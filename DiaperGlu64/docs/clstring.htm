@@ -1,0 +1,2355 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<html>
+
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      clstring.cpp functions
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>
+      <a                                                   >C Functions</a>
+      <a href=clstring.htm#dg_getlstringstartoffset        >dg_getlstringstartoffset</a>
+      <a href=clstring.htm#dg_getlstringlength             >dg_getlstringlength</a>
+      <a href=clstring.htm#dg_getnumberoflstringsonstack   >dg_getnumberoflstringsonstack</a>
+      <a href=clstring.htm#dg_getplstring                  >dg_getplstring</a>
+      <a href=clstring.htm#dg_getlstring                   >dg_getlstring</a>
+      <a href=clstring.htm#dg_poplstring                   >dg_poplstring</a>
+      <a href=clstring.htm#dg_pushlstring                  >dg_pushlstring</a>
+      <a href=clstring.htm#dg_growlstring                  >dg_growlstring</a>
+      <a href=clstring.htm#dg_catlstring                   >dg_catlstring</a>
+      <a href=clstring.htm#dg_stotoplstring                >dg_stotoplstring</a>
+      <a href=clstring.htm#dg_picklstring                  >dg_picklstring</a>
+      <a href=clstring.htm#dg_droplstring                  >dg_droplstring</a>
+      <a href=clstring.htm#dg_dropnlstrings                >dg_dropnlstrings</a>
+      <a href=clstring.htm#dg_deletelstring                >dg_deletelstring</a>
+      <a href=clstring.htm#dg_insertlstring                >dg_insertlstring</a>
+      <a href=clstring.htm#dg_deleteinlstring              >dg_deleteinlstring</a>
+      <a href=clstring.htm#dg_insertinlstring              >dg_insertinlstring</a>
+      <a href=clstring.htm#dg_catlstringn                  >dg_catlstringn</a>
+      <a href=clstring.htm#dg_copystolstringn              >dg_copystolstringn</a>
+      <a href=clstring.htm#dg_copysfromlstringn            >dg_copysfromlstringn</a>
+	  <a href=clstring.htm#dg_setlengthlstringn            >dg_setlengthlstringn</a>
+	  <a href=clstring.htm#dg_replacelstringn              >dg_replacelstringn</a>
+	  <a href=clstring.htm#dg_copylstringntoreplacelstringn>dg_copylstringntoreplacelstringn</a>
+      <a href=clstring.htm#dg_copytoinsertlstrntom         >dg_copytoinsertlstrntom</a>
+      <a href=clstring.htm#dg_makesurelstringnexists       >dg_makesurelstringnexists</a>
+      <a href=clstring.htm#dg_freefreeablelstringarray     >dg_freefreeablelstringarray</a>
+      <a href=clstring.htm#dg_newfreeablelstringarray      >dg_newfreeablelstringarray</a>
+      <a href=clstring.htm#dg_freefreeablelstring          >dg_freefreeablelstring</a>
+      <a href=clstring.htm#dg_newfreeablelstring           >dg_newfreeablelstring</a>
+      <a href=clstring.htm#dg_isfreeablelstringfree        >dg_isfreeablelstringfree</a>
+      <a href=clstring.htm#dg_getsflstrheader              >dg_getsflstrheader</a>
+      <a href=clstring.htm#dg_copyflstrheadertos           >dg_copyflstrheadertos</a>
+      <a href=clstring.htm#dg_insertsintoflstrn            >dg_insertsintoflstrn</a>
+      <a href=clstring.htm#dg_copysfromflstrn              >dg_copysfromflstrn</a>
+      <a href=clstring.htm#dg_copytoinsertflstrntom        >dg_copytoinsertflstrntom</a>
+      <a href=clstring.htm#dg_deleteinflstringn            >dg_deleteinflstringn</a>
+      <a href=clstring.htm#dg_getlengthflstringn           >dg_getlengthflstringn</a>
+      <a href=clstring.htm#dg_newfreeablelstringonend      >dg_newfreeablelstringonend</a>
+      <a href=clstring.htm#dg_comparestolstringn           >dg_comparestolstringn</a>
+      <a href=clstring.htm#dg_deleteuint64inlstringn       >dg_deleteuint64inlstringn</a>
+      <a href=clstring.htm#dg_insertwithcfillinlstringn    >dg_insertwithcfillinlstringn</a>
+      <a href=clstring.htm#dg_packlstring                  >dg_packlstring</a>
+      <a href=clstring.htm#dg_isbufferapackedlstring       >dg_isbufferapackedlstring</a>
+      <a href=clstring.htm#dg_unpacklstring                >dg_unpacklstring</a>
+      <a href=clstring.htm#dg_urlencodestring              >dg_urlencodestring</a>
+      <a href=clstring.htm#dg_urldecodestring              >dg_urldecodestring</a>
+      <a href=clstring.htm#dg_stonewstring                 >dg_stonewstring</a>
+      <a href=clstring.htm#dg_stonew0string                >dg_stonew0string</a>
+      <a href=clstring.htm#dg_pzerostringtonewstring       >dg_pzerostringtonewstring</a>
+    </div>
+
+    <div id=pagestuff>
+
+      <div class=word id=dg_getlstringstartoffset>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getlstringstartoffset
+//
+// C prototype:
+//  UINT64 dg_getlstringstartoffset (
+//   Bufferhandle *pBHarrayhead,
+//   UINT64 offsetbufferid,
+//   UINT64 stringid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  offsetbufferid        index of the bufferhandle for the offset array
+//                                 in the BHarray
+// 
+//  UINT64  stringid              id (index) of the lstring, 0 = bottom
+//                                 which is also the index of the end offset in the
+//                                 offset array
+// 
+// Outputs:
+//  UINT64  return          
+//                              
+// Action
+//  gets the start offset of the lstring in the lstring stack from the offset array
+//
+// Failure cases:
+//  Error getting length of offset buffer
+//   The pointer to the buffer handle array head is NULL
+//   There is no memory allocated for the buffer handle array
+//   The buffer id is for the errorstack. 
+//   The buffer id is off the end of the buffer handle array
+//   The buffer id is for a buffer handle with no buffer attached.
+//  Stringid is off the end of the offsetbuffer
+//  Error getting start of string offset from buffer
+//   The pointer to the buffer handle array head is NULL
+//   There is no memory allocated for the buffer handle array
+//   The buffer id is for the errorstack. 
+//   The buffer id is off the end of the buffer handle array
+//   The buffer id is for a buffer handle with no buffer attached.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getlstringlength>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getlstringlength
+//
+// C prototype:
+//  UINT64 dg_getlstringlength (
+//   Bufferhandle *pBHarrayhead,
+//	 UINT64 offsetbufferid,
+//	 UINT64 stringid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  offsetbufferid        index of the bufferhandle for the offset array
+//                                 in the BHarray
+// 
+//  UINT64  stringid              id (index) of the lstring (0 to depth-1)
+//                                 which is also the index of the end offset in the
+//                                 offset array
+// 
+// Outputs:
+//  UINT64  return          
+//                              
+// Action
+//  calculates the length of the string using the start of this string
+//   and the next in the offset array
+//
+// Failure cases:
+//  Error getting start of next string offset from buffer
+//   The pointer to the buffer handle array head is NULL
+//   There is no memory allocated for the buffer handle array
+//   The buffer id is for the errorstack. 
+//   The buffer id is off the end of the buffer handle array
+//   The buffer id is for a buffer handle with no buffer attached.
+//  Error getting start of string offset from buffer
+//   The pointer to the buffer handle array head is NULL
+//   There is no memory allocated for the buffer handle array
+//   The buffer id is for the errorstack. 
+//   The buffer id is off the end of the buffer handle array
+//   The buffer id is for a buffer handle with no buffer attached.
+//  Start of string offset > end of string offset
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getnumberoflstringsonstack>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getnumberoflstringsonstack
+//
+// C prototype:
+//  UINT64 dg_getnumberoflstringsonstack(
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 offsetbufferid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  offsetbufferid        index of the bufferhandle for the offset array
+//                                 in the BHarray
+// 
+// Outputs:
+//  UINT64  return                number of lstrings on the stack
+//                              
+// Action
+//  Calculates the number of lstrings on the stack
+//
+// Failure cases:
+//  Error getting buffer length
+//   The pointer to the buffer handle array head is NULL
+//   There is no memory allocated for the buffer handle array
+//   The buffer id is for the errorstack. 
+//   The buffer id is off the end of the buffer handle array
+//   The buffer id is for a buffer handle with no buffer attached.
+//  Offset buffer size in bytes is not a multiple of element size in bytes
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getplstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getplstring
+//
+// C prototype:
+//  unsigned char* dg_getplstring(
+//   Bufferhandle* pBHarrayhead,
+//	 UINT64  offsetbufferid,
+//	 UINT64  stringbufferid,
+//	 UINT64  stringid,
+//	 UINT64* pstringlength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  offsetbufferid        index of the offset array bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  stringbufferid        index of the string buffer bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  stringid              index of the string's end+1 offset in the
+//                                 offset array
+// 
+// Outputs:
+//  unsigned char return          if dg_success a pointer to the start of the string
+//                                 is returned
+//                                on fail a NULL pointer is returned
+//                                 (and an error is pushed onto the error stack
+//                                 if possible)
+//
+//  UINT64 pstringlength          if dg_success this is the length of the string
+//                                 on fail this is 0 
+//                              
+// Action
+//  gets a pointer to a start of a string and it's length
+//
+// Failure cases:
+//  Error getting stringstartoffset
+//   The pointer to the buffer handle array head is NULL
+//   There is no memory allocated for the buffer handle array
+//   The offset buffer id is for the errorstack. 
+//   The offset buffer id is off the end of the buffer handle array
+//   The offset buffer id is for a buffer handle with no buffer attached.
+//  Error getting stringlength
+//   The pointer to the buffer handle array head is NULL
+//   There is no memory allocated for the buffer handle array
+//   The offset buffer id is for the errorstack. 
+//   The offset buffer id is off the end of the buffer handle array
+//   The offset buffer id is for a buffer handle with no buffer attached.
+//  Error getting a pointer to the buffer segment
+//   The pointer to the buffer handle array head is NULL
+//   There is no memory allocated for the buffer handle array
+//   The string buffer id is for the errorstack. 
+//   The string buffer id is off the end of the buffer handle array
+//   The string buffer id is for a buffer handle with no buffer attached.
+//   String start offset + string length is after the end of the string buffer's in use
+//    area. (It can be at the end.)
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getlstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getlstring
+//
+// C prototype:
+//  void dg_getlstring (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 offsetbufferid,
+//   UINT64 stringbufferid,
+//   UINT64 stringid,
+//   UINT64 maxlength,
+//   unsigned char* pdest)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  offsetbufferid        index of the offset array bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  stringbufferid        index of the string buffer bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  stringid              index of the string's end+1 offset in the
+//                                 offset array
+//
+//  UINT64  maxlength             maximum length string that will fit in the
+//                                 destination buffer
+// 
+// Outputs:
+//  unsigned char pdest           if dg_success the string is copied to here
+//                                 on fail the string is not copied
+//                                                              
+// Action
+//  copies a string from the string stack to the destination
+//
+// Failure cases:
+//  Error getting stringstartoffset
+//   The pointer to the buffer handle array head is NULL
+//   There is no memory allocated for the buffer handle array
+//   The offset buffer id is for the errorstack. 
+//   The offset buffer id is off the end of the buffer handle array
+//   The offset buffer id is for a buffer handle with no buffer attached.
+//  Error getting stringlength
+//   The pointer to the buffer handle array head is NULL
+//   There is no memory allocated for the buffer handle array
+//   The offset buffer id is for the errorstack. 
+//   The offset buffer id is off the end of the buffer handle array
+//   The offset buffer id is for a buffer handle with no buffer attached.
+//  String won't fit in the destination buffer because it's to long
+//  Error getting the buffer segment
+//   The pointer to the buffer handle array head is NULL
+//   There is no memory allocated for the buffer handle array
+//   The string buffer id is for the errorstack. 
+//   The string buffer id is off the end of the buffer handle array
+//   The string buffer id is for a buffer handle with no buffer attached.
+//   String start offset + string length is after the end of the string buffer's in use
+//    area. (It can be at the end.)
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_poplstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_poplstring
+//
+// C prototype:
+//  void dg_poplstring (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 offsetbufferid,
+//   UINT64 stringbufferid,
+//   UINT64 maxlength,
+//   unsigned char* pdest)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  offsetbufferid        index of the offset array bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  stringbufferid        index of the string buffer bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  maxlength             maximum length string that will fit in the
+//                                 destination buffer
+// 
+// Outputs:
+//  unsigned char pdest           if dg_success the string is copied to here
+//                                 on fail the string is not copied
+//                                                              
+// Action
+//  pops a string off the string stack to the destination
+//  note: if the shrink fails (which it shouldn't) the string is still gotten
+//
+// Failure cases:
+//  Error getting number of strings on the string stack
+//  No strings on string stack
+//  Error getting the string
+//  Error shrinking the offset buffer (shouldn't get this error)
+//  Error shrinking the string buffer (shouldn't get this error)
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+      <div class=word id=dg_pushlstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_pushlstring
+//
+// C prototype:
+//  void dg_pushlstring (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 offsetbufferid,
+//   UINT64 stringbufferid,
+//   UINT64 length,
+//   unsigned char* psrc)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  offsetbufferid        index of the offset array bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  stringbufferid        index of the string buffer bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  length                length of the string to push
+//
+//  unsigned char* psrc           pointer to the source string
+// 
+// Outputs:
+//  none
+//                                                              
+// Action
+//  pushes the source string onto the specified string stack
+//
+// Warning!: Don't push stuff from inside the lstring stack because the buffers
+//  could move when they are grown making the psrc pointer invalid.
+//
+// Failure cases:
+//  Error getting offset buffer length
+//  Error pushing buffer segment to string buffer
+//  Error pushing new end of string+1 onto offset stack
+//  ** could test for case where end of string buffer doesn't match end of last string 
+//   on offset stack! **
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_growlstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_growlstring
+//
+// C prototype:
+//  void dg_growlstring (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 offsetbufferid,
+//   UINT64 stringbufferid,
+//   UINT64 length)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  offsetbufferid        index of the offset array bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  stringbufferid        index of the string buffer bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  length                amount in bytes to grow top lstring on lstring
+//                                 stack
+// 
+// Outputs:
+//  none
+//                                                              
+// Action
+//  grows the top lstring on the specified lstring stack by length bytes
+//
+// Failure cases:
+//  Error getting offset buffer length
+//  Error pushing buffer segment to string buffer
+//  Error pushing new end of string+1 onto offset stack
+//  ** could test for case where end of string buffer doesn't match end of last string 
+//   on offset stack! **
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_catlstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_catlstring
+//
+// C prototype:
+//  void dg_catlstring (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 offsetbufferid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  offsetbufferid        index of the offset array bufferhandle in
+//                                 the BHarray
+//
+//
+// Outputs:
+//  none
+//                                                              
+// Action
+//  concatenatesthe top lstring on the lstring stack with the one below it
+//
+// Failure cases:
+//  error getting pointer to lstring offset buffer
+//  less than 2 lstrings on the lstring stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_stotoplstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_stotoplstring
+//
+// C prototype:
+//  void dg_stotoplstring (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 offsetbufferid,
+//   UINT64 stringbufferid,
+//   UINT64 length,
+//   unsigned char* psrc)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  offsetbufferid        index of the offset array bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  stringbufferid        index of the string buffer bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  length                length of source string
+//
+//  unsigned char* psrc           pointer to source string
+// 
+// Outputs:
+//  none
+//                                                              
+// Action
+//  pushes string at psrc for length onto the end of the top lstring on the lstring
+//   stack
+//
+// Failure cases:
+//  Error pushing copy of string onto the end of the lstring stack
+//  Error concatenating top two lstrings on the lstring stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_picklstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_picklstring
+//
+// C prototype:
+//  void dg_picklstring (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 offsetbufferid,
+//   UINT64 stringbufferid,
+//   UINT64 n)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  offsetbufferid        index of the offset array bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  stringbufferid        index of the string buffer bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  n                     distance of lstring from top of the lstring stack
+//                                 push to the top of the lstring stack
+// 
+// Outputs:
+//  none
+//                                                              
+// Action
+//  pushes the lstring at n down from the top of the lstring stack to the top of the
+//   lstring stack
+//
+// Failure cases:
+//  Error getting offset buffer length
+//  Error pushing buffer segment to string buffer
+//  Error pushing new end of string+1 onto offset stack
+//  ** could test for case where end of string buffer doesn't match end of last string 
+//   on offset stack! **
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+      <div class=word id=dg_droplstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_droplstring
+//
+// C prototype:
+//  void dg_droplstring (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 offsetbufferid,
+//   UINT64 stringbufferid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  offsetbufferid        index of the offset array bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  stringbufferid        index of the string buffer bufferhandle in
+//                                 the BHarray
+// 
+// Outputs:
+//  none
+//                                                              
+// Action
+//  removes the top string from the lstring stack
+//
+// Failure cases:
+//  Error getting number of lstrings on the lstring stack 
+//  No lstrings on the lstring stack
+//  Error shrinking offset buffer
+//  Error shrinking string buffer
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_dropnlstrings>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_dropnlstrings
+//
+// C prototype:
+//  void dg_dropnlstrings (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 offsetbufferid,
+//   UINT64 stringbufferid,
+//   UINT64 n)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  offsetbufferid        index of the offset array bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  stringbufferid        index of the string buffer bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  n                     number of lstrings to drop
+//
+// Outputs:
+//  none
+//
+// Action
+//  removes the top n string from the lstring stack
+//
+// Failure cases:
+//  Error getting number of lstrings on the lstring stack
+//  Not enough lstrings on the lstring stack
+//  Error getting the offsets from the offset buffer
+//  Offsets are corrupt (lower index offset bigger than higher index one)
+//  Error shrinking offset buffer
+//  Error shrinking string buffer
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_deletelstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_deletelstring
+//
+// C prototype:
+//  void dg_deletelstring (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 offsetbufferid,
+//   UINT64 stringbufferid,
+//   UINT64 stringid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  offsetbufferid        index of the offset array bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  stringbufferid        index of the string buffer bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  stringid              index of string to delete from lstring stack
+// 
+// Outputs:
+//  none
+//                                                              
+// Action
+//  removes string stringid from the lstring stack
+//
+// Failure cases:
+//  Error getting number of lstrings on the lstring stack 
+//  No lstrings on the lstring stack
+//  Error shrinking offset buffer
+//  Error shrinking string buffer
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_insertlstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_insertlstring
+//
+// C prototype:
+//  void dg_insertlstring (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 offsetbufferid,
+//   UINT64 stringbufferid,
+//   UINT64 stringid,
+//   UINT64 length)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  offsetbufferid        index of the offset array bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  stringbufferid        index of the string buffer bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  stringid              index of a string on the lstring stack,
+//                                 0 = bottom
+//
+//  UINT64  length                length of the string to insert
+// 
+// Outputs:
+//  none
+//                                                              
+// Action
+//  Inserts a non initialized string before string stringid into the lstring stack.
+//
+// Success cases
+//   no strings on stack, inserting at 0
+//   at least one string on stack, inserting at end
+//     just do pushlstring
+//   at least one string on stack, inserting at 0
+//     offset[0] = length, rest are oldvalue+length
+//   at least two strings on stack, inserting in middle
+//     offset[i] = old offset[i-1] + length,
+//     rest are offset [i+1] = old offset[i] + length
+//     ( seems to be the same)
+//
+// Failure cases:
+//  Error getting number of lstrings on the lstring stack 
+//  Error growing offset buffer
+//  Error growing string buffer
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_deleteinlstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_deleteinlstring
+//
+// C prototype:
+//  void dg_deleteinlstring (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 offsetbufferid,
+//   UINT64 stringbufferid,
+//   UINT64 stringid,
+//   UINT64 offset,
+//   UINT64 length)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  offsetbufferid        index of the offset array bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  stringbufferid        index of the string buffer bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  stringid              index of a string on the lstring stack,
+//                                 0 = bottom
+//
+//  UINT64  offset                start offset of segment to delete
+//
+//  UINT64  length                length of segment to delete in bytes
+// 
+// Outputs:
+//  none
+//                                                              
+// Action
+//  Removes substring in lstring stringid. The lstring ends up getting shortened.
+//
+// Failure cases:
+//  error getting number of lstrings on the lstring stack 
+//  lstring stringid is not on the lstring stack
+//  segment to delete goes past end of lstring stringid
+//  error deleting lstring segment
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_insertinlstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_insertinlstring
+//
+// C prototype:
+//  void dg_insertinlstring (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 offsetbufferid,
+//   UINT64 stringbufferid,
+//   UINT64 stringid,
+//   UINT64 offset,
+//   UINT64 length)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  offsetbufferid        index of the offset array bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  stringbufferid        index of the string buffer bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  stringid              index of a string on the lstring stack,
+//                                 0 = bottom
+//
+//  UINT64  offset                start offset of where to insert segment, inserts
+//                                 before character at this offset
+//
+//  UINT64  length                length of segment to insert in bytes
+// 
+// Outputs:
+//  none
+//                                                              
+// Action
+//  inserts an uninitialized segment before the character at the offset in lstring
+//   stringid
+//  if offset is at end of lstring, lstring is grown by length
+//
+// Failure cases:
+//  error getting number of lstrings on the lstring stack 
+//  lstring stringid is not on the lstring stack
+//  segment to insert start past end of lstring stringid, it can start at end
+//  error deleting lstring segment
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_catlstringn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_catlstringn
+//
+// C prototype:
+//  void dg_catlstringn (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 offsetbufferid,
+//   UINT64 stringbufferid,
+//   UINT64 n)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  offsetbufferid        index of the offset array bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  stringbufferid        index of the string buffer bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  n                     index of string to delete from lstring stack,
+//                                 0 = bottom
+// 
+// Outputs:
+//  none
+//
+// Stack action shorthand:
+//  ( l$0 ... l$n-1 l$n l$n+1 l$n+2 ... l$top -l$- 
+//      l$0 ... l$n-1 l$n+l$n+1 l$n+2 ... l$top )
+//                                                               
+// Action
+//  Concatenates l$ n with the one after it
+//
+// Failure cases:
+//  error getting number of lstrings on the lstring stack 
+//  lstring stringid and one after it is not on the lstring stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_copystolstringn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_copystolstringn
+//
+// C prototype:
+//  void dg_copystolstringn (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 offsetbufferid,
+//   UINT64 stringbufferid,
+//   UINT64 n,
+//   UINT64 offset,
+//   unsigned char* psrc,
+//   UINT64 length)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  offsetbufferid        index of the offset array bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  stringbufferid        index of the string buffer bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  n                     index of string on lstring stack,
+//                                 0 = bottom
+//
+//  UINT64  offset                start offset in lstring
+//
+//  unsigned char* psrc           source string pointer
+//
+//  UINT64  length                length of source string
+// 
+// Outputs:
+//  none
+//                                                              
+// Action
+//  Copies source string at psrc for length over segment in lstring n
+//    starting at offset in lstring
+//
+// Failure cases:
+//  Error getting lstring start offset
+//  Error getting lstring length
+//  Segment goes past end of lstring error
+//  Error copying segment
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_copysfromlstringn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_copysfromlstringn
+//
+// C prototype:
+//  void dg_copysfromlstringn (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 offsetbufferid,
+//   UINT64 stringbufferid,
+//   UINT64 n,
+//   UINT64 offset,
+//   UINT64 length,
+//   unsigned char* pdest)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  offsetbufferid        index of the offset array bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  stringbufferid        index of the string buffer bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  n                     index of string on lstring stack,
+//                                 0 = bottom
+//
+//  UINT64  offset                start offset in lstring
+//
+//  UINT64  length                length of segment to copy in lstring
+//
+//  unsigned char* pdest          destination string pointer
+// 
+// Outputs:
+//  none
+//                                                              
+// Action
+//  Copies segment in lstring n starting at offset for length
+//   to destination
+//
+// Failure cases:
+//  Error getting lstring start offset
+//  Error getting lstring length
+//  Segment goes past end of lstring error
+//  Error copying segment
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+    
+
+      <div class=word id=dg_setlengthlstringn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_setlengthlstringn
+//
+// C prototype:
+//  void dg_setlengthlstringn (
+//   Bufferhandle* pBHarrayhead,
+//	 UINT64 offsetbufferid,
+//	 UINT64 stringbufferid,
+//	 UINT64 n,
+//   UINT64 newlength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  offsetbufferid        index of the offset array bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  stringbufferid        index of the string buffer bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  n                     index of string on lstring stack,
+//                                 0 = bottom
+//
+//  UINT64  newlength             new length for target lstring
+// 
+// Outputs:
+//  none
+//                                                              
+// Action
+//  Adds or removes characters at end of lstring n as needed to get to new length.
+//  Added characters are not initialized and are whatever was in memory from before.
+//
+// Failure cases:
+//  Error getting lstring start offset
+//  Error getting lstring length
+//  Error deleting from end of lstring  
+//  Error inserting at end of lstring
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_replacelstringn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_replacelstringn
+//
+// C prototype:
+//  void dg_replacelstringn (
+//   Bufferhandle* pBHarrayhead,
+//	 UINT64 offsetbufferid,
+//	 UINT64 stringbufferid,
+//	 UINT64 n,
+//   unsigned char* psrc,
+//   UINT64 length)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  offsetbufferid        index of the offset array bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  stringbufferid        index of the string buffer bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  n                     index of string on lstring stack, 0 = bottom
+//
+//  UINT64  offset                start offset in lstring
+//
+//  unsigned char* psrc           source string pointer
+//
+//  UINT64  length                length of source string
+// 
+// Outputs:
+//  none
+//                                                              
+// Action
+//  Replaces target lstring at index n in the lstring array
+//   with a copy of the source string.
+//
+// Failure cases:
+//  Error setting target lstring length to source string length.
+//  Error copying source string to target lstring.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_copylstringntoreplacelstringn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_copylstringntoreplacelstringn
+//
+// C prototype:
+//  void dg_copylstringntoreplacelstringn (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 srcoffsetbufferid,
+//   UINT64 srcstringbufferid,
+//   UINT64 srcstringid,
+//   UINT64 destoffsetbufferid,
+//   UINT64 deststringbufferid,
+//   UINT64 deststringid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  offsetbufferid        index of the offset array bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  stringbufferid        index of the string buffer bufferhandle in
+//                                 the BHarray
+//
+//  UINT64  srcstringid           index of source string on lstring stack,
+//                                 0 = bottom
+//
+//  UINT64  destoffsetbufferid    index of the destination lstring offset array
+//                                 bufferhandle in the BHarray
+//
+//  UINT64  deststringbufferid    index of the destination lstring string buffer
+//                                 bufferhandle in the BHarray
+//
+//  UINT64  deststringid          index of string on the destination lstring stack,
+//                                 0 = bottom
+// 
+// Outputs:
+//  none
+//                                                              
+// Action
+//  Replaces target lstring at index deststringid in the destination lstring array 
+//   with a copy of the source lstring at index srcstringid in the source lstring array.
+//
+// Failure cases:
+//  Error getting source lstring length
+//  Error setting destination lstring length to source lstring length.
+//  Error getting pointer to source lstring
+//  Error copying source lstring to target lstring.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_copytoinsertlstrntom>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_copytoinsertlstrntom
+//
+// C prototype:
+//  void dg_copytoinsertlstrntom (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 srcoffsetbufferidn,
+//   UINT64 srcstringbufferidn,
+//   UINT64 srcstringidn,
+//   UINT64 srcoffsetn,
+//   UINT64 destoffsetbufferidm,
+//   UINT64 deststringbufferidm,
+//   UINT64 deststringidm,
+//   UINT64 destoffsetm,
+//   UINT64 length)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other  bufferhandles are stored.
+//
+//  UINT64  srcoffsetbufferidn    index of the source lstring offset array
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  srcstringbufferidn    index of the source lstring string buffer
+//                                 bufferhandle in the BHarray
+//
+//  UINT64  srcstringidn          index of string on the source lstring stack,
+//                                 0 = bottom
+//
+//  UINT64  srcoffsetn            0 based offset in the source lstring
+//
+//  UINT64  destoffsetbufferidm   index of the destination lstring offset array
+//                                 bufferhandle in the BHarray
+//
+//  UINT64  deststringbufferidm   index of the destination lstring string buffer
+//                                 bufferhandle in the BHarray
+//
+//  UINT64  deststringidm         index of string on the destination lstring
+//                                 stack, 0 = bottom
+//
+//  UINT64  destoffsetm           0 based offset in the destination lstring
+//
+//  UINT64  length                length in bytes to copy and insert
+//
+// Outputs:
+//  none
+//                                                              
+// Action
+//  Copies a segment of the source lstring.
+//   The source segment starts at srcoffsetn and is length bytes long.
+//  Inserts the segment into the destination lstring before the character
+//   at destoffsetm. If destoffsetm is the length of the destination lstring
+//   then the segment is pushed onto the end of the destination lstring.
+//
+// Failure cases:
+//  Error getting pointer to source lstring.
+//  Source segment goes off the end of the source lstring.
+//  Error inserting empty room into the destination lstring.
+//  Error getting a pointer to the destination lstring.
+//  Error copying the section to the destination lstring.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_makesurelstringnexists>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_makesurelstringnexists
+//
+// C prototype:
+//  void dg_makesurelstringnexists (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 lstringoffsetbufferid,
+//   UINT64 lstringstringbufferid,
+//   UINT64 n)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  UINT64  lstringoffsetbufferid  index of the lstring offset array bufferhandle
+//                                  in the BHarray
+//
+//  UINT64  lstringstringbufferid  index of the lstring string buffer bufferhandle
+//                                  in the BHarray
+//
+//  UINT64  n                      index of the lstring in the lstring array
+//
+// Outputs:
+//  none
+//                                                              
+// Action
+//  If lstring n does not exist, then this routine pushes empty lstrings onto the
+//   end of the lstring until it does exist.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_freefreeablelstringarray>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_freefreeablelstringarray
+//
+// C prototype:
+//  void dg_freefreeablelstringarray(
+//   Bufferhandle* pBHarrayhead, 
+//   UINT64 freeindexbuffer)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  freeindexbuffer       index of the buffer containing the header and 
+//                                 in use or next free index array 
+//
+// Outputs:
+//  none
+//                                                              
+// Action
+//  Given the buffer id of the header and (in use or next free index) linked list
+//   buffer, this routine frees the lstring array's offset and string buffers, then
+//   frees the header and (in use or next free index) linked list buffer.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_newfreeablelstringarray>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_newfreeablelstringarray
+//
+// C prototype:
+//  UINT64 dg_newfreeablelstringarray(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                the other  bufferhandles are stored.
+//
+// Outputs:
+//  UINT64        return          buffer id of the header and 
+//                                 (in use or next free index) linked list buffer
+//                                                              
+// Action
+//  Allocates the lstring's offset and string buffers, then allocates the 
+//   header and (in use or next free index) linked list buffer.
+//   Then returns the buffer id of the buffer id of the header and 
+//    (in use or next free index) linked list buffer.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_freefreeablelstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_freefreeablelstring
+//
+// C prototype:
+//  void dg_freefreeablelstring(
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 freeindexbuffer,
+//   UINT64 lstringindex)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  freeindexbuffer       index of the buffer containing the header and 
+//                                 in use or next free index array 
+//
+//  UINT64  lstringindex          index of the lstring to free
+//
+// Outputs:
+//  none
+//                                                              
+// Action
+//  If the lstring is on the end of the array, it is dropped, otherwise
+//   the lstring's length is changed to 0 and it's index is added to the free list.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_newfreeablelstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_newfreeablelstring
+//
+// C prototype:
+//  UINT64 dg_newfreeablelstring (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 freeindexbuffer)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  freeindexbuffer       index of the buffer containing the header and 
+//                                 in use or next free index array 
+//
+// Outputs:
+//  UINT64  return                index of the new lstring
+//                                                              
+// Action
+//  If there is an lstring in the free list, this routine removes one of them from the
+//   free list and returns it's index. Otherwise, this routine pushes a new lstring
+//   onto the end of the array and returns it's index.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_isfreeablelstringfree>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_isfreeablelstringfree
+//
+// C prototype:
+//  UINT64 dg_isfreeablelstringfree (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 freeindexbuffer,
+//    UINT64 flstringid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  freeindexbuffer       index of the buffer containing the header and 
+//                                 in use or next free index array 
+//
+//  UINT64  flstringid            index of the freeable lstring to check
+//
+// Outputs:
+//  UINT64  return                if FORTH_FALSE, the freeable lstring is not free,
+//                                 otherwise it is free.
+//                                                              
+// Action
+//  Returns FORTH_FALSE if the indicated freeable lstring is NOT free, otherwise the
+//   freeable lstring is free.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getsflstrheader>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getsflstrheader
+//
+// C prototype:
+//  Freeablelstringarrayheader* dg_getsflstrheader(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 freeindexbuffer,
+//    UINT64* pflstrheaderlength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  freeindexbuffer       index of the buffer containing the header and 
+//                                 in use or next free index array
+//
+// Outputs:
+//  UINT64* pflstrheaderlength    pointer to caller supplied UINT64 that will hold
+//                                 the length of the freeable lstring array's
+//                                 header structure. This should be
+//                                 sizeof(Freeablelstringarrayheader).
+//
+//  UINT64  return                pointer to the header structure of the indicated
+//                                 freeable lstring array
+//                                                              
+// Action
+//  Returns the address and length of the indicated freeable lstring array's header
+//   structure.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_copyflstrheadertos>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_copyflstrheadertos
+//
+// C prototype:
+//  void dg_copyflstrheadertos(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 freeindexbuffer,
+//    Freeablelstringarrayheader* pflstrheader,
+//    UINT64 flstrheaderlength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  freeindexbuffer       index of the buffer containing the header and 
+//                                 in use or next free index array
+//
+//  UINT64  flstrheaderlength     the length of the indicated freeable lstring
+//                                 array's header. This should be
+//                                 sizeof(Freeablelstringarrayheader).
+//
+// Outputs:
+//  Freeablelstringarrayheader* pflstrheader
+//                                pointer to caller supplied memory that will hold a
+//                                 copy of the indicated freeable lstring array's
+//                                 header
+//
+// Action
+//  Returns a copy of the freeable lstring array's header.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_insertsintoflstrn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_insertsintoflstrn
+//
+// C prototype:
+//  void dg_insertsintoflstrn(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 freeindexbuffer,
+//    UINT64 flstringid,
+//    UINT64 offset,
+//    unsigned char* psrc,
+//    UINT64 length)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  freeindexbuffer       index of the buffer containing the header and 
+//                                 in use or next free index array
+//
+//  UINT64  flstringid            0 based index of the lstring in the freeable
+//                                 lstring array
+//
+//  UINT64  offset                start offset in the freeable lstring of where
+//                                 to begin the insert. The character at this
+//                                 offset will be the first character after the
+//                                 inserted segment.
+//
+//  unsigned char* psrc           pointer to the segment to insert
+//
+//  UINT64 length                 length of the segment to insert in bytes
+//
+// Outputs:
+//  none
+//
+// Action
+//  Inserts a copy of length unsigned bytes at psrc into the indicated freeable
+//   lstring at the indicated start offset. If the offset is set to the length of
+//   the freeable lstring, the segment is appened to the end of the freeable lstring.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_copysfromflstrn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_copysfromflstrn
+//
+// C prototype:
+//  void dg_copysfromflstrn(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 freeindexbuffer,
+//    UINT64 flstringid,
+//    UINT64 offset,
+//    UINT64 length,
+//    unsigned char* pdest)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other  bufferhandles are stored.
+//
+//  UINT64  freeindexbuffer       index of the buffer containing the header and 
+//                                 in use or next free index array
+//
+//  UINT64  flstringid            0 based index of the lstring in the freeable
+//                                 lstring array
+//
+//  UINT64  offset                start offset in the freeable lstring of where
+//                                 to begin the copy.
+//
+//  UINT64 length                 length of the segment to copy from the freeable
+//                                 lstring in bytes
+//
+// Outputs:
+//  unsigned char* pdest          pointer to the destination memory address of
+//                                 the copy
+//
+// Action
+//  Copies length bytes from the offset in the indicated freeable lstring to the
+//   destination memory address
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_copytoinsertflstrntom>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_copytoinsertflstrntom
+//
+// C prototype:
+//  void dg_copytoinsertflstrntom(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 freeindexbuffern,
+//    UINT64 flstringnid,
+//    UINT64 offsetn,
+//    UINT64 freeindexbufferm,
+//    UINT64 flstringmid,
+//    UINT64 offsetm,
+//    UINT64 length)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  freeindexbuffern      index of the buffer containing the header and 
+//                                 in use or next free index array of the source
+//                                 freeable lstring
+//
+//  UINT64  flstringnid           0 based index of the source freeable lstring 
+//                                 in the freeable lstring array
+//
+//  UINT64  offsetn               start offset in the source freeable lstring of
+//                                 where to begin the copy.
+//
+//  UINT64  freeindexbufferm      index of the buffer containing the header and 
+//                                 in use or next free index array of the
+//                                 destination freeable lstring array
+//
+//  UINT64  flstringmid           0 based index of the destination lstring 
+//                                 in the freeable lstring array
+//
+//  UINT64  offsetm               start offset in the destination freeable lstring
+//                                 of where to begin the copy.
+//
+//  UINT64 length                 length of the segment in bytes to copy from
+//                                 the freeable lstring
+//
+// Outputs:
+//  none
+//
+// Action
+//  Copies length bytes from the offsetn in the indicated source freeable lstring and
+//   inserts these bytes before the bytes at the offsetm in the indicated destination
+//   freeable lstring. 
+//   This function handles the case where you are copying from and 
+//   inserting into the same freeable lstring array and the growing the destination 
+//   causes the destination buffer to be relocated.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_deleteinflstringn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_deleteinflstringn
+//
+// C prototype:
+//  void dg_deleteinflstringn(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 freeindexbuffer,
+//    UINT64 flstringid,
+//    UINT64 offset,
+//    UINT64 length)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  freeindexbuffer      index of the buffer containing the header and 
+//                                 in use or next free index array of the source
+//                                 freeable lstring
+//
+//  UINT64  flstringid           0 based index of the freeable lstring 
+//                                 in the freeable lstring array
+//
+//  UINT64  offset               start offset in the freeable lstring of where to
+//                                 begin the delete.
+//
+//  UINT64 length                 length of the segment in bytes to delete from the
+//                                 freeable lstring
+//
+// Outputs:
+//  none
+//
+// Action
+//  Removes length bytes from the indicated freeable lstring starting with the byte
+//   at the indicated offset. This shortens the freeable lstring by length bytes.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getlengthflstringn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getlengthflstringn
+//
+// C prototype:
+//  UINT64 dg_getlengthflstringn (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 freeindexbuffer,
+//    UINT64 flstringid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  freeindexbuffer      index of the buffer containing the header and 
+//                                 in use or next free index array of the source
+//                                 freeable lstring
+//
+//  UINT64  flstringid           0 based index of the freeable lstring 
+//                                 in the freeable lstring array
+//
+// Outputs:
+//  UINT64 return                length in bytes of the indicated freeable lstring.
+//
+// Action
+//  Returns the length in bytes of the indicated freeable lstring.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_newfreeablelstringonend>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_newfreeablelstringonend
+//
+// C prototype:
+//  UINT64 dg_newfreeablelstringonend (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 freeindexbuffer,
+//   unsigned char* plstring,
+//   UINT64 lstringlength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64  freeindexbuffer      index of the buffer containing the header and 
+//                                 in use or next free index array of the source
+//                                 freeable lstring
+//
+//  unsigned char* plstring      pointer to source bytes
+//
+//  UINT64 lstringlength         length of source bytes
+//
+// Outputs:
+//  UINT64 return                0 based index of the new freeable lstring 
+//                                 in the freeable lstring array
+//
+// Action
+//  Creates a new freeable lstring on the end of the freeable lstring array regardless
+//   of whether or not there are any existing free freeable lstrings. Then initializes
+//   the new freeable lstring with a copy of source segment.
+//  This routine is useful because successive calls will return freeable lstring
+//   indexes that increase by 1 each time.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_comparestolstringn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_comparestolstringn
+//
+// C prototype:
+//  INT64 dg_comparestolstringn (
+//    Bufferhandle* pBHarrayhead,
+//    unsigned char* ps,
+//    UINT64 slength,
+//    UINT64 lstringoffsetbufferid, 
+//    UINT64 lstringstringbufferid,
+//    UINT64 n)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array where
+//                                   the other bufferhandles are stored.
+//
+//  unsigned char* ps              pointer to first source segment for compare
+//
+//  UINT64 slength                 length of first source segment
+//
+//  UINT64  lstringoffsetbufferid  index of the lstring's offset array bufferhandle
+//                                  in the BHarray
+//
+//  UINT64  lstringstringbufferid  index of the lstring's string buffer bufferhandle
+//                                  in the BHarray
+//
+//  UINT64  n                      0 based index of the lstring in the lstring array
+//                                  which is also the index of the lstring's end+1
+//                                  offset in the offset array
+//
+// Outputs:
+//  INT64  return                  compare flag: 
+//                                   0 means ps is byte for byte the same as lstring[n]
+//                                   1 means ps is unsigned greater than lstring[n]
+//                                   -1 means ps is unsigned less than lstring[n]
+//                                                              
+// Action
+//  Compares the bytes at ps with lstring[n] using a byte by byte unsigned comparison
+//   and returns a comparison result flag.
+//  In the event the string at ps matches lstring[n] but they are of different
+//   lengths, the longer string is greater.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_deleteuINT64inlstringn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_deleteuint64inlstringn
+//
+// C prototype:
+//  void dg_deleteuINT64inlstringn (
+//    Bufferhandle* pBHarrayhead, 
+//    UINT64 lstringoffsetbufferid, 
+//    UINT64 lstringstringbufferid,
+//    UINT64 lstringindex,
+//    UINT64 uint64toremove)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  UINT64  lstringoffsetbufferid  index of the lstring's offset array bufferhandle
+//                                  in the BHarray
+//
+//  UINT64  lstringstringbufferid  index of the lstring's string buffer bufferhandle
+//                                  in the BHarray
+//
+//  UINT64  lstringindex           0 based index of the lstring in the lstring array
+//                                  which is also the index of the lstring's end+1
+//                                  offset in the offset array
+//
+//  UINT64  uint64toremove         UINT64 value to remove from the array of UINT64s
+//                                  in the lstring
+//
+// Outputs:
+//  none
+//                                                              
+// Action:
+//  Scans the array of UINT64s held in the lstring for the first UINT64 matching
+//   uint64toremove and if found, deletes the UINT64 from the lstring. If not found,
+//   the lstring is not changed.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_insertwithcfillinlstringn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_insertwithcfillinlstringn
+//
+// C prototype:
+//  void dg_insertwithcfillinlstringn (
+//    Bufferhandle* pBHarrayhead, 
+//    UINT64 lstringoffsetbufferid, 
+//    UINT64 lstringstringbufferid,
+//    UINT64 lstringindex,
+//    UINT64 offset,
+//    UINT64 length,
+//    unsigned char cvalue)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  UINT64  lstringoffsetbufferid  index of the lstring's offset array bufferhandle
+//                                  in the BHarray
+//
+//  UINT64  lstringstringbufferid  index of the lstring's string buffer bufferhandle
+//                                  in the BHarray
+//
+//  UINT64  lstringindex           0 based index of the lstring in the lstring array
+//                                  which is also the index of the lstring's end+1
+//                                  offset in the offset array
+//
+//  UINT64  offset                 offset in bytes of first character of insert
+//
+//  UINT64  length                 length in bytes of insert
+//
+//  unsigned char cvalue           character to fill insert area with
+//
+// Outputs:
+//   none
+//                                                              
+// Action:
+//  Inserts length bytes of cvalue into lstring[lstringindex] at the designated offset.
+//  The character at the offset before the insert is the first character after the
+//   inserted bytes after the insert is completed.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+      <div class=word id=dg_packlstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_packlstring
+//
+// C prototype:
+//  void dg_packlstring (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 lstringoffsetbufferid,
+//    UINT64 lstringstringbufferid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  UINT64  lstringoffsetbufferid  index of the lstring's offset array bufferhandle
+//                                  in the BHarray
+//
+//  UINT64  lstringstringbufferid  index of the lstring's string buffer bufferhandle
+//                                  in the BHarray
+//
+// Outputs:
+//   none
+//                                                              
+// Action:
+//   Pushes an lstring onto the end of the lstring array. This string contains an
+//    a magic string, which for now is "PACK" followed by what the lstring's offset
+//    buffer will be after the push.
+//   In other words, the lstring's string buffer now contains the entire array packed
+//    into one buffer, and the lstring array is still a valid lstring array.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+ 
+
+      <div class=word id=dg_isbufferapackedlstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_isbufferapackedlstring
+//
+// C prototype:
+//  UINT64 dg_isbufferapackedlstring (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 lstringstringbufferid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  UINT64  lstringstringbufferid  index of the lstring's string buffer bufferhandle
+//                                  in the BHarray
+//
+// Outputs:
+//   UINT64 return                 FORTH_TRUE if the buffer is a packed lstring
+//                                 otherwise FORTH_FALSE
+//                                                              
+// Action:
+//  Checks to make sure last UINT64 in the file is the length of the file in bytes.
+//  Then checks to make sure the packed lstring magic string "PACK" is there.
+//  Returns FORTH_TRUE if these checks pass otherwise returns FORTH_FALSE.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_unpacklstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_unpacklstring
+//
+// C prototype:
+//  UINT64 dg_unpacklstring (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 lstringstringbufferid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  UINT64  lstringstringbufferid  index of the packed lstring buffer's bufferhandle
+//                                  in the BHarray
+//
+// Outputs:
+//  UINT64 return                  lstringoffsetbufferid
+//                                  index of the lstring offset array's
+//                                  bufferhandle in the BHarray
+//
+//                                                              
+// Action:
+//  Unpacks a packed lstring array returning the index of the new lstring offset
+//   array's buffer.
+//  This routine does this by popping the offset array off the end of the packed
+//   lstring buffer, and then dropping the magic string from the packed lstring
+//   buffer. Then dropping the original packed buffer's length from the new offset
+//    buffer. The lstringstringbufferid passed in is the new unpacked lstring array's
+//    string buffer.
+//
+// Failure cases:
+//   Error getting pointers to the packed lstring buffer.
+//   Packed lstring buffer is not long enough to hold the magic string.
+//   Length of packed lstring buffer does not match length stored at end of
+//    packed lstring buffer.
+//   Magic string does not match "PACK"
+//   Error making a new buffer
+//   Error pushing the offset array onto the end of the new buffer
+//   Error shrinking the string array to drop the magic string and the offset array
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_urlencodelstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_urlencodelstring
+//
+// C prototype:
+//  UINT64 dg_urlencodelstring (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 lstringoffsetbufferid,
+//    UINT64 lstringstringbufferid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  UINT64  lstringoffsetbufferid  index of the lstring's offset array bufferhandle
+//                                  in the BHarray
+//
+//  UINT64  lstringstringbufferid  index of the lstring's string buffer bufferhandle
+//                                  in the BHarray
+//
+// Outputs:
+//  none
+//
+//
+// Action:
+//  Replaces the top lstring on the lstring stack with a url encoded version of the
+//   lstring. Alpha numeric bytes are left alone. The bytes from this set
+//   are left alone: - _ . ~   (that's  minus underscore period and tilde)
+//   All other bytes are replaced with %xx where xx is the hex ascii code for the
+//   byte. So for example if the value of the byte was 1, then this value would be
+//   encoded using three bytes which would be %01 where % is 0x25, 0 is 0x30,
+//   and 1 is 0x31.
+//
+//
+// Note:
+//  Changed this on April 16, 2020 for Diaperglu v4.4 because the old version was
+//   encoding both spaces and + signs as +. This version is going to change spaces to
+//   %20 because then it's obvious what you want.
+//
+// Failure cases:
+//   Error getting the string stack depth.
+//   Error getting a pointer to the lstring.
+//   Error making the lstring longer.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_urldecodelstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_urldecodelstring
+//
+// C prototype:
+//  UINT64 dg_urldecodelstring (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 lstringoffsetbufferid,
+//    UINT64 lstringstringbufferid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  UINT64  lstringoffsetbufferid  index of the lstring's offset array bufferhandle
+//                                  in the BHarray
+//
+//  UINT64  lstringstringbufferid  index of the lstring's string buffer bufferhandle
+//                                  in the BHarray
+//
+// Outputs:
+//  none
+//
+//
+// Action:
+//  Replaces the top lstring on the lstring stack with a url decoded version of the
+//   lstring. If a percent sign is encounter in the string, the two bytes after it
+//   are treated as the hex code for a character and the %xx sequence is replaced
+//   with that character. If the xx sequence is not a character representation of
+//   a hexadecimal number, the %xx sequence is converted to - and no error is given.
+//   If a + sign is encountered, it is replaced with a space.
+//   All other characters are left alone.
+//
+//
+// Note:
+//  + signs and spaces are supposed to be % encoded,
+//  but some implementations replace spaces
+//  with plus signs even though spaces are supposed to be % encoded too.
+//  This implementation does the + to space conversion to be as compatible with as
+//  many things as possible.
+//
+// Failure cases:
+//   Error getting the string stack depth.
+//   Error getting a pointer to the lstring.
+//   Error making the lstring shorter.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+      <div class=word id=dg_stonewstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_stonewstring
+//
+// C prototype:
+//  UINT64 dg_stonewstring (
+//    Bufferhandle* pBHarrayhead,
+//    unsigned char* pstring,
+//    UINT64 stringlength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  unsigned char* pstring         pointer to a source string
+//
+//  UINT 64 stringlength           length of the source string in bytes
+//
+//
+// Outputs:
+//  none
+//
+//
+// Action:
+//  Pushes a copy of the source string onto the string stack.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_stonew0string>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_stonew0string
+//
+// C prototype:
+//  UINT64 dg_stonew0string (
+//    Bufferhandle* pBHarrayhead,
+//    unsigned char* pstring,
+//    UINT64 stringlength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  unsigned char* pstring         pointer to a source string
+//
+//  UINT 64 stringlength           length of the source string in bytes
+//
+//
+// Outputs:
+//  none
+//
+//
+// Action:
+//  Pushes a copy of the source string onto the string stack. Then pushes a null
+//   terminator onto the end of the new string on the string stack.
+//   A null terminator here is a byte with the value 0.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+      <div class=word id=dg_pzerostringtonewstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_pzerostringtonewstring
+//
+// C prototype:
+//  UINT64 dg_pzerostringtonewstring (
+//    Bufferhandle* pBHarrayhead,
+//    unsigned char* pzerostring)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  unsigned char* pzerostring     pointer to a null terminated source string
+//
+//
+// Outputs:
+//  none
+//
+//
+// Action:
+//  Pushes a copy of the source string without the null terminator to the string stack.
+//  A null terminator here is a byte with the value 0.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+    </div>
+    
+  </div></body>
+</html>

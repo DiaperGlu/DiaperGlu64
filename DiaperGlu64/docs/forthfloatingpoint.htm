@@ -1,0 +1,2736 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<html>
+
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      forthfloatingpoint.cpp functions
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>
+      
+      <a href=index.htm                                       >Directory</a>
+      <a href=documentationkey.htm                            >Documentation key</a>
+      <a                                                      >&nbsp;</a>
+
+      <a                                                      >WORDS</a>
+      <a href=forthfloatingpoint.htm#dg_forthtofloat          >&gt;FLOAT</a>
+      <a href=forthfloatingpoint.htm#dg_forthdtof             >D&gt;F</a>
+      <a href=forthfloatingpoint.htm#dg_forthfstore           >DF!</a>
+      <a href=forthfloatingpoint.htm#dg_forthffetch           >DF@</a>
+      <a href=forthcore.htm#dg_forthalign                     >DFALIGN</a>
+      <a href=forthcore.htm#dg_forthaligned                   >DFALIGNED</a>
+      <a href=forthcore.htm#dg_forthcellplus                  >DFLOAT+</a>
+      <a href=forthcore.htm#dg_forthcells                     >DFLOATS</a>
+      <a href=forthfloatingpoint.htm#dg_forthfstore           >F!</a>
+      <a href=forthfloatingpoint.htm#dg_forthfstar            >F*</a>
+      <a href=forthfloatingpoint.htm#dg_forthfstarstar        >F**</a>
+      <a href=forthfloatingpoint.htm#dg_forthfplus            >F+</a>
+      <a href=forthfloatingpoint.htm#dg_forthfminus           >F-</a>
+      <a href=forthfloatingpoint.htm#dg_forthfslash           >F/</a>
+      <a href=forthfloatingpoint.htm#dg_forthffetch           >F@</a>
+      <a href=forthfloatingpoint.htm#dg_forthfzerolessthan    >F0&lt;</a>
+      <a href=forthfloatingpoint.htm#dg_forthfzeroequals      >F0=</a>
+      <a href=forthfloatingpoint.htm#dg_forthftod             >F&gt;D</a>
+      <a href=forthfloatingpoint.htm#dg_forthfabs             >FABS</a>
+      <a href=forthfloatingpoint.htm#dg_forthfacos            >FACOS</a>
+      <a href=forthcore.htm#dg_forthalign                     >FALIGN</a>
+      <a href=forthcore.htm#dg_forthaligned                   >FALIGNED</a>
+      <a href=forthfloatingpoint.htm#dg_forthfalog            >FALOG</a>
+      <a href=forthfloatingpoint.htm#dg_forthfasin            >FASIN</a>
+      <a href=forthfloatingpoint.htm#dg_forthfasinh           >FASINH</a>
+      <a href=forthfloatingpoint.htm#dg_forthfatan            >FATAN</a>
+      <a href=forthfloatingpoint.htm#dg_forthfatan2           >FATAN2</a>
+      <a href=forthfloatingpoint.htm#dg_forthfatanh           >FATANH</a>
+      <a href=forthfloatingpoint.htm#dg_forthfcos             >FCOS</a>
+      <a href=forthfloatingpoint.htm#dg_forthfcosh            >FCOSH</a>
+      <a href=forthfloatingpoint.htm#dg_forthfconstant        >FCONSTANT</a>
+      <a href=forthfloatingpoint.htm#dg_forthfdepth           >FDEPTH</a>
+      <a href=forthfloatingpoint.htm#dg_forthfdrop            >FDROP</a>
+      <a href=forthfloatingpoint.htm#dg_forthfdup             >FDUP</a>
+      <a href=forthfloatingpoint.htm#dg_forthfexp             >FEXP</a>
+      <a href=forthfloatingpoint.htm#dg_forthfexpm1           >FEXPM1</a>
+      <a href=forthfloatingpoint.htm#dg_forthfln              >FLN</a>
+      <a href=forthfloatingpoint.htm#dg_forthflnp1            >FLNP1</a>
+      <a href=forthfloatingpoint.htm#dg_forthfliteral         >FLITERAL</a>
+      <a href=forthcore.htm#dg_forthcellplus                  >FLOAT+</a>
+      <a href=forthcore.htm#dg_forthcells                     >FLOATS</a>
+      <a href=forthfloatingpoint.htm#dg_forthfloor            >FLOOR</a>
+      <a href=forthfloatingpoint.htm#dg_forthfmin             >FMIN</a>
+      <a href=forthfloatingpoint.htm#dg_forthfmax             >FMAX</a>
+      <a href=forthfloatingpoint.htm#dg_forthfnegate          >FNEGATE</a>
+      <a href=forthfloatingpoint.htm#dg_forthfover            >FOVER</a>
+      <a href=forthfloatingpoint.htm#dg_forthfrot             >FROT</a>
+      <a href=forthfloatingpoint.htm#dg_forthfround           >FROUND</a>
+      <a href=forthfloatingpoint.htm#dg_forthfsin             >FSIN</a>
+      <a href=forthfloatingpoint.htm#dg_forthfsincos          >FSINCOS</a>
+      <a href=forthfloatingpoint.htm#dg_forthfsinh            >FSINH</a>
+      <a href=forthfloatingpoint.htm#dg_forthfsqrt            >FSQRT</a>
+      <a href=forthfloatingpoint.htm#dg_forthfswap            >FSWAP</a>
+      <a href=forthfloatingpoint.htm#dg_forthftan             >FTAN</a>
+      <a href=forthfloatingpoint.htm#dg_forthftanh            >FTANH</a>
+      <a href=forthfloatingpoint.htm#dg_forthfproximate       >F~</a>
+      <a href=forthfloatingpoint.htm#dg_forthfvariable        >FVARIABLE</a>
+      <a href=forthfloatingpoint.htm#dg_forthprecision        >PRECISION</a>
+      <a href=forthfloatingpoint.htm#dg_forthrepresent        >REPRESENT</a>
+      <a href=forthfloatingpoint.htm#dg_forthsetprecision     >SETPRECISION</a>
+      <a href=forthfloatingpoint.htm#dg_forthsfstore          >SF!</a>
+      <a href=forthfloatingpoint.htm#dg_forthsffetch          >SF@</a>
+      <a href=forthfloatingpoint.htm#dg_forthsfalign          >SFALIGN</a>
+      <a href=forthfloatingpoint.htm#dg_forthsfaligned        >SFALIGNED</a>
+      <a href=forthfloatingpoint.htm#dg_forthsfloatplus       >SFLOAT+</a>
+      <a href=forthfloatingpoint.htm#dg_forthsfloats          >SFLOATS</a>
+      <a                                                      >&nbsp;</a>
+      
+    </div>
+
+    <div id=pagestuff>
+    
+     <div class=word id=dg_forthtofloat>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthtofloat ( &gt;FLOAT )
+//
+// C prototype:
+//  void dg_forthtofloat (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( c-addr u -- flag ) ( -f64- df )
+//
+// Data stack inputs:
+//  c-addr                        address of numeric decimal string
+//  u                             UINT64 length of numeric decimal string
+//
+// Data stack outputs:
+//  flag                          TRUE if string was converted to FLOAT64
+//                                FALSE if Infinity, NaN, or Denormal
+//
+// F64 stack outputs:
+//  df                            64 bit double precision floating point value
+//
+// Forth Standard:
+//  12.6.1.0558
+//                                                          
+// Action:
+//  Pops the address and length of the numeric decimal string off the data stack
+//   then attempts to covert the string to a double precision floating point value.
+//   If the value is too large to fit into a FLOAT64, IEEE Infinity or -Infinity and
+//   a flag of FALSE is returned. If the value is too small to fit into a
+//   FLOAT64, IEEE Denormal or -Denormal and a flag of FALSE is returned. If the string
+//   has non numeric characters or is missing the exponent marker character (which is
+//   one of d D e E), then IEEE NaN or -NaN and a flag of FALSE is returned. If the 
+//   string is successfully converted to a FLOAT64 then a flag of TRUE is returned. 
+//
+// Note:
+//  If the numeric decimal string is all delimiters, then 0.0 and a flag of true is 
+//   returned. If the length of the decimal string is 0, then 0.0 and a flag of true
+//   is returned. Leading delimiters are skipped before the conversion begins.
+//   If a delimiter occurs after the first non delimiter character then NaN and a
+//   flag of FALSE is returned.
+//
+// Failure cases:
+//  error popping n from the data stack
+//  error pushing df to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+    
+      <div class=word id=dg_forthfconstant>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfconstant ( FCONSTANT )
+//
+// C prototype:
+//  void dg_forthfconstant (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( &quot;&lt;delimiters&gt;name&lt;delimiters&gt;morestuff&quot;  
+//     -currentinputbuffer- &quot;&lt;delimiters&gt;morestuff&quot; )
+//  ( n -f64- )
+//
+// 64 bit floating point stack in:
+//  df                            FLOAT64 value of constant for new definition
+//  
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//
+// Current input buffer's current offset out:
+//  &quot;&lt;delimiters&gt;morestuff&quot; 
+//                                                            
+// Action:
+//  Moves the current input buffer's current offset to the delimeter after the next 
+//   series of non delimeter characters or the end of buffer if that comes first and 
+//   then creates a new word in the current new word wordlist using the series of non 
+//   delimiter characters at the name that:
+//    pushes xd onto the data stack when the process is in execute mode
+//    and compiles code that pushes xd onto the data stack when the process is in 
+//    compile mode
+//
+// Forth standard:
+//  12.6.1.1492
+//
+// Failure cases:
+//  error getting current input buffer id
+//  error gettint a pointer to the current input buffer
+//  error popping the data stack
+//  next word in input buffer wasn't found (no more non delimiters before the end of 
+//  the input buffer)
+//  error creating the new constant definition
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      <div class=word id=dg_forthfvariable>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfvariable ( FVARIABLE )
+//
+// C prototype:
+//  void dg_forthfvariable (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot;  
+//     -currentinputbuffer- &quot;&lt;delimiters&gt;morestuff&quot; )
+//  ( -currentnewvariablebuffer- +sizeofUINT128 )
+//  
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//
+// Current input buffer's current offset out:
+//  &quot;&lt;delimiters&gt;morestuff&quot;          
+// 
+// Current data space buffer in:
+//  previously allocated variables
+// 
+// Current data space buffer out:
+//  previously allocated variables + a new variable of one address cell size 
+//  (sizeof FLOAT64)
+//
+// Forth standard:
+//  12.6.1.1630
+//                                                          
+// Action:
+//  moves the current offset pointer for the current input buffer to the character 
+//   after the next word or to the end of the buffer if no word is found
+//  creates a new definition in the current vocabulary that pushes the address of  
+//   a variable onto the data stack when the process is in execute mode
+//  and compiles code that calculates the address from the variable's bufferid and 
+//   offset and pushes it onto the data stack when the process is in compile mode
+//  the address of the variable used is the address of the next unused byte in the 
+//   current data space buffer
+//  then this routine allocates one cell size worth of memory (8 bytes) in the data 
+//   space buffer (current new variable buffer)
+//
+// Note
+//  Please see CREATE for a discussion on the life of the pointer to the FVARIABLE
+//   
+// Failure cases:
+//  error calling CREATE
+//  error getting the current new variable buffer id
+//  error growing the current new variable buffer
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+      <div class=word id=dg_forthdtof>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdtof ( D&gt;F )
+//
+// C prototype:
+//  void dg_forthdtof (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( n -- ) ( -f64- df )
+//
+// Data stack inputs:
+//  n                             64 bit signed integer
+//
+// F64 stack outputs:
+//  df                            64 bit double precision floating point value
+//
+// Forth Standard:
+//  12.6.1.1130
+//                                                          
+// Action:
+//  Pops a 64 bit signed integer off of the data stack, converts it to a 64 bit double
+//   precision floating point value and pushed the result onto the floating point 
+//   stack.
+//
+// Failure cases:
+//  error popping n from the data stack
+//  error pushing df to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfstore>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfstore ( F! DF! )
+//
+// C prototype:
+//  void dg_forthfstore (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( addr -- ) ( df -f64- )
+//
+// Data stack inputs:
+//  addr                          64 bit address
+//
+// F64 stack inputs:
+//  df                            64 bit double precision floating point value
+//
+// Forth Standard:
+//  12.6.1.1400  12.6.2.1203
+//                                                          
+// Action:
+//  Pops a 64 bit address off of the data stack, and a 64 double precision floating 
+//   point value off the floating point stack and stores the value into the address.
+//
+// Failure cases:
+//  error popping n from the data stack
+//  error popping df from the floating point stack
+//  error storing the 64 bit floating point value to the address
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfstar>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfstar ( F* )
+//
+// C prototype:
+//  void dg_forthfstar (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 df2 -f64- df3 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+//  df2                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df3                           64 bit double precision floating point value
+//                                 df3 = df1 * df2
+//
+// Forth Standard:
+//  12.6.1.1410
+//                                                          
+// Action:
+//  Pops two 64 bit double precision floating point values from the floating point
+//   stack, multiplies them together, then pushes the 64 bit double precision
+//   floating point result to the floating point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfstarstar>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfstarstar ( F** )
+//
+// C prototype:
+//  void dg_forthfstarstar (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( dfbase dfexponent -f64- df3 )
+//
+// F64 stack inputs:
+//  dfbase                        64 bit double precision floating point value
+//
+//  dfexponent                    64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df3                           64 bit double precision floating point value
+//                                 df3 = dfbase raised to the power dfexponent
+//
+// Forth Standard:
+//  12.6.2.1415
+//                                                          
+// Action:
+//  Pops two 64 bit double precision floating point values from the floating point
+//   stack, raises the base to the exponent, then pushes the 64 bit double precision
+//   floating point result to the floating point stack. In the event the base is
+//   negative and not an integer, the result is NaN because I chose to assume the
+//   denominator of any fractional part of a floating point number would be a power
+//   of 2 and be even. If the base is negative and an integer, the result is negative
+//   if the exponent is negative, otherwise the result is positive.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+
+      <div class=word id=dg_forthfplus>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfplus ( F+ )
+//
+// C prototype:
+//  void dg_forthfplus (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 df2 -f64- df3 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+//  df2                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df3                           64 bit double precision floating point value
+//                                 df3 = df1 + df2
+//
+// Forth Standard:
+//  12.6.1.1410
+//                                                          
+// Action:
+//  Pops two 64 bit double precision floating point values from the floating point
+//   stack, adds them together, then pushes the 64 bit double precision
+//   floating point result to the floating point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfminus>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfminus ( F- )
+//
+// C prototype:
+//  void dg_forthfminus (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 df2 -f64- df3 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+//  df2                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df3                           64 bit double precision floating point value
+//                                 df3 = df1 - df2
+//
+// Forth Standard:
+//  12.6.1.1410
+//                                                          
+// Action:
+//  Pops two 64 bit double precision floating point values from the floating point
+//   stack, subtracts df2 from df1, then pushes the 64 bit double precision
+//   floating point result to the floating point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfdot>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfdot ( F. )
+//
+// C prototype:
+//  void dg_forthfdot (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df -f64- )
+//
+// F64 stack inputs:
+//  df                            64 bit double precision floating point value
+//
+// Forth Standard:
+//  12.6.2.1427
+//                                                          
+// Action:
+//  Pops one 64 bit double precision floating point values from the floating point
+//   stack, then displays the value in fixed point notation along with a trailing
+//   space. The number of digits shown is determined using the value of the
+//   PRECISION variable. A trailing E0 is also shown.  
+//
+// Note:
+//  This word ignores the current value of the BASE variable and always uses decimal.
+//  If the value can't be show in fixed point in the current precision setting,
+//   scientific notation is used. 
+//  If the value is Infinity, Denormal, or NaN, the corresponding string is shown
+//   instead.
+//
+// Failure cases:
+//  error popping value from the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfslash>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfslash ( F/ )
+//
+// C prototype:
+//  void dg_forthfslash (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 df2 -f64- df3 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+//  df2                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df3                           64 bit double precision floating point value
+//                                 df3 = df1 / df2
+//
+// Forth Standard:
+//  12.6.1.1430
+//                                                          
+// Action:
+//  Pops two 64 bit double precision floating point values from the floating point
+//   stack, divides df2 from df1, then pushes the 64 bit double precision
+//   floating point result to the floating point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthffetch>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthffetch ( F@ DF@ )
+//
+// C prototype:
+//  void dg_forthffetch (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( addr -- ) ( -f64- df )
+//
+// Data stack inputs:
+//  addr                          64 bit address
+//
+// F64 stack outputs:
+//  df                            64 bit double precision floating point value
+//
+// Forth Standard:
+//  12.6.1.1472  12.6.2.1204
+//                                                          
+// Action:
+//  Pops a 64 bit address off of the data stack, then fetches the 64 bit double
+//   precision floating point value from the address and pushes it to the floating 
+//   point stack.
+//
+// Failure cases:
+//  error popping n from the data stack
+//  error pushing df to the floating point stack
+//  error fetching the 64 bit floating point value from the address
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfzerolessthan>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfzerolessthan ( F0&lt; )
+//
+// C prototype:
+//  void dg_forthfzerolessthan (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( -- n ) ( df -f64- )
+//
+// F64 stack inputs:
+//  df                            64 bit double precision floating point value
+//
+// data stack outputs:
+//  n                             64 bit true false flag
+//
+// Forth Standard:
+//  12.6.1.1440
+//                                                          
+// Action:
+//  Pops a 64 bit floating point value off the floating point stack then pushes a
+//   true (-1) or false (0) flag to the data stack. True (-1) is pushed to the data
+//   stack if the 64 bit floating point value is less than 0, otherwise false (0) is
+//   pushed to the data stack.
+//
+// Failure cases:
+//  Error popping value from floating point stack.
+//  Error pushing flag to data stack.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfzeroequals>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfzeroequals ( F0= )
+//
+// C prototype:
+//  void dg_forthfzeroequals (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( -- n ) ( df -f64- )
+//
+// F64 stack inputs:
+//  df                            64 bit double precision floating point value
+//
+// data stack outputs:
+//  n                             64 bit true false flag
+//
+// Forth Standard:
+//  12.6.1.1450
+//                                                          
+// Action:
+//  Pops a 64 bit floating point value off the floating point stack then pushes a
+//   true (-1) or false (0) flag to the data stack. True (-1) is pushed to the data
+//   stack if the 64 bit floating point value is equal to 0, otherwise false (0) is
+//   pushed to the data stack.
+//
+// Failure cases:
+//  Error popping value from floating point stack.
+//  Error pushing flag to data stack.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthflessthan>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthflessthan ( F&lt; )
+//
+// C prototype:
+//  void dg_forthflessthan (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( -- n ) ( df1 df2 -f64- )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+//  df2                           64 bit double precision floating point value
+//
+// data stack outputs:
+//  n                             64 bit true false flag
+//
+// Forth Standard:
+//  12.6.1.1460
+//                                                          
+// Action:
+//  Pops two 64 bit floating point values off the floating point stack then pushes a
+//   true (-1) or false (0) flag to the data stack. True (-1) is pushed to the data
+//   stack if df1 is less than df2 otherwise FALSE (0) is pushed to the data stack.
+//
+// Failure cases:
+//  Error popping value from floating point stack.
+//  Error pushing flag to data stack.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthftod>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthftod ( F&gt;D )
+//
+// C prototype:
+//  void dg_forthftod (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df -f64- ) ( -- n )
+//
+// F64 stack inputs:
+//  df                            64 bit double precision floating point value
+//
+// Data stack outputs:
+//  n                             64 bit signed integer
+//
+// Forth Standard:
+//  12.6.1.1460
+//                                                          
+// Action:
+//  Pops a 64 bit double precision floating point value off of the floating point  
+//   stack, converts it to a signed 64 bit integer, then pushes the result to the 
+//   data stack.
+//
+// Failure cases:
+//  error popping n from the data stack
+//  error pushing df to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfabs>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfabs ( FABS )
+//
+// C prototype:
+//  void dg_forthfabs (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 -f64- df2 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df2                           64 bit double precision floating point value
+//                                 df2 = |df1| 
+//
+// Forth Standard:
+//  12.6.2.1474
+//                                                          
+// Action:
+//  Pops one 64 bit double precision floating point value from the floating point
+//   stack, clears the sign bit, then pushes the 64 bit double precision floating 
+//   point result to the floating point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfacos>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfacos ( FACOS )
+//
+// C prototype:
+//  void dg_forthfacos (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 -f64- df2 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df2                           64 bit double precision floating point value
+//                                 df2 = arccos(df1) 
+//
+// Forth Standard:
+//  12.6.2.1476
+//                                                          
+// Action:
+//  Pops one 64 bit double precision floating point value from the floating point
+//   stack, gets the arc cosine, then pushes the 64 bit double precision floating 
+//   point result to the floating point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfacosh>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfacos ( FACOSH )
+//
+// C prototype:
+//  void dg_forthfacos (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 -f64- df2 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df2                           64 bit double precision floating point value
+//                                 df2 = arccosh(df1) 
+//
+// Forth Standard:
+//  12.6.2.1477
+//                                                          
+// Action:
+//  Pops one 64 bit double precision floating point value from the floating point
+//   stack, gets the hyperbolic arc cosine, then pushes the 64 bit double precision 
+//   floating  point result to the floating point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfalog>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfalog ( FALOG )
+//
+// C prototype:
+//  void dg_forthfalog (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 -f64- df2 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df2                           64 bit double precision floating point value
+//                                 df2 = 10 raised to the power df1 
+//
+// Forth Standard:
+//  12.6.2.1484
+//                                                          
+// Action:
+//  Pops one 64 bit double precision floating point value from the floating point
+//   stack, gets 10 to the df1, then pushes the 64 bit double precision 
+//   floating  point result to the floating point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfasin>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfasin ( FASIN )
+//
+// C prototype:
+//  void dg_forthfasin (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 -f64- df2 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df2                           64 bit double precision floating point value
+//                                 df2 = arcsin(df1) 
+//
+// Forth Standard:
+//  12.6.2.1486
+//                                                          
+// Action:
+//  Pops one 64 bit double precision floating point value from the floating point
+//   stack, gets the arc sine, then pushes the 64 bit double precision floating 
+//   point result to the floating point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfasinh>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfasinh ( FASINH )
+//
+// C prototype:
+//  void dg_forthfasinh (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 -f64- df2 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df2                           64 bit double precision floating point value
+//                                 df2 = arcsinh(df1) 
+//
+// Forth Standard:
+//  12.6.2.1487
+//                                                          
+// Action:
+//  Pops one 64 bit double precision floating point value from the floating point
+//   stack, gets the hyperbolic arc sine, then pushes the 64 bit double precision 
+//   floating  point result to the floating point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfatan>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfatan ( FATAN )
+//
+// C prototype:
+//  void dg_forthfatan (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 -f64- df2 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df2                           64 bit double precision floating point value
+//                                 df2 = arctan(df1) 
+//
+// Forth Standard:
+//  12.6.2.1488
+//                                                          
+// Action:
+//  Pops one 64 bit double precision floating point value from the floating point
+//   stack, gets the arc tangent, then pushes the 64 bit double precision floating 
+//   point result to the floating point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfatan2>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfatan2 ( FATAN2 )
+//
+// C prototype:
+//  void dg_forthfatan2 (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( dfy dfx -f64- df3 )
+//
+// F64 stack inputs:
+//  dfy                           64 bit double precision floating point value
+//  dfx                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df3                           64 bit double precision floating point value
+//                                 df3 = arctan(dfy/dfx) 
+//
+// Forth Standard:
+//  12.6.2.1489
+//                                                          
+// Action:
+//  Pops two 64 bit double precision floating point values from the floating point
+//   stack, gets the arc tangent of dfy/dfx, then pushes the 64 bit double precision 
+//   floating point result to the floating point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfatanh>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfatanh ( FATANH )
+//
+// C prototype:
+//  void dg_forthfatanh (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 -f64- df2 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df2                           64 bit double precision floating point value
+//                                 df2 = arctanh(df1) 
+//
+// Forth Standard:
+//  12.6.2.1491
+//                                                          
+// Action:
+//  Pops one 64 bit double precision floating point value from the floating point
+//   stack, gets the hyperbolic arc tangent, then pushes the 64 bit double precision 
+//   floating  point result to the floating point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfcos>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfcos ( FCOS )
+//
+// C prototype:
+//  void dg_forthfcos (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 -f64- df2 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df2                           64 bit double precision floating point value
+//                                 df2 = fcos(df1) 
+//
+// Forth Standard:
+//  12.6.2.1493
+//                                                          
+// Action:
+//  Pops one 64 bit double precision floating point value from the floating point
+//   stack, gets the cosine, then pushes the 64 bit double precision 
+//   floating  point result to the floating point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfcosh>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfcosh ( FCOSH )
+//
+// C prototype:
+//  void dg_forthfcosh (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 -f64- df2 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df2                           64 bit double precision floating point value
+//                                 df2 = fcosh(df1) 
+//
+// Forth Standard:
+//  12.6.2.1494
+//                                                          
+// Action:
+//  Pops one 64 bit double precision floating point value from the floating point
+//   stack, gets the hyperbolic cosine, then pushes the 64 bit double precision 
+//   floating  point result to the floating point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfdepth>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfdepth ( FDEPTH )
+//
+// C prototype:
+//  void dg_forthfdepth (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( -- n )
+//
+// Data stack outputs:
+//  n                             64 bit signed integer
+//
+// Forth Standard:
+//  12.6.1.1497
+//                                                          
+// Action:
+//  Pushes the number of 64 bit values on the floating point stack onto the data stack.
+//
+// Note:
+//  This includes infinities, NaNs, and Denormals.
+//
+// Failure cases:
+//  Error getting depth of floating point stack
+//  Error pushing to the data stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfdrop>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfdrop ( FDROP )
+//
+// C prototype:
+//  void dg_forthfdrop (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df0 df1 ... dfn-1 dfn -f64- df0 df1 ... dfn-1 )
+//
+// Forth Standard:
+//  12.6.1.1500
+//                                                          
+// Action:
+//  Removes the top item from the floating point stack.
+//
+// Failure cases:
+//  Floating point stack is empty
+//  Floating point stack is misaligned
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfdup>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfdup ( FDUP )
+//
+// C prototype:
+//  void dg_forthfdup (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df0 df1 ... dfn-1 dfn -f64- df0 df1 ... dfn-1 dfn dfn )
+//
+// Forth Standard:
+//  12.6.1.1510
+//                                                          
+// Action:
+//  Pushes a copy of the top item on the floating point stack to the floating point
+//   stack.
+//
+// Failure cases:
+//  Floating point stack is empty
+//  Error pushing to the floating pack stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthfedot>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfedot ( FE. )
+//
+// C prototype:
+//  void dg_forthfedot (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df -f64- )
+//
+// F64 stack inputs:
+//  df                            64 bit double precision floating point value
+//
+// Forth Standard:
+//  12.6.2.1513
+//                                                          
+// Action:
+//  Pops one 64 bit double precision floating point values from the floating point
+//   stack, then displays the value in engineering notation along with a trailing
+//   space. The number of digits shown is determined using the value of the
+//   PRECISION variable. (Engineering notation is where 1 &lt;= whole part &lt; 1000
+//   and the decimal exponent is a multiple of 3.)  
+//
+// Note:
+//  This word ignores the current value of the BASE variable and always uses decimal. 
+//  If the value is Infinity, Denormal, or NaN, the corresponding string is shown
+//   instead.
+//
+// Failure cases:
+//  error popping value from the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfexp>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfexp ( FEXP )
+//
+// C prototype:
+//  void dg_forthfexp (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 -f64- df2 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df2                           64 bit double precision floating point value
+//                                 df2 = e^(df1) 
+//
+// Forth Standard:
+//  12.6.2.1515
+//                                                          
+// Action:
+//  Pops one 64 bit double precision floating point value from the floating point
+//   stack, gets e raised to the df1 power, then pushes the 64 bit double precision 
+//   floating  point result to the floating point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfexpm1>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfexpm1 ( FEXPM1 )
+//
+// C prototype:
+//  void dg_forthfexpm1 (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 -f64- df2 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df2                           64 bit double precision floating point value
+//                                 df2 = 1 + (e^(df1)) 
+//
+// Forth Standard:
+//  12.6.2.1516
+//                                                          
+// Action:
+//  Pops one 64 bit double precision floating point value from the floating point
+//   stack, gets e raised to the df1 power then subracts 1, then pushes the 64 bit  
+//   double precision floating  point result to the floating point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfliteral>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfliteral ( FLITERAL )
+//
+// C prototype:
+//  void dg_forthfliteral (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( df -f64- )
+//
+// Compiles code that does:
+//  ( -f64- df )
+//  
+// Floating point stack in:
+//  df                            double precision floating point number to compile 
+//                                 (64 bit)
+//                                                           
+// Action:
+//  compiles code to push df to the floating point stack
+//
+// Forth standard:
+//  12.6.1.1552
+//
+// Failure cases:
+//  error getting current compile buffer id
+//  error popping df from the floating point stack
+//  error growing the current compile buffer
+//  error getting the pointer to the current compile buffer
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfln>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfln ( FLN )
+//
+// C prototype:
+//  void dg_forthfln (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 -f64- df2 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df2                           64 bit double precision floating point value
+//                                 df2 = ln(df1) 
+//
+// Forth Standard:
+//  12.6.2.1553
+//                                                          
+// Action:
+//  Pops one 64 bit double precision floating point value from the floating point
+//   stack, gets the natural logarithm of df1, then pushes the 64 bit double precision 
+//   floating point result to the floating point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthflnp1>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthflnp1 ( FLNP1 )
+//
+// C prototype:
+//  void dg_forthflnp1 (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 -f64- df2 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df2                           64 bit double precision floating point value
+//                                 df2 = ln(df1 + 1) 
+//
+// Forth Standard:
+//  12.6.2.1554
+//                                                          
+// Action:
+//  Pops one 64 bit double precision floating point value from the floating point
+//   stack, gets the natural logarithm of (df1 plus 1), then pushes the 64 bit  
+//   double precision floating point result to the floating point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthflog>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthflog ( FLOG )
+//
+// C prototype:
+//  void dg_forthflog (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 -f64- df2 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df2                           64 bit double precision floating point value
+//                                 df2 = log(df1) 
+//
+// Forth Standard:
+//  12.6.2.1613
+//                                                          
+// Action:
+//  Pops one 64 bit double precision floating point value from the floating point
+//   stack, gets the base 10 logarithm of df1, then pushes the 64 bit  
+//   double precision floating point result to the floating point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfloor>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfloor ( FLOOR )
+//
+// C prototype:
+//  void dg_forthfloor (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 -f64- df2 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df2                           64 bit double precision floating point value
+//                                 df2 = df1 rounded towards -infinity
+//
+// Forth Standard:
+//  12.6.1.1558
+//                                                          
+// Action:
+//  Pops one 64 bit double precision floating point value from the floating point
+//   stack, rounds the value towards next integer value closest to negative infinity
+//   then pushes the 64 bit double precision floating point result to the floating 
+//   point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfmax>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfmax ( FMAX )
+//
+// C prototype:
+//  void dg_forthfmax (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 df2 -f64- df3 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+//  df2                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df3                           64 bit double precision floating point value
+//                                 df3 = the greater of df1 or df2
+//
+// Forth Standard:
+//  12.6.1.1562
+//                                                          
+// Action:
+//  Pops two 64 bit double precision floating point values from the floating point
+//   stack, determines which is greater, then pushes the greater 64 bit double 
+//   precision floating point value to the floating point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfmin>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfmin ( FMIN )
+//
+// C prototype:
+//  void dg_forthfmin (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 df2 -f64- df3 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+//  df2                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df3                           64 bit double precision floating point value
+//                                 df3 = the lesser of df1 or df2
+//
+// Forth Standard:
+//  12.6.1.1562
+//                                                          
+// Action:
+//  Pops two 64 bit double precision floating point values from the floating point
+//   stack, determines which is lesser, then pushes the lesser 64 bit double 
+//   precision floating point value to the floating point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfnegate>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfnegate ( FNEGATE )
+//
+// C prototype:
+//  void dg_forthfnegate (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 -f64- df2 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df2                           64 bit double precision floating point value
+//                                 df2 = 0.0 - df1
+//
+// Forth Standard:
+//  12.6.1.1567
+//                                                          
+// Action:
+//  Pops one 64 bit double precision floating point value from the floating point
+//   stack, toggles the sign bit then pushes the 64 bit double precision floating 
+//   point result to the floating point stack.
+//
+// Failure cases:
+//  error popping value from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfover>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfover ( FOVER )
+//
+// C prototype:
+//  void dg_forthfover (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df0 df1 ... dfn-1 dfn -f64- df0 df1 ... dfn-1 dfn dfn-1 )
+//
+// Forth Standard:
+//  12.6.1.1600
+//                                                          
+// Action:
+//  Pushes a copy of the item below the top item on the floating point stack to the 
+//   floating point stack.
+//
+// Failure cases:
+//  Floating point stack is empty
+//  Error pushing to the floating pack stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfrot>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfrot ( FROT )
+//
+// C prototype:
+//  void dg_forthfrot (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df0 df1 ... dfn-2 dfn-1 dfn -f64- df0 df1 ... dfn-1 dfn dfn-2 )
+//
+// Forth Standard:
+//  12.6.1.1610
+//                                                          
+// Action:
+//  Reorders the top three items on the floating point stack so that the item that is
+//   second below the top is moved to the top.
+//
+// Failure cases:
+//  Floating point stack is empty
+//  Error pushing to the floating pack stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfround>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfround ( FROUND )
+//
+// C prototype:
+//  void dg_forthfround (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 -f64- df2 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df2                           64 bit double precision floating point value
+//                                 df2 = df1 rounded to nearest integer value
+//
+// Forth Standard:
+//  12.6.1.1612
+//                                                          
+// Action:
+//  Pops one 64 bit double precision floating point value from the floating point
+//   stack, rounds the value to the nearest integer value, then pushes the 64 bit 
+//   double precision floating point result to the floating point stack. In the event
+//   of a tie, the result is rounded to the even integer value.
+//
+// Failure cases:
+//  error popping value from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfsdot>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfsdot ( FS. )
+//
+// C prototype:
+//  void dg_forthfsdot (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df -f64- )
+//
+// F64 stack inputs:
+//  df                            64 bit double precision floating point value
+//
+// Forth Standard:
+//  12.6.2.1613
+//                                                          
+// Action:
+//  Pops one 64 bit double precision floating point values from the floating point
+//   stack, then displays the value in scientific notation along with a trailing
+//   space. The number of digits shown is determined using the value of the
+//   PRECISION variable. (Scientific notation is where 1 &lt;= whole part &lt; 10.) 
+//
+// Note:
+//  This word ignores the current value of the BASE variable and always uses decimal. 
+//  If the value is Infinity, Denormal, or NaN, the corresponding string is shown
+//   instead.
+//
+// Failure cases:
+//  error popping value from the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfsin>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfsin ( FSIN )
+//
+// C prototype:
+//  void dg_forthfsin (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 -f64- df2 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df2                           64 bit double precision floating point value
+//                                 df2 = sin(df1) 
+//
+// Forth Standard:
+//  12.6.2.1614
+//                                                          
+// Action:
+//  Pops one 64 bit double precision floating point value from the floating point
+//   stack, gets the sine of df1, then pushes the 64 bit double precision floating 
+//   point result to the floating point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfsincos>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfsincos ( FSINCOS )
+//
+// C prototype:
+//  void dg_forthfsincos (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 -f64- df2 df3 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df2                           64 bit double precision floating point value
+//                                 df2 = sin(df1) 
+//  df3                           64 bit double precision floating point value
+//                                 df3 = cos(df1) 
+//
+// Forth Standard:
+//  12.6.2.1616
+//                                                          
+// Action:
+//  Pops one 64 bit double precision floating point value from the floating point
+//   stack, gets the sine and cosine of df1, then pushes the 64 bit double precision 
+//   floating point results to the floating point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfsinh>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfsinh ( FSINH )
+//
+// C prototype:
+//  void dg_forthfsinh (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 -f64- df2 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df2                           64 bit double precision floating point value
+//                                 df2 = sinh(df1) 
+//
+// Forth Standard:
+//  12.6.2.1616
+//                                                          
+// Action:
+//  Pops one 64 bit double precision floating point value from the floating point
+//   stack, gets the hyperbolic sine of df1, then pushes the 64 bit double precision 
+//   floating point result to the floating point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfsqrt>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfsqrt ( FSQRT )
+//
+// C prototype:
+//  void dg_forthfsqrt (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 -f64- df2 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df2                           64 bit double precision floating point value
+//                                 df2 = sqrt(df1) 
+//
+// Forth Standard:
+//  12.6.2.1618
+//                                                          
+// Action:
+//  Pops one 64 bit double precision floating point value from the floating point
+//   stack, gets the square root of df1, then pushes the 64 bit double precision 
+//   floating point result to the floating point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfswap>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfswap ( FSWAP )
+//
+// C prototype:
+//  void dg_forthfswap (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df0 df1 ... dfn-2 dfn-1 dfn -f64- df0 df1 ... dfn-2 dfn dfn-1 )
+//
+// Forth Standard:
+//  12.6.1.1620
+//                                                          
+// Action:
+//  Reorders the top two items on the floating point stack so that the item that is
+//   one below the top is moved to the top.
+//
+// Failure cases:
+//  Floating point stack is empty
+//  Error pushing to the floating pack stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthftan>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthftan ( FTAN )
+//
+// C prototype:
+//  void dg_forthftan (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 -f64- df2 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df2                           64 bit double precision floating point value
+//                                 df2 = tan(df1) 
+//
+// Forth Standard:
+//  12.6.2.1625
+//                                                          
+// Action:
+//  Pops one 64 bit double precision floating point value from the floating point
+//   stack, gets the tangent of df1, then pushes the 64 bit double precision 
+//   floating point result to the floating point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthftanh>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthftanh ( FTANH )
+//
+// C prototype:
+//  void dg_forthftanh (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( df1 -f64- df2 )
+//
+// F64 stack inputs:
+//  df1                           64 bit double precision floating point value
+//
+// F64 stack outputs:
+//  df2                           64 bit double precision floating point value
+//                                 df2 = tanh(df1) 
+//
+// Forth Standard:
+//  12.6.2.1625
+//                                                          
+// Action:
+//  Pops one 64 bit double precision floating point value from the floating point
+//   stack, gets the hyperbolic tangent of df1, then pushes the 64 bit double 
+//   precision floating point result to the floating point stack.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfproximate>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfproximate ( F~ )
+//
+// C prototype:
+//  void dg_forthfproximate (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( -- flag ) ( df1 df2 df3 -f64- )
+//
+// Data stack outputs:
+//  flag                          64 bit integer flag
+//                                 FORTH_TRUE means in range or equal
+//                                 FORTH_FALSE means not in range or unequal
+//
+// F64 stack inputs: 
+//  df1                           64 bit double precision floating point value
+//  df2                           64 bit double precision floating point value
+//  df3                           64 bit double precision floating point value
+//
+// Forth Standard:
+//  12.6.2.1640
+//                                                          
+// Action:
+//  Pops three double precision floating point values off of the floating point
+//   stack. Then:
+//   If df3 is greater than 0, the flag is true if abs(df1 - df2) &lt; df3
+//   If df3 = 0, the flag is true if df1 = df2. (note: +0 does not equal -0)
+//   If df3 is less than 0, the flag is true if abs(df1 - df2) &lt;
+//    df3 * (abs(df1) + abs(df2))
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthprecision>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthprecision ( PRECISION )
+//
+// C prototype:
+//  void dg_forthprecision (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( -- n )
+//
+// Data stack outputs:
+//  n                             64 bit integer precision 
+//
+// Forth Standard:
+//  12.6.2.2035
+//                                                          
+// Action:
+//  Gets the current floating point precision setting and pushes the 64 bit integer
+//   to the data stack. F. FE. FS. and REPRESENT use this setting to determine how
+//   many digits to show.
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthrepresent>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthrepresent ( REPRESENT )
+//
+// C prototype:
+//  void dg_forthrepresent (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( addr length -- base10exponent signflag resultflag ) ( df -f64- )
+//
+// F64 stack inputs:
+//  df                            64 bit double precision floating point value
+//
+// Data stack inputs:
+//  addr                          address of conversion string result buffer
+//  length                        length of conversion string result buffer
+//
+// Data stack outputs:
+//  base10exponent                base 10 exponent
+//  signflag                      FORTH_FALSE means positive result,
+//                                FORTH_TRUE means negative result
+//  resultflag                    FORTH_TRUE means an F64 number was converted
+//                                FORTH_FALSE means the number was infinity,
+//                                 denormal, or NaN
+//
+// Forth Standard:
+//  12.6.1.2143
+//                                                          
+// Action:
+//  Pops one 64 bit double precision floating point value from the floating point
+//   stack, and an address and length off the data stack. First the sign bit is
+//   extracted to determine the sign flag. Then conversion determines if the number
+//   is Denormal, Infinity, or NaN and if it is, the corresponding string for
+//   the type is copied to the conversion string result buffer and the result flag
+//   is set to FORTH_FALSE. Otherwise the number is converted to a base 10 string
+//   with an implied decimal point to the left of the converted string and the
+//   result flag is set to FORTH_TRUE. 
+//  If the result is Denormal, the base10exponent is set to largestnegativeint.
+//  If the result is Infinity or NaN, the base10exponent is set to largestsignedint.
+//  If the conversion is inexact, the result is rounded to the nearest integer. In
+//   the event of a tie, the result should be rounded to the nearest even integer.
+//   (I should probably check this...)
+//
+// For example:
+//  If -1.23 is converted, and the conversion buffer is 4 characters long, the
+//   conversion buffer will have 1230 in it, the base10exponent is set to 1,
+//   the signflag is FORTH_TRUE, and the resultflag is FORTH_TRUE.
+//
+// Failure cases:
+//  error popping value from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthsetprecision>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthsetprecision ( SET-PRECISION )
+//
+// C prototype:
+//  void dg_forthsetprecision (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( n -- )
+//
+// Data stack inputs:
+//  n                             64 bit integer precision 
+//
+// Forth Standard:
+//  12.6.2.2200
+//                                                          
+// Action:
+//  Pops a 64 bit integer value from the data stack and uses it to set the floating
+//   point precision. F. FE. FS. and REPRESENT use this setting to determine how
+//   many digits to show.
+//
+// Note:
+//  The precision is limited to the dg_maxprecision setting in diapergluforth.h
+//   which is currently 64 (7/10/2020 J.N.)
+//
+// Failure cases:
+//  error popping values from the floating point stack
+//  error pushing the result to the floating point stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthsfstore>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthsfstore ( SF! )
+//
+// C prototype:
+//  void dg_forthsfstore (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( addr -- ) ( df -f64- )
+//
+// Data stack inputs:
+//  addr                          64 bit address
+//
+// F64 stack inputs:
+//  df                            64 bit double precision floating point value
+//
+// Forth Standard:
+//  12.6.2.2202
+//                                                          
+// Action:
+//  Pops a 64 bit address off of the data stack, and a 64 bit double floating point 
+//   value off the floating point stack, converts the 64 bit double precision floating 
+//   point value to a 32 bit single precision floating point value and stores the 
+//   value into the address.
+//
+// Failure cases:
+//  error popping n from the data stack
+//  error popping df from the floating point stack
+//  error storing the 64 bit floating point value to the address
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthsffetch>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthsffetch ( SF@ )
+//
+// C prototype:
+//  void dg_forthsffetch (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( addr -- ) ( -f64- df )
+//
+// Data stack inputs:
+//  addr                          64 bit address
+//
+// F64 stack outputs:
+//  df                            64 bit double precision floating point value
+//
+// Forth Standard:
+//  12.6.2.2203
+//                                                          
+// Action:
+//  Pops a 64 bit address off of the data stack, then fetches the 32 bit double 
+//   precision floating point value from the address, converts it to a 64 bit double
+//   precision floating point value and pushes it to the floating point stack.
+//
+// Failure cases:
+//  error popping n from the data stack
+//  error pushing df to the floating point stack
+//  error fetching the 64 bit floating point value from the address
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthsfalign>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthsfalign ( SFALIGN )
+//
+// C prototype:
+// void dg_forthsfalign (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//                                                              
+// Action:
+//  Calculates a pointer to the end of the current data space buffer.
+//  If the pointer is not aligned for a 32 bit value, this grows the data space
+//     buffer to the next aligned address.
+//
+// Forth standard:
+//  12.6.2.2204
+//
+// Notes: 
+//  An aligned address is one that is evenly divisible by a unit size, which is the 
+//   size of a FLOAT32 for this instruction.
+//  The data space buffer is the current new variable buffer.
+//  By default, at the start, the current new variable buffer and the current new  
+//   code buffer share the same fixed size buffer.
+//
+// Failure cases:
+//  error getting current current new variable buffer id
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthsfaligned>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthsfaligned ( SFALIGNED )
+//
+// C prototype:
+//  void dg_forthsfaligned (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( addr -- a-addr )
+//
+// Data stack in:
+//  addr                          pointer to align
+//  
+// Data stack out:
+//  a-addr                        aligned pointer
+//                                                              
+// Action:
+//  This routine moves the pointer to the next multiple of FLOAT32 size 
+//   (which is 32bits)
+//
+// Forth standard:
+//  12.6.2.2206
+//
+// Failure cases:
+//  none
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthsfloatplus>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthsfloatplus ( SFLOAT+ )
+//
+// C prototype:
+//  void dg_forthsfloatplus (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( a-addr1 -- a-addr2 )
+//
+// Data stack in:
+//  a-addr1                       aligned address
+//  
+// Data stack out:
+//  a-addr2                       new aligned address = a-addr1 + one FLOAT32 size 
+//                                                              
+// Action:
+//  adds the size of a FLOAT32 (4 in this implementation) to the address on top of 
+//   the data stack
+//
+// Forth standard:
+//  12.6.2.2207
+//
+// Handling of ambiguous cases:
+//  this routine works the same for both aligned and unaligned addresses and just 
+//   adds 4
+//
+// Failure cases:
+//  error getting pointer to the datastack
+//  data stack is missing address
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthsfloats>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthsfloats ( SFLOATS )
+//
+// C prototype:
+//  void dg_forthsfloats (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( n1 -- n2 )
+//
+// Data stack in:
+//  n1                            number of FLOAT32s
+//  
+// Data stack out:
+//  n2                            number of address units (bytes) in the number 
+//                                 of FLOAT32s
+//                                                              
+// Action:
+//  replaces n1 with n1 * FLOAT32 size (which is 4 in this implementation)
+//
+// Note:
+//  n1 is signed
+//
+// Forth standard:
+//  12.6.2.2208
+//
+// Failure cases:
+//  error getting pointer to the datastack
+//  data stack is missing n1
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+    </div>
+
+  </div></body>
+</html>
+

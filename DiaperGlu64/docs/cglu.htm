@@ -1,0 +1,1739 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<html>
+
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      cglu.cpp functions
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>
+      <a                                              >C Functions</a>
+      <a href=cglu.htm#dg_patchpnewbuffer             >dg_patchpnewbuffer</a>
+      <a href=cglu.htm#dg_patchaddressusingdlsym      >dg_patchaddressusingdlsym</a>
+      <a href=cglu.htm#dg_patchaddressusingdlsymb     >dg_patchaddressusingdlsymb</a>
+      <a href=cglu.htm#dg_patchaddressusinghlist      >dg_patchaddressusinghlist</a>
+      <a href=cglu.htm#dg_patchaddressusinghlistb     >dg_patchaddressusinghlistb</a>
+      <a href=cglu.htm#dg_patchaddressusingoffset     >dg_patchaddressusingoffset</a>
+      <a href=cglu.htm#dg_patchaddressusingoffsetb    >dg_patchaddressusingoffsetb</a>
+      <a href=cglu.htm#dg_loadsharedliblist           >dg_loadsharedliblist</a>
+      <a href=cglu.htm#dg_loadfilelist                >dg_loadfilelist</a>
+      <a href=cglu.htm#dg_loadhlistfilelist           >dg_loadhlistfilelist</a>
+      <a href=cglu.htm#dg_newbufferlist               >dg_newbufferlist</a>
+      <a href=cglu.htm#dg_loadsymbollist              >dg_loadsymbollist</a>
+      <a href=cglu.htm#dg_setpatchdestbufid           >dg_setpatchdestbufid</a>
+      <a href=cglu.htm#dg_setpatchsrcbufid            >dg_setpatchsrcbufid</a>
+      <a href=cglu.htm#dg_setpatchsrclib              >dg_setpatchsrclib</a>
+      <a href=cglu.htm#dg_setpatchsrcsymbollist       >dg_setpatchsrcsymbollist</a>
+      <a href=cglu.htm#dg_setpatchdestsymbollist      >dg_setpatchdestsymbollist</a>
+      <a href=cglu.htm#dg_callpatchsrclib             >dg_callpatchsrclib</a>
+      <a href=cglu.htm#dg_callpatchsrclibtods         >dg_callpatchsrclibtods</a>
+      <a href=cglu.htm#dg_callpatchsrcbufsymbol       >dg_callpatchsrcbufsymbol</a>
+      <a href=cglu.htm#dg_callpatchsrcbufsymboltods   >dg_callpatchsrcbufsymboltods</a>
+      <a href=cglu.htm#dg_callpatchdestbufoffset      >dg_callpatchdestbufoffset</a>
+      <a href=cglu.htm#dg_callpatchdestbufoffsttods   >dg_callpatchdestbufoffsttods</a>
+      <a href=cglu.htm#dg_glueidhidtods               >dg_glueidhidtods</a>
+      <a href=cglu.htm#dg_gluuint64valuetods          >dg_gluuint64valuetods</a>
+      <a href=cglu.htm#dg_gluvaluetoss                >dg_gluvaluetoss</a>
+      <a href=cglu.htm#dg_glufuncnglu                 >dg_glufuncnglu</a>
+      <a href=cglu.htm#dg_glu                         >dg_glu</a>
+      <a href=cglu.htm#dg_nglu                        >dg_nglu</a>
+      
+
+      <a                                                 >&nbsp;</a>
+      <a                                                 >C Structures</a>
+      <a href=cbuffer.htm#Bufferhandle                   >Bufferhandle</a>
+      
+    </div>
+
+    <div id=pagestuff>
+
+
+      <div class=word id=dg_patchpnewbuffer>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_patchpnewbuffer
+//
+// C prototype:
+//  void dg_patchpnewbuffer(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 desthlistheaderid,
+//    UINT64 destparentelementid,
+//    unsigned char* pparentvalue,
+//    UINT64 parentvaluelength,
+//    Hlistheader* pmydesthlistheader)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 desthlistheaderid             id of hlist containing patch new buffer list
+//
+//  UINT64 destparentelementid           parent element id of the patch new buffer list
+//
+//  unsigned char* pparentvalue          pointer to parent element's' value string
+//                                        this parameter is not used in this function
+//
+//  UINT64 parentvaluelength             length of parent element's value string
+//                                        this parameter is not used in this function
+//
+//  Hlistheader* pmydesthlistheader      pointer to destination hlist's header
+//                                        structure. this is used to speed up this
+//                                        function
+//
+//  Variable Inputs:
+//   UINT64 dg_patchdestnamedbuf DG_DATASPACE_BUFFERID
+//    id of named buffer in named buffer list of buffer to patch
+//
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Given a list of children under the parent element in the hlist,
+//  For each child in the list:
+//   create a new buffer using the child's name$ as the length of the buffer,
+//   then using the child's value$ as an offset,
+//   store the 64bit address of the new buffer at the offset in the destination buffer
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_patchaddressusingdlsym>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_patchaddressusingdlsym
+//
+// C prototype:
+//  dg_patchaddressusingdlsym(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistheaderid,
+//    UINT64 parentelementid,
+//    UINT64 dylibhandle,
+//    unsigned char* pbuffer,
+//    UINT64 bufferlength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 desthlistheaderid             id of hlist containing destination patch list
+//
+//  UINT64 destparentelementid           parent element id of destination patch list
+//
+//  UINT64 dylibhandle,                  handle of source shared library
+//
+//  unsigned char* pbuffer               base address of destination buffer to patch
+//
+//  UINT64 bufferlength                  length of destination buffer
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Given a list of children under the parent element in the hlist,
+//  For each child in the list:
+//   use the child's value string as a UINT64 offset into the destination buffer
+//   look up the child's name string as a symbol in the source shared library
+//    and get the symbol's 64bit value
+//   store the 64bit symbol value to the offset in the destination buffer
+//
+// Failure cases:
+//  The child's value string is not long enough to hold a 64bit number
+//  The child's name string was not found in the source symbol list
+//  The hlist is corrupt'
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_patchaddressusingdlsymb>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_patchaddressusingdlsymb
+//
+// C prototype:
+//  void dg_patchaddressusingdlsymb(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 desthlistheaderid,
+//    UINT64 destparentelementid,
+//    unsigned char* pparentvalue,
+//    UINT64 parentvaluelength,
+//    Hlistheader* pmydesthlistheader)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 desthlistheaderid             id of hlist containing destination patch list
+//
+//  UINT64 destparentelementid           parent element id of destination patch list
+//
+//  unsigned char* pparentvalue          pointer to parent element's' value string
+//                                        this parameter is not used in this function
+//
+//  UINT64 parentvaluelength             length of parent element's value string
+//                                        this parameter is not used in this function
+//
+//  Hlistheader* pmydesthlistheader      pointer to destination hlist's header
+//                                        structure. this is used to speed up this
+//                                        function
+//
+// Variable Inputs:
+//  UINT64 dg_patchdestnamedbuf DG_DATASPACE_BUFFERID  id of named buffer in named
+//                                                      buffer list of buffer to patch
+//
+//  UINT64 dg_patchsrcnamedlib DG_DATASPACE_BUFFERID   id of named library in named
+//                                                      library list of library to
+//                                                      search
+//
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Given a list of children under the parent element in the hlist,
+//  For each child in the list:
+//   use the child's value string as a UINT64 offset into the destination buffer
+//   look up the child's name string as a symbol in the source shared library
+//    and get the symbol's 64bit value
+//   store the 64bit symbol value to the offset in the destination buffer
+//
+// Failure cases:
+//  The child's value string is not long enough to hold a 64bit number
+//  The child's name string was not found in the source symbol list
+//  The hlist is corrupt
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_patchaddressusinghlist>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_patchaddressusinghlist
+//
+// C prototype:
+//  void dg_patchaddressusinghlist(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 desthlistheaderid,
+//    UINT64 destparentelementid,
+//    unsigned char* pdestbuffer,
+//    UINT64 destbufferlength,
+//    UINT64 srchlistheaderid,
+//    UINT64 srcparentelementid,
+//    unsigned char* psrcbuffer)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 desthlistheaderid             id of hlist containing destination patch list
+//
+//  UINT64 destparentelementid           parent element id of destination patch list
+//
+//  unsigned char* pdestbuffer           base address of destination buffer to patch
+//
+//  UINT64 destbufferlength              length of destination buffer
+//
+//  UINT64 srchlistheaderid,             id of hlist containing source symbol list
+//
+//  UINT64 srcparentelementid,           parent element id of source symbol list
+//
+//  unsigned char* psrcbuffer            base address of source buffer
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Given a list of children under the parent element in the hlist,
+//  For each child in the destination patch list:
+//   use the destination child's value string as a
+//    UINT64 offset into the destination buffer
+//   look up the destination child's name string as a
+//    name string in the source symbol list and get the UINT64 value
+//    associated with the symbol's name
+//   store the 64bit symbol value to the offset in the destination buffer
+//
+// Failure cases:
+//  The destination child's value was not long enough to hold a 64bit number
+//  The source child's value string was not long enough to hold a 64bit number
+//  The source child's name string was not found in the source symbol list
+//  The hlist is corrupt
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_patchaddressusinghlistb>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_patchaddressusinghlistb
+//
+// C prototype:
+//  void dg_patchaddressusinghlistb(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 desthlistheaderid,
+//    UINT64 destparentelementid,
+//    unsigned char* pparentvalue,
+//    UINT64 parentvaluelength,
+//    Hlistheader* pmydesthlistheader)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 desthlistheaderid             id of hlist containing destination patch list
+//
+//  UINT64 destparentelementid           parent element id of destination patch list
+//
+//  unsigned char* pparentvalue          pointer to parent element's' value string
+//                                        this parameter is not used in this function
+//
+//  UINT64 parentvaluelength             length of parent element's value string
+//                                        this parameter is not used in this function
+//
+//  Hlistheader* pmydesthlistheader      pointer to destination hlist's header
+//                                        structure. this is used to speed up this
+//                                        function
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Given a list of children under the parent element in the hlist,
+//  For each child in the destination patch list:
+//   use the destination child's value string as a
+//    UINT64 offset into the destination buffer
+//   look up the destination child's name string as a
+//    name string in the source symbol list and get the UINT64 value
+//    associated with the symbol's name
+//   store the 64bit symbol value to the offset in the destination buffer
+//
+// Failure cases:
+//  The destination child's value was not long enough to hold a 64bit number
+//  The source child's value string was not long enough to hold a 64bit number
+//  The source child's name string was not found in the source symbol list
+//  The hlist is corrupt
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_patchaddressusingoffset>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_patchaddressusingoffset
+//
+// C prototype:
+//  void dg_patchaddressusingoffset(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 desthlistheaderid,     // id of hlist containing destination patch list
+//    UINT64 destparentelementid,   // parent element id of the destination patch list
+//    unsigned char* pdestbuffer,   // address of destination buffer to patch
+//    UINT64 destbufferlength,      // length of destination buffer
+//    unsigned char* psrcbuffer)    // pointer to source buffer (base address)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 desthlistheaderid             id of hlist containing destination patch list
+//
+//  UINT64 destparentelementid           parent element id of destination patch list
+//
+//  unsigned char* pdestbuffer           base address of buffer to patch
+//
+//  UINT64 destbufferlength              length of buffer to patch
+//
+//  unsigned char* psrcbuffer            base address of source buffer
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Given a list of children under the parent element in the hlist,
+//  For each child in the destination patch list:
+//   use the destination child's value string as a
+//    UINT64 offset into the destination buffer
+//   get the value of child element's name and add to source buffer's base address
+//   store calculated source address to the offset in the destination buffer
+//
+// Failure cases:
+//  Destination child's name is not long enough to hold a UINT64
+//  Destination child's value is not long enough to hold a UINT64
+//  The hlist is corrupt
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_patchaddressusingoffsetb>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_patchaddressusingoffsetb
+//
+// C prototype:
+//  void dg_patchaddressusingoffsetb(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 desthlistheaderid,
+//    UINT64 destparentelementid,
+//    unsigned char* pparentvalue,
+//    UINT64 parentvaluelength,
+//    Hlistheader* pmydesthlistheader)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 desthlistheaderid             id of hlist containing destination patch list
+//
+//  UINT64 destparentelementid           parent element id of destination patch list
+//
+//  unsigned char* pparentvalue          pointer to parent element's' value string
+//                                        this parameter is not used in this function
+//
+//  UINT64 parentvaluelength             length of parent element's value string
+//                                        this parameter is not used in this function
+//
+//  Hlistheader* pmydesthlistheader      pointer to destination hlist's header
+//                                        structure. this is used to speed up this
+//                                        function
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Given a list of children under the parent element in the hlist,
+//  For each child in the destination patch list:
+//   use the destination child's value string as a
+//    UINT64 offset into the destination buffer
+//   add the destination offset to source buffer's base address
+//   store calculated source address to the offset in the destination buffer
+//
+// Failure cases:
+//  Destination child's name is not long enough to hold a UINT64
+//  Destination child's value is not long enough to hold a UINT64
+//  The hlist is corrupt
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_loadsharedliblist>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_loadsharedliblist
+//
+// C prototype:
+//  void dg_loadsharedliblist(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 srchlistid,
+//    UINT64 parentelementid,
+//    unsigned char* pparentvalue,
+//    UINT64 parentvaluelength,
+//    Hlistheader* pmysrchlistheader)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 srchlistheaderid              id of hlist containing destination patch list
+//
+//  UINT64 parentelementid               parent element id of destination patch list
+//
+//  unsigned char* pparentvalue          pointer to parent element's' value string
+//                                        this parameter is not used in this function
+//
+//  UINT64 parentvaluelength             length of parent element's value string
+//                                        this parameter is not used in this function
+//
+//  Hlistheader* pmydesthlistheader      pointer to destination hlist's header
+//                                        structure. this is used to speed up this
+//                                        function
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Given a list of children under the parent element in the hlist,
+//  For each child in the source load shared library list:
+//   Use the source child's name string as the name to assign to
+//    the named shared library in the named shared library list
+//   if the child's value is "dglib",
+//    use the OS specific file name of the diaperglu shared library
+//   otherwise
+//    use the source child's value string as the file name of a shared library
+//   then open the shared library and add the handle to the named shared library
+//    list under the assigned name
+//
+// Failure cases:
+//  Could not find or load the file
+//  The source hlist is corrupt
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_loadfilelist>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_loadfilelist
+//
+// C prototype:
+//  void dg_loadfilelist(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 srchlistid,
+//    UINT64 parentelementid,
+//    unsigned char* pparentvalue,
+//    UINT64 parentvaluelength,
+//    Hlistheader* pmysrchlistheader)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 srchlistheaderid              id of hlist containing destination patch list
+//
+//  UINT64 parentelementid               parent element id of destination patch list
+//
+//  unsigned char* pparentvalue          pointer to parent element's' value string
+//                                        this parameter is not used in this function
+//
+//  UINT64 parentvaluelength             length of parent element's value string
+//                                        this parameter is not used in this function
+//
+//  Hlistheader* pmydesthlistheader      pointer to destination hlist's header
+//                                        structure. this is used to speed up this
+//                                        function
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Given a list of children under the parent element in the hlist,
+//  For each child in the source load file list:
+//   use the source child's value string as a
+//    the file name of a file to load
+//   use the source child's name string as the name to assign to
+//    the named buffer in the named buffer list
+//   load the file new buffer and add the new buffer
+//    to the named buffer list under the assigned name
+//
+// Failure cases:
+//  Could find or load the hlist file to a new buffer
+//  could not unpack the bufferj to a new hlist
+//  The source hlist is corrupt
+//
+// Note:
+//  hlist is short for hierarchical list
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_loadhlistfilelist>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_loadhlistfilelist
+//
+// C prototype:
+//  void dg_loadhlistfilelist(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 srchlistid,
+//    UINT64 parentelementid,
+//    unsigned char* pparentvalue,
+//    UINT64 parentvaluelength,
+//    Hlistheader* pmysrchlistheader)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 srchlistheaderid              id of hlist containing destination patch list
+//
+//  UINT64 parentelementid               parent element id of destination patch list
+//
+//  unsigned char* pparentvalue          pointer to parent element's' value string
+//                                        this parameter is not used in this function
+//
+//  UINT64 parentvaluelength             length of parent element's value string
+//                                        this parameter is not used in this function
+//
+//  Hlistheader* pmydesthlistheader      pointer to destination hlist's header
+//                                        structure. this is used to speed up this
+//                                        function
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Given a list of children under the parent element in the hlist,
+//  For each child in the source load hlist list:
+//   use the source child's value string as a
+//    the file name of a packed hlist file to load
+//   use the source child's name string as the name to assign to
+//    the named hlist in the named hlist list
+//   load the hlist file and unpack it into a new hlist and add the new hlist
+//    to the named hlist list under the assigned name
+//
+// Failure cases:
+//  Could find or load the hlist file to a new buffer
+//  could not unpack the bufferj to a new hlist
+//  The source hlist is corrupt
+//
+// Note:
+//  hlist is short for hierarchical list
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_newbufferlist>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_newbufferlist
+//
+// C prototype:
+//  void dg_newbufferlist(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 srchlistid,
+//    UINT64 parentelementid,
+//    unsigned char* pparentvalue,
+//    UINT64 parentvaluelength,
+//    Hlistheader* pmysrchlistheader)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 srchlistheaderid              id of hlist containing destination patch list
+//
+//  UINT64 parentelementid               parent element id of destination patch list
+//
+//  unsigned char* pparentvalue          pointer to parent element's' value string
+//                                        this parameter is not used in this function
+//
+//  UINT64 parentvaluelength             length of parent element's value string
+//                                        this parameter is not used in this function
+//
+//  Hlistheader* pmydesthlistheader      pointer to destination hlist's header
+//                                        structure. this is used to speed up this
+//                                        function
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Given a list of children under the parent element in the hlist,
+//  For each child in the destination load hlist list:
+//   use the source child's value string as the
+//    length of a new buffer
+//   use the source child's name string as the name to assign to
+//    the named buffer in the named buffer list
+//   create the new buffer, grow the new buffer to the size requested,
+//    and add the buffer id to the named buffer list under the designated name
+//
+// Failure cases:
+//  Out of memory
+//  The source hlist is corrupt
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_loadsymbollist>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_loadsymbollist
+//
+// C prototype:
+//  void dg_loadsymbollist(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 symbollisthlistid,
+//    UINT64 symbollistelementid,
+//    unsigned char* pparentvalue,
+//    UINT64 parentvaluelength,
+//    Hlistheader* pmysrchlistheader)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 srchlistheaderid              id of hlist containing destination patch list
+//
+//  UINT64 parentelementid               parent element id of destination patch list
+//
+//  unsigned char* pparentvalue          pointer to parent element's' value string
+//                                        this will be the named symbol list's name
+//
+//  UINT64 parentvaluelength             length of parent element's value string
+//                                        length of named symbol list's name'
+//
+//  Hlistheader* pmydesthlistheader      pointer to destination hlist's header
+//                                        structure. this is used to speed up this
+//                                        function
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Add the element id hlist id pair to the named symbol list list using the
+//   parent element's value as the named symbol list's name.
+//
+// Failure cases:
+//  The source hlist is corrupt
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_setpatchdestbufid>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_setpatchdestbufid
+//
+// C prototype:
+//  void dg_setpatchdestbufid (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistid,
+//    UINT64 elementid,
+//    unsigned char* pbuffername,
+//    UINT64 buffernamelength,
+//    Hlistheader* pmyhlistheader)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistid                       id of hlist
+//
+//  UINT64 elementid                     element id
+//
+//  unsigned char* pbuffername           pointer to element's value string
+//                                        this is the name of the source buffer for
+//                                        patching in the named buffer list
+//
+//  UINT64 buffernamelength              length of element's value string
+//                                        length of source buffer's named buffer name
+//
+//  Hlistheader* pmydesthlistheader      pointer to destination hlist's header
+//                                        structure. this is used to speed up this
+//                                        function
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Find the element's value in the named buffer list, and set the
+//   patch destination named buffer to this named buffer.
+//
+// Failure cases:
+//  The source hlist is corrupt
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_setpatchsrcbufid>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_setpatchsrcbufid
+//
+// C prototype:
+//  void dg_setpatchsrcbufid (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistid,
+//    UINT64 elementid,
+//    unsigned char* pbuffername,
+//    UINT64 buffernamelength,
+//    Hlistheader* pmyhlistheader)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistid                       id of hlist
+//
+//  UINT64 elementid                     element id
+//
+//  unsigned char* pbuffername           pointer to element's value string
+//                                        this is the name of the source buffer for
+//                                        patching in the named buffer list
+//
+//  UINT64 buffernamelength              length of element's value string
+//                                        length of source buffer's named buffer name
+//
+//  Hlistheader* pmydesthlistheader      pointer to destination hlist's header
+//                                        structure. this is used to speed up this
+//                                        function
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Find the element's value in the named buffer list, and set the
+//   patch source named buffer to this named buffer.
+//
+// Failure cases:
+//  The source hlist is corrupt
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_setpatchsrclib>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_setpatchsrclib
+//
+// C prototype:
+//  void dg_setpatchsrclib (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistid,
+//    UINT64 elementid,
+//    unsigned char* plibname,
+//    UINT64 libnamelength,
+//    Hlistheader* pmyhlistheader)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlist                         id of hlist
+//
+//  UINT64 elementid                     element id
+//
+//  unsigned char* plibname              pointer to name shared library's name
+//                                        this is a pointerthe element's value string
+//
+//  UINT64 libnamelength                length of named shared library's name
+//
+//  Hlistheader* pmydesthlistheader      pointer to destination hlist's header
+//                                        structure. this is used to speed up this
+//                                        function
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Find the element's value in the named shared library list, and set the
+//   patch source named shared library to this named shared library.
+//
+// Failure cases:
+//  The source hlist is corrupt
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_setpatchsrcsymbollist>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_setpatchsrcsymbollist
+//
+// C prototype:
+//  void dg_setpatchsrcsymbollist (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistid,
+//    UINT64 elementid,
+//    unsigned char* psymbollistname,
+//    UINT64 symbollistnamelength,
+//    Hlistheader* pmyhlistheader)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlist                         id of hlist
+//
+//  UINT64 elementid                     element id
+//
+//  unsigned char* psymbollistname       pointer to named symbol list's name
+//                                        this is a pointerthe element's value string
+//
+//  UINT64 symbollistnamelength          length of named symbol list's name
+//
+//  Hlistheader* pmydesthlistheader      pointer to destination hlist's header
+//                                        structure. this is used to speed up this
+//                                        function
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Find the element's value in the named symbol list list, and set the
+//   patch source named symbol list to this named symbol list.
+//
+// Failure cases:
+//  The hlist is corrupt
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_setpatchdestsymbollist>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_setpatchdestsymbollist
+//
+// C prototype:
+//  void dg_setpatchdestsymbollist (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistid,
+//    UINT64 elementid,
+//    unsigned char* psymbollistname,
+//    UINT64 symbollistnamelength,
+//    Hlistheader* pmyhlistheader)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlist                         id of hlist
+//
+//  UINT64 elementid                     element id
+//
+//  unsigned char* psymbollistname       pointer to named symbol list's name
+//                                        this is a pointerthe element's value string
+//
+//  UINT64 symbollistnamelength          length of named symbol list's name
+//
+//  Hlistheader* pmydesthlistheader      pointer to destination hlist's header
+//                                        structure. this is used to speed up this
+//                                        function
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Find the element's value in the named symbol list list, and set the
+//   patch destination named symbol list to this named symbol list.
+//
+// Failure cases:
+//  The hlist is corrupt
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_callpatchsrclib>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_callpatchsrclib
+//
+// C prototype:
+//  UINT64 dg_callpatchsrclib (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistid,
+//    UINT64 elementid,
+//    unsigned char* pfunctionname,
+//    UINT64 functionnamelength,
+//    Hlistheader* pmyhlistheader)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlist                         id of hlist
+//
+//  UINT64 elementid                     element id
+//
+//  unsigned char* pfunctionname         pointer to named symbol list's name
+//                                        this is a pointerthe element's value string
+//
+//  UINT64 functionnamelength            length of named symbol list's name
+//
+//  Hlistheader* pmydesthlistheader      pointer to destination hlist's header
+//                                        structure. this is used to speed up this
+//                                        function
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Find the function name in the source library, then get the sumbol's value.
+//   Then use the symbol's value as the address of the function and call the function.
+//   The protocol for the call is:
+//    UINT64 functionname(
+//     Bufferhandle* pBHarrayhead,
+//     UINT64 hlistid,
+//     UINT64 elementid)
+//   The result is returned... but if this function is called from dg_glu or dg_nglu,
+//    it will be lost.
+//
+// Failure cases:
+//  The hlist is corrupt
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_callpatchsrclibtods>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_callpatchsrclibtods
+//
+// C prototype:
+//  void dg_callpatchsrclibtods (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistid,
+//    UINT64 elementid,
+//    unsigned char* pfunctionname,
+//    UINT64 functionnamelength,
+//    Hlistheader* pmyhlistheader)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlist                         id of hlist
+//
+//  UINT64 elementid                     element id
+//
+//  unsigned char* pfunctionname         pointer to named symbol list's name
+//                                        this is a pointerthe element's value string
+//
+//  UINT64 functionnamelength            length of named symbol list's name
+//
+//  Hlistheader* pmydesthlistheader      pointer to destination hlist's header
+//                                        structure. this is used to speed up this
+//                                        function
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Find the function name in the source library, then get the sumbol's value.
+//   Then use the symbol's value as the address of the function and call the function.
+//   The protocol for the call is:
+//    UINT64 functionname(
+//     Bufferhandle* pBHarrayhead,
+//     UINT64 hlistid,
+//     UINT64 elementid)
+//   The result is pushed to the data stack.
+//
+// Failure cases:
+//  The hlist is corrupt
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_callpatchsrcbufsymbol>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_callpatchsrcbufsymbol
+//
+// C prototype:
+//  UINT64 dg_callpatchsrcbufsymbol (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistid,
+//    UINT64 elementid,
+//    unsigned char* pfunctionname,
+//    UINT64 functionnamelength,
+//    Hlistheader* pmyhlistheader)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlist                         id of hlist
+//
+//  UINT64 elementid                     element id
+//
+//  unsigned char* pfunctionname         pointer to named symbol list's name
+//                                        this is a pointerthe element's value string
+//
+//  UINT64 functionnamelength            length of named symbol list's name
+//
+//  Hlistheader* pmydesthlistheader      pointer to destination hlist's header
+//                                        structure. this is used to speed up this
+//                                        function
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Find the function name in the destination symbol list, then get the sumbol's value.
+//   Then use the symbol's value as the offset of the function in the current
+//    destination buffer and call the function.
+//   The protocol for the call is:
+//    UINT64 functionname(
+//     Bufferhandle* pBHarrayhead,
+//     UINT64 hlistid,
+//     UINT64 elementid)
+//   The result is returned... but if this function is called from dg_glu or dg_nglu,
+//    the result will be lost.
+//
+// Failure cases:
+//  The hlist is corrupt
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_callpatchsrcbufsymboltods>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_callpatchsrcbufsymboltods
+//
+// C prototype:
+//  void dg_callpatchsrcbufsymboltods (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistid,
+//    UINT64 elementid,
+//    unsigned char* pfunctionname,
+//    UINT64 functionnamelength,
+//    Hlistheader* pmyhlistheader)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlist                         id of hlist
+//
+//  UINT64 elementid                     element id
+//
+//  unsigned char* pfunctionname         pointer to named symbol list's name
+//                                        this is a pointerthe element's value string
+//
+//  UINT64 functionnamelength            length of named symbol list's name
+//
+//  Hlistheader* pmydesthlistheader      pointer to destination hlist's header
+//                                        structure. this is used to speed up this
+//                                        function
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Find the function name in the destination symbol list, then get the sumbol's value.
+//   Then use the symbol's value as the offset of the function in the current
+//    destination buffer and call the function.
+//   The protocol for the call is:
+//    UINT64 functionname(
+//     Bufferhandle* pBHarrayhead,
+//     UINT64 hlistid,
+//     UINT64 elementid)
+//   The result is pushed to the data stack.
+//
+// Failure cases:
+//  The hlist is corrupt
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_callpatchdestbufoffset>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_callpatchdestbufoffset
+//
+// C prototype:
+//  UINT64 dg_callpatchdestbufoffset (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 hlistid,
+//   UINT64 elementid,
+//   unsigned char* pdestoffset,
+//   UINT64 destoffsetlength,
+//   Hlistheader* pmyhlistheader)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistid                       id of hlist
+//
+//  UINT64 elementid                     element id
+//
+//  unsigned char* pdestoffset           pointer to destination offset
+//                                        this is really a UINT64
+//
+//  UINT64 destoffsetlength              is sizeof(UINT64)
+//
+//  Hlistheader* pmydesthlistheader      pointer to destination hlist's header
+//                                        structure. this is used to speed up this
+//                                        function, but this function doesn't use it
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Calls the function at the offset in the destination buffer
+//   The protocol for the call is:
+//    UINT64 functionname(
+//     Bufferhandle* pBHarrayhead,
+//     UINT64 hlistid,
+//     UINT64 elementid)
+//   The result is returned... but if this function is called from dg_glu or dg_nglu,
+//    it will be lost.
+//
+// Failure cases:
+//  The hlist is corrupt
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_callpatchdestbufoffsttods>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_callpatchdestbufoffsttods
+//
+// C prototype:
+//  void dg_callpatchdestbufoffsttods (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistid,
+//    UINT64 elementid,
+//    unsigned char* pfunctionname,
+//    UINT64 functionnamelength,
+//    Hlistheader* pmyhlistheader)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlist                         id of hlist
+//
+//  UINT64 elementid                     element id
+//
+//  unsigned char* pfunctionname         pointer to destination offset
+//                                        this is really a UINT64
+//
+//  UINT64 functionnamelength            is sizeof(UINT64)
+//
+//  Hlistheader* pmydesthlistheader      pointer to destination hlist's header
+//                                        structure. this is used to speed up this
+//                                        function, but this function doesn't use it
+//                                        not really...
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Calls the function at the offset in the destination buffer
+//   The protocol for the call is:
+//    UINT64 functionname(
+//     Bufferhandle* pBHarrayhead,
+//     UINT64 hlistid,
+//     UINT64 elementid)
+//   The result is pushed to the data stack.
+//
+// Failure cases:
+//  The hlist is corrupt
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_glueidhidtods>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_glueidhidtods
+//
+// C prototype:
+//  void dg_glueidhidtods (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistid,
+//    UINT64 elementid,
+//    unsigned char* pfunctionname,
+//    UINT64 functionnamelength,
+//    Hlistheader* pmyhlistheader)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlist                         id of hlist
+//
+//  UINT64 elementid                     element id
+//
+//  unsigned char* pfunctionname         pointer to element's value string
+//                                        this parameter is ignored
+//
+//  UINT64 functionnamelength            length of element's value string
+//
+//  Hlistheader* pmydesthlistheader      pointer to destination hlist's header
+//                                        structure. this is used to speed up this
+//                                        function, but this function doesn't use it
+//
+// Outputs:
+//  none
+//
+// Action:
+//  PUshes elementid and hlistid to the data stack.
+//
+// Failure cases:
+//  The hlist is corrupt
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_gluUINT64valuetods>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_gluUINT64valuetods
+//
+// C prototype:
+//  void dg_gluUINT64valuetods (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistid,
+//    UINT64 elementid,
+//    unsigned char* pfunctionname,
+//    UINT64 functionnamelength,
+//    Hlistheader* pmyhlistheader)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlist                         id of hlist
+//
+//  UINT64 elementid                     element id
+//
+//  unsigned char* pfunctionname         pointer to element's value string
+//                                        this parameter is ignored
+//
+//  UINT64 functionnamelength            length of element's value string
+//
+//  Hlistheader* pmydesthlistheader      pointer to destination hlist's header
+//                                        structure. this is used to speed up this
+//                                        function, but this function doesn't use it
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Instead of pfunctionname... it should be called pvalue...
+//  The element's value (pointed to by pfunctionname) is treated as a UINT64 and
+//  pushed to the data stack.'
+//
+// Failure cases:
+//  Element's value is not long enough to hold a UINT64
+//  The hlist is corrupt
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_gluvaluetoss>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_gluvaluetoss
+//
+// C prototype:
+//  void dg_gluvaluetoss (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistid,
+//    UINT64 elementid,
+//    unsigned char* pfunctionname,
+//    UINT64 functionnamelength,
+//    Hlistheader* pmyhlistheader)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlist                         id of hlist
+//
+//  UINT64 elementid                     element id
+//
+//  unsigned char* pfunctionname         pointer to element's value string
+//                                        this parameter is ignored
+//
+//  UINT64 functionnamelength            length of element's value string
+//
+//  Hlistheader* pmydesthlistheader      pointer to destination hlist's header
+//                                        structure. this is used to speed up this
+//                                        function, but this function doesn't use it
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Instead of pfunctionname... it should be called pvalue...
+//  The element's value string (pointed to by pfunctionname) is
+//  pushed to the data stack.
+//
+// Failure cases:
+//  The hlist is corrupt
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_glufuncnglu>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_glufuncnglu
+//
+// C prototype:
+//  void dg_glufuncnglu(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 srchlistid,
+//    UINT64 parentelementid,
+//    unsigned char* pparentvalue,
+//    UINT64 parentvaluelength,
+//    Hlistheader* pmysrchlistheader)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlist                         id of hlist
+//
+//  UINT64 elementid                     element id
+//
+//  unsigned char* pparentvalue          pointer to parent element's value string
+//                                        this is the name of a named hlist's name
+//
+//  UINT64 parentvaluelength             length of parent element's value string
+//                                        length of named hlist's name
+//
+//  Hlistheader* pmydesthlistheader      pointer to destination hlist's header
+//                                        structure. this is used to speed up this
+//                                        function, but this function doesn't use it
+//
+// Outputs:
+//  none
+//
+// Action:
+//  The element's value is used as the name of a named hlist.
+//  This function looks up the named hlist in the named hlist list, and
+//   then either Glus or NGlus the hlist depending on the root element's name.
+//   If the root element's name is "NGlu", then this routine NGlus the hlist.
+//    This means, for each child of root in the
+//    named hlist, the child's name is used as the UINT64 index of a function
+//    in the NGlu function list to call that indexed function.
+//   If the root element's name is "Glu ", then this routine Glus the hlist.
+//    This means, for each child of root in the named hlist,
+//    the child's name is looked up in a list of names, to get a function index.
+//    Then the indexed function is called.
+//    The protocol for the indexed function is this:
+//     UINT64 indexedfunction(
+//      Bufferhandle* pBHarrayhead,
+//      UINT64 hlistidofnamedhlist,
+//      UINT64 childelementid,
+//      unsigned char* pchildvalue,
+//      UINT64 childvaluelength,
+//      Hlistheader* pnamedhlistheader)
+//   The function indexes will be documented in dg_forthnglu, but since
+//    this document is being maintained by hand... if you want to be
+//    absolutely sure, look up dg_glulistfunctions in diapergluforth.h
+//    or dg_glufunctiontable in cglu.cpp
+//
+// Note:
+//  This linker supports calling the link functions by both name and number.
+//  NGlu uses indexes, and Glu uses names. Call by index is faster because
+//  the linker does not have to find the function name in a list, but This
+//  means the indexes can't change. This will certainly be true if you link
+//  against a specific version of Diaperglu. The idea is that the indexes
+//  will never change in any version and if a function needs to be added
+//  to this linker, it will be added to a new index.
+//
+//
+// Failure cases:
+//  The hlist is corrupt
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+      <div class=word id=dg_glu>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_glu
+//
+// C prototype:
+//  void dg_glu(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistheaderid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistheaderid                 id of hlist to glu
+//
+// Outputs:
+//  none
+//
+// Action:
+//  If the root element's name is "NGlu" then this function does dg_nglu on the
+//   hlist instead.
+//  Otherwise, root element's name must be "Glu ".
+//  This function Glus the hlist. This means, for each child of root in the
+//   named hlist, the child's name string is used as the name of a function
+//   in the Glu function name list. This function looks up the name in the
+//   list then calls the function assigned to the name.
+//   The protocol for the called function is this:
+//    UINT64 indexedfunction(
+//     Bufferhandle* pBHarrayhead,
+//     UINT64 hlistidofnamedhlist,
+//     UINT64 childelementid,
+//     unsigned char* pchildvalue,
+//     UINT64 childvaluelength,
+//     Hlistheader* pnamedhlistheader)
+//   The function names will be documented in dg_forthglu, but since
+//    this document is being maintained by hand... if you want to be
+//    absolutely sure, look up dg_glufunctionnames or the string constants
+//    defined just before dg_glufunctionnames in cglu.cpp
+//
+// Note:
+//  The glu hlist element function names are not supposed to change.
+//
+//  Glu list child element name   Glu function
+//   Bufs                          dg_newbufferlist
+//   CallBuf                       dg_callpatchsrcbufsymbol
+//   CallBufToDS                   dg_callpatchsrcbufsymboltods
+//   CallDestOffset                dg_callpatchdestbufoffset
+//   CallDestOffsetToDS            dg_callpatchdestbufoffsttods
+//   CallLib                       dg_callpatchsrclib
+//   CallLibToDS                   dg_callpatchsrclibtods
+//   DestBuf                       dg_setpatchdestbufid
+//   DestSymbols                   dg_setpatchdestsymbollist
+//   Files                         dg_loadfilelist
+//   HFiles                        dg_loadhlistfilelist
+//   HlistHere                     dg_glueidhidtods
+//   Libs                          dg_loadsharedliblist
+//   LinkBuf                       dg_patchaddressusinghlistb
+//   LinkLib                       dg_patchaddressusingdlsymb
+//   LinkNewBuf                    dg_patchpnewbuffer
+//   LinkOffset                    dg_patchaddressusingoffsetb
+//   NGlu                          dg_glufuncnglu
+//   SrcBuf                        dg_setpatchsrcbufid
+//   SrcLib                        dg_setpatchsrclib
+//   SrcSymbols                    dg_setpatchsrcsymbollist
+//   Symbols                       dg_loadsymbollist
+//   UINT64ValueToDS               dg_gluuint64valuetods
+//   ValueTo$S                     dg_gluvaluetoss
+//
+//
+// Failure cases:
+//  The hlist is corrupt
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+      <div class=word id=dg_nglu>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_nglu
+//
+// C prototype:
+//  void dg_nglu(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistid                       id of hlist to nglu
+//
+// Outputs:
+//  none
+//
+// Action:
+//  If the root element's name is "Glu" then this function does dg_glu on the
+//   hlist instead.
+//  Otherwise, root element's name must be "NGlu ".
+//  This function NGlus the hlist. This means, for each child of root in the
+//   named hlist, the child's name string is used as the UINT64 index of a
+//   function in the NGlu function function table.
+//   This function calls the indexed function.
+//   The protocol for the called function is this:
+//    UINT64 indexedfunction(
+//     Bufferhandle* pBHarrayhead,
+//     UINT64 hlistidofnamedhlist,
+//     UINT64 childelementid,
+//     unsigned char* pchildvalue,
+//     UINT64 childvaluelength,
+//     Hlistheader* pnamedhlistheader)
+//   The function table will be documented in dg_forthnglu, but since
+//    this document is being maintained by hand... if you want to be
+//    absolutely sure, look up the dg_glulistfunctions enum
+//    in diapergluforth.h
+//
+// Note:
+//  The nglu hlist function indexes are not supposed to change.
+//
+//  UINT64 value of NGlu list
+//   child element name              Glu function
+//    0    ( NGLU-BUFS )              dg_newbufferlist
+//    1    ( NGLU-CALLBUF )           dg_callpatchsrcbufsymbol
+//    2    ( NGLU-CALLBUF> )          dg_callpatchsrcbufsymboltods
+//    3    ( NGLU-CALLDESTOFFSET )    dg_callpatchdestbufoffset
+//    4    ( NGLU-CALLDESTOFFSET> )   dg_callpatchdestbufoffsttods
+//    5    ( NGLU-CALLLIB )           dg_callpatchsrclib
+//    6    ( NGLU-CALLLIB> )          dg_callpatchsrclibtods
+//    7    ( NGLU-DESTBUF )           dg_setpatchdestbufid
+//    8    ( NGLU-DESTSYMBOLS )       dg_setpatchdestsymbollist
+//    9    ( NGLU-FILES )             dg_loadfilelist
+//    10   ( NGLU-HFILES )            dg_loadhlistfilelist
+//    11   ( NGLU-HLISTHERE )         dg_glueidhidtods
+//    12   ( NGLU-LIBS )              dg_loadsharedliblist
+//    13   ( NGLU-LINKBUF )           dg_patchaddressusinghlistb
+//    14   ( NGLU-LINKLIB )           dg_patchaddressusingdlsymb
+//    15   ( NGLU-LINKNEWBUF )        dg_patchpnewbuffer
+//    16   ( NGLU-LINKOFFSET )        dg_patchaddressusingoffsetb
+//    17   ( NGLU-NGLU )              dg_glufuncnglu
+//    18   ( NGLU-SRCBUF )            dg_setpatchsrcbufid
+//    19   ( NGLU-SRCLIB )            dg_setpatchsrclib
+//    20   ( NGLU-SRCSYMBOLS )        dg_setpatchsrcsymbollist
+//    21   ( NGLU-SYMBOLS )           dg_loadsymbollist
+//    22   ( NGLU-UINT64VALUE> )      dg_gluuint64valuetods
+//    23   ( NGLU-VALUE$>NEW$ )       dg_gluvaluetoss
+//
+//
+// Failure cases:
+//  The hlist is corrupt
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    </div>
+
+  </div></body>
+</html>

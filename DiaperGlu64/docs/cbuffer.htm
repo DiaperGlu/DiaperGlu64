@@ -1,0 +1,2340 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<html>
+
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      cbuffer.cpp functions
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>
+      <a                                                 >C Functions</a>
+      <a href=cbuffer.htm#dg_newbuffer                   >dg_newbuffer</a>
+      <a href=cbuffer.htm#dg_freebuffer                  >dg_freebuffer</a>
+      <a href=cbuffer.htm#dg_freeallbuffers              >dg_freeallbuffers</a>
+      <a href=cbuffer.htm#dg_checkbuffer                 >dg_checkbuffer</a>
+      <a href=cbuffer.htm#dg_growbuffer                  >dg_growbuffer</a>
+      <a href=cbuffer.htm#dg_shrinkbuffer                >dg_shrinkbuffer</a>
+      <a href=cbuffer.htm#dg_getpbuffer                  >dg_getpbuffer</a>
+      <a href=cbuffer.htm#dg_clearbuffer                 >dg_clearbuffer</a>
+      <a href=cbuffer.htm#dg_getpbuffersegment           >dg_getpbuffersegment</a>
+      <a href=cbuffer.htm#dg_getpbufferoffset            >dg_getpbufferoffset</a>
+      <a href=cbuffer.htm#dg_getbuffersegment            >dg_getbuffersegment</a>
+      <a href=cbuffer.htm#dg_putbuffersegment            >dg_putbuffersegment</a>
+      <a href=cbuffer.htm#dg_getbufferuint32             >dg_getbufferuint32</a>
+      <a href=cbuffer.htm#dg_putbufferuint32             >dg_putbufferuint32</a>
+      <a href=cbuffer.htm#dg_pushbufferuint32            >dg_pushbufferuint32</a>
+      <a href=cbuffer.htm#dg_popbufferuint32             >dg_popbufferuint32</a>
+      <a href=cbuffer.htm#dg_getbufferuint64             >dg_getbufferuint64</a>
+      <a href=cbuffer.htm#dg_putbufferuint64             >dg_putbufferuint64</a>
+      <a href=cbuffer.htm#dg_pushbufferuint64            >dg_pushbufferuint64</a>
+      <a href=cbuffer.htm#dg_pushbuffersegment           >dg_pushbuffersegment</a>
+      <a href=cbuffer.htm#dg_pickbuffersegment           >dg_pickbuffersegment</a>
+      <a href=cbuffer.htm#dg_popbuffersegment            >dg_popbuffersegment</a>
+      <a href=cbuffer.htm#dg_getbufferbyte               >dg_getbufferbyte</a>
+      <a href=cbuffer.htm#dg_putbufferbyte               >dg_putbufferbyte</a>
+      <a href=cbuffer.htm#dg_popbufferbyte               >dg_popbufferbyte</a>
+      <a href=cbuffer.htm#dg_pushbufferbyte              >dg_pushbufferbyte</a>
+      <a href=cbuffer.htm#dg_popbufferuint64             >dg_popbufferuint64</a>
+      <a href=cbuffer.htm#dg_insertinbuffer              >dg_insertinbuffer</a>
+      <a href=cbuffer.htm#dg_deleteinbuffer              >dg_deleteinbuffer</a>
+      <a href=cbuffer.htm#dg_getbufferlength             >dg_getbufferlength</a>
+      <a href=cbuffer.htm#dg_getpbufferhandle            >dg_getpbufferhandle</a>
+      <a href=cbuffer.htm#dg_push0stringtobuffersegment  >dg_push0stringtobuffersegment</a>
+      <a href=cbuffer.htm#dg_pushdatastack               >dg_pushdatastack</a>
+      <a href=cbuffer.htm#dg_popdatastack                >dg_popdatastack</a>
+      <a href=cbuffer.htm#dg_newbufferset                >dg_newbufferset</a>
+      <a href=cbuffer.htm#dg_freebufferset               >dg_freebufferset</a>
+      <a href=cbuffer.htm#dg_getuint64arrayelement       >dg_getuint64arrayelement</a>
+      <a href=cbuffer.htm#dg_putuint64arrayelement       >dg_putuint64arrayelement</a>
+      <a href=cbuffer.htm#dg_getuint64stackelement       >dg_getuint64stackelement</a>
+      <a href=cbuffer.htm#dg_putuint64stackelement       >dg_putuint64stackelement</a>
+      <a href=cbuffer.htm#dg_stonewbuffer                >dg_stonewbuffer</a>
+      <a href=cbuffer.htm#dg_getpbufferhandlefast        >dg_getpbufferhandlefast</a>
+      <a href=cbuffer.htm#dg_makebuffersizeatleastx      >dg_makebuffersizeatleastx</a>
+      <a href=cbuffer.htm#dg_getpnewbuffer               >dg_getpnewbuffer</a>
+      <a href=cbuffer.htm#dg_parse                       >dg_parse</a>
+      <a href=cbuffer.htm#dg_parsemultiline              >dg_parsemultiline</a>
+      <a href=cbuffer.htm#dg_parseword                   >dg_parseword</a>
+      <a href=cbuffer.htm#dg_parsewords                  >dg_parsewords</a>
+      <a href=cbuffer.htm#dg_savelocalstackdepth         >dg_savelocalstackdepth</a>
+      <a href=cbuffer.htm#dg_restorelocalstackdepth      >dg_restorelocalstackdepth</a>
+      <a href=cbuffer.htm#dg_savelocallstackdepth        >dg_savelocallstackdepth</a>
+      <a href=cbuffer.htm#dg_restorelocallstackdepth     >dg_restorelocallstackdepth</a>
+      <a href=cbuffer.htm#dg_tocurrent                   >dg_tocurrent</a>
+      <a href=cbuffer.htm#dg_currentfrom                 >dg_currentfrom</a>
+      <a href=cbuffer.htm#dg_getline                     >dg_getline</a>
+
+      <a                                                 >&nbsp;</a>
+      <a                                                 >C Structures</a>
+      <a href=cbuffer.htm#Bufferhandle                   >Bufferhandle</a>
+      
+    </div>
+
+    <div id=pagestuff>
+
+      <div class=word id=dg_newbuffer>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_newbuffer
+//
+// C prototype:
+//  UINT64 dg_newbuffer (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 growby,
+//   UINT64 maxsize,
+//   const char** pError,
+//   UINT64 forceoutofmemory)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where the
+//                               other bufferhandles are stored.
+//
+//  UINT64  growby              used as the initial size of the buffer and the
+//                               amount to grow the buffer when it needs extending
+//
+//  UINT64  maxsize             this is the largest permissible size of the buffer
+//                               I don't know why I have this... seems it might be
+//                               better to just allow it to keep growing as long
+//                               as there is memory
+//
+//  bool    forceoutofmemory    forceoutofmemory if true,
+//                               any needed memory allocations will fail
+//
+// Outputs:
+//  UINT64 return               index of the new buffer if successful
+//                               BHarraymaxindex if it fails
+//
+//  const char**  pError        on dg_success points to dg_success error string
+//                              on fail points to an error string
+//
+// Action:
+//  Tries to add a buffer handle to the buffer handle array and malloc a buffer
+//   of size growby.
+//  If there is no bufferhandle array this routine will allocate one and the
+//   first buffer will be buffer 0.
+//  If there isn't enough memory at any point of the process, this routine will
+//   return BHarraymaxindex
+//  If there is a freed bufferhandle in the array, this routine will use one of
+//   those.
+//  If the bufferhandle array is full, this routine will attempt to extend it
+//   by the BHarrayhead's growby. If it is already at the arrayhead's maxsize
+//   this routine will return BHarraymaxindex
+//
+// Failure cases:
+//  invalid pointer to the buffer handle array head (checking null case only)
+//  growby = 0
+//  maxsize &lt; growby
+//  not enough memory to allocate buffer handle array for first time
+//  maxsize of buffer handle array &lt; size of one buffer handle
+//  bharray nextunusedbyte is corrupt - not a multiple of the element size
+//  bharray nextunusedbyte is corrupt - its off the end of the buffer
+//  not enough memory to extend buffer handle array
+//  extending buffer handle array would exceed maxsize of buffer handle array
+//  not enough memory to allocate the buffer
+//  if trying to reuse a free handle, BHarrayhead's first free pointer is not
+//   pointing to a truly free buffer handle. A buffer handle is truly free if
+//   it does not have a buffer attached to it
+//
+// Assumptions:
+//  if pBHarrayhead is not NULL, then it points to a BHarrayhead structure
+//  pBHarrayhead-&gt;growby and pBHarrayhead-&gt;maxsize don't change value
+//   after first dg_newbuffer call
+//
+// dg_success cases:
+//  growby != 0, pBHarrayhead != NULL, maxsize &gt;= growby, there is enough
+//   memory for buffer and
+//   if this is 1st time to allocate a buffer, there is enough memory for
+//   bufferheader array or if this is not 1st time
+//    there is a free handle that is truly free in the array OR
+//    there is enough room to add a handle OR
+//    there is enough memory to extend the bufferheader array
+//
+// First time use:
+//  Initialize a Bufferhandle structure for use as the BHarrayhead with:
+//   pbuf = NULL
+//   size = 0
+//   growby = BHarraygrowby (suggested value)
+//   maxsize =  BHarraymaxsize (suggested value)
+//   wouldnt hurt to initialize these also with:
+//    nextunusedbyte = 0
+//    nextfreeindex = BHarraymaxindex
+//
+// NOTE:
+//  This routine can cause the array to be relocated in memory. Therefor any
+//   pointers into the array become invalid if this routine is called.
+//  This routine does not push errors to the error stack because it is used
+//   to allocate the memory for the error stack.
+//
+// *** need to add check for current offset initialization to the test
+//   
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_freebuffer>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_freebuffer
+//
+// C prototype:
+//  void dg_freebuffer (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 bufferid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64  bufferid      index of the bufferhandle in the BHarray
+//
+// Outputs:
+//  none
+//
+// Action:
+//  frees the buffer attached to the buffer handle and puts the buffer handle
+//   in the free list
+//
+// Failure cases:
+//  (for all failure cases, this routine will quietly do nothing - for now)
+//  pBHarrayhead = badbufferhandle
+//  there is no array memory allocated
+//  id given is off the end of the array
+//  id is already free
+//  (nextunusedbyte is corrupt)
+//
+// dg_success case:
+//  buffer is freed
+// 
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_freeallbuffers>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_freeallbuffers
+//
+// C prototype:
+//  UINT64 dg_freeallbuffers (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+// Outputs:
+//  UINT64  return              count of buffers freed
+//
+// Action:
+//  Frees all buffers.
+//  This routine catches any buffers that may have have been forgotten
+//  at shutdown time. If the return from this routine is not 0, there is a
+//   memory leak somewhere that needs fixing.
+//
+// Failure cases:
+//  (for all failure cases, this routine will quietly do nothing - for now)
+//  pBHarrayhead = NULL
+//  there is no array memory allocated
+//  (nextunusedbyte is corrupt)
+//
+// dg_success case:
+//  buffer is freed
+// 
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_checkbuffer>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_checkbuffer
+//
+// C prototype:
+//  const char* dg_checkbuffer (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 bufferid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64  bufferid            index of the bufferhandle in the BHarray
+//
+// Outputs:
+//  const char* flag            dg_buffernubcorrupt if BHarray's length not
+//                               multiple of Bufferhandle's size
+//                              dg_bufferidnotinbharray if buffer off end
+//                               of BHarray
+//                              dg_bufferidisfree if bufferid is for a
+//                               free buffer
+//                              dg_success if bufferid's buffer exists.
+//
+// Action:
+//  Checks to see if BHarray's length is a multiple of the Bufferhandle
+//   structure's size
+//  Checks to see if bufferid is off end of BHarray.
+//  Checks to see if bufferid is for a free buffer.
+//
+// Failure cases:
+// 
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_growbuffer>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_growbuffer
+//
+// C prototype:
+//  UINT64 dg_growbuffer (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 length,
+//   const char** pError,
+//   UINT64 forceoutofmemory)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array where
+//                                   the other bufferhandles are stored.
+//
+//  UINT64        bufferid          index of the bufferhandle in the BHarray
+//
+//  UINT64        length            number of bytes add to the buffer's
+//                                   in use section
+//
+//  bool          forceoutofmemory  if true, any needed memory allocations or
+//                                   reallocations will fail
+//
+// Outputs:
+//  UINT64        return            if successful, returns the value of
+//                                   nextunusedbyte from before this call
+//                                  on failure, returns the largest
+//                                   possible UINT64
+//
+//  const char**  pError            if successful, points to the dg_success
+//                                   error string
+//                                  on failure, points to an error string
+//                              
+// Action:
+//  Attempts to increase the buffer's in use bytes by length.
+//  If length is &lt; buffer's growby, it will attempt to grow by growby,
+//   otherwise it will attempt to grow by length.
+//
+// Failure cases:
+//  pBHarrayhead = NULL
+//  there is no array memory allocated
+//  id given is off the end of the array
+//  id is for a free handle
+//  (nextunusedbyte is corrupt)
+//  grow would exceed maxsize
+//  need to extend buffer but there isn't enough memory
+//
+// dg_success case:
+//  buffer is grown by length (nextunusedbyte is increased by length,
+//   and buffer is extended if necessary
+// 
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_shrinkbuffer>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_shrinkbuffer
+//
+// C prototype:
+//  void dg_shrinkbuffer (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 length,
+//   const char** pError)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64  bufferid            index of the bufferhandle in the BHarray
+//
+//  UINT64  length              number of bytes remove from the end of the
+//                               buffer's in use section
+//
+// Outputs:
+//  const char**  pError        if successful, points to the dg_success error
+//                              string on failure, points to an error string
+//                              
+// Action:
+//  Attempts to decrease the buffer's in use bytes by length. 
+//
+// Failure cases:
+//  pBHarrayhead = NULL
+//  there is no array memory allocated
+//  id given is off the end of the array
+//  id is for a free handle
+//  (nextunusedbyte is corrupt)
+//  shrink size exceeds size of the buffer
+//
+// dg_success case:
+//  buffer is shrunk by length (nextunusedbyte is decreased by length)
+//
+// Failure cases:
+//  dg_shrinkbufferunderflow,
+//  dg_shrinkbufferinvparmheadnull,
+//  dg_shrinkbuffernobharray,
+//  dg_shrinkbuffernubcorrupt,
+//  dg_shrinkbufferidnotinbharray,
+//  dg_shrinkbufferidisfree
+//  (dg_shrinkbufferoutofmemory... not doing realloc at this time in this routine)
+// 
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getpbuffer>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getpbuffer
+//
+// C prototype:
+//  unsigned char* dg_getpbuffer (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64** pplength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other  bufferhandles are stored.
+//
+//  UINT64  bufferid            index of the bufferhandle in the BHarray
+// 
+// Outputs:
+//  unsigned char* return       if successful, a pointer to the start of
+//                               the segment is returned
+//                              on failure, badbufferhandle is returned
+//                               (and an error is pushed onto the error stack
+//                               if possible)
+//
+//  UINT64** pplength           if successful, a pointer to the length of
+//                              the buffer on failure, NULL
+//                              
+// Action
+//  gets a pointer to a buffer and a pointer to it's length
+//
+// Failure cases:
+//  The pointer to the buffer handle array head is badbufferhandle
+//  There is no memory allocated for the buffer handle array
+//  The buffer id is for the errorstack. 
+//  The buffer id is off the end of the buffer handle array
+//  The buffer id is for a buffer handle with no buffer attached. (it's free)
+//  The buffer's in use area is greater than it's allocated memory
+//  The buffer's allocated memory is greater than it's maximum allowed size
+//  The pointer to the pointer to the length variable is NULL
+//
+// Next step, make this routine support a bharrayhead id and core id
+//  should this routine return the length instead of a pointer to the length?
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_clearbuffer>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_clearbuffer
+//
+// C prototype:
+//  void dg_clearbuffer (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array
+//                               where the other  bufferhandles are stored.
+//
+//  UINT64        bufferid      index of the bufferhandle in the BHarray
+//                               
+// Action
+//  Set's the buffer's length to 0 which is how long the buffer is from the 
+//   user's point of view.
+//  This does not change the buffer's size which is how much memory is
+//   allocated from the operating system for the buffer.
+//
+// Failure cases:
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getpbuffersegment>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getpbuffersegment
+//
+// C prototype:
+//  unsigned char* dg_getpbuffersegment (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 offset,
+//   UINT64 length)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64        bufferid      index of the bufferhandle in the BHarray
+//
+//  UINT64        offset        offset in bytes of the start of the segment
+// 
+//  UINT64        length        number of bytes in the segment
+// 
+// Outputs:
+//  if successful, a pointer to the start of the segment is returned
+//  on fail the bad buffer handle value is returned and an error is pushed
+//   onto the error stack if possible
+//                              
+// Action
+//  gets a pointer to a start of a buffer segment
+//
+// Failure cases:
+//  The pointer to the buffer handle array head is NULL
+//  There is no memory allocated for the buffer handle array
+//  The buffer id is for the errorstack. 
+//  The buffer id is off the end of the buffer handle array
+//  The buffer id is for a buffer handle with no buffer attached.
+//  Offset + length is after the end of the buffer's in use area
+//   (It can be at the end.)
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getpbufferoffset>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getpbufferoffset
+//
+// C prototype:
+//  unsigned char* dg_getpbufferoffset  (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 offset)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64        bufferid      index of the bufferhandle in the BHarray
+//
+//  UINT64        offset        offset in bytes of the start of the segment
+// 
+// Outputs:
+//  if successful an address pointer to byte offset in the buffer is returned
+//  on fail a bad buffer handle value is returned and an error is pushed 
+//   onto the error stack if possible
+//                              
+// Action
+//  gets a pointer to the specified byte offset in the buffer
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getbuffersegment>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getbuffersegment
+//
+// C prototype:
+//  void dg_getbuffersegment (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 offset,
+//   UINT64 length,
+//   unsigned char* pdest)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64        bufferid      index of the bufferhandle in the BHarray
+//
+//  UINT64        offset        offset in bytes of the start of the segment
+// 
+//  UINT64        length        number of bytes in the segment
+//
+//  unsigned char* pdest        where to copy the buffer segment
+// 
+// Outputs:
+//  none
+//                              
+// Action
+//  copies a buffer segment to a destination
+//
+// Failure cases:
+//  The pointer to the buffer handle array head is NULL
+//  There is no memory allocated for the buffer handle array
+//  The buffer id is for the errorstack. 
+//  The buffer id is off the end of the buffer handle array
+//  The buffer id is for a buffer handle with no buffer attached.
+//  Offset + length is after the end of the buffer's in use area
+//   (It can be at the end.)
+//  The pointer to the destination is NULL
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_putbuffersegment>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_putbuffersegment
+//
+// C prototype:
+//  void dg_putbuffersegment (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 offset,
+//   UINT64 length,
+//   unsigned char* psrc)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64  bufferid            index of the bufferhandle in the BHarray
+//
+//  UINT64  offset              offset in bytes of the start of the segment
+// 
+//  UINT64  length              number of bytes in the segment
+// 
+//  unsigned char* psrc         data is copied from here to the buffer segment      
+//
+// Outputs:
+//  none
+//                              
+// Action
+//  copies data from psrc to the buffersegment
+//
+// Failure cases:
+//  The pointer to the buffer handle array head is NULL
+//  There is no memory allocated for the buffer handle array
+//  The buffer id is for the errorstack. 
+//  The buffer id is off the end of the buffer handle array
+//  The buffer id is for a buffer handle with no buffer attached.
+//  Offset + length is after the end of the buffer's in use area
+//   (It can be at the end.)
+//  The source pointer is NULL
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+        <div class=word id=dg_getbufferuint32>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getbufferuint32
+//
+// C prototype:
+//  UINT32 dg_getbufferuint32 (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 offset)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64        bufferid      index of the bufferhandle in the BHarray
+//
+//  UINT64        offset        in bytes, where in the buffer to get the UINT64
+//
+// Outputs:
+//  UINT32        return        the UINT32 gotten from offset in buffer bufferid
+//                              
+// Action
+//  Gets the UINT32 at the offset in buffer bufferid
+//
+// Failure cases:
+//  The pointer to the buffer handle array head is NULL
+//  There is no memory allocated for the buffer handle array
+//  The buffer id is for the errorstack.
+//   (use dg_geterror to get errors from the error stack)
+//  The buffer id is of the end of the buffer handle array
+//  The buffer id is for a buffer handle with no buffer attached. (It's free.)
+//  The offset is to close to the end, or off the end of the buffer
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_putbufferuint32>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_putbufferuint32
+//
+// C prototype:
+//  void dg_putbufferuint32 (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 offset,
+//   UINT32 data)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64        bufferid      index of the bufferhandle in the BHarray
+//
+//  UINT64        offset        in bytes, where in the buffer to get the UINT64
+//
+//  UINT32        data          the UINT32 to put at offset in buffer bufferid
+// Outputs:
+//                              
+// Action
+//  Puts the UINT32 at the offset in buffer bufferid
+//
+// Failure cases:
+//  The pointer to the buffer handle array head is NULL
+//  There is no memory allocated for the buffer handle array
+//  The buffer id is for the errorstack. (use dg_geterror to get errors from
+//   the error stack)
+//  The buffer id is of the end of the buffer handle array
+//  The buffer id is for a buffer handle with no buffer attached. (It's free.)
+//  The offset is to close to the end, or off the end of the buffer
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_pushbufferuint32>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_pushbufferuint32
+//
+// C prototype:
+//  void dg_pushbufferuint32 (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT32 data)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64        bufferid      index of the bufferhandle in the BHarray
+//
+//  UINT32        data          the UINT32 to be pushed onto the buffer
+//
+// Outputs:
+//  none
+//                              
+// Action
+//  Pushes a UINT32 onto the end of a buffer.
+//   (The end is marked by nextunusedbyte.)
+//
+// Failure cases:
+//  There was an error trying to grow the buffer
+//  There was an error trying to put in the buffer
+//  The buffer id is for the errorstack. (use dg_pusherror to put errors
+//   on the error stack)
+//
+//  (The pointer to the buffer handle array head is NULL) - caught by grow
+//  (There is no memory allocated for the buffer handle array)
+//   - caught by grow
+//  (The buffer id is off the end of the buffer handle array)
+//   - caught by grow
+//  (The buffer id is for a buffer handle with no buffer attached.)
+//   (It's free.) - caught by grow
+//  (doing the push would exceed the maxsize of the buffer)
+//   - caught by grow
+//  (nomemory for the grow) - caught by grow
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_popbufferuint32>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_popbufferuint32
+//
+// C prototype:
+//  UINT32 dg_popbufferuint32 (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64        bufferid      index of the bufferhandle in the BHarray
+//
+// Outputs:
+//  UINT32        data          the UINT32 to be pushed onto the buffer
+//                              
+// Action
+//  Pop a UINT32 from the end of a buffer. (The end is marked by nextunusedbyte.)
+//
+// Failure cases:
+//  The pointer to the buffer handle array head is NULL
+//  There is no memory allocated for the buffer handle array
+//  The buffer id is for the errorstack.) (use dg_pusherror to put errors on the
+//   error stack
+//  The buffer id is off the end of the buffer handle array
+//  The buffer id is for a buffer handle with no buffer attached.
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getbufferuint64>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getbufferuint64
+//
+// C prototype:
+//  UINT64 dg_getbufferuint64 (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 offset)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64        bufferid      index of the bufferhandle in the BHarray
+//
+//  UINT64        offset        in bytes, where in the buffer to get the UINT64
+//
+// Outputs:
+//  UINT64        return        the UINT64 gotten from offset in buffer bufferid
+//                              
+// Action
+//  Gets the UINT64 at the offset in buffer bufferid 
+//
+// Failure cases:
+//  The pointer to the buffer handle array head is NULL
+//  There is no memory allocated for the buffer handle array
+//  The buffer id is for the errorstack.
+//   (use dg_geterror to get errors from the error stack)
+//  The buffer id is of the end of the buffer handle array
+//  The buffer id is for a buffer handle with no buffer attached. (It's free.)
+//  The offset is to close to the end, or off the end of the buffer
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_putbufferuint64>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_putbufferuint64
+//
+// C prototype:
+//  void dg_putbufferuint64 (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 offset,
+//   UINT64 data)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64        bufferid      index of the bufferhandle in the BHarray
+//
+//  UINT64        offset        in bytes, where in the buffer to get the UINT64
+//
+//  UINT64        data          the UINT64 to put at offset in buffer bufferid
+// Outputs:
+//                              
+// Action
+//  Puts the UINT64 at the offset in buffer bufferid 
+//
+// Failure cases:
+//  The pointer to the buffer handle array head is NULL
+//  There is no memory allocated for the buffer handle array
+//  The buffer id is for the errorstack. (use dg_geterror to get errors from
+//   the error stack)
+//  The buffer id is of the end of the buffer handle array
+//  The buffer id is for a buffer handle with no buffer attached. (It's free.)
+//  The offset is to close to the end, or off the end of the buffer
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_pushbufferuint64>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_pushbufferuint64
+//
+// C prototype:
+//  void dg_pushbufferuint64 (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 data)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64        bufferid      index of the bufferhandle in the BHarray
+//
+//  UINT64        data          the UINT64 to be pushed onto the buffer
+//
+// Outputs:
+//  none
+//                              
+// Action
+//  Pushes a UINT64 onto the end of a buffer.
+//   (The end is marked by nextunusedbyte.)
+//
+// Failure cases:
+//  There was an error trying to grow the buffer
+//  There was an error trying to put in the buffer
+//  The buffer id is for the errorstack. (use dg_pusherror to put errors
+//   on the error stack)
+//
+//  (The pointer to the buffer handle array head is NULL) - caught by grow
+//  (There is no memory allocated for the buffer handle array)
+//   - caught by grow
+//  (The buffer id is off the end of the buffer handle array)
+//   - caught by grow
+//  (The buffer id is for a buffer handle with no buffer attached.)
+//   (It's free.) - caught by grow
+//  (doing the push would exceed the maxsize of the buffer)
+//   - caught by grow
+//  (nomemory for the grow) - caught by grow
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_pushbuffersegment>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_pushbuffersegment
+//
+// C prototype:
+//  void dg_pushbuffersegment (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 length,
+//   unsigned char* psrc)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64        bufferid      index of the bufferhandle in the BHarray
+// 
+//  UINT64        length        number of bytes in the segment
+// 
+//  unsigned char* psrc         data is copied from here to the buffer segment      
+//
+// Outputs:
+//  none
+//                              
+// Action
+//  pushes length bytes from psrc to the buffersegment
+//
+// Warning!: Don't push stuff from inside this buffer because the buffer could
+//  move when it is grown making psrc invalid. If you need to do that,
+//  do a dg_growbuffer first then get the pointer, then do a
+//  dg_putbuffersegment.
+//
+// Failure cases:
+//  Error growing buffer
+//   The pointer to the buffer handle array head is NULL
+//   There is no memory allocated for the buffer handle array
+//   The buffer id is for the errorstack. 
+//   The buffer id is off the end of the buffer handle array
+//   The buffer id is for a buffer handle with no buffer attached.
+//  Error doing put
+//   Offset + length is after the end of the buffer's in use area 
+//    (It can be at the end.)
+//   The source pointer is NULL
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_pickbuffersegment>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_pickbuffersegment
+//
+// C prototype:
+//  void dg_pickbuffersegment (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 offset,
+//   UINT64 length)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64        bufferid      index of the bufferhandle in the BHarray
+// 
+//  UINT64        length        number of bytes in the segment
+// 
+//  UINT64        offset        offset in same buffer of the buffer segment
+//
+// Outputs:
+//  none
+//                              
+// Action
+//  pushes length bytes from offset in the same buffer to the end of the buffer
+//
+// Failure cases:
+//  Error growing buffer
+//  Segment goes off end of buffer error
+//  Error getting pointer to buffer
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_popbuffersegment>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_popbuffersegment
+//
+// C prototype:
+//  void dg_popbuffersegment (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 length,
+//   unsigned char* pdest)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead  pointer to a Bufferhandle structure which is
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64         bufferid      index of the bufferhandle in the BHarray
+// 
+//  UINT64         length        number of bytes in the segment
+//
+//  unsigned char* pdest         where to copy the buffer segment
+// 
+// Outputs:
+//  none
+//                              
+// Action
+//  pops a buffer segment to a destination
+//
+// Failure cases:
+//  Error getting buffer length
+//   The pointer to the buffer handle array head is NULL
+//   There is no memory allocated for the buffer handle array
+//   The buffer id is for the errorstack. 
+//   The buffer id is off the end of the buffer handle array
+//   The buffer id is for a buffer handle with no buffer attached.
+//  Length is greater than the buffer's in use area (It can be at the end.)
+//  Error getting buffer segment
+//   The pointer to the destination is NULL
+//  Error shrinking buffer
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getbufferbyte>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getbufferbyte
+//
+// C prototype:
+//  unsigned char dg_getbufferbyte (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 offset)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64        bufferid      index of the bufferhandle in the BHarray
+// 
+//  UINT64        offset        0 based offset in buffer
+// 
+// Outputs:
+//  unsigned char return        byte from offset in buffer if dg_success, 0 if fail
+//                              
+// Action
+//  gets a byte from a buffer at the offset
+//
+// Failure cases:
+//  Error getting buffer segment
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_putbufferbyte>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_putbufferbyte
+//
+// C prototype:
+//  void dg_putbufferbyte (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 offset,
+//   unsigned char data)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64        bufferid      index of the bufferhandle in the BHarray
+// 
+//  UINT64        offset        where to put the byte in the buffer
+//
+//  unsigned char data          this goes into the buffer at the offset
+// 
+// Outputs:
+//  none
+//                              
+// Action
+//  puts a byte into the buffer at the offset
+//
+// Failure cases:
+//  Error putting the buffer segment
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_popbufferbyte>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_popbufferbyte
+//
+// C prototype:
+//  unsigned char dg_popbufferbyte (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64        bufferid      index of the bufferhandle in the BHarray
+// 
+// Outputs:
+//  unsigned char return        byte from end of the buffer if dg_success, 0 if fail
+//                              
+// Action
+//  gets a byte from the end of the buffer and shrinks buffer's length by a byte
+//
+// Failure cases:
+//  Error popping buffer segment
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_pushbufferbyte>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_pushbufferbyte
+//
+// C prototype:
+//  void dg_pushbufferbyte (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   unsigned char data)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64        bufferid      index of the bufferhandle in the BHarray
+// 
+//  unsigned char data          this goes onto the end of the buffer
+// 
+// Outputs:
+//  none
+//                              
+// Action
+//  increases the buffers length by a byte and puts a byte at the end of the buffer
+//
+// Failure cases:
+//  Error pushing the buffer segment
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_popbufferuint64>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_popbufferuint64
+//
+// C prototype:
+//  UINT64 dg_popbufferuint64 (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64        bufferid      index of the bufferhandle in the BHarray
+//
+// Outputs:
+//  UINT64        data          the UINT64 to be pushed onto the buffer
+//                              
+// Action
+//  Pop a UINT64 from the end of a buffer. (The end is marked by nextunusedbyte.)
+//
+// Failure cases:
+//  The pointer to the buffer handle array head is NULL
+//  There is no memory allocated for the buffer handle array
+//  The buffer id is for the errorstack.) (use dg_pusherror to put errors on the
+//   error stack
+//  The buffer id is off the end of the buffer handle array
+//  The buffer id is for a buffer handle with no buffer attached.
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_insertinbuffer>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_insertinbuffer
+//
+// C prototype:
+//  void dg_insertinbuffer (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 offset, // in bytes
+//   UINT64 length)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64        bufferid      index of the bufferhandle in the BHarray
+//
+//  UINT64        offset        offset in bytes of where to do the insert
+// 
+//  UINT64        length        number of bytes to insert
+// 
+// Outputs:
+//  none
+//                              
+// Action
+//  Inserts length bytes just before the byte at offset in the buffer buffer ID
+//
+// Failure cases:
+//  The pointer to the buffer handle array head is NULL
+//  There is no memory allocated for the buffer handle array
+//  The buffer id is for the errorstack. 
+//  The buffer id is off the end of the buffer handle array
+//  The buffer id is for a buffer handle with no buffer attached.
+//  Offset is after the end of the buffer's in use area (It can be at the end.)
+//  Inserting the bytes would cause the buffer to exceed it's maximum allowed size
+//  There was an error trying to grow the buffer
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_deleteinbuffer>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_deleteinbuffer
+//
+// C prototype:
+//  void dg_deleteinbuffer (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 offset, // in bytes
+//   UINT64 length) // in bytes
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64        bufferid      index of the bufferhandle in the BHarray
+//
+//  UINT64        offset        offset in bytes of where to do the delete
+// 
+//  UINT64        length        number of bytes to delete
+// 
+// Outputs:
+//  none
+//                              
+// Action
+//  deletes length bytes including the byte at offset in the buffer buffer ID
+//
+// Failure cases:
+//  The pointer to the buffer handle array head is NULL
+//  There is no memory allocated for the buffer handle array
+//  The buffer id is for the errorstack. 
+//  The buffer id is off the end of the buffer handle array
+//  The buffer id is for a buffer handle with no buffer attached.
+//  Offset + length is after the end of the buffer's in use area
+//   (It can be at the end.)
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getbufferlength>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getbufferlength
+//
+// C prototype:
+//  UINT64 dg_getbufferlength (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64        bufferid      index of the bufferhandle in the BHarray
+// 
+// Outputs:
+//  UINT64        return        buffer length
+//                              
+// Action
+//  returns the bufferlength of bufferid
+//
+// Failure cases:
+//  The pointer to the buffer handle array head is NULL
+//  There is no memory allocated for the buffer handle array
+//  The buffer id is for the errorstack. 
+//  The buffer id is off the end of the buffer handle array
+//  The buffer id is for a buffer handle with no buffer attached.
+//  Offset + length is after the end of the buffer's in use area
+//   (It can be at the end.)
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getpbufferhandle>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getpbufferhandle
+//
+// C prototype:
+//  Bufferhandle* dg_getpbufferhandle (
+//   Bufferhandle* pBHarrayhead, 
+//   UINT64 bufferid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64        bufferid      index of the bufferhandle in the BHarray
+// 
+// Outputs:
+//  Bufferhandle* return        pointer to the bufferhandle for bufferid or NULL
+//                              
+// Action
+//  returns a pointer to the buffer handle for bufferid
+//
+// Failure cases:
+//  The pointer to the buffer handle array head is NULL
+//  There is no memory allocated for the buffer handle array
+//  The buffer id is off the end of the buffer handle array
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_push0stringtobuffersegment>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_push0stringtobuffersegment
+//
+// C prototype:
+//  void dg_push0stringtobuffersegment (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   unsigned char* psrc)
+//
+// Inputs:
+//  Bufferhandle*   pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64          bufferid      index of the bufferhandle in the BHarray
+//
+//  unsigned char*  psrc          pointer to the zero string
+// 
+// Outputs:
+//  none
+//                              
+// Action
+//  pushes the zero string at psrc to the end of the buffer
+//
+// Failure cases:
+//  prc = NULL
+//  the 0 string is corrupt, that is, the zero is missing from the end
+//   - zero missing from end case isn't checked
+//  error pushing the buffersegment
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_pushdatastack>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_pushdatastack
+//
+// C prototype:
+//  void dg_pushdatastack (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 data)
+//
+// Inputs:
+//  Bufferhandle*   pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64          data          number to push onto the data stack
+//
+//  unsigned char*  psrc          pointer to the zero string
+// 
+// Outputs:
+//  none
+//
+// Stack action shorthand:
+//  ( -- data )
+//
+// Data stack out:
+//  data                          32 bit number
+//                            
+// Action
+//  pushes data onto the data stack
+//
+// Failure cases:
+//  prc = NULL
+//  error pushing the buffersegment
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_popdatastack>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_popdatastack  
+//
+// C prototype:
+//  UINT64 dg_popdatastack (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Outputs:
+//  UINT64  return                number popped from the data stack
+//
+// Stack action shorthand:
+//  ( data -- )
+//
+// Data stack in:
+//  data                          32 bit number
+//                                                            
+// Action:
+//  Removes data from the data stack
+//  returns data
+//
+// Failure cases:
+//  error popping the data stack (subroutine reports the error)
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_freebufferset>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_freebufferset
+//
+// C prototype:
+//  void dg_freebufferset (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 buffersetheaderbufferid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead       pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where
+//                                    the other bufferhandles are stored.
+//  UINT64  buffersetheaderbufferid  buffer set header's buffer id. This buffer
+//                                    holds the buffer ids of the buffers in the
+//                                    buffer set.
+//
+// Outputs:
+//  UINT64  return                   buffer id of the buffer holding the list of
+//                                    buffer ids in the set
+//
+// Action:
+//  Frees the buffers in the buffer set, then frees the buffer set header buffer.
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_newbufferset>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_newbufferset
+//
+// C prototype:
+//  UINT64 dg_newbufferset (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 growby,
+//   UINT64 maxsize,
+//   UINT64 numberofbuffers)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other  bufferhandles are stored.
+//  UINT64  growby                used as the initial size of the buffer and
+//                                 the amount to grow the buffer when it needs
+//                                 extending
+//  UINT64  maxsize               this is the largest permissible size of
+//                                 the buffer
+//                                 I don't know why I have this... seems it
+//                                 might be better to just allow it to keep
+//                                 growing as long as there is memory
+//  UINT64  numberofbuffers       number of buffers in the buffer set
+//
+// Outputs:
+//  UINT64  return                buffer set header's buffer id
+//
+// Action:
+//  Allocates numberofbuffers buffers using the growby and maxsize passed in as
+//   the growby and maxsize of each buffer. This is the buffer set.
+//  Also allocates another buffer to hold the buffer ids of the buffer set and
+//   puts the buffer set's buffer ids into it.
+//  This is the buffer set header and is an array of buffer ids.
+//  Finally returns the buffer id of the buffer set header.
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_getuint64arrayelement>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getuint64arrayelement
+//
+// C prototype:
+//  UINT64 dg_getuint64arrayelement (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 index)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64       bufferid      index of the bufferhandle in the BHarray
+//
+//  UINT64       index         index of element in the array starting from 0
+//                              to number of elements - 1
+// 
+// Outputs:
+//  UINT64       return        the element
+//                              
+// Action
+//  returns copy of the array element at the index from an array of UINT64s
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      <div class=word id=dg_putuint64arrayelement>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_putuint64arrayelement
+//
+// C prototype:
+//  void dg_putuint64arrayelement (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 index,
+//   UINT64 x)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64        bufferid      index of the bufferhandle in the BHarray
+//
+//  UINT64        index         index of where to put element in the array
+//                               starting from 0 to number of elements - 1
+//
+//  UINT64        x             the element
+// 
+// Outputs:
+//  none
+//                              
+// Action
+//  copies the element into an array of UINT64s at the index
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+      <div class=word id=dg_getuint64stackelement>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getuint64stackelement
+//
+// C prototype:
+//  UINT64 dg_getuint64stackelement (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 index)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64        bufferid      index of the bufferhandle in the BHarray
+//
+//  UINT64        index         index of element in the stack starting from
+//                               0 = top to number of elements - 1
+// 
+// Outputs:
+//  UINT64  return        the element
+//                              
+// Action
+//  returns copy of the stack element at the index from a stack of UINT64s
+//   where 0 refers to the top element on the stack
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      <div class=word id=dg_putuint64stackelement>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_putuint64stackelement
+//
+// C prototype:
+//  void dg_putuint64stackelement (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 index,
+//   UINT64 x)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64        bufferid      index of the bufferhandle in the BHarray
+//
+//  UINT64        index         index of where to put element in the stack
+//                               starting from 0 = top to number of elements - 1
+//
+//  UINT64        x             the element
+// 
+// Outputs:
+//  none
+//                              
+// Action
+//  copies the element into a stack of UINT64s at the index
+//   where index 0 refers to the top element on the stack
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+      <div class=word id=dg_stonewbuffer>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_stonewbuffer
+//
+// C prototype:
+//  UINT64 dg_stonewbuffer (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 growby,
+//    UINT64 maxsize,
+//    unsigned char* psrc,
+//    UINT64 srclength)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead  pointer to a Bufferhandle structure which is
+//                                used as the bufferhandle for the array where
+//                                the other bufferhandles are stored.
+//
+//  UINT64         growby        used as the amount to grow the buffer when it
+//                                needs extending. This value is rounded up to
+//                                the nearest system pagesize.
+//
+//  UINT64         maxsize       largest permissible size of the buffer
+//
+//  unsigned char* psrc          pointer to the segment to copy to the new buffer
+//
+//  UINT64         srclength     size of the segment in bytes to copy
+//                                to the new buffer
+// 
+// Outputs:
+//  UINT64         return        index of the new bufferhandle in the BHarray
+//                              
+// Action
+//  Makes a new buffer and fills it with srclength bytes at psrc.
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      <div class=word id=dg_getpbufferhandlefast>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getpbufferhandlefast
+//
+// C prototype:
+//  Bufferhandle* dg_getpbufferhandlefast(
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64        bufferid      index of the bufferhandle to get
+// 
+// Outputs:
+//  Bufferhandle* return        pointer to the bufferhandle which bufferid
+//                               indexes
+//                              
+// Action
+//  Gets the pointer to bufferhandle bufferid with no error checks.
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      <div class=word id=dg_makebuffersizeatleastx>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_makebuffersizeatleastx
+//
+// C prototype:
+//  void dg_makebuffersizeatleastx(
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 x)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64        bufferid      index of the bufferhandle to get
+//
+//  UINT64        x             minimum buffer length
+// 
+// Outputs:
+//  none
+//                              
+// Action
+//  If buffer's length is less than x, this routine grows the buffer to x.
+//  Growing the buffer will allocate memory from the operating system in units
+//   of the buffer's growby to increase the buffer's size if needed.
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_getpnewbuffer>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getpnewbuffer
+//
+// C prototype:
+//  unsigned char* dg_getpnewbuffer(
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferlength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64        bufferlength  length of the new buffer.
+// 
+// Outputs:
+//  none
+//                              
+// Action
+//  Makes a new buffer with size and maxsize equal to the buffer length.
+//  Grows the buffer to the bufferlength.
+//  Pushes the buffer's id to the DG_LINKNEWBUFFERIDSTACK_BUFFERID stack.
+//  Returns a pointer to the new buffer.
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_parse>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_parse
+//
+// C prototype:
+//  const char* dg_parse(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64* pstringlength,
+//    unsigned char enddelimiter)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the 
+//                                  other bufferhandles are stored.
+//  unsigned char enddelimiter    8 bit character that marks the end of the string
+//                                 this is added to the list of line terminator
+//                                 delimiters
+//                          
+//
+// Stack action shorthand:
+//  ( "string&lt;delimeter&gt;morestuff" 
+//     -currentinputbuffer- "morestuff" )
+//
+// Outputs:
+//  const char*   return          pointer to string parsed
+//
+//  UINT64*       pstringlength   pointer to length of string parsed
+//
+// Action:
+//  Moves current input pointer past the string and the delimiter after the string
+//   in the current input buffer and returns a pointer to and length of the string
+//   parsed. 
+//
+// Note:
+//  Parse only works on one line. If a line terminator is found, or the end of the
+//   current input buffer is reached, the parse ends and this function returns the
+//   string found as if the end delimiter was found. The end delimiter is not
+//   included in the string length returned.
+//
+// For the future:
+//  Change this function to accept a set of delimiters... that way someone can choose
+//   whether or not to include the line terminators....
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_parsemultiline>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_parsemultiline
+//
+// C prototype:
+//  const char* dg_parsemultiline(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64* pstringlength,
+//    unsigned char enddelimiter)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the 
+//                                  other bufferhandles are stored.
+//  unsigned char enddelimiter    8 bit character that marks the end of the string
+//                                 this is added to the list of line terminator
+//                                 delimiters
+//                          
+//
+// Stack action shorthand:
+//  ( "string&lt;delimeter&gt;morestuff" 
+//     -currentinputbuffer- "morestuff" )
+//
+// Outputs:
+//  const char*   return          pointer to string parsed
+//
+//  UINT64*       pstringlength   pointer to length of string parsed
+//
+// Action:
+//  Moves current input pointer past the string and the delimiter after the string
+//   in the current input buffer and returns a pointer to and length of the string
+//   parsed. 
+//
+// Note:
+//  Parsemultiline works over multiple lines. Line terminators are not treated as
+//   delimiters. If the end of the current input buffer is reached, the parse ends
+//   and this function returns the string found as if the end delimiter was found. 
+//   The end delimiter is not included in the string length returned.
+//
+// For the future:
+//  Change this function to accept a set of delimiters... that way someone can choose
+//   whether or not to include the line terminators....
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_parseword>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_parseword
+//
+// C prototype:
+//  unsigned char* dg_parseword(
+//   Bufferhandle* pBHarrayhead,
+//   UINT64* pwordlength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the 
+//                                  other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( "string&lt;delimeter&gt;morestuff" 
+//     -currentinputbuffer- "morestuff" )
+//
+// Outputs:
+//  unsigned char*   return         pointer to string parsed
+//
+//  UINT64*          pwordlength    pointer to length of word parsed
+//
+// Action:
+//  Moves current input pointer to the first non white space delimiter, the first
+//   end of line delimiter, or to the end of the buffer, whichever comes first. 
+//   The address of the current input pointer's location in the current input buffer
+//   at this point is what is returned. Then moves the current input pointer to the 
+//   first white space delimiter, the first end of line delimiter, or to the end of
+//   the buffer, whichever comes first. The number of characters skipped during this
+//   second move is the wordlength returned. This routine only works over one line.
+//   If the first move ends on an end of line delimiter or the end of the buffer,
+//   the wordlength returned is 0.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_parsewords>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_parsewords
+//
+// C prototype:
+//  unsigned char* dg_parsewords(
+//   Bufferhandle* pBHarrayhead,
+//   UINT64* pwordlength,
+//   unsigned char enddelimiter,
+//   UINT64* pfoundendflag,
+//   UINT64 lineterminatorsareendflag) // single line only if true
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the 
+//                                  other bufferhandles are stored.
+//  unsigned char enddelimiter    character that ends the parse
+//  UINT64 lineterminatorsareendflag if FORTH_TRUE, parse ends if an end of line
+//                                    delimiter is encountered
+//                                   if FORTH_FALSE, end of line delimiters are
+//                                    treated as whitespace
+//
+// Stack action shorthand:
+//  ( "string&lt;delimeter&gt;morestuff" 
+//     -currentinputbuffer- "morestuff" )
+//
+// Outputs:
+//  unsigned char*   return         pointer to string parsed
+//
+//  UINT64*          pwordlength    pointer to length of word parsed
+//  UINT64*          pfoundendflag  pointer to flag that is FORTH_TRUE
+//                                   if the end delimiter, end of buffer,
+//                                   or if lineterminatorsareendflag is
+//                                   FORTH_TRUE and an end of line delimiter
+//                                   is found. Otherwise flag is FORTH_FALSE.
+//
+// Action:
+//  If lineterminatorsareendflag is FORTH_FALSE, end of line delimiters are
+//   treated the same as white space delimiters. Otherwise, end of line
+//   delimiters are treated the same as the enddelimiter and end of buffer.
+//  This routine parses one word from the current input buffer and lets you know
+//   if the end delimiter, or end of buffer was found.
+//  Moves current input pointer to the first non white space delimiter, end
+//   delimiter, or to the end of the buffer, whichever comes first. 
+//   The address of the current input pointer's location in the current input buffer
+//   at this point is what is returned. Then moves the current input pointer to the 
+//   first white space delimiter, end delimiter, or to the end of the buffer, 
+//   whichever comes first. The number of characters skipped during this
+//   second move is the wordlength returned. 
+//  If the first move ends on an end delimiter or the end of the buffer,
+//   the wordlength returned is 0.
+//  If an end delimiter or the end of buffer is found, the found end flag is
+//   FORTH_TRUE, otherwise the found end flag is FORTH_FALSE.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_tocurrent>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_tocurrent
+//
+// C prototype:
+//  void dg_tocurrent (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 newcurrentwordlist)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the 
+//                                  other bufferhandles are stored.
+//  UINT64 newcurrentwordlist     word list id that is to become the new current
+//                                 new word wordlist
+//
+// Stack action shorthand:
+//  ( widn ... wid1 -currentnewwordwordliststack- widn ... wid1 wid0 )
+//
+// Variable action shorthand:
+//  ( wid0 -currentcompilewordlist- newcurrentwordlist )
+//
+// Action:
+//  Pushes the value in the currentcompilewordlist variable to the
+//   current new word wordlist stack. Then sets the value of the
+//   currentcompilewordlist to newcurrentwordlist.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_currentfrom>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_currentfrom
+//
+// C prototype:
+//  UINT64 dg_currentfrom (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the 
+//                                  other bufferhandles are stored.
+//  UINT64 newcurrentwordlist     word list id that is to become the new current
+//                                 new word wordlist
+//
+// Stack action shorthand:
+//  ( widn ... wid1 wid0 -currentnewwordwordliststack- widn ... wid1 )
+//
+// Variable action shorthand:
+//  ( currentwordlist -currentcompilewordlist- wid0 )
+//
+// Outputs:
+//  UINT64   return               currentwordlist
+// 
+//
+// Action:
+//  Sets the return value to the value in the currentcompilewordlist variable.
+//  Then pops a value from the current new word wordlist stack and stores it
+//   in the currentcompilewordlist variable.
+//  If the current new word wordlist stack is empty, no value is popped from the
+//   stack and no error is returned. Instead DG_ENDOFWORDLIST is stored into the 
+//   currentcompilewordlist variable.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=Bufferhandle>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+//  How the buffer handles work:
+//
+//  Buffer handles are stored using an array.
+//  Free buffer handles are tracked using a linked list.
+//
+//  pBHarrayhead->pbuf            points to buffer holding buffer handle array
+//  pBHarrayhead->nextfreeindex   holds buffer id of first free buffer
+//  pBHarrayhead->nextunusedbyte  marks end of memory buffer handles are
+//                                 currently using out of allocated size
+//                                 in buffer handle array
+//                                 (length of the buffer handle array in bytes
+//                                   from Diaperglu's point of view)
+//  pBHarrayhead->size            is current allocated bytes of buffer holding
+//                                 buffer handle array
+//                                 (length of the buffer handle array in bytes
+//                                   from the operating system's point of view)
+//  pBHarrayhead->maxsize         is maximum allowed size of buffer handle array in 
+//                                 bytes
+//
+//  headptr       index  array of Bufferhandles    malloced buffers
+//   pBHarrayhead  0      Bufferhandle0 --------->  buffer0
+//                 1      Bufferhandle1 --------->  buffer1
+//                 2      Bufferhandle2 --------->  buffer2
+//   nextfreeindex 3       (Free) -> 5
+//                 4      Bufferhandle4 --------->  buffer4
+//                 5       (Free) -> (BHarraymaxindex)
+//                 6      Bufferhandle6 --------->  buffer6
+//                 ...     ...          --------->  ...
+//                 N      BufferhandleN --------->  bufferN
+//   nextunusedbyte N+1     (unused memory at end of array)
+//                 ...     (unused memory at end of array)
+//   size-1        ?      (end of array memory)
+//
+//  the last free handle points to BHarraymaxindex
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getline>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getline
+//
+// C prototype:
+//  void dg_getline(
+//   Bufferhandle* pBHarrayhead, 
+//   UINT64 bufferid, 
+//   UINT64 forceerror)
+// 
+// Inputs:
+//  Bufferhandle*   pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array where
+//                                   the other bufferhandles are stored.
+//  UINT64          forceerror      if not 0, getting a line fails when it tries to
+//                                   get a character
+//  UINT64          bufferid        buffer id of destination buffer where the line
+//                                   is put
+//  
+// Outputs:
+//  none
+//
+// Action:
+//  empties the buffer bufferid
+//  gets characters from the OS until an error occurs or until a line feed and puts
+//   them into the buffer bufferid
+//
+// Failure cases:
+//  unforseen problem in the OS
+//  error clearing the buffer bufferid or pushing to the buffer
+//
+// Assumptions:
+//  assumes dg_fgetc returns -1 or a character between 0 and 0xFF
+//   
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+    </div>
+
+  </div></body>
+</html>

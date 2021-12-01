@@ -1,0 +1,1792 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<html>
+
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      Diaperglu Wordlist Words
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>
+      
+        <a href=index.htm                                                >Directory</a>
+        <a href=documentationkey.htm                                     >Documentation key</a>
+        <a                                                               >&nbsp;</a>
+
+        <a                                                               >C Functions</a>
+        <a href=forthwordlist.htm#dg_forthnewdefinition                  >dg_forthnewdefinition</a>
+        <a href=forthwordlist.htm#dg_forthgetswordhead                   >dg_forthgetswordhead</a>
+        <a href=forthwordlist.htm#dg_forthtohead                         >dg_forthtohead</a>
+        <a href=forthwordlist.htm#dg_forthlinkdefinition                 >dg_forthlinkdefinition</a>
+        <a href=forthwordlist.htm#dg_forthnewsubroutinedefinition        >dg_forthnewsubroutinedefinition</a>
+        <a href=forthwordlist.htm#dg_forthnewvariabledefinition          >dg_forthnewvariabledefinition</a>
+        <a href=forthwordlist.htm#dg_forthnewconstantdefinition          >dg_forthnewconstantdefinition</a>
+        <a href=forthwordlist.htm#dg_forthgetnewestdefinitioninwordlist  >dg_forthgetnewestdefinitioninwordlist</a>
+        <a href=forthwordlist.htm#dg_forthgetnextdefinition              >dg_forthgetnextdefinition</a>
+        <a href=forthwordlist.htm#dg_forthfinddefinitioninwordlist       >dg_forthfinddefinitioninwordlist</a>
+        <a href=forthwordlist.htm#dg_forthfinddefinitioninsearchorder    >dg_forthfinddefinitioninsearchorder</a>
+        <a href=forthwordlist.htm#dg_forthputnewestdefinitioncompiletype >dg_forthputnewestdefinitioncompiletype</a>
+        <a href=forthwordlist.htm#dg_forthcreateov                       >dg_forthcreateov</a>
+        <a href=forthwordlist.htm#dg_forthcreateoc                       >dg_forthcreateoc</a>
+<!--    <a href=forthwordlist.htm#dg_forthtooname                        >dg_forthtooname</a> -->
+        <a href=forthwordlist.htm#dg_forthlatest                         >dg_forthlatest</a>
+        <a href=forthwordlist.htm#dg_forthbracketlatest                  >dg_forthbracketlatest</a>
+<!--    <a href=forthwordlist.htm#dg_forthbracketcolononame              >dg_forthbracketcolononame</a> -->
+        <a href=forthwordlist.htm#dg_forthgetcompileroutine              >dg_forthgetcompileroutine</a>
+        <a href=forthwordlist.htm#dg_forthsetcompileroutine              >dg_forthsetcompileroutine</a>
+        <a href=forthwordlist.htm#dg_forthgetodf                         >dg_forthgetodf</a>
+        <a href=forthwordlist.htm#dg_forthsetodf                         >dg_forthsetodf</a>
+        <a href=forthwordlist.htm#dg_forthtoorder                        >dg_forthtoorder</a>
+        <a href=forthwordlist.htm#dg_forthorderfrom                      >dg_forthorderfrom</a>
+        <a href=forthwordlist.htm#dg_forthdotwordname                    >dg_forthdotwordname</a>
+        <a href=forthwordlist.htm#dg_forthshowwordlist                   >dg_forthshowwordlist</a>
+        <a href=forthwordlist.htm#dg_forthshowsortedwordlist             >dg_forthshowsortedwordlist</a>
+        <a href=forthwordlist.htm#dg_forthshowallwords                   >dg_forthshowallwords</a>
+        <a href=forthwordlist.htm#dg_forthforthwords                     >dg_forthforthwords</a>
+        <a href=forthwordlist.htm#dg_forthbufferwords                    >dg_forthbufferwords</a>
+        <a href=forthwordlist.htm#dg_fortherrorwords                     >dg_fortherrorwords</a>
+        <a href=forthwordlist.htm#dg_forthenvironmentwords               >dg_forthenvironmentwords</a>
+        <a href=forthwordlist.htm#dg_forthstringwords                    >dg_forthstringwords</a>
+        <a href=forthwordlist.htm#dg_forthlibrarywords                   >dg_forthlibrarywords</a>
+        <a href=forthwordlist.htm#dg_forthuserwords                      >dg_forthuserwords</a>
+        <a href=forthwordlist.htm#dg_forthsafe                           >dg_forthsafe</a>
+        <a href=forthwordlist.htm#dg_forthiscolon                        >dg_forthiscolon</a>
+        <a href=forthwordlist.htm#dg_forthisoto                          >dg_forthisoto</a>
+        <a href=forthwordlist.htm#dg_forthisobto                         >dg_forthisobto</a>
+        <a href=forthwordlist.htm#dg_forthispto                          >dg_forthispto</a>
+        <a href=forthwordlist.htm#dg_forthiscallproc                     >dg_forthiscallproc</a>
+        <a href=forthwordlist.htm#dg_forthiscallprocretuint128           >dg_forthiscallprocretuint128</a>
+        <a href=forthwordlist.htm#dg_forthiscompilecall                  >dg_forthiscompilecall</a>
+        <a href=forthwordlist.htm#dg_forthstringtonewprocword            >dg_forthstringtonewprocword</a>
+        <a href=forthwordlist.htm#dg_forthstringtonewobword              >dg_forthstringtonewobword</a>
+        <a href=forthwordlist.htm#dg_forthemptywordlist                  >dg_forthemptywordlist</a>
+        <a href=forthwordlist.htm#dg_forthtosetcurrent                   >dg_forthtosetcurrent</a>
+
+    </div>
+
+    <div id=pagestuff>
+
+      <div class=word id=dg_forthnewdefinition>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthnewdefinition ( NEWDEFINITION NEWWORD )
+//
+// C prototype:
+//  void dg_forthnewdefinition (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored         
+//
+// Stack action shorthand:
+//  ( compilebufoffset compilebufid databufoffset databufid pname namelength -- executiontoken )
+//
+// Data stack in:
+//  compilebufoffset                 compile type routine's buffer offset
+//  compilebufid                     compile type routine's buffer id
+//  databufoffset                    data's buffer offset (or in some cases, the data low 64 bits)
+//  databufid                        data's buffer id     (or in some cases, the data hi 64 bits)
+//  pname                            pointer to the name string
+//  namelength                       length of the name string in characters (bytes)
+//
+// Data stack out:
+//  executiontoken                   unique identifier for this definition
+//
+// Action:
+//  this creates a new definition using the parameters
+//
+// Note: 
+//  this does not link the definition into a word list
+//
+// Failure cases:
+//  error getting a pointer to the data stack
+//  data stack underflow
+//  error creating the new definition (the subroutine pushes an error)
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetswordhead>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetswordhead ( GETPDEFINITION GETSWORDHEAD )
+//
+// C prototype:
+//  void dg_forthgetswordhead (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored         
+//
+// Stack action shorthand:
+//  ( xt -- addr u )
+//
+// Data stack in:
+//  xt                               unique identifier for the word
+//
+// Data stack out:
+//  addr                             pointer to the word's header
+//  u                                length of the word's header in bytes
+//
+// Action:
+//  this returns a pointer to the word's header and it's length
+//
+// Failure cases:
+//  error getting a pointer to the data stack
+//  data stack underflow
+//  error creating the pointer to the definition (subroutine returns an error)
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthtohead>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthtohead ( &gt;HEAD )
+//
+// C prototype:
+//  void dg_forthtohead (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored         
+//
+// Stack action shorthand:
+//  ( xt -- addr )
+//
+// Data stack in:
+//  xt                               unique identifier for the word
+//
+// Data stack out:
+//  addr                             pointer to the word's header
+//
+// Action:
+//  this returns a pointer to the word's header
+//
+// Failure cases:
+//  error calling dg_forthgetpdefinition
+//  calling dg_forthdrop
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthlinkdefinition>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthlinkdefinition ( LINKDEFINITION LINKWORD )
+//
+// C prototype:
+//  void dg_forthlinkdefinition (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored         
+//
+// Stack action shorthand:
+//  ( executiontoken wordlistid -- )
+//
+// Data stack in:
+//  executiontoken                   unique identifier for the word
+//  wordlistid                       the word is added to this word list
+//
+// Action:
+//  links the word onto the end of the word list
+//
+// Failure cases:
+//  error getting a pointer to the data stack
+//  data stack underflow
+//  error linking the definition into the word list (subroutine returns an error)
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthnewsubroutinedefinition>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthnewsubroutinedefinition ( NEWSUBROUTINEDEFINITION )
+//
+// C prototype:
+//  void dg_forthnewsubroutinedefinition (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored         
+//
+// Stack action shorthand:
+//  ( pname namelength -- executiontoken )
+//
+// Data stack in:
+//  pname                            pointer to character string containing name for new subroutine
+//  namelength                       length of the name in characters (bytes)
+//
+// Data stack out:
+//  executiontoken                   unique identifier for the definition                     
+//
+// Action:
+//  Creates a new subroutine threaded definition with the name. 
+//  The compile type routine is call subroutine in execute mode and
+//   compile call subroutine in compile mode.
+//  The data pointer is set to point to the next unused byte in the current compile buffer.
+//
+// Note: 
+//   A subroutine definition does NOT get linked into a word list at time of creation
+//   This is to allow you to make a new definition with the same name that calls the old
+//    definition, among other things.
+//
+// Failure cases:
+//  error getting a pointer to the data stack
+//  data stack underflow
+//  error creating the definition (subroutine returns an error)
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthnewvariabledefinition>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthnewvariabledefinition ( NEWVARIABLEDEFINITION )
+//
+// C prototype:
+//  void dg_forthnewvariabledefinition (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored         
+//
+// Stack action shorthand:
+//  ( pname namelength -- executiontoken )
+//
+// Data stack in:
+//  pname                            pointer to character string containing name for new variable
+//  namelength                       length of the name in characters (bytes)
+//
+// Data stack out:
+//  executiontoken                   unique identifier for the definition                     
+//
+// Action:
+//  Creates a new variable definition with the name. 
+//  The compile type routine is calculate and push address in execute mode and
+//   compile calculate and push address in compile mode.
+//  The data pointer is set to point to the next unused byte in the current new variable buffer.
+//  Links the definition to the current new definition word list.
+//
+// Failure cases:
+//  error getting a pointer to the data stack
+//  data stack underflow
+//  error creating the definition (subroutine returns an error)
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthnewconstantdefinition>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthnewconstantdefinition ( NEWCONSTANTDEFINITION )
+//
+// C prototype:
+//  void dg_forthnewconstantdefinition (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored         
+//
+// Stack action shorthand:
+//  ( constant pname namelength -- executiontoken )
+//
+// Data stack in:
+//  constant                         integer (64 bits)
+//  pname                            pointer to character string containing name for new variable
+//  namelength                       length of the name in characters (bytes)
+//
+// Data stack out:
+//  executiontoken                   unique identifier for the definition                     
+//
+// Action:
+//  Creates a new constant definition with the name. 
+//  The compile type routine is push integer (32 bit) to data stack in execute mode and
+//   compile push integer (32 bit) to data stack in compile mode.
+//  The data pointer's offset is set to the value of the intger and the data pointer's buffer id
+//   is set to 0 and not used.
+//  Links the definition to the current new definition word list.
+//
+// Failure cases:
+//  error getting a pointer to the data stack
+//  data stack underflow
+//  error creating the definition (subroutine returns an error)
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetnewestdefinitioninwordlist>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetnewestdefinitioninwordlist ( GETNEWESTDEFINITIONINWORDLIST )
+//
+// C prototype:
+//  void dg_forthgetnewestdefinitioninwordlist (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored         
+//
+// Stack action shorthand:
+//  ( wordlistid -- executiontoken )
+//
+// Data stack in:
+//  wordlistid                       identifier of wordlist
+//
+// Data stack out:
+//  executiontoken                   unique identifier for the definition                     
+//
+// Action:
+//  Removes wordlistid from the data stack and pushes the executiontoken of the last created
+//   definition in the word list to the data stack.
+//
+// Failure cases:
+//  error getting a pointer to the data stack
+//  data stack underflow
+//  error getting the latest definition (subroutine returns an error)
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetnextdefinition>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetnextdefinition ( GETNEXTDEFINITION )
+//
+// C prototype:
+//  void dg_forthgetnextdefinition (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored         
+//
+// Stack action shorthand:
+//  ( executiontoken -- nextexecutiontoken )
+//
+// Data stack in:
+//  executiontoken                   unique identifier for the definition
+//
+// Data stack out:
+//  nextexecutiontoken               unique identifier for the next definition in the word list's
+//                                    linked list of definitions                    
+//
+// Action:
+//  Execution tokens get linked into a word list's linked list. This routine removes the execution token
+//   from the data stack and pushes the next execution token in the linked list to the data stack.
+//
+// Failure cases:
+//  error getting a pointer to the data stack
+//  data stack underflow
+//  error getting the next definition (subroutine returns an error)
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfinddefinitioninwordlist>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfinddefinitioninwordlist ( FINDDEFINITIONINWORDLIST )
+//
+// C prototype:
+//  void dg_forthfinddefinitioninwordlist (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored         
+//
+// Stack action shorthand:
+//  ( wordlistid pname namelength -- executiontoken )
+//
+// Data stack in:
+//  wordlistid                       identifier of wordlist
+//  pname                            pointer to string containing name to look up
+//  namelength                       number of characters (bytes) in name
+//  
+// Data stack out:
+//  executiontoken                   unique identifier for the definition or ENDOFWORDLIST if not found
+//
+// Action:
+//  Removes parameters from the data stack.
+//  Looks up name in the word list's linked list of definitions.
+//  If the name is found the execution token of the name is pushed to the data stack.
+//  If the name is not found ENDOFWORDLIST is pushed to the data stack.
+//
+// Failure cases:
+//  error getting a pointer to the data stack
+//  data stack underflow
+//  error finding the definition in the word list (subroutine returns an error)
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfinddefinitioninsearchorder>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfinddefinitioninsearchorder ( FINDDEFINITIONINSEARCHORDER )
+//
+// C prototype:
+//  void dg_forthfinddefinitioninsearchorder (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored         
+//
+// Stack action shorthand:
+//  ( pname namelength -- executiontoken )
+//
+// Data stack in:
+//  pname                            pointer to string containing name to look up
+//  namelength                       number of characters (bytes) in name
+//  
+// Data stack out:
+//  executiontoken                   unique identifier for the definition or ENDOFWORDLIST if not found
+//
+// Action:
+//  Removes parameters from the data stack.
+//  Looks up name in each of the current search order's word lists.
+//  If the name is found the execution token of the name is pushed to the data stack.
+//  If the name is not found ENDOFWORDLIST is pushed to the data stack.
+//
+// Failure cases:
+//  error getting a pointer to the data stack
+//  data stack underflow
+//  error finding the definition in the search order (subroutine returns an error)
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthputnewestdefinitioncompiletype>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthputnewestdefinitioncompiletype ( PUTNEWESTDEFINITIONCOMPILETYPE )
+//
+// C prototype:
+//  void dg_forthputnewestdefinitioncompiletype (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored         
+//
+// Stack action shorthand:
+//  ( compilebuffoffset compilebufid -- )
+//
+// Data stack in:
+//  compilebufoffset                 offset of compile type routine in its buffer (or its address if it's not in a buffer)
+//  compilebufid                     the buffer id of the compile type routine (or DG_CORE_BUFFERID if it's not in a buffer)
+//
+// Action:
+//  Replaces the pointer to the compile type routine of the last created definition with this.
+//
+// Failure cases:
+//  error getting a pointer to the data stack
+//  data stack underflow
+//  error changing the compile routine of the last created definition (subroutine returns an error)
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcreateov>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcreateov ( CREATEOV )
+//
+// C prototype:
+//  void dg_forthcreateov (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//  
+// Stack action shorthand:
+//  ( "&lt;delimiters&gt;word&lt;delimiters&gt;morestuff" -currentinputbuffer-
+//     "&lt;delimiters&gt;morestuff" )
+//  ( -masterdefinitionarray- newovdefinition )
+//  ( -currentnewwordwordlist- newovdefinition )
+//
+// Current input buffer's current offset in:
+//  "&lt;delimiters&gt;word&lt;delimiters&gt;morestuff" 
+//
+// Current input buffer's current offset out:
+//  "&lt;delimiters&gt;morestuff"           
+//                                                            
+// Action:
+//  Moves the current offset pointer for the current input buffer to the character after the next word or to
+//   the end of the current input buffer if no word is found
+//  Then creates a new definition in the current wordlist that:
+//   in execute mode, pushes the offset and bufferid of the current new variable buffer's current length
+//   in compile mode, compiles code to push the offset and bufferid of the current compile new variable buffer's
+//     current length
+//     the current length used is the length at the time CREATEOV is called, and is the length from the user's pointer
+//     of view... so in other words, the definition created will contain the offset and buffer id of the next stuff
+//     reserved with ALLOT C, or , in the current new variable buffer.
+//
+// Note:
+//
+//  When Diaperglu first starts, the current compile buffer and current new variable buffer point to the same buffer
+//   and this buffer's' size is locked to not grow so you don't have to worry
+//   about it moving. This is so Diaperglu will be compatible with older Forth programs which may keep pointers around
+//   for a long time. If you change PCURRENTNEWVARIABLEBUFFER or PCURRENTCOMPILEBUFFER,
+//   then you have to worry about the life of the pointers from variables you CREATE in the new buffer.
+//   Using CREATEOC and CREATEOV is one way to get around the problem of your pointers going bad when the
+//   current compile buffer or current new variable buffer moves while growing.
+//  
+//   This routine and it's partner CREATEOV are more generic versions of CREATE and let you specify which
+//   buffer the new definition is for. NEWDEFINITION can give you even more control.
+//
+// Failure cases:
+//  error getting current input buffer id
+//  error gettint a pointer to the current input buffer
+//  error getting the current data space buffer id
+//  error getting a pointer to the current data space buffer
+//  next word in input buffer wasn't found (no more non delimiters before the end of the input buffer)
+//  error creating the new constant definition
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcreateoc>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcreateoc ( CREATEOC )
+//
+// C prototype:
+//  void dg_forthcreateoc (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//  
+// Stack action shorthand:
+//  ( "&lt;delimiters&gt;word&lt;delimiters&gt;morestuff" -currentinputbuffer-
+//     "&lt;delimiters&gt;morestuff" )
+//  ( -masterdefinitionarray- newovdefinition )
+//  ( -currentnewwordwordlist- newovdefinition )
+//
+// Current input buffer's current offset in:
+//  "&lt;delimiters&gt;word&lt;delimiters&gt;morestuff" 
+//
+// Current input buffer's current offset out:
+//  "&lt;delimiters&gt;morestuff"           
+//                                                            
+// Action:
+//  Moves the current offset pointer for the current input buffer to the character after the next word or to
+//   the end of the current input buffer if no word is found
+//  Then creates a new definition in the current wordlist that:
+//   in execute mode, pushes the offset and bufferid of the current compile buffer's current length 
+//   in compile mode, compiles code to push the offset and bufferid of the current compile buffer's current length
+//     the current length used is the length at the time CREATEOC is called, and is the length from the user's pointer
+//     of view... so in other words, the definition created will contain the offset and buffer id of the next stuff
+//     that will be compiled to the current compile buffer.
+//
+//
+// Note:
+//
+//  When Diaperglu first starts, the current compile buffer and current new variable buffer point to the same buffer
+//   and this buffer's' size is locked to not grow so you don't have to worry
+//   about it moving. This is so Diaperglu will be compatible with older Forth programs which may keep pointers around
+//   for a long time. If you change PCURRENTNEWVARIABLEBUFFER or PCURRENTCOMPILEBUFFER,
+//   then you have to worry about the life of the pointers from variables you CREATE in the new buffer.
+//   Using CREATEOC and CREATEOV is one way to get around the problem of your pointers going bad when the
+//   current compile buffer or current new variable buffer moves while growing.
+//  
+//   This routine and it's partner CREATEOV are more generic versions of CREATE and let you specify which
+//   buffer the new definition is for. NEWDEFINITION can give you even more control.
+//
+// Failure cases:
+//  error getting current input buffer id
+//  error gettint a pointer to the current input buffer
+//  error getting the current data space buffer id
+//  error getting a pointer to the current data space buffer
+//  next word in input buffer wasn't found (no more non delimiters before the end of the input buffer)
+//  error creating the new constant definition
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+<!--
+      <div class=word id=dg_forthtooname>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthtooname ( &gt;ONAME )  
+//
+// C prototype:
+//  void dg_forthtooname (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( executiontoken -- nameoffset namebufferid )
+//
+// Data stack in:
+//  executiontoken                unique identifier for a word
+//
+// Data stack out:
+//  nameoffset                    offset in a buffer of the word's name string
+//  namebufferid                  bufferid of buffer containing the word's name string
+//                                                            
+// Action:
+//  Pops a word's unique execution token off the data stack.
+//  Then pushes the offset and bufferid of that word's name string to the data stack.
+//
+// Failure cases:
+//  not checked
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+-->
+
+      <div class=word id=dg_forthlatest>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthlatest ( LATEST )  
+//
+// C prototype:
+//  void dg_forthlatest (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- executiontoken )
+//
+// Data stack out:
+//  executiontoken                unique identifier for a word
+//                                                            
+// Action:
+//  Pushes the execution token of the last defined word onto the data stack.
+//
+// Failure cases:
+//  not checked
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthbracketlatest>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthbracketlatest ( [LATEST] )  
+//
+// C prototype:
+//  void dg_forthbracketlatest (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//
+// Compiled code does:
+//  ( -- executiontoken )
+//
+// Compiled code data stack out:
+//  executiontoken                unique identifier for a word
+//                                                            
+// Action:
+//  Compiles code that pushes the execution token of the last defined word onto the data stack.
+//
+// Failure cases:
+//  not checked
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+<!--
+      <div class=word id=dg_forthbracketcolononame>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthbracketcolononame ( [:ONAME] [OLATESTNAME] )  
+//
+// C prototype:
+//  void dg_forthbracketcolononame (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//
+// Compiled code does:
+//  ( -- latestnameoffset latestnamebufferid )
+//
+// Compiled code data stack out:
+//  latestnameoffset              offset of latest word's name string
+//  latestnamebufferid            bufferid of latest word's name string
+//                                                            
+// Action:
+//  Compiles code that pushes the offset and bufferid of the latest defined word's
+//   name string onto the data stack.
+//
+// Failure cases:
+//  not checked
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+-->
+
+      <div class=word id=dg_forthgetcompileroutine>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetcompileroutine ( GETOCR )
+//
+// C prototype:
+//  void dg_forthgetcompileroutine (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//  
+// Stack action shorthand:
+//  ( executiontoken -- compileroutineoffset compileroutinebufferid )
+//
+// Data stack in:
+//  executiontoken                execution token of a word
+//
+// Data stack out:
+//  compileroutineoffset          offset of compile routine
+//  compileroutinebufferid        bufferid of compile routine           
+//                                                            
+// Action:
+//  Gets the compile routine for the word having executiontoken as it's unique identifier. 
+//  The compile routine is the action the script interpreter takes when the word with this 
+//   execute token is parsed. 
+// 
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthsetcompileroutine>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthsetcompileroutine ( SETOCR )
+//
+// C prototype:
+//  void dg_forthsetcompileroutine (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( offset bufferid executetoken -- )
+//
+// Data stack in:
+//  offset                        offset of compile routine
+//  bufferid                      bufferid of compile routine
+//  executetoken                  execution token of word to change           
+//                                                            
+// Action:
+//  Changes the compile routine for the word with executetoken. This is the action the script
+//    interpreter takes when the word with this execute token is parsed. 
+// 
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetodf>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetodf ( GETODF )
+//
+// C prototype:
+//  void dg_forthgetodf (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//  
+// Stack action shorthand:
+//  ( executiontoken -- datafieldoffset datafieldbufferid )
+//
+// Data stack in:
+//  executiontoken               execution token of a word
+//
+// Data stack out:
+//  datafieldoffset              offset of data field
+//  datafieldbufferid            bufferid of data field
+//                                                            
+// Action:
+//  Gets the data field for the word having execution token as it's unique identifier.
+//
+// Note:
+//  The data field is passed to the action function for this execution token
+//   when the script interpreter parses the word associated with this
+//   execute token.
+// 
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthsetodf>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthsetodf ( SETODF )
+//
+// C prototype:
+//  void dg_forthsetodf (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( offset bufferid executetoken -- )
+//
+// Data stack in:
+//  offset                        offset of data field
+//  bufferid                      bufferid of data field
+//  executetoken                  execution token of word to change           
+//                                                            
+// Action:
+//  Changes the data field for the word with this executetoken.
+//
+// Note:
+//  The data field is passed to the action function for this execution token
+//   when the script interpreter parses the word associated with this
+//   execute token.
+// 
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthtoorder>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthtoorder ( &gt;SEARCH-ORDER )
+//
+// C prototype:
+//  void dg_forthtoorder (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( wid -- )
+//  ( ... -order- ... wid )
+// 
+// Data stack in:
+//  wid                           word list id 
+//                     
+// Action:
+//  Pops a word list id off the data stack and pushes it onto the end of the search order stack.
+//
+// Failure cases:
+//  error popping the data stack
+//  error pushing to the search order stack
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthorderfrom>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthorderfrom ( SEARCH-ORDER&gt; )
+//
+// C prototype:
+//  void dg_forthorderfrom (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( wid ... -order- ... )
+//  ( -- wid )
+// 
+// Data stack out:
+//  wid                           word list id 
+//                     
+// Action:
+//  Pops a word list id off the end of the search order stack and pushes it onto the data stack.
+//
+// Failure cases:
+//  error popping the search order stack 
+//  error pushing to the data stack
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthdotwordname>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdotwordname ( .NAME )  
+//
+// C prototype:
+//  void dg_forthdotwordname (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( executiontoken -- )
+//  
+// Data stack buffer in:
+//  executiontoken                unique identifier of a definition
+//                                                           
+// Action:
+//  displays the name associated with the definition's execution token
+//
+// Failure cases:
+//  not checked
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+    
+
+      <div class=word id=dg_forthshowwordlist>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthshowwordlist ( SHOW-WORDLIST )  
+//
+// C prototype:
+//  void dg_forthshowwordlist (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( wordlistid -- )
+//
+// Data stack in:
+//  wordlistid                    unique identifier of a word list
+//                                                            
+// Action:
+//  displays the names of the words in the word list
+//
+// Failure cases:
+//  not checked
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthshowsortedwordlist>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthshowsortedwordlist ( SHOW-SORTED-WORDLIST )
+//
+// C prototype:
+//  void dg_forthshowsortedwordlist (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( wordlistid -- )
+//
+// Data stack in:
+//  wordlistid                    unique identifier of a word list
+//                                                            
+// Action:
+//  Displays the names of the words in the word list in sorted order.
+//  This routine also shows a message after words that are out of order or that
+//   are duplicates.
+//
+// Failure cases:
+//  not checked
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthshowallwords>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthshowallwords ( SHOW-ALL-WORDS )
+//
+// C prototype:
+//  void dg_forthshowallwords (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//                                                            
+// Action:
+//  For each wordlist:
+//   Displays the names of the words in each word list in sorted order.
+//   This routine also shows a message after words that are out of order or that
+//    are duplicates in a wordlist.
+//
+// Failure cases:
+//  not checked
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+    
+
+      <div class=word id=dg_forthforthwords>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthforthwords ( FORTH-WORDS )  
+//
+// C prototype:
+//  void dg_forthforthwords (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//                                                            
+// Action:
+//  shows the names of the definitions in the FORTH-WORDLIST
+//
+// Failure cases:
+//  not checked
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+    
+
+      <div class=word id=dg_fortherrorwords>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_fortherrorwords ( ERROR-WORDS )  
+//
+// C prototype:
+//  void dg_fortherrorwords (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//                                                            
+// Action:
+//  shows the names of the definitions in the ERROR-WORDLIST
+//
+// Failure cases:
+//  not checked
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+    
+
+      <div class=word id=dg_forthenvironmentwords>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthenvironmentwords ( ENVIRONMENT-WORDS )  
+//
+// C prototype:
+//  void dg_forthenvironmentwords (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//                                                            
+// Action:
+//  shows the names of the definitions in the ENVIRONMENT-WORDLIST
+//
+// Failure cases:
+//  not checked
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+    
+
+      <div class=word id=dg_forthbufferwords>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthbufferwords ( BUFFER-WORDS )  
+//
+// C prototype:
+//  void dg_forthbufferwords (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//                                                            
+// Action:
+//  shows the names of the definitions in the BUFFER-WORDLIST
+//
+// Failure cases:
+//  not checked
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+    
+
+      <div class=word id=dg_forthstringwords>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthstringwords ( $-WORDS )  
+//
+// C prototype:
+//  void dg_forthstringwords (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//                                                            
+// Action:
+//  shows the names of the definitions in the STRING-WORDLIST
+//
+// Failure cases:
+//  not checked
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+    
+
+      <div class=word id=dg_forthlibrarywords>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthlibrarywords ( OS-WORDS )  
+//
+// C prototype:
+//  void dg_forthlibrarywords (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//                                                            
+// Action:
+//  shows the names of the definitions in the WINDOWS-WORDLIST
+//
+// Failure cases:
+//  not checked
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+    
+
+      <div class=word id=dg_forthuserwords>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthuserwords ( USER-WORDS )  
+//
+// C prototype:
+//  void dg_forthuserwords (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//                                                            
+// Action:
+//  shows the names of the definitions in the WINDOWS-WORDLIST
+//
+// Failure cases:
+//  not checked
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthsafe>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthsafe ( SAFE )
+//
+// C prototype:
+//  void dg_forthsafe (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//                                                              
+// Action:
+//   If the compile type of the last defined word in the current create wordlist was 
+//     dg_forthdocompiletypesubroutine, it is changed to dg_forthdocompiletypesafesubroutine. 
+//     When a call to this last defined word is compiled, it uses this word's offset and bufferid 
+//     for a return address instead of the actual address in case the buffer moves
+//     during this last defined word's execution.
+//
+// Failure cases:
+//  error getting current vocabulary id
+//  error getting latest definition execute token
+//  error getting pointer to the latest definition 
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthiscolon>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthiscolon ( IS-: )
+//
+// C prototype:
+//  void dg_forthiscolon (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//                                                              
+// Action:
+//   The compile type of the last defined word is changed to
+//     dg_forthdocompiletypesubroutine.
+//
+// Failure cases:
+//  error getting current vocabulary id
+//  error getting latest definition execute token
+//  error getting pointer to the latest definition 
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthisoto>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthisoto ( IS-O&gt; )
+//
+// C prototype:
+//  void dg_forthisoto (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//                                                              
+// Action:
+//   The compile type of the last defined word is changed to
+//     dg_forthdocompiletypedpushn.
+//
+// Failure cases:
+//  error getting current vocabulary id
+//  error getting latest definition execute token
+//  error getting pointer to the latest definition 
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthisobto>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthisobto ( IS-OB&gt; )
+//
+// C prototype:
+//  void dg_forthisobto (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//                                                              
+// Action:
+//   The compile type of the last defined word is changed to
+//     dg_forthdocompiletypedpushdn.
+//
+// Failure cases:
+//  error getting current vocabulary id
+//  error getting latest definition execute token
+//  error getting pointer to the latest definition 
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthispto>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthispto ( IS-P&gt; )
+//
+// C prototype:
+//  void dg_forthispto (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//                                                              
+// Action:
+//   The compile type of the last defined word is changed to
+//     dg_forthdocompiletypedpushp.
+//
+// Failure cases:
+//  error getting current vocabulary id
+//  error getting latest definition execute token
+//  error getting pointer to the latest definition 
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthiscallproc>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthiscallproc ( IS-CALL-PROC )
+//
+// C prototype:
+//  void dg_forthiscallproc (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//                                                              
+// Action:
+//   The compile type of the last defined word is changed to
+//     dg_forthdocompiletypecdecl.
+//
+// Failure cases:
+//  error getting current vocabulary id
+//  error getting latest definition execute token
+//  error getting pointer to the latest definition 
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthiscallprocretuint64>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthiscallprocretuint64 ( IS-CALL-PROC-RET-UINT64 )
+//
+// C prototype:
+//  void dg_forthiscallprocretuint64 (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//                                                              
+// Action:
+//   The compile type of the last defined word is changed to
+//     dg_forthiscallprocretuint64.
+//
+// Failure cases:
+//  error getting current vocabulary id
+//  error getting latest definition execute token
+//  error getting pointer to the latest definition 
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthiscompilecall>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthiscompilecall ( IS-COMPILE-CALL )
+//
+// C prototype:
+//  void dg_forthiscompilecall (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//                                                              
+// Action:
+//   The compile type of the last defined word is changed to
+//     dg_forthdocompiletypecall.
+//
+// Failure cases:
+//  error getting current vocabulary id
+//  error getting latest definition execute token
+//  error getting pointer to the latest definition 
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthstringtonewprocword>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthstringtonewprocword ( $&gt;NEW-PROC-WORD )
+//
+// C prototype:
+//  void dg_forthstringtonewprocword (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//                                                              
+// Action:
+//   Creates a new word with compile type dg_forthdocompiletypecdecl.
+//    The data offset and bufferid of this word is the current offset
+//    in the current compile buffer.
+//
+// Failure cases:
+//  error getting current vocabulary id
+//  error getting latest definition execute token
+//  error getting pointer to the latest definition 
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthstringtonewobword>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthstringtonewobword ( $&gt;NEW-OB-WORD )
+//
+// C prototype:
+//  void dg_forthstringtonewobword (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//                                                              
+// Action:
+//   Creates a new word with compile type dg_forthdocompiletypedpushdn.
+//    The data offset and bufferid of this word is the current offset
+//    in the current compile buffer.
+//
+// Failure cases:
+//  error getting current vocabulary id
+//  error getting latest definition execute token
+//  error getting pointer to the latest definition 
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthemptywordlist>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthemptywordlist ( EMPTY-WORDLIST )
+//
+// C prototype:
+//  void dg_forthemptywordlist (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( wid -- )
+//                                                              
+// Action:
+//  Removes all the words from a word list.
+//  Wordlists are stored in hierarchical lists and this action is equivalent to
+//   pruning the word list element of all it's children, and the children's children,
+//   etc. So if a word list is a child of this word list, the child word list and
+//   all it's children are freed.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+      
+      <div class=word id=dg_forthtosetcurrent>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthtosetcurrent ( &gt;SET-CURRENT )
+//
+// C prototype:
+//  void dg_forthtosetcurrent (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//   ( oldestcurrent ... 2ndlatestcurrent -currentnewwordwordliststack- 
+//     oldestcurrent ... 2ndlatestcurrent latestcurrent )
+//   ( wid -- ) 
+// 
+// Data stack in:
+//  wid                           identifier of new current new word word list  
+//                              
+// Action:
+//  Pushes the current new word wordlist identifier to the current new word
+//   wordlist identifier stack.
+//  Pops word list identifier from the data stack.
+//  Sets the current new word word list to this identifier.
+//    (This is the word list where newly created words go.)
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetcurrentfrom>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetcurrentfrom ( GET-CURRENT&gt; )
+//
+// C prototype:
+//   void dg_forthgetcurrentfrom (Bufferhandle* pBHarrayhead) 
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//   ( oldestcurrent ... 2ndlatestcurrent latestcurrent -currentnewwordwordliststack- 
+//     oldestcurrent ... 2ndlatestcurrent )
+//   ( -- wid )
+// 
+// Data stack out: 
+//  wid                           identifier of the word list where newly defined
+//                                  words were recently added
+//                                                            
+// Action:
+//  Pushes the word list id of the current wordlist where newly defined words are 
+//   added to the data stack.
+//  Then pops the latest current new word wordlist from the current new word
+//   wordlist stack and sets the current new word wordlist to this wordlist.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    </div>
+
+  </div></body>
+</html>

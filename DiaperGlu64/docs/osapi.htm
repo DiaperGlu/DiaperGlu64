@@ -1,0 +1,3177 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<html>
+
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      operating system api functions
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>
+      <a                                                      >C Functions</a>
+      <a href=osapi.htm#dg_initpbharrayhead                   >dg_initpbharrayhead</a>
+      <a href=osapi.htm#dg_getpagesize                        >dg_getpagesize</a>
+      <a href=osapi.htm#dg_getmicrosecondssince1970Jan01      >dg_getmicrosecondssince1970Jan01</a>
+      <a href=osapi.htm#dg_gettruesize                        >dg_gettruesize</a>
+      <a href=osapi.htm#dg_isdelimiter                        >dg_isdelimiter</a>
+      <a href=osapi.htm#dg_islineterminator                   >dg_islineterminator</a>
+      <a href=osapi.htm#dg_digittochar                        >dg_digittochar</a>
+      <a href=osapi.htm#dg_chartodigit                        >dg_chartodigit</a>
+      <a href=osapi.htm#dg_chartodigitlowertoo                >dg_chartodigitlowertoo</a>
+      <a href=osapi.htm#dg_pchartonumber                      >dg_pchartonumber</a>
+      <a href=osapi.htm#dg_pchartonumberskipperiod            >dg_pchartonumberskipperiod</a>
+      <a href=osapi.htm#dg_pchartobase10numberandexponent     >dg_pchartobase10numberandexponent</a>
+      <a href=osapi.htm#dg_u64times10totheu64tof64            >dg_u64times10totheu64tof64</a>
+      <a href=osapi.htm#dg_pchartof64                         >dg_pchartof64</a>
+      <a href=osapi.htm#dg_hexdectonumber                     >dg_hexdectonumber</a>
+      <a href=osapi.htm#dg_malloc                             >dg_malloc</a>
+      <a href=osapi.htm#dg_realloc                            >dg_realloc</a>
+      <a href=osapi.htm#dg_free                               >dg_free</a>
+      <!--
+      <a href=osapi.htm#dg_writeisapi                         >dg_writeisapi</a>
+      <a href=osapi.htm#dg_readisapi                          >dg_readisapi</a>
+      -->
+      <a href=osapi.htm#dg_readfile                           >dg_readfile</a>
+      <a href=osapi.htm#dg_writefile                          >dg_writefile</a>
+      <a href=osapi.htm#dg_writestdoutraw                     >dg_writestdoutraw</a>
+      <a href=osapi.htm#dg_closefile                          >dg_closefile</a>
+      <a href=osapi.htm#dg_getfiletype                        >dg_getfiletype</a>
+      <a href=osapi.htm#dg_gethstdin                          >dg_gethstdin</a>
+      <a href=osapi.htm#dg_gethstdout                         >dg_gethstdout</a>
+      <a href=osapi.htm#dg_gethstderror                       >dg_gethstderror</a>
+      <a href=osapi.htm#dg_getfilelength                      >dg_getfilelength</a>
+      <a href=osapi.htm#dg_getch                              >dg_getch</a>
+      <a href=osapi.htm#dg_freelibrary                        >dg_freelibrary</a>
+      <a href=osapi.htm#dg_loadlibrary                        >dg_loadlibrary</a>
+      <a href=osapi.htm#dg_openfileforread                    >dg_openfileforread</a>
+      <a href=osapi.htm#dg_openfileforwritenew                >dg_openfileforwritenew</a>
+      <a href=osapi.htm#dg_printzerostring                    >dg_printzerostring</a>
+      <a href=osapi.htm#dg_writestdout                        >dg_writestdout</a>
+      <a href=osapi.htm#dg_writefileuint64todec               >dg_writefileuint64todec</a>
+      <a href=osapi.htm#dg_writestdoutuinttodec               >dg_writestdoutuinttodec</a>
+      <a href=osapi.htm#dg_writestdoutuint64tohex             >dg_writestdoutuint64tohex</a>
+      <a href=osapi.htm#dg_writestdoutuint8tohex              >dg_writestdoutuint8tohex</a>
+      <a href=osapi.htm#dg_hexdumpsegment                     >dg_hexdumpsegment</a>
+      <a href=osapi.htm#dg_isnegative                         >dg_isnegative</a>
+      <a href=osapi.htm#dg_movebytesskipdestination           >dg_movebytesskipdestination</a>
+      <a href=osapi.htm#dg_getsvalue                          >dg_getsvalue</a>
+      <a href=osapi.htm#dg_getsenvnamevalue                   >dg_getsenvnamevalue</a>
+      <a href=osapi.htm#dg_getuleb128size                     >dg_getuleb128size</a>
+      <a href=osapi.htm#dg_getlengthwithuleb128length         >dg_getlengthwithuleb128length</a>
+      <a href=osapi.htm#dg_getenvironmentvariable             >dg_getenvironmentvariable</a>
+      <a href=osapi.htm#dg_fork                               >dg_fork</a>
+      <a href=osapi.htm#dg_execve                             >dg_execve</a>
+      <a href=osapi.htm#dg_waitpid                            >dg_waitpid</a>
+      <a href=osapi.htm#dg_runfileandwait                     >dg_runfileandwait</a>
+      <a href=osapi.htm#dg_forthfixpathstring                 >dg_forthfixpathstring</a>
+      <a href=osapi.htm#dg_forthloadlibrarystringsub          >dg_forthloadlibrarystringsub</a>
+      <a href=osapi.htm#dg_forthfindmachoimageindexfromfilenamestring  >dg_forthfindmachoimageindexfromfilenamestring</a>
+      <a href=osapi.htm#dg_getpsymboltablecommandfrompmachoheader      >dg_getpsymboltablecommandfrompmachoheader</a>
+      <a href=osapi.htm#dg_getsymboln                         >dg_getsymboln</a>
+      <a href=osapi.htm#dg_forthloadmachosymbols              >dg_forthloadmachosymbols</a>
+      <a href=osapi.htm#dg_forthshowmachosymbols              >dg_forthshowmachosymbols</a>
+      <a href=osapi.htm#dg_getplibraryexporttables            >dg_getplibraryexporttables</a>
+      <a href=osapi.htm#dg_getnumberoflibrarysymbols          >dg_getnumberoflibrarysymbols</a>
+      <a href=osapi.htm#dg_getlibrarysymbol                   >dg_getlibrarysymbol</a>
+      <a href=osapi.htm#dg_determinecalltypefromname          >dg_determinecalltypefromname</a>
+      <a href=osapi.htm#dg_forthloadlibrarystring             >dg_forthloadlibrarystring</a>
+      <a href=osapi.htm#dg_forthopenlibrarystring             >dg_forthopenlibrarystring</a>
+      <a href=osapi.htm#dg_forthshowlibrarystring             >dg_forthshowlibrarystring</a>
+      <a href=osapi.htm#dg_forthshowopenlibrary               >dg_forthshowopenlibrary</a>
+      <a href=osapi.htm#dg_forthfindlibrarysymbol             >dg_forthfindlibrarysymbol</a>
+      <a href=osapi.htm#dg_callbuffer                         >dg_callbuffer</a>
+      <a href=osapi.htm#dg_makedototobufsub                   >dg_makedototobufsub</a>
+      <a href=osapi.htm#dg_makedototobuf                      >dg_makedototobuf</a>
+      <a href=osapi.htm#dg_forthrunfileandwait                >dg_forthrunfileandwait</a>
+      
+    </div>
+
+    <div id=pagestuff>
+    
+      <div class=word id=dg_initpbharrayhead>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_initpbharrayhead  
+//
+// C prototype:
+//  void dg_initpbharrayhead(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Initializes the data members of a Diaperglu BufferHandle structure with the
+//   default values. No memory is allocated.
+//
+// Note:
+//  This function assumes pBHarrayhead points to a valid BufferHandle structure, 
+//   that is, this assumes the pointer points to valid memory.
+//
+// Failure cases:
+//  failures are ignored during this call which means if you forget to allocate the 
+//  memory for the buffer handle before calling this function, you will get an 
+//  uncaught bad memory exception.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getpagesize>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getpagesize
+//
+// C prototype: 
+//  UINT64 dg_getpagesize ()
+//
+// Inputs:
+//  none                             
+//
+// Outputs:
+//  UINT64      return          the operating system page size which is the minimum
+//                               size memory buffer some operating systems will
+//                               allocate.
+//                              
+// Action:
+//  Gets the operating system memory page size.
+//
+// Note:
+//  In order to get read/write/execute memory on 64 bit Windows, you have to allocate
+//   system pages. The page handles for these pages are stored on the x86 processor
+//   and the size of the memory for these pages can only come in multiples of the
+//   system page size.
+//  On 64 bit Mac, DiaperGlu also uses the page allocation system to allocate memory,
+//   which also uses page handles on the x86 processor and allocates memory in
+//   multiples of the system page size.
+//
+// Failure cases:
+//  none
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_getmicrosecondssince1970Jan01>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getmicrosecondssince1970Jan01
+//
+// C prototype: 
+//  UINT64 dg_getmicrosecondssince1970Jan01 ()
+//
+// Inputs:
+//  none                             
+//
+// Outputs:
+//  UINT64      return          the current time in microseconds since 01/01/1970
+//                              
+// Action:
+//  Returns the current UTC time in microseconds since the start of Jan 01, 1970.
+//
+// Note:
+//  I think this number won't fit into a UINT64 in about 80 years... Oct. 3, 2020 J.N.
+//
+// Failure cases:
+//  none
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+      
+      <div class=word id=dg_gettruesize>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_gettruesize
+//
+// C prototype: 
+//  UINT64 dg_gettruesize ()
+//
+// Inputs:
+//  none                             
+//
+// Outputs:
+//  UINT64      return          allocation size needed to hold BHarrayhead and 
+//                               jumpbuffer
+//                              
+// Action:
+//  Calculates the size of memory in units of the system page size needed to hold
+//   the master buffer handle and the safe call jump buffer. This is usually one
+//   page.
+//
+// Failure cases:
+//  none
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_isdelimiter>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_isdelimiter
+//
+// C prototype:
+//  UINT64 dg_isdelimiter(char c)
+//
+// Inputs:
+//  char           c                ascii character (0 - 255)
+//
+// Outputs:
+//  UINT64         return          FORTH_TRUE if character is a white space delimiter
+//                                  FORTH_FALSE if not
+// Action:
+//  Returns a true false flag indicating whether or not the character passed in is
+//   a white space delimiter character.
+//
+//  A delimiter is one of:
+//   c shorthand      ascii code    name 
+//   ' '              0x20          &lt;space&gt; 
+//   '\n'             0x0a          &lt;line feed&gt;
+//   '\t'             0x09          &lt;tab&gt;
+//   '\v'             0x0b          &lt;vertical tab&gt;
+//   '\b'             0x08          &lt;back space&gt;
+//   '\r'             0x0c          &lt;carriage return&gt;
+//   '\f'             0x0f          &lt;form feed&gt;
+//
+// Note (Oct. 1, 2020):
+//  The white space delimiter characters for DiaperGlu are:
+//   space, line feed, tab, vertical tab, backspace, carriage return, and form feed
+//  This set of delimiters are non-standard as the current Forth standard says only
+//   the space is a white space delimiter. This means DiaperGlu handles gracefully
+//   the case where white space delimiters are in the input stream, where a Forth
+//   following the standard will not. This can happen if you EVALUATE a string which
+//   has line terminator or tab characters in it.
+//  The reason I did it this way is to simplify parsing and to handle the ambiguous
+//   condition of a line terminator passed to EVALUATE. DiaperGlu does not need
+//   REFILL to parse stuff from a file.
+//   
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_islineterminator>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_islineterminator
+//
+// C prototype:
+//  UINT64 dg_islineterminator(char c)
+//
+// Inputs:
+//  char           c                ascii character (0 - 255)
+//
+// Outputs:
+//  UINT64         return          FORTH_TRUE if character is a white space delimiter
+//                                  FORTH_FALSE if not
+// Action:
+//  Returns a true false flag indicating whether or not the character passed in is
+//   a line terminator delimiter character. 
+//
+//  A line terminator character is one of:
+//   c shorthand      ascii code    name 
+//   '\n'             0x0a          &lt;line feed&gt;
+//   '\v'             0x0b          &lt;vertical tab&gt;
+//   '\b'             0x08          &lt;back space&gt;
+//   '\r'             0x0c          &lt;carriage return&gt;
+//   '\f'             0x0f          &lt;form feed&gt;
+//
+// Note:
+//  The line terminator characters for DiaperGlu are:
+//   line feed, vertical tab, backspace, carriage return, and form feed
+//   
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_digittochar>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_digittochar
+//
+// C prototype:
+//  void dg_digittochar(
+//   UINT64 d)
+//
+// Inputs:
+//  UINT64         d                 UINT64 to convert
+//
+// Outputs:
+//  unsigned char  return            char for the digit
+//                                                              
+// Action:
+//  Converts the UINT64 value i to its ascii character representation.
+//
+// Failure cases:
+//  none
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_chartodigit>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_chartodigit 
+//
+// C prototype:
+//  UINT64 dg_chartodigit (unsigned char c)
+//
+// Inputs:
+//  unsigned char     c           
+//
+// Outputs:
+//  UINT64      return       integer value of the character c
+//                                 or -1 (0xFFFFFFFF) if not in range 
+//                                                              
+// Action:
+//  tries to convert the character c into an integer value
+//  '0' to '9' becomes 0-9 and 'A' to 'Z' becomes 10 to 35 
+//  all other values become 0xFFFFFFFF (hex)
+//
+// Failure cases:
+//  error in a subroutine
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_chartodigitlowertoo>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_chartodigitlowertoo
+//
+// C prototype:
+//  unsigned int dg_chartodigitlowertoo (unsigned char c)
+//
+// Inputs:
+//  unsigned char     c           
+//
+// Outputs:
+//  UINT64      return       integer value of the character c
+//                                 or -1 (0xFFFFFFFF) if not in range 
+//                                                              
+// Action:
+//  tries to convert the character c into an integer value
+//  '0' to '9' becomes 0-9 and 'A' to 'F' or 'a' to 'f' becomes 10 to 15 
+//  all other values become 0xFFFFFFFF (hex)
+//
+// Failure cases:
+//  error in a subroutine
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_pchartonumber>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_pchartonumber 
+//
+// C prototype:
+//  UINT64 dg_pchartonumber (
+//   unsigned char* pnumber, 
+//   UINT64 length, 
+//   UINT64 base, 
+//   UINT64* flag)
+//
+// Inputs:
+//  unsigned char*     pnumber     pointer to string representation of number to 
+//                                  convert to integer
+//  UINT64             length      length of the string in characters (bytes)
+//  UINT64             base        base of the number conversion       
+//
+// Outputs:
+//  UINT64             return      integer value of the string
+//  UINT64*            flag        pointer to the flag 
+//                                
+//                                                              
+// Action:
+//  tries to convert the string at pnumber that is length character long into an 
+//   integer using the base
+//  if a '-' is found before the number, the returned result is negative 
+//   e.g. "-1" becomes 0xFFFFFFFF
+//  for the rest of the characters in the string, 
+//   if a character is not within the base, 0 is returned and the flag is set 
+//    to FALSE
+//   if all characters are within the base, the number is returned and the flag 
+//    is set to TRUE
+//
+// Note:
+//  This function assumes all the memory used is valid. No bad memory checks are done.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_pchartonumberskipperiod>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_pchartonumberskipperiod 
+//
+// C prototype:
+//  INT64 dg_pchartonumberskipperiod (
+//   unsigned char* pnumber, 
+//   UINT64 length, 
+//   UINT64 base,
+//   UINT64* pindex, 
+//   UINT64* pdigitsafterperiod)
+//
+// Inputs:
+//  unsigned char*     pnumber      pointer to string representation of number to 
+//                                   convert to integer
+//  UINT64             length       length of the string in characters (bytes)
+//  UINT64             base         base of the number conversion       
+//
+// Outputs:
+//  UINT64      return              signed integer value of the string
+//  UINT64*     pindex              pointer to the index of the first non 
+//                                   convertable character or the length of the
+//                                   string if all the characters could be 
+//                                   converted.
+//  UINT64*     pdigitsafterperiod  pointer to the number of digits after the
+//                                   first period found.
+//                                                                                              
+// Action:
+//  tries to convert the string at pnumber that is length characters long into an 
+//   integer using the base passed in
+//  if the first character is '-', the returned result is negative 
+//  if the first character is '+', it is skipped
+//  for the rest of the characters in the string:
+//   for the first period is found, it is skipped. If a second period is found, the
+//    conversion stops
+//   if a character other than the first period can not be converted to a digit in 
+//    the current number base, the conversion stops
+//   if a character can be converted to a digit, then the current calculated result
+//    is multiplied by ten and the digit added to the result.
+//
+// Note:
+//  This function assumes all the memory used is valid. No bad memory checks are done.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_pchartobase10numberandexponent>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_pchartobase10numberandexponent 
+//
+// C prototype:
+//  INT64 dg_pchartobase10numberandexponent (
+//   unsigned char* pnumber, 
+//   UINT64 length, 
+//   UINT64* pexponent, 
+//   UINT64* pflag)
+//
+// Inputs:
+//  unsigned char*     pnumber      pointer to a base 10 string representation of  
+//                                   a Forth standard floating point number to convert 
+//                                   to an integer and exponent
+//  UINT64             length       length of the string in characters (bytes)       
+//
+// Outputs:
+//  UINT64      return              signed integer value of the non exponent part
+//                                   of the string
+//  UINT64*     pexponent           signed integer value of the exponent part of
+//                                   the string adjusted for the number of digits
+//                                   after a period from the non exponent part
+//                                   of the string
+//  UINT64*     pflag               FORTH_TRUE if the string could be converted
+//                                   FORTH_FALSE if not
+//                                                                                              
+// Action:
+//  Tries to convert the base 10 string at pnumber that is length characters long 
+//   into a signed integer mantissa and signed integer exponent. In order for the
+//   conversion to be valid, the beginning of the string has to convert to a signed
+//   integer using the rules of dg_pchartonumberskipperiod. After this, the next
+//   character in the string must be an E e D or d. If not then conversion fails. 
+//   Then the characters after E e D or d are converted to a signed integer. If
+//   and of the charaters after E e D or d can not be converted to a signed integer, 
+//   then the conversion fails. If there are no characters after E d D or d, then 
+//   the conversion succeeds and the conversion assumes a 0 was after the E e D or d.
+//   The exponenent returned is the number converted after E e D or d minus the 
+//   number of digits found after the period from before the E e D or d.
+//
+// Note:
+//  A period is not required in the first part of the string. If there is no period
+//   then the number of digits after the period is 0.
+//  If the exponent minus the number of digits after the period calculation overflows,
+//   the largest negative integer is the exponent returned.
+//  This function assumes all the memory used is valid. No bad memory checks are done.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_u64times10totheu64tof64>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_u64times10totheu64tof64 
+//
+// C prototype:
+// FLOAT64 dg_u64times10totheu64tof64(
+//  INT64 number,
+//  INT64 exponent)
+//
+// Inputs:
+//  INT64   number              signed 64 bit integer mantissa
+//  INT64   exponent            signed 64 bit integer exponent      
+//
+// Outputs:
+//  FLOAT64 return              64 bit double precision floating point value
+//                               representing number times 10 raised to the
+//                               exponent
+//                                                                                              
+// Action:
+//  Converts the signed integer number and exponent to a 64 bit double precision
+//   floating point value.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_pchartof64>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_pchartof64 
+//
+// C prototype:
+// FLOAT64 dg_pchartof64(
+//  UINT8* pnumber,
+//  UINT64 length,
+//  UINT64* pflag)
+//
+// Inputs:
+//  UINT8*   pnumber             pointer to an ascii character string that holds
+//                                a character respresentation of a Forth standard
+//                                floating point number
+//  UINT64   length              length of the ascii character string  
+//
+// Outputs:
+//  FLOAT64 return               64 bit double precision floating point value
+//                                representing the number string passed in
+//  UINT64* pflag                FORTH_TRUE if the conversion was successful
+//                               FORTH_FALSE if the conversion was not successful
+//                                                                                              
+// Action:
+//  Converts the string to a 64 bit double precision floating point value.
+//
+// Note:
+//  If the string is all white space delimiters, the conversion is successful and 0.0
+//   is returned.
+//  In order for the conversion to be successful, the string must either be all white 
+//   space delimiters or contain an E e D or d. There also can only be one period 
+//   before the E e D or D. The first character of the string and the first character 
+//   after E e D or d can also be a + or -. All other characters must be a character
+//   representing a base 10 digit, which are 0 1 2 3 4 5 6 7 8 or 9.
+//  This means if the string is just E e D or d, the conversion will be valid and 0.0
+//   is returned.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_hexdectonumber>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_hexdectonumber 
+//
+// C prototype:
+// UINT64 dg_hexdectonumber(
+//  UINT8* pnumber,
+//  UINT64 length,
+//  UINT64* pflag)
+//
+// Inputs:
+//  UINT8*   pnumber             pointer to an ascii character string that holds
+//                                a character respresentation of an html hex
+//                                or decimal number
+//  UINT64   length              length of the ascii character string  
+//
+// Outputs:
+//  FLOAT64 return               64 bit integer value representing the number 
+//                                string passed in
+//  UINT64* pflag                FORTH_TRUE if the conversion was successful
+//                               FORTH_FALSE if the conversion was not successful
+//                                                                                              
+// Action:
+//  Converts the string to a 64 bit integer value.
+//
+// Note:
+//  Trailing or leading white space delimiters are ignored. This is to comply with
+//   the html standard as of Dec. 21, 2016.
+//  If the string after white space delimiters starts with 0x or 0X, then the 
+//   following characters are converted using number base 16, otherwise, the string
+//   is converted using number base 10. If any characters other than trailing or
+//   leading white space delimiters or leading 0x or 0X can not be converted, the
+//   conversion fails.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_malloc>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_malloc
+//
+// C prototype:
+//  const char* dg_malloc(
+//   void** ppbuffer, 
+//   UINT64 size, 
+//   const char* pforceerror)
+//
+// Inputs:
+//  UINT64          size            the size of the memory buffer to allocate
+//                                   this must be a multiple of the system page size
+//  const char*     pforceerror     if not dg_success, dg_malloc will force this
+//                                   error instead of allocating memory
+//
+// Outputs:
+//  const char*     return          pointer to null terminated c string error status
+//                                   message:
+//                                    dg_success if successful
+//                                    dg_badmemory if process does not own memory at
+//                                     ppbuffer
+//                                   dg_outofmemoryerror if the operating system can
+//                                    not allocate the buffer
+//  void**          ppbuffer        pointer to allocated memory buffer address on
+//                                   success or dg_badbufferhandle on failure
+//
+// Action:
+//  Then attempts to allocate memory from the operating system. 
+//
+// Note:
+//  Uses system functions getpagesize and mmap
+//  This function uses mmap which allocates pages. Each page uses a handle which is
+//   stored in the x86 processor. There are a finite number of page handles and
+//   when they are all used up the operating system starts swapping pages out to
+//   the hard drive. This really slows things down.
+//
+// Failure cases:
+//  size isn't a multiple of the system page size
+//  OS does not have a large enough chunk of contiguous free memory to allocate the
+//   buffer
+//  unforseen problem in the OS
+//
+//   
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_realloc>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_realloc
+//
+// C prototype:
+//  const char* dg_realloc(	
+//   void** ppbuffer, 
+//   UINT64 oldsize, 
+//   UINT64 newsize, 
+//   const char* pforceerror)
+//
+// Inputs:
+//  void**        ppbuffer          pointer to address of a previously allocated 
+//                                    or reallocated memory buffer
+//                                    In Linux, address has to be a multiple of 
+//                                    the system page size
+//  UINT64        oldsize           old size of the buffer in bytes,
+//                                    In Linux this has to be a multiple of the 
+//                                    system page size
+//  UINT64        newsize           new size of the buffer in bytes, 
+//                                    In Linux this has to be a multiple of the 
+//                                    system page size
+//  const char*   pforceerror       if not dg_success, memory reallocation will fail
+//
+// Outputs:
+//  void**        ppbuffer          if successful, 
+//                                    pointer to address of newly allocated buffer
+//                                  if out of memory, 
+//                                    pointer to previously allocated memory buffer
+//                                  if address of previously allocated buffer is
+//                                    invalid, this is changed to dg_badbufferhandle
+//  const char*   return            pointer to null terminated error string
+//                                  if successful,  dg_success
+//                                  if out of memory, dg_outofmemoryerror
+//                                  if invalid handle, dg_invalidhandleerror
+//                                  if ppbuffer is bad, dg_badmemoryerror
+//
+// Action:
+//  Tries to resize a memory buffer, it may be moved to a new address.
+//  In Linux, buffer will be moved to a new address.
+//
+// Failure cases:
+//  OS does not have enough memory to allocate the buffer
+//  pointer to buffer, oldsize, or newsize is not a multiple of the system page size
+//  pointer to buffer not in memory owned by process
+//  not all memory in old buffer owned by process 
+//  unforseen problem in the OS
+//   
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+
+      <div class=word id=dg_free>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_free
+//
+// C prototype:
+//  const char* dg_free(
+//   void* pbuffer, 
+//   UINT64 size,  
+//   const char* forceerrorflag)
+//
+// Inputs:
+//  void*         buffer            address of a previously allocated or reallocated
+//                                   memory buffer, this has to be a multiple of the
+//                                   system page size
+//  UINT64        size              size of the previously allocated buffer in bytes,
+//                                   this has to be a multiple of the system page
+//                                   size
+//  const char*   forceerrorflag    if not dg_success, freeing memory will fail
+//
+// Outputs:
+//  const char*     return          pointer to null terminated c string error status
+//                                   message:
+//                                    dg_success if successful
+//                                    dg_invalidhandleerror if buffer or size are not
+//                                      multiples of the system page size, or if the
+//                                      free fails
+//
+// Action:
+//  tries to free the memory buffer
+//
+// Failure cases:
+//  unable to determine system page size
+//  buffer address is not a multiple of system page size
+//  size is not a multiple of system page size
+//
+// Note:
+//  On Linux, FreeBSD and Mac OS X uses external system functions getpagesize and
+//   munmap free on win32 does not report failures
+//
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_readfile>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_readfile
+//
+// C prototype:
+//  const char* dg_readfile(
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 fileid,
+//   unsigned char* pbuf,
+//   UINT64 length,
+//   UINT64 timeout,
+//   UINT64* pnumread,
+//   const char* forceerrorflag)
+//
+// Inputs:
+//  Bufferhandle*   pBHarrayhead        pointer to a Bufferhandle structure which is 
+//                                       used as the bufferhandle for the array where
+//                                       the other  bufferhandles are stored.
+//  UINT64          fileid              file id of an already open file
+//  UINT64          length              number of bytes to try to read from the file
+//                                       and the length of the buffer at pbuf
+//  UINT64          timeout             number of milliseconds before read times out
+//                                       not used in Mac OS X, Linux, or FreeBSD
+//  const char*     forceerrorflag      if not dg_success, dg_readfile will fail
+//
+// Outputs:
+//  const char*     return              pointer to null terminated c string error
+//                                       status message:
+//                                        dg_success if successful
+//                                        dg_badmemory if process does not own memory
+//                                         at pnumread
+//  unsigned char*  pbuf                pointer to the buffer where the bytes read go
+//  UINT64*         pnumread            pointer to the number of bytes actually read
+//                                      
+//
+// Action:
+//  tries to read length bytes from fileid and put them into the buffer at pbuf
+//  dg_readfile may read less than length bytes from the file if less bytes are
+//  available
+//
+// Notes:
+//  you can use dg_getfilelength to determine how many bytes are available
+//  however, on rare occassions, dg_readfile on win32 will still return less bytes
+//   than dg_getfilelength reports are available
+//
+//  operating system reads are supposed to be allowed to return less than the number
+//  of bytes you asked for. But since you are supposed to see how many bytes are
+//  available before calling this function and only ask for that many,
+//  not getting that many bytes is an error.
+//
+// Failure cases:
+//   fileid is not for a file opened for reading
+//   other operating system error
+//   (process does not own the memory at pbuf - not checked)
+//   process does not own memory at pnumread
+//
+// Note:
+//   dg_readfile assumes pbuf is a pointer to valid memory
+//
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_writefile>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_writefile
+//
+// C prototype:
+//  const char* dg_writefile(
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 fileid,
+//   unsigned char* pbuf,
+//   UINT64 length,
+//   const char* forceerrorflag)
+//
+// Inputs:
+//  Bufferhandle*   pBHarrayhead        pointer to a Bufferhandle structure which is 
+//                                       used as the bufferhandle for the array where
+//                                       the other bufferhandles are stored.
+//  UINT64          fileid              file id of an already open file
+//  unsigned char*  pbuf                pointer to the buffer containing the bytes to
+//                                       write
+//  UINT64          length              number of bytes to try to write to the file
+//                                       and the length of the buffer at pbuf
+//  const char*     forceerrorflag      if not dg_success, dg_writefile will fail
+//
+// Outputs:
+//  const char*     return              pointer to null terminated c string error
+//                                       status message:
+//                                        dg_success if successful
+//                                      
+// Action:
+//  tries to write length bytes from pbuf and put them into the file 
+//
+// Failure cases:
+//   fileid is not for a file opened for writing
+//   other operating system error
+//   (process does not own the memory at pbuf - not checked)
+//
+// Note:
+//   dg_writefile assumes pbuf is a pointer to valid memory
+//
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_writestdoutraw>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_writestdoutraw
+//
+// C prototype:
+//  const char* dg_writestdoutraw(
+//   Bufferhandle* pBHarrayhead, 
+//   unsigned char* pbuf,
+//   UINT64 length)
+//
+// Inputs:
+//  Bufferhandle*   pBHarrayhead        pointer to a Bufferhandle structure which is 
+//                                       used as the bufferhandle for the array where
+//                                       the other  bufferhandles are stored.
+//  unsigned char*  pbuf                pointer to the buffer containing the bytes to
+//                                       write
+//  UINT64          length              number of bytes to try to write to the stdout
+//                                       and the length of the buffer at pbuf
+//
+// Outputs:
+//  const char*     return              pointer to null terminated c string error
+//                                       status message:
+//                                        dg_success if successful
+//                                      
+//
+// Action:
+//  tries to write length bytes from pbuf to stdout 
+//
+// Failure cases:
+//   operating system error
+//   (process does not own the memory at pbuf - not checked)
+//
+// Note:
+//   dg_writestdoutraw assumes pbuf is a pointer to valid memory
+//   pBHarrayhead parameter needed for win32 isapi compatibility
+//
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_closefile>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_closefile
+//
+// C prototype:
+//  const char* dg_closefile(
+//   UINT64 fileid,
+//   const char* forceerrorflag)
+//
+// Inputs:
+//  UINT64          fileid              file id of an already open file
+//  const char*     forceerrorflag      if not dg_success, dg_closefile will fail
+//
+// Outputs:
+//  const char*     return              pointer to null terminated c string error
+//                                       status message:
+//                                        dg_success if successful
+//                                        dg_invalidhandleerror if fileid is not for
+//                                         an open file
+//                                       dg_oserror if operating system reports other
+//                                        errors
+//                                      
+// Action:
+//  tries to close file fileid 
+//
+// Failure cases:
+//   operating system error
+//   file handle is not for an open file
+//
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getfiletype>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getfiletype
+//
+// C prototype:
+//  const char* dg_getfiletype(
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 fileid,
+//   const char** pfiletype,
+//   const char* forceerrorflag)
+//
+// Inputs:
+//  Bufferhandle*   pBHarrayhead        pointer to a Bufferhandle structure which is 
+//                                       used as the bufferhandle for the array where
+//                                       the other bufferhandles are stored.
+//  UINT64          fileid              file id of an already open file
+//  const char*     forceerrorflag      if not dg_success, dg_getfiletype will fail
+//
+// Outputs:
+//  const char*     return              pointer to null terminated c string error
+//                                       status message:
+//                                        dg_success if successful
+//                                        dg_invalidhandleerror if fileid is not for
+//                                         an open file
+//                                       dg_badmemoryerror if memory at pfiletype
+//                                        is invalid
+//                                       dg_accessdeniederror if process does not
+//                                        have permission
+//                                       dg_outofmemoryerror if system is out
+//                                        of memory
+//                                       dg_oserror if operating system reports
+//                                        other errors
+//  const char**    pfiletype            pointer to file fileid's filetype
+//                                      
+// Action:
+//  tries to get the file type of open file fileid
+//
+// Notes:
+//  filetype is one of:
+//   dg_filetypeconsole
+//   dg_filetypepipe
+//   dg_filetypedisk
+//   dg_filetypeunknown
+//
+// Failure cases:
+//  file handle is not for an open file
+//  process does not own memory at pfiletype
+//  process does not have permission to get file's file type
+//  operating system does not have enough memory to get the file type
+//  other operating system errors
+//
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_gethstdin>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_gethstdin
+//
+// C prototype:
+//  const char* dg_gethstdin(
+//   Bufferhandle* pBHarrayhead,
+//   UINT64* pfileid,
+//   const char* forceerrorflag)
+//
+// Inputs:
+//  Bufferhandle*   pBHarrayhead        pointer to a Bufferhandle structure which is 
+//                                       used as the bufferhandle for the array where
+//                                       the other  bufferhandles are stored.
+//  const char*     forceerrorflag      if not dg_success, dg_gethstdin will fail
+//
+// Outputs:
+//  const char*     return              pointer to null terminated c string error
+//                                       status message:
+//                                        dg_success if successful
+//                                        dg_badmemoryerror if memory at pfileid is
+//                                         invalid
+//  UINT64*         pfileid             file id of stdin
+//                                      
+// Action:
+//  gets the file id of stdin
+//
+// Notes:
+//  On many operating systems, this is a hard coded constant
+//  This function may return dg_oserror if you are running under IIS and IIS is
+//   not using stdin
+//
+// Failure cases:
+//  process does not own memory at pfileid
+//  on some versions of IIS, if stdin is not being used, the OS returns an invalid
+//   handle. If this happens, this function returns dg_oserror
+//
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_gethstdout>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_gethstdout
+//
+// C prototype:
+//  const char* dg_gethstdout(
+//   Bufferhandle* pBHarrayhead,
+//   UINT64* pfileid,
+//   const char* forceerrorflag)
+//
+// Inputs:
+//  Bufferhandle*   pBHarrayhead        pointer to a Bufferhandle structure which is 
+//                                       used as the bufferhandle for the array where
+//                                       the other bufferhandles are stored.
+//  const char*     forceerrorflag      if not dg_success, dg_gethstdout will fail
+//
+// Outputs:
+//  const char*     return              pointer to null terminated c string error
+//                                       status message:
+//                                        dg_success if successful
+//                                        dg_badmemoryerror if memory at pfileid is
+//                                         invalid
+//  UINT64*         pfileid             file id of stdout
+//                                      
+// Action:
+//  gets the file id of stdout
+//
+// Notes:
+//  On many operating systems, this is a hard coded constant
+//
+// Failure cases:
+//  process does not own memory at pfileid
+//
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_gethstderror>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_gethstderror
+//
+// C prototype:
+//  const char* dg_gethstderror(
+//   Bufferhandle* pBHarrayhead,
+//   UINT64* pfileid,
+//   const char* forceerrorflag)
+//
+// Inputs:
+//  Bufferhandle*   pBHarrayhead        pointer to a Bufferhandle structure which is 
+//                                       used as the bufferhandle for the array where
+//                                       the other bufferhandles are stored.
+//  const char*     forceerrorflag      if not dg_success, dg_gethstderror will fail
+//
+// Outputs:
+//  const char*     return              pointer to null terminated c string error
+//                                       status message:
+//                                        dg_success if successful
+//                                        dg_badmemoryerror if memory at pfileid is
+//                                         invalid
+//  UINT64*         pfileid             file id of stdout
+//                                      
+// Action:
+//  gets the file id of stderror
+//
+// Notes:
+//  On many operating systems, this is a hard coded constant
+//
+// Failure cases:
+//  process does not own memory at pfileid
+//
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getfilelength>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getfilelength
+//
+// C prototype:
+//  const char* dg_getfilelength( 
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 fileid,
+//   UINT64* pfilelength,  
+//   const char* forceerrorflag)
+//
+// Inputs:
+//  Bufferhandle*   pBHarrayhead        pointer to a Bufferhandle structure which is 
+//                                       used as the bufferhandle for the array where
+//                                       the other bufferhandles are stored.
+//  UINT64          fileid              file id of an already open file
+//  const char*     forceerrorflag      if not dg_success, dg_getfilelength will fail
+//
+// Outputs:
+//  const char*     return              pointer to null terminated c string error
+//                                       status message:
+//                                        dg_success if successful
+//                                        dg_badmemoryerror if memory at pfilelength
+//                                         is invalid
+//                                        dg_invalidhandleerror if fileid is not
+//                                         for an open file
+//                                        dg_accessdeniederror if process does not
+//                                         have permission
+//                                        dg_outofmemoryerror if system is out of
+//                                         memory
+//                                        dg_oserror for other operating system
+//                                         errors
+//  UINT64*         pfilelength         number of bytes in the file for disk files
+//                                      number of bytes ready for non disk files
+//                                      
+// Action:
+//  gets the length in bytes or number ready to read of open file fileid
+//
+//
+// Failure cases:
+//  file handle is not for an open file
+//  process does not own memory at pfilelength
+//  process does not have permission to get file's length
+//  operating system does not have enough memory to get the file length
+//  other operating system errors
+//
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getch>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getch()
+//
+// C prototype:
+//  int dg_getch() 
+//
+// Inputs:
+//  none
+//
+// Outputs:
+//  INT64       return      character representing next keypress if successful
+//                          0 if not keypress available
+//
+// Action:
+//  Gets a character from from the OS
+//   (most likely the console unless input was redirected)
+//   without displaying the charater to the screen
+//
+// Notes:
+//  Currently this function only works on win32,
+//   other operating systems always return 0
+//
+// Failure cases:
+//  unforseen problem in the OS
+//   
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_freelibrary>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_freelibrary
+//
+// C prototype:
+//  const char* dg_freelibrary(
+//   UINT64 libraryhandle,
+//   const char* forceerrorflag)
+// 
+// Inputs:
+//  UINT64          libraryhandle       library handle of an open library returned
+//                                       from dg_loadlibrary
+//  const char*     forceerrorflag      if not dg_success, dg_freelibrary will fail
+//  
+// Outputs:
+//  none
+//
+// Action:
+//  tries to free the library 
+//
+// Failure cases:
+//  unforseen problem in the OS
+//   
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_loadlibrary>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_loadlibrary
+//
+// C prototype:
+//  const char* dg_loadlibrary(
+//   const char* libraryname,
+//   UINT64* plibraryhandle,
+//   const char* forceerrorflag)
+// 
+// Inputs:
+//  const char*     libraryname         pointer to a c style null terminated string
+//                                       containing the name of the library to load
+//  const char*     forceerrorflag      if not dg_success, dg_loadlibrary will fail
+//  
+// Outputs:
+//  UINT64*         plibraryhandle      library handle of an open library 
+//  const char*     return              pointer to null terminated c string error
+//                                       status message:
+//                                        dg_success if successful
+//                                        dg_badmemoryerror if memory at
+//                                         plibraryhandle is invalid
+//                                        dg_oserror for any operating system errors
+//                                         including library not found
+//
+// Action:
+//  tries to load the library indicated by libraryname 
+//
+// Failure cases:
+//  process does not own memory at plibraryhandle
+//  any operating system errors including library not found
+//   
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_openfileforread>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_openfileforread
+//
+// C prototype:
+//  const char* dg_openfileforread(
+//   const char* filename, 
+//   UINT64* pfileid, 
+//   const char* forceerrorflag)
+// 
+// Inputs:
+//  const char*     filename            pointer to a c style null terminated string
+//                                       containing the name of the file to open
+//  const char*     forceerrorflag      if not dg_success, dg_openfileforread
+//                                       will fail
+//  
+// Outputs:
+//  UINT64*         pfileid             file if of an open file if successful
+//                                       badfilehandle if not successful
+//  const char*     return              pointer to null terminated c string error
+//                                       status message:
+//                                        dg_success if successful
+//                                        dg_badmemoryerror if memory at pfileid is
+//                                         invalid
+//                                        dg_outofmemoryerror if operating system is
+//                                         out of memory
+//                                        dg_toomanyopenfileserror if over number of
+//                                         open files limit
+//                                        dg_pathnotfounderror if path is not found
+//                                        dg_filenotfounderror if file not found
+//                                        dg_accessdeniederror if process does not
+//                                         have permission
+//                                        dg_oserror for other operating system
+//                                         errors
+//
+// Action:
+//  tries to open the file for read indicated by filename 
+//
+// Failure cases:
+//  process does not own memory at pfileid
+//  out of memory
+//  too many open files
+//  path not found
+//  file not found
+//  access denied
+//  any other operating system errors 
+//   
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_openfileforwritenew>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_openfileforwritenew
+//
+// C prototype:
+//  const char* dg_openfileforwritenew(
+//   const char* filename, 
+//   UINT64* pfileid, 
+//   const char* forceerrorflag)
+// 
+// Inputs:
+//  const char*     filename            pointer to a c style null terminated string
+//                                       containing the name of the file to open for
+//                                       writing
+//  const char*     forceerrorflag      if not dg_success, dg_openfileforwritenew
+//                                       will fail
+//  
+// Outputs:
+//  UINT64*         pfileid             file if of an open file if successful
+//                                       badfilehandle if not successful
+//  const char*     return              pointer to null terminated c string error
+//                                       status message:
+//                                        dg_success if successful
+//                                        dg_badmemoryerror if memory at pfileid is
+//                                         invalid
+//                                        dg_outofmemoryerror if operating system is
+//                                         out of memory
+//                                        dg_toomanyopenfileserror if over number of
+//                                         open files limit
+//                                        dg_pathnotfounderror if path is not found
+//                                        dg_filenotfounderror if file not found
+//                                        dg_accessdeniederror if process does not
+//                                         have permission
+//                                        dg_oserror for other operating system errors
+//
+// Action:
+//  tries to open the file for write indicated by filename
+//  if the file already exists it is emptied 
+//
+// Failure cases:
+//  process does not own memory at pfileid
+//  out of memory
+//  too many open files
+//  path not found
+//  file not found
+//  access denied including trying to open a read only file
+//  any other operating system errors 
+//   
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_printzerostring>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_printzerostring
+//
+// C prototype:
+//  void dg_printzerostring(
+//   Bufferhandle* pBHarrayhead,
+//   unsigned char* addr)
+//
+// Inputs:
+//  unsigned char * addr        addr of the zero string
+//  
+// Outputs:
+//  none
+//
+// Action:
+//  displays a C style 0 string to the output
+//
+// Failure cases:
+//  bad address - this routine does not report an error and quietly exits
+//   
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_writestdout>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_writestdout 
+//
+// C prototype:
+//  void dg_writestdout(
+//   Bufferhandle* pBHarrayhead,
+//   unsigned char* pbuf,
+//   UINT64 length)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored 
+//  unsigned char* pbuf              pointer to source memory location
+//  UINT64         length            number of characters (bytes) to write to stdout
+//                                                              
+// Action:
+//  Sends length characters (bytes) from source memory location pbuf to stdout. This is
+//   a blocking write (control does not come back until write is finished).
+//
+// Failure cases:
+//  operating system reported error during write
+//  process does not own all the memory at pbuf for length
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_writefileuint64todec>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_writefileuint64todec
+//
+// C prototype:
+//  void dg_writefileuint64todec(
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 fileid,
+//   UINT64 i)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored
+//
+//  UINT64         fileid            file to write number string to
+//
+//  UINT64         i                 UINT64 value
+//                                                              
+// Action:
+//  Converts the UINT64 value i to its ascii string representation and then sends the string
+//   to the file. This is a blocking write (control does not come back until write is finished).
+//
+// Failure cases:
+//  operating system reported error during write
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+     
+
+      <div class=word id=dg_writestdoutuinttodec>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_writestdoutuinttodec 
+//
+// C prototype:
+//  void dg_writestdoutuinttodec(
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 i)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored 
+//  UINT64         i                 UINT64 value
+//                                                              
+// Action:
+//  Converts the UINT64 value i to its decimal ascii string representation and then sends the string
+//   to stdout. This is a blocking write (control does not come back until write is finished).
+//
+// Failure cases:
+//  operating system reported error during write
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+     <div class=word id=dg_writestdoutuint64tohex>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_writestdoutuint64tohex
+//
+// C prototype:
+//  void dg_writestdoutuint64tohex(
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 i)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored
+//
+//  UINT64         i                 UINT64 value
+//                                                              
+// Action:
+//  Converts the UINT64 value i to its hexadecimal ascii string representation and then sends the string
+//   to stdout. This is a blocking write (control does not come back until write is finished).
+//
+// Failure cases:
+//  operating system reported error during write
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_writestdoutuint8tohex>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_writestdoutuint8tohex
+//
+// C prototype:
+//  void dg_writestdoutuint8tohex(
+//   Bufferhandle* pBHarrayhead,
+//   unsigned char i)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored
+//
+//  unsigned char  i                 UINT64 value
+//                                                              
+// Action:
+//  Converts the unsigned char value i to its hexadecimal ascii string representation and
+//   then sends the string to stdout.
+//  This is a blocking write (control does not come back until write is finished).
+//
+// Failure cases:
+//  operating system reported error during write
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+     
+     
+    <div class=word id=dg_hexdumpsegment>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_hexdumpsegment
+//
+// C prototype:
+//  void dg_hexdumpsegment(
+//   Bufferhandle* pBHarrayhead,
+//   unsigned char* pstring,
+//   UINT64 length)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where 
+//                                    the other bufferhandles are stored
+//
+//  unsigned char* pstring           pointer to byte array to hex dump
+//
+//  UINT64 length                    length of byte array to hex dump in bytes
+//                                                              
+// Action:
+//  Displays the byte array at pstring that is length bytes long in the hex
+//   dump format. The output of the dump goes to stdout.
+//
+// Failure cases:
+//  operating system reported error during write
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    <div class=word id=dg_isnegative>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_isnegative
+//
+// C prototype:
+//  UINT64 dg_isnegative(
+//   UINT64 x)
+//
+// Inputs:
+//  UINT64    x    64 bit integer
+//
+// Outputs:
+//  return         FORTH_TRUE if the sign bit of x is set
+//                  FORTH_FALSE otherwise
+//                                                              
+// Action:
+//  Treats x as a signed 64 bit integer and determines if x is less
+//   than 0.
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_movebytesskipdestination>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_movebytesskipdestination
+//
+// C prototype:
+//  const char* dg_movebytesskipdestination (
+//    unsigned char* psrc,
+//    unsigned char* pdest,
+//    UINT64 stringlength)
+//
+// Inputs:
+//   unsigned char* psrc
+//
+//   unsigned char* pdest
+//
+//   UINT64 stringlength
+//
+// Outputs:
+//  const char*   return    pointer to dg_success message if everything worked
+//                          otherwise returns a pointer to an error message
+//
+// Action:
+//  Does a block move, except it skips the destination if they overlap.
+//  If the source and the destination segments overlap, this blockmove will not 
+//   copy any bytes from within the destination segment. Instead it will split 
+//   the source into two segments if necessary and continue the copy from the first 
+//   byte after the destination.
+//
+// This routine is used to handle the case where a copy and insert is done from 
+//  a string into the middle of the same string.
+//
+// Failure cases:
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getsvalue>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getsvalue
+//
+// C prototype:
+//  UINT64 dg_getsvalue (
+//    unsigned char* pbuf,
+//    UINT64 buflength,
+//    UINT64* pfirstvaluestartoffset,
+//    UINT64* pfirstvaluelength)
+//
+// Inputs:
+//   unsigned char* pbuf             pointer to source buf to scan for
+//                                    iis7 isapi value
+//   UINT64 buflength                length of source buf in bytes
+//   UINT64* pfirstvaluestartoffset  pointer to first value found
+//   UINT64* pfirstvaluelength       pointer to length of first value found
+//                                    in bytes
+//  
+// Outputs:
+//  return const char*               dg_success if everything worked
+//                                   error if something went wrong
+//
+// Action:
+//  Drops everything after first '&amp;'
+//  Then drop everything after first ';'
+//  Drop everything before first '='
+//  Returns pointer what was found.
+//
+// Failure cases:
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_getsenvnamevalue>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getsenvnamevalue
+//
+// C prototype:
+//  const char* dg_getsenvnamevalue (
+//    int argc,
+//    char* argv[],
+//    const char* pnametofind,
+//    UINT64 nametofindlength,
+//    char** ppfoundname,
+//    UINT64* pfoundnamelength,
+//    char** ppfoundvalue,
+//    UINT64* pfoundvaluelength)
+//
+// Inputs:
+//  int argc                   number of arguments
+//
+//  char* argv[]               pointer to argument array of zero strings
+//
+//  const char* pnametofind    pointer to name to find
+//
+//  UINT64 nametofindlength    length of name to find in bytes
+//
+// Outputs:
+//  char** ppfoundname         pointer to found name
+//
+//  UINT64* pfoundnamelength   pointer to found name length
+//
+//  char** ppfoundvalue        pointer to found value
+//
+//  UINT64* pfoundvaluelength  pointer to found value length
+//
+//  const char* return         pointer to dg_success message if everything worked
+//                              otherwise a pointer to an error message
+//
+// Action:
+//  Searches the argument array for the first argument that has a name that
+//   matches the name passed in and returns the pointer and length to the
+//   name's value.
+//
+// Note:
+//  for Linux, FreeBSD
+//   apparently Mac OS X doesn't do this...
+//   neither does Win32
+//  pointers to environment variables passed to diaperglu are in argv array 
+//   starting at index argc+1 and go until argv[x]=0;
+//  environment variable strings are null terminated and are of form name=value
+//   the =value part is not necessarily there
+//
+// Failure cases:
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_getuleb128size>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getuleb128size
+//
+// C prototype:
+//  UINT64 dg_getuleb128size (UINT64 u)
+//
+// Inputs:
+//  UINT64 u                  unsigned 64 bit integer
+//
+// Outputs:
+//  return                    length in bytes of uleb128 representation of u
+//
+// Action:
+//  Determines the number of bytes it would take to represent u as a uleb128.
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+    <div class=word id=dg_getlengthwithuleb128length>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getlengthwithuleb128length
+//
+// C prototype:
+//  UINT64 dg_getlengthwithuleb128length (UINT64 currentlength)
+//
+// Inputs:
+//  UINT64 u                unsigned 64 bit integer length of a buffer
+//
+// Outputs:
+//  return                  length of buffer if you added a uleb128 representation
+//                           of the final length of the buffer to the buffer
+//
+// Action:
+//  Calculates the length of a buffer if you added a uleb128 represention of the
+//   length of the buffer to the buffer. The uleb128 representation is of the
+//   returned length which makes this calculation a bit tricky.
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getenvironmentvariable>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getenvironmentvariable
+//
+// C prototype:
+//  const char* dg_getenvironmentvariable (
+//   Bufferhandle* pBHarrayhead,
+//   const char* pvarname,
+//   unsigned char* pbuf,
+//   UINT64 buflength,
+//   UINT64* pvaluelength,
+//   const char* forceerrorflag)
+// 
+// Inputs:
+//  Bufferhandle*   pBHarrayhead        pointer to a Bufferhandle structure which
+//                                       is  used as the bufferhandle for the array
+//                                       where the other bufferhandles are stored.
+//  const char*     pvarname            pointer to a c style null terminated string
+//                                       containing the name of the environment
+//                                       variable to find
+//  unsigned char*  pbuf                pointer to buffer where the value string
+//                                       will go
+//  UINT64          buflength           length of the buffer at pbuf
+//                                       or 0 if you just want to get the length of
+//                                        the value string
+//  const char*     forceerrorflag      if not dg_success, dg_getenvironmentvariable
+//                                       will fail and return the error in
+//                                       forceerrorflag
+//  
+// Outputs:
+//  UINT64*         pvaluelength        if there is a problem finding the varname,
+//                                       this is -1
+//                                      if varname not found,  then this is -1
+//                                      if varname is found with no problems, then
+//                                       this is the length of the environment
+//                                       variable's value in bytes not including
+//                                       the null terminator
+//                                      if varname is found but the value's memory
+//                                       is bad, then this is -1
+//                                       (largest unsigned int)
+//                                      if there is bad memory at pvaluelength,
+//                                       then you can't use this :-)'
+//                                      if varname is found but there is bad memory
+//                                       at pbuf, then this is the length of the
+//                                       environment variable's value in  bytes not
+//                                       including the null terminator
+//  const char*     return              pointer to null terminated c string error
+//                                       status message:
+//                                        dg_success if successful
+//                                         (found and not found cases)
+//                                        dg_badmemoryerror if memory at
+//                                         pvaluelength is invalid
+//                                        dg_badmemoryerror if memory at pbuf is
+//                                         invalid
+//                                        dg_oserror for other operating system
+//                                         errors
+//
+// Action:
+//  finds the value string associated with the environment variable's name passed
+//   in pvarname and returns the length of the value in bytes not including the null
+//   terminator in pvaluelength
+//  if buflength is not 0 and the buffer you pass in is large enough for the value's
+//   length in bytes and a null terminator, this function will copy the value and a
+//   null terminator to pbuf
+//  if buflength is not 0 and the buffer you pass in is not large enough for the
+//   value's length in bytes and a null terminator, a partial value may or may not
+//   be copied depending on which operating system diaperglu is running on.
+//   (win32 = no, all others = yes)
+//
+// Notes:
+//  On FreeBSD and Linux, this function is NOT reentrant. Other tasks may change the
+//   values of this processes' environment variables while this function is processing.
+//   see http://blogs.sun.com/pgdh/entry/caring_for_the_environment_making
+//  Call this function twice, the first time with buflength=0 to get the value string
+//   length then allocate enough storage to hold the value string and call this
+//   function again
+//  On win32, if you want the value copied to pbuf you must pass in a buffer large
+//   enough to hold the value plus a null terminator.
+//
+// Failure cases:
+//  process does not own memory at pvaluelength
+//  process does not own memory at pbuf
+//  any other operating system errors 
+//   
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_fork>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_fork
+//
+// C prototype:
+//  const char* dg_fork (
+//   pid_t* ppid,
+//   const char* forceerrorflag)
+//
+// Inputs:
+//  const char*    forceerrorflag       will fail and return the error in
+//                                       forceerrorflag
+//
+// Outputs:
+//  pid_t*          ppid                if successful,
+//                                       0 is returned in value at ppid to new process
+//                                       process id of new child is returned in value
+//                                        at ppid to process that called dg_fork
+//  const char*     return              pointer to null terminated c string error
+//                                       status message:
+//                                        dg_success if successful
+//                                        dg_toomanyprocesseserror
+//                                        dg_outofmemoryerror
+//                                        dg_oserror
+//
+// Action:
+//  Creates a copy of the process that called dg_fork and makes the copy a child
+//   of the process that called dg_fork. Both the child and the parent then return
+//   from dg_fork.
+//
+// Failure cases:
+//
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_execve>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_execve
+//
+// C prototype:
+//  const char* dg_execve (
+//   const char* pfilename,
+//   const char* argv[],
+//   const char* envp[],
+//   const char* forceerrorflag)
+//
+// Inputs:
+//  const char*     pfilename           null terminated filename of program to run
+//  char *const     argv[],             arguments for the program to run
+//                                       pointer to null terminated array of pointers
+//                                        to null terminated strings
+//                                       argument 0 is usually the name of the program
+//  char *const     envp[],             environment for the program to run
+//                                       pointer to null terminated array of pointers
+//                                        to null terminated strings
+//  char *const     forceerrorflag      if not dg_success, dg_execve
+//                                       will fail and return the error in
+//                                       forceerrorflag
+//
+// Outputs:
+//  const char*     return              pointer to null terminated c string error
+//                                       status message:
+//                                        dg_success if successful
+//                                        dg_outofmemoryerror
+//                                        dg_parametersovermaxsizeerror
+//                                        dg_accessdeniederror
+//                                        dg_badmemoryerror
+//                                        dg_ioerror
+//                                        dg_toomanysymboliclinkserror
+//                                        dg_pathorfilenametoolongerror
+//                                        dg_filenotfounderror
+//                                        dg_notexecutablefileerror
+//                                        dg_partofpathnotdirectoryerror
+//                                        dg_fileopenforwriteerror
+//                                        dg_oserror
+//
+// Action:
+//  Tries to execute the program with the name from pfilename. The program will
+//   replace the process that called execve with it's own.
+//
+// Failure cases:
+//
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_waitpid>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_waitpid
+//
+// C prototype:
+//  const char* dg_waitpid (
+//   pid_t pid,
+//   int *pstatus,
+//   int options,
+//   pid_t* pchildprocessid,
+//   const char* forceerrorflag)
+//
+// Inputs:
+//  pid_t           pid                 which children to wait for
+//  int             options             what kind of wait to do
+//  char *const     forceerrorflag      if not dg_success, dg_waitpid
+//                                       will fail and return the error in
+//                                       forceerrorflag
+//
+// Outputs:
+//  int             *pstatus,           why the child exited
+//  pid_t*          pchildprocessid     -1 means there was an error
+//                                       otherwise the id of the child that stopped
+//                                       or terminated
+//  const char*     return              pointer to null terminated c string error
+//                                       status message:
+//                                        dg_success if successful
+//                                        dg_couldnotrunfileerror
+//                                        dg_programexitedwitherrorerror
+//                                        dg_badprocessiderror
+//                                        dg_interruptedbysignalerror
+//                                        dg_invalidparametererror
+//                                        dg_oserror
+//
+// Action:
+//  Blocking waits for one or more children of the calling process to stop or
+//   terminate.
+//
+// Failure cases:
+//
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_runfileandwait>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_runfileandwait
+//
+// C prototype:
+//  const char* dg_runfileandwait (
+//   const char* pfilename,
+//   const char* argv[],
+//   const char* envp[],
+//   const char* forceerrorflag)
+//
+// Inputs:
+//  const char*     pfilename           null terminated filename of program to run
+//  char *const     argv[],             arguments for the program to run
+//  char *const     envp[],             environment for the program to run
+//  char *const     forceerrorflag      if not dg_success, dg_execcve
+//                                       will fail and return the error in
+//                                       forceerrorflag
+//
+// Outputs:
+//  const char*     return              pointer to null terminated c string error
+//                                       status message:
+//                                        dg_oserror
+//                                        any of the errors from:
+//                                         dg_fork
+//                                         dg_execcve
+//                                         dg_waitpid
+//
+// Action:
+//  Tries to execute the program with the name from pfilename, then blocking waits
+//   for the program to finish running.
+//
+// Failure cases:
+//
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+ 
+      <div class=word id=dg_forthfixpathstring>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfixpathstring
+//
+// C prototype:
+//  void dg_forthfixpathstring (Bufferhandle* pBHarrayhead)
+// 
+// Inputs:
+//  Bufferhandle*   pBHarrayhead        pointer to a Bufferhandle structure which is 
+//                                       used as the bufferhandle for the array where
+//                                       the other  bufferhandles are stored.
+//  
+// Outputs:
+//  none
+//
+// Stack action shorthand:
+//  ( path$ -$- fixedpath$ )
+// 
+// Action:
+//  fixes the path string
+//
+// Notes:
+//  needed for windows compatibility
+//  on operating systems other than win32 this does nothing
+//
+// Failure cases: 
+//   
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthloadlibrarystringsub>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthloadlibrarystringsub
+//
+// C prototype:
+//  void dg_forthloadlibrarystringsub (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// Outputs:
+//  none
+//
+// Stack action shorthand:
+//  ( libraryname$ -$- libraryname$ ) 
+//  ( -openlibraryhandlestack- libraryhandle )
+//
+// String stack in:
+//  libraryname$                  library's name, this is usually something like
+//                                 " libname.dll" or " libname.so"  or
+//                                 " libname.dylib"
+//
+// Data stack out:
+//  libraryhandle                 handle to the library or NULL
+//                                                         
+// Action:
+//  removes the libraryname$ from the string stack
+//  attempts to load the library with that name
+//  pushes the OS handle to the library to the string stack
+//
+// Notes:
+//  On Mac OS X, this function does not work correctly for libraryname$ that are
+//   symlinks
+// 
+// Failure cases:
+//  error getting string stack depth
+//  string stack underflow error
+//  error turning library name string into a 0 string
+//  error getting pointer to the name string
+//  error loading the library - error not pushed to error stack, 0 (NULL) returned
+//   on data stack
+//  error pushing the library handle to the data stack
+//  error dropping libraryname$ from the string stack
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthloadlibrarystringsub>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthloadlibrarystringsub
+//
+// C prototype:
+//  void dg_forthloadlibrarystringsub (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// Outputs:
+//  none
+//
+// Stack action shorthand:
+//  ( libraryname$ -$- libraryname$ ) 
+//  ( -openlibraryhandlestack- libraryhandle )
+//
+// String stack in:
+//  libraryname$                  library's name, this is usually something like
+//                                 " libname.dll" or " libname.so"
+//                                 or " libname.dylib"
+//
+// Data stack out:
+//  libraryhandle                 handle to the library or NULL
+//                                                         
+// Action:
+//  removes the libraryname$ from the string stack
+//  attempts to load the library with that name
+//  pushes the OS handle to the library to the string stack
+//
+// Notes:
+//  On Mac OS X, this function does not work correctly for libraryname$ that
+//   are symlinks
+// 
+// Failure cases:
+//  error getting string stack depth
+//  string stack underflow error
+//  error turning library name string into a 0 string
+//  error getting pointer to the name string
+//  error loading the library - error not pushed to error stack, 0 (NULL) returned
+//   on data stack
+//  error pushing the library handle to the data stack
+//  error dropping libraryname$ from the string stack
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getpsymboltablecommandfrompmachoheader>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getpsymboltablecommandfrompmachoheader ( Mac OS X only. Not part of the A.P.I. )
+//
+// C prototype:
+//  const struct section* dg_getpsymboltablecommandfrompmachoheader (
+//   Bufferhandle* pBHarrayhead, 
+//   const struct mach_header* pmymachheader)
+//
+// Inputs:
+//  Bufferhandle*                 pBHarrayhead    pointer to a Bufferhandle structure
+//                                                 which is  used as the bufferhandle
+//                                                 for the array where the other
+//                                                 bufferhandles are stored.
+//  const struct mach_header*     pmymachheader   pointer to a mac os x mach-o file
+//                                                 header of a loaded
+//                                                 shared object library file                       
+// Outputs:
+//  const struct section*         return          pointer to the symbol table
+//                                                         
+// Action:
+//  finds the symbol table of a loaded shared object library file from it's
+//   mach-o header
+// 
+// Notes:
+//  Mac OS X only
+//  should work for both 32 and 64 bit headers
+//
+// Failure cases:
+//  Process does not own the all the memory this function tries to access
+//  Mach-o header's magic id is not correct which means it is not a mach-o header
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getsymboln>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getsymboln ( Mac OS X only. Not part of the A.P.I. )
+//
+// C prototype:
+//  void dg_getsymboln (
+//   Bufferhandle* pBHarrayhead, 
+//   const struct mach_header* pmymachheader,
+//   unsigned char* pnlistarray,       
+//   UINT64 n,
+//   struct nlist_64* pnlistentryout) 
+//
+// Inputs:
+//  Bufferhandle*                 pBHarrayhead    pointer to a Bufferhandle structure
+//                                                 which is used as the bufferhandle
+//                                                 for the array where the other
+//                                                 bufferhandles are stored.
+//  const struct mach_header*     pmymachheader   pointer to a mac os x mach-o file
+//                                                 header of a loaded
+//                                                 shared object library file
+//  UINT64                        n               number of the symbol to get
+//                                                 (0 based, goes up by 1s)
+//  struct nlist_64*              pnlistentryout  pointer to the symbol's entry in the
+//                                                 symbol table
+//                                                 could be 32 or 64 bit nlist array
+//                   
+// Outputs:
+//  none
+//                                                         
+// Action:
+//  gets a pointer to the symbol's entry in the symbol table using the symbols
+//   ordinal index value
+// 
+// Notes:
+//  Mac OS X only
+//  should work for both 32 and 64 bit nlist arrays
+//  assumes n checked against number of symbols before calling this routine
+//  assumes array is valid, that is there is enough bytes
+//  assumes pnlistarray->value is already cleared in case of 32 bit nlist entry
+//
+// Failure cases:
+//  Process does not own the all the memory this function tries to access
+//  Mach-o header's magic id is not correct which means it is not a mach-o header
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+
+      <div class=word id=dg_forthloadmachosymbols>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthloadmachosymbols ( Mac OS X only. Not part of the A.P.I. )
+//
+// C prototype:
+//  void dg_forthloadmachosymbols (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*       pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                      used as the bufferhandle for the array where
+//                                      the other bufferhandles are stored.
+//                   
+// Outputs:
+//  none
+//
+// Stack action shorthand:
+//  ( openlibraryhandle -- wordlistid )
+//  ( filename$ -$- )
+//                                                        
+// Action:
+//  loads an open shared object library's symbols into a new wordlist
+// 
+// Notes:
+//  Mac OS X only
+//  should work for both 32 and 64 bit nlist arrays
+//
+// Failure cases:
+//  openlibraryhandle or filename$ missing
+//  Process does not own the all the memory this function tries to access
+//  can't find the image index of the open library
+//  can't find the mach-o header of for the loaded image index
+//  Mach-o header's magic id is not correct which means it is not a mach-o header
+//  out of memory or a stack's buffer is full
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+	
+      <div class=word id=dg_forthshowmachosymbols>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthshowmachosymbols ( Mac OS X only. Not part of the A.P.I. )
+//
+// C prototype:
+//  void dg_forthshowmachosymbols (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*      pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                     used as the bufferhandle for the array where
+//                                     the other bufferhandles are stored.
+//                   
+// Outputs:
+//  none
+//
+// Stack action shorthand:
+//  ( filename$ -$- )
+//                                                        
+// Action:
+//  attempts to show the symbols of the open shared object library
+// 
+// Notes:
+//  Mac OS X only
+//
+// Failure cases:
+//  filename$ missing
+//  Process does not own the all the memory this function tries to access
+//  can't find the image index of the open library
+//  can't find the mach-o header of for the loaded image index
+//  Mach-o header's magic id is not correct which means it is not a mach-o header
+//  out of memory or a stack's buffer is full
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getplibraryexporttables>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getplibraryexporttables ( Win32 only. Not part of the A.P.I. )
+//
+// C prototype:
+//  const char* dg_getplibraryexporttables( 
+//   HINSTANCE hlibrary,
+//   UINT64* pimagesize,
+//   UINT64* pnumberoffunctions,
+//   UINT64* pnumberofnames,
+//   void** ppfunctionoffsetarray,
+//   void** ppnameoffsetarray,
+//   void** ppordinalarray)
+//
+// Inputs: 
+//  HINSTANCE       hlibrary              handle of the dll. In Windows, this is a
+//                                         pointer to the memory where the dll
+//                                         was loaded
+//  
+// Outputs:
+//  UINT64*         pnumberoffunctions    the number of functions in the function
+//                                         offset array
+//  UINT64*         pnumberofnames        the number of function names and ordinals
+//                                         in the name offset and ordinal arrays
+//  void**          ppfunctionoffsetarray the address of the function offset array
+//  void**          ppnameoffsetarray     the address of the name offset array
+//  void**          ppordinalarray        the address of the ordinal array
+//
+// Action:
+//  Gets the number of functions, number of function names, a pointer to the
+//   function offset array, a pointer to the name offset array, and ordinal
+//   array from a dll (library) that is loaded into memory.
+// 
+// Failure cases:
+//  null library handle passed in
+//  error accessing memory, dlldg_forth doesn't have access to all the memory
+//   hlibrary points to
+//  dll's e_magic field incorrect. it's not a dos/windows file
+//  pe format signature field incorrect, it's not a pe format file
+//  optional header's size too small, file does not have an export table
+//  dll says export directory goes outside the dll's memory space
+//  dll says function offset array goes outside the dll's memory space
+//  dll says name offset array goes outside the dll's memory space
+//  dll says ordinal array goes outside the dll's memory space
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getnumberoflibrarysymbols>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getnumberoflibrarysymbols ( Win32 only. Not part of the A.P.I. )
+//
+// C prototype:
+//  const char* dg_getnumberoflibrarysymbols (
+//   HINSTANCE hlibrary, 
+//   UINT64* pnumberofsymbols,
+//   const char* forceerrorflag)
+//
+// Inputs:  
+//  HINSTANCE       hlibrary              handle of the dll. In Windows, this is a
+//                                         pointer to the memory where the dll was
+//                                         loaded
+//  const char*     forceerrorflag        if not dg_success, this function fails
+//                                         with this error
+//  
+// Outputs:
+//  const char*     return                dg_success if function succeeded otherwise
+//                                         function failed
+//  UINT64*         pnumberofsymbols      the number of exported symbols in the dll
+//
+// Action:
+//  Gets the number of exported symbols in the dll.
+// 
+// Failure cases:
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_getlibrarysymbol>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getlibrarysymbol ( Win32 only. Not part of the A.P.I. )
+//
+// C prototype:
+//  const char* dg_getlibrarysymbol(
+//   HINSTANCE hlibrary,
+//   UINT64 symbolnumber,     // this is not symbol's exported ordinal
+//   const char** psymbolname,
+//   UINT64* pnamelength,
+//   const char** psymboltype,
+//   UINT64* psymbolvalue,
+//   const char* forceerrorflag)
+//
+// Inputs:  
+//  HINSTANCE       hlibrary              handle of the dll. In Windows, this is a
+//                                         pointer to the memory where the dll was
+//                                         loaded
+//  UINT64          symbolnumber          index of symbol in symbol table,
+//                                         this is not the same as the symbol's
+//                                         exported ordinal
+//  const char*     forceerrorflag        if not dg_success, this function fails
+//                                         with this error
+//  
+// Outputs:
+//  const char*     return                dg_success if function succeeded otherwise
+//                                         function failed
+//  const char**    psymbolname           contains a pointer to the symbol's exported
+//                                         name string
+//  UINT64*         pnamelength           contains the length in bytes of exported
+//                                         symbol name string
+//  const char**    psymboltype           contains a pointer to a c style null
+//                                         terminated string representing the
+//                                         symbol's type which is one of:
+//                                          dg_symboltypefunction
+//                                          dg_symboltypeconstant
+//                                          dg_symboltypeunknown
+//  UINT64*         psymbolvalue          contains the symbols value
+//
+// Action:
+//  From the library handle and symbol number, get's pointers to the symbol's name
+//   and type strings, and the symbols value.
+// 
+// Failure cases:
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_determinecalltypefromname>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_determinecalltypefromname ( Win32 only. Not part of the A.P.I. )
+//
+// C prototype:
+//  const char* dg_determinecalltypefromname (
+//   const char* pname, 
+//   UINT64 namelength, 
+//   UINT64* pcalltype)
+//
+// Inputs:  
+//  const char*     pname                 pointer to symbol's name string
+//  UINT64          namelength            length of symbol's name string in bytes
+//  
+// Outputs:
+//  const char*     return                dg_success if function succeeded otherwise
+//                                         function failed
+//  UINT64*         pcalltype             contains the symbol's call type which is
+//                                         one of:
+//                                          ? (seems to be missing...)
+//
+// Action:
+//  Determines a function's calling convention from it's symbol name string
+// 
+// Notes:
+//  Currently only checks for Microsoft Visual C++ call convention
+//
+// Failure cases:
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// Win32 Internet Services Application Programming Interface (ISAPI) functions
+//
+// These are not part of the exported Diaperglu OSAPI
+//
+// BOOL WINAPI GetExtensionVersion(
+//  HSE_VERSION_INFO *pVer)
+//
+// BOOL WINAPI TerminateExtension(
+//  DWORD dwFlags)
+//
+// DWORD WINAPI HttpExtensionProc(
+//  EXTENSION_CONTROL_BLOCK* lpECB)
+//
+// BOOL WINAPI DllMain(
+//  HINSTANCE hinstDLL,
+//  DWORD fdwReason,
+//  LPVOID lpvReserved)
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthloadlibrarystring>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// LOADLIBRARY$ ( dg_forthloadlibrarystring )
+//
+// C prototype:
+//  void dg_forthloadlibrarystring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// Outputs:
+//  none
+//
+// Stack action shorthand:
+//  ( filename$ -$- )
+//	( -- wordlistid )
+//  ( -libhandle- libraryhandle )
+//
+// String stack in:
+//  libraryname$                  library's name, this is usually something like
+//                                  " libname.dll" or " libname.so"  or
+//                                  " libname.dylib" or " libname.framework/libname "
+//
+// Data stack out:
+//  wordlistid                    word list id of the new wordlist containing
+//                                  the names of the exported symbols
+//
+// Library handle stack out: 
+//  libraryhandle                 library's handle
+//                                                         
+// Action:
+//  removes the libraryname$ from the string stack
+//  attempts to load the library with that name
+//  pushes the handle of the library to the open library handle stack
+//  creates a new wordlist and pushes the wordlist id to the data stack
+//  loads the library's symbols into the new wordlist
+//
+// Notes:
+// 
+// Failure cases:
+//  filename$ missing
+//  filename is not found or not for a library or application file
+//  Process does not own the all the memory this function tries to access
+//  error loading the library
+//  error loading the library's symbols
+//  out of memory or a stack's buffer is full
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthopenlibrarystring>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// OPENLIBRARY$ ( dg_forthopenlibrarystring )
+//
+// C prototype:
+//  void dg_forthopenlibrarystring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other  bufferhandles are stored.
+// Outputs:
+//  none
+//
+// Stack action shorthand:
+//  ( filename$ -$- )
+//	( -- wordlistid libraryhandle )
+//
+// String stack in:
+//  libraryname$                  library's name, this is usually something like
+//                                  " libname.dll" or " libname.so"
+//                                  or " libname.dylib" or " libname.framework/libname "
+//
+// Data stack out:
+//  wordlistid                    word list id of the new wordlist containing the
+//                                  names of the exported symbols
+//  libraryhandle                 handle to the library or NULL
+//
+// Library handle stack out: 
+//  libraryhandle                 library's handle
+//                                                         
+// Action:
+//  removes the libraryname$ from the string stack
+//  attempts to load the library with that name
+//  pushes the handle of the library to the open library handle stack
+//  creates a new wordlist and pushes the wordlist id to the data stack
+//  pushes the handle of the library to the data data stack
+//
+// Notes:
+//  Does NOT load the library's symbols into the new wordlist. This is much faster
+//  than LOADLIBRARY$, especially for libraries that have thousands of exported
+//  symbols.
+//  To load just the symbols you need, use FINDLIBRARYSYMBOL.
+// 
+// Failure cases:
+//  filename$ missing
+//  filename is not found or not for a library or application file
+//  Process does not own the all the memory this function tries to access
+//  error loading the library
+//  error loading the library's symbols
+//  out of memory or a stack's buffer is full
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthshowlibrarystring>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// SHOWLIBRARY$ ( dg_forthshowlibrarystring )
+//
+// C prototype:
+//  void dg_forthshowlibrarystring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// Outputs:
+//  none
+//
+// Stack action shorthand:
+//  ( filename$ -$- )
+//
+// String stack in:
+//  libraryname$                  library's name, this is usually something like
+//                                 " libname.dll" or " libname.so"  or
+//                                 " libname.dylib" or " libname.framework/libname "
+//                                                         
+// Action:
+//  removes the libraryname$ from the string stack
+//  attempts to load the library with that name
+//  shows all the exported symbols in the library
+//  closes the library
+// 
+// Failure cases:
+//  filename$ missing
+//  filename is not found or not for a library or application file
+//  Process does not own the all the memory this function tries to access
+//  error loading the library
+//  error showing the library's symbols
+//  out of memory or a stack's buffer is full
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthshowopenlibrary>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// SHOWOPENLIBRARY ( dg_forthshowopenlibrary )
+//
+// C prototype:
+//  void dg_forthshowopenlibrary (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other  bufferhandles are stored.
+// Outputs:
+//  none
+//
+// Data action shorthand:
+//  ( libraryhandle -- )
+//
+// Data stack in:
+//  libraryhandle                 handle of an open library
+//                                                         
+// Action:
+//  removes the libraryhandle from the data stack
+//  shows all the exported symbols in the library
+// 
+// Note:
+//  This shows the exported symbols in the open library, NOT the symbols that
+//   may have been loaded from the library into a diaperglu wordlist.
+//  The handles of all open libraries are kept on the open library handle stack.
+//
+// Failure cases:
+//  libraryhandle missing
+//  libraryhandle is not really a library handle
+//  Process does not own the all the memory this function tries to access
+//  out of memory or a stack's buffer is full
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthfindlibrarysymbol>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// FINDLIBRARYSYMBOL ( dg_forthfindlibrarysymbol )
+//
+// C prototype:
+//  void dg_forthfindlibrarysymbol (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// Outputs:
+//  none
+//
+// Data action shorthand:
+//  ( libraryhandle -- symboladdress )
+//
+// String stack shorthand:
+// ( symbolname$ -$- )
+//
+// Data stack in:
+//  libraryhandle                 handle of an open library
+//
+// Data stack out:
+//  symboladdress                 This is the number the symbol represents. Usually
+//                                this is the address of a function. If this symbol
+//                                is not found, 0 (also called NULL) is returned.
+//
+// String stack in:
+//  symbolname$                   name of the exported symbol to look up in the
+//                                 library
+//                                                           
+// Action:
+//  removes the libraryhandle from the data stack
+//  removes the symbol name string from the string stack
+//  looks up the symbol name in the exported library
+//  returns the value the symbol represents on the data stack
+//
+// Failure cases:
+//  libraryhandle missing
+//  symbolname$ missing
+//  Process does not own the all the memory this function tries to access
+//  out of memory or a stack's buffer is full
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_callbuffer>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_callbuffer
+//
+// C function prototype:
+//  void dg_callbuffer (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 offset)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are dg_forthstored.
+//  UINT64  bufferid        buffer the routine is in
+//  UINT64  offset          offset of the routine in the buffer
+//                                                              
+// Action:
+//  Calls the routine at the offset in the buffer.
+//  
+// Note:
+//  If the buffer id is DG_CORE_BUFFERID, this routine will use the offset as
+//   the address.
+//
+// Failure cases:
+//  error calculating the address from the bufferid and offset
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_makedototobufsub>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_makedototobufsub
+//
+// C function prototype:
+//  void dg_makedototobufsub (
+//   Bufferhandle* pBHarrayhead,
+//   unsigned char* pcode,
+//   UINT64 codelength,
+//   UINT64 exportsymbollisthlistid,
+//   UINT64 exportsymbollistparentelementid,
+//   UINT64 importsymbollisthlistid,          // (UINT64)-1 means not using imports
+//   UINT64 importsymbollistparentelementid,
+//   UINT64 destbuf,
+//   UINT64 stringtablelstringoffsetbufferid,
+//   UINT64 stringtablelstringstringbufferid,
+//   UINT64 relocationtablebufferid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead               pointer to a Bufferhandle structure which
+//                                            is used as the bufferhandle for the
+//                                            array where the other bufferhandles are
+//                                            stored.
+//  unsigned char* pcode                     pointer to raw code to turn into a .o
+//                                            file image
+//  UINT64  codelength                       length of raw code in bytes
+//  UINT64 exportsymbollisthlistid           this hlist holds the export symbol list
+//  UINT64 exportsymbollistparentelementid   parent element of export symbol list
+//                                            this is a list of name value pairs
+//                                            name = export symbol name
+//                                            value = 8 byte integer buffer offset
+//  UINT64 importsymbollisthlistid,          this hlist holds the export symbol list
+//                                            (UINT64)-1 means not using imports
+//                                            can be same as export hlist id
+//  UINT64 importsymbollistparentelementid,  parent element of import symbol list
+//                                            this is a list of name value pairs
+//                                            name = import symbol name
+//                                            value = 8 byte integer buffer offset
+//  UINT64 destbuf                           buffer id of where to put the .o image
+//  UINT64 stringtablelstringoffsetbufferid, an empty buffer
+//  UINT64 stringtablelstringstringbufferid, an empty buffer
+//  UINT64 relocationtablebufferid           an empty buffer
+//
+// Action:
+//  This function takes a raw code buffer, an export symbol list, and an import
+//   symbol list and builds a mach-o .o file image. The symbol lists are name value
+//   pairs where the name is the symbol name, and the value is an 8 byte integer
+//   representing an offset from pcode.
+//   Mac OS X supports different kinds of import linking and exports but this
+//   routine only supports one type of export and import. Later I'll probably
+//   change it.
+//   The import offset represents the offset where ld should put a four byte
+//   offset to the real link pointer. What this means is ld will create an array
+//   of 8 byte link addresses for you and you are supposed to access them with pc
+//   relative instructions.
+//
+// Import link example of calling an imported function in 64 bit mode:
+//  RIP 0 [R+N] CALL,              // compile a call to address stored in pc relative
+//                                 //  link table
+//                                 //  when RIP is base reg, displacement is always 4
+//  OHERE 4 - >NEW$   $" myimport" // import function name is myimport, offset is of
+//                                 //  CALL instruction's 4 byte displacement
+//  1 EH[ND]  NEW-ELEMENT          // this adds a name value pair to the 2nd from
+//                                 //  top current hierarchical list parent element
+//                                 //  pair on the EH stack
+//
+//
+// Import link example of getting address of imported function or 8 bit data:
+//  RIP 0 [R+N] MOV,               // when RIP is base reg, displacement is always 4
+//
+//  OHERE 4 - >NEW$   $" mydimp"   // import function name is mydimp, offset is of
+//                                 //  MOV instruction's 4 byte displacement
+//  1 EH[ND]  NEW-ELEMENT          // this adds a name value pair to the 2nd from
+//                                 //  top current hierarchical list parent element
+//                                 //  pair on the EH stack
+//
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_makedototobuf>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_makedototobuf
+//
+// C function prototype:
+// void dg_makedototobuf (
+//   Bufferhandle* pBHarrayhead,
+//   unsigned char* pcode,
+//   UINT64 codelength,
+//   UINT64 exportsymbollisthlistid,
+//   UINT64 exportsymbollistparentelementid,
+//   UINT64 importsymbollisthlistid,           // (UINT64)-1 means not using imports
+//   UINT64 importsymbollistparentelementid,
+//   UINT64 destbuf)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead               pointer to a Bufferhandle structure which
+//                                            is used as the bufferhandle for the
+//                                            array where the other bufferhandles are
+//                                            stored.
+//  unsigned char* pcode                     pointer to raw code to turn into a .o
+//                                            file image
+//  UINT64  codelength                       length of raw code in bytes
+//  UINT64 exportsymbollisthlistid           this hlist holds the export symbol list
+//  UINT64 exportsymbollistparentelementid   parent element of export symbol list
+//                                            this is a list of name value pairs
+//                                            name = export symbol name
+//                                            value = 8 byte integer buffer offset
+//  UINT64 importsymbollisthlistid,          this hlist holds the export symbol list
+//                                            (UINT64)-1 means not using imports
+//                                            can be same as export hlist id
+//  UINT64 importsymbollistparentelementid,  parent element of import symbol list
+//                                            this is a list of name value pairs
+//                                            name = import symbol name
+//                                            value = 8 byte integer buffer offset
+//  UINT64 destbuf                           buffer id of where to put the .o image
+//
+// Action:
+//  This function takes a raw code buffer, an export symbol list, and an import
+//   symbol list and builds a mach-o .o file image. The symbol lists are name value
+//   pairs where the name is the symbol name, and the value is an 8 byte integer
+//   representing an offset from pcode.
+//   Mac OS X supports different kinds of import linking and exports but this
+//   routine only supports one type of export and import. Later I'll probably
+//   change it.
+//   The import offset represents the offset where ld should put a four byte
+//   offset to the real link pointer. What this means is ld will create an array
+//   of 8 byte link addresses for you and you are supposed to access them with pc
+//   relative instructions.
+//
+// Import link example of calling an imported function in 64 bit mode:
+//  RIP 0 [R+N] CALL,              // compile a call to address stored in pc relative
+//                                 //  link table
+//                                 //  when RIP is base reg, displacement is always 4
+//  OHERE 4 - >NEW$   $" myimport" // import function name is myimport, offset is of
+//                                 //  CALL instruction's 4 byte displacement
+//  1 EH[ND]  NEW-ELEMENT          // this adds a name value pair to the 2nd from
+//                                 //  top current hierarchical list parent element
+//                                 //  pair on the EH stack
+//
+//
+// Import link example of getting address of imported function or 8 bit data:
+//  RIP 0 [R+N] MOV,               // when RIP is base reg, displacement is always 4
+//
+//  OHERE 4 - >NEW$   $" mydimp"   // import function name is mydimp, offset is of
+//                                 //  MOV instruction's 4 byte displacement
+//  1 EH[ND]  NEW-ELEMENT          // this adds a name value pair to the 2nd from
+//                                 //  top current hierarchical list parent element
+//                                 //  pair on the EH stack
+//
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthrunfileandwait>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthrunfileandwait    ( RUNFILEANDWAIT )
+//
+// C prototype:
+//  void dg_forthrunfileandwait (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// Outputs:
+//  none
+//
+// Stack action shorthand:
+//  ( pargv[] penvp[] pfilename -- )
+//
+// Data stack in:
+//  pargv[]             pointer to null terminated array of null terminated strings
+//                       which hold the arguments for the program about to run
+//  penvp[]             pointer to null terminated array of null terminated strings
+//                       which hold the environment for the program about to run
+//  pfilename           null terminated path/filename of the program to run
+//
+// Data stack out:
+//
+// Action:
+//  Attemps to execute a program and then wait for it to finish running completely.
+//
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+    </div>
+
+  </div></body>
+</html>

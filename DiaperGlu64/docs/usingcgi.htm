@@ -1,0 +1,509 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      Using Diaperglu as a CGI/ISAPI scripting engine
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+    
+    <div id=pagedirectory>
+      <a                                                      >Scripting on</a>
+      <a href=usingcgi.htm#macosx                             >Mac OS X Apache</a>
+      <a href=usingcgi.htm#windows10iis                       >Windows 10 IIS</a>
+      <a                                                      >&nbsp;</a>
+      <a href=usingcgi.htm#filedownload                       >Downloading Files</a>
+      <a href=usingcgi.htm#fileupload                         >Uploading Files</a>
+      <a href=usingcgi.htm#runmodes                           >Other Ways of Running</a>
+    </div>
+
+    <div id=pagestuff>
+        
+      <div class=pagestuffsection id=macosx>
+<pre>
+**************************************
+* Apache Installation Instructions   *
+*  for Mac OS X using a shebang line *
+*  last checked: April 16, 2020      *
+*  for Mac Os Catalina v10.15.4      *
+**************************************
+
+After building diaperglu,
+
+  copy the new diaperglu to the cgi-bin directory of your website.
+
+On my Mac this is at /Library/WebServer/CGI-Executables
+
+If you have an older Mac, you should be able to browse to
+ http://localhost/cgi-bin/diaperglu
+and see the no script file found page.
+
+On Mac Os Catalina, you may need to edit the Apache configuration file.
+
+ The Apache configuration file is called httpd.conf and is located in /etc/Apache2/
+ You can't just open this directory in Finder. If you want to use Finder, open
+ Finder then do this: Finder -> Go -> Go to folder... then type /etc/Apache2 into
+  the popup.
+ Once there, I would make a backup copy of httpd.conf just in case you mess it up.
+ In order to enable cgi, you need to uncomment two lines. They look like this:
+  #LoadModule cgid_module libexec/apache2/mod_cgid.so
+  #LoadModule cgi_module libexec/apache2/mod_cgi.so
+ You need to remove the beginning # so they look like this:
+  LoadModule cgid_module libexec/apache2/mod_cgid.so
+  LoadModule cgi_module libexec/apache2/mod_cgi.so
+
+ 
+ In any case, now you need to start Apache. It doesn't start by itself by default
+  anymore so you need to enter this command:
+   sudo apachectl start
+  
+ Now you should be able to browse to http://localhost/cgi-bin/diaperglu
+  and see the no script file found page.
+  
+  
+On older versions of Mac OS you may need to enable sharing and/or change the
+ permissions on the diaperglu file.
+
+ To enable sharing do this:
+  Apple Icon -&gt; System Preferences... -&gt; put a check in the Web Sharing box.
+  
+ To enable execute permissions for diaperglu do this:
+  open a terminal
+  change to the /Library/WebServer/CGI-Executables directory
+  and do chmod +x diaperglu 
+  (this give execute permissions to everyone,
+   you may just want to give permissions to you and group)
+
+
+Now make a file helloworld.dglu and save it to the 
+ /Library/WebServer/CGI-Executables folder with this in it:
+
+    #! diaperglu
+
+    ." CONTENT-TYPE: text/html" CRLF
+    CRLF
+
+    ." <html><body>Hello Apache on Mac OS X</body></html>" CRLF
+
+Note:
+ You need a space after #! and #! must be the first thing on the first line of the
+  file. If you cut and paste this example from the browser you may get ctl-m at the
+  end of each line which causes problems for Mac Os X.
+ If you type this example in using TextEdit, it should be ok except that TextEdit
+  will append a .txt to your filename which may not show up in Finder unless you
+  uncheck the please add .txt to my filename box.
+
+ You may need to change the permissions of the helloworld.dglu to execute.
+ (I didn't need to do this on Catalina.)
+  open a terminal
+  change to the /Library/WebServer/CGI-Executables directory
+  and do chmod +x helloworld.dglu 
+  (this give execute permissions to everyone,
+   you may just want to give permissions to you and group)
+
+At this point you should be able to browse to
+
+  http://localhost/cgi-bin/diaperglu?helloworld.dglu
+  
+This should show a 'Hello Apache on Mac OS X' page.
+
+You should also be able to browse to this:
+
+  http://localhost/cgi-bin/helloworld.dglu
+  
+If you see the message diaperglu^M bad interpreter message with the
+ /cgi-bin/helloworld.dglu way of running it, that means your script file has
+the control m characters at the end of the lines.
+ 
+For more information on how to configure Apache to use cgi, you can look here:
+ https://httpd.apache.org/docs/2.4/howto/cgi.html  (link checked April 16, 2020)
+ 
+</pre>
+
+      </div>
+
+<div class=pagestuffsection id=windows10iis>
+
+<pre>
+**************************************
+* IIS Installation Instructions      *
+*  for Windows 10                    *
+*  last checked: October 3, 2020     *
+**************************************
+
+The default web server directory for IIS is C:\inetpub\wwwroot\
+  These instructions are for the default server directory.
+
+First you need to make sure IIS is installed and CGI and/or ISAPI is enabled.
+
+To do this, go to:
+  Start -> Windows System -> Control Panel -> Programs -> Turn Windows Features On and Off
+
+Then make sure the Internet Information Services box has the black square in it.
+  Then make sure the cgi and/or isapi boxes have the black square in them.
+  The cgi and isapi boxes can be found at this position in the heirarchical list:
+
+  Internet Information Services
+    World Wide Web Services
+      Application Developement Features
+        ...
+        CGI
+        ISAPI Extensions
+
+Then change the authentication of the website to a user that can access the website directory.
+
+  I recommend not using pass through authentication unless you know how to give permissions to
+all the different parts of IIS that need access to your website directory. I couldn't figure it
+out for both ISAPI and CGI so I just used my administrator account. Using the administrator
+account is probably also a bad idea, you should probably make a new user just for your website
+and limit which folders this user can access to just the website folder.
+
+To change the authentication of the website, go to:
+  Start -> Windows Administrative Tools -> Internet Information Services (IIS) Manager
+  Under connections on the left, expand the hierarchical list so that
+  Computer -> Sites -> Default Web Site is visible and left click on the Default Web Site to
+   hilight it.
+  Then under Actions on the right, choose Basic Settings.
+  In the Edit Site pop up, choose Connect As, then select specific user and choose Set...
+  In the Set Credentials pop up, put in the user name and password of a user on your computer 
+  that can access the default website directory. For security reasons, it's probably a bad 
+  idea to use an administrator account, but you could make a new user, and give the new user 
+  access to the directory.
+  (I didn't test the new user case...)
+  Click on Test Settings. Both Authentication and Authorization should be green with a checkmark.
+   If not, things aren't going to work.
+
+Next, build diaperglu if you need to, then copy diaperglu.exe and/or libdiaperglu.dll to the 
+  website directory. 
+  You only need to copy one of these. But you can do both if you want. 
+  You'll need to use different file name extensions for each mode if you do both.
+  diaperglu.exe is for cgi mode and libdiaperglu.dll is for isapi mode.
+
+Next you will need to add a folder (subdirectory) to the default website. I tried to get things 
+  work in the default web site folder, but due to permissions issues, I think you have to make 
+  a virtual directory so that you can give permissions to a user account. Also, when I tried to 
+  assign a virtual directory to the default website directory, it broke IIS and I had reinstall
+  IIS.
+
+To do this:
+ open file explorer,
+ browse to your default website directory,  (on my computer it's C:\inetpub\wwwroot\)
+ right click on the directory and choose Folder
+ in the text edit box for the folder, enter your folder name. For this example I'm using
+   myphysicaldirectory.
+
+Next copy diaperglu.exe and/or libdiaperglu.dll to your new website directory.
+
+Next copy a script file to the website directory. 
+  You can use helloworld.dglu and or helloworld.asdglu
+  in the samplescript/CGIScripts/ subdirectory. If you are installing both diaperglu.exe 
+  and libdiaperglu.dll you will need to use different file name extensions for cgi and 
+  isapi mode. 
+  For example, .dglu can be for diaperglu.exe and .asdglu can be for libdiaperglu.dll.
+  If you want to make your own file, it needs to be an html file including the response 
+    header. This looks like:
+
+    ." Content-type: text/html" CRLF
+    CRLF
+    ." <html><head></head><body>" CRLF
+    ." Hello World on CGI!" CRLF
+    ." </body></html>" CRLF
+
+Next, make sure the user you chose as the user for the website has access to the web site 
+  directory and the files. 
+  In file explorer, right click on the directory each file and choose properties. 
+  Then select the security tab. 
+  If your user falls into one of the categories listed, you are ok. 
+  For instance, if your user is an administrator and administrators are listed, 
+    then you are ok.
+  If not, you will need to add the user to the list. 
+
+Next you need to make a virtual directory for your physical website directory.
+
+To do this, go to:
+Start -> Windows Administrative Tools -> Internet Information Services (IIS) Manager
+Under connections on the left, expand the hierarchical list so that
+  Computer -> Sites -> Default Web Site is visible and left click on the Default Web Site
+    to hilight it.
+  Right click on the Default Web Site and choose Add Virtual Directory...
+  In the pop up:
+    for Alias: choose your virtual directory name. I'm using myvirtualdirectory for 
+      this example.
+    for Physical Path: choose your websites physical directory. For this example it's
+      C:\inetpub\wwwroot\myphysicaldirectory
+    click Connect as... to get the Connect As pop up
+      choose Specific User:
+      click Set... to get the set Credentials pop up
+        use the same user name and password that you chose for the Default Web Site
+        basic settings
+    click Test Settings... Both Authentication and Authorization should be green with 
+      a checkmark. If not, things aren't going to work.
+
+Now you need to associate your script file name extensions with the script engine. 
+  For this example I'm going to associate .dglu with diaperglu.exe and .asdglu with 
+  libdiaperglu.dll
+
+To do CGI do this, go to:
+  Start -> Windows Administrative Tools -> Internet Information Services (IIS) Manager
+  Under connections on the left, expand the hierarchical list so that
+    Computer -> Sites -> Default Web Site is visible and left click on the Default Web 
+    Site to hilight it.
+  The box in the middle should say something like Default Web Site Home
+  Double click Handler Mappings
+  Under actions on the right, choose Add Script Map
+  In the Add Script Map dialog do this:
+    for Request path: *.dglu
+    for Executable: browse to C:\inetpub\wwwroot\myphysicaldirectory\diaperglu.exe 
+      and choose it
+    for Name: put whatever you want, just not the same name as something else. 
+      I used dotdglucgi3
+
+  A pop up will ask you if you want to allow this cgi extension, 
+    If you do, say yes.
+
+  Left click on your computer name under Connections on the left
+  In the box on the right under Manage Server choose restart
+
+You should now be able to open a browser and run the script file.
+
+To do this, open a brower and enter this URL:
+  http://localhost/myvirtualdirectory/helloworld.dglu
+
+If it worked, you should see "Hello World on CGI!"
+
+
+To do ISAPI do this, go to:
+  Start -> Windows Administrative Tools -> Internet Information Services (IIS) Manager
+  Under connections on the left, expand the hierarchical list so that
+    Computer -> Sites -> Default Web Site is visible and left click on the Default Web Site to 
+    hilight it.
+  The box in the middle should say something like Default Web Site Home
+  Double click Handler Mappings
+  Under actions on the right, choose Add Script Map
+  In the Add Script Map dialog do this:
+    for Request path: *.asdglu
+    for Executable: browse to C:\inetpub\wwwroot\myphysicaldirectory\libdiaperglu.dll 
+    and choose it
+    for Name: put whatever you want, just not the same name as something else. 
+    I used dotasdgluisapi3
+
+  A pop up will ask you if you want to allow this isapi extension, If you do, say yes.
+
+  Left click on your computer name under Connections on the left
+  In the box on the right under Manage Server choose restart
+
+You should now be able to open a browser and run the script file.
+
+To do this, open a brower and enter this URL:
+  http://localhost/myvirtualdirectory/helloworld.asdglu
+
+If it worked, you should see "Hello World on ISAPI!"
+
+
+If you want to support the diaperglu.exe?myscriptfilename.dglu run mode, do this:
+  Start -> Windows Administrative Tools -> Internet Information Services (IIS) Manager
+  Under connections on the left, expand the hierarchical list so that
+    Computer -> Sites -> Default Web Site is visible and left click on the Default 
+    Web Site to hilight it.
+  The box in the middle should say something like Default Web Site Home
+  Double click Handler Mappings
+  The top of the middle section should say Handler Mappings
+  Left click on the *.dglu CgiModule entry to highlight it.
+  On the right under Actions choose Edit Feature Permissions.
+  In the pop up, make sure Execute has a check.
+
+  Left click on your computer name under Connections on the left
+  In the box on the right under Manage Server choose restart
+
+You should now be able to open a browser and run diaperglu to get the no script found page.
+  http://localhost/myvirtualdirectory/diaperglu.exe
+
+You should also be able to use diaperglu to run script files this way.... on Windows you need
+ to have the physical path relative to the web site root to the script file after the ?
+ http://localhost/myvirtualdirectory/diaperglu.exe?myphysicaldirectory/helloworld.dglu
+
+If you want to support the libdiaperglu.dll?myscriptfilename run mode, in addition to enabling
+  execute for the handler mapping, you also have to give user anonymous access to the physical
+  website folder. Do this:
+  Start -> Windows Administrative Tools -> Internet Information Services (IIS) Manager
+  Under connections on the left, expand the hierarchical list so that
+    Computer -> Sites -> Default Web Site is visible and left click on the Default Web Site to 
+    hilight it.
+  The box in the middle should say something like Default Web Site Home
+  Double click Handler Mappings
+  The top of the middle section should say Handler Mappings
+  Left click on the *.asdglu IsapiModule entry to highlight it.
+  On the right under Actions choose Edit Feature Permissions.
+  In the pop up, make sure Execute has a check.
+
+  Left click on your computer name under Connections on the left
+  In the box on the right under Manage Server choose restart
+
+  Open file explore and browse to your website's physical folder.
+  Right click on your website's physical folder and choose properties.
+  On the properties pop up, go to the security tab and choose Advanced.
+  On the Advanced pop up, choose Change Permissions
+  After the popup changes, choose Add
+  On the permission pop up choose Select a principal
+  On the Select User or Group pop up, type anonymous in the box and choose Check Names
+  The name should change to ANONYMOUS_LOGON or something like that. Choose ok.
+
+  I would restart IIS just in case.
+  
+You should now be able to open a browser and run libdiaperglu to get the no script found page.
+  http://localhost/myvirtualdirectory/libdiaperglu.dll
+
+You should also be able to use libdiaperglu to run script files this way.... on Windows you need
+ to have the physical path relative to the web site root to the script file after the ?
+ http://localhost/myvirtualdirectory/libdiaperglu.dll?myphysicaldirectory/helloworld.asdglu
+
+
+</pre>
+
+      </div>
+      
+      
+      <div class=pagestuffsection id=filedownload>
+      
+        <h3>File Dowload</h3>
+
+        <p>Here is a page that downloads the file downloaded.txt with the contents 'I was downloaded':</p>
+
+        <p class=command>
+          $&quot; I was downloaded!&quot;<br>
+          .&quot; Content-Type: application/octet-stream&quot; CRLF<br>
+          .&quot; Content-Length: &quot; LENGTH$ DECIMAL 0 &lt;#$ #S$ #&gt;$ .$ CRLF<br>
+          .&quot; Content-Disposition: attachment; filename=downloaded.txt&quot; CRLF<br>
+          CRLF<br>
+          .$
+        </p>
+        
+      </div>
+      
+      
+      <div class=pagestuffsection id=fileupload>
+      
+        <h3>File Upload</h3>
+
+        <p>HTML form file upload is supported for cgi;
+however, I have not yet written a script to make it convenient
+for you. When your script gets control, the header is already
+loaded into the post buffer. The file may or may not still be
+loading. To determine this you have to do a blocking read from
+stdin until the os returns 0 characters. This means your script
+may be at the mercy of the OS and could hang if the OS never
+returns. This will wait for all characters and append them to
+what is already loaded in the post buffer:</p>
+
+<p class=command><pre>
+HEX
+: readstdin ( -- )
+   BEGIN
+     GETHSTDIN 1000 70000000 POSTBUFFERID WAITREADN&gt;BUF 
+   0= UNTIL  
+;
+</pre></p>
+
+<p>You will need to get the boundary marker
+from the 'CONTENT-TYPE' environment variable and parse the post
+buffer data yourself.</p>
+
+      </div>
+      
+      
+      <div class=pagestuffsection id=runmodes>
+      
+        <h3>Different Ways to Run Diaperglu</h3>
+        
+        <p>You can put the Diaperglu in your cgi-bin directory and use it to run script files
+directly. I added this for those cases where your ISP does not
+allow you to associate a file extension with a script engine. If
+you do this, the script engine supports the following:</p>
+
+<blockquote>
+  <p>http://www.yourwebsite.com/cgi-bin/diaperglu</p>
+</blockquote>
+
+<p>If you browse to just the script engine, it
+will try to execute the script 'noscript.dglu'. If it can not
+find that file, it will show a default page letting you know no
+script file was specified.</p>
+
+<blockquote>
+  <p>http://www.yourwebsite.com/cgi-bin/diaperglu?scriptfilename.dglu</p>
+</blockquote>
+
+<p>If you browse to the script engine and pass
+in a filename as a parameter, it will try to execute the script
+with that filename. If it can not find that script or you do not have permissions
+it will show a default page letting you know it
+could not find the script file.</p>
+
+<p>In this mode, only the first parameter's value is used as the script file name.
+This allows you to pass other parameters in to Diaperglu, and even do something like this:<p>
+
+<blockquote>
+  <p>http://www.yourwebsite.com/cgi-bin/diaperglu?MYSCRIPT=scriptfilename.dglu&amp;MYPARAMETER=awesome</p>
+</blockquote>
+
+<p>Under Apache and diaperglu?scriptfilename.dglu in CGI mode, Diaperglu also tries to build the full path for you,
+but takes the path information from SCRIPT_FILENAME. This means scriptfilename.dglu's path has to be relative to
+the directory containing Diaperglu. You may run into some security issues on Catalina if you try to put the
+script files in a directory different from Diaperglu...</p>
+
+      </div>
+      
+    </div>
+
+  </div></body>
+</html>

@@ -1,0 +1,386 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<html>
+
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      Handy References
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>
+      <a                                                >Reference</a>
+      <a href=reference.htm#css                         >css</a>
+      <a href=reference.htm#sql                         >sql</a>
+    </div>
+
+    <div id=pagestuff>
+    
+      <div class=pagestuffsection id=css>
+<pre>
+
+        CSS Reference
+        
+        Note:
+  measurement units are in % em or px
+  px = pixels (browsers may not take px literally)
+  1em is 1 letter size
+  
+
+Internal style:
+&lt;head&gt;
+  &lt;style type='text/css'&gt;
+    h1 {text-align: center; color: black}
+    h2 {text-align: left; color: green}
+  &lt;/style&gt;
+&lt;/head&gt;
+
+Inline style:
+&lt;h1 style='text-align:center; color:black;'&gt;
+
+External style:
+HTML link
+&lt;link rel='stylesheet' type='text/css' href='mystyle.css'&gt;
+
+XHTML link
+&lt;link rel='stylesheet' type='text/css' href='mystyle.css'&gt;
+
+CSS import
+&lt;head&gt;
+&lt;style type='text/css'&gt;
+@import url(css/global.css);
+&lt;/style&gt;
+&lt;/head&gt;
+
+
+IE6 and before hack:
+
+  only IE6 and earlier see css selectors prefixed with '* html'
+  for example * html h2 { } tells IE6 and earlier to use this formatting
+
+IE5 and after absolute positioning fix. IE5 can't position absolutely
+  in top level element so put all content in a child div. for example:
+
+  body { overflow: hidden }
+  div.content { height: 100%; overflow: auto; }
+
+
+selectors:
+body { }
+the body tag gets the style
+
+p { }
+all p tags get the style
+
+.myclassname { }
+
+all tags with class=myclassname get style
+eg. &lt;h1 class=myclassname&gt;my text&lt;/h1&gt;
+
+#myidname { }
+
+only one tag with id=myidname gets style
+eg. &lt;h1 id=myidname&gt;my text&lt;/h1&gt;
+
+p.myclassname { }
+only p tags with class=myclassname get style
+
+p#myidname { }
+only the p tag with id=myidname gets the style
+
+p.myclassname table { }
+only table tags within p tags with class=myclassname get style
+
+h1 span.myclassname { }
+only span tags with class=myclassname inside h1 tags get style
+
+p h1 { }
+only h1 tags inside p tags get style
+
+p, h1 { }
+both p and h1 tags get style
+
+
+properties:
+
+text-align (inherited): 
+  left center right justify
+
+vertical-align: 
+  top middle bottom baseline sub super text-top text-bottom 
+  px em % (% is of line height)
+
+white-space:
+  nowrap 
+  pre (display all spaces)
+  normal (group of spaces treated like one space)
+  (pre-line) (not in all browsers)
+  (pre-wrap) (not in all browsers)
+
+color (inherited): 
+  #rrggbb #rgb 
+  rgb(red%, green%, blue%) rgb(0-255red, 0-255green, 0-255blue) 
+  aqua black blue fuchsia gray green lime maroon 
+  navy olive purple red silver teal white yellow
+
+font-family (inherited):
+  generics: serif, sans-serif, monotype, fantasy, cursive
+
+font-size (inherited):
+  2pt 1.25em xx-small x-small small medium large x-large xx-large larger smaller medium
+
+font-style (inherited):
+  italic normal oblique 
+
+font-weight (inherited):
+  bold normal (supposed to be others)
+
+letter-spacing (inherited):
+  normal (normal is 0) -1px 2em (percents don't work in all browsers)
+
+line-height (inherited):
+  px em % 
+
+text-decoration:
+  underline overline line-through blink none
+
+text-indent (inherited):
+  px em % (% is of container's width)
+
+text-transform (inherited):
+  uppercase 
+  lowercase 
+  capitalize (first letter of each word) 
+  none (leaves text alone)
+
+list-style-image (inherited):
+  sets bullet image using url
+  e.g. list-style-image: url(myimagefile.jpg)
+
+list-style-position (inherited):
+  inside outside
+
+list-style-type (inherited):
+  doesn't work on all browsers including IE
+  disc, circle, square, decimal, decimal-leading-zero,
+  upper-alpha, lower-alpha, upper-roman, lower-roman, lower-greek, none
+
+border-width border-top-width border-right-width border-bottom-width border-left-width:
+  px em
+
+border-color border-top-color border-right-color border-bottom-color border-left-color:
+  see color
+
+border-style border-top-style border-right-style border-bottom-style border-left-style:
+  solid dotted dashed double groove ridge inset outset none hidden
+
+outline-color:
+  see color, also invert
+
+outline-style:
+  see border-style, also dashed
+
+outline-width:
+  px em
+
+padding padding-top padding-right padding-bottom padding-left:
+  distance between element and border
+  px em % (% is of parent size)
+
+margin margin-top margin-right margin bottom margin-left:
+ distance between border and other margins
+ px em % (% is of parent's size)
+
+background-attachment:
+  ( &lt;= IE6 body tag only )
+  scroll fixed
+
+background-color:
+  see color
+
+background-image:
+  url(path/filename)
+
+background-position:
+  background position: horizontal vertical
+  (% is of parent's size)
+  (px em % position is from top left corner of parent)
+  horizontal: left center right em px % 
+  vertical: top center bottom em px %
+  (default is top left)
+  
+background-repeat:
+  repeat no-repeat repeat-x repeat-y
+  (default is repeat)
+
+clear:
+  (makes it drop below left and/or right floated things)
+  left right both none
+
+clip:
+  (hides part of parent)
+  eg: clip: rect(top left, top right, bottom left, bottom right)
+  (coordinates are relative to top left of parent)
+
+display:
+  (overides default behavior)
+  block inline none
+
+float:
+  (moves element to left or right in parent's layout)
+  left right none
+
+height:
+  px em % (% is of parent's size)
+
+left right top bottom:
+  (IE's &lt;= IE6 don't work well)
+  px em % (% is of parent's size)
+  (in absolute mode position is from parent's edge)
+  (in relative mode position is from where element would normally go)
+
+max-height max-width min-height min-width:
+  (not supported in IE's &lt;= IE6)
+  px em % (% is of parent's size)
+
+overflow:
+  visible hidden scroll auto
+  (IE's &lt;= IE6 default visible and makes this element bigger)
+  (also IE6 seems to only support this in div tag and requires)
+  (size to be specified in px)
+  
+visibility:
+  (hidden leaves a hole in the layout where element would go)
+  visible hidden  
+
+z-index:
+  eg: z-index: int such as z-index:5
+  (in elements with position property set to absolute relative or fixed determines
+   which ones are on top)
+  (higher integer values are on top)
+
+border-collapse:
+  (for table cell borders, use in table tag)
+  collapse separate
+
+border-spacing:
+  (not supported in IE)
+
+caption-side:
+  top bottom
+
+empty-cells:
+  show hide
+
+table-layout:
+  (fixed sets column widths using first row widths)
+  auto fixed
+
+content:
+  (not supported in IE)
+
+cursor:
+  auto default crosshair pointer move e-resize ne-resize 
+  nw-resize n-resize se-resize sw-resize w-resize text wait 
+  help progress
+  (url supported in IE and Firefox on Windows)
+
+orphans widows:
+  (Opera only)
+  eg: opera: int opera: 5
+  (minimum number of lines allowed to be alone at top or bottom of a
+  printed page)
+
+page-break-after page-break-before page-break-inside:
+  auto always avoid left right
+  (default auto)
+</pre>
+      </div>
+      
+      <div class=pagestuffsection id=sql>
+<pre>
+mssql create database
+
+
+mysql create database
+CREATE DATABASE databasename
+
+
+mssql create table
+CREATE TABLE tblteststuff (ID INT PRIMARY KEY IDENTITY)
+
+mysql create table
+CREATE TABLE alternaterealitydb.tblmessage (ID INTEGER UNSIGNED NOT NULL
+ DEFAULT NULL AUTO_INCREMENT PRIMARY KEY)
+
+
+mssql add column that holds binary file data to table (I think)
+ALTER TABLE alternaterealitydb.tblmessage ADD messagecol IMAGE
+
+mysql add column that holds binary file data to table
+ALTER TABLE alternaterealitydb.tblmessage ADD messagecol BLOB
+
+granting user permissions in mssql
+EXEC sp_addrolemember N'db_owner', N'username'
+EXEC sp_addrolemember N'db_datareader', N'username'
+EXEC sp_addrolemember N'db_datawriter', N'username'
+
+getting user permissions in mssql
+SELECT * FROM fn_my_permissions(NULL, 'SERVER')
+SELECT * FROM fn_my_permissions (NULL, 'DATABASE')
+SELECT * FROM fn_my_permissions('MalikAr', 'USER')
+ ( permissions of another user of current database )
+</pre>
+      </div>
+    </div>
+
+  </div></body>
+</html>

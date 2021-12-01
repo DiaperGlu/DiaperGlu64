@@ -1,0 +1,608 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<html>
+
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      cerror.cpp functions
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>
+      <a                                                      >C Functions</a>
+      <a href=cerror.htm#dg_howerrorstackworks                >How error stack works</a>
+      <a href=cerror.htm#dg_initerrors                        >dg_initerrors</a>
+      <a href=cerror.htm#dg_pusherror                         >dg_pusherror</a>
+      <a href=cerror.htm#dg_pushbuffererror                   >dg_pushbuffererror</a>
+      <a href=cerror.htm#dg_geterror                          >dg_geterror</a>
+      <a href=cerror.htm#dg_getbuffererror                    >dg_getbuffererror</a>
+      <a href=cerror.htm#dg_poperror                          >dg_poperror</a>
+      <a href=cerror.htm#dg_popbuffererror                    >dg_popbuffererror</a>
+      <a href=cerror.htm#dg_geterrorcount                     >dg_geterrorcount</a>
+      <a href=cerror.htm#dg_checkerrorsonstack                >dg_checkerrorsonstack</a>
+      <a href=cerror.htm#dg_clearerrors                       >dg_clearerrors</a>
+      <a href=cerror.htm#dg_droptoerrorcount                  >dg_droptoerrorcount</a>
+      <a href=cerror.htm#dg_replaceerrors                     >dg_replaceerrors</a>
+    </div>
+
+    <div id=pagestuff>
+    
+      <div class=word id=dg_howerrorstackworks>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// How the error stack works 
+//
+//   An error id is a bufferid and offset of a c-style 0 string constant.
+//
+//   When an error occurs, this id is pushed onto the error stack and the
+//   error count is incremented.
+//
+//   If the error count is greater than the number of errors on the error stack,
+//   it means the error stack overflowed.
+//
+//   When the errors are popped off the stack, if there was an overflow one 
+//   error indicating an overflow is returned first, then the other errors
+//   pop off.
+//
+// Whys
+//
+//   The error stack is of fixed size so it will always work. 
+//   If it was not, then pushing errors to the error stack could cause 
+//   it to need to grow the error stack buffer. If the system is out of memory
+//   this grow could fail. However, it could be possible to reallocate the error
+//   stack to a larger fixed size at a time when there are no errors pending to 
+//   accomodate a user who wants a larger error stack at run time. This is not 
+//   implemented in an easy way at this time.
+//
+//   The current number of errors is not calculated using the number of errors
+//   in the error stack buffer. A separate variable is used. This is for speed.
+//
+//   I chose using buffer id's and offset's of error messages instead of using 
+//   an error number for a couple reasons. So you can print them out without having
+//   to look them up, and to avoid error id conflict. The buffer id and offset of
+//   the c precompiled error messages is going to change every time the program is
+//   compiled. Run time error message ids will almost always be different.
+//   In other languages you would link at compile time against a header 
+//   file that used a symbol name for the error number to avoid collisions in case 
+//   the actual error id was reassigned. But the whole point of this program is to not 
+//   need a header file. So that means if you want an error id in this program, you 
+//   have to look it up using it's symbol at run time, just like function names are 
+//   looked up in a shared library.
+//
+//   I chose using a buffer id and offset instead of a pointer for robustness.
+//   This allows you to add more error messages at run time in growable buffers
+//   without having to worry about your error id becoming obsolete if the buffer
+//   moves.
+//
+//   I chose to use c-style 0 strings instead of length strings because 
+//   I do not know of an easy way to calculate the length of a c-style
+//   0 string at compile time and I didn't want to have a bunch of symbols for keeping
+//   track of the lengths. I also didn't want to have to type all those symbols for
+//   the length constants. If there was an easy way to do it in c though, I would 
+//   much rather use length strings than 0 strings.
+//
+// Style
+// 
+//   Actual errors are in either ' - error message' format or 
+//   'function_name - error message' format.
+//
+//   Function trace message are in 'function_name' format
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_initerrors>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_initerrors
+//
+// C prototype: 
+// void dg_initerrors (
+//  Bufferhandle* pBHarrayhead,
+//  UINT64 size,
+//  const char** pError)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where the
+//                               other bufferhandles are stored.
+//  UINT64        size          in bytes
+//                              
+//
+// Outputs:
+//  const char**  pError        on dg_success points to dg_success error string
+//                              on fail points to an error string
+//                              
+// Action:
+//  Attempts to allocate buffer 0 for use as the error stack 
+//
+// Failure cases:
+//  all dg_newbuffer errors
+//  buffer 0 is already in use
+//
+// dg_success case:
+//  buffer 0 is allocated with size for use as the error stack
+//  the minimum size of the stack is 2 UINT64s. Passing in anything less than the
+//  minimum size will be forced to the minimum size.
+//  errorcount is also set to 0
+//
+// NOTE:
+//  Yes we could use a global variable for the errorstack bufferid and get rid of the
+//   buffer already in use error case, but then the code would not be re-entrant.
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_pusherror>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_pusherror
+//
+// C prototype:
+//  void dg_pusherror (
+//   Bufferhandle* pBHarrayhead,
+//   const char* error)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where the other 
+//                               bufferhandles are stored.
+//
+//  const char*  error        on dg_success points to dg_success error string
+//                              on fail points to an error string
+//
+// Outputs:
+//  none, if there is an error during this routine it isn't reported
+//  but the errorcount in pBHarrayhead will be incremented if pBHarrayhead isn't NULL
+//                              
+// Action:
+//  Attempts to push an error in the core onto the error stack and increment the
+//   error count
+//
+// Failure cases:
+//  pBHarrayhead = NULL
+//  BHarray buffer not allocated
+//  buffer 0 is not in array (BH nub &lt; 1 * sizeof bufferhandle)
+//  buffer 0 is free
+//  buffer 0 growby != buffer 0 size != buffer 0 maxsize (something else used buffer 0)
+//  buffer 0 is full
+//
+// Assumptions:
+//  nothing but the error routines will try to access the error buffer
+//  buffer 0 is reserved for the error stack
+//  maxsize &gt;= 2*sizeof (const char*)
+//  
+// Success case:
+//  the buffer id and offset of the error string is pushed onto the end of buffer 0
+//  and the error count is incremented
+//
+// Not success cases:
+//  Buffer handle array head structure is not there
+//  Buffer handle array is not there
+//  Error stack buffer not there
+//  Error stack is misaligned
+//  Error stack is full
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_pushbuffererror>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_pushbuffererror
+//
+// C prototype:
+//  void dg_pushbuffererror (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 offset)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where the other 
+//                               bufferhandles are stored.
+//
+//  UINT64        bufferid      buffer the error is in
+//  UINT64        offset        offset of the error in the buffer
+//
+// Outputs:
+//  none, if there is an error during this routine it isn't reported
+//  but the errorcount in pBHarrayhead will be incremented if pBHarrayhead isn't NULL
+//                              
+// Action:
+//  Attempts to push an error in a buffer onto the error stack and increment the
+//   error count
+//
+// Note: 
+//  This routine does not check to make sure the error string has a 0 at the end of it
+//   and that the error string does not go off the end of the buffer
+//
+// Failure cases:
+//  pBHarrayhead = NULL
+//  BHarray buffer not allocated
+//  buffer 0 is not in array (BH nub &lt; 1 * sizeof bufferhandle)
+//  buffer 0 is free
+//  buffer 0 growby != buffer 0 size != buffer 0 maxsize (something else used buffer 0)
+//  buffer 0 is full
+//
+// Assumptions:
+//  nothing but the error routines will try to access the error buffer
+//  buffer 0 is reserved for the error stack
+//  maxsize &gt;= 2*sizeof (const char*)
+//  
+// dg_success case:
+//  the pointer to the error string is pushed onto the end of buffer 0 at next
+//   unused byte
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_geterror>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_geterror
+//
+// C prototype:
+//  const char* dg_geterror (Bufferhandle* pBHarrayhead, unsigned int errorindex)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where the other 
+//                               bufferhandles are stored.
+//
+//  unsigned int errorindex     index of error in errorstack as if it was an array
+// 
+// Outputs:
+//  bool    return              true if pBHarrayhead was NULL or if BHarrayhead's
+//                                errorcount isn't 0, false otherwise
+//                              
+// Action:
+//  gets an error from the error stack as if it was an array
+//  useful for seeing what the errors are without emptying the stack
+//
+// Failure cases:
+//  pBHarrayhead = NULL
+//  no errors on the error stack
+//  there is no buffer header array
+//  there is no error stack
+//  the error stack buffer has been freed
+//  underflow, error stack probably corrupt
+//  buffer 0 growby != buffer 0 size != buffer 0 maxsize (something else used buffer 0)
+//  buffer 0 is full
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getbuffererror>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getbuffererror
+//
+// C prototype:
+//  void dg_getbuffererror (
+//   Bufferhandle* pBHarrayhead, 
+//   UINT64 errorindex,
+//   UINT64* poffset,
+//   UINT64* pbufferid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where the other 
+//                               bufferhandles are stored.
+//
+//  UINT64 errorindex           index of error in errorstack as if it was an array 0
+//                               to length - 1
+// 
+// Outputs:
+//  UINT64* perrmsgoffset       pointer to error message offset
+//  UINT64* perrmsgbufid        pointer to error message bufid
+//                              
+// Action:
+//  gets an error from the error stack as if it was an array
+//  useful for seeing what the errors are without emptying the stack
+//
+// Failure cases:
+//  pBHarrayhead = NULL
+//  no errors on the error stack
+//  there is no buffer header array
+//  there is no error stack
+//  the error stack buffer has been freed
+//  underflow, error stack probably corrupt
+//  buffer 0 growby != buffer 0 size != buffer 0 maxsize (something else used buffer 0)
+//  buffer 0 is full
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_poperror>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_poperror
+//
+// C prototype:
+//  const char* dg_poperror (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where the other 
+//                               bufferhandles are stored.
+// Outputs:
+//  const char*   return        pointer to error message
+//                              
+// Action:
+//  pops the top error on the error stack if there is one, otherwise another message is
+//   supplied
+//
+// Failure cases:
+//  pBHarrayhead = NULL
+//  no errors on the error stack
+//  there is no buffer header array
+//  there is no error stack
+//  the error stack buffer has been freed
+//  underflow, error stack probably corrupt
+//  buffer 0 growby != buffer 0 size != buffer 0 maxsize (something else used buffer 0)
+//  buffer 0 is full
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_popbuffererror>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_popbuffererror
+//
+// C prototype:
+//  void dg_popbuffererror (
+//   Bufferhandle* pBHarrayhead, 
+//   UINT64* perrmsgoffset,
+//   UINT64* perrmsgbufid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead   pointer to a Bufferhandle structure which is 
+//                                used as the bufferhandle for the array where the other 
+//                                bufferhandles are stored.
+// Outputs:
+//  UINT64*       perrmsgoffset  pointer to error message offset
+//  UINT64*       perrmsgbufid   pointer to error message buffer id
+//                              
+// Action:
+//  pops the top error on the error stack if there is one, otherwise another message is
+//   supplied
+//
+// Failure cases:
+//  pBHarrayhead = NULL
+//  no errors on the error stack
+//  there is no buffer header array
+//  there is no error stack
+//  the error stack buffer has been freed
+//  underflow, error stack probably corrupt
+//  buffer 0 growby != buffer 0 size != buffer 0 maxsize (something else used buffer 0)
+//  buffer 0 is full
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_geterrorcount>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_geterrorcount
+//
+// C prototype:
+//  UINT64 dg_geterrorcount (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where the other 
+//                               bufferhandles are stored.
+// 
+// Outputs:
+//  UINT64        return        the error count which is the number of errors
+//                               pushed onto the error stack, unless an error occurs
+//                               with the error stack such as the error stack
+//                               overflowing
+//                              
+// Action:
+//  returns the value in errorcount unless a null pointer is passed in.
+//  Then in returns 1.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_checkerrorsonstack>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_checkerrorsonstack
+//
+// C prototype:
+//  UINT64 dg_checkerrorsonstack (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where the other 
+//                               bufferhandles are stored.
+// 
+// Outputs:
+//  UINT64        return        the number of errors on the error stack itself
+//                              
+// Action
+//  The number of errors on the error stack itself.
+//   This routine doesn't catch stack problems.
+//   Normally you'd use dg_geterrorcount, but if there are errors on the errorstack
+//   but the error count is erroneously 0, dg_geterrorcount wont see it.
+//   You can use this routine to check for that case.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_clearerrors>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_clearerrors
+//
+// C prototype:
+//  void dg_clearerrors (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where the other 
+//                               bufferhandles are stored.
+//
+// Outputs:
+//  none
+//                              
+// Action
+//  Clears all errors off the error stack and sets the error count to 0
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_droptoerrorcount>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_droptoerrorcount
+//
+// C prototype:
+//  void dg_droptoerrorcount (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 newerrorcount)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where the other 
+//                               bufferhandles are stored.
+//  UINT64        newerrorcount if less than the current error count, then this is
+//                               the number of errors on the stack after this routine
+//                               is called
+//
+// Outputs:
+//  none
+//                              
+// Action
+//  Drops errors from the stack until the number of errors on the stack is newerrorcount
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_replaceerrors>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_replaceerrors
+//
+// C prototype:
+//  void dg_replaceerrors (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 olderrorbufferid,
+//    UINT64 olderroroffset,
+//    UINT64 newerrorbufferid,
+//    UINT64 newerroroffset)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead      pointer to a Bufferhandle structure which is
+//                                   used as the bufferhandle for the array where
+//                                   the other bufferhandles are stored.
+//  UINT64        olderrorbufferid  bufferid of error to replace
+//  UINT64        olderroroffset    offset of error to replace
+//  UINT64        newerrorbufferid  bufferid of replacement error
+//  UINT64        newerroroffset    offset of replacement error
+// Outputs:
+//  none
+//                              
+// Action
+//  For each error on the error stack,
+//   if the error's bufferid and offset matches the olderrorbufferid and olderroroffset
+//    passed in, then this routine replaces them with the newerrorbufferid and
+//    newerroroffset.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+    </div>
+
+  </div></body>
+</html>

@@ -1,0 +1,2184 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<html>
+
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      forthbuffer.cpp functions
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>
+      
+      <a href=index.htm                                       >Directory</a>
+      <a href=documentationkey.htm                            >Documentation key</a>
+      <a                                                      >&nbsp;</a>
+
+      <a                                                      >C Functions</a>
+      <a href=forthbuffer.htm#dg_howbufferswork               >How buffers work</a>
+      <a href=forthbuffer.htm#dg_forthocfetch                 >dg_forthocfetch</a>
+      <a href=forthbuffer.htm#dg_forthofetch                  >dg_forthofetch</a>
+      <a href=forthbuffer.htm#dg_forthostonewstring           >dg_forthostonewstring</a>
+      <a href=forthbuffer.htm#dg_forthocstore                 >dg_forthocstore</a>
+      <a href=forthbuffer.htm#dg_forthostore                  >dg_forthostore</a>
+      <a href=forthbuffer.htm#dg_forthctobuf                  >dg_forthctobuf</a>
+      <a href=forthbuffer.htm#dg_forthtobuf                   >dg_forthtobuf</a>
+      <a href=forthbuffer.htm#dg_forthstringtobuf             >dg_forthstringtobuf</a>
+      <a href=forthbuffer.htm#dg_forthbuftoc                  >dg_forthbuftoc</a>
+      <a href=forthbuffer.htm#dg_forthbufto                   >dg_forthbufto </a>
+      <a href=forthbuffer.htm#dg_forthbuftostring             >dg_forthbuftostring</a>
+      <a href=forthbuffer.htm#dg_forthosstore                 >dg_forthosstore</a>
+      <a href=forthbuffer.htm#dg_forthosfetch                 >dg_forthosfetch</a>
+      <a href=forthbuffer.htm#dg_forthstobuf                  >dg_forthstobuf</a>
+      <a href=forthbuffer.htm#dg_forthbuftos                  >dg_forthbuftos</a>
+      <a href=forthbuffer.htm#dg_forthlengthbuf               >dg_forthlengthbuf</a>
+      <a href=forthbuffer.htm#dg_forthgetsbufferhandlearrayhead  >dg_forthgetsbufferhandlearrayhead</a>
+      <a href=forthbuffer.htm#dg_forthgetsbufferhandle        >dg_forthgetsbufferhandle</a>
+      <a href=forthbuffer.htm#dg_forthgetoarrayelement        >dg_forthgetoarrayelement</a>
+      <a href=forthbuffer.htm#dg_forthgetparrayelement        >dg_forthgetparrayelement</a>
+      <a href=forthbuffer.htm#dg_forthgetbuffersize           >dg_forthgetbuffersize</a>
+      <a href=forthbuffer.htm#dg_forthgetbuffermaxsize        >dg_forthgetbuffermaxsize</a>
+      <a href=forthbuffer.htm#dg_forthgetbuffergrowby         >dg_forthgetbuffergrowby</a>
+      <a href=forthbuffer.htm#dg_forthgetbuffercurrentoffset  >dg_forthgetbuffercurrentoffset</a>
+      <a href=forthbuffer.htm#dg_forthputbuffercurrentoffset  >dg_forthputbuffercurrentoffset</a>
+      <a href=forthbuffer.htm#dg_forthgetpbufferlength        >dg_forthgetpbufferlength</a>
+      <a href=forthbuffer.htm#dg_forthgetpbuffercurrentoffset >dg_forthgetpbuffercurrentoffset</a>
+      <a href=forthbuffer.htm#dg_forthinsertinbuffer          >dg_forthinsertinbuffer</a>
+      <a href=forthbuffer.htm#dg_forthdeleteinbuffer          >dg_forthdeleteinbuffer</a>
+      <a href=forthbuffer.htm#dg_forthgrowbuffer              >dg_forthgrowbuffer</a>
+      <a href=forthbuffer.htm#dg_forthshrinkbuffer            >dg_forthshrinkbuffer</a>
+      <a href=forthbuffer.htm#dg_forthemptybuffer             >dg_forthemptybuffer</a>
+      <a href=forthbuffer.htm#dg_forthnewbuffer               >dg_forthnewbuffer</a>
+      <a href=forthbuffer.htm#dg_forthfreebuffer              >dg_forthfreebuffer</a>
+      <a href=forthbuffer.htm#dg_forthgetpbufferoffset        >dg_forthgetpbufferoffset</a>
+      <a href=forthbuffer.htm#dg_forthgetpbuffer              >dg_forthgetpbuffer</a>
+      <a href=forthbuffer.htm#dg_forthgetsbuffer              >dg_forthgetsbuffer</a>
+      <a href=forthbuffer.htm#dg_forthgetpbuffersegment       >dg_forthgetpbuffersegment</a>
+      <a href=forthbuffer.htm#dg_forthmaxusedbuffers          >dg_forthmaxusedbuffers</a>
+      <a href=forthbuffer.htm#dg_forthinusebuffers            >dg_forthinusebuffers</a>
+      <a href=forthbuffer.htm#dg_forthinusebytes              >dg_forthinusebytes</a>
+      <a href=forthbuffer.htm#dg_forthallocatedbytes          >dg_forthallocatedbytes</a>
+      <a href=forthbuffer.htm#dg_forthcscanbuf                >dg_forthcscanbuf</a>
+      <a href=forthbuffer.htm#dg_forthscanbuf                 >dg_forthscanbuf</a>
+      <a href=forthbuffer.htm#dg_forthshowbuffers             >dg_forthshowbuffers</a>
+      <a href=forthbuffer.htm#dg_forthgetpnewbuffer           >dg_forthgetpnewbuffer</a>
+      <a href=forthbuffer.htm#dg_forthu16store                >dg_forthu16store</a>
+      <a href=forthbuffer.htm#dg_forthu32store                >dg_forthu32store</a>
+      <a href=forthbuffer.htm#dg_forthu16fetch                >dg_forthu16fetch</a>
+      <a href=forthbuffer.htm#dg_forthu32fetch                >dg_forthu32fetch</a>
+      <a href=forthbuffer.htm#dg_forthu32comma                >dg_forthu32comma</a>
+      
+    </div>
+
+    <div id=pagestuff>
+    
+      <div class=word id=dg_howbufferswork>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// How Diaperglu buffers work.
+//
+// Buffers have a length, currentoffset, growby, size, and maxsize.
+//
+// When the buffers are created with NEWBUFFER, they start out with length 0,
+//  and growby equal to size. When you try to grow a buffer with GROWBUFFER or push
+//  onto or insert into the buffer, and the new length would be greater than the
+//  size, Diaperglu will increase the buffer's size in units of growby up to
+//  the buffer's maxsize until the new length will fit. If the buffer's size is
+//  changed, it is very likely the operating system will move the buffer to a new
+//  address which will make any pointers into the buffer invalid.
+//
+// To deal with the problem of buffers moving when their size changes, Diaperglu
+//  refers to buffers using a bufferid, which is an index into an array that holds
+//  the buffer headers. Diaperglu also uses offsets into the buffers along with
+//  their bufferids to refer to positions in the buffer.
+//
+// Data stack parameters:
+//  offset                        offset in buffer in bytes
+//
+//  bufferid                      buffer id of buffer
+//
+//  length                        length in bytes
+//                                this is the length from the user's point of view
+//
+//  growby                        growby in bytes
+//                                buffer grows in units of growby
+//
+//  size                          size in bytes
+//                                this is the length from the operating system
+//                                 point view
+//
+//  maxsize                       max size in bytes
+//                                this is the maximum allowed size and length
+//                                 allowed
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+      <div class=word id=dg_forthocfetch>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthocfetch ( OC@ )
+//
+// C prototype:
+//  void dg_forthocfetch (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( offset bufferid -- byte )
+//
+// Data stack in:
+//  offset                        offset in buffer in bytes
+//
+//  bufferid                      bufferid of buffer
+//
+// Data stack out:                
+//  byte                          byte at offset in buffer
+//                                                              
+// Action:
+//  pops offset and buffer id from the data stack
+//  pushes the byte at the offset in the buffer to the data stack
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error getting byte from the buffer
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthofetch>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthofetch ( O@ )
+//
+// C prototype:
+//  void dg_forthofetch (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( offset bufferid -- value )
+//
+// Data stack in:
+//  offset                        offset in buffer in bytes
+//
+//  bufferid                      bufferid of buffer
+//
+// Data stack out:                
+//  value                         UINT64 at offset in buffer
+//                                                              
+// Action:
+//  pops offset and buffer id from the data stack
+//  pushes the int at the offset in the buffer to the data stack
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error getting dword from the buffer
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthostonewstring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthostonewstring ( OS&gt;NEW$ )
+//
+// C prototype:
+//  void dg_forthostonewstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( offset bufferid length -- )
+//  ( -$- string )
+//
+// Data stack in:
+//  offset                        offset in buffer in bytes of start of
+//                                 buffersegment
+//
+//  length                        length of the buffer segment
+//
+//  bufferid                      buffer id of buffer
+//
+// String stack out:                
+//  string                        copy of the buffer segment is pushed onto the
+//                                 string stack
+//                                                              
+// Action:
+//  pops offset length and buffer id from the data stack
+//  pushes a copy of the buffer segment at offset with length in bufferid
+//   to the string stack
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error getting pointer to the buffer segment
+//  error pushing to the string stack
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthocstore>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthocstore ( OC! )
+//
+// C prototype:
+//  void dg_forthocstore (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( byte offset bufferid -- )
+//
+// Data stack in:
+//  byte                          byte to store in buffer
+//
+//  offset                        offset in bytes in buffer
+//
+//  bufferid                      buffer id of buffer
+//                                                              
+// Action:
+//  pops byte offset and buffer id from the data stack
+//  puts the byte into the buffer at the offset
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error putting byte to the buffer
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthostore>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthostore ( O!)
+//
+// C prototype:
+//  void dg_forthostore (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( dword offset bufferid -- )
+//
+// Data stack in:
+//  dword                         dword to store in buffer
+//
+//  offset                        offset in bytes in buffer
+//
+//  bufferid                      buffer id of buffer
+//                                                              
+// Action:
+//  pops dword offset and buffer id from the data stack
+//  puts the dword into the buffer at the offset
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error putting dword to the buffer
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthctobuf>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthctobuf ( C&gt;BUF )
+//
+// C prototype:
+//  void dg_forthctobuf (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( byte bufferid -- )
+//
+// Data stack in:
+//  byte                          byte to store in buffer
+//
+//  bufferid                      bufferid of buffer
+//                                                              
+// Action:
+//  pops byte and buffer id from the data stack
+//  pushes the byte into the buffer at the offset
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error pushing byte to the buffer
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthtobuf>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthtobuf ( &gt;BUF )
+//
+// C prototype:
+//  void dg_forthtobuf (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( uint64 bufferid -- )
+//
+// Data stack in:
+//  uint64                        UINT64 to store in buffer
+//
+//  bufferid                      bufferid of buffer
+//                                                              
+// Action:
+//  pops dword and buffer id from the data stack
+//  pushes the dword into the buffer at the offset
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error pushing dword to the buffer
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthstringtobuf>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthstringtobuf ( $&gt;BUF )
+//
+// C prototype:
+//  void dg_forthstringtobuf (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( bufferid -- )
+//  ( string -$- )
+//
+// Data stack in:
+//  bufferid                      bufferid of buffer
+//
+// String stack in:
+//  string                        string to push to buffer
+//                                                              
+// Action:
+//  buffer id from the data stack
+//  pops string from the string stack
+//  pushes the string to the end of the buffer
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  string stack underflow
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthbuftoc>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthbuftoc ( BUFC&gt; )
+//
+// C prototype:
+//  void dg_forthbuftoc (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( bufferid -- byte )
+//
+// Data stack in:
+//  bufferid                      bufferid of buffer
+//
+// Data stack out:                
+//  byte                          byte popped from end of buffer
+//                                                              
+// Action:
+//  pops buffer id from the data stack
+//  pops a byte from the end of the buffer
+//  pushes the byte to the data stack as a UINT64
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error popping byte from the buffer
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthbufto >
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthbufto ( BUF&gt; )
+//
+// C prototype:
+//  void dg_forthbufto (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( bufferid -- value )
+//
+// Data stack in:
+//  bufferid                      bufferid of buffer
+//
+// Data stack out:                
+//  value                         UINT64 popped from end of buffer
+//                                                              
+// Action:
+//  pops buffer id from the data stack
+//  pops a UINT64 from the end of the buffer
+//  pushes the UINT64 to the data stack
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error popping dword from the buffer
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthbuftostring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthbuftostring ( BUF&gt;NEW$ )
+//
+// C prototype:
+//  void dg_forthbuftostring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( bufferid length -- )
+//  ( -$- string )
+//
+// Data stack in:
+//  bufferid                      buffer id of buffer
+//
+//  length                        length of segment in bytes to pop from buffer
+//                                                              
+// Action:
+//  pops bufferid and length from the data stack
+//  pops buffer segment of length from bufferid
+//  pushes the buffersegment to the string stack
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error getting pointer to the buffer segment
+//  error pushing the buffer segment to the string stack
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthosstore>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthosstore ( OS! )
+//
+// C prototype:
+//  void dg_forthosstore (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( offset bufferid length pdest -- )
+//
+// Data stack in:
+//  offset                        start offset of the buffer segment
+//
+//  bufferid                      buffer id of buffer
+//
+//  length                        length of the buffer segment in bytes
+//
+//  pdest                         memory address of destination for storing
+//                                 buffer segment
+//                                                              
+// Action:
+//  pops offset bufferid length and pdest from the data stack
+//  stores the buffer segment at offset in bufferid with length to pdest
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error getting buffer segment
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthosfetch>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthosfetch ( OS@ )
+//
+// C prototype:
+//  void dg_forthosfetch (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( psrc offset bufferid length -- )
+//
+// Data stack in:
+//  psrc                          memory address of the source string
+//
+//  length                        length of source string in bytes
+//
+//  offset                        start offset of the buffer segment to overwrite
+//
+//  bufferid                      bufferid of buffer
+//                                                              
+// Action:
+//  pops offset bufferid length and psrc from the data stack
+//  stores the string of length at psrc to the offset in bufferid
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error putting buffer segment
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthstobuf>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthstobuf ( S&gt;BUF )
+//
+// C prototype:
+//  void dg_forthstobuf (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( psrc length bufferid -- )
+//
+// Data stack in:
+//  psrc                          memory address of the source string
+//
+//  length                        length of source string in bytes
+//
+//  bufferid                      buffer id of buffer
+//                                                              
+// Action:
+//  pops offset bufferid length and psrc from the data stack
+//  stores the string of length at psrc to the offset in bufferid
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error putting buffer segment
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthbuftos>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthbuftos ( BUF&gt;S )
+//
+// C prototype:
+//  void dg_forthbuftos (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( bufferid pdest length -- )
+//
+// Data stack in:
+//  psrc                          memory address of the source string
+//
+//  length                        length of source string in bytes
+//
+//  bufferid                      bufferid of buffer
+//                                                              
+// Action:
+//  pops offset bufferid length and pdest from the data stack
+//  pops a buffersegment of length from bufferid and stores it at pdest
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error putting buffer segment
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthlengthbuf>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthlengthbuf ( LENGTHBUF )
+//
+// C prototype:
+//  void dg_forthlengthbuf (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( bufferid -- bufferlength )
+//
+// Data stack in:
+//  bufferid                      buffer id of buffer
+//  
+// Data stack out:
+//  bufferlength                  length of buffer in bytes
+//                                                            
+// Action:
+//  pops the buffer id off the data stack
+//  pushes the length of the buffer onto the data stack
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error getting the buffer length
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetsbufferhandlearrayhead>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetsbufferhandlearrayhead
+//  ( GETPBUFFERHANDLEARRAYHEAD GETSBUFFERHANDLEARRAYHEAD )
+//  ( GETPBUFFERHANDLEARRAYHEAD is deprecated,
+//     use GETSBUFFERHANDLEARRAYHEAD instead )
+//
+// C prototype:
+//  void dg_forthgetsbufferhandlearrayhead (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//  
+// Stack action shorthand:
+//  ( -- pBHarrayhead sizeofBufferhandle )
+//
+// Data stack out:
+//  pBHarrayhead                  pointer to the buffer handle array head handle
+//
+//  sizeofBufferhandle            length of the handle in bytes
+//                                                            
+// Action:
+//  pushes a pointer to the head buffer handle array handle and its length
+//   to the data stack
+//
+// Failure cases:
+//  error pushing to the data stack
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetsbufferhandle>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetsbufferhandle ( GETBUFFERHANDLE GETSBUFFERHANDLE )
+//  ( GETBUFFERHANDLE is deprecated, use GETSBUFFERHANDLE instead )
+//
+// C prototype:
+//  void dg_forthgetsbufferhandle (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//  
+// Stack action shorthand:
+//  ( bufferid -- pBufferheader sizeofBufferhandle )
+//
+// Data stack in                  bufferid
+//
+// Data stack out:
+//  pBufferheader                 pointer to the buffer handle for bufferid
+//
+//  sizeofBufferhandle            length of the handle in bytes
+//                                                            
+// Action:
+//  pushes a pointer to the buffer's buffer handle and its length to the
+//   data stack
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error getting pointer to the buffer handle
+//  error pushing buffer handle length to the data stack
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetoarrayelement>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetoarrayelement ( GETOARRAYELEMENT )
+//
+// C prototype:
+//  void dg_forthgetoarrayelement (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( elementindex bufferid elementsize -- oarrayelement )
+//
+// Data stack in:
+//  elemenindex                   index of the array element
+//
+//  bufferid                      buffer the array is in
+//
+//  elementsize                   size of an element in the array in bytes
+//  
+// Data stack out:
+//  oarrayelement                 offset in bytes of the element in the array
+//                                 buffer from the start of the array
+//                                                            
+// Action:
+//  pushes the offset of an array element in a buffer to the data stack
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error getting pointer to the buffer
+//  offset off end error
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetparrayelement>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetparrayelement ( GETPARRAYELEMENT )
+//
+// C prototype:
+//  void dg_forthgetparrayelement (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( elementindex bufferid elementsize-- parrayelement )
+//
+// Data stack in:
+//  elemenindex                   index of the array element
+//
+//  bufferid                      buffer the array is in
+//
+//  elementsize                   size of an element in the array in bytes
+//  
+// Data stack out:
+//  parrayelement                 pointer to the element in the array buffer
+//                                                            
+// Action:
+//  pushes the pointer to an array element 
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error getting pointer to the buffer
+//  index off end error
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetbuffersize>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetbuffersize ( GETBUFFERSIZE )
+//
+// C prototype:
+//  void dg_forthgetbuffersize (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( bufferid -- buffersize )
+//
+// Data stack in:
+//  bufferid                      id of the buffer
+//  
+// Data stack out:
+//  buffersize                    amount of memory in bytes current allocated
+//                                 from the OS for the buffer
+//                                                            
+// Action:
+//  pushes the current size of the buffer to the data stack
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error getting pointer to the buffer handle
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetbuffermaxsize>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetbuffermaxsize ( GETBUFFERMAXSIZE )
+//
+// C prototype:
+//  void dg_forthgetbuffermaxsize (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( bufferid -- maxsize )
+//
+// Data stack in:
+//  bufferid                      id of the buffer
+//  
+// Data stack out:
+//  maxsize                       max allowed length and size of the buffer
+//                                 in bytes
+//                                                            
+// Action:
+//  pushes max size of the buffer to the data stack
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error getting pointer to the buffer handle
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetbuffergrowby>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+//  dg_forthgetbuffergrowby ( GETBUFFERGROWBY )
+//
+// C prototype:
+//  void dg_forthgetbuffergrowby (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( bufferid --  growby )
+//
+// Data stack in:
+//  bufferid                      id of the buffer
+//  
+// Data stack out:
+//  growby                        the amount the buffer grows by in bytes when the
+//                                 current size allocation is used up and more is
+//                                 needed
+//                                                            
+// Action:
+//  pushes the buffer's amount to grow by to the data stack
+//
+// Note:
+//  For Linux and FreeBSD compatibility, growby is rounded up to the
+//  nearest system page when the buffer is created.
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error getting pointer to the buffer handle
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetbuffercurrentoffset>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetbuffercurrentoffset ( GETBUFFERCURRENTOFFSET )
+//
+// C prototype:
+//  void dg_forthgetbuffercurrentoffset (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( bufferid -- buffercurrentoffset )
+//
+// Data stack in:
+//  bufferid                      id of the buffer
+//  
+// Data stack out:
+//  buffercurrentoffset           gets the current offset which is an index into
+//                                 the buffer
+//
+//                                                            
+// Action:
+//  pushes the buffer's current offset to the data stack
+//
+// Note:
+//  &gt;IN and the parsing words use the current offset of a buffer
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error getting pointer to the buffer handle
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthputbuffercurrentoffset>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthputbuffercurrentoffset ( PUTBUFFERCURRENTOFFSET )
+//
+// C prototype:
+//  void dg_forthputbuffercurrentoffset (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( currentoffset bufferid -- )
+//
+//
+// Data stack in:
+//  currentoffset                 new value of the current offset
+//
+//  bufferid                      id of the buffer
+//                                                            
+// Action:
+//  if this new current offset &lt;= the length of the buffer, then the current
+//  offset is set to this value otherwise it is set to the length of the buffer
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error getting pointer to the buffer handle
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetpbufferlength>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetpbufferlength ( GETPBUFFERLENGTH )
+//
+// C prototype:
+//  void dg_forthgetpbufferlength (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( bufferid -- pbufferlength )
+//
+// Data stack in:
+//  bufferid                      id of the buffer
+//  
+// Data stack out:
+//  pbufferlength                 a pointer to the current buffer length
+//                                                            
+// Action:
+//  pushes a pointer to the buffer's in use length to the data stack
+//
+// WARNING!:
+//  the pointer returned is only valid until the next time you make a new buffer
+//   because when a new buffer is made there is a chance the addition of the
+//   new buffer will cause a reallocation of the buffer header array to a new
+//   base memory address
+//  So in other words, use the pointer right after you get it. If you don't, this
+//   kind of a bug is almost impossible to find :-)
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error getting pointer to the buffer handle
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetpbuffercurrentoffset>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetpbuffercurrentoffset ( GETPBUFFERCURRENTOFFSET )
+//
+// C prototype:
+//  void dg_forthgetpbuffercurrentoffset (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( bufferid -- pbuffercurrentoffset )
+//
+// Data stack in:
+//  bufferid                      id of the buffer
+//  
+// Data stack out:
+//  pbuffercurrentoffset           pointer to the current offset of the buffer
+//                                                            
+// Action:
+//  pushes the pointer to the buffer's current offset to the data stack
+//
+// WARNING!:
+//  the pointer returned is only valid until the next time you make a new buffer
+//   because when a new buffer is made there is a chance the addition of the
+//   new buffer will cause a reallocation of the buffer header array to a new
+//   base memory address
+//  So in other words, use the pointer right after you get it. If you don't, this
+//   kind of a bug is almost impossible to find :-)
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error getting pointer to the buffer handle
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthinsertinbuffer>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthinsertinbuffer ( INSERTINBUFFER )
+//
+// C prototype:
+//  void dg_forthinsertinbuffer (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( offset bufferid length -- )  
+//
+// Data stack in:
+//  offset                        offset in buffer where insert begins,
+//                                 it is ON this character
+//
+//  bufferid                      id of the buffer
+//
+//  length                        number of bytes to insert into the buffer
+//                                                            
+// Action:
+//  Inserts length bytes into the buffer on the offset specified
+//  The insert begins before this character.
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error calling insert in buffer
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthdeleteinbuffer>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdeleteinbuffer ( DELETEINBUFFER )
+//
+// C prototype:
+//  void dg_forthdeleteinbuffer (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( offset bufferid length -- )
+//
+// Data stack in:
+//  offset                        offset in buffer where delete begins,
+//                                 it is ON this character
+//
+//  bufferid                      id of the buffer
+//
+//  length                        number of bytes to delete from the buffer
+//                                                            
+// Action:
+//  Deletes length bytes from the buffer on the offset specified.
+//  This includes the character at the offset.
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error calling delete in buffer
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgrowbuffer>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgrowbuffer ( GROWBUFFER )
+//
+// C prototype:
+//  void dg_forthgrowbuffer (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( length bufferid -- )
+//
+// Data stack in:
+//  length                        number of bytes to add to end of the buffer
+//
+//  bufferid                      id of the buffer
+//                                                            
+// Action:
+//  Adds length to the buffer's length. The is the buffer's length in bytes
+//   from the user's point of view.
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error calling delete in buffer
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthshrinkbuffer>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthshrinkbuffer ( SHRINKBUFFER )
+//
+// C prototype:
+//  void dg_forthshrinkbuffer (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( length bufferid -- )
+//
+// Data stack in:
+//  length                        number of bytes to remove from the end of
+//  bufferid                      the buffer id of the buffer
+//                                                            
+// Action:
+//  deletes length bytes from the buffer specified
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error calling delete in buffer
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthemptybuffer>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthemptybuffer ( EMPTYBUFFER )
+//
+// C prototype:
+//  void dg_forthemptybuffer (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( bufferid -- )
+//
+// Data stack in:
+//  bufferid                      id of the buffer
+//                                                            
+// Action:
+//  Empties the buffer. This means it sets the buffer's length to 0, which is
+//   the buffer length from the user's point of view. The size of the buffer
+//   is unchanged.
+//
+// Failure cases:
+//  error popping the data stack
+//  error clearing the buffer
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthnewbuffer>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthnewbuffer ( NEWBUFFER )
+//
+// C prototype:
+//  void dg_forthnewbuffer (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( growby maxsize -- bufferid )
+//
+// Data stack in:
+//  growby                        This is the initial memory allocation from
+//                                 the os. When the buffer grows beyond it's
+//                                 current memory allocation size, it grows by
+//                                 this amount in bytes.
+//
+//  maxsize                       this is the largest allowed buffer length and
+//                                 memory allocation from the os in bytes
+//       
+// Data stack out:
+//  bufferid                      id of the dg_newbuffer
+//                                                            
+// Action:
+//  allocates memory from the OS and initializes a new buffer and returns the
+//   id of the new buffer
+//    bufferlength will be 0  ( this is the length from the users point of view )
+//    current offset will be 0  ( In the current input buffer, this is for parsing )
+//    size will equal growby  ( this is the length from the OS point of view )
+//
+// Failure cases:
+//  error popping the data stack
+//  error clearing the buffer
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfreebuffer>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfreebuffer ( FREEBUFFER )
+//
+// C prototype:
+//  void dg_forthfreebuffer (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//       
+// Stack action shorthand:
+//  ( bufferid -- )
+//
+// Data stack in:
+//  bufferid                      id of the buffer
+//                                                            
+// Action:
+//  frees the buffer, releasing its memory back to the OS
+// 
+// Note:
+//  This routine will only let you free user buffers.
+//  When you do BYE, Diaperglu will free all the remaining user buffers for you.
+//
+// Failure cases:
+//  error popping the data stack
+//  error clearing the buffer
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetpbufferoffset>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetpbufferoffset ( GETPBUFFEROFFSET O>P )
+//
+// C prototype:
+//  void dg_forthgetpbufferoffset (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//       
+// Stack action shorthand:
+//  ( offset bufferid -- address )
+//
+// Data stack in:
+//  offset                        offset in buffer in bytes
+//  bufferid                      id of the buffer
+//                                                            
+// Action:
+//  gets a pointer to the offset in the buffer.
+//  if the bufferid = DG_CORE_BUFFERID, the offset is returned as the pointer
+//
+// Warning!!!:
+//  The pointer returned is only valid until the next time the buffer moves.
+//   The buffer grows when it exceeds it's previous size allocation and may move.
+//   In other words, pushing more things than you popped off,
+//    and growing the buffer can cause the buffer to need more memory from the OS
+//    which can result in the buffer being moved to a new base address.
+//
+// Note:
+//  This routine will accept DG_CORE_BUFFERID as a valid buffer and return
+//   the offset as the address.
+//  
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error getting pointer to the offset
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetpbuffer>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetpbuffer ( GETPBUFFERPBUFFERLENGTH GETPBUFFER )
+//  ( GETPBUFFER is deprecated, use GETPBUFFERPBUFFERLENGTH instead )
+//
+// C prototype:
+//  void dg_forthgetpbuffer (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//       
+// Stack action shorthand:
+//  ( bufferid -- pbuffer plength )
+//
+// Data stack in:
+//  bufferid                      id of the buffer
+//
+// Data stack out:
+//  pbuffer                       address of the start of the buffer
+//  plength                       address of the length of the buffer 
+//                                 which is the number of bytes currently in use
+//                                                            
+// Action:
+//  returns a pointer to the buffer and its length on the data stack.
+//
+// Warning!!!:
+//  The pointer returned is only valid until the next time the buffer moves.
+//   The buffer grows when it exceeds it's previous size allocation and may move.
+//   In other words, pushing more things than you popped off,
+//    and growing the buffer can cause the buffer to need more memory from the OS
+//    which can result in the buffer being moved to a new base address.
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error getting pointer to the buffer
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetsbuffer>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetsbuffer ( GETSBUFFER )
+//
+// C prototype:
+//  void dg_forthgetsbuffer (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//       
+// Stack action shorthand:
+//  ( bufferid -- pbuffer length )
+//
+// Data stack in:
+//  bufferid                      id of the buffer
+//
+// Data stack out:
+//  pbuffer                       address of the start of the buffer
+//  length                       length of the buffer
+//                                 which is the number of bytes currently in use
+//                                                            
+// Action:
+//  returns a pointer to the buffer and returns the buffer's
+//   length on the data stack.
+//
+// Warning!!!:
+//  The pointer returned is only valid until the next time the buffer moves.
+//   The buffer grows when it exceeds it's previous size allocation and may move.
+//   In other words, pushing more things than you popped off,
+//    and growing the buffer can cause the buffer to need more memory from the OS
+//    which can result in the buffer being moved to a new base address.
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error getting pointer to the buffer
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+    
+
+      <div class=word id=dg_forthgetpbuffersegment>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetpbuffersegment ( GETPBUFFERSEGMENT )
+//
+// C prototype:
+//  void dg_forthgetpbuffersegment (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//       
+// Stack action shorthand:
+//  ( offset bufferid length -- address )
+//
+// Data stack in:
+//  offset                        start offset of buffer segment in bytes
+//  bufferid                      id of the buffer
+//  length                        length of buffer segment in bytes
+//
+// Data stack out:
+//  pbuffer                       address of the start of the buffer segment
+//                                                            
+// Action:
+//  returns a pointer to the buffer segment .
+//
+// Warning!!!:
+//  The pointer returned is only valid until the next time the buffer moves.
+//   The buffer grows when it exceeds it's previous size allocation and may move.
+//   In other words, pushing more things than you popped off,
+//    and growing the buffer can cause the buffer to need more memory from the OS
+//    which can result in the buffer being moved to a new base address.
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error getting pointer to the buffer segment
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthmaxusedbuffers>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthmaxusedbuffers ( MAXUSEDBUFFERS )
+//
+// C prototype:
+//  void dg_forthmaxusedbuffers (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- maxusedbuffers ) 
+//
+// Data stack out:
+//  maxusedbuffers                UINT64 maximum number of buffers in use at any
+//                                 one time
+//                                                            
+// Action:
+//  pushes the maximum number of buffers in use at any one time to the data stack 
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthinusebuffers>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthinusebuffers ( INUSEBUFFERS )
+//
+// C prototype:
+//  void dg_forthinusebuffers (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- inusebuffers ) 
+//
+// Data stack out:
+//  inusebuffers                  UINT64 number of buffers currently in use
+//                                                            
+// Action:
+//  pushes the number of buffers currently in use to the data stack
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthinusebytes>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthinusebytes ( INUSEBYTES )
+//
+// C prototype:
+//  void dg_forthinusebytes (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- inusebytes ) 
+//
+// Data stack out:
+//  inusebytes                  UINT64 number of bytes currently in use in
+//                               all buffers
+//                                                            
+// Action:
+//  Pushes the number of bytes currently in use in all buffers to the data stack.
+//  This routine looks at the buffer lengths.
+//  This routine uses the length of the data stack from before the push.
+//  ( This is how big the buffers are from the user's point of view. )
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthallocatedbytes>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthallocatedbytes ( ALLOCATEDBYTES )
+//
+// C prototype:
+//  void dg_forthallocatedbytes (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- allocatedbytes ) 
+//
+// Data stack out:
+//  allocatedbytes                UINT64 number of operating system allocated bytes 
+//                                 currently in use by all buffers
+//                                                            
+// Action:
+//  Pushes to the data stack the number of bytes currently allocated by the
+//   operating system for use by all buffers.
+//  This routine looks at the buffer sizes.
+//  ( This is how big the buffers are from the operating system's point of view. )
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcscanbuf>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcscanbuf ( CSCANBUF ) 
+//
+// C prototype:
+//  void dg_forthcscanbuf (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( bufferid offset value -- index )
+//
+// Data stack in:
+//  bufferid                      bufferid of buffer to scan
+//
+//  index                         start index in buffer for scan
+//
+//  value						  value of byte to scan for in buffer
+//
+// Data stack out:
+//  index                         index in buffer in range of 0 to length of
+//                                 buffer - 1 of first match in string
+//                                 or -1 if no match is found
+//                                                            
+// Action:
+//  Searches the memory in the buffer starting at offset from beginning for the
+//   first occurence of the value
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  process doesn't own the memory in the string
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthscanbuf>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthscanbuf ( SCANBUF ) 
+//
+// C prototype:
+//  void dg_forthscanbuf (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( bufferid offset value -- index )
+//
+// Data stack in:
+//  bufferid                      bufferid of buffer to scan
+//
+//  index                         start index in buffer for scan in units of UINT64
+//
+//  value						  value of UINT64 to scan for in buffer
+//
+// Data stack out:
+//  index                         index in buffer in range of 0 to length of
+//                                buffer - 1  in units of UINT64 of first match
+//                                 or -1 if no match is found
+//                                                            
+// Action:
+//  Searches the memory in the buffer starting at offset from beginning for the
+//   first occurence of the value
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  process doesn't own the memory in the string
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthshowbuffers>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthshowbuffers ( SHOW-BUFFERS )
+//
+// C prototype:
+//  void dg_forthshowbuffers (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( -- )
+//                                                            
+// Action:
+//  Sends a table to stdout that shows for each buffer its:
+//   startaddress inuselength osallocatedlength addressafterlastbyte
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetpnewbuffer>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetpnewbuffer ( GETPNEWBUFFER )
+//
+// C prototype:
+//  void dg_forthgetpnewbuffer (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( bufferlength -- pnewbuffer )
+//                                                            
+// Action:
+//  Allocates a new buffer and grows it to the size requested.
+//  A pointer to this new buffer is returned on the data stack. Unfortunately
+//   the buffer id is not returned... 
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthu16store>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthu16store ( U16! )
+//
+// C prototype:
+//  void dg_forthu16store (Bufferhandle* pBHarrayhead)
+//
+// Inputs:  
+//  pBHarrayhead       64 bit pointer to a Bufferhandle structure which is 
+//                      used as the buffer handle for the array where the other
+//                      buffer handles are kept
+//
+// Stack action shorthand:
+//  ( x addr -- )
+//
+// Data stack inputs:
+//  x                  INT16 data value
+//  addr               64 bit memory address pointer
+//
+// Action:
+//  puts x into memory address then removes x and address from the data stack
+//
+// Forth standard: 
+//  6.1.0010
+//
+// Handling of ambiguous conditions:
+//  dg_forthu16store works for unaligned address the same as for aligned addresses
+//
+// Success case:
+//  ( u addr -- )
+//
+// Failure cases:
+//  error getting pointer to the datastack
+//   { -- } datastack does not exist
+//   ( -error- dg_forthstorename )
+//
+//  one or both of data and address are missing
+//   ( ? -- )
+//   ( -error- dg_datastackunderflowerror dg_forthstorename )
+//
+//  address is not in process space or is read only
+//   ( u address -- )
+//   ( -error- dg_badmemoryerror dg_forthstorename )
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthu32store>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthu32store ( U32! )
+//
+// C prototype:
+//  void dg_forthu32store (Bufferhandle* pBHarrayhead)
+//
+// Inputs:  
+//  pBHarrayhead       64 bit pointer to a Bufferhandle structure which is 
+//                      used as the buffer handle for the array where the other
+//                      buffer handles are kept
+//
+// Stack action shorthand:
+//  ( x addr -- )
+//
+// Data stack inputs:
+//  x                  INT16 data value
+//  addr               64 bit memory address pointer
+//
+// Action:
+//  puts x into memory address then removes x and address from the data stack
+//
+// Forth standard: 
+//  6.1.0010
+//
+// Handling of ambiguous conditions:
+//  dg_forthu16store works for unaligned address the same as for aligned
+//   addresses
+//
+// Success case:
+//  ( u addr -- )
+//
+// Failure cases:
+//  error getting pointer to the datastack
+//   { -- } datastack does not exist
+//   ( -error- dg_forthstorename )
+//
+//  one or both of data and address are missing
+//   ( ? -- )
+//   ( -error- dg_datastackunderflowerror dg_forthstorename )
+//
+//  address is not in process space or is read only
+//   ( u address -- )
+//   ( -error- dg_badmemoryerror dg_forthstorename )
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthu16fetch>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthu16fetch ( U16@ )
+//
+// C prototype:
+//  void dg_forthu16fetch (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( addr -- x )
+//
+// Data stack in:
+//  addr                          pointer to data to get
+//  
+// Data stack out:
+//  x                             this 16 bit integer is fetched from the address,
+//                                 is 0 extended to 64 bits, and
+//                                 replaces the address on the data stack
+//
+// Action:
+//  gets the integer at address and replaces address on the datastack with the integer
+//
+// Forth standard:
+//  6.1.0650                                                            
+//
+// Handling of ambiguous conditions:
+//  dg_forthfetch works for unaligned address the same as for aligned addresses
+//
+// Failure cases:
+//  error getting pointer to the datastack
+//  data stack is missing address
+//  address isn't in process' space
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthu32fetch>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthu32fetch ( U32@ )
+//
+// C prototype:
+//  void dg_forthu32fetch (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( addr -- x )
+//
+// Data stack in:
+//  addr                          pointer to data to get
+//  
+// Data stack out:
+//  x                             this 32 bit integer is fetched from the address,
+//                                 is 0 extended to 64 bits, and
+//                                 replaces the address on the data stack
+//
+// Action:
+//  gets the integer at address and replaces address on the datastack with the
+//   integer
+//
+// Forth standard:
+//  6.1.0650                                                            
+//
+// Handling of ambiguous conditions:
+//  dg_forthfetch works for unaligned address the same as for aligned addresses
+//
+// Failure cases:
+//  error getting pointer to the datastack
+//  data stack is missing address
+//  address isn't in process' space
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthu32comma>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthu32comma ( U32, )
+//
+// C prototype:
+//  void dg_forthu32comma (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( u1 -- )
+//  ( -currentdataspacebuffer- n1 )
+//           
+// Data stack in:
+//  u1                            32 bit integer to push onto the end of the
+//                                 current compile buffer
+//                                                              
+// Action:
+//  pushes u1 onto end of current compile buffer
+//
+// Forth standard:
+//  6.1.0150
+//
+// Handling of ambiguous conditions:
+//  If the 'data-space' pointer is not aligned, dg_forthcomma still works the
+//   same as the aligned case and exactly 32 bits of space are used.
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  u1 missing from data stack
+//  error getting current data space buffer id
+//  error pushing to the current data space buffer
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    </div>
+
+  </div></body>
+</html>
+
+
+

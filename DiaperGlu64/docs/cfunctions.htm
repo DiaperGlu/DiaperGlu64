@@ -1,0 +1,4168 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      C Function Prototypes
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>
+      <a href=cfunctions.htm#cbuffer>cbuffer.cpp</a>
+      <a href=cfunctions.htm#cerror>cerror.cpp</a>
+      <a href=cfunctions.htm#cglu>cglu.cpp</a>
+      <a href=cfunctions.htm#chierarchicallist>chierarchicallist.cpp</a>
+      <a href=cfunctions.htm#cinitwordlist>cinitwordlist.cpp</a>
+      <a href=cfunctions.htm#clstring>clstring.cpp</a>
+      <a href=cfunctions.htm#cmiscellaneous>cmiscellaneous.cpp</a>
+      <a href=cfunctions.htm#assembly>assembly</a>
+      <a href=cfunctions.htm#cpux86>cpux86.cpp</a>
+      <a href=cfunctions.htm#cpux86macosxsignalcatch>signalcatch</a>
+      <a href=cfunctions.htm#cwordlist>cwordlist.cpp</a>
+      <a href=cfunctions.htm#osapi>operating system api</a>
+      <a href=cfunctions.htm#dglumain>dglumain.cpp</a>
+    </div>
+
+    <div id=pagestuff>
+
+        <div class=cfile id=cbuffer>
+        
+            <strong>cbuffer.cpp functions</strong>
+
+            <div class=cfunctionprototype id=dg_newbuffer>
+                UINT64 <a href=cbuffer.htm#newbuffer>dg_newbuffer</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64  growby,
+                    UINT64  maxsize,
+                    const char** pError,
+                    UINT64 forceoutofmemory)
+            </div>
+
+            <div class=cfunctionprototype id=dg_freebuffer>
+                void <a href=cbuffer.htm#dg_freebuffer>dg_freebuffer</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid)
+            </div>
+
+            <div class=cfunctionprototype id=dg_freeallbuffers>
+                UINT64 <a href=cbuffer.htm#dg_freeallbuffers>dg_freeallbuffers</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_checkbuffer>
+                const char* <a href=cbuffer.htm#dg_checkbuffer>dg_checkbuffer</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid)
+            </div>
+
+            <div class=cfunctionprototype id=dg_growbuffer>
+                UINT64 <a href=cbuffer.htm#dg_growbuffer>dg_growbuffer</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid,
+                    UINT64 length,
+                    const char** pError,
+                    UINT64 forceoutofmemory)
+            </div>
+
+            <div class=cfunctionprototype id=dg_shrinkbuffer>
+                void <a href=cbuffer.htm#dg_shrinkbuffer>dg_shrinkbuffer</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid,
+                    UINT64 length,
+                    const char** pError)
+            </div>
+
+            <div class=cfunctionprototype id=dg_getpbuffer>
+                unsigned char* <a href=cbuffer.htm#dg_getpbuffer>dg_getpbuffer</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid,
+                    UINT64** pplength)
+            </div>
+
+            <div class=cfunctionprototype id=dg_clearbuffer>
+                void <a href=cbuffer.htm#dg_clearbuffer>dg_clearbuffer</a> (Bufferhandle* pBHarrayhead, UINT64 bufferid)
+            </div>
+
+            <div class=cfunctionprototype id=dg_getpbuffersegment>
+                unsigned char* <a href=cbuffer.htm#dg_getpbuffersegment>dg_getpbuffersegment</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid,
+                    UINT64 offset,
+                    UINT64 length)
+            </div>
+
+            <div class=cfunctionprototype id=dg_getpbufferoffset>
+                unsigned char* <a href=cbuffer.htm#dg_getpbufferoffset>dg_getpbufferoffset</a>  (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid,
+                    UINT64 offset)
+            </div>
+
+            <div class=cfunctionprototype id=dg_getbuffersegment>
+                void <a href=cbuffer.htm#dg_getbuffersegment>dg_getbuffersegment</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid,
+                    UINT64 offset,
+                    UINT64 length,
+                    unsigned char* pdest)        
+            </div>
+
+            <div class=cfunctionprototype id=dg_putbuffersegment>
+                void <a href=cbuffer.htm#dg_putbuffersegment>dg_putbuffersegment</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid,
+                    UINT64 offset,
+                    UINT64 length,
+                    unsigned char* psrc)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getbufferdword>
+                UINT64 <a href=cbuffer.htm#dg_getbufferdword>dg_getbufferdword</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid,
+                    UINT64 offset)
+            </div>
+
+            <div class=cfunctionprototype id=dg_putbufferdword>
+                void <a href=cbuffer.htm#dg_putbufferdword>dg_putbufferdword</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid,
+                    UINT64 offset,
+                    UINT64 data)
+            </div>
+
+            <div class=cfunctionprototype id=dg_pushbufferdword>
+                void <a href=cbuffer.htm#dg_pushbufferdword>dg_pushbufferdword</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid,
+                    UINT64 data)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_pushbuffersegment>
+                void <a href=cbuffer.htm#dg_pushbuffersegment>dg_pushbuffersegment</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid,
+                    UINT64 length,
+                    unsigned char* psrc)
+            </div>
+
+            <div class=cfunctionprototype id=dg_pickbuffersegment>
+                void <a href=cbuffer.htm#dg_pickbuffersegment>dg_pickbuffersegment</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid,
+                    UINT64 offset,
+                    UINT64 length)
+            </div>
+
+            <div class=cfunctionprototype id=dg_popbuffersegment>
+                void <a href=cbuffer.htm#dg_popbuffersegment>dg_popbuffersegment</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid,
+                    UINT64 length,
+                    unsigned char* pdest)
+            </div>
+
+            <div class=cfunctionprototype id=dg_getbufferbyte>
+                unsigned char <a href=cbuffer.htm#dg_getbufferbyte>dg_getbufferbyte</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid,
+                    UINT64 offset)
+            </div>
+
+            <div class=cfunctionprototype id=dg_putbufferbyte>
+                void <a href=cbuffer.htm#dg_putbufferbyte>dg_putbufferbyte</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid,
+                    UINT64 offset,
+                    unsigned char data)
+            </div>
+
+            <div class=cfunctionprototype id=dg_popbufferbyte>
+                unsigned char <a href=cbuffer.htm#dg_popbufferbyte>dg_popbufferbyte</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid)
+            </div>
+
+            <div class=cfunctionprototype id=dg_pushbufferbyte>
+                void <a href=cbuffer.htm#dg_pushbufferbyte>dg_pushbufferbyte</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid,
+                    unsigned char data)
+            </div>
+
+            <div class=cfunctionprototype id=dg_popbufferdword>
+                UINT64 <a href=cbuffer.htm#dg_popbufferdword>dg_popbufferdword</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid)
+            </div>
+
+            <div class=cfunctionprototype id=dg_insertinbuffer>            
+                void <a href=cbuffer.htm#dg_insertinbuffer>dg_insertinbuffer</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid,
+                    UINT64 offset, // in bytes
+                    UINT64 length)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_deleteinbuffer>
+                void <a href=cbuffer.htm#dg_deleteinbuffer>dg_deleteinbuffer</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid,
+                    UINT64 offset, // in bytes
+                    UINT64 length) // in bytes
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getbufferlength>
+                UINT64 <a href=cbuffer.htm#dg_getbufferlength>dg_getbufferlength</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getpbufferhandle>            
+                Bufferhandle* <a href=cbuffer.htm#dg_getpbufferhandle>dg_getpbufferhandle</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 bufferid)
+            </div>
+
+            <div class=cfunctionprototype id=dg_popbufferdword>
+                void <a href=cbuffer.htm#dg_push0stringtobuffersegment>dg_push0stringtobuffersegment</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid,
+                    unsigned char* psrc)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_pushdatastack>            
+                void <a href=cbuffer.htm#dg_pushdatastack>dg_pushdatastack</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 data)
+                //     ( -- data )                
+            </div>
+            
+            <div class=cfunctionprototype id=dg_popdatastack>            
+                UINT64 <a href=cbuffer.htm#dg_popdatastack>dg_popdatastack</a> (Bufferhandle* pBHarrayhead)
+                //                    ( data -- )                
+            </div>
+            
+            <div class=cfunctionprototype id=dg_newbufferset>
+                UINT64 <a href=cbuffer.htm#dg_newbufferset>dg_newbufferset</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 growby,
+                    UINT64 maxsize,
+                    UINT64 numberofbuffers)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getuint64arrayelement>
+                UINT64 <a href=cbuffer.htm#dg_getuint64arrayelement>dg_getuint64arrayelement</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid,
+                    UINT64 index)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_putuint64arrayelement>
+                void <a href=cbuffer.htm#dg_putuint64arrayelement>dg_putuint64arrayelement</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid,
+                    UINT64 index,
+                    UINT64 x)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getuint64stackelement>
+                UINT64 <a href=cbuffer.htm#dg_getuint64stackelement>dg_getuint64stackelement</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid,
+                    UINT64 index)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_putUINT64stackelement>
+                void <a href=cbuffer.htm#dg_putUINT64stackelement>dg_putUINT64stackelement</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid,
+                    UINT64 index,
+                    UINT64 x)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_stonewbuffer>
+                UINT64 <a href=cbuffer.htm#dg_stonewbuffer>dg_stonewbuffer</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 growby,
+                    UINT64 maxsize,
+                    unsigned char* psrc,
+                    UINT64 srclength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getpbufferhandlefast>
+                Bufferhandle* <a href=cbuffer.htm#dg_getpbufferhandlefast>dg_getpbufferhandlefast</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_makebuffersizeatleastx>
+                void <a href=cbuffer.htm#dg_makebuffersizeatleastx>dg_makebuffersizeatleastx</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid,
+                    UINT64 x)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getpnewbuffer>
+                unsigned char* <a href=cbuffer.htm#dg_getpnewbuffer>dg_getpnewbuffer</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferlength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_parse>
+                const char* <a href=cbuffer.htm#dg_parse>dg_parse</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64* pstringlength,
+                    unsigned char enddelimiter)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_parsemultiline>
+                const char* <a href=cbuffer.htm#dg_parsemultiline>dg_parsemultiline</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64* pstringlength,
+                    unsigned char enddelimiter)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_parseword>
+                unsigned char* <a href=cbuffer.htm#dg_parseword>dg_parseword</a> (
+                    unsigned char* dg_parseword(
+                    Bufferhandle* pBHarrayhead,
+                    UINT64* pwordlength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_parsewords>
+                unsigned char* <a href=cbuffer.htm#dg_parsewords>dg_parsewords</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64* pwordlength,
+                    unsigned char enddelimiter,
+                    UINT64* pfoundendflag,
+                    UINT64 lineterminatorsareendflag)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_tocurrent>
+                unsigned char* <a href=cbuffer.htm#dg_tocurrent>dg_tocurrent</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 newcurrentwordlist)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_tocurrent>
+                void <a href=cbuffer.htm#dg_tocurrent>dg_tocurrent</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 newcurrentwordlist)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_currentfrom>
+                UINT64 <a href=cbuffer.htm#dg_currentfrom>dg_currentfrom</a> (
+                    (Bufferhandle* pBHarrayhead)
+            </div>
+
+        </div>
+        
+        <div class=cfile id=cerror>
+        
+            <strong>cerror.cpp functions</strong>
+            
+            <div class=cfunctionprototype id=dg_initerrors>
+                void <a href=cerror.htm#dg_initerrors>dg_initerrors</a> (
+                    Bufferhandle* pBHarrayhead,
+                    unsigned int size, 
+                    const char** pError)
+            </div>
+
+            <div class=cfunctionprototype id=dg_pusherror>
+                void <a href=cerror.htm#dg_pusherror>dg_pusherror</a> (
+                    Bufferhandle* pBHarrayhead,
+                    const char* error)
+            </div>
+
+
+            <div class=cfunctionprototype id=dg_pushbuffererror>
+                void <a href=cerror.htm#dg_pushbuffererror>dg_pushbuffererror</a> (
+                    Bufferhandle* pBHarrayhead,
+                    unsigned int bufferid,
+                    unsigned int offset)    
+            </div>
+
+
+            <div class=cfunctionprototype id=dg_geterror>
+                const char* <a href=cerror.htm#dg_geterror>dg_geterror</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    unsigned int errorindex)
+            </div>
+
+            <div class=cfunctionprototype id=dg_getbuffererror>
+                void <a href=cerror.htm#dg_getbuffererror>dg_getbuffererror</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    unsigned int errorindex, 
+                    UINT64* poffset,
+                    UINT64* pbufferid)
+            </div>
+
+            <div class=cfunctionprototype id=dg_poperror>
+                const char* <a href=cerror.htm#dg_poperror>dg_poperror</a> (Bufferhandle* pBHarrayhead)
+            </div>
+
+            <div class=cfunctionprototype id=dg_popbuffererror>
+                void <a href=cerror.htm#dg_popbuffererror>dg_popbuffererror</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64* perrmsgoffset,
+                    UINT64* perrmsgbufid)
+            </div>
+
+            <div class=cfunctionprototype id=dg_geterrorcount>
+                UINT64 <a href=cerror.htm#dg_geterrorcount>dg_geterrorcount</a> (Bufferhandle* pBHarrayhead)
+            </div>
+
+            <div class=cfunctionprototype id=dg_checkerrorsonstack>
+                UINT64 <a href=cerror.htm#dg_checkerrorsonstack>dg_checkerrorsonstack</a> (Bufferhandle* pBHarrayhead)
+            </div>
+
+            <div class=cfunctionprototype id=dg_clearerrors>
+                void <a href=cerror.htm#dg_clearerrors>dg_clearerrors</a> (Bufferhandle* pBHarrayhead)
+            </div>
+
+            <div class=cfunctionprototype id=dg_droptoerrorcount>
+                void <a href=cerror.htm#dg_droptoerrorcount>dg_droptoerrorcount</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 newerrorcount)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_replaceerrors>
+                void <a href=cerror.htm#dg_replaceerrors>dg_replaceerrors</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 olderrorbufferid,
+                    UINT64 olderroroffset,
+                    UINT64 newerrorbufferid,
+                    UINT64 newerroroffset)
+            </div>
+    
+        </div>
+        
+        
+        <div class=cfile id=cglu>
+        
+            <strong>cglu.cpp functions</strong>
+
+            <div class=cfunctionprototype id=dg_patchpnewbuffer>
+                void <a href=cglu.htm#dg_patchpnewbuffer>dg_patchpnewbuffer</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 desthlistheaderid,
+                    UINT64 destparentelementid,
+                    unsigned char* pparentvalue,
+                    UINT64 parentvaluelength,
+                    Hlistheader* pmydesthlistheader)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_patchaddressusingdlsym>
+                void <a href=cglu.htm#dg_patchaddressusingdlsym>dg_patchaddressusingdlsym</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistheaderid,
+                    UINT64 parentelementid,
+                    UINT64 dylibhandle,
+                    unsigned char* pbuffer,
+                    UINT64 bufferlength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_patchaddressusingdlsymb>
+                void <a href=cglu.htm#dg_patchaddressusingdlsymb>dg_patchaddressusingdlsymb</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 desthlistheaderid,
+                    UINT64 destparentelementid,
+                    unsigned char* pparentvalue,
+                    UINT64 parentvaluelength,
+                    Hlistheader* pmydesthlistheader)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_patchaddressusinghlist>
+                void <a href=cglu.htm#dg_patchaddressusinghlist>dg_patchaddressusinghlist</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 desthlistheaderid,
+                    UINT64 destparentelementid,
+                    unsigned char* pdestbuffer,
+                    UINT64 destbufferlength,
+                    UINT64 srchlistheaderid,
+                    UINT64 srcparentelementid,
+                    unsigned char* psrcbuffer)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_patchaddressusinghlistb>
+                void <a href=cglu.htm#dg_patchaddressusinghlistb>dg_patchaddressusinghlistb</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 desthlistheaderid,
+                    UINT64 destparentelementid,
+                    unsigned char* pparentvalue,
+                    UINT64 parentvaluelength,
+                    Hlistheader* pmydesthlistheader)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_patchaddressusingoffset>
+                void <a href=cglu.htm#dg_patchaddressusingoffset>dg_patchaddressusingoffset</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 desthlistheaderid,     // id of hlist containing destination patch list
+                    UINT64 destparentelementid,   // parent element id of the destination patch list
+                    unsigned char* pdestbuffer,   // address of destination buffer to patch
+                    UINT64 destbufferlength,      // length of destination buffer
+                    unsigned char* psrcbuffer)    // pointer to source buffer (base address)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_patchaddressusingoffsetb>
+                void <a href=cglu.htm#dg_patchaddressusingoffsetb>dg_patchaddressusingoffsetb</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 desthlistheaderid,
+                    UINT64 destparentelementid,
+                    unsigned char* pparentvalue,
+                    UINT64 parentvaluelength,
+                    Hlistheader* pmydesthlistheader)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_loadsharedliblist>
+                void <a href=cglu.htm#dg_loadsharedliblist>dg_loadsharedliblist</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 srchlistid,
+                    UINT64 parentelementid,
+                    unsigned char* pparentvalue,
+                    UINT64 parentvaluelength,
+                    Hlistheader* pmysrchlistheader)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_loadfilelist>
+                void <a href=cglu.htm#dg_loadfilelist>dg_loadfilelist</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 srchlistid,
+                    UINT64 parentelementid,
+                    unsigned char* pparentvalue,
+                    UINT64 parentvaluelength,
+                    Hlistheader* pmysrchlistheader)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_loadhlistfilelist>
+                void <a href=cglu.htm#dg_loadhlistfilelist>dg_loadhlistfilelist</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 srchlistid,
+                    UINT64 parentelementid,
+                    unsigned char* pparentvalue,
+                    UINT64 parentvaluelength,
+                    Hlistheader* pmysrchlistheader)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_newbufferlist>
+                void <a href=cglu.htm#dg_newbufferlist>dg_newbufferlist</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 srchlistid,
+                    UINT64 parentelementid,
+                    unsigned char* pparentvalue,
+                    UINT64 parentvaluelength,
+                    Hlistheader* pmysrchlistheader)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_loadsymbollist>
+                void <a href=cglu.htm#dg_loadsymbollist>dg_loadsymbollist</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 symbollisthlistid,
+                    UINT64 symbollistelementid,
+                    unsigned char* pparentvalue,
+                    UINT64 parentvaluelength,
+                    Hlistheader* pmysrchlistheader)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_setpatchdestbufid>
+                void <a href=cglu.htm#dg_setpatchdestbufid>dg_setpatchdestbufid</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistid,
+                    UINT64 elementid,
+                    unsigned char* pbuffername,
+                    UINT64 buffernamelength,
+                    Hlistheader* pmyhlistheader)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_setpatchsrcbufid>
+                void <a href=cglu.htm#dg_setpatchsrcbufid>dg_setpatchsrcbufid</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistid,
+                    UINT64 elementid,
+                    unsigned char* pbuffername,
+                    UINT64 buffernamelength,
+                    Hlistheader* pmyhlistheader)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_setpatchsrclib>
+                void <a href=cglu.htm#dg_setpatchsrclib>dg_setpatchsrclib</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistid,
+                    UINT64 elementid,
+                    unsigned char* plibname,
+                    UINT64 libnamelength,
+                    Hlistheader* pmyhlistheader)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_setpatchsrcsymbollist>
+                void <a href=cglu.htm#dg_setpatchsrcsymbollist>dg_setpatchsrcsymbollist</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistid,
+                    UINT64 elementid,
+                    unsigned char* psymbollistname,
+                    UINT64 symbollistnamelength,
+                    Hlistheader* pmyhlistheader)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_setpatchdestsymbollist>
+                void <a href=cglu.htm#dg_setpatchdestsymbollist>dg_setpatchdestsymbollist</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistid,
+                    UINT64 elementid,
+                    unsigned char* psymbollistname,
+                    UINT64 symbollistnamelength,
+                    Hlistheader* pmyhlistheader)
+            </div>
+
+            <div class=cfunctionprototype id=dg_callpatchsrclib>
+                UINT64 <a href=cglu.htm#dg_callpatchsrclib>dg_callpatchsrclib</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistid,
+                    UINT64 elementid,
+                    unsigned char* pfunctionname,
+                    UINT64 functionnamelength,
+                    Hlistheader* pmyhlistheader)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_callpatchsrclibtods>
+                void <a href=cglu.htm#dg_callpatchsrclibtods>dg_callpatchsrclibtods</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistid,
+                    UINT64 elementid,
+                    unsigned char* pfunctionname,
+                    UINT64 functionnamelength,
+                    Hlistheader* pmyhlistheader)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_callpatchsrcbufsymbol>
+                UINT64 <a href=cglu.htm#dg_callpatchsrcbufsymbol>dg_callpatchsrcbufsymbol</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistid,
+                    UINT64 elementid,
+                    unsigned char* pfunctionname,
+                    UINT64 functionnamelength,
+                    Hlistheader* pmyhlistheader)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_callpatchsrcbufsymboltods>
+                void <a href=cglu.htm#dg_callpatchsrcbufsymboltods>dg_callpatchsrcbufsymboltods</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistid,
+                    UINT64 elementid,
+                    unsigned char* pfunctionname,
+                    UINT64 functionnamelength,
+                    Hlistheader* pmyhlistheader)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_callpatchdestbufoffset>
+                UINT64 <a href=cglu.htm#dg_callpatchdestbufoffset>dg_callpatchdestbufoffset</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistid,
+                    UINT64 elementid,
+                    unsigned char* pdestoffset,
+                    UINT64 destoffsetlength,
+                    Hlistheader* pmyhlistheader)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_callpatchdestbufoffsttods>
+                UINT64 <a href=cglu.htm#dg_callpatchdestbufoffsttods>dg_callpatchdestbufoffsttods</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistid,
+                    UINT64 elementid,
+                    unsigned char* pdestoffset,
+                    UINT64 destoffsetlength,
+                    Hlistheader* pmyhlistheader)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_glueidhidtods>
+                void <a href=cglu.htm#dg_glueidhidtods>dg_glueidhidtods</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistid,
+                    UINT64 elementid,
+                    unsigned char* pfunctionname,
+                    UINT64 functionnamelength,
+                    Hlistheader* pmyhlistheader)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_gluUINT64valuetods>
+                void <a href=cglu.htm#dg_gluUINT64valuetods>dg_gluUINT64valuetods</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistid,
+                    UINT64 elementid,
+                    unsigned char* pfunctionname,
+                    UINT64 functionnamelength,
+                    Hlistheader* pmyhlistheader)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_gluvaluetoss>
+                void <a href=cglu.htm#dg_gluvaluetoss>dg_gluvaluetoss</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistid,
+                    UINT64 elementid,
+                    unsigned char* pfunctionname,
+                    UINT64 functionnamelength,
+                    Hlistheader* pmyhlistheader)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_glufuncnglu>
+                void <a href=cglu.htm#dg_glufuncnglu>dg_glufuncnglu</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 srchlistid,
+                    UINT64 parentelementid,
+                    unsigned char* pparentvalue,
+                    UINT64 parentvaluelength,
+                    Hlistheader* pmysrchlistheader)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_glu>
+                void <a href=cglu.htm#dg_glu>dg_glu</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistheaderid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_nglu>
+                void <a href=cglu.htm#dg_nglu>dg_nglu</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistid)
+            </div>
+            
+        </div>
+        
+        
+        <div class=cfile id=chierarchicallist>
+        
+            <strong>chierarchicallist.cpp functions</strong>
+        
+            <div class=cfunctionprototype id=dg_gethlistheaderarrayheader>
+                void <a href=chierarchicallist.htm#dg_gethlistheaderarrayheader>dg_gethlistheaderarrayheader</a> (
+                    Bufferhandle* pBHarrayhead,
+                    Freeablelstringarrayheader* phlistheaderarrayheader,
+                    UINT64 hlistheaderarrayheaderlength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_querycreatehlistheaderarray>
+                UINT64 <a href=chierarchicallist.htm#dg_querycreatehlistheaderarray>dg_querycreatehlistheaderarray</a> (
+                    Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_gethlistheader>
+                void <a href=chierarchicallist.htm#dg_gethlistheader>dg_gethlistheader</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistheaderid,
+                    Hlistheader* phlistheader,
+                    UINT64 hlistheaderlength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_freehlistmemory>
+                void <a href=chierarchicallist.htm#dg_freehlistmemory>dg_freehlistmemory</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    struct Hlistheader* phlist)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_allocatehlistmemory>
+                void <a href=chierarchicallist.htm#dg_allocatehlistmemory>dg_allocatehlistmemory</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    struct Hlistheader* phlist,
+                    UINT64 hlistlength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_newhlist>
+                UINT64 <a href=chierarchicallist.htm#dg_newhlist>dg_newhlist</a> (
+                    Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_freehlist>
+                void <a href=chierarchicallist.htm#dg_freehlist>dg_freehlist</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistheaderid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_linklasthlistchildelement>
+                void <a href=chierarchicallist.htm#dg_linklasthlistchildelement>dg_linklasthlistchildelement</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistheaderid,
+                    UINT64 elementheaderid,
+                    UINT64 parentelementheaderid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_unlinkhlistchildelement>
+                void <a href=chierarchicallist.htm#dg_unlinkhlistchildelement>dg_unlinkhlistchildelement</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistheaderid,
+                    UINT64 elementheaderid)
+            </div>
+            
+             <div class=cfunctionprototype id=dg_newhlistelement>
+                UINT64 <a href=chierarchicallist.htm#dg_newhlistelement>dg_newhlistelement</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistid,
+                    UINT64 parentelementid,
+                    unsigned char* pname,
+                    UINT64 namelength,
+                    unsigned char* pvalue,
+                    UINT64 valuelength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_freehlistelement>
+                void <a href=chierarchicallist.htm#dg_freehlistelement>dg_freehlistelement</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistheaderid,
+                    UINT64 elementheaderid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_gethlistlastchildofparent>
+                UINT64 <a href=chierarchicallist.htm#dg_gethlistlastchildofparent>dg_gethlistlastchildofparent</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistheaderid,
+                    UINT64 parentelementid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_gethlistfirstchild>
+                UINT64 <a href=chierarchicallist.htm#dg_gethlistfirstchild>dg_gethlistfirstchild</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistheaderid,
+                    UINT64 parentelementid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_prunehlistelement>
+                void <a href=chierarchicallist.htm#dg_prunehlistelement>dg_prunehlistelement</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistheaderid,
+                    UINT64 elementheaderid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_gethlistnextsibling>
+                UINT64 <a href=chierarchicallist.htm#dg_gethlistnextsibling>dg_gethlistnextsibling</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistheaderid,
+                    UINT64 childelementid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_gethlistprevioussibling>
+                UINT64 <a href=chierarchicallist.htm#dg_gethlistprevioussibling>dg_gethlistprevioussibling</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistheaderid,
+                    UINT64 childelementid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_gethlistelementparent>
+                UINT64 <a href=chierarchicallist.htm#dg_gethlistelementparent>dg_gethlistelementparent</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistheaderid,
+                    UINT64 elementid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getshlistelementnom>
+                unsigned char* <a href=chierarchicallist.htm#dg_getshlistelementnom>dg_getshlistelementnom</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistheaderid,
+                    UINT64 elementid,
+                    UINT64* pnamelength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getshlistelementvalue>
+                unsigned char* <a href=chierarchicallist.htm#dg_getshlistelementvalue>dg_getshlistelementvalue</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistheaderid,
+                    UINT64 elementid,
+                    UINT64* pvaluelength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_sethlistelementvalue>
+                unsigned char* <a href=chierarchicallist.htm#dg_sethlistelementvalue>dg_sethlistelementvalue</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistheaderid,
+                    UINT64 elementid
+                    unsigned char* pvalue,
+                    UINT64 valuelength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getshlistelement>
+                void <a href=chierarchicallist.htm#dg_getshlistelement>dg_getshlistelement</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistheaderid,
+                    UINT64 elementid,
+                    unsigned char** ppname,
+                    UINT64* pnamelength,
+                    unsigned char** ppvalue,
+                    UINT64* pvaluelength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_sortcomparehlistnom>
+                INT64 <a href=chierarchicallist.htm#dg_sortcomparehlistnom>dg_sortcomparehlistnom</a> (
+                    Bufferhandle* pBHarrayhead,
+                    void* pcomparedata,
+                    UINT64 comparedatalength,
+                    UINT64 keyofmidrangevalue)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_dobinaryinsertsortstep>
+                INT64 <a href=chierarchicallist.htm#dg_dobinaryinsertsortstep>dg_dobinaryinsertsortstep</a> (
+                    Bufferhandle* pBHarrayhead,
+                    unsigned char* psortedkeyslstring,
+                    UINT64 sortedkeyslength,
+                    INT64 (*pcompareroutine)(Bufferhandle*, void*, UINT64, UINT64),
+                    void* pcomparedata,
+                    UINT64 comparedatalength,
+                    UINT64* pstartindex,
+                    UINT64* pendindex,
+                    UINT64* ptofindbeforerangeflag,
+                    UINT64* ploopdoneflag)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_findsortedhlistchildsub>
+                UINT64 <a href=chierarchicallist.htm#dg_findsortedhlistchildsub>dg_findsortedhlistchildsub</a> (
+                    Bufferhandle* pBHarrayhead,
+                    unsigned char* pname,
+                    UINT64 namelength,
+                    UINT64 sortedkeyslstringlength,
+                    unsigned char* psortedkeyslstring,
+                    UINT64* pnamelstringoffsetbuffer,
+                    unsigned char* pnamelstringstringbuffer,
+                    UINT64* pindexofkeyaftermatch,
+                    UINT64* pkey)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_findsortedhlistchild>
+                UINT64 <a href=chierarchicallist.htm#dg_findsortedhlistchild>dg_findsortedhlistchild</a> (
+                    Bufferhandle* pBHarrayhead,
+                    unsigned char* pname,
+                    UINT64 namelength,
+                    UINT64 hlistheaderid,
+                    UINT64 parentelementid,
+                    UINT64* pindexofkeyaftermatch,
+                    UINT64* pkey)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getshlistelementnamene>
+                const char* <a href=chierarchicallist.htm#dg_getshlistelementnamene>dg_getshlistelementnamene</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistheaderid,
+                    UINT64 elementid,
+                    unsigned char** ppname,
+                    UINT64* pnamelength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_changehlistelementparent>
+                void <a href=chierarchicallist.htm#dg_changehlistelementparent>dg_changehlistelementparent</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistid,
+                    UINT64 elementid,
+                    UINT64 newparentelementid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getnumberofsortedchildren>
+                UINT64 <a href=chierarchicallist.htm#dg_getnumberofsortedchildren>dg_getnumberofsortedchildren</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistheaderid,
+                    UINT64 parentelementid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getidofsortedhlistchildn>
+                UINT64 <a href=chierarchicallist.htm#dg_getidofsortedhlistchildn>dg_getidofsortedhlistchildn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistheaderid,
+                    UINT64 parentelementid,
+                    UINT64 sortkeyindex)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_addnsamechartostring>
+                void <a href=chierarchicallist.htm#dg_addnsamechartostring>dg_addnsamechartostring</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 n,
+                    unsigned char c)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_hlisttodglumlstring>
+                void <a href=chierarchicallist.htm#dg_hlisttodglumlstring>dg_hlisttodglumlstring</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistid,
+                    UINT64 rootelementid,
+                    UINT64 indentationstepsize,
+                    UINT64 currentindentationlevel)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_newunsortedhlistelement>
+                UINT64 <a href=chierarchicallist.htm#dg_newunsortedhlistelement>dg_newunsortedhlistelement</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistid,
+                    Hlistheader myhlistheader,
+                    UINT64 parentelementid,
+                    unsigned char* pname,
+                    UINT64 namelength,
+                    unsigned char* pvalue,
+                    UINT64 valuelength,
+                    UINT64 previouselementid,
+                    UINT64 nextelementid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_callhlistchildren>
+                void <a href=chierarchicallist.htm#dg_callhlistchildren>dg_callhlistchildren</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistid,
+                    UINT64 parentelementid,
+                    UINT64 maxnumberoffunctions,
+                    void (**pfunctions)(Bufferhandle*, UINT64, UINT64, unsigned char*, UINT64, Hlistheader*))
+            </div>
+            
+            <div class=cfunctionprototype id=dg_callhlistchildrenbyn>
+                void <a href=chierarchicallist.htm#dg_callhlistchildrenbyn>dg_callhlistchildrenbyn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistid,
+                    UINT64 parentelementid,
+                    UINT64 fsortedkeyslstringlength,
+                    unsigned char* pfsortedkeyslstring,
+                    UINT64* pfnamelstringoffsetbuffer,
+                    unsigned char* pfnamelstringstringbuffer,
+                    void (**pfunctions)(Bufferhandle*, UINT64, UINT64, unsigned char*, UINT64, Hlistheader*))
+
+            </div>
+            
+            <div class=cfunctionprototype id=dg_packhlist>
+                UINT64 <a href=chierarchicallist.htm#dg_packhlist>dg_packhlist</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_unpackhlist>
+                UINT64 <a href=chierarchicallist.htm#dg_unpackhlist>dg_unpackhlist</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 packedbufferid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_namestringtovaluestring>
+                unsigned char* <a href=chierarchicallist.htm#dg_namestringtovaluestring>dg_namestringtovaluestring</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 hlistid,
+                    UINT64 elementid,
+                    unsigned char* pname,
+                    UINT64 namelength,
+                    UINT64* pvaluelength)
+            </div>
+            
+        </div>
+        
+    
+        <div class=cfile id=cinitwordlist>
+        
+            <strong>cinitwordlist.cpp functions</strong>
+        
+            <div class=cfunctionprototype id=dg_initwordlists>        
+                void <a href=cinitwordlist.htm#dg_initwordlists>dg_initwordlists</a> (Bufferhandle* pBHarrayhead)            
+            </div>
+        
+        </div>
+    
+        <div class=cfile id=clstring>
+        
+            <strong>clstring.cpp functions</strong>
+    
+            <div class=cfunctionprototype id=dg_getlstringstartoffset>    
+                UINT64 <a href=clstring.htm#dg_initwordlists>dg_getlstringstartoffset</a> (
+                    Bufferhandle *pBHarrayhead,
+                    UINT64 offsetbufferid,
+                    UINT64 stringid)
+            </div>
+
+            <div class=cfunctionprototype id=dg_getlstringlength>
+                UINT64 <a href=clstring.htm#dg_getlstringlength>dg_getlstringlength</a> (
+                    Bufferhandle *pBHarrayhead,
+                    UINT64 offsetbufferid,
+                    UINT64 stringid)
+            </div>
+
+            <div class=cfunctionprototype id=dg_getnumberoflstringsonstack>
+                UINT64 <a href=clstring.htm#dg_getnumberoflstringsonstack>dg_getnumberoflstringsonstack</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferid)
+            </div>
+
+            <div class=cfunctionprototype id=dg_getplstring>
+                unsigned char* <a href=clstring.htm#dg_getplstring>dg_getplstring</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64  offsetbufferid,
+                    UINT64  stringbufferid,
+                    UINT64  stringid,
+                    UINT64* pstringlength)
+            </div>
+
+            <div class=cfunctionprototype id=dg_getlstring>
+                void <a href=clstring.htm#dg_getlstring>dg_getlstring</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferid,
+                    UINT64 stringbufferid,
+                    UINT64 stringid,
+                    UINT64 maxlength,
+                    unsigned char* pdest)        
+            </div>
+
+            <div class=cfunctionprototype id=dg_poplstring>
+                void <a href=clstring.htm#dg_poplstring>dg_poplstring</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferid,
+                    UINT64 stringbufferid,
+                    UINT64 maxlength,
+                    unsigned char* pdest)        
+            </div>
+
+            <div class=cfunctionprototype id=dg_pushlstring>
+                void <a href=clstring.htm#dg_pushlstring>dg_pushlstring</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferid,
+                    UINT64 stringbufferid,
+                    UINT64 length,
+                    unsigned char* psrc)        
+            </div>
+
+            <div class=cfunctionprototype id=dg_growlstring>
+                void <a href=clstring.htm#dg_growlstring>dg_growlstring</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferid,
+                    UINT64 stringbufferid,
+                    UINT64 length)
+            </div>
+
+            <div class=cfunctionprototype id=dg_catlstring>
+                void <a href=clstring.htm#dg_catlstring>dg_catlstring</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferid)
+            </div>
+
+            <div class=cfunctionprototype id=dg_stotoplstring>
+                void <a href=clstring.htm#dg_stotoplstring>dg_stotoplstring</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferid,
+                    UINT64 stringbufferid,
+                    UINT64 length,
+                    unsigned char* psrc)                        
+            </div>
+
+            <div class=cfunctionprototype id=dg_picklstring>
+                void <a href=clstring.htm#dg_picklstring>dg_picklstring</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferid,
+                    UINT64 stringbufferid,
+                    UINT64 n)
+            </div>
+
+            <div class=cfunctionprototype id=dg_droplstring>
+                void <a href=clstring.htm#dg_droplstring>dg_droplstring</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferid,
+                    UINT64 stringbufferid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_dropnlstrings>
+                void <a href=clstring.htm#dg_dropnlstrings>dg_dropnlstrings</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferid,
+                    UINT64 stringbufferid,
+                    UINT64 n)
+            </div>
+
+            <div class=cfunctionprototype id=dg_deletelstring>
+                void <a href=clstring.htm#dg_deletelstring>dg_deletelstring</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferid,
+                    UINT64 stringbufferid,
+                    UINT64 stringid)
+            </div>
+
+            <div class=cfunctionprototype id=dg_insertlstring>
+                void <a href=clstring.htm#dg_insertlstring>dg_insertlstring</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferid,
+                    UINT64 stringbufferid,
+                    UINT64 stringid,
+                    UINT64 length)
+            </div>
+
+            <div class=cfunctionprototype id=dg_deleteinlstring>
+                void <a href=clstring.htm#dg_deleteinlstring>dg_deleteinlstring</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferid,
+                    UINT64 stringbufferid,
+                    UINT64 stringid,
+                    UINT64 offset,
+                    UINT64 length)
+            </div>
+
+            <div class=cfunctionprototype id=dg_insertinlstring>
+                void <a href=clstring.htm#dg_insertinlstring>dg_insertinlstring</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferid,
+                    UINT64 stringbufferid,
+                    UINT64 stringid,
+                    UINT64 offset,
+                    UINT64 length)
+            </div>
+
+            <div class=cfunctionprototype id=dg_catlstringn>
+                void <a href=clstring.htm#dg_catlstringn>dg_catlstringn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferid,
+                    UINT64 stringbufferid,
+                    UINT64 stringid)
+            </div>
+
+            <div class=cfunctionprototype id=dg_copystolstringn>
+                void <a href=clstring.htm#dg_copystolstringn>dg_copystolstringn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferid,
+                    UINT64 stringbufferid,
+                    UINT64 stringid,
+                    UINT64 offset,
+                    unsigned char* psrc,
+                    UINT64 length)
+            </div>
+
+            <div class=cfunctionprototype id=dg_copysfromlstringn>
+                void <a href=clstring.htm#dg_copysfromlstringn>dg_copysfromlstringn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferid,
+                    UINT64 stringbufferid,
+                    UINT64 stringid,
+                    UINT64 offset,
+                    UINT64 length,
+                    unsigned char* pdest)                        
+            </div>
+
+            <div class=cfunctionprototype id=dg_setlengthlstringn>
+                void <a href=clstring.htm#dg_setlengthlstringn>dg_setlengthlstringn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferid,
+                    UINT64 stringbufferid,
+                    UINT64 stringid,
+                    UINT64 newlength)
+            </div>
+
+            <div class=cfunctionprototype id=dg_replacelstringn>
+                void <a href=clstring.htm#dg_replacelstringn>dg_replacelstringn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferid,
+                    UINT64 stringbufferid,
+                    UINT64 stringid,
+                    unsigned char* psrc,
+                    UINT64 length)
+            </div>
+
+            <div class=cfunctionprototype id=dg_copylstringntoreplacelstringn>
+                void <a href=clstring.htm#dg_copylstringntoreplacelstringn>dg_copylstringntoreplacelstringn</a> (
+                        Bufferhandle* pBHarrayhead,
+                        UINT64 srcoffsetbufferid,
+                        UINT64 srcstringbufferid,
+                        UINT64 srcstringid,
+                        UINT64 destoffsetbufferid,
+                        UINT64 deststringbufferid,
+                        UINT64 deststringid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_copytoinsertlstrntom>
+                void <a href=clstring.htm#dg_copytoinsertlstrntom>dg_copytoinsertlstrntom</a> (
+                        Bufferhandle* pBHarrayhead,
+                        UINT64 srcoffsetbufferidn,
+                        UINT64 srcstringbufferidn,
+                        UINT64 srcstringidn,
+                        UINT64 srcoffsetn,
+                        UINT64 destoffsetbufferidm,
+                        UINT64 deststringbufferidm,
+                        UINT64 deststringidm,
+                        UINT64 destoffsetm,
+                        UINT64 length)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_makesurelstringnexists>
+                void <a href=clstring.htm#dg_makesurelstringnexists>dg_makesurelstringnexists</a> (
+                        Bufferhandle* pBHarrayhead,
+                        UINT64 lstringoffsetbufferid,
+                        UINT64 lstringstringbufferid,
+                        UINT64 n)
+            </div>
+
+            <div class=cfunctionprototype id=dg_freefreeablelstringarray>
+                void <a href=clstring.htm#dg_freefreeablelstringarray>dg_freefreeablelstringarray</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 freeindexbuffer)
+            </div>
+
+            <div class=cfunctionprototype id=dg_newfreeablelstringarray>
+                UINT64 <a href=clstring.htm#dg_newfreeablelstringarray>dg_newfreeablelstringarray</a> (Bufferhandle* pBHarrayhead)
+            </div>
+
+            <div class=cfunctionprototype id=dg_freefreeablelstring>
+                void <a href=clstring.htm#dg_freefreeablelstring>dg_freefreeablelstring</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 freeindexbuffer,
+                    UINT64 lstringindex)
+            </div>
+
+            <div class=cfunctionprototype id=dg_newfreeablelstring>
+                UINT64 <a href=clstring.htm#dg_newfreeablelstring>dg_newfreeablelstring</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 freeindexbuffer)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_isfreeablelstringfree>
+                UINT64 <a href=clstring.htm#dg_isfreeablelstringfree>dg_isfreeablelstringfree</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 freeindexbuffer,
+                    UINT64 flstringid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getsflstrheader>
+                Freeablelstringarrayheader* <a href=clstring.htm#dg_getsflstrheader>dg_getsflstrheader</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 freeindexbuffer,
+                    UINT64* pflstrheaderlength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_copyflstrheadertos>
+                void<a href=clstring.htm#dg_copyflstrheadertos>dg_copyflstrheadertos</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 freeindexbuffer,
+                    Freeablelstringarrayheader* pflstrheader,
+                    UINT64 flstrheaderlength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_insertsintoflstrn>
+                void<a href=clstring.htm#dg_insertsintoflstrn>dg_insertsintoflstrn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 freeindexbuffer,
+                    UINT64 flstringid,
+                    UINT64 offset,
+                    UINT64 length,
+                    unsigned char* pdest)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_copysfromflstrn>
+                void<a href=clstring.htm#dg_copysfromflstrn>dg_copysfromflstrn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 freeindexbuffer,
+                    UINT64 flstringid,
+                    UINT64 offset,
+                    unsigned char* psrc,
+                    UINT64 length)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_copytoinsertflstrntom>
+                void<a href=clstring.htm#dg_copytoinsertflstrntom>dg_copytoinsertflstrntom</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 freeindexbuffern,
+                    UINT64 flstringnid,
+                    UINT64 offsetn,
+                    UINT64 freeindexbufferm,
+                    UINT64 flstringmid,
+                    UINT64 offsetm,
+                    UINT64 length)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_deleteinflstringn>
+                void<a href=clstring.htm#dg_deleteinflstringn>dg_deleteinflstringn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 freeindexbuffer,
+                    UINT64 flstringid,
+                    UINT64 offset,
+                    UINT64 length)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getlengthflstringn>
+                UINT64<a href=clstring.htm#dg_getlengthflstringn>dg_getlengthflstringn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 freeindexbuffer,
+                    UINT64 flstringid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_newfreeablelstringonend>
+                UINT64<a href=clstring.htm#dg_newfreeablelstringonend>dg_newfreeablelstringonend</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 freeindexbuffer,
+                    unsigned char* plstring,
+                    UINT64 lstringlength))
+            </div>
+            
+            <div class=cfunctionprototype id=dg_comparestolstringn>
+                INT64 <a href=clstring.htm#dg_comparestolstringn>dg_comparestolstringn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    unsigned char* ps,
+                    UINT64 slength,
+                    UINT64 lstringoffsetbufferid,
+                    UINT64 lstringstringbufferid,
+                    UINT64 n)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_deleteUINT64inlstringn>
+                void <a href=clstring.htm#dg_deleteUINT64inlstringn>dg_deleteUINT64inlstringn</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 lstringoffsetbufferid,
+                    UINT64 lstringstringbufferid,
+                    UINT64 lstringindex,
+                    UINT64 UINT64toremove)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_insertwithcfillinlstringn>
+                void <a href=clstring.htm#dg_insertwithcfillinlstringn>dg_insertwithcfillinlstringn</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 lstringoffsetbufferid,
+                    UINT64 lstringstringbufferid,
+                    UINT64 lstringindex,
+                    UINT64 offset,
+                    UINT64 length,
+                    unsigned char cvalue)     
+            </div>
+            
+            <div class=cfunctionprototype id=dg_packlstring>
+                void <a href=clstring.htm#dg_packlstring>dg_packlstring</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 lstringoffsetbufferid,
+                    UINT64 lstringstringbufferid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_isbufferapackedlstring>
+                UINT64 <a href=clstring.htm#dg_isbufferapackedlstring>dg_isbufferapackedlstring</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 lstringstringbufferid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_unpacklstring>
+                UINT64 <a href=clstring.htm#dg_unpacklstring>dg_unpacklstring</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 lstringstringbufferid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_urlencodelstring>
+                UINT64 <a href=clstring.htm#dg_urlencodelstring>dg_urlencodelstring</a> (
+                    UINT64 lstringoffsetbufferid,
+                    UINT64 lstringstringbufferid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_urldecodelstring>
+                UINT64 <a href=clstring.htm#dg_urldecodelstring>dg_urldecodelstring</a> (
+                    UINT64 lstringoffsetbufferid,
+                    UINT64 lstringstringbufferid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_stonewstring>
+                UINT64 <a href=clstring.htm#dg_stonewstring>dg_stonewstring</a> (
+                    unsigned char* pstring,
+                    UINT64 stringlength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_stonew0string>
+                UINT64 <a href=clstring.htm#dg_stonew0string>dg_stonew0string</a> (
+                    unsigned char* pstring,
+                    UINT64 stringlength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_pzerostringtonewstring>
+                UINT64 <a href=clstring.htm#dg_pzerostringtonewstring>dg_pzerostringtonewstring</a> (
+                    unsigned char* pzerostring)
+            </div>
+            
+            
+                       
+        </div>
+        
+        <div class=cfile id=cmiscellaneous>
+        
+            <strong>cmiscellaneous.cpp functions</strong>
+
+            <div class=cfunctionprototype id=dg_getbharrayheadsize>            
+                UINT64 <a href=cmiscellaneous.htm#dg_getbharrayheadsize>dg_getbharrayheadsize</a> ()
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getnearesthighestmultiple>
+                UINT64 <a href=cmiscellaneous.htm#dg_getnearesthighestmultiple>dg_getnearesthighestmultiple</a> (
+                UINT64 n,
+                UINT64 pagesize)
+            </div>
+
+            <div class=cfunctionprototype id=dg_calcnearestpagesize>
+                UINT64 <a href=cmiscellaneous.htm#dg_calcnearestpagesize>dg_calcnearestpagesize</a> (UINT64 n)
+            </div>
+
+            <div class=cfunctionprototype id=dg_getlocalpath>
+                void <a href=cmiscellaneous.htm#dg_getlocalpath>dg_getlocalpath</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_pushenvtobuf>
+                void <a href=cmiscellaneous.htm#dg_pushenvtobuf>dg_pushenvtobuf</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid,
+                    const char* penvname)
+            </div>
+
+            <div class=cfunctionprototype id=dg_getevalstdinfileid>
+                UINT64 <a href=cmiscellaneous.htm#dg_getevalstdinfileid>dg_getevalstdinfileid</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getevalfilenamefileid>
+                UINT64 <a href=cmiscellaneous.htm#dg_getevalfilenamefileid>dg_getevalfilenamefileid</a> (
+                    Bufferhandle* pBHarrayhead,
+                    unsigned char* pbuf,
+                    UINT64* pbuflength)
+            </div>
+
+            <div class=cfunctionprototype id=dg_getevalargsfileid>
+                UINT64 <a href=cmiscellaneous.htm#dg_getevalargsfileid>dg_getevalargsfileid</a> (Bufferhandle* pBHarrayhead)
+            </div>
+
+<!--            <div class=cfunctionprototype id=dg_getevalpathtranslatedfileid>
+                UINT64 <a href=cmiscellaneous.htm#dg_getevalpathtranslatedfileid>dg_getevalpathtranslatedfileid</a> (Bufferhandle* pBHarrayhead)
+           </div> -->
+
+            <div class=cfunctionprototype id=dg_getnoscriptfileid>
+                UINT64 <a href=cmiscellaneous.htm#dg_getnoscriptfileid>dg_getnoscriptfileid</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getiisquerystringfileid>
+                UINT64 <a href=cmiscellaneous.htm#dg_getiisquerystringfileid>dg_getiisquerystringfileid</a> (
+                    Bufferhandle* pBHarrayhead,
+                    unsigned char* pname,
+                    UINT64 namelength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getapachequerystrfileid>
+                UINT64 <a href=cmiscellaneous.htm#dg_getapachequerystrfileid>dg_getapachequerystrfileid</a> (
+                    Bufferhandle* pBHarrayhead,
+                    unsigned char* pname,
+                    UINT64 namelength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getquerystringfileid>
+                UINT64 <a href=cmiscellaneous.htm#dg_getquerystringfileid>dg_getquerystringfileid</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_checkformatchafterslash>
+                UINT64 <a href=cmiscellaneous.htm#dg_checkformatchafterslash>dg_checkformatchafterslash</a> (
+                    unsigned char* pbufa,
+                    UINT64 bufalength,
+                    unsigned char* pbufb,
+                    UINT64 bufblength)
+            </div>
+
+<!--            <div class=cfunctionprototype id=dg_getscriptnotfoundfileid>
+                UINT64 <a href=cmiscellaneous.htm#dg_getscriptnotfoundfileid>dg_getscriptnotfoundfileid</a> (Bufferhandle* pBHarrayhead)
+            </div> -->
+
+            <div class=cfunctionprototype id=dg_getevaluatefileid>
+                UINT64 <a href=cmiscellaneous.htm#dg_getevaluatefileid>dg_getevaluatefileid</a> (Bufferhandle* pBHarrayhead)
+            </div>
+
+            <div class=cfunctionprototype id=dg_querygetpost>
+                void <a href=cmiscellaneous.htm#dg_querygetpost>dg_querygetpost</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 firsttimethrough)
+            </div>
+
+            <div class=cfunctionprototype id=dg_closeevalfileid>
+                void <a href=cmiscellaneous.htm#dg_closeevalfileid>dg_closeevalfileid</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 fileid)
+            </div>
+
+            <div class=cfunctionprototype id=dg_getline>
+                UINT64 <a href=cbuffer.htm#dg_getline>dg_getline</a> (
+                   Bufferhandle* pBHarrayhead,
+                   UINT64 fileid,
+                   UINT64 bufferid,
+                   const char* pforceerror)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_captureerrorline>
+                void <a href=cmiscellaneous.htm#dg_captureerrorline>dg_captureerrorline</a> (
+                   Bufferhandle* pBHarrayhead,
+                   UINT64 bufferid)
+            </div>
+
+            <div class=cfunctionprototype id=dg_evaluatefileid>
+                void <a href=cmiscellaneous.htm#dg_evaluatefileid>dg_evaluatefileid</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 fileid,
+                    UINT64* pfirsttimethrough)
+            </div>
+
+            <div class=cfunctionprototype id=dg_sendnoscriptfilepage>
+                void <a href=cmiscellaneous.htm#dg_sendnoscriptfilepage>dg_sendnoscriptfilepage</a> (Bufferhandle* pBHarrayhead)
+            </div>
+
+            <div class=cfunctionprototype id=dg_sendfilenotfoundpage>
+                void <a href=cmiscellaneous.htm#dg_sendfilenotfoundpage>dg_sendfilenotfoundpage</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 olderrorcount)
+            </div>
+
+            <div class=cfunctionprototype id=dg_showinputmode>
+                void <a href=cmiscellaneous.htm#dg_showinputmode>dg_showinputmode</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 fileid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_showerrorspage>
+                void <a href=cmiscellaneous.htm#dg_showerrorspage>dg_showerrorspage</a> (
+                    Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_showinputmodepage>
+                void <a href=cmiscellaneous.htm#dg_showinputmodepage>dg_showinputmodepage</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 fileid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_sendgetenvvarerrorpage>
+                void <a href=cmiscellaneous.htm#dg_sendgetenvvarerrorpage>dg_sendgetenvvarerrorpage</a> (Bufferhandle* pBHarrayhead)
+            </div>
+
+<!--            <div class=cfunctionprototype id=dg_showerrorspage>
+                void <a href=cmiscellaneous.htm#dg_showerrorspage>dg_showerrorspage</a> (Bufferhandle* pBHarrayhead)
+            </div> -->
+
+            <div class=cfunctionprototype id=dg_doinputstuff>
+                void <a href=cmiscellaneous.htm#dg_doinputstuff>dg_doinputstuff</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64* pfirsttimethrough)
+            </div>
+
+            <div class=cfunctionprototype id=dg_evaluatebuffer>
+                void <a href=cmiscellaneous.htm#dg_evaluatebuffer>dg_evaluatebuffer</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 bufferid)
+            </div>
+
+            <div class=cfunctionprototype id=dg_argstoargsbuffer>
+                void <a href=cmiscellaneous.htm#dg_argstoargsbuffer>dg_argstoargsbuffer</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    int argc, 
+                    char* argv[])
+            </div>
+
+            <div class=cfunctionprototype id=dg_readstdinavailabletobuffer>
+                void <a href=cmiscellaneous.htm#dg_readstdinavailabletobuffer>dg_readstdinavailabletobuffer</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid)
+            </div>
+
+            <div class=cfunctionprototype id=dg_compilesegment>
+                void <a href=cmiscellaneous.htm#dg_compilesegment>dg_compilesegment</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    const char* psrc, 
+                    UINT64 length)
+            </div>
+
+            <div class=cfunctionprototype id=dg_compilecallcore>
+                void <a href=cmiscellaneous.htm#dg_compilecallcore>dg_compilecallcore</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 addr)
+            </div>
+
+            <div class=cfunctionprototype id=dg_compilecallcorepreserveregs>
+                void <a href=cmiscellaneous.htm#dg_compilecallcorepreserveregs>dg_compilecallcorepreserveregs</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 addr)
+            </div>
+
+            <div class=cfunctionprototype id=dg_compilepushdatastack>
+                void <a href=cmiscellaneous.htm#dg_compilepushdatastack>dg_compilepushdatastack</a> (Bufferhandle* pBHarrayhead)
+            </div>
+
+            <div class=cfunctionprototype id=dg_smslashrem>
+                void <a href=cmiscellaneous.htm#dg_smslashrem>dg_smslashrem</a> (UINT64* pints)
+            </div>
+
+            <div class=cfunctionprototype id=dg_fmslashmod>
+                void <a href=cmiscellaneous.htm#dg_fmslashmod>dg_fmslashmod</a> (UINT64* pints)
+            </div>
+
+            <div class=cfunctionprototype id=dg_checkbharrayhead>
+                const char* <a href=cmiscellaneous.htm#dg_checkbharrayhead>dg_checkbharrayhead</a> (Bufferhandle* pBHarrayhead)
+            </div>
+
+            <div class=cfunctionprototype id=dg_checkbharray>
+                const char* <a href=cmiscellaneous.htm#dg_checkbharray>dg_checkbharray</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_stonewstring>
+                void <a href=cmiscellaneous.htm#dg_stonewstring>dg_stonewstring</a> (
+                    Bufferhandle* pBHarrayhead,
+                    unsigned char* pstring,
+                    UINT64 stringlength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_pzerostringtonewstring>
+                void <a href=cmiscellaneous.htm#dg_pzerostringtonewstring>dg_pzerostringtonewstring</a> (
+                    Bufferhandle* pBHarrayhead,
+                    unsigned char* pzerostring)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_checkargs>
+                const char* <a href=cmiscellaneous.htm#dg_checkargs>dg_checkargs</a> (
+                    int argc,              // assumes argc is at least one less than largest signed int
+                    char* argv[])
+            </div>
+            
+            <div class=cfunctionprototype id=dg_parseword>
+                unsigned char* <a href=cmiscellaneous.htm#dg_parseword>dg_parseword</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64* pwordlength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_parsewords>
+                unsigned char* <a href=cmiscellaneous.htm#dg_parsewords>dg_parsewords</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64* pwordlength,
+                    unsigned char enddelimiter,
+                    UINT64* pfoundendflag)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_f32tof64>
+                FLOAT64 <a href=cmiscellaneous.htm#dg_f32tof64>dg_f32tof64</a> (FLOAT32 f32)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_f64tof32>
+                FLOAT32 <a href=cmiscellaneous.htm#dg_f64tof32>dg_f64tof32</a> (FLOAT64 f64)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_ftod>
+                INT64 <a href=cmiscellaneous.htm#dg_ftod>dg_ftod</a> (FLOAT32 f32)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_dftod>
+                INT64 <a href=cmiscellaneous.htm#dg_dftod>dg_dftod</a> (FLOAT64 f64)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_dtodf>
+                FLOAT64 <a href=cmiscellaneous.htm#dg_dtodf>dg_dtodf</a> (INT64 i64)
+            </div>
+        </div>
+        
+        <div class=cfile id=cpux86>
+        
+            <strong>cpux86.cpp functions</strong>
+            
+            <div class=cfunctionprototype id=dg_compilemoveaxton>
+                void <a href=cpux86.htm#dg_compilemoveaxton>dg_compilemoveaxton</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compiledatalink>
+                void <a href=cpux86.htm#dg_compiledatalink>dg_compiledatalink</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilejumptoeax>
+                void <a href=cpux86.htm#dg_compilejumptoeax>dg_compilejumptoeax</a> (Bufferhandle* pBHarrayhead)
+            </div>
+
+            <div class=cfunctionprototype id=dg_compilereturn>
+                void <a href=cpux86.htm#dg_compilereturn>dg_compilereturn</a> (Bufferhandle* pBHarrayhead)
+            </div>
+
+            <div class=cfunctionprototype id=dg_compileclc>
+                void <a href=cpux86.htm#dg_compileclc>dg_compileclc</a> (Bufferhandle* pBHarrayhead)
+            </div>
+
+            <div class=cfunctionprototype id=dg_compilestc>
+                void <a href=cpux86.htm#dg_compilestc>dg_compilestc</a> (Bufferhandle* pBHarrayhead)
+            </div>
+
+            <div class=cfunctionprototype id=dg_compilecalloffset>
+                void <a href=cpux86.htm#dg_compilecalloffset>dg_compilecalloffset</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    INT64 offset)
+            </div>
+
+            <div class=cfunctionprototype id=dg_compilecalloffsetinsamebuffer>
+                void <a href=cpux86.htm#dg_compilecalloffsetinsamebuffer>dg_compilecalloffsetinsamebuffer</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    INT64 targetoffset)
+            </div>
+
+            <div class=cfunctionprototype id=dg_compilejumptoaddress>
+                void <a href=cpux86.htm#dg_compilejumptoaddress>dg_compilejumptoaddress</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 addr)
+            </div>
+
+            <div class=cfunctionprototype id=dg_compilecalladdress>
+                void <a href=cpux86.htm#dg_compilecalladdress>dg_compilecalladdress</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 addr)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthdocompiletypecall>
+                void <a href=cpux86.htm#dg_forthdocompiletypecall>dg_forthdocompiletypecall</a> (
+                    Bufferhandle* pBHarrayhead)
+            </div>
+
+            <div class=cfunctionprototype id=dg_compilecalladdresspreserveregs>
+                void <a href=cpux86.htm#dg_compilecalladdresspreserveregs>dg_compilecalladdresspreserveregs</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 addr)
+            </div>
+
+            <div class=cfunctionprototype id=dg_packmodrslashm>
+                unsigned char <a href=cpux86.htm#dg_packmodrslashm>dg_packmodrslashm</a> (
+                    UINT64 mode,
+                    UINT64 reg1orn,
+                    UINT64 reg2ormem)
+            </div>
+
+            <div class=cfunctionprototype id=dg_packsib>
+                unsigned char <a href=cpux86.htm#dg_packsib>dg_packsib</a> (
+                    UINT64 basereg,
+                    UINT64 indexscalecode,
+                    UINT64 indexreg)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compileinitlocals>
+                void <a href=cpux86.htm#dg_compileinitlocals>dg_compileinitlocals</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilepusholderrorcounttoret>
+                void <a href=cpux86.htm#dg_compilepusholderrorcounttoret>dg_compilepusholderrorcounttoret</a> (Bufferhandle* pBHarrayhead)
+            </div>
+
+            <div class=cfunctionprototype id=dg_compilequeryerror>
+                void <a href=cpux86.htm#dg_compilequeryerror>dg_compilequeryerror</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compileexitlocals>
+                void <a href=cpux86.htm#dg_compileexitlocals>dg_compileexitlocals</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilealignretstack>
+                void <a href=cpux86.htm#dg_compilealignretstack>dg_compilealignretstack</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 numberofparameters)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthcompilealignretforn>
+                void <a href=cpux86.htm#dg_forthcompilealignretforn>dg_forthcompilealignretforn</a> (
+                    Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilealignretstackpreserveregs>
+                void <a href=cpux86.htm#dg_compilealignretstackpreserveregs>dg_compilealignretstackpreserveregs</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 numberofparameters)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthcompilealignretfornpf>
+                void <a href=cpux86.htm#dg_forthcompilealignretfornpf>dg_forthcompilealignretfornpf</a> (
+                    Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_showframe>
+                void <a href=cpux86.htm#dg_showframe>dg_showframe</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilepushparametertoret>
+                void <a href=cpux86.htm#dg_compilepushparametertoret>dg_compilepushparametertoret</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 parameterindex)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilepushregtoret>
+                void <a href=cpux86.htm#dg_compilepushregtoret>dg_compilepushregtoret</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 reg)
+            </div>
+
+            <div class=cfunctionprototype id=dg_compilepopregfromret>
+                void <a href=cpux86.htm#dg_compilepopregfromret>dg_compilepopregfromret</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 reg)
+            </div>
+
+            <div class=cfunctionprototype id=dg_compilebranch>
+                UINT64 <a href=cpux86.htm#dg_compilebranch>dg_compilebranch</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 branchtype)
+            </div>
+
+            <div class=cfunctionprototype id=dg_resolvecompiledbranch>
+                void <a href=cpux86.htm#dg_resolvecompiledbranch>dg_resolvecompiledbranch</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 afterbranchoffset,
+                    UINT64 targetoffset)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_resolvecompiled8bitbranch>
+                void <a href=cpux86.htm#dg_resolvecompiled8bitbranch>dg_resolvecompiled8bitbranch</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 afterbranchoffset,
+                    UINT64 targetoffset)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilecompare>
+                void <a href=cpux86.htm#dg_compilecompare>dg_compilecompare</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 n)
+            </div>
+
+            <div class=cfunctionprototype id=dg_compileundoalignretstack>
+                void <a href=cpux86.htm#dg_compileundoalignretstack>dg_compileundoalignretstack</a> (Bufferhandle* pBHarrayhead)
+            </div>
+
+            <div class=cfunctionprototype id=dg_compiledropparametersfromret>
+                void <a href=cpux86.htm#dg_compiledropparametersfromret>dg_compiledropparametersfromret</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 n)
+            </div>
+
+            <div class=cfunctionprototype id=dg_compilepushntoret>
+                UINT64 <a href=cpux86.htm#dg_compilepushntoret>dg_compilepushntoret</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 n)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthcompilesafecallbuffer>
+                void <a href=cpux86.htm#dg_forthcompilesafecallbuffer>dg_forthcompilesafecallbuffer</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_initjumpbuffer>
+                void <a href=cpux86.htm#dg_initjumpbuffer>dg_initjumpbuffer</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    char* jumpbufferstring)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthshowcapturedregs>
+                void <a href=cpux86.htm#dg_forthshowcapturedregs>dg_forthshowcapturedregs</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_initSibformatter>
+                void <a href=cpux86.htm#dg_initSibformatter>dg_initSibformatter</a> (
+                    struct dg_Sibformatter* psf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_bumpdisplacementsizeifneeded>
+                void <a href=cpux86.htm#dg_bumpdisplacementsizeifneeded>dg_bumpdisplacementsizeifneeded</a> (
+                    struct dg_Sibformatter* psf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_setmod>
+                void <a href=cpux86.htm#dg_setmod>dg_setmod</a> (
+                    struct dg_Sibformatter* psf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_formatsib>
+                void <a href=cpux86.htm#dg_formatsib>dg_formatsib</a> (
+                    Bufferhandle* pBHarrayhead,
+                    dg_Sibformatter* psf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_formatmodrslashm>
+                void <a href=cpux86.htm#dg_formatmodrslashm>dg_formatmodrslashm</a> (
+                    Bufferhandle* pBHarrayhead,
+                    dg_Sibformatter* psf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_formatreg>
+                void <a href=cpux86.htm#dg_formatreg>dg_formatreg</a> (
+                    Bufferhandle* pBHarrayhead,
+                    dg_Sibformatter* psf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_calculatemodrslashm>
+                void <a href=cpux86.htm#dg_calculatemodrslashm>dg_calculatemodrslashm</a> (
+                    struct dg_Sibformatter* psf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_calculatesib>
+                void <a href=cpux86.htm#dg_calculatesib>dg_calculatesib</a> (
+                    struct dg_Sibformatter* psf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getsizefromreg>
+                void <a href=cpux86.htm#dg_getsizefromreg>dg_getsizefromreg</a> (
+                    UINT64 reg)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_pullmemusingsib>
+                void <a href=cpux86.htm#dg_pullmemusingsib>dg_pullmemusingsib</a> (
+                    Bufferhandle* pBHarrayhead,
+                    dg_Sibformatter* psf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_pullmemusingrslashm>
+                void <a href=cpux86.htm#dg_pullmemusingrslashm>dg_pullmemusingrslashm</a> (
+                    Bufferhandle* pBHarrayhead,
+                    dg_Sibformatter* psf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_pulloneaddressingmode>
+                void <a href=cpux86.htm#dg_pulloneaddressingmode>dg_pulloneaddressingmode</a> (
+                    Bufferhandle* pBHarrayhead,
+                    dg_Sibformatter* psf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compiledisplacement>
+                void <a href=cpux86.htm#dg_compiledisplacement>dg_compiledisplacement</a> (
+                    Bufferhandle* pBHarrayhead,
+                    dg_Sibformatter* psf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_ccboffsettodisplacement>
+                void <a href=cpux86.htm#dg_ccboffsettodisplacement>dg_ccboffsettodisplacement</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 targetccboffset,
+                    UINT64 opcodelength,
+                    UINT64 immediatedatalength,
+                    UINT64 beforeinstructionccboffset)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilepsf>
+                void <a href=cpux86.htm#dg_compilepsf>dg_compilepsf</a> (
+                    Bufferhandle* pBHarrayhead,
+                    dg_Sibformatter* psf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_queryisrega>
+                void <a href=cpux86.htm#dg_queryisrega>dg_queryisrega</a> (
+                    UINT64 regtype)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_gettargettype>
+                void <a href=cpux86.htm#dg_gettargettype>dg_gettargettype</a> (
+                    Bufferhandle* pBHarrayhead,
+                    dg_Sibformatter* psf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_determine2targettype>
+                void <a href=cpux86.htm#dg_determine2targettype>dg_determine2targettype</a> (
+                    Bufferhandle* pBHarrayhead,
+                    dg_Sibformatter* psf1,
+                    dg_Sibformatter* psf2)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilen8tom8>
+                void <a href=cpux86.htm#dg_compilen8tom8>dg_compilen8tom8</a> (
+                    Bufferhandle* pBHarrayhead,
+                    Twotargetopcodestrings* popcodes,
+                    dg_Sibformatter* pimmediatepsf,
+                    dg_Sibformatter* pregpsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilen16tom16>
+                void <a href=cpux86.htm#dg_compilen16tom16>dg_compilen16tom16</a> (
+                    Bufferhandle* pBHarrayhead,
+                    Twotargetopcodestrings* popcodes,
+                    dg_Sibformatter* pimmediatepsf,
+                    dg_Sibformatter* pregpsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilen32tom32>
+                void <a href=cpux86.htm#dg_compilen32tom32>dg_compilen32tom32</a> (
+                    Bufferhandle* pBHarrayhead,
+                    Twotargetopcodestrings* popcodes,
+                    dg_Sibformatter* pimmediatepsf,
+                    dg_Sibformatter* pregpsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilen8tom32>
+                void <a href=cpux86.htm#dg_compilen8tom32>dg_compilen8tom32</a> (
+                    Bufferhandle* pBHarrayhead,
+                    Twotargetopcodestrings* popcodes,
+                    dg_Sibformatter* pimmediatepsf,
+                    dg_Sibformatter* pregpsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilen8tom16>
+                void <a href=cpux86.htm#dg_compilen8tom16>dg_compilen8tom16</a> (
+                    Bufferhandle* pBHarrayhead,
+                    Twotargetopcodestrings* popcodes,
+                    dg_Sibformatter* pimmediatepsf,
+                    dg_Sibformatter* pregpsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilentom>
+                void <a href=cpux86.htm#dg_compilentom>dg_compilentom</a> (
+                    Bufferhandle* pBHarrayhead,
+                    Twotargetopcodestrings* popcodes,
+                    dg_Sibformatter* pimmediatepsf,
+                    dg_Sibformatter* pregpsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compileopcodeplusropstr>
+                void <a href=cpux86.htm#dg_compileopcodeplusropstr>dg_compileopcodeplusropstr</a> (
+                    Bufferhandle* pBHarrayhead,
+                    const char* popcodestring,
+                    UINT64 opcodestringlength,
+                    UINT64 reg)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilemem8>
+                void <a href=cpux86.htm#dg_compilemem8>dg_compilemem8</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct Onetargetopcodestrings* popcodes,
+                    dg_Sibformatter* ptargetsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilereg8>
+                void <a href=cpux86.htm#dg_compilereg8>dg_compilereg8</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct Onetargetopcodestrings* popcodes,
+                    dg_Sibformatter* ptargetsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilerega8>
+                void <a href=cpux86.htm#dg_compilerega8>dg_compilerega8</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct Onetargetopcodestrings* popcodes,
+                    dg_Sibformatter* ptargetsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilen8>
+                void <a href=cpux86.htm#dg_compilen8>dg_compilen8</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct Onetargetopcodestrings* popcodes,
+                    dg_Sibformatter* ptargetsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilen16>
+                void <a href=cpux86.htm#dg_compilen16>dg_compilen16</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct Onetargetopcodestrings* popcodes,
+                    dg_Sibformatter* ptargetsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilen16signextended>
+                void <a href=cpux86.htm#dg_compilen16signextended>dg_compilen16signextended</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct Onetargetopcodestrings* popcodes,
+                    dg_Sibformatter* ptargetsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilen32>
+                void <a href=cpux86.htm#dg_compilen32>dg_compilen32</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct Onetargetopcodestrings* popcodes,
+                    dg_Sibformatter* ptargetsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilen32signextended>
+                void <a href=cpux86.htm#dg_compilen32signextended>dg_compilen32signextended</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct Onetargetopcodestrings* popcodes,
+                    dg_Sibformatter* ptargetsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilemem16>
+                void <a href=cpux86.htm#dg_compilemem16>dg_compilemem16</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct Onetargetopcodestrings* popcodes,
+                    dg_Sibformatter* ptargetsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilereg16>
+                void <a href=cpux86.htm#dg_compilereg16>dg_compilereg16</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct Onetargetopcodestrings* popcodes,
+                    dg_Sibformatter* ptargetsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilerega16>
+                void <a href=cpux86.htm#dg_compilerega16>dg_compilerega16</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct Onetargetopcodestrings* popcodes,
+                    dg_Sibformatter* ptargetsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilemem32>
+                void <a href=cpux86.htm#dg_compilemem32>dg_compilemem32</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct Onetargetopcodestrings* popcodes,
+                    dg_Sibformatter* ptargetsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilereg32>
+                void <a href=cpux86.htm#dg_compilereg32>dg_compilereg32</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct Onetargetopcodestrings* popcodes,
+                    dg_Sibformatter* ptargetsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilerega32>
+                void <a href=cpux86.htm#dg_compilerega32>dg_compilerega32</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct Onetargetopcodestrings* popcodes,
+                    dg_Sibformatter* ptargetsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilentarget>
+                void <a href=cpux86.htm#dg_compilentarget>dg_compilentarget</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct Onetargetopcodestrings* popcodes,
+                    dg_Sibformatter* ptargetsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compileregatarget>
+                void <a href=cpux86.htm#dg_compileregatarget>dg_compileregatarget</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct Onetargetopcodestrings* popcodes,
+                    dg_Sibformatter* ptargetsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compileregtarget>
+                void <a href=cpux86.htm#dg_compileregtarget>dg_compileregtarget</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct Onetargetopcodestrings* popcodes,
+                    dg_Sibformatter* ptargetsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilememtarget>
+                void <a href=cpux86.htm#dg_compilememtarget>dg_compilememtarget</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct Onetargetopcodestrings* popcodes,
+                    dg_Sibformatter* ptargetsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compileonetarget>
+                void <a href=cpux86.htm#dg_compileonetarget>dg_compileonetarget</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct Onetargetopcodestrings* popcodes,
+                    dg_Sibformatter* ptargetsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_fillonetargetmemonlyoptable>
+                void <a href=cpux86.htm#dg_fillonetargetmemonlyoptable>dg_fillonetargetmemonlyoptable</a> (
+                    Bufferhandle* pBHarrayhead,
+                    Onetargetopcodestrings* popcodes,
+                    UINT64 baseopcode,
+                    UINT64 opcodeextension)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilen8tor8>
+                void <a href=cpux86.htm#dg_compilen8tor8>dg_compilen8tor8</a> (
+                    Bufferhandle* pBHarrayhead,
+                    Twotargetopcodestrings* popcodes,
+                    dg_Sibformatter* pimmediatepsf,
+                    dg_Sibformatter* pregpsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilen16tor16>
+                void <a href=cpux86.htm#dg_compilen16tor16>dg_compilen16tor16</a> (
+                    Bufferhandle* pBHarrayhead,
+                    Twotargetopcodestrings* popcodes,
+                    dg_Sibformatter* pimmediatepsf,
+                    dg_Sibformatter* pregpsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilen32tor32>
+                void <a href=cpux86.htm#dg_compilen32tor32>dg_compilen32tor32</a> (
+                    Bufferhandle* pBHarrayhead,
+                    Twotargetopcodestrings* popcodes,
+                    dg_Sibformatter* pimmediatepsf,
+                    dg_Sibformatter* pregpsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilentor>
+                void <a href=cpux86.htm#dg_compilentor>dg_compilentor</a> (
+                    Bufferhandle* pBHarrayhead,
+                    Twotargetopcodestrings* popcodes,
+                    dg_Sibformatter* pimmediatepsf,
+                    dg_Sibformatter* pregpsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilen8toa8>
+                void <a href=cpux86.htm#dg_compilen8toa8>dg_compilen8toa8</a> (
+                    Bufferhandle* pBHarrayhead,
+                    Twotargetopcodestrings* popcodes,
+                    dg_Sibformatter* pimmediatepsf,
+                    dg_Sibformatter* pmempsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilen16toa16>
+                void <a href=cpux86.htm#dg_compilen16toa16>dg_compilen16toa16</a> (
+                    Bufferhandle* pBHarrayhead,
+                    Twotargetopcodestrings* popcodes,
+                    dg_Sibformatter* pimmediatepsf,
+                    dg_Sibformatter* pmempsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilen32toa32>
+                void <a href=cpux86.htm#dg_compilen32toa32>dg_compilen32toa32</a> (
+                    Bufferhandle* pBHarrayhead,
+                    Twotargetopcodestrings* popcodes,
+                    dg_Sibformatter* pimmediatepsf,
+                    dg_Sibformatter* pmempsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilentoa>
+                void <a href=cpux86.htm#dg_compilentoa>dg_compilentoa</a> (
+                    Bufferhandle* pBHarrayhead,
+                    Twotargetopcodestrings* popcodes,
+                    dg_Sibformatter* pimmediatepsf,
+                    dg_Sibformatter* pregpsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilertom>
+                void <a href=cpux86.htm#dg_compilertom>dg_compilertom</a> (
+                    Bufferhandle* pBHarrayhead,
+                    Twotargetopcodestrings* popcodes,
+                    dg_Sibformatter* pregpsf,
+                    dg_Sibformatter* pmempsf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compiletwotargets>
+                void <a href=cpux86.htm#dg_compiletwotargets>dg_compiletwotargets</a> (
+                    Bufferhandle* pBHarrayhead,
+                    Twotargetopcodestrings* popcodes,
+                    dg_Sibformatter* pfirsttarget,
+                    dg_Sibformatter* psecondtarget)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_fill2targetmathoptbl>
+                void <a href=cpux86.htm#dg_fill2targetmathoptbl>dg_fill2targetmathoptbl</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct Twotargetopcodestrings* popcodes,
+                    UINT64 mathopindex)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_fill2targetmovoptbl>
+                void <a href=cpux86.htm#dg_fill2targetmovoptbl>dg_fill2targetmovoptbl</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct Twotargetopcodestrings* popcodes)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_fill2targettestoptbl>
+                void <a href=cpux86.htm#dg_fill2targettestoptbl>dg_fill2targettestoptbl</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct Twotargetopcodestrings* popcodes)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_fill2targetmemonlyoptbl>
+                void <a href=cpux86.htm#dg_fill2targetmemonlyoptbl>dg_fill2targetmemonlyoptbl</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct Twotargetopcodestrings* popcodes,
+                    UINT64 memopcode)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_fill2targetmembonlyoptbl>
+                void <a href=cpux86.htm#dg_fill2targetmembonlyoptbl>dg_fill2targetmembonlyoptbl</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct Twotargetopcodestrings* popcodes,
+                    UINT64 memopcode)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_fill2targetmem32onlyoptbl>
+                void <a href=cpux86.htm#dg_fill2targetmem32onlyoptbl>dg_fill2targetmem32onlyoptbl</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct Twotargetopcodestrings* popcodes,
+                    UINT64 memopcode)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_fill2targetm32bonlyoptbl>
+                void <a href=cpux86.htm#dg_fill2targetm32bonlyoptbl>dg_fill2targetm32bonlyoptbl</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct Twotargetopcodestrings* popcodes,
+                    UINT64 memopcode)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_pullandcompiletwotargets>
+                void <a href=cpux86.htm#dg_pullandcompiletwotargets>dg_pullandcompiletwotargets</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct Twotargetopcodestrings* popcodes)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthadccomma>
+                void <a href=cpux86.htm#dg_forthadccomma>dg_forthadccomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthaddcomma>
+                void <a href=cpux86.htm#dg_forthaddcomma>dg_forthaddcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthandcomma>
+                void <a href=cpux86.htm#dg_forthandcomma>dg_forthandcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthcmpcomma>
+                void <a href=cpux86.htm#dg_forthcmpcomma>dg_forthcmpcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthorcomma>
+                void <a href=cpux86.htm#dg_forthorcomma>dg_forthorcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthsbbcomma>
+                void <a href=cpux86.htm#dg_forthsbbcomma>dg_forthsbbcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthsubcomma>
+                void <a href=cpux86.htm#dg_forthsubcomma>dg_forthsubcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthxorcomma>
+                void <a href=cpux86.htm#dg_forthxorcomma>dg_forthxorcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthmovcomma>
+                void <a href=cpux86.htm#dg_forthmovcomma>dg_forthmovcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthtestcomma>
+                void <a href=cpux86.htm#dg_forthtestcomma>dg_forthtestcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthcmovcomma>
+                void <a href=cpux86.htm#dg_forthcmovcomma>dg_forthcmovcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthnotcomma>
+                void <a href=cpux86.htm#dg_forthnotcomma>dg_forthnotcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthnegcomma>
+                void <a href=cpux86.htm#dg_forthnegcomma>dg_forthnegcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthmulcomma>
+                void <a href=cpux86.htm#dg_forthmulcomma>dg_forthmulcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthdivcomma>
+                void <a href=cpux86.htm#dg_forthdivcomma>dg_forthdivcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthidivcomma>
+                void <a href=cpux86.htm#dg_forthidivcomma>dg_forthidivcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthbswapcomma>
+                void <a href=cpux86.htm#dg_forthbswapcomma>dg_forthbswapcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthpushcomma>
+                void <a href=cpux86.htm#dg_forthpushcomma>dg_forthpushcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthpopcomma>
+                void <a href=cpux86.htm#dg_forthpopcomma>dg_forthpopcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthinccomma>
+                void <a href=cpux86.htm#dg_forthinccomma>dg_forthinccomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthdeccomma>
+                void <a href=cpux86.htm#dg_forthdeccomma>dg_forthdeccomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getshiftopcodetype>
+                UINT64 <a href=cpux86.htm#dg_getshiftopcodetype>dg_getshiftopcodetype</a> (dg_Sibformatter* pmymodesf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_pullandcompileshiftop>
+                void <a href=cpux86.htm#dg_pullandcompileshiftop>dg_pullandcompileshiftop</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 opcodeextension)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthsetcomma>
+                void <a href=cpux86.htm#dg_forthsetcomma>dg_forthsetcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthrclcomma>
+                void <a href=cpux86.htm#dg_forthrclcomma>dg_forthrclcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthrcrcomma>
+                void <a href=cpux86.htm#dg_forthrcrcomma>dg_forthrcrcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthrolcomma>
+                void <a href=cpux86.htm#dg_forthrolcomma>dg_forthrolcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthrorcomma>
+                void <a href=cpux86.htm#dg_forthrorcomma>dg_forthrorcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthshlcomma>
+                void <a href=cpux86.htm#dg_forthshlcomma>dg_forthshlcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthshrcomma>
+                void <a href=cpux86.htm#dg_forthshrcomma>dg_forthshrcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthsarcomma>
+                void <a href=cpux86.htm#dg_forthsarcomma>dg_forthsarcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthhltcomma>
+                void <a href=cpux86.htm#dg_forthhltcomma>dg_forthhltcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthnopcomma>
+                void <a href=cpux86.htm#dg_forthnopcomma>dg_forthnopcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthaltooutdxcomma>
+                void <a href=cpux86.htm#dg_forthaltooutdxcomma>dg_forthaltooutdxcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_fortheaxtooutdxcomma>
+                void <a href=cpux86.htm#dg_fortheaxtooutdxcomma>dg_fortheaxtooutdxcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthindxtoalcomma>
+                void <a href=cpux86.htm#dg_forthindxtoalcomma>dg_forthindxtoalcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthindxtoeaxcomma>
+                void <a href=cpux86.htm#dg_forthindxtoeaxcomma>dg_forthindxtoeaxcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthretcomma>
+                void <a href=cpux86.htm#dg_forthretcomma>dg_forthretcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthstccomma>
+                void <a href=cpux86.htm#dg_forthstccomma>dg_forthstccomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthsticomma>
+                void <a href=cpux86.htm#dg_forthsticomma>dg_forthsticomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthstdcomma>
+                void <a href=cpux86.htm#dg_forthstdcomma>dg_forthstdcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthclccomma>
+                void <a href=cpux86.htm#dg_forthclccomma>dg_forthclccomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthcldcomma>
+                void <a href=cpux86.htm#dg_forthcldcomma>dg_forthcldcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthclicomma>
+                void <a href=cpux86.htm#dg_forthclicomma>dg_forthclicomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthlahfcomma>
+                void <a href=cpux86.htm#dg_forthlahfcomma>dg_forthlahfcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthsahfcomma>
+                void <a href=cpux86.htm#dg_forthsahfcomma>dg_forthsahfcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthdaacomma>
+                void <a href=cpux86.htm#dg_forthdaacomma>dg_forthdaacomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthdascomma>
+                void <a href=cpux86.htm#dg_forthdascomma>dg_forthdascomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthcmccomma>
+                void <a href=cpux86.htm#dg_forthcmccomma>dg_forthcmccomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthaaacomma>
+                void <a href=cpux86.htm#dg_forthaaacomma>dg_forthaaacomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthaadcomma>
+                void <a href=cpux86.htm#dg_forthaadcomma>dg_forthaadcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthaamcomma>
+                void <a href=cpux86.htm#dg_forthaamcomma>dg_forthaamcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthaascomma>
+                void <a href=cpux86.htm#dg_forthaascomma>dg_forthaascomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthcpuidcomma>
+                void <a href=cpux86.htm#dg_forthcpuidcomma>dg_forthcpuidcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthrepcomma>
+                void <a href=cpux86.htm#dg_forthrepcomma>dg_forthrepcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthrepecomma>
+                void <a href=cpux86.htm#dg_forthrepecomma>dg_forthrepecomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthrepnecomma>
+                void <a href=cpux86.htm#dg_forthrepnecomma>dg_forthrepnecomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthlockcomma>
+                void <a href=cpux86.htm#dg_forthlockcomma>dg_forthlockcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthmovsbcomma>
+                void <a href=cpux86.htm#dg_forthmovsbcomma>dg_forthmovsbcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthmovsdcomma>
+                void <a href=cpux86.htm#dg_forthmovsdcomma>dg_forthmovsdcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthmovswcomma>
+                void <a href=cpux86.htm#dg_forthmovswcomma>dg_forthmovswcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthcmpsbcomma>
+                void <a href=cpux86.htm#dg_forthcmpsbcomma>dg_forthcmpsbcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthcmpsdcomma>
+                void <a href=cpux86.htm#dg_forthcmpsdcomma>dg_forthcmpsdcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthcmpswcomma>
+                void <a href=cpux86.htm#dg_forthcmpswcomma>dg_forthcmpswcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthstosbcomma>
+                void <a href=cpux86.htm#dg_forthstosbcomma>dg_forthstosbcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthstosdcomma>
+                void <a href=cpux86.htm#dg_forthstosdcomma>dg_forthstosdcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthstoswcomma>
+                void <a href=cpux86.htm#dg_forthstoswcomma>dg_forthstoswcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthlodsbcomma>
+                void <a href=cpux86.htm#dg_forthlodsbcomma>dg_forthlodsbcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthlodsdcomma>
+                void <a href=cpux86.htm#dg_forthlodsdcomma>dg_forthlodsdcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthlodswcomma>
+                void <a href=cpux86.htm#dg_forthlodswcomma>dg_forthlodswcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthscasbcomma>
+                void <a href=cpux86.htm#dg_forthscasbcomma>dg_forthscasbcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthscasdcomma>
+                void <a href=cpux86.htm#dg_forthscasdcomma>dg_forthscasdcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthscaswcomma>
+                void <a href=cpux86.htm#dg_forthscaswcomma>dg_forthscaswcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthint3comma>
+                void <a href=cpux86.htm#dg_forthint3comma>dg_forthint3comma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthintocomma>
+                void <a href=cpux86.htm#dg_forthintocomma>dg_forthintocomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthinvdcomma>
+                void <a href=cpux86.htm#dg_forthinvdcomma>dg_forthinvdcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthleavecomma>
+                void <a href=cpux86.htm#dg_forthleavecomma>dg_forthleavecomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthmonitorcomma>
+                void <a href=cpux86.htm#dg_forthmonitorcomma>dg_forthmonitorcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthmwaitcomma>
+                void <a href=cpux86.htm#dg_forthmwaitcomma>dg_forthmwaitcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthpausecomma>
+                void <a href=cpux86.htm#dg_forthpausecomma>dg_forthpausecomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthpopadcomma>
+                void <a href=cpux86.htm#dg_forthpopadcomma>dg_forthpopadcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthpopfdcomma>
+                void <a href=cpux86.htm#dg_forthpopfdcomma>dg_forthpopfdcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthpushadcomma>
+                void <a href=cpux86.htm#dg_forthpushadcomma>dg_forthpushadcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthpushfdcomma>
+                void <a href=cpux86.htm#dg_forthpushfdcomma>dg_forthpushfdcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthsysentercomma>
+                void <a href=cpux86.htm#dg_forthsysentercomma>dg_forthsysentercomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthsysexitcomma>
+                void <a href=cpux86.htm#dg_forthsysexitcomma>dg_forthsysexitcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthiretdcomma>
+                void <a href=cpux86.htm#dg_forthiretdcomma>dg_forthiretdcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthcbwcomma>
+                void <a href=cpux86.htm#dg_forthcbwcomma>dg_forthcbwcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthcdqcomma>
+                void <a href=cpux86.htm#dg_forthcdqcomma>dg_forthcdqcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthcwdcomma>
+                void <a href=cpux86.htm#dg_forthcwdcomma>dg_forthcwdcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthcwdecomma>
+                void <a href=cpux86.htm#dg_forthcwdecomma>dg_forthcwdecomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthsfencecomma>
+                void <a href=cpux86.htm#dg_forthsfencecomma>dg_forthsfencecomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthintcomma>
+                void <a href=cpux86.htm#dg_forthintcomma>dg_forthintcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthentercomma>
+                void <a href=cpux86.htm#dg_forthentercomma>dg_forthentercomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthboundcomma>
+                void <a href=cpux86.htm#dg_forthboundcomma>dg_forthboundcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthleacomma>
+                void <a href=cpux86.htm#dg_forthleacomma>dg_forthleacomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthbsfcomma>
+                void <a href=cpux86.htm#dg_forthbsfcomma>dg_forthbsfcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthbsrcomma>
+                void <a href=cpux86.htm#dg_forthbsrcomma>dg_forthbsrcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthcmpxchgcomma>
+                void <a href=cpux86.htm#dg_forthcmpxchgcomma>dg_forthcmpxchgcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthxchgcomma>
+                void <a href=cpux86.htm#dg_forthxchgcomma>dg_forthxchgcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthcode>
+                void <a href=cpux86.htm#dg_forthcode>dg_forthcode</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthocode>
+                void <a href=cpux86.htm#dg_forthocode>dg_forthocode</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthendcode>
+                void <a href=cpux86.htm#dg_forthendcode>dg_forthendcode</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthbegincomma>
+                void <a href=cpux86.htm#dg_forthbegincomma>dg_forthbegincomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthuntilcomma>
+                void <a href=cpux86.htm#dg_forthuntilcomma>dg_forthuntilcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthloopcomma>
+                void <a href=cpux86.htm#dg_forthloopcomma>dg_forthloopcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthloopnzcomma>
+                void <a href=cpux86.htm#dg_forthloopnzcomma>dg_forthloopnzcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthloopzscomma>
+                void <a href=cpux86.htm#dg_forthloopzscomma>dg_forthloopzscomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthloopwhilecomma>
+                void <a href=cpux86.htm#dg_forthloopwhilecomma>dg_forthloopwhilecomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthnzorloopwhilecomma>
+                void <a href=cpux86.htm#dg_forthnzorloopwhilecomma>dg_forthnzorloopwhilecomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthzsorloopwhilecomma>
+                void <a href=cpux86.htm#dg_forthzsorloopwhilecomma>dg_forthzsorloopwhilecomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthifcomma>
+                void <a href=cpux86.htm#dg_forthifcomma>dg_forthifcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthelsecomma>
+                void <a href=cpux86.htm#dg_forthelsecomma>dg_forthelsecomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forththencomma>
+                void <a href=cpux86.htm#dg_forththencomma>dg_forththencomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthwhilecomma>
+                void <a href=cpux86.htm#dg_forthwhilecomma>dg_forthwhilecomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthrepeatcomma>
+                void <a href=cpux86.htm#dg_forthrepeatcomma>dg_forthrepeatcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthzeroimmediate>
+                void <a href=cpux86.htm#dg_forthzeroimmediate>dg_forthzeroimmediate</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthbracketr>
+                void <a href=cpux86.htm#dg_forthbracketr>dg_forthbracketr</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthbracketrplusd>
+                void <a href=cpux86.htm#dg_forthbracketrplusd>dg_forthbracketrplusd</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthbracketd>
+                void <a href=cpux86.htm#dg_forthbracketd>dg_forthbracketd</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthbracketrpsxrpd>
+                void <a href=cpux86.htm#dg_forthbracketrpsxrpd>dg_forthbracketrpsxrpd</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthdatasizebyte>
+                void <a href=cpux86.htm#dg_forthdatasizebyte>dg_forthdatasizebyte</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthdatasizeword>
+                void <a href=cpux86.htm#dg_forthdatasizeword>dg_forthdatasizeword</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthdatasizedword>
+                void <a href=cpux86.htm#dg_forthdatasizedword>dg_forthdatasizedword</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthx86wordlist>
+                void <a href=cpux86.htm#dg_forthx86wordlist>dg_forthx86wordlist</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilebitoprofr>
+                void <a href=cpux86.htm#dg_compilebitoprofr>dg_compilebitoprofr</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct dg_Sibformatter* psourceregtarget,
+                    struct dg_Sibformatter* pdestregtarget,
+                    UINT64 baseopcode)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilebitop>
+                void <a href=cpux86.htm#dg_compilebitop>dg_compilebitop</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct dg_Sibformatter* pfirsttarget,  // top on stack
+                    struct dg_Sibformatter* psecondtarget, // second on stack
+                    UINT64 rofmbaseopcode,
+                    UINT64 nofmopcodeextension)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilebitopnofr>
+                void <a href=cpux86.htm#dg_compilebitopnofr>dg_compilebitopnofr</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct dg_Sibformatter* pfirsttarget,  // top on stack
+                    struct dg_Sibformatter* psecondtarget, // second on stack
+                    UINT64 opcodeextension)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_compilebitopnofm>
+                void <a href=cpux86.htm#dg_compilebitopnofm>dg_compilebitopnofm</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct dg_Sibformatter* pfirsttarget,  // top on stack
+                    struct dg_Sibformatter* psecondtarget, // second on stack
+                    UINT64 opcodeextension)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthbtcomma>
+                void <a href=cpux86.htm#dg_forthbtcomma>dg_forthbtcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthbtccomma>
+                void <a href=cpux86.htm#dg_forthbtccomma>dg_forthbtccomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthbtrcomma>
+                void <a href=cpux86.htm#dg_forthbtrcomma>dg_forthbtrcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthbtscomma>
+                void <a href=cpux86.htm#dg_forthbtscomma>dg_forthbtscomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthshldcomma>
+                void <a href=cpux86.htm#dg_forthshldcomma>dg_forthshldcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthshrdcomma>
+                void <a href=cpux86.htm#dg_forthshrdcomma>dg_forthshrdcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthimulacomma>
+                void <a href=cpux86.htm#dg_forthimulacomma>dg_forthimulacomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthimulcomma>
+                void <a href=cpux86.htm#dg_forthimulcomma>dg_forthimulcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthimulncomma>
+                void <a href=cpux86.htm#dg_forthimulncomma>dg_forthimulncomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthmovzxcomma>
+                void <a href=cpux86.htm#dg_forthmovzxcomma>dg_forthmovzxcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthmovsxcomma>
+                void <a href=cpux86.htm#dg_forthmovsxcomma>dg_forthmovsxcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthcallcomma>
+                void <a href=cpux86.htm#dg_forthcallcomma>dg_forthcallcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_ntoeaxcomma>
+                void <a href=cpux86.htm#dg_ntoeaxcomma>dg_ntoeaxcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthotormovcomma>
+                void <a href=cpux86.htm#dg_forthotormovcomma>dg_forthotormovcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthbracketotormovcomma>
+                void <a href=cpux86.htm#dg_forthbracketotormovcomma>dg_forthbracketotormovcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthopushcomma>
+                void <a href=cpux86.htm#dg_forthopushcomma>dg_forthopushcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthbracketopushcomma>
+                void <a href=cpux86.htm#dg_forthbracketopushcomma>dg_forthbracketopushcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthbracketopopcomma>
+                void <a href=cpux86.htm#dg_forthbracketopopcomma>dg_forthbracketopopcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthstrtopstrpushcomma>
+                void <a href=cpux86.htm#dg_forthstrtopstrpushcomma>dg_forthstrtopstrpushcomma</a> (Bufferhandle* pBHarrayhead)
+            </div>
+
+        </div>
+        
+        <div class=cfile id=cpux86gcc>
+        
+            <strong>cpux86gcc.cpp</strong>
+
+            <div class=cfunctionprototype id=dg_forthcallprocaddress>
+                void <a href=forthmiscellaneous.htm#dg_forthcallprocaddress>dg_forthcallprocaddress</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthcalldfpprocaddress>
+                void <a href=forthmiscellaneous.htm#dg_forthcalldfpprocaddress>dg_forthcalldfpprocaddress</a> (Bufferhandle* pBHarrayhead)
+            </div>
+
+            <div class=cfunctionprototype id=dg_forthcallprocaddressretuint128>
+                void <a href=forthmiscellaneous.htm#dg_forthcallprocaddressretuint128>dg_forthcallprocaddressretuint128</a> (Bufferhandle* pBHarrayhead)
+                //                     ( paramn paramn-1 paramn-2 ... param1 n procaddress -- returnvaluelo returnvaluehi )
+            </div>
+
+        </div>
+        
+        <div class=cfile id=cpux86macosxsignalcatch>
+        
+            <strong>signal catching functions </strong>
+
+            <div class=cfunctionprototype id=dg_catchbadmemoryerror>
+                void <a href=signalcatch.htm#dg_catchbadmemoryerror>dg_catchbadmemoryerror</a> (
+                    int signum, 
+                    siginfo_t* pinfo, 
+                    void* pcontext)
+            </div>
+
+            <div class=cfunctionprototype id=dg_trycatchbadmemoryerror>
+                void <a href=signalcatch.htm#dg_trycatchbadmemoryerror>dg_trycatchbadmemoryerror</a> ()
+            </div>
+
+            <div class=cfunctionprototype id=dg_endtrycatchbadmemoryerror>
+                void <a href=signalcatch.htm#dg_endtrycatchbadmemoryerror>dg_endtrycatchbadmemoryerror</a> ()
+            </div>
+
+            <div class=cfunctionprototype id=dg_catchbadmemoryerrorwithfullframe>
+                void <a href=signalcatch.htm#dg_catchbadmemoryerrorwithfullframe>dg_catchbadmemoryerrorwithfullframe</a> (
+                    int signum, 
+                    siginfo_t* pinfo, 
+                    void* pcontext)
+            </div>
+
+            <div class=cfunctionprototype id=dg_trycatchbadmemoryerrorwithfullframe>
+                void <a href=signalcatch.htm#dg_trycatchbadmemoryerrorwithfullframe>dg_trycatchbadmemoryerrorwithfullframe</a> ()
+            </div>
+
+            <div class=cfunctionprototype id=dg_fstat>
+                UINT64 <a href=signalcatch.htm#dg_fstat>dg_fstat</a> (
+                    UINT64 fileid,
+                    UINT64 pstat)
+            </div>
+
+            <div class=cfunctionprototype id=dg_write>
+                UINT64 <a href=signalcatch.htm#dg_write>dg_write</a> (
+                    UINT64 fileid,
+                    UINT64 pbuf,
+                    UINT64 length)
+            </div>
+
+        </div>
+        
+        <div class=cfile id=assembly>
+        
+            <strong>cpux86macosxgccasm.s functions</strong>
+            
+            <p><strong>cpux86win64msvcasm.s functions</strong></p>
+            
+            <div class=cfunctionprototype id=dg_testasm>
+                UINT64 <a href=assembly.htm#dg_testasm>dg_testasm</a> (UINT64 i)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_testasmimport>
+                const char* <a href=assembly.htm#dg_testasmimport>dg_testasmimport</a> ()
+            </div>
+            
+            <div class=cfunctionprototype id=dg_testalignment>
+                UINT64 <a href=assembly.htm#dg_testalignment>dg_testalignment</a> ()
+            </div>
+            
+            <div class=cfunctionprototype id=dg_testalignmentdf>
+                FLOAT64 <a href=assembly.htm#dg_testalignmentdf>dg_testalignmentdf</a> ()
+            </div>
+ 
+            <div class=cfunctionprototype id=dg_catchbadmemoryexit>
+                <a href=assembly.htm#dg_catchbadmemoryexit>dg_catchbadmemoryexit</a>
+                    // does return (dg_badmemoryerror)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_catchbadmemoryexitwithfullframe>
+                <a href=assembly.htm#dg_catchbadmemoryexitwithfullframe>dg_catchbadmemoryexitwithfullframe</a>
+                // does return(dg_badmemoryerror)
+            </div>
+
+            <div class=cfunctionprototype id=dg_putbyte>                 
+                const char* <a href=assembly.htm#dg_putbyte>dg_putbyte</a> (
+                    unsigned char* paddr, 
+                    unsigned char c) 
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getbyte>
+                const char* <a href=assembly.htm#dg_getbyte>dg_getbyte</a> (
+                    unsigned char* paddr, 
+                    unsigned char* pc)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_putuint16>
+                const char* <a href=assembly.htm#dg_putuint16>dg_putuint16</a> (
+                    UINT64* paddr,
+                    UINT16 u)
+            </div>
+
+            <div class=cfunctionprototype id=dg_getuint16>
+                const char* <a href=assembly.htm#dg_getuint16>dg_getuint16</a> (
+                    UINT64* paddr,
+                    UINT16* pn)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_putuint32>
+                const char* <a href=assembly.htm#dg_putuint32>dg_putuint32</a> (
+                    UINT64* paddr,
+                    UINT32 u)
+            </div>
+
+            <div class=cfunctionprototype id=dg_getuint32>
+                const char* <a href=assembly.htm#dg_getuint32>dg_getuint32</a> (
+                    UINT64* paddr,
+                    UINT32* pn)
+            </div>
+
+            <div class=cfunctionprototype id=dg_putuint64>
+                const char* <a href=assembly.htm#dg_putuint64>dg_putuint64</a> (
+                    UINT64* paddr,
+                    UINT64 u)
+            </div>
+
+            <div class=cfunctionprototype id=dg_getuint64>
+                const char* <a href=assembly.htm#dg_getuint64>dg_getuint64</a> (
+                    UINT64* paddr,
+                    UINT64* pn)
+            </div>
+                   
+            <div class=cfunctionprototype id=dg_getretstackpointer>
+                void* <a href=assembly.htm#dg_getretstackpointer>dg_getretstackpointer</a> ()
+            </div>
+                   
+            <div class=cfunctionprototype id=dg_getframepointer>                 
+                 void* <a href=assembly.htm#dg_getframepointer>dg_getframepointer</a> ()
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getplocalvariablestackspacestart>
+                void* <a href=assembly.htm#dg_getplocalvariablestackspacestart>dg_getplocalvariablestackspacestart</a> ()
+            </div>
+                   
+            <div class=cfunctionprototype id=dg_getplocalvariablestackspaceend>                   
+                void* <a href=assembly.htm#dg_getplocalvariablestackspaceend>dg_getplocalvariablestackspaceend</a> ()
+            </div>
+                   
+            <div class=cfunctionprototype id=dg_getlocalvariablestackspacelength>                   
+                UINT64 <a href=assembly.htm#dg_getlocalvariablestackspacelength>dg_getlocalvariablestackspacelength</a> ()
+            </div>
+
+            <div class=cfunctionprototype id=dg_callcoreforthroutine>                   
+                void <a href=assembly.htm#dg_callcoreforthroutine>dg_callcoreforthroutine</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 forthcoreroutineaddress)
+            </div>
+                    
+            <div class=cfunctionprototype id=dg_forthregsfrom>                   
+                void <a href=assembly.htm#dg_forthregsfrom>dg_forthregsfrom</a> (Bufferhandle* pBHarrayhead)
+                    // ( -- ebp esp edi esi edx ecx ebx eax eflags ) 
+            </div>
+
+            <div class=cfunctionprototype id=dg_forthtoregs>                      
+                void <a href=assembly.htm#dg_forthtoregs>dg_forthtoregs</a> (Bufferhandle* pBHarrayhead)
+                   // ( ebp esp edi esi edx ecx ebx eax eflags -- )
+            </div>
+                   
+            <div class=cfunctionprototype id=dg_bswap>
+                UINT64 <a href=assembly.htm#dg_bswap>dg_bswap</a> (UINT64 u)
+            </div>
+
+            <div class=cfunctionprototype id=dg_udmslashmod>                   
+                void <a href=assembly.htm#dg_udmslashmod>dg_udmslashmod</a> (UINT64* pints)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_umslashmod>
+                void <a href=assembly.htm#dg_umslashmod>dg_umslashmod</a> (UINT64* pints)
+            </div>
+
+            <div class=cfunctionprototype id=dg_twoslash>                        
+                INT64 <a href=assembly.htm#dg_twoslash>dg_twoslash</a> (INT64 n1)
+            </div>
+                      
+            <div class=cfunctionprototype id=dg_lshift>
+                UINT64 <a href=assembly.htm#dg_lshift>dg_lshift</a> (
+                    UINT64 x1,
+                    UINT64 u)
+            </div>
+                        
+            <div class=cfunctionprototype id=dg_mstar>
+                INT64 <a href=assembly.htm#dg_mstar>dg_mstar</a> (
+                    INT64 n1,
+                    INT64 n2)
+            </div>
+
+            <div class=cfunctionprototype id=dg_rshift>                    
+                UINT64 <a href=assembly.htm#dg_rshift>dg_rshift</a> (
+                    UINT64 x1,
+                    UINT64 u)
+            </div>
+                    
+            <div class=cfunctionprototype id=dg_umstar>
+                UINT64 <a href=assembly.htm#dg_umstar>dg_umstar</a> (
+                    UINT64 n1,
+                    UINT64 n2)
+            </div>
+                    
+            
+                 
+            <div class=cfunctionprototype id=dg_scanforbyte>                    
+                const char* <a href=assembly.htm#dg_scanforbyte>dg_scanforbyte</a> (
+                    void* pbuf, 		
+                    UINT64* plength,
+                    UINT64 value)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_scanforuint32>
+                const char* <a href=assembly.htm#dg_scanforuint32>dg_scanforuint32</a> (
+                    void* pbuf,         
+                    UINT64* plength,
+                    UINT64 value);
+            </div>
+
+            <div class=cfunctionprototype id=dg_scanforuint64>
+                const char* <a href=assembly.htm#dg_scanforuint64>dg_scanforuint64</a> (
+                    void* pbuf,         
+                    UINT64* plength,
+                    UINT64 value);
+            </div>
+            
+            <div class=cfunctionprototype id=dg_scanfornotbytereverse>                    
+                const char* <a href=assembly.htm#dg_scanfornotbytereverse>dg_scanfornotbytereverse</a> (
+                    void* pbuf,         
+                    UINT64* plength,
+                    UINT64 value)
+            </div>
+                    
+            <div class=cfunctionprototype id=dg_movebytes>                          
+                const char* <a href=assembly.htm#dg_movebytes>dg_movebytes</a> (
+                    unsigned char* psrc,    
+                    unsigned char* pdest,   
+                    UINT64 stringlength);
+            </div>
+            
+            <div class=cfunctionprototype id=dg_movebytesforward>                          
+                const char* <a href=assembly.htm#dg_movebytesforward>dg_movebytesforward</a> (
+                    unsigned char* psrc,    
+                    unsigned char* pdest,   
+                    UINT64 stringlength);
+            </div>
+            
+            <div class=cfunctionprototype id=dg_movebytesreverse>                          
+                const char* <a href=assembly.htm#dg_movebytesreverse>dg_movebytesreverse</a> (
+                    unsigned char* psrc,    
+                    unsigned char* pdest,   
+                    UINT64 stringlength);
+            </div>
+            
+            <div class=cfunctionprototype id=dg_moveuint64s>                          
+                const char* <a href=assembly.htm#dg_moveuint64s>dg_moveuint64s</a> (
+                    UINT64* psrc,    
+                    UINT64* pdest,   
+                    UINT64 stringlength);
+            </div>
+
+            <div class=cfunctionprototype id=dg_comparebytes>
+                const char* <a href=assembly.htm#dg_comparebytes>dg_comparebytes</a> (
+                    unsigned char* pstring1,    
+                    UINT64 string1length,
+                    unsigned char* pstring2,    
+                    UINT64 string2length,
+                    INT64* pflag);
+            </div>
+
+            <div class=cfunctionprototype id=dg_search>
+                unsigned char* <a href=assembly.htm#dg_search>dg_search</a> (
+                    unsigned char* caddr1,      // target string to search
+                    UINT64 u1,                  // length of target string
+                    unsigned char* caddr2,      // string to search for in target string
+                    UINT64 u2,                  // length of string to search for
+                    unsigned char** pcaddrout)  // pointer to found string or pointer to null 
+            </div>
+                    
+            <div class=cfunctionprototype id=dg_savequitstate>
+                void <a href=assembly.htm#dg_savequitstate>dg_savequitstate</a> (UINT64* pquitstate)
+            </div>
+
+            <div class=cfunctionprototype id=dg_restorequitstate>                    
+                void <a href=assembly.htm#dg_restorequitstate>dg_restorequitstate</a> (UINT64* pquitstate)
+            </div>
+                    
+            <div class=cfunctionprototype id=dg_callprocaddress>
+                UINT64 <a href=assembly.htm#dg_callprocaddress>dg_callprocaddress</a>  (
+                    UINT64* pints,
+                    UINT64 n,
+                    UINT64* plength,
+                    UINT64* address)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_calldfprocaddress>
+                UINT64 <a href=assembly.htm#dg_calldfprocaddress>dg_calldfprocaddress</a>  (
+                    UINT64* pints,
+                    UINT64 n,
+                    UINT64* plength,
+                    UINT64* address,
+                    UINT64 nfloat)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_fillwithbyte>                    
+                const char* <a href=assembly.htm#dg_fillwithbyte>dg_fillwithbyte</a> (
+                    unsigned char* pbuf, 		
+                    UINT64 length,
+                    UINT64 cvalue)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_readallbytes>
+                const char* <a href=assembly.htm#dg_readallbytes>dg_readallbytes</a> (
+                    unsigned char* pbuf,
+                    UINT64 length)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_lobit>
+                UINT64 <a href=assembly.htm#dg_lobit>dg_lobit</a> (UINT64 u)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_hibit>
+                UINT64 <a href=assembly.htm#dg_hibit>dg_hibit</a> (UINT64 u)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_touleb128>
+                UINT64 <a href=assembly.htm#dg_touleb128>dg_touleb128</a> (
+                    UINT64 u,
+                    UINT64* presult)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_shrd>
+                UINT64 <a href=assembly.htm#dg_shrd>dg_shrd</a> (
+                    UINT64* pud,
+                    UINT64 shiftcount)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_ashrd>
+                INT64 <a href=assembly.htm#dg_ashrd>dg_ashrd</a> (
+                    INT64* pnd,
+                    UINT64 shiftcount)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_shld>
+                UINT64 <a href=assembly.htm#dg_shld>dg_shld</a> (
+                    UINT64* pud,
+                    UINT64 shiftcount)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_gethctwolength>
+                UINT64 <a href=assembly.htm#dg_gethctwolength>dg_gethctwolength</a> (UINT64* pud)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_hctwostore>
+                const char* <a href=assembly.htm#dg_hctwostore>dg_hctwostore</a> (
+                    unsigned char* pdest, 
+                    UINT64* pud)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_tentothex>
+                FLOAT64 <a href=assembly.htm#dg_tentothex>dg_tentothex</a> (UINT64 x)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_i64tof64>
+                FLOAT64 <a href=assembly.htm#dg_i64tof64>dg_i64tof64</a> (INT64 x)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_timeslog2>
+                UINT64 <a href=assembly.htm#dg_timeslog2>dg_timeslog2</a> (UINT64 x)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_f64toi64>
+                INT64 <a href=assembly.htm#dg_f64toi64>dg_f64toi64</a> (FLOAT64 f64)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_roundf64tonearesteven>
+                FLOAT64 <a href=assembly.htm#dg_roundf64tonearesteven>dg_roundf64tonearesteven</a> (FLOAT64 f64)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_roundf64tonegativeinfinity>
+                FLOAT64 <a href=assembly.htm#dg_roundf64tonegativeinfinity>dg_roundf64tonegativeinfinity</a> (FLOAT64 f64)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_f64sqrt>
+                FLOAT64 <a href=assembly.htm#dg_f64sqrt>dg_f64sqrt</a> (FLOAT64 f64)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_f64cos>
+                FLOAT64 <a href=assembly.htm#dg_f64cos>dg_f64cos</a> (FLOAT64 f64)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_f64sin>
+                FLOAT64 <a href=assembly.htm#dg_f64sin>dg_f64sin</a> (FLOAT64 f64)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_f64tan>
+                FLOAT64 <a href=assembly.htm#dg_f64tan>dg_f64tan</a> (FLOAT64 f64)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_f64sincos>
+                FLOAT64 <a href=assembly.htm#dg_f64sincos>dg_f64sincos</a> (
+                    FLOAT64 f64,
+                    FLOAT64* psinresult)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_f64fyl2x>
+                FLOAT64 <a href=assembly.htm#dg_f64fyl2x>dg_f64fyl2x</a> (
+                    FLOAT64 x,
+                    FLOAT64 y)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_f64fyl2xp1>
+                FLOAT64 <a href=assembly.htm#dg_f64fyl2xp1>dg_f64fyl2xp1</a> (
+                    FLOAT64 x,
+                    FLOAT64 y)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_f64f2xm1>
+                FLOAT64 <a href=assembly.htm#dg_f64f2xm1>dg_f64f2xm1</a> (FLOAT64 x)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_truncatef64>
+                FLOAT64 <a href=assembly.htm#dg_truncatef64>dg_truncatef64</a> (FLOAT64 x)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_f64getfractional>
+                FLOAT64 <a href=assembly.htm#dg_f64getfractional>dg_f64getfractional</a> (FLOAT64 x)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_f64logbase2of10>
+                FLOAT64 <a href=assembly.htm#dg_f64logbase2of10>dg_f64logbase2of10</a> ()
+            </div>
+            
+            <div class=cfunctionprototype id=dg_f64logbase2ofe>
+                FLOAT64 <a href=assembly.htm#dg_f64logbase2ofe>dg_f64logbase2ofe</a> ()
+            </div>
+            
+            <div class=cfunctionprototype id=dg_f64fpatan>
+                FLOAT64 <a href=assembly.htm#dg_f64fpatan>dg_f64fpatan</a> (
+                    FLOAT64 x,
+                    FLOAT64 y)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_f64tof32>
+                FLOAT32 <a href=assembly.htm#dg_f64tof32>dg_f64tof32</a> (FLOAT64 x)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_f32tof64>
+                FLOAT64 <a href=assembly.htm#dg_f32tof64>dg_f32tof64</a> (FLOAT32 x)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_mstarslash>
+                UINT64 <a href=assembly.htm#dg_mstarslash>dg_mstarslash</a> (
+                    INT64* pnd1,
+                    INT64 n1,
+                    INT64 n2)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_mplus>
+                void <a href=assembly.htm#dg_mplus>dg_mplus</a> (UINT64* pints)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_dplus>
+                UINT64 <a href=assembly.htm#dg_dplus>dg_dplus</a> (UINT64* pints)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_dminus>
+                UINT64 <a href=assembly.htm#dg_dminus>dg_dminus</a> (UINT64* pints)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_dulessthan>
+                UINT64 <a href=assembly.htm#dg_dulessthan>dg_dulessthan</a> (UINT64* pints)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_dugreaterequalthan>
+                UINT64 <a href=assembly.htm#dg_dugreaterequalthan>dg_dugreaterequalthan</a> (UINT64* pints)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_dlessthan>
+                UINT64 <a href=assembly.htm#dg_dlessthan>dg_dlessthan</a> (UINT64* pints)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_dgreaterequalthan>
+                UINT64 <a href=assembly.htm#dg_dgreaterequalthan>dg_dgreaterequalthan</a> (UINT64* pints)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_dumin>
+                UINT64 <a href=assembly.htm#dg_dumin>dg_dumin</a> (UINT64* pints)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_dumax>
+                UINT64 <a href=assembly.htm#dg_dumax>dg_dumax</a> (UINT64* pints)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_dmin>
+                UINT64 <a href=assembly.htm#dg_dmin>dg_dmin</a> (UINT64* pints)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_dmax>
+                UINT64 <a href=assembly.htm#dg_dmax>dg_dmax</a> (UINT64* pints)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_dnegate>
+                UINT64 <a href=assembly.htm#dg_dnegate>dg_dnegate</a> (UINT64* pints)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_dabs>
+                UINT64 <a href=assembly.htm#dg_dabs>dg_dabs</a> (UINT64* pints)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_testasmretuint128>
+                UINT64 <a href=assembly.htm#dg_testasmretuint128>dg_testasmretuint128</a> (UINT64 u)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_random>
+                UINT64 <a href=assembly.htm#dg_random>dg_random</a> ()
+            </div>
+
+        </div>
+        
+        <div class=cfile id=cwordlist>
+        
+            <strong>cwordlist.cpp functions</strong>
+            
+            <div class=cfunctionprototype id=dg_newwordlist>
+                UINT64 <a href=cwordlist.htm#dg_newwordlist>dg_newwordlist</a> (Bufferhandle* pBHarrayhead)
+            </div>
+
+            <div class=cfunctionprototype id=dg_newword>
+                UINT64 <a href=cwordlist.htm#dg_newword>dg_newword</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 compilebufid,
+                    UINT64 compilebufoffset,
+                    UINT64 databufid,
+                    UINT64 databufoffset,
+                    UINT64 namebufid,
+                    UINT64 nameoffset,
+                    UINT64 namelength)
+            </div>
+
+            <div class=cfunctionprototype id=dg_newwordcopyname>
+                UINT64 <a href=cwordlist.htm#dg_newwordcopyname>dg_newwordcopyname</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 compilebufid,
+                    UINT64 compilebufoffset,
+                    UINT64 databufid,
+                    UINT64 databufoffset,
+                    UINT64 namebufid,
+                    UINT64 nameoffset,
+                    UINT64 namelength)
+            </div>
+
+            <div class=cfunctionprototype id=dg_new0stringnamecoreword>
+                UINT64 <a href=cwordlist.htm#dg_new0stringnamecoreword>dg_new0stringnamecoreword</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 compilebufoffset,
+                    UINT64 databufoffset,
+                    unsigned char* pname)
+            </div>
+
+            <div class=cfunctionprototype id=dg_new0stringcorenameword>
+                UINT64 <a href=cwordlist.htm#dg_new0stringcorenameword>dg_new0stringcorenameword</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    UINT64 compilebufid,
+                    UINT64 compilebufoffset,
+                    UINT64 databufid,
+                    UINT64 databufoffset,
+                    unsigned char* pname)
+            </div>
+
+            <div class=cfunctionprototype id=dg_getpdefinition>
+                Definitionheader* <a href=cwordlist.htm#dg_getpdefinition>dg_getpdefinition</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 definitionid)
+            </div>
+
+            <div class=cfunctionprototype id=dg_linkdefinition>
+                void <a href=cwordlist.htm#dg_linkdefinition>dg_linkdefinition</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 vocabularyid,
+                    UINT64 definitionid)
+            </div>
+
+            <div class=cfunctionprototype id=dg_createovariablebufdef>
+                UINT64 <a href=cwordlist.htm#dg_createovariablebufdef>dg_createovariablebufdef</a> (
+                    Bufferhandle* pBHarrayhead,
+                    unsigned char* pname,
+                    UINT64 namelength)
+            </div>
+
+            <div class=cfunctionprototype id=dg_createocompilebufdef>
+                UINT64 <a href=cwordlist.htm#dg_createocompilebufdef>dg_createocompilebufdef</a> (
+                    Bufferhandle* pBHarrayhead,
+                    unsigned char* pname,
+                    UINT64 namelength)
+            </div>
+
+            <div class=cfunctionprototype id=dg_createsubthreaddef>
+                UINT64 <a href=cwordlist.htm#dg_createsubthreaddef>dg_createsubthreaddef</a> (
+                    Bufferhandle* pBHarrayhead,
+                    unsigned char* pname,
+                    UINT64 namelength)
+            </div>
+
+            <div class=cfunctionprototype id=dg_createvariabledef>
+                UINT64 <a href=cwordlist.htm#dg_createvariabledef>dg_createvariabledef</a> (
+                    Bufferhandle* pBHarrayhead,
+                    unsigned char* pname,
+                    UINT64 namelength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_createdconstantdef>
+                UINT64 <a href=cwordlist.htm#dg_createdconstantdef>dg_createdconstantdef</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 databufoffset,
+                    UINT64 databufid,
+                    unsigned char* pname,
+                    UINT64 namelength)
+            </div>
+
+            <div class=cfunctionprototype id=dg_createconstantdef>
+                UINT64 <a href=cwordlist.htm#dg_createconstantdef>dg_createconstantdef</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 dataid,
+                    unsigned char* pname,
+                    UINT64 namelength)
+            </div>
+
+            <div class=cfunctionprototype id=dg_getlatestdefinition>
+                UINT64 <a href=cwordlist.htm#dg_getlatestdefinition>dg_getlatestdefinition</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 vocabularyid)
+            </div>
+
+            <div class=cfunctionprototype id=dg_getnextdefinition>
+                UINT64 <a href=cwordlist.htm#dg_getnextdefinition>dg_getnextdefinition</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 currentdefinition)
+            </div>
+
+            <div class=cfunctionprototype id=dg_executedefinition>
+                void <a href=cwordlist.htm#dg_executedefinition>dg_executedefinition</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 definitionid)
+            </div>
+
+            <div class=cfunctionprototype id=dg_finddefinwordlist>
+                UINT64 <a href=cwordlist.htm#dg_finddefinwordlist>dg_finddefinwordlist</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 vocabularyid,
+                    unsigned char* pname,
+                    UINT64 namelength)
+            </div>
+
+            <div class=cfunctionprototype id=dg_finddefinsearchorder>
+                UINT64 <a href=cwordlist.htm#dg_finddefinsearchorder>dg_finddefinsearchorder</a> (
+                    Bufferhandle* pBHarrayhead,
+                    unsigned char* pname,
+                    UINT64 namelength)
+            </div>
+
+            <div class=cfunctionprototype id=dg_changelatestcompileroutine>
+                void <a href=cwordlist.htm#dg_changelatestcompileroutine>dg_changelatestcompileroutine</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 compilebufid,
+                    UINT64 compilebufoffset)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_newpresortedwordlist>
+                void <a href=cwordlist.htm#dg_newpresortedwordlist>dg_newpresortedwordlist</a> (
+                    Bufferhandle* pBHarrayhead,
+                    struct Premadeword *pmypresortedwordlist,
+                    UINT64 mypresortedwordlistlength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_copyandrenamewordid>
+                UINT64 <a href=cwordlist.htm#dg_copyandrenamewordid>dg_copyandrenamewordid</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 definitionid,
+                    unsigned char* pname,
+                    UINT64 namelength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_findcopyandrenameword>
+                UINT64 <a href=cwordlist.htm#dg_findcopyandrenameword>dg_findcopyandrenameword</a> (
+                    unsigned char* poldname,
+                    UINT64 oldnamelength,
+                    unsigned char* pnewname,
+                    UINT64 newnamelength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_emptywordlist>
+                void <a href=cwordlist.htm#dg_emptywordlist>dg_emptywordlist</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 parentelementid);
+            </div>
+            
+            <div class=cfunctionprototype id=dg_createbrackettoorderconstantdef>
+                UINT64 <a href=cwordlist.htm#dg_createbrackettoorderconstantdef>dg_createbrackettoorderconstantdef</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 wordlistid,
+                    unsigned char* pname,
+                    UINT64 namelength)
+            </div>
+    
+        </div>
+        
+        <div class=cfile id=osapi>
+        
+            <strong>operating system api functions</strong>
+        
+            <div class=cfunctionprototype id=dg_initpbharrayhead>
+                void <a href=osapi.htm#dg_initpbharrayhead>dg_initpbharrayhead</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getpagesize>
+                UINT64 <a href=osapi.htm#dg_getpagesize>dg_getpagesize</a> ()
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getmicrosecondssince1970Jan01>
+                UINT64 <a href=osapi.htm#dg_getmicrosecondssince1970Jan01>dg_getmicrosecondssince1970Jan01</a> ()
+            </div>
+            
+            <div class=cfunctionprototype id=dg_gettruesize>
+                UINT64 <a href=osapi.htm#dg_gettruesize>dg_gettruesize</a> ()
+            </div>
+            
+            <div class=cfunctionprototype id=dg_isdelimiter>
+                UINT64 <a href=osapi.htm#dg_isdelimiter>dg_isdelimiter</a> (char c)
+            </div>
+
+            <div class=cfunctionprototype id=dg_islineterminator>
+                UINT64 <a href=osapi.htm#dg_islineterminator>dg_islineterminator</a> (char c)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_digittochar>
+                unsigned char <a href=osapi.htm#dg_digittochar>dg_digittochar</a> (UINT64 d)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_chartodigit>
+                UINT64 <a href=osapi.htm#dg_chartodigit>dg_chartodigit</a> (unsigned char c)
+            </div>
+
+            <div class=cfunctionprototype id=dg_chartodigitlowertoo>
+                UINT64 <a href=osapi.htm#dg_chartodigitlowertoo>dg_chartodigitlowertoo</a> (unsigned char c)
+            </div>
+
+            <div class=cfunctionprototype id=dg_pchartonumber>
+                UINT64 <a href=osapi.htm#dg_pchartonumber>dg_pchartonumber</a> (
+                    unsigned char* pnumber, 
+                    UINT64 length,
+                    UINT64 base,
+                    UINT64* flag)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_pchartonumberskipperiod>
+                INT64 <a href=osapi.htm#dg_pchartonumberskipperiod>dg_pchartonumberskipperiod</a> (
+                    UINT8* pnumber,
+                    UINT64 length,
+                    UINT64 base,
+                    UINT64* pindex,
+                    UINT64* pdigitsafterperiod)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_pchartobase10numberandexponent>
+                INT64 <a href=osapi.htm#dg_pchartobase10numberandexponent>dg_pchartobase10numberandexponent</a> (
+                    UINT8* pnumber,
+                    UINT64 length,
+                    INT64* pexponent,
+                    UINT64* pflag)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_u64times10totheu64tof64>
+                FLOAT64 <a href=osapi.htm#dg_u64times10totheu64tof64>dg_u64times10totheu64tof64</a> (
+                    INT64 number,
+                    INT64 exponent)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_pchartof64>
+                FLOAT64 <a href=osapi.htm#dg_pchartof64>dg_pchartof64</a> (
+                    UINT8* pnumber,
+                    UINT64 length,
+                    UINT64* pflag)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_hexdectonumber>
+                UINT64 <a href=osapi.htm#dg_hexdectonumber>dg_hexdectonumber</a> (
+                    unsigned char* pnumber, 
+                    UINT64 length,
+                    UINT64* flag)
+            </div>
+
+            <div class=cfunctionprototype id=dg_malloc>
+                const char* <a href=osapi.htm#dg_malloc>dg_malloc</a> (
+                    void** ppbuffer, 
+                    UINT64 size,
+                    const char* pforceerror)
+            </div>
+
+            <div class=cfunctionprototype id=dg_realloc>
+                const char* <a href=osapi.htm#dg_realloc>dg_realloc</a> (	
+                    void** ppbuffer, 
+                    UINT64 oldsize,
+                    UINT64 newsize,
+                    const char* pforceerror)
+            </div>
+
+            <div class=cfunctionprototype id=dg_free>
+                const char* <a href=osapi.htm#dg_free>dg_free</a> (
+                    void* pbuffer, 
+                    UINT64 size,
+                    const char* forceerrorflag)
+            </div>
+
+            <div class=cfunctionprototype id=dg_readfile>
+                const char* <a href=osapi.htm#dg_readfile>dg_readfile</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 fileid,
+                    unsigned char* pbuf,
+                    UINT64 length,
+                    UINT64 timeout,
+                    UINT64* pnumread,
+                    const char* forceerrorflag)
+            </div>
+
+            <div class=cfunctionprototype id=dg_writefile>
+                const char* <a href=osapi.htm#dg_writefile>dg_writefile</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 fileid,
+                    unsigned char* pbuf,
+                    UINT64 length,
+                    const char* forceerrorflag)
+            </div>
+
+            <div class=cfunctionprototype id=dg_writestdoutraw>
+                const char* <a href=osapi.htm#dg_writestdoutraw>dg_writestdoutraw</a> (
+                    Bufferhandle* pBHarrayhead, 
+                    unsigned char* pbuf,
+                    UINT64 length)
+            </div>
+
+            <div class=cfunctionprototype id=dg_closefile>
+                const char* <a href=osapi.htm#dg_closefile>dg_closefile</a> (
+                    UINT64 fileid,
+                    const char* forceerrorflag)
+            </div>
+
+            <div class=cfunctionprototype id=dg_getfiletype>
+                const char* <a href=osapi.htm#dg_getfiletype>dg_getfiletype</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 fileid,
+                    const char** pfiletype,
+                    const char* forceerrorflag)
+            </div>
+
+            <div class=cfunctionprototype id=dg_gethstdin>
+                const char* <a href=osapi.htm#dg_gethstdin>dg_gethstdin</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64* pfileid,
+                    const char* forceerrorflag)
+            </div>
+
+            <div class=cfunctionprototype id=dg_gethstdout>
+                const char* <a href=osapi.htm#dg_gethstdout>dg_gethstdout</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64* pfileid,
+                    const char* forceerrorflag)
+            </div>
+
+            <div class=cfunctionprototype id=dg_gethstderror>
+                const char* <a href=osapi.htm#dg_gethstderror>dg_gethstderror</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64* pfileid,
+                    const char* forceerrorflag)
+            </div>
+
+            <div class=cfunctionprototype id=dg_getfilelength>
+                const char* <a href=osapi.htm#dg_getfilelength>dg_getfilelength</a> ( 
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 fileid,
+                    UINT64* pfilelength,  // number ready for non disk files
+                    const char* forceerrorflag)
+            </div>
+
+            <div class=cfunctionprototype id=dg_getch>
+                INT64 <a href=osapi.htm#dg_getch>dg_getch</a> () 
+
+            </div>
+
+            <div class=cfunctionprototype id=dg_freelibrary>
+                const char* <a href=osapi.htm#dg_freelibrary>dg_freelibrary</a> (
+                    UINT64 libraryhandle,
+                    const char* forceerrorflag)
+            </div>
+                     
+            <div class=cfunctionprototype id=dg_loadlibrary>
+                const char* <a href=osapi.htm#dg_loadlibrary>dg_loadlibrary</a> (
+                    const char* libraryname,
+                    UINT64* plibraryhandle,
+                    const char* forceerrorflag)
+            </div>
+                     
+            <div class=cfunctionprototype id=dg_openfileforread>
+                const char* <a href=osapi.htm#dg_openfileforread>dg_openfileforread</a> (
+                    const char* filename, 
+                    UINT64* pfileid,
+                    const char* forceerrorflag)
+            </div>
+
+            <div class=cfunctionprototype id=dg_openfileforwritenew>
+                const char* <a href=osapi.htm#dg_openfileforwritenew>dg_openfileforwritenew</a> (
+                    const char* filename, 
+                    UINT64* pfileid,
+                    const char* forceerrorflag)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_printzerostring>
+                void <a href=cmiscellaneous.htm#dg_printzerostring>dg_printzerostring</a> (
+                   Bufferhandle* pBHarrayhead,
+                   unsigned char* addr)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_writestdout>
+                void <a href=osapi.htm#dg_writestdout>dg_writestdout</a> (
+                    Bufferhandle* pBHarrayhead,
+                    unsigned char* pbuf,
+                    UINT64 length)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_writefileuint64todec>
+                void <a href=osapi.htm#dg_writefileuint64todec>dg_writefileuint64todec</a> (
+                     Bufferhandle* pBHarrayhead,
+                     UINT64 fileid,
+                     UINT64 i)
+            </div>
+
+            <div class=cfunctionprototype id=dg_writestdoutuinttodec>
+                void <a href=osapi.htm#dg_writestdoutuinttodec>dg_writestdoutuinttodec</a> (
+                     Bufferhandle* pBHarrayhead,
+                     UINT64 i)
+            </div>
+
+            <div class=cfunctionprototype id=dg_writestdoutuint64tohex>
+                void <a href=osapi.htm#dg_writestdoutuint64tohex>dg_writestdoutuint64tohex</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 i)
+            </div>
+
+            <div class=cfunctionprototype id=dg_writestdoutuint8tohex>
+                void <a href=osapi.htm#dg_writestdoutuint8tohex>dg_writestdoutuint8tohex</a> (
+                    Bufferhandle* pBHarrayhead,
+                    unsigned char i)
+            </div>
+
+            <div class=cfunctionprototype id=dg_hexdumpsegment>
+                void <a href=osapi.htm#dg_hexdumpsegment>dg_hexdumpsegment</a> (
+                    Bufferhandle* pBHarrayhead,
+                    unsigned char* pstring,
+                    UINT64 length)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_isnegative>
+                UINT64 <a href=osapi.htm#dg_isnegative>dg_isnegative</a> (UINT64 x)  // could call this dg_zeroless
+            </div>
+            
+            <div class=cfunctionprototype id=dg_movebytesskipdestination>
+                const char* <a href=osapi.htm#dg_movebytesskipdestination>dg_movebytesskipdestination</a> (
+                    unsigned char* psrc,
+                    unsigned char* pdest,
+                    UINT64 stringlength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getsvalue>
+                UINT64 <a href=osapi.htm#dg_getsvalue>dg_getsvalue</a> (
+                    unsigned char* pbuf,
+                    UINT64 buflength,
+                    UINT64* pfirstvaluestartoffset,
+                    UINT64* pfirstvaluelength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getsenvnamevalue>
+                const char* <a href=osapi.htm#dg_getsenvnamevalue>dg_getsenvnamevalue</a> (
+                    int argc,
+                    char* argv[],
+                    const char* pnametofind,
+                    UINT64 nametofindlength,
+                    char** ppfoundname,
+                    UINT64* pfoundnamelength,
+                    char** ppfoundvalue,
+                    UINT64* pfoundvaluelength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getuleb128size>
+                UINT64 <a href=osapi.htm#dg_getuleb128size>dg_getuleb128size</a> (UINT64 u)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_getlengthwithuleb128length>
+                UINT64 <a href=osapi.htm#dg_getlengthwithuleb128length>dg_getlengthwithuleb128length</a> (UINT64 currentlength)
+            </div>
+                    
+            <div class=cfunctionprototype id=dg_getenvironmentvariable>
+                const char* <a href=osapi.htm#dg_getenvironmentvariable>dg_getenvironmentvariable</a> (
+                    Bufferhandle* pBHarrayhead,
+                    const char* pvarname,
+                    unsigned char* pbuf,
+                    UINT64 buflength,
+                    UINT64* pvaluelength,
+                    const char* forceerrorflag)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_runfileandwait>
+                const char* <a href=osapi.htm#dg_runfileandwait>dg_runfileandwait</a> (
+                    Bufferhandle* pBHarrayhead,
+                    unsigned char* pfilename,
+                    char *const argv[],
+                    char *const envp[],
+                    const char* forceerrorflag)
+            </div>
+                                
+            <div class=cfunctionprototype id=dg_forthfixpathstring>
+                void <a href=osapi.htm#dg_forthfixpathstring>dg_forthfixpathstring</a> (Bufferhandle* pBHarrayhead)
+            </div>
+
+            <div class=cfunctionprototype id=dg_forthloadlibrarystringsub>
+                void <a href=osapi.htm#dg_forthloadlibrarystringsub>dg_forthloadlibrarystringsub</a> (Bufferhandle* pBHarrayhead)
+                //      ( libraryname$ -$- libraryname$ ) 
+                //      ( -openlibraryhandlestack- libraryhandle )
+            </div>
+
+            <div class=cfunctionprototype id=dg_forthloadlibrarystring>
+                void <a href=osapi.htm#dg_forthloadlibrarystring>dg_forthloadlibrarystring</a> (Bufferhandle* pBHarrayhead)
+                //      ( filename$ -$- )
+                //      ( -- wordlistid )
+            </div>
+            
+             <div class=cfunctionprototype id=dg_forthopenlibrarystring>
+                void <a href=osapi.htm#dg_forthopenlibrarystring>dg_forthopenlibrarystring</a> (Bufferhandle* pBHarrayhead)
+                //  ( filename$ -$- )
+                //  ( -- wordlistid libraryhandle )
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthfindlibrarysymbol>
+                void <a href=osapi.htm#dg_forthfindlibrarysymbol>dg_forthfindlibrarysymbol</a> (Bufferhandle* pBHarrayhead)
+            </div>
+
+            <div class=cfunctionprototype id=dg_callbuffer>
+                void <a href=osapi.htm#dg_callbuffer>dg_callbuffer</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 bufferid,
+                    UINT64 offset)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_makedototobuf>
+                void <a href=osapi.htm#dg_makedototobuf>dg_makedototobuf</a> (
+                    Bufferhandle* pBHarrayhead,
+                    unsigned char* pcode,
+                    UINT64 codelength,
+                    UINT64 exportsymbollisthlistid,
+                    UINT64 exportsymbollistparentelementid,
+                    UINT64 importsymbollisthlistid,
+                    UINT64 importsymbollistparentelementid,
+                    UINT64 destbuf)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_forthrunfileandwait>
+                void <a href=osapi.htm#dg_forthrunfileandwait>dg_forthrunfileandwait</a> (Bufferhandle* pBHarrayhead)
+            </div>
+
+        </div>
+        
+        <div class=cfile id=dglumain>
+        
+            <strong>dglumain.cpp functions</strong>
+
+            <div class=cfunctionprototype id=dg_initbuffers>
+                const char* <a href=dglumain.htm#dg_initbuffers>dg_initbuffers</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_inithlists>
+                void <a href=dglumain.htm#dg_inithlists>dg_inithlists</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_initvariables>
+                void <a href=dglumain.htm#dg_initvariables>dg_initvariables</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_cleanup>
+                void <a href=dglumain.htm#dg_cleanup>dg_cleanup</a> (Bufferhandle* pBHarrayhead)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_gettruesize>
+                UINT64 <a href=dglumain.htm#dg_gettruesize>dg_gettruesize</a> ()
+            </div>
+            
+            <div class=cfunctionprototype id=dg_initwithoutwordlists>
+                Bufferhandle* <a href=dglumain.htm#dg_initwithoutwordlists>dg_initwithoutwordlists</a> (
+                    int argc,
+                    char* argv[])
+            </div>
+            
+            <div class=cfunctionprototype id=dg_init>
+                Bufferhandle* <a href=dglumain.htm#dg_init>dg_init</a> (
+                    int argc,
+                    char* argv[])
+            </div>
+            
+            <div class=cfunctionprototype id=dg_main>
+                void<a href=dglumain.htm#dg_main>dg_main</a> (
+                    int argc,
+                    char* argv[])
+            </div>
+            
+            <div class=cfunctionprototype id=main>
+                int<a href=dglumain.htm#main>main</a> (
+                    int argc,
+                    char* argv[])
+            </div>
+
+        </div>
+        
+    </div>
+
+  </div></body>
+</html>

@@ -1,0 +1,743 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+
+<html>
+
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      forthcompiletype.cpp functions
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>
+      
+        <a href=index.htm                                                      >Directory</a>
+        <a href=documentationkey.htm                                           >Documentation key</a>
+        <a                                                                     >&nbsp;</a>
+
+        <a                                                                     >C functions</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypealwaysexecute        >dg_forthdocompiletypealwaysexecute</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypesubroutine           >dg_forthdocompiletypesubroutine</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypepreserveregs         >dg_forthdocompiletypepreserveregs</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypesafesubroutine       >dg_forthdocompiletypesafesubroutine</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypedpushn               >dg_forthdocompiletypedpushn</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypedpushdn              >dg_forthdocompiletypedpushdn</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypedpushp               >dg_forthdocompiletypedpushp</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypedpushs               >dg_forthdocompiletypedpushs</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypewordsstringquotes    >dg_forthdocompiletypewordsstringquotes</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypewords0stringquotes   >dg_forthdocompiletypewords0stringquotes</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletyperunfileandwaitnoenvquotes    >dg_forthdocompiletyperunfileandwaitnoenvquotes</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypecdecl                >dg_forthdocompiletypecdecl</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypecdeclretuint128      >dg_forthdocompiletypecdeclretuint128</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypecppmemberfunction    >dg_forthdocompiletypecppmemberfunction</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypecall                 >dg_forthdocompiletypecall</a>
+      
+    </div>
+
+    <div id=pagestuff>
+
+      <div class=word id=dg_forthdocompiletypealwaysexecute>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdocompiletypealwaysexecute ( OCRALWAYSEXECUTE ) 
+//
+// C prototype:
+//  void dg_forthdocompiletypealwaysexecute (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( dataoffset databufid -- )
+//
+// Data stack in:
+//  bufferid                      buffer the target routine is in
+//  bufferoffset                  offset of the target routine in the buffer
+//                                                            
+// Action:
+//   calls the routine at bufferoffset in bufferid regardless of the system processing state
+//
+// Failure cases:
+//  subroutine may report errors
+//
+// See Also:
+//  <a href='forthwordlist.htm#dg_forthnewdefinition'>NEWDEFINITION</a>
+//  <a href='forthwordlist.htm#dg_forthputnewestdefinitioncompiletype'>PUTNEWESTDEFINITIONCOMPILETYPE</a>
+//  <a href='forthwordlist.htm#dg_forthsetocr'>SETOCR</a>
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+      <div class=word id=dg_forthdocompiletypesubroutine>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdocompiletypesubroutine ( OCREXECUTE )
+//
+// C prototype:
+//  void dg_forthdocompiletypesubroutine (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( dataoffset databufid -- )
+//
+// Data stack in:
+//  dataoffset                     offset of the target routine in the buffer
+//  databufid                      buffer the target routine is in
+//                                                            
+// Action:
+//  Removes dataoffset and databufid from the data stack then:
+//   If the script processing state is execute, this calls the routine at bufferoffset in bufferid 
+//   If the script processing state is compile, this compiles a call to the routine at bufferoffset in bufferid
+//   If the script processing state is anything else, this does nothing
+//
+// Failure cases:
+//  error getting a pointer to the data stack
+//  data stack underflow
+//  error getting the state
+//  
+// See Also:
+//  <a href='forthwordlist.htm#dg_forthnewdefinition'>NEWDEFINITION</a>
+//  <a href='forthwordlist.htm#dg_forthputnewestdefinitioncompiletype'>PUTNEWESTDEFINITIONCOMPILETYPE</a>
+//  <a href='forthwordlist.htm#dg_forthsetocr'>SETOCR</a>
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthdocompiletypepreserveregs>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdocompiletypepreserveregs ( OCRPRESERVEREGS )
+//
+// C prototype:
+//  void dg_forthdocompiletypepreserveregs (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+// 
+// Data stack in:
+//  dataoffset                     offset of the target routine in the buffer
+//  databufid                      buffer the target routine is in
+//                                                            
+// Action:
+//  Removes dataoffset and databufid from the data stack then:
+//   If the script processing state is execute, this calls the routine at bufferoffset in bufferid 
+//   If the script processing state is compile, this compiles a call to the routine at bufferoffset in bufferid
+//    that preserves the registers
+//   If the script processing state is anything else, this does nothing
+//
+// Note:
+//  This compile type can only compile calls to core routines at this time, attempting to use this to
+//   compile a call to a routine at an offset in a buffer will generate an error
+//  This is the compile type for REGS&gt; and &gt;REGS
+//
+// Failure cases:
+//  error getting a pointer to the data stack
+//  data stack underflow
+//  error getting the state
+//  attempting to compile a call to a non-core routine
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+      <div class=word id=dg_forthdocompiletypesafesubroutine>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdocompiletypesafesubroutine ( OCRSAFEEXECUTE )
+//
+// C prototype:
+//  void dg_forthdocompiletypesafesubroutine (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( dataoffset databufid -- )
+//  
+// Data stack in:
+//  dataoffset                     offset of the target routine in the buffer
+//  databufid                      buffer the target routine is in
+//                                                            
+// Action:
+//  Removes dataoffset and databufid from the data stack then:
+//   If the script processing state is execute, this calls the routine at bufferoffset in bufferid 
+//   If the script processing state is compile, this compiles a safe call to the routine 
+//     at bufferoffset in bufferid and sets the flag showing a safe call was compiled.
+//   If the script processing state is anything else, this does nothing
+//
+//  Note: The default safe behavior errs on the side of caution. Only compiling words
+//    and words that could be used to push to the current compile buffer need to be 
+//    marked as safe. Safe subroutine calls execute slower but can handle the case 
+//    where the buffer they are called from relocates while they are executing.
+//
+// Failure cases:
+//  error getting the state
+//  
+// See Also:
+//  <a href='forthwordlist.htm#dg_forthnewdefinition'>NEWDEFINITION</a>
+//  <a href='forthwordlist.htm#dg_forthputnewestdefinitioncompiletype'>PUTNEWESTDEFINITIONCOMPILETYPE</a>
+//  <a href='forthwordlist.htm#dg_forthsetocr'>SETOCR</a>
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthdocompiletypedpushn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdocompiletypedpushn ( OCRPUSHN ) 
+//
+// C prototype:
+//  void dg_forthdocompiletypedpushn (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( dataoffset databufid -- )
+//
+// Data stack in:
+//  dataoffset                     n
+//  databufid                      this is 0 (doesn't really matter what this is) 
+//                                                            
+// Action:
+//  Removes dataoffset and databufid from the data stack then:
+//   If the script processing state is execute, this pushes n (the data offset) to the data stack 
+//   If the script processing state is compile, this compiles push n to the data stack
+//   If the script processing state is anything else, this does nothing
+//
+// Failure cases:
+//  error getting the state
+//  
+// See Also:
+//  <a href='forthwordlist.htm#dg_forthnewdefinition'>NEWDEFINITION</a>
+//  <a href='forthwordlist.htm#dg_forthputnewestdefinitioncompiletype'>PUTNEWESTDEFINITIONCOMPILETYPE</a>
+//  <a href='forthwordlist.htm#dg_forthsetocr'>SETOCR</a>
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthdocompiletypedpushdn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdocompiletypedpushdn ( OCRPUSHDN )
+//
+// C prototype:
+//  void dg_forthdocompiletypedpushdn (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( dataoffset databufid -- )
+//
+// Data stack in:
+//  dataoffset                     n lo
+//  databufid                      n hi
+//                                                            
+// Action:
+//  Removes dataoffset and databufid from the data stack then:
+//   If the script processing state is execute, this pushes n lo n hi to the data stack 
+//   If the script processing state is compile, this compiles push n lo n hi to the data stack
+//   If the script processing state is anything else, this does nothing
+//
+// Failure cases:
+//  error getting the state
+//
+// See Also:
+//  <a href='forthwordlist.htm#dg_forthnewdefinition'>NEWDEFINITION</a>
+//  <a href='forthwordlist.htm#dg_forthputnewestdefinitioncompiletype'>PUTNEWESTDEFINITIONCOMPILETYPE</a>
+//  <a href='forthwordlist.htm#dg_forthsetocr'>SETOCR</a>
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthdocompiletypedpushp>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdocompiletypedpushp ( OCRPUSHBUFADDR )
+//
+// C prototype:
+//  void dg_forthdocompiletypedpushp (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( dataoffset databufid -- )
+// 
+// Data stack in:
+//  dataoffset                     n lo
+//  databufid                      n hi
+//                                                            
+// Action:
+//  Removes dataoffset and databufid from the data stack then:
+//   If the script processing state is execute, this calculates and pushes the address to the data stack 
+//   If the script processing state is compile, this compiles calculate and push address to the data stack
+//   If the script processing state is anything else, this does nothing
+//
+// Failure cases:
+//  error getting the state
+//
+// See Also:
+//  <a href='forthwordlist.htm#dg_forthnewdefinition'>NEWDEFINITION</a>
+//  <a href='forthwordlist.htm#dg_forthputnewestdefinitioncompiletype'>PUTNEWESTDEFINITIONCOMPILETYPE</a>
+//  <a href='forthwordlist.htm#dg_forthsetocr'>SETOCR</a>
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthdocompiletypedpushs>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdocompiletypedpushs ( OCRPUSH$ ) 
+//
+// C prototype:
+//  void dg_forthdocompiletypedpushs (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( dataoffset databufid -- )
+// 
+// Data stack in:
+//  dataoffset                     not used
+//  databufid                      not used
+//                                                            
+// Action:
+//  Removes dataoffset and databufid from the data stack then:
+//   If the script processing state is execute, this parses until " and pushes the parsed string to the string stack 
+//   If the script processing state is compile, this parses until " and compiles push 
+//    a copy of the parsed string to the string stack
+//   If the script processing state is anything else, this does nothing
+//
+// Failure cases:
+//  error getting the state
+//  
+// See Also:
+//  <a href='forthwordlist.htm#dg_forthnewdefinition'>NEWDEFINITION</a>
+//  <a href='forthwordlist.htm#dg_forthputnewestdefinitioncompiletype'>PUTNEWESTDEFINITIONCOMPILETYPE</a>
+//  <a href='forthwordlist.htm#dg_forthsetocr'>SETOCR</a>
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthdocompiletypewordsstringquotes>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdocompiletypewordsstringquotes ( OCRWORDS$&quot; )
+//
+// C prototype:
+//  void dg_forthdocompiletypewordsstringquotes (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( dataoffset databufid -- )
+//
+// Data stack in:
+//  dataoffset                     not used
+//  databufid                      not used
+//
+// Action:
+//  Removes dataoffset and databufid from the data stack then:
+//   If the script processing state is execute, this parses words until " and pushes
+//    each parsed word string to the string stack
+//   If the script processing state is compile, this parses words until " and
+//    compiles push a copy of each parsed word string to the string stack
+//   If the script processing state is anything else, this does nothing
+//
+// Failure cases:
+//  error getting the state
+//
+// See Also:
+//  <a href='forthwordlist.htm#dg_forthnewdefinition'>NEWDEFINITION</a>
+//  <a href='forthwordlist.htm#dg_forthputnewestdefinitioncompiletype'>PUTNEWESTDEFINITIONCOMPILETYPE</a>
+//  <a href='forthwordlist.htm#dg_forthsetocr'>SETOCR</a>
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthdocompiletypewords0stringquotes>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdocompiletypewords0stringquotes ( OCRWORDS0$&quot; )
+//
+// C prototype:
+//  void dg_forthdocompiletypewords0stringquotes (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( dataoffset databufid -- )
+//
+// Data stack in:
+//  dataoffset                     not used
+//  databufid                      not used
+//
+// Action:
+//  Removes dataoffset and databufid from the data stack then:
+//   If the script processing state is execute, this parses words until " and pushes
+//    each parsed word string with a null terminator added onto the end
+//    to the string stack
+//   If the script processing state is compile, this parses words until " and
+//    compiles push a copy of each parsed word string with a null terminator added
+//    onto the end to the string stack
+//   If the script processing state is anything else, this does nothing
+//
+// Failure cases:
+//  error getting the state
+//
+// See Also:
+//  <a href='forthwordlist.htm#dg_forthnewdefinition'>NEWDEFINITION</a>
+//  <a href='forthwordlist.htm#dg_forthputnewestdefinitioncompiletype'>PUTNEWESTDEFINITIONCOMPILETYPE</a>
+//  <a href='forthwordlist.htm#dg_forthsetocr'>SETOCR</a>
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthdocompiletyperunfileandwaitnoenvquotes>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdocompiletyperunfileandwaitnoenvquotes ( OCRRUNFILEANDWAITNOENV&quot; )
+//
+// C prototype:
+//  void dg_forthdocompiletyperunfileandwaitnoenvquotes (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( dataoffset databufid -- )
+//
+// Data stack in:
+//  dataoffset                     not used
+//  databufid                      not used
+//
+// Action:
+//  Removes dataoffset and databufid from the data stack then:
+//   If the script processing state is execute, this parses words until " and then
+//    uses the first word parsed as a filename to run, then passes all the words
+//    parsed as arguments to the filename to run, then runs the filename with a
+//    null environment passed in then waits for it to completely finish running.
+//   If the script processing state is compile, this parses words until " and then
+//    uses the first word parsed as a filename to run, and all the words
+//    as arguments, then this compiles code to run the filename with the argurments
+//    parsed a null environment passed in,
+//    then waits for it to completely finish running.
+//   If the script processing state is anything else, this does nothing
+//
+// Failure cases:
+//  error getting the state
+//
+// See Also:
+//  <a href='forthwordlist.htm#dg_forthnewdefinition'>NEWDEFINITION</a>
+//  <a href='forthwordlist.htm#dg_forthputnewestdefinitioncompiletype'>PUTNEWESTDEFINITIONCOMPILETYPE</a>
+//  <a href='forthwordlist.htm#dg_forthsetocr'>SETOCR</a>
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      <div class=word id=dg_forthdocompiletypecdecl>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdocompiletypecdecl ( OCRCALLPROC )
+//
+// C prototype:
+//  void dg_forthdocompiletypecdecl (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( dataoffset databufid -- )
+// 
+// Data stack in:
+//  dataoffset                     address of the proc
+//  databufid                      not used - usually set to core buffer id
+//                                                            
+// Action:
+//  Removes dataoffset and databufid from the data stack then:
+//   If the script processing state is execute, calls the proc address at dataoffset 
+//   If the script processing state is compile, this compiles a call to the proc address at dataoffset
+//   If the script processing state is anything else, this does nothing
+//
+// Note:
+//  On return, the compiled code sets the return stack pointer back to
+//   where it was before the call. This means you can use this compile type
+//   to compile calls to stdcall subrtoutines as well as cdecl.
+//
+//  When building a call to a word with this compile type, the parameters
+//   go on the data stack in reverse order, the number of paramaters for the
+//   the call go on the data stack after the parameters, then
+//   the word with this compile type is used. Diaperglu will move the
+//   parameters to the return stack before calling the word's function.'
+//
+// Failure cases:
+//  error getting the state
+//  
+// See Also:
+//  <a href='forthwordlist.htm#dg_forthnewdefinition'>NEWDEFINITION</a>
+//  <a href='forthwordlist.htm#dg_forthputnewestdefinitioncompiletype'>PUTNEWESTDEFINITIONCOMPILETYPE</a>
+//  <a href='forthwordlist.htm#dg_forthsetocr'>SETOCR</a>
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthdocompiletypecdeclretuint128>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdocompiletypecdeclretuint128 ( OCRCALLPROCRETUINT128 )
+//
+// C prototype:
+//  void dg_forthdocompiletypecdeclretuint128 (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( dataoffset databufid -- )
+// 
+// Data stack in:
+//  dataoffset                     address of the proc
+//  databufid                      not used - usually set to core buffer id
+//                                                            
+// Action:
+//  Removes dataoffset and databufid from the data stack then:
+//   If the script processing state is execute, calls the proc address at dataoffset 
+//   If the script processing state is compile, this compiles a call to the proc address at dataoffset
+//   If the script processing state is anything else, this does nothing
+//
+// Note:
+//  On return, the compiled code sets the return stack pointer back to
+//   where it was before the call.
+//
+//  When building a call to a word with this compile type, the parameters
+//   go on the data stack in reverse order, the number of paramaters for the
+//   the call go on the data stack after the parameters, then
+//   the word with this compile type is used. Diaperglu will move the
+//   parameters to the return stack before calling the word's function.'
+//
+// Failure cases:
+//  error getting the state
+//  
+// See Also:
+//  <a href='forthwordlist.htm#dg_forthnewdefinition'>NEWDEFINITION</a>
+//  <a href='forthwordlist.htm#dg_forthputnewestdefinitioncompiletype'>PUTNEWESTDEFINITIONCOMPILETYPE</a>
+//  <a href='forthwordlist.htm#dg_forthsetocr'>SETOCR</a>
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthdocompiletypecppmemberfunction>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdocompiletypecppmemberfunction ( OCRCALLCPPMEMBER ) 
+//
+// C prototype:
+//  void dg_forthdocompiletypecppmemberfunction (Bufferhandle* pBHarrayhead)
+//
+// C prototype:
+//  void dg_forthdocompiletypecppmemberfunction (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( dataoffset databufid -- )
+// 
+// Data stack in:
+//  dataoffset                     address of the proc
+//  databufid                      not used - usually set to core buffer id
+//                                                            
+// Action:
+//  Removes dataoffset and databufid from the data stack then:
+//   If the script processing state is execute, calls the proc address at dataoffset 
+//   If the script processing state is compile, this compiles a call to the proc address at dataoffset
+//   If the script processing state is anything else, this does nothing
+//
+// Note:
+//  On return, the compiled code sets the return stack pointer back to
+//   where it was before the call.
+//
+//  When building a call to a word with this compile type, the parameters
+//   go on the data stack in reverse order, the number of paramaters for the
+//   the call go on the data stack after the parameters, then
+//   the word with this compile type is used. Diaperglu will move the
+//   parameters to the return stack before calling the word's function.
+//
+//  Also, the 'this' pointer is included in the parameter count. Yes, this
+//   makes setting up the call the same as for cdecl and stdcall, but a
+//   separate function is needed because on some or all operating systems
+//   the 'this' pointer is passed in the ECX register.'
+//
+// Failure cases:
+//  error getting the state
+//  
+// See Also:
+//  <a href='forthwordlist.htm#dg_forthnewdefinition'>NEWDEFINITION</a>
+//  <a href='forthwordlist.htm#dg_forthputnewestdefinitioncompiletype'>PUTNEWESTDEFINITIONCOMPILETYPE</a>
+//  <a href='forthwordlist.htm#dg_forthsetocr'>SETOCR</a>
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthdocompiletypecall>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdocompiletypecall ( OCRCALL )
+//
+// C prototype:
+//  void dg_forthdocompiletypecall (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( dataoffset databufid -- )
+// 
+// Data stack in:
+//  dataoffset                     offset of the subroutine in buffer
+//  databufid                      bufferid of buffer containing subroutine
+//                                                            
+// Action:
+//  Removes dataoffset and databufid from the data stack then:
+//   If the bufferid is the same as the calling routine, compiles a relative call to the subroutine
+//   If the bufferid is DG_CORE_BUFFERID, compiles a call to an absolute address - note that this
+//    case trashes the EAX register.
+//   If the bufferid is not the same as the calling routine or DG_CORE_BUFFERID, errors are pushed
+//    to the error stack.
+//
+// Note:
+//  No setup or cleanup is performed. This is just a straight simple call. Nothing is pushed
+//   to the return stack before the call, and nothing is popped off the return stack after.
+//   You have to do that.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+    </div>
+
+  </div></body>
+</html>

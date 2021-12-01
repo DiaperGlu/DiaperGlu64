@@ -1,0 +1,1320 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<html>
+
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      forthglu.cpp functions
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>
+      
+      <a href=index.htm                                       >Directory</a>
+      <a href=documentationkey.htm                            >Documentation key</a>
+      <a                                                      >&nbsp;</a>
+
+      <a                                                      >C functions</a>
+      <a href=forthglu.htm#dg_howgluworks                     >How glu works</a>
+      <a href=forthglu.htm#dg_forthgluelement                 >dg_forthgluelement</a>
+      <a href=forthglu.htm#dg_forthngluelement                >dg_forthngluelement</a>
+      <a href=forthglu.htm#dg_forthglu                        >dg_forthglu</a>
+      <a href=forthglu.htm#dg_forthnglu                       >dg_forthnglu</a>
+      <a href=forthglu.htm#dg_forthnewnglulist                >dg_forthnewnglulist</a>
+      <a href=forthglu.htm#dg_forthnewcurrentnglulist         >dg_forthnewcurrentnglulist</a>
+      <a href=forthglu.htm#dg_createlinkcomma                 >dg_createlinkcomma</a>
+      <a href=forthglu.htm#dg_forthcreatecodelinkcomma        >dg_forthcreatecodelinkcomma</a>
+      <a href=forthglu.htm#dg_forthcreateocodelinkcomma       >dg_forthcreateocodelinkcomma</a>
+      <a href=forthglu.htm#dg_forthcreateobcodelinkcomma      >dg_forthcreateobcodelinkcomma</a>
+      <a href=forthglu.htm#dg_forthcreatecdecllinkcomma       >dg_forthcreatecdecllinkcomma</a>
+      <a href=forthglu.htm#dg_forthcreatecolonlinkcomma       >dg_forthcreatecolonlinkcomma</a>
+      <a href=forthglu.htm#dg_forthcreateodatalinkcomma       >dg_forthcreateodatalinkcomma</a>
+      <a href=forthglu.htm#dg_forthcreateobdatalinkcomma      >dg_forthcreateobdatalinkcomma</a>
+      <a href=forthglu.htm#dg_forthwtolinkcomma               >dg_forthwtolinkcomma</a>
+      <a href=forthglu.htm#dg_forthwtocodelinkcomma           >dg_forthwtocodelinkcomma</a>
+      <a href=forthglu.htm#dg_forthwtodatalinkcomma           >dg_forthwtodatalinkcomma</a>
+      <a href=forthglu.htm#dg_forthsymbol                     >dg_forthsymbol</a>
+      <a href=forthglu.htm#dg_stringtoglulinkcomma            >dg_stringtoglulinkcomma</a>
+      <a href=forthglu.htm#dg_forthstrtolinkcomma             >dg_forthstrtolinkcomma</a>
+      <a href=forthglu.htm#dg_forthstrtocodelinkcomma         >dg_forthstrtocodelinkcomma</a>
+      <a href=forthglu.htm#dg_forthstrtodatalinkcomma         >dg_forthstrtodatalinkcomma</a>
+      
+      <a                                                      >&nbsp;</a>
+      
+    </div>
+
+    <div id=pagestuff>
+
+      <div class=word id=dg_howgluworks>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// How glu lists work
+//
+// Glu lists allow automatic linking to libraries and precompiled code.
+//
+// A glu list is basically a hierarchical list where the name strings of each
+//  element reference a function to call. The idea is to have the minimum
+//  number functions needed to support linking to system libraries and
+//  precompiled code buffers. Previously Diaperglu had to recompile a script
+//  each time you wanted to run it. Now, for assembly language programs at least,
+//  you can make a glu list for a compiled buffer to load and run the code
+//  without having to recompile it.
+//
+// For this purpose, glu lists have functions to create buffers,
+//  load files, libraries, and patch addresses to loaded files and libraries
+//  using symbols. Glu lists can also call the loaded functions.
+//
+// Glu lists also allow you to push values to the data and string stacks so that
+//  you can load and link to the Diaperglu library call Diaperglu's functions
+//  from a glu list.
+//
+// The reason for glu lists is in order to load a precompiled file into a buffer
+//  and use the functions, you have to know where the offsets are, but offsets
+//  change every time you recompile. You also don't know which buffer the file
+//  will load into or what base address the buffer will have until it's loaded,
+//  so it's necessary to link by symbol instead of address, or even offset and
+//  buffer id. So symbols are used to get the final load addresses of functions.
+//
+// The way patching works is, glu lists have a list of offsets to patch along
+//  with the symbol for each offset. Glu lists turn the symbol into an
+//  address and store the address at the offset specified in the list.
+//  Right now Diaperglu supports two kinds of links, code and data, but you
+//  could use the patch lists to support other kinds if you want.
+//  To use a patch list, there are commands to set the current source library,
+//  or source code buffer and source symbol list; and destination buffer.
+//  Then you specify a patch list.
+//
+// A code link is just a jump to an address. A data link is just a subroutins
+//  that returns the link's value.
+//
+// To build a glu list, make a new hierarchical list.
+//  Then Make a root element.
+//  The name of the root element must be "NGlu" or "Glu ".
+//  If the root element's name is NGlu then the names of the children of root
+//  must be UINT64 indexes into the glu function table. If the root element's
+//  name is "Glu " then the names of the children of root are symbols
+//  representing which glu table function to call.
+//  To make an export glu list for a buffer used as a library, all you have to
+//  specify is a symbol list for the exported functions.
+//  To make an import glu list for a buffer which uses imported libraries or
+//  precompiled buffers, then you have to specify a patch list for each source.
+//  You can also have the glu list load those libraries and precompiled
+//  buffers for you.
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthgluelement>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgluelement ( GLU-ELEMENT )
+//
+// C prototype:
+//  void dg_forthgluelement (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( elementid gluhlistid -- )
+//
+// Data stack in:
+//  elementid                     parent element id of glu list
+//  gluhlistid                    hierarchical list containing glu list
+//
+// Data stack out:
+//  none
+//                                                              
+// Action:
+//  Pops elementid and hlistid from data stack.
+//  For each child element of the parent in order they were added to the parent,
+//   look up the name of the child element and do the glu function associated
+//   with the name.
+//
+// Note:
+//  Glu list child element name   Glu function
+//   Bufs                          dg_newbufferlist
+//   CallBuf                       dg_callpatchsrcbufsymbol
+//   CallBufToDS                   dg_callpatchsrcbufsymboltods
+//   CallDestOffset                dg_callpatchdestbufoffset
+//   CallDestOffsetToDS            dg_callpatchdestbufoffsttods
+//   CallLib                       dg_callpatchsrclib
+//   CallLibToDS                   dg_callpatchsrclibtods
+//   DestBuf                       dg_setpatchdestbufid
+//   DestSymbols                   dg_setpatchdestsymbollist
+//   Files                         dg_loadfilelist
+//   HFiles                        dg_loadhlistfilelist
+//   HlistHere                     dg_glueidhidtods
+//   Libs                          dg_loadsharedliblist
+//   LinkBuf                       dg_patchaddressusinghlistb
+//   LinkLib                       dg_patchaddressusingdlsymb
+//   LinkNewBuf                    dg_patchpnewbuffer
+//   LinkOffset                    dg_patchaddressusingoffsetb
+//   NGlu                          dg_glufuncnglu
+//   SrcBuf                        dg_setpatchsrcbufid
+//   SrcLib                        dg_setpatchsrclib
+//   SrcSymbols                    dg_setpatchsrcsymbollist
+//   Symbols                       dg_loadsymbollist
+//   UINT64ValueToDS               dg_gluuint64valuetods
+//   ValueTo$S                     dg_gluvaluetoss
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthngluelement>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthngluelement ( NGLU-ELEMENT )
+//
+// C prototype:
+//  void dg_forthngluelement (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( elementid ngluhlistid -- )
+//
+// Data stack in:
+//  elementid                     parent element id of glu list
+//  ngluhlistid                   hierarchical list containing glu list
+//
+// Data stack out:
+//  none
+//                                                              
+// Action:
+//  Pops elementid and hlistid from data stack.
+//  For each child element of the parent in order they were added to the parent,
+//   use the name of the child element as a 32bit integer index
+//   and do the glu function associated with the index.
+//
+// Note:
+//  UINT64 index of NGlu list
+//   child element name              Glu function
+//    0    ( NGLU-BUFS )              dg_newbufferlist
+//    1    ( NGLU-CALLBUF )           dg_callpatchsrcbufsymbol
+//    2    ( NGLU-CALLBUF> )          dg_callpatchsrcbufsymboltods
+//    3    ( NGLU-CALLDESTOFFSET )    dg_callpatchdestbufoffset
+//    4    ( NGLU-CALLDESTOFFSET> )   dg_callpatchdestbufoffsttods
+//    5    ( NGLU-CALLLIB )           dg_callpatchsrclib
+//    6    ( NGLU-CALLLIB> )          dg_callpatchsrclibtods
+//    7    ( NGLU-DESTBUF )           dg_setpatchdestbufid
+//    8    ( NGLU-DESTSYMBOLS )       dg_setpatchdestsymbollist
+//    9    ( NGLU-FILES )             dg_loadfilelist
+//    10   ( NGLU-HFILES )            dg_loadhlistfilelist
+//    11   ( NGLU-HLISTHERE )         dg_glueidhidtods
+//    12   ( NGLU-LIBS )              dg_loadsharedliblist
+//    13   ( NGLU-LINKBUF )           dg_patchaddressusinghlistb
+//    14   ( NGLU-LINKLIB )           dg_patchaddressusingdlsymb
+//    15   ( NGLU-LINKNEWBUF )        dg_patchpnewbuffer
+//    16   ( NGLU-LINKOFFSET )        dg_patchaddressusingoffsetb
+//    17   ( NGLU-NGLU )              dg_glufuncnglu
+//    18   ( NGLU-SRCBUF )            dg_setpatchsrcbufid
+//    19   ( NGLU-SRCLIB )            dg_setpatchsrclib
+//    20   ( NGLU-SRCSYMBOLS )        dg_setpatchsrcsymbollist
+//    21   ( NGLU-SYMBOLS )           dg_loadsymbollist
+//    22   ( NGLU-UINT64VALUE> )      dg_gluuint64valuetods
+//    23   ( NGLU-VALUE$>NEW$ )       dg_gluvaluetoss
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthglu>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthglu ( GLU )
+//
+// C prototype:
+//  void dg_forthglu (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( gluhlistid -- )
+//
+// Data stack in:
+//  gluhlistid                    hierarchical list containing nglu list
+//
+// Data stack out:
+//  none
+//                                                              
+// Action:
+//  Pops hlistid from data stack.
+//  This function uses the root element, which is element 0, as the parent.
+//  If the root element's name is "Glu " then:
+//   For each child element of the root element in order they were added,
+//    look up the name of the child element and do the glu function associated
+//    with the name.
+//  If the root element's name is "NGlu" then:
+//   For each child element of the root element in order they were added,
+//    use the name of the child element as a 32bit integer index
+//    and do the glu function associated with the index.
+//
+// Note:
+//  Glu list child element name   Glu function
+//   Bufs                          dg_newbufferlist
+//   CallBuf                       dg_callpatchsrcbufsymbol
+//   CallBufToDS                   dg_callpatchsrcbufsymboltods
+//   CallDestOffset                dg_callpatchdestbufoffset
+//   CallDestOffsetToDS            dg_callpatchdestbufoffsttods
+//   CallLib                       dg_callpatchsrclib
+//   CallLibToDS                   dg_callpatchsrclibtods
+//   DestBuf                       dg_setpatchdestbufid
+//   DestSymbols                   dg_setpatchdestsymbollist
+//   Files                         dg_loadfilelist
+//   HFiles                        dg_loadhlistfilelist
+//   HlistHere                     dg_glueidhidtods
+//   Libs                          dg_loadsharedliblist
+//   LinkBuf                       dg_patchaddressusinghlistb
+//   LinkLib                       dg_patchaddressusingdlsymb
+//   LinkNewBuf                    dg_patchpnewbuffer
+//   LinkOffset                    dg_patchaddressusingoffsetb
+//   NGlu                          dg_glufuncnglu
+//   SrcBuf                        dg_setpatchsrcbufid
+//   SrcLib                        dg_setpatchsrclib
+//   SrcSymbols                    dg_setpatchsrcsymbollist
+//   Symbols                       dg_loadsymbollist
+//   UINT64ValueToDS               dg_gluuint64valuetods
+//   ValueTo$S                     dg_gluvaluetoss
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthnglu>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthnglu ( NGLU )
+//
+// C prototype:
+//  void dg_forthnglu (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( ngluhlistid -- )
+//
+// Data stack in:
+//  ngluhlistid                   hierarchical list containing nglu list
+//
+// Data stack out:
+//  none
+//                                                              
+// Action:
+//  Pops elementid and hlistid from data stack.
+//  This function uses the root element, which is element 0, as the parent.
+//  If the root element's name is "Glu " then:
+//   For each child element of the root element in order they were added,
+//    look up the name of the child element and do the glu function associated
+//    with the name.
+//  If the root element's name is "NGlu" then:
+//   For each child element of the root element in order they were added,
+//    use the name of the child element as a 32bit integer index
+//    and do the glu function associated with the index.
+//
+// Note:
+//  UINT64 value of NGlu list
+//   child element name              Glu function
+//    0    ( NGLU-BUFS )              dg_newbufferlist
+//    1    ( NGLU-CALLBUF )           dg_callpatchsrcbufsymbol
+//    2    ( NGLU-CALLBUF> )          dg_callpatchsrcbufsymboltods
+//    3    ( NGLU-CALLDESTOFFSET )    dg_callpatchdestbufoffset
+//    4    ( NGLU-CALLDESTOFFSET> )   dg_callpatchdestbufoffsttods
+//    5    ( NGLU-CALLLIB )           dg_callpatchsrclib
+//    6    ( NGLU-CALLLIB> )          dg_callpatchsrclibtods
+//    7    ( NGLU-DESTBUF )           dg_setpatchdestbufid
+//    8    ( NGLU-DESTSYMBOLS )       dg_setpatchdestsymbollist
+//    9    ( NGLU-FILES )             dg_loadfilelist
+//    10   ( NGLU-HFILES )            dg_loadhlistfilelist
+//    11   ( NGLU-HLISTHERE )         dg_glueidhidtods
+//    12   ( NGLU-LIBS )              dg_loadsharedliblist
+//    13   ( NGLU-LINKBUF )           dg_patchaddressusinghlistb
+//    14   ( NGLU-LINKLIB )           dg_patchaddressusingdlsymb
+//    15   ( NGLU-LINKNEWBUF )        dg_patchpnewbuffer
+//    16   ( NGLU-LINKOFFSET )        dg_patchaddressusingoffsetb
+//    17   ( NGLU-NGLU )              dg_glufuncnglu
+//    18   ( NGLU-SRCBUF )            dg_setpatchsrcbufid
+//    19   ( NGLU-SRCLIB )            dg_setpatchsrclib
+//    20   ( NGLU-SRCSYMBOLS )        dg_setpatchsrcsymbollist
+//    21   ( NGLU-SYMBOLS )           dg_loadsymbollist
+//    22   ( NGLU-UINT64VALUE> )      dg_gluuint64valuetods
+//    23   ( NGLU-VALUE$>NEW$ )       dg_gluvaluetoss
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthnewnglulist>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthnewnglulist ( NEW-NGLULIST )
+//
+// C prototype:
+//  void dg_forthnewnglulist (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( -- ngluhlistid )
+//
+// Data stack in:
+//  none
+//
+// Data stack out:
+//  ngluhlistid                   hierarchical list containing nglu list
+//                                                              
+// Action:
+//  Creates a new hlist and adds a root element with the name "NGlu".
+//  Then the id of this new hlist is pushed to the data stack.
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthnewcurrentnglulist>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthnewcurrentnglulist ( NEW-NGLULIST&gt;EH )
+//
+// C prototype:
+//  void dg_forthnewcurrentnglulist (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( -EH- 0 ngluhlistid )
+//
+// Data stack in:
+//  none
+//
+// Data stack out:
+//  ngluhlistid                   hierarchical list containing nglu list
+//                                                              
+// Action:
+//  Creates a new hlist and adds a root element with the name "NGlu".
+//  Then the element id of the new root element, which is 0,
+//   is pushed to the EH stack
+//  Then the id of this new hlist is pushed to the EH stack.
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_createlinkcomma>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_createlinkcomma
+//
+// C prototype:
+//  void dg_createlinkcomma (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 compiletyperoutine,
+//   UINT64 linktype)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64 compiletyperoutine     the compile type function of the new word
+//
+//  UINT64 linktype               type of link to compile
+//                                 0 = data link ( 0 N EAX MOV,  RET, )
+//                                 1 = code link ( 0 N EAX MOV,  EAXJMP, )
+//                                 2 = none link ( 0 N EAX MOV,  )
+//                                 3 = import    ( UINT64 0 is compiled )
+//
+// Stack action shorthand:
+//  ( elementid hlistid -EH- elementid hlistid )
+//
+// EH stack in and out:
+//  elementid                     current parent element id of the symbol list
+//  hlistid                       current hlist id of the glu/nglu list
+//
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//
+// Current input buffer's current offset out:
+//  &quot;&lt;delimiters&gt;morestuff&quot;
+//
+// Action:
+//  This routine compiles a link, adds that link to the current patch list
+//   using the symbol name given (which can not contain whitespace),
+//   and creates a new word using the symbol name given so the script engine
+//   can use that link while interpretting. In more detail:
+//  If the linktype is 0, then this routine compiles into the current compile
+//   buffer:  0 N EAX MOV, RET,
+//  If the linktype is 1, then this routine compiles into the current
+//   compile buffer:  0 N EAX MOV, EAX JMP,
+//  If the linktype is 2, then this routine compiles into the current
+//   compile buffer:  0 N EAX MOV,
+//  If the linktype is 3, then this routine compiles a UINT64 0 into the current
+//   compile buffer.
+//  Other linktypes will generate an error.
+//  Then adds a new element as a child of the current element in the
+//   current hlist. The current element id and hlist id are the top element id
+//   hlist id pair on the EH stack. The name of this new element comes from
+//   the next word in the input stream. The value of this element is the
+//   UINT64 offset in the current compile buffer of where to do the import.
+//    ( For link types 0, and 1, this is the offset of the immediate value of the
+//    0 N EAX MOV, instruction, or +1 from where the current compile buffer's
+//    current offset was before this subroutine was executed. For link type 2,
+//    the length of the current compile buffer before this subroutine was
+//    executed is used.)
+//  Then creates a new word in the current new word wordlist using the next
+//   word in the input stream. This new word has a CFA with the offset of
+//   the compiletyperoutine passed in, and corebufferid of the core (-1).
+//   (This means the compiletyperoutine is an address)
+//   The PFA is the offset bufferid of the current offset in the current
+//   compile buffer from before this subroutine was executed.
+//  Then the current input stream buffer's current offset is moved past
+//   the word which was just used.
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthcreatecodelinkcomma>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcreatecodelinkcomma ( CREATE-COMPILECALL-CODE-LINK, )
+//
+// C prototype:
+//  void dg_forthcreatecodelinkcomma (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( elementid hlistid -EH- elementid hlistid )
+//
+// EH stack in and out:
+//  elementid                     current parent element id of the symbol list
+//  hlistid                       current hlist id of the glu/nglu list
+//
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//
+// Current input buffer's current offset out:
+//  &quot;&lt;delimiters&gt;morestuff&quot;
+//
+// Action:
+//  This routine compiles a code link, adds that link to the current patch list
+//   using the symbol name given (which can not contain whitespace),
+//   and creates a new code word using the symbol name given so the script engine
+//   can use that link while interpretting. In more detail:
+//  This routine compiles this into the current compile buffer:
+//   0 N EAX MOV, EAX JMP,
+//  Then creates a new word in the current new word wordlist using the next
+//   word in the input stream. This new word has a compile type of always
+//   compile call. (This type can currently only compile calls to the same buffer
+//   or the core.)
+//   The PFA is the offset bufferid of the current offset in the current
+//   compile buffer from before this instruction was executed.
+//  This routine also adds an element with the name string equal to the
+//   next word in the input stream and value equal to the UINT64 offset of
+//   the compiled link's value under the parent element in the hlist given
+//   by the top element id hlist id pair on the EH stack.
+//  Then the current input stream buffer's current offset is moved past
+//   the word which was just used.
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcreateocodelinkcomma>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcreateocodelinkcomma ( CREATE-O-CODE-LINK, )
+//
+// C prototype:
+//  void dg_forthcreateocodelinkcomma (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( elementid hlistid -EH- elementid hlistid )
+//
+// EH stack in and out:
+//  elementid                     current parent element id of the symbol list
+//  hlistid                       current hlist id of the glu/nglu list
+//
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//
+// Current input buffer's current offset out:
+//  &quot;&lt;delimiters&gt;morestuff&quot;
+//
+// Action:
+//  This routine compiles a code link, adds that link to the current patch list
+//   using the symbol name given (which can not contain whitespace),
+//   and creates a new ocode word using the symbol name given so the script engine
+//   can use that link while interpretting. In more detail:
+//  This routine compiles this into the current compile buffer:
+//   0 N EAX MOV, EAX JMP,
+//  Then creates a new word in the current new word wordlist using the next
+//   word in the input stream. This new word has a compile type of push the PFA's
+//   offset in execute mode, compile push the PFA's 'offset in compile mode.
+//   The PFA is the offset bufferid of the current offset in the current
+//   compile buffer from before this instruction was executed.
+//  This routine also adds an element with the name string equal to the
+//   next word in the input stream and value equal to the UINT64 offset of
+//   the compiled link's value under the parent element in the hlist given
+//   by the top element id hlist id pair on the EH stack.
+//  Then the current input stream buffer's current offset is moved past
+//   the word which was just used.
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcreateobcodelinkcomma>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcreateobcodelinkcomma ( CREATE-OB-CODE-LINK, )
+//
+// C prototype:
+//  void dg_forthcreateobcodelinkcomma (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( elementid hlistid -EH- elementid hlistid )
+//
+// EH stack in and out:
+//  elementid                     current parent element id of the symbol list
+//  hlistid                       current hlist id of the glu/nglu list
+//
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//
+// Current input buffer's current offset out:
+//  &quot;&lt;delimiters&gt;morestuff&quot;
+//
+// Action:
+//  This routine compiles a code link, adds that link to the current patch list
+//   using the symbol name given (which can not contain whitespace),
+//   and creates a new obcode word using the symbol name given so the script engine
+//   can use that link while interpretting. In more detail:
+//  This routine compiles this into the current compile buffer:
+//   0 N EAX MOV, EAX JMP,
+//  Then creates a new word in the current new word wordlist using the next
+//   word in the input stream. This new word has a compile type of push the PFA's
+//   offset and buffer id in execute mode, compile push the PFA's offset
+//   and buffer id in compile mode.
+//   The PFA is the offset bufferid of the current offset in the current
+//   compile buffer from before this instruction was executed.
+//  This routine also adds an element with the name string equal to the
+//   next word in the input stream and value equal to the UINT64 offset of
+//   the compiled link's value under the parent element in the hlist given
+//   by the top element id hlist id pair on the EH stack.
+//  Then the current input stream buffer's current offset is moved past
+//   the word which was just used.
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcreatecdecllinkcomma>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcreatecdecllinkcomma ( CREATE-CDECL-CODE-LINK, )
+//
+// C prototype:
+//  void dg_forthcreatecdecllinkcomma (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( elementid hlistid -EH- elementid hlistid )
+//
+// EH stack in and out:
+//  elementid                     current parent element id of the symbol list
+//  hlistid                       current hlist id of the glu/nglu list
+//
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//
+// Current input buffer's current offset out:
+//  &quot;&lt;delimiters&gt;morestuff&quot;
+//
+// Action:
+//  This routine compiles a code link, adds that link to the current patch list
+//   using the symbol name given (which can not contain whitespace),
+//   and creates a new cdecl word using the symbol name given so the script engine
+//   can use that link while interpretting. In more detail:
+//  This routine compiles this into the current compile buffer:
+//   0 N EAX MOV, EAX JMP,
+//  Then creates a new word in the current new word wordlist using the next
+//   word in the input stream. This new word has a compile type of call CDECL,
+//   which uses paramters on the data stack,
+//   in execute mode which uses parameters on the data stack,
+//   and compile call CDECL, which uses parameters on the data stack,
+//   in compile mode.
+//   The PFA is the offset bufferid of the current offset in the current
+//   compile buffer from before this instruction was executed.
+//  This routine also adds an element with the name string equal to the
+//   next word in the input stream and value equal to the UINT64 offset of
+//   the compiled link's value under the parent element in the hlist given
+//   by the top element id hlist id pair on the EH stack.
+//  Then the current input stream buffer's current offset is moved past
+//   the word which was just used.
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcreatecolonlinkcomma>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcreatecolonlinkcomma ( CREATE-:-CODE-LINK, )
+//
+// C prototype:
+//  void dg_forthcreatecolonlinkcomma (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( elementid hlistid -EH- elementid hlistid )
+//
+// EH stack in and out:
+//  elementid                     current parent element id of the symbol list
+//  hlistid                       current hlist id of the glu/nglu list
+//
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//
+// Current input buffer's current offset out:
+//  &quot;&lt;delimiters&gt;morestuff&quot;
+//
+// Action:
+//  This routine compiles a code link, adds that link to the current patch list
+//   using the symbol name given (which can not contain whitespace),
+//   and creates a new : word using the symbol name given so the script engine
+//   can use that link while interpretting. In more detail:
+//  This routine compiles this into the current compile buffer:
+//   0 N EAX MOV, EAX JMP,
+//  Then creates a new word in the current new word wordlist using the next
+//   word in the input stream. This new word has a compile type of call :
+//   in execute mode, and compile call : in compile mode.
+//   The PFA is the offset bufferid of the current offset in the current
+//   compile buffer from before this instruction was executed.
+//  This routine also adds an element with the name string equal to the
+//   next word in the input stream and value equal to the UINT64 offset of
+//   the compiled link's value under the parent element in the hlist given
+//   by the top element id hlist id pair on the EH stack.
+//  Then the current input stream buffer's current offset is moved past
+//   the word which was just used.
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcreateodatalinkcomma>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcreateodatalinkcomma ( CREATE-O-DATA-LINK, )
+//
+// C prototype:
+//  void dg_forthcreateodatalinkcomma (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( elementid hlistid -EH- elementid hlistid )
+//
+// EH stack in and out:
+//  elementid                     current parent element id of the symbol list
+//  hlistid                       current hlist id of the glu/nglu list
+//
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//
+// Current input buffer's current offset out:
+//  &quot;&lt;delimiters&gt;morestuff&quot;
+//
+// Action:
+//  This routine compiles a data link, adds that link to the current patch list
+//   using the symbol name given (which can not contain whitespace),
+//   and creates a new odata word using the symbol name given so the script engine
+//   can use that link while interpretting. In more detail:
+//  This routine compiles this into the current compile buffer:
+//   0 N EAX MOV, RET,
+//  Then creates a new word in the current new word wordlist using the next
+//   word in the input stream. This new word has a compile type of
+//   push the offset of the PFA to the data stack.
+//   The PFA is the offset bufferid of the current offset in the current
+//   compile buffer from before this instruction was executed.
+//  This routine also adds an element with the name string equal to the
+//   next word in the input stream and value equal to the UINT64 offset of
+//   the compiled link's value under the parent element in the hlist given
+//   by the top element id hlist id pair on the EH stack.
+//  Then the current input stream buffer's current offset is moved past
+//   the word which was just used.
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthcreateobdatalinkcomma>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcreateobdatalinkcomma ( CREATE-OB-DATA-LINK, )
+//
+// C prototype:
+//  void dg_forthcreateobdatalinkcomma (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( elementid hlistid -EH- elementid hlistid )
+//
+// EH stack in and out:
+//  elementid                     current parent element id of the symbol list
+//  hlistid                       current hlist id of the glu/nglu list
+//
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//
+// Current input buffer's current offset out:
+//  &quot;&lt;delimiters&gt;morestuff&quot;
+//
+// Action:
+//  This routine compiles a data link, adds that link to the current patch list
+//   using the symbol name given (which can not contain whitespace),
+//   and creates a new obdata word using the symbol name given so the script engine
+//   can use that link while interpretting. In more detail:
+//  This routine compiles this into the current compile buffer:
+//   0 N EAX MOV, RET,
+//  Then creates a new word in the current new word wordlist using the next
+//   word in the input stream. This new word has a compile type of
+//   push the offset and bufferid of the PFA to the data stack.
+//   The PFA is the offset bufferid of the current offset in the current
+//   compile buffer from before this instruction was executed.
+//  This routine also adds an element with the name string equal to the
+//   next word in the input stream and value equal to the UINT64 offset of
+//   the compiled link's value under the parent element in the hlist given
+//   by the top element id hlist id pair on the EH stack.
+//  Then the current input stream buffer's current offset is moved past
+//   the word which was just used.
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthwtolinkcomma>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthwtolinkcomma ( W&gt;LINK, )
+//
+// C prototype:
+//  void dg_forthwtolinkcomma (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( elementid hlistid -EH- elementid hlistid )
+//
+// EH stack in and out:
+//  elementid                     current parent element id of the symbol list
+//  hlistid                       current hlist id of the glu/nglu list
+//
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//
+// Current input buffer's current offset out:
+//  &quot;&lt;delimiters&gt;morestuff&quot;
+//
+// Action:
+//  This routine compiles a code link and adds that link to the current patch list
+//   using the symbol name given (which can not contain whitespace),
+//  In more detail:
+//  This routine compiles this into the current compile buffer:
+//   0 N EAX MOV,
+//  This routine also adds an element with the name string equal to the
+//   next word in the input stream and value equal to the UINT64 offset of
+//   the compiled link's value under the parent element in the hlist given
+//   by the top element id hlist id pair on the EH stack.
+//  Then the current input stream buffer's current offset is moved past
+//   the word which was just used.
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthwtocodelinkcomma>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthwtocodelinkcomma ( W&gt;CODE-LINK, )
+//
+// C prototype:
+//  void dg_forthwtocodelinkcomma (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( elementid hlistid -EH- elementid hlistid )
+//
+// EH stack in and out:
+//  elementid                     current parent element id of the symbol list
+//  hlistid                       current hlist id of the glu/nglu list
+//
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//
+// Current input buffer's current offset out:
+//  &quot;&lt;delimiters&gt;morestuff&quot;
+//
+// Action:
+//  This routine compiles a code link and adds that link to the current patch list
+//   using the symbol name given (which can not contain whitespace),
+//  In more detail:
+//  This routine compiles this into the current compile buffer:
+//   0 N EAX MOV, EAX JMP,
+//  This routine also adds an element with the name string equal to the
+//   next word in the input stream and value equal to the UINT64 offset of
+//   the compiled link's value under the parent element in the hlist given
+//   by the top element id hlist id pair on the EH stack.
+//  Then the current input stream buffer's current offset is moved past
+//   the word which was just used.
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthwtodatalinkcomma>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthwtodatalinkcomma ( W&gt;DATA-LINK, )
+//
+// C prototype:
+//  void dg_forthwtodatalinkcomma (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( elementid hlistid -EH- elementid hlistid )
+//
+// EH stack in and out:
+//  elementid                     current parent element id of the symbol list
+//  hlistid                       current hlist id of the glu/nglu list
+//
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//
+// Current input buffer's current offset out:
+//  &quot;&lt;delimiters&gt;morestuff&quot;
+//
+// Action:
+//  This routine compiles a data link ,and adds that link to the current patch list
+//   using the symbol name given (which can not contain whitespace),
+//  In more detail:
+//  This routine compiles this into the current compile buffer:
+//   0 N EAX MOV, RET,
+//  This routine also adds an element with the name string equal to the
+//   next word in the input stream and value equal to the UINT64 offset of
+//   the compiled link's value under the parent element in the hlist given
+//   by the top element id hlist id pair on the EH stack.
+//  Then the current input stream buffer's current offset is moved past
+//   the word which was just used.
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthsymbol>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthsymbol ( SYMBOL )
+//
+// C prototype:
+//  void dg_forthsymbol (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( symbolvalue -- )
+//  ( elementid hlistid -EH- elementid hlistid )
+//
+// Data stack in:
+//  symbolvalue                   UINT64 value of the new element
+//
+// Data stack out:
+//  none
+//
+// EH stack in and out:
+//  elementid                     current parent element id of the symbol list
+//  hlistid                       current hlist id of the glu/nglu list
+//
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//
+// Current input buffer's current offset out:
+//  &quot;&lt;delimiters&gt;morestuff&quot;
+//
+// Action:
+//  This routine adds an element with the name string equal to the
+//   next word in the input stream and value equal to the UINT64 value
+//   popped off the data stack under the parent element in the hlist given
+//   by the top element id hlist id pair on the EH stack.
+//  Then the current input stream buffer's current offset is moved past
+//   the word which was just used.
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_stringtoglulinkcomma>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_stringtoglulinkcomma
+//
+// C prototype:
+//  void dg_stringtoglulinkcomma(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 linktype)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64 linktype               0 means compile data link
+//                                1 means compile code link
+//                                2 means compile just a link
+//                                3 means compile an import
+//
+// Stack action shorthand:
+//  ( elementid hlistid -EH- elementid hlistid )
+//  ( symbolname$ -$- )
+//
+// EH stack in and out:
+//  UINT64 elementid              current parent element id of the symbol list
+//  UINT64 hlistid                current hlist id of the glu/nglu list
+//
+// String stack in:
+//  symbolname$                   name to assign to new symbol
+//
+// Action:
+//  If the link type is 0, then this routine compiles a data link which is:
+//   0 N EAX MOV, RET,
+//  If the link type is 1, then this routine compiles a code link which is:
+//   0 N EAX MOV, EAX JMP,
+//  If the link type is 2, then this routine compiles just a link which is:
+//   0 N EAX MOV,
+//  If the link type is 3, then this routines compiles a UINT 64 0
+//  This routine then adds an element with the name string equal to the
+//   name on top of the string stack and value equal to the UINT64
+//   offset of the link's value in the current compile buffer under the parent
+//   element in the hlist given by the top element id hlist id pair on the EH stack.
+//  Then the top string is dropped off the string stack.
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthstrtolinkcomma>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthstrtolinkcomma ( $&gt;LINK, )
+//
+// C prototype:
+//  void dg_forthstrtolinkcomma(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( elementid hlistid -EH- elementid hlistid )
+//  ( symbolname$ -$- )
+//
+// EH stack in and out:
+//  UINT64 elementid              current parent element id of the symbol list
+//  UINT64 hlistid                current hlist id of the glu/nglu list
+//
+// String stack in:
+//  symbolname$                   name to assign to new symbol
+//
+// Action:
+//  This routine compiles a link which is:
+//   0 N EAX MOV,
+//  This routine then adds an element with the name string equal to the
+//   name on top of the string stack and value equal to the UINT64
+//   offset of the link's value in the current compile buffer under the parent
+//   element in the hlist given by the top element id hlist id pair on the EH stack.
+//  Then the top string is dropped off the string stack.
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthstrtocodelinkcomma>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthstrtocodelinkcomma ( $&gt;CODE-LINK, )
+//
+// C prototype:
+//  void dg_forthstrtocodelinkcomma(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( elementid hlistid -EH- elementid hlistid )
+//  ( symbolname$ -$- )
+//
+// EH stack in and out:
+//  UINT64 elementid              current parent element id of the symbol list
+//  UINT64 hlistid                current hlist id of the glu/nglu list
+//
+// String stack in:
+//  symbolname$                   name to assign to new symbol
+//
+// Action:
+//  This routine compiles a code link which is:
+//   0 N EAX MOV, EAX JMP,
+//  This routine then adds an element with the name string equal to the
+//   name on top of the string stack and value equal to the UINT64
+//   offset of the link's value in the current compile buffer under the parent
+//   element in the hlist given by the top element id hlist id pair on the EH stack.
+//  Then the top string is dropped off the string stack.
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthstrtodatalinkcomma>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthstrtodatalinkcomma ( $&gt;DATA-LINK, )
+//
+// C prototype:
+//  void dg_forthstrtodatalinkcomma(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( elementid hlistid -EH- elementid hlistid )
+//  ( symbolname$ -$- )
+//
+// EH stack in and out:
+//  UINT64 elementid              current parent element id of the symbol list
+//  UINT64 hlistid                current hlist id of the glu/nglu list
+//
+// String stack in:
+//  symbolname$                   name to assign to new symbol
+//
+// Action:
+//  This routine compiles a data link which is:
+//   0 N EAX MOV, RET,
+//  This routine then adds an element with the name string equal to the
+//   name on top of the string stack and value equal to the UINT64
+//   offset of the link's value in the current compile buffer under the parent
+//   element in the hlist given by the top element id hlist id pair on the EH stack.
+//  Then the top string is dropped off the string stack.
+//
+// Failure cases:
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    </div>
+
+  </div></body>
+</html>
+

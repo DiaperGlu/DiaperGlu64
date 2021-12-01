@@ -1,0 +1,3100 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      Assembly Functions
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>
+      <a                                                            >C Functions</a>
+      <a href=assembly.htm#dg_testasm                               >dg_testasm</a>
+      <a href=assembly.htm#dg_testasmimport                         >dg_testasmimport</a>
+      <a href=assembly.htm#dg_testalignment                         >dg_testalignment</a>
+      <a href=assembly.htm#dg_testalignmentdf                       >dg_testalignmentdf</a>
+      <a href=assembly.htm#dg_catchbadmemoryexit2                   >dg_catchbadmemoryexit2</a>
+      <a href=assembly.htm#dg_putbyte                               >dg_putbyte</a>
+      <a href=assembly.htm#dg_getbyte                               >dg_getbyte</a>
+      <a href=assembly.htm#dg_putuint16                             >dg_putuint16</a>
+      <a href=assembly.htm#dg_getuint16                             >dg_getuint16</a>
+      <a href=assembly.htm#dg_putuint32                             >dg_putuint32</a>
+      <a href=assembly.htm#dg_getuint32                             >dg_getuint32</a>
+      <a href=assembly.htm#dg_putuint64                             >dg_putuint64</a>
+      <a href=assembly.htm#dg_getuint64                             >dg_getuint64</a>
+      <a href=assembly.htm#dg_getretstackpointer                    >dg_getretstackpointer</a>
+      <a href=assembly.htm#dg_getframepointer                       >dg_getframepointer</a>
+      <a href=assembly.htm#dg_callcoreforthroutine                  >dg_callcoreforthroutine</a>
+      <a href=assembly.htm#dg_bswap                                 >dg_bswap</a>
+      <a href=assembly.htm#dg_udmslashmod                           >dg_udmslashmod</a>
+      <a href=assembly.htm#dg_umslashmod                            >dg_umslashmod</a>
+      <a href=assembly.htm#dg_twoslash                              >dg_twoslash</a>
+      <a href=assembly.htm#dg_lshift                                >dg_lshift</a>
+      <a href=assembly.htm#dg_mstar                                 >dg_mstar</a>
+      <a href=assembly.htm#dg_rshift                                >dg_rshift</a>
+      <a href=assembly.htm#dg_umstar                                >dg_umstar</a>
+      <a href=assembly.htm#dg_scanforbyte                           >dg_scanforbyte</a>
+      <a href=assembly.htm#dg_scanforuint32                         >dg_scanforuint32</a>
+      <a href=assembly.htm#dg_scanforuint64                         >dg_scanforuint64</a>
+      <a href=assembly.htm#dg_scanfornotbytereverse                 >dg_scanfornotbytereverse</a>
+      <a href=assembly.htm#dg_movebytes                             >dg_movebytes</a>
+      <a href=assembly.htm#dg_movebytesforward                      >dg_movebytesforward</a>
+      <a href=assembly.htm#dg_movebytesreverse                      >dg_movebytesreverse</a>
+      <a href=assembly.htm#dg_moveuint64s                           >dg_moveuint64s</a>
+      <a href=assembly.htm#dg_comparebytes                          >dg_comparebytes</a>
+      <a href=assembly.htm#dg_search                                >dg_search</a>
+      <a href=assembly.htm#dg_savequitstate                         >dg_savequitstate</a>
+      <a href=assembly.htm#dg_restorequitstate                      >dg_restorequitstate</a>
+      <a href=assembly.htm#dg_callprocaddress                       >dg_callprocaddress</a>
+      <a href=assembly.htm#dg_calldfprocaddress                     >dg_calldfprocaddress</a>
+      <a href=assembly.htm#dg_fillwithbyte                          >dg_fillwithbyte</a>
+      <a href=assembly.htm#dg_readallbytes                          >dg_readallbytes</a>
+      <a href=assembly.htm#dg_lobit                                 >dg_lobit</a>
+      <a href=assembly.htm#dg_hibit                                 >dg_hibit</a>
+      <a href=assembly.htm#dg_countbits                             >dg_countbits</a>
+      <a href=assembly.htm#dg_touleb128                             >dg_touleb128</a>
+      <a href=assembly.htm#dg_shrd                                  >dg_shrd</a>
+      <a href=assembly.htm#dg_ashrd                                 >dg_ashrd</a>
+      <a href=assembly.htm#dg_shld                                  >dg_shld</a>
+      <a href=assembly.htm#dg_gethctwolength                        >dg_gethctwolength</a>
+      <a href=assembly.htm#dg_hctwostore                            >dg_hctwostore</a>
+      <a href=assembly.htm#dg_tentothex                             >dg_tentothex</a>
+      <a href=assembly.htm#dg_i64tof64                              >dg_i64tof64</a>
+      <a href=assembly.htm#dg_timeslog2                             >dg_timeslog2</a>
+      <a href=assembly.htm#dg_f64toi64                              >dg_f64toi64</a>
+      <a href=assembly.htm#dg_roundf64tonearesteven                 >dg_roundf64tonearesteven</a>
+      <a href=assembly.htm#dg_roundf64tonegativeinfinity            >dg_roundf64tonegativeinfinity</a>
+      <a href=assembly.htm#dg_f64sqrt                               >dg_f64sqrt</a>
+      <a href=assembly.htm#dg_f64cos                                >dg_f64cos</a>
+      <a href=assembly.htm#dg_f64sin                                >dg_f64sin</a>
+      <a href=assembly.htm#dg_f64tan                                >dg_f64tan</a>
+      <a href=assembly.htm#dg_f64sincos                             >dg_f64sincos</a>
+      <a href=assembly.htm#dg_f64fyl2x                              >dg_f64fyl2x</a>
+      <a href=assembly.htm#dg_f64fyl2xp1                            >dg_f64fyl2xp1</a>
+      <a href=assembly.htm#dg_f64f2xm1                              >dg_f64f2xm1</a>
+      <a href=assembly.htm#dg_truncatef64                           >dg_truncatef64</a>
+      <a href=assembly.htm#dg_f64getfractional                      >dg_f64getfractional</a>
+      <a href=assembly.htm#dg_f64logbase2of10                       >dg_f64logbase2of10</a>
+      <a href=assembly.htm#dg_f64logbase2ofe                        >dg_f64logbase2ofe</a>
+      <a href=assembly.htm#dg_f64fpatan                             >dg_f64fpatan</a>
+      <a href=assembly.htm#dg_f64tof32                              >dg_f64tof32</a>
+      <a href=assembly.htm#dg_f32tof64                              >dg_f32tof64</a>
+      <a href=assembly.htm#dg_mstarslash                            >dg_mstarslash</a>
+      <a href=assembly.htm#dg_mplus                                 >dg_mplus</a>
+      <a href=assembly.htm#dg_dplus                                 >dg_dplus</a>
+      <a href=assembly.htm#dg_dminus                                >dg_dminus</a>
+      <a href=assembly.htm#dg_dulessthan                            >dg_dulessthan</a>
+      <a href=assembly.htm#dg_dugreaterequalthan                    >dg_dugreaterequalthan</a>
+      <a href=assembly.htm#dg_dlessthan                             >dg_dlessthan</a>
+      <a href=assembly.htm#dg_dgreaterequalthan                     >dg_dgreaterequalthan</a>
+      <a href=assembly.htm#dg_dumin                                 >dg_dumin</a>
+      <a href=assembly.htm#dg_dumax                                 >dg_dumax</a>
+      <a href=assembly.htm#dg_dmin                                  >dg_dmin</a>
+      <a href=assembly.htm#dg_dmax                                  >dg_dmax</a>
+      <a href=assembly.htm#dg_dnegate                               >dg_dnegate</a>
+      <a href=assembly.htm#dg_dabs                                  >dg_dabs</a>
+      <a href=assembly.htm#dg_dreturntestuint128                    >dg_dreturntestuint128</a>
+      <a href=assembly.htm#dg_testasmretuint128                     >dg_testasmretuint128</a>
+      <a href=assembly.htm#dg_random                                >dg_random</a>
+    </div>
+    
+    <div id=pagestuff>
+    
+
+      <div class=word id=dg_testasm>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_testasm
+//
+// C prototype: 
+//  UINT64 dg_testasm(UINT64 x)
+//
+// Inputs:
+//  UINT64 x                     test number
+//
+// Return:
+//  UINT64                       x+1
+//
+// Action:
+//  Increments input number by 1 and returns it.
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_testasmimport>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_testasmimport
+//
+// C prototype: 
+//  const char* dg_testasm()
+//
+// Return:
+//  const char*                   dg_success
+//
+// Action:
+//  returns dg_success
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_testalignment>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_testalignment
+//
+// C prototype: 
+//  UINT64 dg_testalignment()
+//
+// Return:
+//  const char*                   dg_success
+//
+// Action:
+//  returns what the return stack pointer is during the dg_testalignment subroutine
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_testalignmentdf>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_testalignmentdf
+//
+// C prototype: 
+//  FLOAT64 dg_testalignmentdf()
+//
+// Return:
+//  const char*                   dg_success
+//
+// Action:
+//  Returns what the return stack pointer is during the dg_testalignment subroutine
+//   in the register used to do floating point value returns. The address is not
+//   converted to a floating point value.
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_catchbadmemoryexit2>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_catchbadmemoryexit2
+//
+// C prototype: 
+//  This is not a complete function, just a function exit
+//  This exit happens via processor interrupt and operating system signal handling
+//   when a protected function tries to access memory the process does not own.
+//  In order for this to work, dg_catchbadmemoryexit has to have the same return
+//   type and stack frame as the protected function. Also, the protected function
+//   can not call any subroutines that might access bad memory in the protected area.
+//
+// Outputs:
+//  const char*                 dg_badmemoryerror
+//                              
+// Action:
+//  restores SIGSEGV and SIGBUS signal handling to the system default which 
+//   are the signals sent when a process tries to access memory it doesn't own.
+//  Then this returns dg_badmemoryerror
+//
+// Failure cases:
+//  This is a failure case which happens when a protected function tries to access
+//    memory the process does not own.
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+      
+      <div class=word id=dg_putbyte>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_putbyte
+//
+// C prototype: 
+//  const char* dg_putbyte (
+//   unsigned char* paddr,
+//   unsigned char c)
+//
+// Inputs:
+//  unsigned char*  paddr           target memory address
+//  unsigned char   c               byte to put into memory address
+//
+// Outputs:
+//  const char*     return          pointer to null terminated c string error
+//                                   status message
+//                                    dg_success if successful
+//                                    dg_badmemory if process does not own
+//                                     memory at paddr
+//                              
+// Action:
+//  while trapping memory exceptions,
+//  attempts to put byte c into memory at paddr
+//
+// Failure cases:
+//  process may not own memory at paddr
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_getbyte>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getbyte
+//
+// C prototype: 
+//  const char* dg_getbyte (
+//   unsigned char* paddr,
+//   unsigned char* pc)
+//
+// Inputs:
+//  unsigned char*  paddr           target memory address
+//  unsigned char*  pc              pointer to where copy of byte from memory
+//                                   address goes
+//
+// Outputs:
+//  const char*     return          pointer to null terminated c string error
+//                                   status message
+//                                    dg_success if successful
+//                                    dg_badmemory if process does not own memory
+//                                     at paddr or pc
+//                              
+// Action:
+//  while trapping memory exceptions,
+//  attempts to get byte from memory at paddr and put it into memory at pc
+//
+// Failure cases:
+//  process may not own memory at paddr or pc
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_putuint16>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_putuint16
+//
+// C prototype: 
+//  const char* dg_putuint16 (
+//   UINT16* paddr,
+//   UINT16 u)
+//
+// Inputs:
+//  unsigned char*  paddr           target memory address
+//  UINT16          u               UINT16 to put into memory address
+//
+// Outputs:
+//  const char*     return          pointer to null terminated c string error status 
+//                                   message
+//                                    dg_success if successful
+//                                    dg_badmemory if process does not own memory at 
+//                                     paddr
+//                              
+// Action:
+//  while trapping memory exceptions,
+//  attempts to put UINT16 u into memory at paddr
+//
+// Failure cases:
+//  process may not own memory at paddr
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getuint16>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getuint16
+//
+// C prototype: 
+//  const char* dg_getuint16 (
+//   UINT16* paddr,
+//   UINT16* pn)
+//
+// Inputs:
+//  UINT16*         paddr           target memory address
+//  UINT16*         pn              pointer to where copy of UINT32 from memory 
+//                                   address goes
+//
+// Outputs:
+//  const char*     return          pointer to null terminated c string error status 
+//                                   message
+//                                    dg_success if successful
+//                                    dg_badmemory if process does not own memory at 
+//                                     paddr or pn
+//                              
+// Action:
+//  while trapping memory exceptions,
+//  attempts to get UINT16 from memory at paddr and put it into memory at pn
+//
+// Failure cases:
+//  process may not own memory at paddr or pn
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_putuint32>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_putuint32
+//
+// C prototype: 
+//  const char* dg_putuint32 (
+//   UINT32* paddr,
+//   UINT32 u)
+//
+// Inputs:
+//  unsigned char*  paddr           target memory address
+//  UINT32          u               UINT32 to put into memory address
+//
+// Outputs:
+//  const char*     return          pointer to null terminated c string error status 
+//                                   message
+//                                    dg_success if successful
+//                                    dg_badmemory if process does not own memory at 
+//                                     paddr
+//                              
+// Action:
+//  while trapping memory exceptions,
+//  attempts to put UINT32 u into memory at paddr
+//
+// Failure cases:
+//  process may not own memory at paddr
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getuint32>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getuint32
+//
+// C prototype: 
+//  const char* dg_getuint32 (
+//   UINT32* paddr,
+//   UINT32* pn)
+//
+// Inputs:
+//  UINT32*         paddr           target memory address
+//  UINT32*         pn              pointer to where copy of UINT32 from memory 
+//                                   address goes
+//
+// Outputs:
+//  const char*     return          pointer to null terminated c string error status 
+//                                   message
+//                                    dg_success if successful
+//                                    dg_badmemory if process does not own memory at 
+//                                     paddr or pn
+//                              
+// Action:
+//  while trapping memory exceptions,
+//  attempts to get UINT32 from memory at paddr and put it into memory at pn
+//
+// Failure cases:
+//  process may not own memory at paddr or pn
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_putuint64>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_putuint64
+//
+// C prototype: 
+//  const char* dg_putuint64 (
+//   UINT64* paddr,
+//   UINT64 u)
+//
+// Inputs:
+//  unsigned char*  paddr           target memory address
+//  UINT64          u               UINT64 to put into memory address
+//
+// Outputs:
+//  const char*     return          pointer to null terminated c string error status 
+//                                   message
+//                                    dg_success if successful
+//                                    dg_badmemory if process does not own memory 
+//                                     at paddr
+//                              
+// Action:
+//  while trapping memory exceptions,
+//  attempts to put UINT64 u into memory at paddr
+//
+// Failure cases:
+//  process may not own memory at paddr
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getuint64>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getuint64
+//
+// C prototype: 
+//  const char* dg_getuint64 (
+//   UINT64* paddr,
+//   UINT64* pn)
+//
+// Inputs:
+//  UINT64*         paddr           target memory address
+//  UINT64*         pn              pointer to where copy of UINT64 from memory 
+//                                   address goes
+//
+// Outputs:
+//  const char*     return          pointer to null terminated c string error 
+//                                   status message
+//                                    dg_success if successful
+//                                    dg_badmemory if process does not own memory 
+//                                     at paddr or pn
+//                              
+// Action:
+//  while trapping memory exceptions,
+//  attempts to get UINT64 from memory at paddr and put it into memory at pn
+//
+// Failure cases:
+//  process may not own memory at paddr or pn
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_getretstackpointer>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getretstackpointer
+//
+// C prototype: 
+//  void* dg_getretstackpointer ()
+//
+// Inputs:
+//  none
+//
+// Outputs:
+//  void*       return              current value of processor return stack pointer
+//                              
+// Action:
+//  gets the address return stack pointer of where it was before and where it will be
+//   after this subroutine is called
+//
+// Failure cases:
+//  none
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getframepointer>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getframepointer
+//
+// C prototype: 
+//  void* dg_getframepointer ()
+//
+// Inputs:
+//  none
+//
+// Outputs:
+//  void*       return           current value of processor subroutine frame pointer
+//                              
+// Action:
+//  gets the frame pointer address of the parent subroutine that called this
+//   function
+//
+// Notes:
+//  On the X86, the subroutine frame looks like this:
+//   parameter n
+//   ...
+//   parameter 1       // frame pointer + 0x0C
+//   parameter 0       // frame pointer + 8
+//   return address    // frame pointer + 4
+//   saved frame pointer of parent subroutine &lt;- frame pointer points here
+//   registers that have to be saved (ebx on x86)
+//   pointer to end of local variables
+//   local variables
+//   
+// Failure cases:
+//  none
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_getplocalvariablestackspacestart>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getplocalvariablestackspacestart
+//
+// C prototype: 
+//  void* dg_getplocalvariablestackspacestart ()
+//
+// Inputs:
+//  none
+//
+// Outputs:
+//  void*       return              points to the end of the local subroutine frame
+//                              
+// Action:
+//  gets the address of the return stack pointer from before the first local variable
+//   was pushed
+//
+// Notes:
+//  On the X86, the subroutine frame looks like this:
+//   parameter n
+//   ...
+//   parameter 1       // frame pointer + 0x0C
+//   parameter 0       // frame pointer + 8
+//   return address    // frame pointer + 4
+//   saved frame pointer of parent subroutine 
+//   register that has to be saved (ebx on x86) 
+//   pointer to end of local variables &lt;- returns address of this pointer
+//   local variables
+//   
+// Failure cases:
+//  none
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getplocalvariablestackspaceend>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getplocalvariablestackspaceend
+//
+// C prototype: 
+//  void* dg_getplocalvariablestackspaceend ()
+//
+// Inputs:
+//  none
+//
+// Outputs:
+//  void*       return              address of end of local variable space on return 
+//                                   stack
+//                              
+// Action:
+//  gets the address of the return stack pointer of just after last local variable 
+//   was pushed onto it
+//
+// Notes:
+//  On the X86, the subroutine frame looks like this:
+//   parameter n
+//   ...
+//   parameter 1       // frame pointer + 0x0C
+//   parameter 0       // frame pointer + 8
+//   return address    // frame pointer + 4
+//   saved frame pointer of parent subroutine 
+//   register that has to be saved (ebx on x86) 
+//   pointer to end of local variables &lt;- returns value of this pointer
+//   local variables 
+//   
+// Failure cases:
+//  none
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_getlocalvariablestackspacelength>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getlocalvariablestackspacelength
+//
+// C prototype: 
+//  void* dg_getlocalvariablestackspacelength ()
+//
+// Inputs:
+//  none
+//
+// Outputs:
+//  UINT32       return             length in bytes of local variable space on 
+//                                   return stack
+//                              
+// Action:
+//  gets the length in bytes of the local variable space of the subroutine that 
+//   called this function
+//
+// Notes:
+//  On the X86 in 32 bit address mode, the subroutine frame looks like this:
+//   parameter n
+//   ...
+//   parameter 1       // frame pointer + 0x0C
+//   parameter 0       // frame pointer + 8
+//   return address    // frame pointer + 4
+//   saved frame pointer of parent subroutine 
+//   register that has to be saved (ebx on x86) 
+//   pointer to end of local variables &lt;- returns value of this pointer - address 
+//    of this pointer
+//   local variables 
+//   
+// Failure cases:
+//  none
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_callcoreforthroutine>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_callcoreforthroutine
+//
+// C prototype: 
+//  void dg_callcoreforthroutine(
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 forthcoreroutineaddress)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//
+//  UINT32 forthcoreroutineaddress   address of a diaperglu forth core 
+//                                    subroutine
+//
+// Outputs:
+//  none
+//                              
+// Action:
+//  allows c functions to call subroutines which have the diaperglu forth standard 
+//   one and only one parameter of just pBHarrayhead
+//
+// Failure cases:
+//  none
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+ 
+       
+      <div class=word id=dg_forthregsfrom>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthregsfrom
+//
+// C prototype: 
+//  void dg_forthregsfrom(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Outputs:
+//  none
+//
+// Stack action shorthand:
+//  on x86: ( -- ebp esp edi esi edx ecx ebx eax eflags )
+//                              
+// Action:
+//  pushes a copy of the processor registers from what they were just before this 
+//   subroutine was called to the data stack
+//
+// Failure cases:
+//  none
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthtoregs>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthtoregs
+//
+// C prototype: 
+//  void dg_forthtoregs (Bufferhandle* pBHarrayhead);
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Outputs:
+//  none
+//
+// Stack action shorthand:
+//  on x86: ( ebp esp edi esi edx ecx ebx eax eflags -- )
+//
+//                              
+// Action:
+//  just after this subroutine exits, the processor's registers are set to the values
+//   popped from the data stack
+//
+// Failure cases:
+//  none
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_bswap>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_bswap
+//
+// C prototype: 
+//  UINT64 dg_bswap (UINT64 u)
+//
+// Inputs:
+//  UINT64          u           UINT32 value
+//
+// Outputs:
+//  UINT64          return      value of u with bytes in reverse order
+//                              
+// Action:
+//  returns the input value with the byte order reversed
+//
+// Failure cases:
+//  none
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_udmslashmod>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_udmslashmod
+//
+// C prototype: 
+//  void dg_udmslashmod(UINT64* pints)
+//
+// Inputs:
+//  UINT64*         pints       pointer to UINT128 numerator followed by UINT64 
+//                               denominator
+//                                pints[0] = numerator low 64 bits
+//                                pints[1] = numerator high 64 bits
+//                                pints[2] = denominator
+//
+// Outputs:
+//  --              return      --
+//  UINT64*         pints       pointer to UINT128 quotient followed by UINT64 
+//                               remainder
+//                                pints[0] = quotient low 64 bits
+//                                pints[1] = quotient high 64 bits
+//                                pints[2] = remainder
+//                              
+// Action:
+//  calculates the quotient (result) and the remainder from numerator/denominator
+//  in the event the denominator is 0, the numerator and denominator are set to 
+//   the highest possible unsigned values
+//
+// Failure cases:
+//  none
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_umslashmod>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_umslashmod
+//
+// C prototype: 
+//  void dg_umslashmod(UINT64* pints)
+//
+// Inputs:
+//  UINT64*         pints       pointer to UINT128 numerator followed by UINT64 
+//                               denominator
+//                                pints[0] = numerator low 64 bits
+//                                pints[1] = numerator high 64 bits
+//                                pints[2] = denominator
+//
+// Outputs:
+//  --              return      --
+//  UINT64*         pints       pointer to UINT64 remainder followed by UINT64 
+//                               quotient
+//                                pints[0] = remainder
+//                                pints[1] = quotient 
+//                                pints[2] = unchanged denominator
+//                              
+// Action:
+//  calculates the result and the remainder from numerator/denominator
+//  in the event the denominator is 0 or the result is a greater value than will fit
+//   in a UINT64, the numerator and denominator are set to the highest possible
+//   unsigned values
+//  
+// Failure cases:
+//  none
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_twoslash>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_twoslash
+//
+// C prototype: 
+//  INT64 dg_twoslash (INT64 n)
+//
+// Inputs:
+//  INT64           n           INT64 value
+//
+// Outputs:
+//  INT64           return      value of n/2
+//                              
+// Action:
+//  returns n/2
+//
+// Note:
+//  Different compilers might not implement signed n/2 in the same way. 
+//  This does a signed arithmetic shift to the right one bit.
+//
+// Failure cases:
+//  none
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_lshift>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_lshift
+//
+// C prototype: 
+//  UINT64 dg_lshift (
+//   UINT64 x1,
+//   UINT64 u)
+//
+// Inputs:
+//  UINT64          x1          UINT64 value to shift
+//  UINT64          u           number of bits to shift
+//
+// Outputs:
+//  UINT64          return      value of x1 shifted u bits to the left
+//                              
+// Action:
+//  returns x1 shifted u bits to the left
+//  only the low 5 bits of u are used
+//
+// Failure cases:
+//  none
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_mstar>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_mstar
+//
+// C prototype: 
+//  INT64 dg_mstar (
+//   INT64 n1,
+//   INT64 n2,
+//   INT64* presult) // really an INT128*
+//
+// Inputs:
+//  INT64           n1
+//  INT64           n2
+//
+// Outputs:
+//  return                      low 64 bits of n1 * n2
+//  INT64*          presult     signed 128 bit integer representing n1 * n2
+//                              
+// Action:
+//  returns the signed 128 bit result of the signed multiplication of n1 and n2
+//
+// Failure cases:
+//  none
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_rshift>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_rshift
+//
+// C prototype: 
+//  UINT64 dg_rshift (
+//   UINT64 x1,
+//   UINT64 u)
+//
+// Inputs:
+//  UINT64          x1          UINT32 value to shift
+//  UINT64          u           number of bits to shift
+//
+// Outputs:
+//  UINT64          return      value of x1 shifted u bits to the right
+//                              
+// Action:
+//  returns x1 shifted u bits to the right
+//  only the low 5 bits of u are used
+//
+// Failure cases:
+//  none
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_umstar>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_umstar
+//
+// C prototype: 
+//  UINT64 dg_umstar (
+//   UINT64 u1,
+//   UINT64 u2,
+//   UINT64* presult) // really UINT128*
+//
+// Inputs:
+//  UINT64          u1
+//  UINT64          u2
+//
+// Outputs:
+//  UINT64          return      low 64 bits of u1 * u2
+//  UINT64*         presult     unsigned 128 bit representation of u1 * u2
+//                              
+// Action:
+//  returns the unsigned 128 bit result of the unsigned multiplication of u1 and u2
+//
+// Failure cases:
+//  none
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_scanforbyte>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_scanforbyte
+//
+// C prototype: 
+//  const char* dg_scanforbyte (
+//   void* pbuf, 		
+//   UINT64* plength,
+//   UINT64 value)
+//
+// Inputs:
+//  void*           pbuf            pointer to target string to scan
+//  UINT64*         plength         pointer to length in bytes of target string to 
+//                                   scan
+//  UINT64          value           UINT64 representation of the byte to scan for
+//
+// Outputs:
+//  UINT64*         plength         pointer to offset of byte in bytes in target 
+//                                   string if found or -1 if not found
+//  const char*     return          pointer to null terminated c string error 
+//                                   status message
+//                                    dg_success if successful
+//                                    dg_badmemory if process does not own memory 
+//                                     at pbuf or plength            
+//                              
+// Action:
+//  scans target string at pbuf for the length of the string for the
+//   first occurrence of byte value
+//
+// Failure cases:
+//  process may not own all memory in the string at pbuf or the UINT64 at plength
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_scanforuint32>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_scanforuint32
+//
+// C prototype: 
+//  const char* dg_scanforuint32 (
+//   void* pbuf,         
+//   UINT64* plength,
+//   UINT64 value);
+//    
+//
+// Inputs:
+//  void*           pbuf            pointer to target string to scan
+//  UINT64*         plength         pointer to length in units of UINT32 of target 
+//                                   string to scan
+//  UINT64          value           UINT32 to scan for
+//
+// Outputs:
+//  UINT64*         plength         pointer to offset in units of UINT64 in target 
+//                                   string if found or -1 if not found (-1 is 
+//                                   equivalent to max UINT64 value)
+//  const char*     return          pointer to null terminated c string error 
+//                                   status message
+//                                    dg_success if successful
+//                                    dg_badmemory if process does not own memory 
+//                                     at pbuf or plength            
+//                              
+// Action:
+//  scans target string at pbuf for the length in units of UINT64 of the string for 
+//   the first occurrence of the UINT64 value and returns the offset in UINT64 of 
+//   the match or -1 if no match
+//
+// Failure cases:
+//  process may not own all memory in the string at pbuf or the UINT64 at plength
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_scanforuint64>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_scanforuint64
+//
+// C prototype: 
+//  const char* dg_scanforuint64 (
+//   void* pbuf,         
+//   UINT64* plength,
+//   UINT64 value);
+//    
+//
+// Inputs:
+//  void*           pbuf            pointer to target string to scan
+//  UINT64*         plength         pointer to length in units of UINT64 of target 
+//                                   string to scan
+//  UINT64          value           UINT64 to scan for
+//
+// Outputs:
+//  UINT64*         plength         pointer to offset in units of UINT64 in target 
+//                                   string if found or -1 if not found (-1 is 
+//                                   equivalent to max UINT64 value)
+//  const char*     return          pointer to null terminated c string error 
+//                                   status message
+//                                    dg_success if successful
+//                                    dg_badmemory if process does not own memory 
+//                                     at pbuf or plength            
+//                              
+// Action:
+//  scans target string at pbuf for the length in units of UINT64 of the string for 
+//   the first occurrence of the UINT64 value and returns the offset in UINT64 of 
+//   the match or -1 if no match
+//
+// Failure cases:
+//  process may not own all memory in the string at pbuf or the UINT64 at plength
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_scanfornotbytereverse>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_scanfornotbytereverse
+//
+// C prototype: 
+//  const char* dg_scanfornotbytereverse (
+//   void* pbuf,         
+//   UINT64* plength,
+//   UINT64 value)
+//
+// Inputs:
+//  void*           pbuf            pointer to target string to scan
+//  UINT64*         plength         pointer to length in bytes of target string to 
+//                                   scan
+//  UINT64          value           UINT64 representation of the byte to scan for
+//
+// Outputs:
+//  UINT64*         plength         pointer to offset of not value in bytes in target 
+//                                   string if found or -1 if not found
+//  const char*     return          pointer to null terminated c string error 
+//                                   status message
+//                                    dg_success if successful
+//                                    dg_badmemory if process does not own memory 
+//                                     at pbuf or plength            
+//                              
+// Action:
+//  scans target string at pbuf for the length of the string for the
+//   first occurrence that is not the byte value. The first byte scanned is at
+//   pbuf + stringlength - 1 and proceedes to lower memory addresses
+//
+// Failure cases:
+//  process may not own all memory in the string at pbuf or the UINT64 at plength
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_movebytes>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_movebytes
+//
+// C prototype: 
+//   const char* dg_movebytes (
+//    unsigned char* psrc,    
+//    unsigned char* pdest,   
+//    UINT64 stringlength);
+//    
+//
+// Inputs:
+//  unsigned char*   psrc            pointer to source string
+//  unsigned char*   plength         pointer to destination string
+//  UINT64           stringlength    length of each string in bytes
+//
+// Outputs:
+//  const char*     return          pointer to null terminated c string error status 
+//                                   message
+//                                    dg_success if successful
+//                                    dg_badmemory if process does not own memory at 
+//                                     psrc or pdest            
+//                              
+// Action:
+//  copies the string at psrc of length stringlength to pdest
+//  if psrc overlaps pdest, dg_movebytes does the copy in such a way that a complete
+//   copy of what was at psrc before the copy will be at pdest once the copy is 
+//   finished
+//
+// Failure cases:
+//  process may not own all memory in the string at psrc or pdest
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_movebytesforward>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_movebytesforward
+//
+// C prototype: 
+//   const char* dg_movebytesforward (
+//    unsigned char* psrc,    
+//    unsigned char* pdest,   
+//    UINT64 stringlength);
+//    
+//
+// Inputs:
+//  unsigned char*   psrc            pointer to source string
+//  unsigned char*   plength         pointer to destination string
+//  UINT64           stringlength    length of each string in bytes
+//
+// Outputs:
+//  const char*     return          pointer to null terminated c string error status 
+//                                   message
+//                                    dg_success if successful
+//                                    dg_badmemory if process does not own memory at 
+//                                     psrc or pdest            
+//                              
+// Action:
+//  Copies the string at psrc of length stringlength to pdest.
+//  The copy starts with the first byte of psrc and goes up in memory addresses.
+//  If psrc is less than pdest and the copy regions overlap, the non overlapped part
+//  of psrc is repeatedly copied to pdest.
+//
+// Failure cases:
+//  process may not own all memory in the string at psrc or pdest
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_movebytesreverse>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_movebytesreverse
+//
+// C prototype: 
+//   const char* dg_movebytesreverse (
+//    unsigned char* psrc,    
+//    unsigned char* pdest,   
+//    UINT64 stringlength);
+//    
+//
+// Inputs:
+//  unsigned char*   psrc            pointer to source string
+//  unsigned char*   plength         pointer to destination string
+//  UINT64           stringlength    length of each string in bytes
+//
+// Outputs:
+//  const char*     return          pointer to null terminated c string error status 
+//                                   message
+//                                    dg_success if successful
+//                                    dg_badmemory if process does not own memory at 
+//                                     psrc or pdest            
+//                              
+// Action:
+//  Copies the string at psrc of length stringlength to pdest.
+//  The copy starts with the last byte of psrc and goes down in memory addresses.
+//  So the first byte copied is from psrc + stringlength - 1.
+//  If psrc is greater than pdest and the copy regions overlap, the non overlapped part
+//  of psrc is repeatedly copied to pdest.
+//
+// Failure cases:
+//  process may not own all memory in the string at psrc or pdest
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_moveuint64s>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_moveuint64s
+//
+// C prototype: 
+//   const char* dg_moveuint64s (
+//    unsigned char* psrc,    
+//    unsigned char* pdest,   
+//    UINT64 stringlength);
+//    
+//
+// Inputs:
+//  unsigned char*   psrc            pointer to source string
+//  unsigned char*   plength         pointer to destination string
+//  UINT64           stringlength    length of each string in uint64s
+//
+// Outputs:
+//  const char*     return          pointer to null terminated c string error status 
+//                                   message
+//                                    dg_success if successful
+//                                    dg_badmemory if process does not own memory at 
+//                                     psrc or pdest            
+//                              
+// Action:
+//  copies the string at psrc of length in UINT64s stringlength to pdest
+//  if psrc overlaps pdest, dg_movebytes does the copy in such a way that a complete
+//   copy of what was at psrc before the copy will be at pdest once the copy is 
+//   finished
+//
+// Failure cases:
+//  process may not own all memory in the string at psrc or pdest
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_comparebytes>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_comparebytes
+//
+// C prototype: 
+//   DGLU_API const char* dg_comparebytes (
+//    unsigned char* pstring1,    
+//	  UINT64 string1length,
+//	  unsigned char* pstring2,    
+//    UINT64 string2length,
+//	  INT64* pflag);
+//    
+//
+// Inputs:
+//  unsigned char*   pstring1         pointer to string 1
+//  UINT64           string1length    length of string 1 in bytes
+//  unsigned char*   pstring2         pointer to string 2
+//  UINT64           string2length    length of string 2 in bytes
+//
+// Outputs:
+//  INT64*           pflag            result of compare
+//                                     -1 if string1 &lt; string2
+//                                     0 if same
+//                                     1 if string1 &gt; string2
+//  const char*      return           pointer to null terminated c string error 
+//                                     status message
+//                                      dg_success if successful
+//                                      dg_badmemory if process does not own memory 
+//                                       at pstring1, pstring2, or pflag           
+//                              
+// Action:
+//  compares each byte at string 1 with each byte in string 2 starting with the first 
+//   byte
+//  if both strings are the same length and all bytes are the same, pflag is set to 0
+//  if the first different byte in string 1 is &gt; string 2 using an unsigned compare,
+//   1 is returned
+//  if the first different byte in string 2 is &lt; string 2 using an unsigned compare,
+//   -1 is returned
+//  if string 1 is longer than string 2 and all the bytes in string 2 are the same as 
+//   the matching bytes in string 1, 1 is returned
+//  if string 2 is longer than string 1 and all the bytes in string 1 are the same as 
+//   the matching bytes in string 2, -1 is returned
+//
+// Failure cases:
+//  process may not own all memory in the string at pstring1, pstring2, or pflag
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_search>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_search
+//
+// C prototype: 
+//  unsigned char* dg_search (
+//   unsigned char* caddr1, 
+//   UINT64 u1,
+//   unsigned char* caddr2, 
+//   UINT64 u2,
+//   unsigned char** pcaddrout)                  
+//    
+//
+// Inputs:
+//  unsigned char*   caddr1           pointer to target string to search
+//  UINT64           u1               length of target string
+//  unsigned char*   caddr2           pointer to string to search for in target string
+//  UINT64           u2               length of string to search for
+//
+// Outputs:
+//  unsigned char**  pcaddrout        pointer to pointer to found string if found
+//                                     or pointer to null if not found
+//  const char*      return           pointer to null terminated c string error status 
+//                                     message
+//                                      dg_success if successful
+//                                      dg_badmemory if process does not own memory 
+//                                       at caddr1, caddr2, or pcaddrout           
+//                              
+// Action:
+//  searches string at caddr1 for first occurrence of string at caddr2
+//  if the string at caddr2 is found in caddr1, a pointer to the occurrence in caddr1 
+//   is returned in pcaddrout
+//  if no match is found, null is returned in pcaddrout
+//
+// Failure cases:
+//  process may not own all memory in the string at caddr1, caddr2, or pcaddrout
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+ 
+      <div class=word id=dg_savequitstate>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_savequitstate
+//
+// C prototype: 
+//   void dg_savequitstate (UINT64* pquitstate)
+//    
+//
+// Inputs:
+//  UINT64*     pquitstate          pointer to memory for saving a copy of processor 
+//                                   registers representing the state diaperglu was 
+//                                   in during the first call to QUIT
+//
+// Outputs:
+//  none           
+//                              
+// Action:
+//  saves a copy of the processor registers to pquitstate
+//
+// Failure cases:
+//  process may not own all memory at pquitstate, but this is not checked
+//   mainly because this routine is only used by QUIT which passes a valid pointer
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_restorequitstate>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_restorequitstate
+//
+// C prototype: 
+//   void dg_restorequitstate (UINT64* pquitstate)
+//    
+//
+// Inputs:
+//  UINT64*     pquitstate          pointer to memory for saving a copy of processor 
+//                                   registers representing the state diaperglu was in 
+//                                   during the first call to QUIT
+//
+// Outputs:
+//  none           
+//                              
+// Action:
+//  restores the processor registers using the values saved in pquitstate
+//   This routine is used to unwind the return stack to the first call to QUIT
+//
+// Failure cases:
+//  process may not own all memory at pquitstate, but this is not checked
+//   mainly because this routine is only used by QUIT which passes a valid pointer
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+              
+    
+      <div class=word id=dg_callprocaddress>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_callprocaddress
+//
+// C prototype: 
+//  UINT64 dg_callprocaddress  (
+//   UINT64* pints,
+//   UINT64 n,
+//   UINT64* plength,
+//   UINT64* address)
+//           
+//    
+// Inputs:
+//  UINT64*     pints          pointer to the cdecl subroutine's UINT64 parameter list 
+//                              on the data stack. the last parameter on the data stack 
+//                              is the first parameter in the c function prototype 
+//                              parameter list
+//  UINT64      n              the number of parameters
+//  UINT64*     plength        pointer to the current length of the data stack buffer 
+//                              in bytes
+//  UINT64*     address        the address of the cdecl subroutine to call
+//
+// Outputs:
+//  UINT64      return         contains the called subroutine's return value
+//                              
+// Action:
+//  Aligns the return stack for the number of parameters (mac os x requirement)
+//  Pops the parameter list from the data stack and moves the parameters to
+//   registers or the return stack
+//  Then calls the subroutine
+//
+// Notes:
+//  For x86 64 bit AMD-V calling convention, the parameters are passed like this:
+//   RDX:RAX =f(RDI RSI RDX RCX R8 R9 RSP[1] RSP[2] RSP[3] ...)
+//   RDX out = high 64 bits, RAX out = low 64 bits
+//  This subroutine is compatible with calling conventions other than cdecl that
+//   return UINT64.
+//  This subroutine is also compatible with functions that return UINT128.
+//  You probably can call subroutines which modify the data stack the parameters 
+//   came from
+//
+// Failure cases:
+//  called subroutine may cause an exception
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_calldfprocaddress>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_calldfprocaddress
+//
+// C prototype: 
+//  UINT64 dg_calldfprocaddress  (
+//   UINT64* pints,
+//   UINT64 n,
+//   UINT64* plength,
+//   UINT64* address,
+//   UINT64 nfloat)
+//           
+//    
+// Inputs:
+//  UINT64*     pints          pointer to the cdecl subroutine's UINT32 parameter list 
+//                              on the data stack. the last parameter on the data stack 
+//                              is the first parameter in the c function prototype 
+//                              parameter list
+//  UINT64      n              the number of parameters
+//  UINT64*     plength        pointer to the current length of the data stack buffer 
+//                              in bytes
+//  UINT64*     address        the address of the cdecl subroutine to call
+//  UINT64      nfloat         the number of floating point parameters
+//
+// Outputs:
+//  UINT64      dfpreturn      contains the called subroutine's floating point 
+//                              return value
+//                              
+// Action:
+//  Aligns the return stack for the number of parameters (mac os x requirement)
+//  Pops the parameter list from the data stack and moves the parameters to
+//   registers or return stack
+//  Then calls the subroutine
+//
+// Notes:
+//  For x86 64 bit AMD-V calling convention, the parameters are passed like this:
+//   XMM1:XMM0 =f(RDI RSI RDX RCX R8 R9
+//    XMM0 XMM1 XMM2 XMM3 XMM4 XMM5 XMM6 XMM7
+//    RSP[1] RSP[2] RSP[3] ...)
+//    XMM1 out = high floating point return, XMM0 out = low floating point return
+//   On the return stack in, the floating point parameters are pushed after the
+//    integer parameters.
+//  This means the parameters passed in at pints are passed in reverse order from
+//   the c prototype except, the floating point parameters come first at pints in
+//   in reverse order followed by the integer parameters in reverse order. So,
+//   if there are any floating point input parameters, pints[0] has the last
+//   floating point input parameter in the c function prototype.
+//  You may be able to call subroutines which modify the data stack the parameters 
+//   came from
+//
+// Failure cases:
+//  called subroutine may cause an exception
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_fillwithbyte>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_fillwithbyte
+//
+// C prototype: 
+//  const char* dg_fillwithbyte (
+//   unsigned char* pbuf, 		
+//   UINT64 length,
+//   UINT64 cvalue)
+//
+// Inputs:
+//  unsigned char*  pbuf            pointer to target memory to fill
+//  UINT64          length          length in bytes of number of characters
+//                                   to fill
+//  UINT64          cvalue          UINT64 representation of the byte to
+//                                   fill the memory with
+//
+// Outputs:
+//  const char*     return          pointer to null terminated c string
+//                                   error status message
+//                                    dg_success if successful
+//                                    dg_badmemory if process does not
+//                                     own memory at pbuf
+//                              
+// Action:
+//  fills target string with length bytes in cvalue
+//
+// Failure cases:
+//  process may not own all memory in the string at pbuf
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+            
+
+      <div class=word id=dg_readallbytes>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_readallbytes
+//
+// C prototype:
+//  const char* dg_readallbytes (
+//   unsigned char* pbuf,
+//   UINT64 length)
+//
+// Inputs:
+//  unsigned char*  pbuf            pointer to target memory to fill
+//  UINT64          length          length in bytes of number of characters
+//                                   to read
+//
+// Outputs:
+//  const char*     return          pointer to null terminated c string
+//                                   error status message
+//                                    dg_success if successful
+//                                    dg_badmemory if process does not
+//                                     own memory at pbuf
+//
+// Action:
+//  Reads all the bytes in the string. This function checks to see if the memory in
+//   the string is able to be read.
+//
+// Failure cases:
+//  process may not own all memory in the string at pbuf
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_lobit>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_lobit
+//
+// C prototype:
+//  UINT64 dg_lobit (UINT64 u)
+//
+// Inputs:
+//  UINT64       u                  64 bit unsigned integer number
+//
+// Outputs:
+//  UINT64       return             returns -1 if u was 0
+//                                   otherwise returns index of lowest set bit
+//
+// Action:
+//  Returns the position of the lowest bit set to 1 in the number or
+//   if the number has no bits set, returns -1. So if the lowest bit is set, this
+//   function returns 0. If u is 0x0A (..1010), then 1 is returned.
+//
+// Failure cases:
+//  none
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+     
+     
+     <div class=word id=dg_hibit>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_hibit
+//
+// C prototype:
+//  UINT64 dg_hibit (UINT64 u)
+//
+// Inputs:
+//  UINT64       u                  64 bit unsigned integer number
+//
+// Outputs:
+//  UINT64       return             returns -1 if u was 0
+//                                   otherwise returns index of highest set bit
+//
+// Action:
+//  Returns the position of the highest bit set to 1 in the number or
+//   if the number has no bits set, returns -1. So if the highest bit is set, this
+//   function returns 63 (0x3F). If u is 0x0A (..1010), then 3 is returned.
+//
+// Failure cases:
+//  none
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_countbits>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_countbits
+//
+// C prototype:
+//  UINT64 dg_countbits (UINT64 u)
+//
+// Inputs:
+//  UINT64       u                  64 bit unsigned integer number
+//
+// Outputs:
+//  UINT64       return             returns the number of 1 bits in u
+//
+// Action:
+//  Returns the number of bits equal to 1 in u
+//
+// Failure cases:
+//  none
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_touleb128>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_touleb128
+//
+// C prototype:
+//  UINT64 dg_touleb128 (
+//   UINT64 u,
+//   UINT64* presult)
+//
+// Inputs:
+//  UINT64       u                  64 bit unsigned integer number
+//
+// Outputs:
+//  UINT64       return             low 64 bits of the converted value
+//  UINT64*      presult            128 bit uleb128 representation of u  
+//
+// Action:
+//  Returns u converted to a uleb128 byte string in the 128 bit high counted string
+//   format. The length of the string is returned in the highest byte.
+//
+// Note:
+//  The uleb128 format represents an unsigned integer as a little endian byte string.
+//   Every 7 bits going from the lowest order group of seven bits to the highest is
+//   put into a byte. If there are more groups of 7 bits, the high bit of the byte is
+//   set which means the group gets ored with 0x80.
+//   If not, the high bit of the byte is left clear.
+//
+//  The 128 bit high counted string format stores byte strings in a 128 bit unsigned
+//   integer with the first byte of the string in the lowest 8 bits of the unsigned
+//   integer. The number of bytes in the string is stored in the highest 8 bits of the
+//   unsigned integer.
+//
+// Failure cases:
+//  none
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+     
+     
+     <div class=word id=dg_shrd>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_shrd
+//
+// C prototype:
+//  UINT64 dg_shrd (
+//   UINT64* pud, 
+//   UINT64 shiftcount)
+//
+// Inputs:
+//  UINT64*       pud               pointer to 128 bit unsigned integer number
+//  UINT64        shiftcount        unsigned number of bits to shift
+//
+// Outputs:
+//  UINT64        return            lower 64 bit of shifted value
+//  UINT64*       pud               pointer to 128 bit integer number shifted 
+//                                   right logically shiftcount bits
+//
+// Action:
+//  Shifts the 128 bit unsigned value at pud to the right shiftcount bits. 
+//  0s are shifted in from the left.
+//  (This lets you divide unsigned integers by powers of 2.)
+//  In other words, the bits at pud are shifted from the high order bits to the low.
+//
+// Failure cases:
+//  none
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+     
+     
+     <div class=word id=dg_ashrd>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_ashrd
+//
+// C prototype:
+//  INT64 dg_ashrd (
+//   INT64 pnd, 
+//   UINT64 shiftcount)
+//
+// Inputs:
+//  INT64*       pnd               pointer to 128 bit signed integer number
+//  UINT64       shiftcount        unsigned number of bits to shift
+//
+// Outputs:
+//  INT64        return            lower 64 bits of shifted value
+//  INT64*       pnd               pointer to 128 bit integer number shifted 
+//                                  right arithmetically shiftcount bits
+//
+// Action:
+//  Shifts the 128 bit signed value at pnd right shiftcount bits.
+//  Copies of the high bit are shifted in from the left. 
+//  (This lets you divide signed integers by powers of 2.)
+//  In other words, the bits at pnd are shifted from the high order bits to the low.
+//
+// Failure cases:
+//  none
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+     
+     
+     <div class=word id=dg_shld>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_shld
+//
+// C prototype:
+//  UINT64 dg_shld (
+//   UINT64 pxd, 
+//   UINT64 shiftcount)
+//
+// Inputs:
+//  UINT64*       pxd               pointer to 128 bit integer
+//  UINT64        shiftcount        unsigned number of bits to shift
+//
+// Outputs:
+//  UINT64        return            lower 64 bits of the shifted value
+//
+// Action:
+//  Shifts the 128 bit signed or unsigned value at pxd left shiftcount bits.
+//  0s are shifted in from the right.
+//  (This lets you multiply signed or unsigned values that won't overflow by
+//   powers of 2.)
+//  In other words, the bits at pxd are shifted from the low order bits to the high.
+//
+// Failure cases:
+//  none
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+     
+     
+     <div class=word id=dg_gethctwolength>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_gethctwolength
+//
+// C prototype:
+//  UINT64 dg_gethctwolength (UINT64* pud)
+//
+// Inputs:
+//  UINT64*       pud               pointer to a 128 bit high counted byte string
+//
+// Outputs:
+//  UINT64        return            returns the number of bytes in the string
+//
+// Action:
+//  Returns the count of the high counted byte string. The count comes from the high 
+//   byte of the string.
+//
+// Note:
+//  The 128 bit high counted string format stores byte strings in a 128 bit unsigned
+//   integer with the first byte of the string in the lowest 8 bits of the unsigned
+//   integer. The number of bytes in the string is stored in the highest 8 bits of the
+//   unsigned integer.
+//
+// Failure cases:
+//  none
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_hctwostore>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_hctwostore
+//
+// C prototype:
+//  const char* dg_hctwostore (
+//   unsigned char* pdest, 
+//   UINT64* pud)  // really a UINT128*
+//
+// Inputs:
+//  unsigned char* pdest
+//  UINT64*        pud              pointer to a 128 bit high counted byte string
+//
+// Outputs:
+//  const char*    return           returns dg_success if no error
+//                                  returns an error if there was an error
+//
+// Action:
+//  Stores the high counted byte string at pud to the memory at pdest.
+//
+// Note:
+//  The 128 bit high counted string format stores byte strings in a 128 bit unsigned
+//   integer with the first byte of the string in the lowest 8 bits of the unsigned
+//   integer. The number of bytes in the string is stored in the highest 8 bits of the
+//   unsigned integer.
+//
+// Failure cases:
+//  none
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_tentothex>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_tentothex
+//
+// C prototype:
+//  FLOAT64 dg_tentothex (UINT64 x)
+//
+// Inputs:
+//  UINT64         x                unsigned 128 bit integer
+//
+// Outputs:
+//  FLOAT64        return           64 bit double precision value representing
+//                                   10 raised to the x power.
+//
+// Action:
+//  Calculates 10 raised to the x power and returns the result as a double precision
+//   floating point value. If x is greater or equal to 309, infinity is returned.
+//
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+     
+
+     <div class=word id=dg_i64tof64>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_i64tof64
+//
+// C prototype:
+//  FLOAT64 dg_i64tof64 (INT64 n)
+//
+// Inputs:
+//  INT64          n                signed 64 bit integer
+//
+// Outputs:
+//  FLOAT64        return           64 bit double precision value representing n
+//                                   
+//
+// Action:
+//  Converts a signed 64 bit integer into a 64 bit double precision floating point
+//   value.
+//
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_timeslog2>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_timeslog2
+//
+// C prototype:
+//  UINT64 dg_timeslog2 (UINT64 u)
+//
+// Inputs:
+//  UINT64         u                unsigned 64 bit integer
+//
+// Outputs:
+//  UINT64        return            u multiplied by log(2)
+//                                   
+//
+// Action:
+//  Multiplies u with the log of 2 and returns the result. The result is always valid.
+//   (This multiplies by a 64 bit integer first to a 128 bit intermediate result,
+//   then divides by another 64 bit integer to get the final result. Since the
+//   fraction is less than 1, the return value will be smaller than u unless u = 0.)
+//
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_f64toi64>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_f64toi64
+//
+// C prototype:
+//  INT64 dg_f64toi64 (FLOAT64 f64)
+//
+// Inputs:
+//  FLOAT64        f64               64 bit double precision value
+//
+// Outputs:
+//  INT64          return            signed 64 bit integer representation of f64
+//                                   
+//
+// Action:
+//  Rounds a 64 bit double precision floating point value to the next signed integer
+//   towards zero (truncates) and converts it to a signed 64 bit integer value.
+//
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_roundf64tonearesteven>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_roundf64tonearesteven
+//
+// C prototype:
+//  FLOAT64 dg_roundf64tonearesteven (FLOAT64 f64)
+//
+// Inputs:
+//  FLOAT64        f64               64 bit double precision value
+//
+// Outputs:
+//  FLOAT64        return            64 bit double precision value representing f64 
+//                                    rounded to the nearest integer
+//                                   
+//
+// Action:
+//  Rounds a 64 bit double precision floating point value to the nearest integer.
+//   If f64 is exactly halfway between two integer values, f64 is rounded to the
+//   nearest even integer. The result is returned as a 64 bit precision floating
+//   point value.
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_roundf64tonegativeinfinity>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_roundf64tonegativeinfinity
+//
+// C prototype:
+//  FLOAT64 dg_roundf64tonegativeinfinity (FLOAT64 f64)
+//
+// Inputs:
+//  FLOAT64        f64               64 bit double precision value
+//
+// Outputs:
+//  FLOAT64        return            64 bit double precision value representing f64 
+//                                    rounded down towards negative infinity.
+//                                   
+//
+// Action:
+//  Rounds a 64 bit double precision floating point value down towards negative
+//   infinity. The result is returned as a 64 bit precision floating point value.
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_f64sqrt>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_f64sqrt
+//
+// C prototype:
+//  FLOAT64 dg_f64sqrt (FLOAT64 f64)
+//
+// Inputs:
+//  FLOAT64        f64               64 bit double precision value
+//
+// Outputs:
+//  FLOAT64        return            64 bit double precision value representing the
+//                                    square root of f64.
+//                                   
+//
+// Action:
+//  Returns the square root of f64.
+//  (If you multiply the return value by itself, you should get f64 back.)
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_f64cos>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_f64cos
+//
+// C prototype:
+//  FLOAT64 dg_f64cos (FLOAT64 f64)
+//
+// Inputs:
+//  FLOAT64        f64               64 bit double precision value
+//
+// Outputs:
+//  FLOAT64        return            64 bit double precision value representing the
+//                                    cosine of f64
+//                                   
+//
+// Action:
+//  Returns the cosine of f64.
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_f64sin>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_f64sin
+//
+// C prototype:
+//  FLOAT64 dg_f64sin (FLOAT64 f64)
+//
+// Inputs:
+//  FLOAT64        f64               64 bit double precision value
+//
+// Outputs:
+//  FLOAT64        return            64 bit double precision value representing the
+//                                    sine of f64
+//                                   
+//
+// Action:
+//  Returns the sine of f64.
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_f64tan>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_f64tan
+//
+// C prototype:
+//  FLOAT64 dg_f64tan (FLOAT64 f64)
+//
+// Inputs:
+//  FLOAT64        f64               64 bit double precision value
+//
+// Outputs:
+//  FLOAT64        return            64 bit double precision value representing the
+//                                    tangent of f64
+//                                   
+//
+// Action:
+//  Returns the tangent of f64.
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_f64sincos>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_f64sincos
+//
+// C prototype:
+//  FLOAT64 dg_f64sincos (
+//   FLOAT64 f64,
+//   FLOAT64* psinresult)
+//
+// Inputs:
+//  FLOAT64        f64               64 bit double precision value
+//
+// Outputs:
+//  FLOAT64        return            64 bit double precision value representing the
+//                                    cosine of f64
+//  FLOAT64*       psinresult        64 bit double precision value representing the
+//                                    sine of f64
+//
+// Action:
+//  Returns the cosine of f64 in the return value, and the sine of f64 in the memory
+//   pointed to by psinresult.
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_f64fyl2x>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_f64fyl2x
+//
+// C prototype:
+//  FLOAT64 dg_f64fyl2x (
+//   FLOAT64 f64x,
+//   FLOAT64 f64y)
+//
+// Inputs:
+//  FLOAT64        f64x              64 bit double precision value
+//  FLOAT64        f64y              64 bit double precision value
+//
+// Outputs:
+//  FLOAT64        return            64 bit double precision value representing 
+//                                    f64y times log base 2 of f64x
+//                                   
+//
+// Action:
+//  Returns the f64y times log base 2 of f64x
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_f64fyl2xp1>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_f64fyl2xp1
+//
+// C prototype:
+//  FLOAT64 dg_f64fyl2xp1 (
+//   FLOAT64 f64x,
+//   FLOAT64 f64y)
+//
+// Inputs:
+//  FLOAT64        f64x              64 bit double precision value
+//  FLOAT64        f64y              64 bit double precision value
+//
+// Outputs:
+//  FLOAT64        return            64 bit double precision value representing 
+//                                    f64y times log base 2 of (f64x + 1)
+//                                   
+//
+// Action:
+//  Returns the f64y times log base 2 of (f64x + 1)
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_f64f2xm1>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_f64f2xm1
+//
+// C prototype:
+//  FLOAT64 dg_f64f2xm1 (FLOAT64 f64x)
+//
+// Inputs:
+//  FLOAT64        f64x              64 bit double precision value
+//
+// Outputs:
+//  FLOAT64        return            64 bit double precision value representing 
+//                                    2 raised to the (f64x - 1) power
+//                                   
+//
+// Action:
+//  Returns the 2 raised to the (f64x - 1) power.
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    <div class=word id=dg_truncatef64>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_truncatef64
+//
+// C prototype:
+//  FLOAT64 dg_truncatef64 (FLOAT64 f64x)
+//
+// Inputs:
+//  FLOAT64        f64x              64 bit double precision value
+//
+// Outputs:
+//  FLOAT64        return            64 bit double precision value representing 
+//                                    f64x rounded towards zero
+//                                   
+//
+// Action:
+//  Returns the truncation of f64x, which is f64x rounded towards zero. It basically
+//   gets rid of the fractional part of f64x.
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    <div class=word id=dg_f64getfractional>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_f64getfractional
+//
+// C prototype:
+//  FLOAT64 dg_f64getfractional (FLOAT64 f64x)
+//
+// Inputs:
+//  FLOAT64        f64x              64 bit double precision value
+//
+// Outputs:
+//  FLOAT64        return            64 bit double precision value representing 
+//                                    the fractional part of f64x
+//                                   
+//
+// Action:
+//  Returns the fractional part of f64x.
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    <div class=word id=dg_f64logbase2of10>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_f64logbase2of10
+//
+// C prototype:
+//  FLOAT64 dg_f64logbase2of10 ()
+//
+// Inputs:
+//  none
+//
+// Outputs:
+//  FLOAT64        return            64 bit double precision value representing 
+//                                    log base 2 of 10.
+//                                   
+//
+// Action:
+//  Returns the log base 2 of 10.
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    <div class=word id=dg_f64logbase2ofe>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_f64logbase2ofe
+//
+// C prototype:
+//  FLOAT64 dg_f64logbase2ofe ()
+//
+// Inputs:
+//  none
+//
+// Outputs:
+//  FLOAT64        return            64 bit double precision value representing 
+//                                    log base 2 of e.
+//                                   
+//
+// Action:
+//  Returns the log base 2 of e.
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    <div class=word id=dg_f64fpatan>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_f64fpatan
+//
+// C prototype:
+//  FLOAT64 dg_f64fpatan (FLOAT64 f64x)
+//
+// Inputs:
+//  FLOAT64        f64x              64 bit double precision value
+//
+// Outputs:
+//  FLOAT64        return            64 bit double precision value representing 
+//                                    the arctangent of f64x
+//                                   
+//
+// Action:
+//  Returns the arctangent of f64x.
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    <div class=word id=dg_f64tof32>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_f64tof32
+//
+// C prototype:
+//  FLOAT32 dg_f64tof32 (FLOAT64 f64x)
+//
+// Inputs:
+//  FLOAT64        f64x              64 bit double precision value
+//
+// Outputs:
+//  FLOAT32        return            32 bit single precision value representing f64x
+//                                   
+//
+// Action:
+//  Returns f64x converted to a single precision floating point value.
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    <div class=word id=dg_f32tof64>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_f32tof64
+//
+// C prototype:
+//  FLOAT64 dg_f32tof64 (FLOAT32 f32x)
+//
+// Inputs:
+//  FLOAT32        f32x              32 bit single precision value
+//
+// Outputs:
+//  FLOAT32        return            64 bit double precision value representing f32x
+//                                   
+//
+// Action:
+//  Returns f32x converted to a double precision floating point value.
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    <div class=word id=dg_mstarslash>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_mstarslash
+//
+// C prototype:
+//  UINT64 dg_mstarslash (
+//   INT64* pnd1,
+//   INT64 n1,
+//   INT64 n2);
+//
+// Inputs:
+//  INT64*         pnd1              pointer to a 128 bit signed integer
+//  INT64          n1                numerator of scale factor
+//  INT64          n2                denominator of scale factor
+//
+// Outputs:
+//  UINT64         return            lower 64 bits of signed integer result
+//  INT64*         pnd1              pointer to the 128 bit signed integer result
+//                                   
+//
+// Action:
+//  returns (nd1 * n1) / abs(n2)
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    <div class=word id=dg_mplus>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_mplus
+//
+// C prototype:
+//  void dg_mplus (UINT64* pints);
+//
+// Inputs:
+//  UINT64*        pints           array of 3 64 bit integer values
+//                  pints[1:0]      128 bit integer
+//                  pints[2]        signed 64 bit integer to add to the 128 bit integer
+//
+// Outputs:
+//  UINT64*        pints           pointer to a 128 integer result which equals
+//                  pints[1:0]      pints[1:0] + pints[2]
+//                                   
+//
+// Action:
+//  Sign extends pints[2] to a 128 bit signed integer and adds it to the 128 bit
+//   integer in pints[1:0]. It doesn't matter if you consider pints[1:0] to be signed
+//   or unsigned, the result is the same.
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    <div class=word id=dg_dplus>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_dplus
+//
+// C prototype:
+//  void dg_dplus (UINT64* pints);
+//
+// Inputs:
+//  UINT64*        pints           array of 2 64 bit integer values
+//                  pints[1:0]      128 bit integer
+//                  pints[3:2]      128 bit integer
+//
+// Outputs:
+//  UINT64*        pints           pointer to a 128 bit integer result which equals
+//                                  pints[1:0] = pints[3:2] + pints[1:0]
+//                                   
+//
+// Action:
+//  Adds the 128 bit integer in pints[3:2] to the 128 bit integer in pints[1:0].
+//   pints[1:0] holds the result. 
+//
+// Note:
+//  Windows C does not support 128 bit integers so the C function prototype uses
+//   UINT64*, but in reality this function works on 128 bit integers. 
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    <div class=word id=dg_dminus>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_dminus
+//
+// C prototype:
+//  void dg_dminus (UINT64* pints);
+//
+// Inputs:
+//  UINT64*        pints           array of 2 128 bit integer values
+//                  pints[1:0]      128 bit integer
+//                  pints[3:2]      128 bit integer
+//
+// Outputs:
+//  UINT64*        pints           pointer to a 128 integer result which equals
+//                                  pints[1:0] = pints[1:0] - pints[3:2]
+//                                   
+//
+// Action:
+//  Subtracts the 128 bit integer in pints[3:2] from the 128 bit integer in pints[1:0].
+//   pints[1:0] holds the result. 
+//
+// Note:
+//  Windows C does not support 128 bit integers so the C function prototype uses
+//   UINT64*, but in reality this function works on 128 bit integers. 
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    <div class=word id=dg_dulessthan>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_dulessthan
+//
+// C prototype:
+//  void dg_dulessthan (UINT64* pints);
+//
+// Inputs:
+//  UINT64*        pints           array of 2 128 bit unsigned integer values
+//                  pints[1:0]      128 bit unsigned integer x
+//                  pints[3:2]      128 bit unsigned integer y
+//
+// Outputs:
+//  UINT64*        pints           pointer to a 64 bit integer flag which equals
+//                  pints[0]        FORTH_TRUE if x less than y
+//                  pints[1]        FORTH_FALSE if x is not less than y
+//                                   
+//
+// Action:
+//  If the 128 bit unsigned integer in x is less than the unsigned 128 bit integer in y
+//   then pints[0] is changed to FORTH_TRUE, otherwise pints[0] is changed to
+//   FORTH_FALSE. 
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    <div class=word id=dg_dugreaterequalthan>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_dugreaterequalthan
+//
+// C prototype:
+//  void dg_dugreaterequalthan (UINT64* pints);
+//
+// Inputs:
+//  UINT64*        pints           array of 2 128 bit unsigned integer values
+//                  pints[1:0]      128 bit unsigned integer x
+//                  pints[3:2]      128 bit unsigned integer y
+//
+// Outputs:
+//  UINT64*        pints           pointer to a 64 bit integer flag which equals
+//                  pints[0]        FORTH_TRUE if x greater than or equal to y
+//                  pints[1]        FORTH_FALSE if x less than y
+//                                   
+//
+// Action:
+//  If the 128 bit unsigned integer in x greater than or equal to the unsigned 128 
+//   bit integer in y then pints[0] is changed to FORTH_TRUE, otherwise pints[0] is 
+//   changed to FORTH_FALSE. 
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    <div class=word id=dg_dlessthan>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_dlessthan
+//
+// C prototype:
+//  void dg_dlessthan (UINT64* pints);
+//
+// Inputs:
+//  UINT64*        pints           array of 2 128 bit signed integer values
+//                  pints[1:0]      128 bit signed integer x
+//                  pints[3:2]      128 bit signed integer y
+//
+// Outputs:
+//  UINT64*        pints           pointer to a 64 bit integer flag which equals
+//                  pints[0]        FORTH_TRUE if x less than y
+//                  pints[1]        FORTH_FALSE if x is not less than y
+//                                   
+//
+// Action:
+//  If the 128 bit signed integer in x is less than the signed 128 bit integer in y
+//   then pints[0] is changed to FORTH_TRUE, otherwise pints[0] is changed to
+//   FORTH_FALSE. 
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    <div class=word id=dg_dgreaterequalthan>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_dgreaterequalthan
+//
+// C prototype:
+//  void dg_dgreaterequalthan (UINT64* pints);
+//
+// Inputs:
+//  UINT64*        pints           array of 2 128 bit signed integer values
+//                  pints[1:0]      128 bit signed integer x
+//                  pints[3:2]      128 bit signed integer y
+//
+// Outputs:
+//  UINT64*        pints           pointer to a 64 bit integer flag which equals
+//                  pints[0]        FORTH_TRUE if x greater than or equal to y
+//                  pints[1]        FORTH_FALSE if x less than y
+//                                   
+//
+// Action:
+//  If the 128 bit signed integer in x greater than or equal to the signed 128 
+//   bit integer in y then pints[0] is changed to FORTH_TRUE, otherwise pints[0] is 
+//   changed to FORTH_FALSE. 
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    <div class=word id=dg_dumin>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_dumin
+//
+// C prototype:
+//  void dg_dumin (UINT64* pints);
+//
+// Inputs:
+//  UINT64*        pints           array of 2 128 bit unsigned integer values
+//                  pints[1:0]      128 bit unsigned integer
+//                  pints[3:2]      128 bit unsigned integer
+//
+// Outputs:
+//  UINT64*        pints           pointer to a 128 unsigned integer result which 
+//                  pints[1:0]      equals the lesser of pints[1:0] or pints[3:2]
+//                                   
+//
+// Action:
+//  Replaces pints[1:0] with the lesser of pints[3:2] or pints[1:0].
+//
+// Note:
+//  Windows C does not support 128 bit integers so the C function prototype uses
+//   UINT64*, but in reality this function works on 128 bit integers. 
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    <div class=word id=dg_dumax>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_dumax
+//
+// C prototype:
+//  void dg_dumax (UINT64* pints);
+//
+// Inputs:
+//  UINT64*        pints           array of 2 128 bit unsigned integer values
+//                  pints[1:0]      128 bit unsigned integer
+//                  pints[3:2]      128 bit unsigned integer
+//
+// Outputs:
+//  UINT64*        pints           pointer to a 128 unsigned integer result which 
+//                  pints[1:0]      equals the greater of pints[1:0] or pints[3:2]
+//                                   
+//
+// Action:
+//  Replaces pints[1:0] with the greater of pints[3:2] or pints[1:0].
+//
+// Note:
+//  Windows C does not support 128 bit integers so the C function prototype uses
+//   UINT64*, but in reality this function works on 128 bit integers. 
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    <div class=word id=dg_dmin>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_dmin
+//
+// C prototype:
+//  void dg_dmin (UINT64* pints);
+//
+// Inputs:
+//  UINT64*        pints           array of 2 128 bit signed integer values
+//                  pints[1:0]      128 bit signed integer
+//                  pints[3:2]      128 bit signed integer
+//
+// Outputs:
+//  UINT64*        pints           pointer to a 128 signed integer result which 
+//                  pints[1:0]      equals the lesser of pints[1:0] or pints[3:2]
+//                                   
+//
+// Action:
+//  Replaces pints[1:0] with the lesser of pints[3:2] or pints[1:0].
+//
+// Note:
+//  Windows C does not support 128 bit integers so the C function prototype uses
+//   UINT64*, but in reality this function works on 128 bit integers. 
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    <div class=word id=dg_dmax>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_dmax
+//
+// C prototype:
+//  void dg_dmax (UINT64* pints);
+//
+// Inputs:
+//  UINT64*        pints           array of 2 128 bit signed integer values
+//                  pints[1:0]      128 bit signed integer
+//                  pints[3:2]      128 bit signed integer
+//
+// Outputs:
+//  UINT64*        pints           pointer to a 128 signed integer result which 
+//                  pints[1:0]      equals the greater of pints[1:0] or pints[3:2]
+//                                   
+//
+// Action:
+//  Replaces pints[1:0] with the greater of pints[3:2] or pints[1:0].
+//
+// Note:
+//  Windows C does not support 128 bit integers so the C function prototype uses
+//   UINT64*, but in reality this function works on 128 bit integers. 
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    <div class=word id=dg_dnegate>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_dnegate
+//
+// C prototype:
+//  void dg_dnegate (UINT64* pints);
+//
+// Inputs:
+//  UINT64*        pints           pointer to a 128 bit signed integer value
+//                  pints[1:0]      128 bit signed integer
+//
+// Outputs:
+//  UINT64*        pints           pointer to a 128 bit signed integer result which 
+//                  pints[1:0]      equals 0 - pints[1:0]
+//                                   
+//
+// Action:
+//  Replaces pints[1:0] with 0 - pints[1:0]
+//
+// Note:
+//  Windows C does not support 128 bit integers so the C function prototype uses
+//   UINT64*, but in reality this function works on 128 bit integers. 
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    <div class=word id=dg_dabs>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_dabs
+//
+// C prototype:
+//  void dg_dabs (UINT64* pints);
+//
+// Inputs:
+//  UINT64*        pints           pointer to a 128 bit signed integer value
+//                  pints[1:0]      128 bit signed integer
+//
+// Outputs:
+//  UINT64*        pints           pointer to a 128 bit signed integer result which 
+//                  pints[1:0]      equals the absolute value of pints[1:0]
+//                                   
+//
+// Action:
+//  Replaces pints[1:0] with the absolute value of pints[1:0]
+//
+// Note:
+//  Windows C does not support 128 bit integers so the C function prototype uses
+//   UINT64*, but in reality this function works on 128 bit integers. 
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    <div class=word id=dg_returntestuint128>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_returntestuint128
+//
+// C prototype:
+//  UINT64 dg_returntestuint128()
+//
+// Inputs:
+//  none
+//
+// Outputs:
+//  UINT64       return          a 128 bit signed integer value equal to -5    
+//                                   
+//
+// Action:
+//  Returns -5 in RDX:RAX. 
+//
+// Note:
+//  Windows C does not support 128 bit integers so the C function prototype uses
+//   UINT64, but in reality this function returns a 128 bit signed integer in
+//   RDX:RAX. This function is for testing purposes.
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    <div class=word id=dg_testasmretuint128>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_testasmretuint128
+//
+// C prototype:
+//  UINT64 dg_testasmretuint128(UINT64 u)
+//
+// Inputs:
+//  UINT64       u               64 bit integer.
+//
+// Outputs:
+//  UINT64       return          a 128 bit integer result...
+//                                the low 64 bits = u + 1
+//                                the high 64 bits = u - 1  
+//                                   
+//
+// Action:
+//  Returns u + 1 in RAX
+//  Returns u - 1 in RDX. 
+//
+// Note:
+//  Windows C does not support 128 bit integers so the C function prototype uses
+//   UINT64, but in reality this function returns a 128 bit signed integer in
+//   RDX:RAX. This function is for testing purposes.
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    <div class=word id=dg_random>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_random
+//
+// C prototype:
+//  UINT64 dg_random()
+//
+// Inputs:
+//  none
+//
+// Outputs:
+//  UINT64       return          a random 64 bit integer 
+//                                   
+//
+// Action:
+//  Returns a randome 64 bit integer. 
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    </div>
+
+  </div></body>
+</html>

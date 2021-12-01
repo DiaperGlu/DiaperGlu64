@@ -1,0 +1,1849 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<html>
+
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      chierarchicallist.cpp functions
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>
+      <a                                                           >C Functions</a>
+      <a href=chierarchicallist.htm#dg_gethlistheaderarrayheader   >dg_gethlistheaderarrayheader</a>
+      <a href=chierarchicallist.htm#dg_querycreatehlistheaderarray >dg_querycreatehlistheaderarray</a>
+      <a href=chierarchicallist.htm#dg_gethlistheader              >dg_gethlistheader</a>
+      <a href=chierarchicallist.htm#dg_freehlistmemory             >dg_freehlistmemory</a>
+      <a href=chierarchicallist.htm#dg_allocatehlistmemory         >dg_allocatehlistmemory</a>
+      <a href=chierarchicallist.htm#dg_newhlist                    >dg_newhlist</a>
+      <a href=chierarchicallist.htm#dg_freehlist                   >dg_freehlist</a>
+      <a href=chierarchicallist.htm#dg_linklasthlistchildelement   >dg_linklasthlistchildelement</a>
+      <a href=chierarchicallist.htm#dg_unlinkhlistchildelement     >dg_unlinkhlistchildelement</a>
+      <a href=chierarchicallist.htm#dg_newhlistelement             >dg_newhlistelement</a>
+      <a href=chierarchicallist.htm#dg_freehlistelement            >dg_freehlistelement</a>
+      <a href=chierarchicallist.htm#dg_gethlistlastchildofparent   >dg_gethlistlastchildofparent</a>
+      <a href=chierarchicallist.htm#dg_gethlistfirstchild          >dg_gethlistfirstchild</a>
+      <a href=chierarchicallist.htm#dg_prunehlistelement           >dg_prunehlistelement</a>
+      <a href=chierarchicallist.htm#dg_gethlistnextsibling         >dg_gethlistnextsibling</a>
+      <a href=chierarchicallist.htm#dg_gethlistprevioussibling     >dg_gethlistprevioussibling</a>
+      <a href=chierarchicallist.htm#dg_gethlistelementparent       >dg_gethlistelementparent</a>
+      <a href=chierarchicallist.htm#dg_getshlistelementnom         >dg_getshlistelementnom</a>
+      <a href=chierarchicallist.htm#dg_getshlistelementvalue       >dg_getshlistelementvalue</a>
+      <a href=chierarchicallist.htm#dg_sethlistelementvalue        >dg_sethlistelementvalue</a>
+      <a href=chierarchicallist.htm#dg_getshlistelement            >dg_getshlistelement</a>
+      <a href=chierarchicallist.htm#dg_sortcomparehlistnom         >dg_sortcomparehlistnom</a>
+      <a href=chierarchicallist.htm#dg_dobinaryinsertsortstep      >dg_dobinaryinsertsortstep</a>
+      <a href=chierarchicallist.htm#dg_findsortedhlistchildsub     >dg_findsortedhlistchildsub</a>
+      <a href=chierarchicallist.htm#dg_findsortedhlistchild        >dg_findsortedhlistchild</a>
+      <a href=chierarchicallist.htm#dg_getshlistelementnamene      >dg_getshlistelementnamene</a>
+      <a href=chierarchicallist.htm#dg_changehlistelementparent    >dg_changehlistelementparent</a>
+      <a href=chierarchicallist.htm#dg_getnumberofsortedchildren   >dg_getnumberofsortedchildren</a>
+      <a href=chierarchicallist.htm#dg_getidofsortedhlistchildn    >dg_getidofsortedhlistchildn</a>
+      <a href=chierarchicallist.htm#dg_addnsamechartostring        >dg_addnsamechartostring</a>
+      <a href=chierarchicallist.htm#dg_hlisttodglumlstring         >dg_hlisttodglumlstring</a>
+      <a href=chierarchicallist.htm#dg_newunsortedhlistelement     >dg_newunsortedhlistelement</a>
+      <a href=chierarchicallist.htm#dg_callhlistchildren           >dg_callhlistchildren</a>
+      <a href=chierarchicallist.htm#dg_callhlistchildrenbyn        >dg_callhlistchildrenbyn</a>
+      <a href=chierarchicallist.htm#dg_packhlist                   >dg_packhlist</a>
+      <a href=chierarchicallist.htm#dg_unpackhlist                 >dg_unpackhlist</a>
+      <a href=chierarchicallist.htm#dg_namestringtovaluestring     >dg_namestringtovaluestring</a>
+
+      <a                                                 >&nbsp;</a>
+      <a                                                 >C Structures</a>
+      <a href=cbuffer.htm#Bufferhandle                   >Bufferhandle</a>
+      
+    </div>
+
+    <div id=pagestuff>
+
+
+      <div class=word id=dg_gethlistheaderarrayheader>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_gethlistheaderarrayheader
+//
+// C prototype:
+//  void dg_gethlistheaderarrayheader(
+//    Bufferhandle* pBHarrayhead,
+//    Freeablelstringarrayheader* phlistheaderarrayheader,
+//    UINT64 hlistheaderarrayheaderlength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistheaderarrayheaderlength  This needs to be set to the size of the
+//                                        hlist header array's header structure, which
+//                                        is also sizeof(Freeablelstringarrayheader).
+//
+// Outputs:
+//  Freeablelstringarrayheader*          pointer to memory supplied by caller to hold
+//    phlistheaderarrayheader             the hierarchical list header array's header
+//
+// Action:
+//  Copies the hlist header array's header to the memory supplied by the caller.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_querycreatehlistheaderarray>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_querycreatehlistheaderarray
+//
+// C prototype:
+//  UINT64 dg_querycreatehlistheaderarray(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+// Outputs:
+//  UINT64 return                        buffer id of the hierarchical list header array.
+//
+// Action:
+//  If the hierarchical list header array does not exist, this routine creates it and
+//   returns the buffer id of the hierarchical list header array.
+//  If the hierarchical list header array already exists, this routine just returns the
+//   buffer id of the hierarchical list header array.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_gethlistheader>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_gethlistheader
+//
+// C prototype:
+//  void dg_gethlistheader(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistheaderid,
+//    Hlistheader* phlistheader,
+//    UINT64 hlistheaderlength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistheaderid                 id of the hierarchical list
+//
+//  UINT64 hlistheaderlength             this needs to be set to the size of an hlist 
+//                                        header, which is sizeof(Hlistheader)
+//  
+//
+// Outputs:
+//
+//  Hlistheader* phlistheader            pointer to memory supplied by the caller to 
+//                                        hold a copy of the hlist's header
+//  
+//
+// Action:
+//  If the hierarchical list hlistheaderid exists, this routine copies it's header to 
+//   the memory at phlistheader.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_freehlistmemory>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_freehlistmemory
+//
+// C prototype:
+//  void dg_freehlistmemory (
+//    Bufferhandle* pBHarrayhead, 
+//    struct Hlistheader* phlist)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  struct Hlistheader* phlist           pointer to a hierarchical list's header 
+//                                        structure
+//
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Frees the memory buffers associated with the hierarchical list.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_allocatehlistmemory>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_allocatehlistmemory
+//
+// C prototype:
+//  void dg_allocatehlistmemory (
+//    Bufferhandle* pBHarrayhead, 
+//    struct Hlistheader* phlist, 
+//    UINT64 hlistlength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistlength                   this needs to be set to the size of an hlist 
+//                                        header which is sizeof(Hlistheader)
+//
+// Outputs:
+//  struct Hlistheader* phlist           pointer to memory supplied by the caller to 
+//                                        hold a hierarchical list's header structure
+//
+// Action:
+//  Allocates the memory buffers needed for a hierarchical list and stores their 
+//   buffer ids into the hierarchical list header structure supplied by the caller.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_newhlist>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_newhlist
+//
+// C prototype:
+//  UINT64 dg_newhlist (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+// Outputs:
+//  UINT64 return                        hlist id of the new hierarchical list.
+//                                        This is also the 0 based index of the 
+//                                        hierarchical list's header in the 
+//                                        hierarchical list header array
+//
+// Action:
+//  Allocates the memory buffers needed for a hierarchical list and stores their 
+//   buffer ids into the hierarchical list header structure supplied by the caller.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_freehlist>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_freehlist
+//
+// C prototype:
+//  void dg_freehlist (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistheaderid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array 
+//                                        where the other bufferhandles are stored.
+//
+//  UINT64 hlistheaderid                 hlist id of the hierarchical list to free.
+//                                        This is also the 0 based index of the 
+//                                        hierarchical list's header in the 
+//                                        hierarchical list header array
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Free's the hierarchical list, 
+//   which includes freeing the memory buffers used by the hierarchical list, 
+//   and freeing the hierarchical list's header's lstring in the hierarchical list 
+//   header array.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_linklasthlistchildelement>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_linklasthlistchildelement
+//
+// C prototype:
+//  void dg_linklasthlistchildelement (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistheaderid,
+//    UINT64 elementheaderid,
+//    UINT64 parentelementheaderid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which  
+//                                        is used as the bufferhandle for the array 
+//                                        where the other bufferhandles are stored.
+//
+//  UINT64 hlistheaderid                 hlist id of the hierarchical list
+//                                        This is also the 0 based index of the 
+//                                        hierarchical list's header in the 
+//                                        hierarchical list header array
+//
+//  UINT64 elementheaderid               element id of the element to link to the 
+//                                        parent
+//                                         This is also the 0 based index of the 
+//                                         element header in the hierarchical list's 
+//                                         element header array.
+//
+//  UINT64 parentelementheaderid         element id of the parent element
+//                                         This is also the 0 based index of the 
+//                                         parent element header in the hierarchical 
+//                                         list's element header array.
+//
+// Outputs:
+//  none
+//
+// Action:
+//  A parent element has two lists for keeping track of it's children. The first is 
+//   a linked list of it's children in the order of when the children were linked to 
+//   the parent. The newest child is the one the parent points to, then each child
+//   points to it's next older sibling, it's next newer sibling, and back to it's 
+//   parent. The oldest child's next older sibling is DG_ENDOFWORDLIST (-1)
+//  The other list is a list of the children's element id's sorted in order of their 
+//   name strings.
+//
+//  This routine adds the child to the first list which is the linked list of what
+//   order the children were linked to this parent. This element becomes the newest 
+//   child of the parent. This routine does NOT add this child to the parent's list 
+//   of sorted children.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_unlinkhlistchildelement>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_unlinkhlistchildelement
+//
+// C prototype:
+//  void dg_unlinkhlistchildelement (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistheaderid,
+//    UINT64 elementheaderid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistheaderid                 hlist id of the hierarchical list
+//                                        This is also the 0 based index of the 
+//                                        hierarchical list's header in the 
+//                                        hierarchical list header array
+//
+//  UINT64 elementheaderid               element id of the child to unlink from the 
+//                                        parent
+//                                         This is also the 0 based index of the 
+//                                          element header in the hierarchical list's 
+//                                          element header array.
+//
+// Outputs:
+//  none
+//
+// Action:
+//  A parent element has two lists for keeping track of it's children. The first is 
+//   a linked list of it's children in the order of when the children were linked to 
+//   the parent. The newest child is the one the parent points to, then each child 
+//   points to it's next older sibling, it's next newer sibling, and back to it's 
+//   parent.
+//  The other list is a list of the children's element id's sorted in order of their 
+//   name strings.
+//
+//  This routine removes the child from the first list, which is the linked list of 
+//   what order the children were linked to this parent. 
+//   This child's next older sibling becomes the newest child of the parent.
+//   This routine does NOT remove this child from the parent's list of sorted children.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_newhlistelement>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_newhlistelement
+//
+// C prototype:
+//  UINT64 dg_newhlistelement (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistid,
+//    UINT64 parentelementid, 
+//    unsigned char* pname,
+//    UINT64 namelength,
+//    unsigned char* pvalue,
+//    UINT64 valuelength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistid                       hlist id of the hierarchical list
+//                                        This is also the 0 based index of the 
+//                                        hierarchical list's header in the 
+//                                        hierarchical list header array
+//
+//  UINT64 parentelementid               parent element id of the new element
+//                                        The new element will be a child of this 
+//                                         element
+//                                        if parentelementid == DG_ENDOFLIST it 
+//                                         means you are adding a root element
+//                                        an hlist can have more than one root in 
+//                                         it, it is the callers resposibility to
+//                                         keep track of them
+//                                        This is also the 0 based index of the 
+//                                         element header in the hierarchical 
+//                                         list's element header array.
+//
+//  unsigned char* pname                 pointer to the initial name string for the 
+//                                        new element
+//
+//  UINT64 namelength                    length of the initial name string for the 
+//                                        new element in bytes
+//
+//  unsigned char* pvalue                pointer to the initial value string for the 
+//                                        new element
+//
+//  UINT64 valuelength                   length of the initial value string for the 
+//                                        new element in bytes
+//
+// Outputs:
+//  UINT64 return                        element id of the newly created element
+//                                        This is also the 0 based index of the 
+//                                        element header in the hierarchical list's 
+//                                        element header array.
+//
+// Action:
+//  A parent element has two lists for keeping track of it's children. The first is a 
+//   linked list of it's children in the order of when the children were linked to 
+//   the parent. The newest child is the one the parent points to, then each child 
+//   points to it's next older sibling, it's next newer sibling, and back to it's
+//   parent.
+//  The other list is a list of the children's element id's sorted in order of their 
+//   name strings.
+//
+//  This routine creates the new element as a child of the indicated parent element 
+//   in the indicated hlist and sets the new element's initial name string and value 
+//   string to a copy of the strings passed in. The element is also added to the 
+//   parent's two lists of children, becoming the newest child of the parent in the 
+//   process.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_freehlistelement>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_freehlistelement
+//
+// C prototype:
+//  void dg_freehlistelement (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistheaderid,
+//    UINT64 elementheaderid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistheaderid                 hlist id of the hierarchical list
+//                                        This is also the 0 based index of the hierarchical 
+//                                        list's header in the hierarchical list header array
+//
+//  UINT64 elementheaderid               element id of the element to free
+//                                        This is also the 0 based index of the element header
+//                                        in the hierarchical list's element header array.
+//
+// Outputs:
+//  none
+//
+// Action:
+//  If this element has a parent, this routine removes the element from it's parent element's 
+//   lists of children. This routine also frees the element, which means it frees the element's
+//   header. This routine should not be called if this element has any children since it will
+//   abandon any children this element has. Technically you have to call dg_prunehlistelement
+//   on this element first... I should change this routine to either give an error if there
+//   are children, or make this routine call dg_prunehlistelement first.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_gethlistlastchildofparent>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_gethlistlastchildofparent
+//
+// C prototype:
+//  UINT64 dg_gethlistlastchildofparent (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistheaderid,
+//    UINT64 parentelementid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistheaderid                 hlist id of the hierarchical list
+//                                        This is also the 0 based index of the hierarchical 
+//                                        list's header in the hierarchical list header array
+//
+//  UINT64 parentelementheaderid         element id of the parent element
+//                                         This is also the 0 based index of the parent element header
+//                                         in the hierarchical list's element header array.
+//
+// Outputs:
+//  UINT64 return                        the element id of the child most recently added to this
+//                                        parent. If this parent has no children,
+//                                        DG_ENDOFWORDLIST (-1) is returned
+//
+// Action:
+//  Returns the element id of the child most recently added to this parent. If this parent
+//   has no child, DG_ENDOFWORDLIST (-1) is returned.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_gethlistfirstchild>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_gethlistfirstchild
+//
+// C prototype:
+//  UINT64 dg_gethlistfirstchild (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistheaderid,
+//    UINT64 parentelementid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistheaderid                 hlist id of the hierarchical list
+//                                        This is also the 0 based index of the hierarchical 
+//                                        list's header in the hierarchical list header array
+//
+//  UINT64 parentelementheaderid         element id of the parent element
+//                                         This is also the 0 based index of the parent element header
+//                                         in the hierarchical list's element header array.
+//
+// Outputs:
+//  UINT64 return                        the element id of the oldest child added to this
+//                                        parent. If this parent has no children,
+//                                        DG_ENDOFWORDLIST (-1) is returned
+//
+// Action:
+//  Returns the element id of the first child added to this parent that is still a child
+//   of this parent and has not been freed. If this parent has no child, DG_ENDOFWORDLIST (-1)
+//   is returned.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_prunehlistelement>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_prunehlistelement
+//
+// C prototype:
+//  void dg_prunehlistelement (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistheaderid,
+//    UINT64 elementheaderid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistheaderid                 hlist id of the hierarchical list
+//                                        This is also the 0 based index of the hierarchical 
+//                                        list's header in the hierarchical list header array
+//
+//  UINT64 elementheaderid               element id of the element to prune
+//                                        This is also the 0 based index of the element header
+//                                        in the hierarchical list's element header array.
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Recursively frees all the descendents of this element. This routine does not free the
+//   element itself.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_gethlistnextsibling>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_gethlistnextsibling
+//
+// C prototype:
+//  UINT64 dg_gethlistnextsibling (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistheaderid,
+//    UINT64 childelementid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistheaderid                 hlist id of the hierarchical list
+//                                        This is also the 0 based index of the hierarchical 
+//                                        list's header in the hierarchical list header array
+//
+//  UINT64 childelementid                element id of the child element
+//                                        This is also the 0 based index of the element header
+//                                        in the hierarchical list's element header array.
+//
+// Outputs:
+//  UINT64 return                        the next older sibling of this child's parent
+//
+// Action:
+//  Returns the next older sibling of this element's parent. This usually the one added
+//   to this element's parent just before this element was added. If there is no more older
+//   siblings, DG_ENDOFWORDLIST is returned.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_gethlistprevioussibling>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_gethlistprevioussibling
+//
+// C prototype:
+//  UINT64 dg_gethlistprevioussibling (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistheaderid,
+//    UINT64 childelementid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistheaderid                 hlist id of the hierarchical list
+//                                        This is also the 0 based index of the hierarchical 
+//                                        list's header in the hierarchical list header array
+//
+//  UINT64 childelementid                element id of the child element
+//                                        This is also the 0 based index of the element header
+//                                        in the hierarchical list's element header array.
+//
+// Outputs:
+//  UINT64 return                        the next older sibling of this child's parent
+//
+// Action:
+//  Returns the next newer sibling of this element's parent. This usually the one added
+//   to this element's parent just after this element was added. If there is no more newer
+//   siblings, DG_ENDOFWORDLIST is returned.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_gethlistelementparent>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_gethlistelementparent
+//
+// C prototype:
+//  UINT64 dg_gethlistelementparent (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistheaderid,
+//    UINT64 elementid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistheaderid                 hlist id of the hierarchical list
+//                                        This is also the 0 based index of the hierarchical 
+//                                        list's header in the hierarchical list header array
+//
+//  UINT64 elementid                     element id of the child element
+//                                        This is also the 0 based index of the element header
+//                                        in the hierarchical list's element header array.
+//
+// Outputs:
+//  UINT64 return                        the parent element id of this element
+//
+// Action:
+//  Returns the parent element id of this element. If there is no parent element,
+//   which means this is a root element, DG_ENDOFWORDLIST is returned.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getshlistelementnom>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getshlistelementnom
+//
+// C prototype:
+//  unsigned char* dg_getshlistelementnom (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistheaderid,
+//    UINT64 elementid,
+//    UINT64* pnamelength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistheaderid                 hlist id of the hierarchical list
+//                                        This is also the 0 based index of the hierarchical 
+//                                        list's header in the hierarchical list header array
+//
+//  UINT64 elementid                     element id of the element
+//                                        This is also the 0 based index of the element header
+//                                        in the hierarchical list's element header array.
+//
+// Outputs:
+//  unsigned char* return                pointer to the element's name string
+//
+//  UINT64* pnamelength                  pointer to a UINT64 supplied by the caller to hold 
+//                                        the length of the element's name string
+//
+// Action:
+//  Returns the pointer to and length of the element's name string.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getshlistelementvalue>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getshlistelementvalue
+//
+// C prototype:
+//  unsigned char* dg_getshlistelementvalue (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistheaderid,
+//    UINT64 elementid,
+//    UINT64* pvaluelength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistheaderid                 hlist id of the hierarchical list
+//                                        This is also the 0 based index of the hierarchical 
+//                                        list's header in the hierarchical list header array
+//
+//  UINT64 elementid                     element id of the element
+//                                        This is also the 0 based index of the element header
+//                                        in the hierarchical list's element header array.
+//
+// Outputs:
+//  unsigned char* return                pointer to the element's value string
+//
+//  UINT64* pvaluelength                 pointer to a UINT64 supplied by the caller to hold 
+//                                        the length of the element's value string
+//
+// Action:
+//  Returns the pointer to and length of the element's value string.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_sethlistelementvalue>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_sethlistelementvalue
+//
+// C prototype:
+//  void dg_sethlistelementvalue (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistheaderid,
+//    UINT64 elementid,
+//    unsigned char* pvalue,
+//    UINT64 valuelength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistheaderid                 hlist id of the hierarchical list
+//                                        This is also the 0 based index of the hierarchical 
+//                                        list's header in the hierarchical list header array
+//
+//  UINT64 elementid                     element id of the element
+//                                        This is also the 0 based index of the element header
+//                                        in the hierarchical list's element header array.
+//
+//  unsigned char* pvalue                pointer to the new value string
+//
+//  UINT64 valuelength                   length of the new value string
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Replaces the element's value string with a copy of the value string passed in.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getshlistelement>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getshlistelement
+//
+// C prototype:
+//  void dg_getshlistelement (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistheaderid,
+//    UINT64 elementid,
+//    unsigned char** ppname,
+//    UINT64* pnamelength,
+//    unsigned char** ppvalue,
+//    UINT64* pvaluelength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistheaderid                 hlist id of the hierarchical list
+//                                        This is also the 0 based index of the hierarchical 
+//                                        list's header in the hierarchical list header array
+//
+//  UINT64 elementid                     element id of the element
+//                                        This is also the 0 based index of the element header
+//                                        in the hierarchical list's element header array.
+//
+// Outputs:
+//  unsigned char** ppname               pointer to memory supplied by the caller to hold a 
+//                                        pointer to the element's name string
+//
+//  UINT64* pnamelength                  pointer to memory supplied by the caller to hold the
+//                                        length of the element's name string
+//
+//  unsigned char** ppvalue              pointer to memory supplied by the caller to hold a 
+//                                        pointer to the element's value string
+//
+//  UINT64* pvaluelength                 pointer to memory supplied by the caller to hold the
+//                                        length of the element's value string
+//
+// Action:
+//  Returns pointers to and lengths of the elements name and value strings.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_sortcomparehlistnom>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_sortcomparehlistnom
+//
+// C prototype:
+//  INT64 dg_sortcomparehlistnom(
+//    Bufferhandle* pBHarrayhead,
+//    void* pcomparedata,
+//    UINT64 comparedatalength,
+//    UINT64 keyofmidrangevalue)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  void* pcomparedata                   pointer to a custom structure holding the data
+//                                        needed for this compare routine.
+//
+//  UINT64 comparedatalength             length of the custom structure holding the data
+//                                        needed for this compare routine.
+//
+//  UINT64 keyofmidrangevalue            index in hlist parent element's list of sorted
+//                                        child ids of the child element to compare
+//  
+// Outputs:
+//  INT64 return                         result of the compare
+//                                        0 means the name strings matched
+//                                        1 means the name string you are checking is greater
+//                                         than the one represented by keyofmidrangevalue
+//                                        -1 means the name string you are checking is less
+//                                         than the one represented by keyofmidrangevalue
+//
+// Action:
+//  Uses the compare data structure passed in and the key of mid range value to compare 
+//   a passed in name string against a name string from the sorted list of child elements.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_dobinaryinsertsortstep>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_dobinaryinsertsortstep
+//
+// C prototype:
+//  UINT64 dg_dobinaryinsertsortstep (
+//    Bufferhandle* pBHarrayhead,
+//    unsigned char* psortedkeyslstring,
+//    UINT64 sortedkeyslength,
+//    INT64 (*pcompareroutine)(Bufferhandle*, void*, UINT64, UINT64),
+//    void* pcomparedata,
+//    UINT64 comparedatalength,
+//    UINT64* pstartindex,
+//    UINT64* pendindex,
+//    UINT64* ptofindbeforerangeflag,
+//    UINT64* ploopdoneflag)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  unsigned char* psortedkeyslstring    pointer to an hlist parent element's list of child
+//                                        element indexes sorted by name string
+//
+//  UINT64 sortedkeyslength              wow this isn't used, I'll remove it. I could use it
+//                                        to make sure the indexes aren't out of array
+//
+// INT64 (*pcompareroutine)(Bufferhandle*, void*, UINT64, UINT64)
+//                                       function pointer to the custom compare routine for
+//                                        this sort
+//
+//  void* pcomparedata                   pointer to a custom structure holding the data
+//                                        needed for this compare routine.
+//
+//  UINT64 comparedatalength             length of the custom structure holding the data
+//                                        needed for this compare routine.
+//  
+// Outputs:
+//  UINT64* pstartindex                  pointer to the start index of the range to check 
+//                                        in the parent's list of child element ids sorted 
+//                                        by name string. This value may be changed by 
+//                                        this function. 
+//
+//  UINT64* pendindex                    pointer to the end index of the range to check 
+//                                        in the parent's list of child element ids sorted 
+//                                        by name string. This value may be changed by 
+//                                        this function. 
+//
+//  UINT64* ptofindbeforerangeflag       pointer to a flag which indicates when FORTH_TRUE
+//                                        that all the elements in the range to check are  
+//                                        greater than all elements before the range. This
+//                                        value may be changed by this function.
+//
+//  UINT64* ploopdoneflag                pointer to a flag which indicates when FORTH_TRUE
+//                                        that there are no more elements to check in the
+//                                        range.           
+//
+// Action:
+//  This routine does a step in a binary insert sort using the compare data and compare routine
+//   passed in. In freshman year of college, my professor called this algorithm a 'shell sort' so
+//   you may still see some mislabelings in the code.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_findsortedhlistchildsub>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_findsortedhlistchildsub
+//
+// C prototype:
+//  UINT64 dg_findsortedhlistchildsub (
+//   Bufferhandle* pBHarrayhead,
+//   unsigned char* pname,
+//   UINT64 namelength,  
+//   UINT64 sortedkeyslstringlength,
+//   unsigned char* psortedkeyslstring,
+//   UINT64* pnamelstringoffsetbuffer,
+//   unsigned char* pnamelstringstringbuffer,
+//   UINT64* pindexofkeyaftermatch, 
+//   UINT64* pkey)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  unsigned char* pname                 pointer to the name string to find
+//
+//  UINT64 namelength                    length of name string to find in bytes
+//
+//  UINT64 sortedkeyslstringlength       length of sorted keys lstring in bytes
+//
+//  unsigned char* psortedkeyslstring    pointer to sorted keys lstring
+//
+//  UINT64* pnamelstringoffsetbuffer     pointer to name lstring offset buffer
+//
+//  unsigned char* pnamelstringstringbuffer pointer to name lstring string buffer
+//
+// Outputs:
+//  UINT64* pindexofkeyaftermatch        pointer to memory supplied by the caller that will
+//                                        hold the 0 based index of the child element in the 
+//                                        parent's list of child elements sorted by name string
+//                                        of the first child having a greater name string.
+//                                       
+//
+//  UINT64* pkey                         pointer to memory supplied by the caller that will
+//                                        hold the element id of the child element at the index
+//                                        ONE BEFORE the one at *pindexofkeyaftermatch.
+//                                        In the event the compare flag returned is 0,
+//                                        this holds the element id of the most recently added
+//                                        child with a matching name string.
+//                                        In the event *pindexofkeyaftermatch is 0, pkey holds
+//                                        DG_ENDOFWORDLIST
+//
+// Action:
+//  This routine does a binary search of the list of children sorted by name string for the first
+//   child with a name string greater than the one passed in. I did it this way so that the in 
+//   the event multiple elements with the same name string are added, the most recently added
+//   will be the one found. This is to meet the FORTH requirement that new words with the same 
+//   name are found before older words.
+//  I added this routine to speed up the call hlist children function, so that it wouldn't
+//   have to get the pointers to the arrays for every child element.'
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_findsortedhlistchild>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_findsortedhlistchild
+//
+// C prototype:
+//  UINT64 dg_findsortedhlistchild (
+//   Bufferhandle* pBHarrayhead,
+//   unsigned char* pname,
+//   UINT64 namelength,  
+//   UINT64 hlistheaderid, 
+//   UINT64 parentelementid,      
+//   UINT64* pindexofkeyaftermatch, 
+//   UINT64* pkey)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  unsigned char* pname                 pointer to the name string to find
+//
+//  UINT64 namelength                    length of name string to find
+//
+//  UINT64 hlistheaderid                 hlist id of the hierarchical list
+//                                        This is also the 0 based index of the hierarchical 
+//                                        list's header in the hierarchical list header array
+//
+//  UINT64 parentelementid               element id of the parent element
+//                                        This is also the 0 based index of the element header
+//                                        in the hierarchical list's element header array.
+//  
+// Outputs:
+//  UINT64* pindexofkeyaftermatch        pointer to memory supplied by the caller that will
+//                                        hold the 0 based index of the child element in the 
+//                                        parent's list of child elements sorted by name string
+//                                        of the first child having a greater name string.
+//                                       
+//
+//  UINT64* pkey                         pointer to memory supplied by the caller that will
+//                                        hold the element id of the child element at the index
+//                                        ONE BEFORE the one at *pindexofkeyaftermatch.
+//                                        In the event the compare flag returned is 0,
+//                                        this holds the element id of the most recently added
+//                                        child with a matching name string.
+//                                        In the event *pindexofkeyaftermatch is 0, pkey holds
+//                                        DG_ENDOFWORDLIST
+//
+// Action:
+//  This routine does a binary search of the list of children sorted by name string for the first
+//   child with a name string greater than the one passed in. I did it this way so that the in 
+//   the event multiple elements with the same name string are added, the most recently added
+//   will be the one found. This is to meet the FORTH requirement that new words with the same 
+//   name are found before older words.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getshlistelementnamene>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getshlistelementnamene
+//
+// C prototype:
+//  const char* dg_getshlistelementnamene (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistheaderid,
+//    UINT64 elementid,
+//    unsigned char** ppname,
+//    UINT64* pnamelength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistheaderid                 hlist id of the hierarchical list
+//                                        This is also the 0 based index of the hierarchical 
+//                                        list's header in the hierarchical list header array
+//
+//  UINT64 elementid                     element id of the element
+//                                        This is also the 0 based index of the element header
+//                                        in the hierarchical list's element header array.
+//
+// Outputs:
+//  const char* return                   dg_success if there is no error doing this routing
+//                                        otherwise an error code is returned which is usually
+//                                        dg_errorinsubroutine unless the error was from writing
+//                                        to the memory at ppname.
+//                                       
+//  unsigned char** ppname               pointer to a pointer supplied by the caller to
+//                                        hold a pointer to the element's name string
+//
+//  UINT64* pnamelength                  pointer to a UINT64 supplied by the caller to hold 
+//                                        the length of the element's name string
+//
+// Action:
+//  Returns the pointer to and length of the element's name string. If any errors occur, they are 
+//   not pushed to the error stack and an error flag is returned instead. This is so this routine
+//   can be used by the words that display the contents of the error stack without adding to the 
+//   error stack.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_changehlistelementparent>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_changehlistelementparent
+//
+// C prototype:
+//  void dg_changehlistelementparent (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistid,
+//    UINT64 elementid,
+//    UINT64 newparentelementid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistid                       hlist id of the hierarchical list
+//                                        This is also the 0 based index of the hierarchical 
+//                                        list's header in the hierarchical list header array
+//
+//  UINT64 elementid                     element id of the element to be moved to a new parent
+//                                        This is also the 0 based index of the element header
+//                                        in the hierarchical list's element header array.
+//
+//  UINT64 newparentelementid            element id of the new parent
+//                                        This is also the 0 based index of the element header
+//                                        in the hierarchical list's element header array.
+//  
+// Outputs:
+//  none
+//
+// Action:
+//  Removes the element from it's current parent's child lists and adds the element to the child
+//   lists of the new parent. This element becomes the newest child of the new parent and is sorted
+//   into the newest parent's sorted list of children by it's name string.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getnumberofsortedchildren>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getnumberofsortedchildren
+//
+// C prototype:
+//  UINT64 dg_getnumberofsortedchildren(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistheaderid,
+//    UINT64 parentelementid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistid                       hlist id of the hierarchical list
+//                                        This is also the 0 based index of the hierarchical 
+//                                        list's header in the hierarchical list header array
+//
+//  UINT64 parentelementid               element id of the parent
+//                                        This is also the 0 based index of the element header
+//                                        in the hierarchical list's element header array.
+//  
+// Outputs:
+//  UINT64 return                        number of children in the parent's list of sorted children
+//
+// Action:
+//  Returns the number of child element ids in the parent element's list of sorted children. If
+//   everything is working properly and you didn't manually alter the list or tried to free an 
+//   element without pruning it's children first, this should also be the number of children in
+//   the parent's linked list of what order the children were added to the parent.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getidofsortedhlistchildn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getidofsortedhlistchildn
+//
+// C prototype:
+//  UINT64 dg_getidofsortedhlistchildn(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistheaderid,
+//    UINT64 parentelementid,
+//    UINT64 sortkeyindex)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistheaderid                 hlist id of the hierarchical list
+//                                        This is also the 0 based index of the hierarchical 
+//                                        list's header in the hierarchical list header array
+//
+//  UINT64 parentelementid               element id of the parent
+//                                        This is also the 0 based index of the element header
+//                                        in the hierarchical list's element header array.
+//
+//  UINT64 sortkeyindex                  0 based index of a child element's id in the 
+//                                        parent's list of children sorted by name string.
+//                                        This sorted list is stored in an array.
+//  
+// Outputs:
+//  UINT64 return                        element id of the child at the sortkeyindex in 
+//                                        parent's list of children sorted by name string.
+//
+// Action:
+//  The parent element maintains a list it's children sorted by name string. This routine
+//    returns element id of the nth child in this list, where n is sortkeyindex.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_addnsamechartostring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_addnsamechartostring
+//
+// C prototype:
+//  void dg_addnsamechartostring (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 n,
+//    unsigned char c)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 n                             the number of characters to push onto the end of
+//                                        top string on the string stack
+//
+//  unsigned char c                      the character to use to push onto the end of the
+//                                        the string stack
+// 
+// Outputs:
+//  none
+//
+// Action:
+//  This routine pushes n copies of character c onto the end of the string stack.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_hlisttodglumlstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_hlisttodglumlstring
+//
+// C prototype:
+//  void dg_hlisttoxmlstring (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistid,
+//    UINT64 rootelementid,
+//    UINT64 indentationstepsize,
+//    UINT64 currentindentationlevel)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistid                       hlist id of the hierarchical list
+//                                        This is also the 0 based index of the hierarchical 
+//                                        list's header in the hierarchical list header array
+//
+//  UINT64 parentelementid               element id of the top parent element for the conversion
+//                                        This is also the 0 based index of the element header
+//                                        in the hierarchical list's element header array.
+//
+//  UINT64 indentationstepsize           the number of spaces to indent each nesting level
+//
+//  UINT64 currentindentationlevel       the beginning indentation level of the top parent
+//                                        this is so the routine can be used for recursion
+// 
+// Outputs:
+//  none
+//
+// Action:
+//  This routine converts an hierarchical list starting at the designated root element and
+//   pushes it onto the end of the top string on the string stack. The name and value strings
+//   of each element are url encoded during this conversion. 
+//   The format looks like this:
+//   &lt;topname$&gt;topvalue$
+//     &lt;firstchildname$&gt;firstchildvalue$
+//       &lt;firstsubchildname$&gt;firstsubchildvalue$&lt;/firstsubchildname$&gt;
+//     &lt;/firstchildname$&gt;
+//     &lt;secondchildname$&gt;secondchildvalue$&lt;/secondchildname$&gt;
+//   &lt;/topname$&gt;
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_newunsortedhlistelement>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_newunsortedhlistelement
+//
+// C prototype:
+//  UINT64 dg_newunsortedhlistelement (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistid,
+//    Hlistheader myhlistheader,
+//    UINT64 parentelementid, 
+//    unsigned char* pname,
+//    UINT64 namelength,
+//    unsigned char* pvalue,
+//    UINT64 valuelength,
+//    UINT64 previouselementid,
+//    UINT64 nextelementid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistid                       hlist id of the hierarchical list
+//                                        This is also the 0 based index of the hierarchical 
+//                                        list's header in the hierarchical list header array
+//
+//  Hlistheader myhlistheader            a copy of the hierarchical list header
+//
+//  UINT64 parentelementid               element id of this new element's parent
+//                                        DG_ENDOFWORDLIST (-1) means this element is a root element
+//                                        This is also the 0 based index of the element header
+//                                        in the hierarchical list's element header array.         
+//
+//  unsigned char* pname                 pointer to the string to use for the new element's name string
+//
+//  UINT64 namelength                    length of the name string
+//
+//  unsigned char* pvalue                pointer to the string to use for the new element's value string
+//
+//  UINT64 valuelength                   length of the value string
+// 
+//  UINT64 previouselementid             element id of what will be this child's next more recently 
+//                                        added sibling
+//                                        DG_ENDOFWORDLIST means this child will be the most recently 
+//                                        added sibling
+//                                        This is also the 0 based index of the element header
+//                                        in the hierarchical list's element header array.
+//  
+//  UINT64 nextelementid                 element id of what will be the child added just previous to this one
+//                                        DG_ENDOFWORDLIST means this child will have been the first 
+//                                        child added
+//                                        This is also the 0 based index of the element header
+//                                        in the hierarchical list's element header array.
+//
+// Outputs:
+//  UINT64 return                        element id of newly added child
+//                                        This is also the 0 based index of the element header
+//                                        in the hierarchical list's element header array.
+//
+// Action:
+//  This routine adds a child element to a parent element in a hierarchical list, but only adds the child to the parent's
+//   linked list of when children were added. This routine does not add the child to the list of sorted children.
+//   The caller is responsible for making sure the linked list will be accurate after this child is added.
+//   This routine is mainly for use during the diaperglu script initialization and allows diaperglu to quickly initialize
+//   a wordlist using a presorted list of words.
+//   Also, free element ids are ignored during this and the new element is added onto to the end of the array.
+//   This way successive calls to this function can guarantee element ids that go up by 1 each time, which is
+//   useful for calculating what previous element id and next element id should be.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_callhlistchildren>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_callhlistchildren
+//
+// C prototype:
+//  void dg_callhlistchildren(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistid,
+//    UINT64 parentelementid,
+//    UINT64 fsortedkeyslstringlength,
+//    unsigned char* pfsortedkeyslstring,
+//    UINT64* pfnamelstringoffsetbuffer,
+//    unsigned char* pfnamelstringstringbuffer,
+//    void (**pfunctions)(Bufferhandle*, UINT64, UINT64, unsigned char*, UINT64, Hlistheader*))
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistid                       hlist id of the hierarchical list containing function names to do
+//                                        This is also the 0 based index of the hierarchical 
+//                                        list's header in the hierarchical list header array
+//
+//  UINT64 parentelementid               parent element id in hlist containing function names to do
+//
+//  UINT64 fsortedkeyslstringlength      length in bytes of lstring array containing the sorted keys
+//
+//  unsigned char* pfsortedkeyslstring   pointer to lstring array containing the sorted keys
+//                                        the 'keys' are UINT64 indexes into the function name array
+//                                        and the function pointer array
+//
+//  UINT64* pfnamelstringoffsetbuffer    pointer to the function names lstring array offset buffer
+//
+//  unsigned char* pfnamelstringstringbuffer  pointer to the function names lstring array string buffer
+//
+//  void (**pfunctions)(                 function pointer array containing functions to call
+//                                        the functions will be passed these parementers but
+//                                        do not have to use them
+//    Bufferhandle*,                       pBHarrayhead
+//    UINT64,                              hlistid
+//    UINT64,                              parentelementid
+//    unsigned char*,                      pparentvalue
+//    UINT64,                              parentvaluelength
+//    Hlistheader*))                       pointer to hlistid's hlist header
+//
+//
+// Outputs:
+//  none
+//
+// Action:
+//  This routine goes through each child element in the order they were linked to the
+//   parent in the hlist and finds the child's name string in the sorted function name
+//   array. Then the 'key' of the found function name is used as an index into the
+//   function pointer array to call the indexed function. So, the oldest child's indexed
+//   function is called first, then the next oldest, and so on with the newest child's
+//   function being called last.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_callhlistchildrenbyn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_callhlistchildrenbyn
+//
+// C prototype:
+//  void dg_callhlistchildrenbyn(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistid,
+//    UINT64 parentelementid,
+//    UINT64 maxnumberoffunctions,
+//    void (**pfunctions)(Bufferhandle*, UINT64, UINT64, unsigned char*, UINT64, Hlistheader*))
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistid                       hlist id of the hierarchical list
+//                                        This is also the 0 based index of the hierarchical 
+//                                        list's header in the hierarchical list header array
+//
+//  UINT64 parentelementid               parent element id in hlist
+//
+//  UINT64 maxnumberoffunctions          number of functions in the function array
+//
+//  void (**pfunctions)(                 function pointer array containing functions to call
+//                                        the functions will be passed these parementers but
+//                                        do not have to use them
+//    Bufferhandle*,                       pBHarrayhead
+//    UINT64,                              hlistid
+//    UINT64,                              parentelementid
+//    unsigned char*,                      pparentvalue
+//    UINT64,                              parentvaluelength
+//    Hlistheader*))                       pointer to hlistid's hlist header
+//
+//
+// Outputs:
+//  none
+//
+// Action:
+//  This routine goes through each child element in the order they were linked to the
+//   parent in the hlist and uses the child's name string as a UINT64 index into the
+//   function pointer array to call the indexed function. So, the oldest child's indexed
+//   function is called first, then the next oldest, and so on with the newest child's
+//   function being called last.
+//
+// Note:
+//  dg_callhlistchildrenbyn should be faster than dg_callhlistchildrenname because
+//  dg_callhlistchildrenbyn does not have to find the index of the function name.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_packhlist>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_packhlist
+//
+// C prototype:
+//  UINT64 dg_packhlist (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistid                       hlist id of the hierarchical list
+//                                        This is also the 0 based index of the hierarchical 
+//                                        list's header in the hierarchical list header array
+//
+//
+// Outputs:
+//  UINT64 return                        buffer id of a buffer containing the packed hlist
+//
+// Action:
+//  This routine packs an hlist into one new buffer.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_unpackhlist>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_unpackhlist
+//
+// C prototype:
+//  UINT64 dg_unpackhlist (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 packedbufferid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 packedhlistbufferid           buffer id of buffer holding the packed hlist
+//
+//
+// Outputs:
+//  UINT64 return                        hlist id of the unpacked hlist
+//
+// Action:
+//  This routine unpacks an hlist from a buffer that holds a packed hlist.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_namestringtovaluestring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_namestringtovaluestring
+//
+// C prototype:
+//  unsigned char* dg_namestringtovaluestring(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistid,
+//    UINT64 elementid,
+//    unsigned char* pname,
+//    UINT64 namelength,
+//    UINT64* pvaluelength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistid                       hlist id of the hierarchical list
+//                                        This is also the 0 based index of the hierarchical 
+//                                        list's header in the hierarchical list header array
+//
+//  UINT64 elementid                     parent element id of the element in the hierarchical list
+//                                        This is also the 0 based index of the element's
+//                                        name and value strings in the hlist's lstring arrays'
+//
+//  unsigned char*                       pointer to the name string of the child element to find
+//                                        under the parent element id in the hierarchical list
+//
+//  UINT64 namelength                    length of the name string of the child element to find
+//                                        under the parent element id in the hierarchical list
+//
+// Outputs:
+//  UINT64* pvaluelength                 length of the value string if name string was found
+//                                        0 if name string was not found or
+//                                        an error happened
+//
+//  unsigned char* return                pointer to the value string if name string was found
+//                                        badbufferhandle (-1) if name string not found
+//                                        badbufferhandle (-1) if an error happened
+//
+// Action:
+//  This routine unpacks an hlist from a buffer that holds a packed hlist.
+//
+// Failure cases:
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    </div>
+
+  </div></body>
+</html>

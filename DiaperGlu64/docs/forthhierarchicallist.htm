@@ -1,0 +1,1421 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<html>
+
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      forthhierarchicallist.cpp functions
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>
+      
+      <a href=index.htm                                       >Directory</a>
+      <a href=documentationkey.htm                            >Documentation key</a>
+      <a                                                      >&nbsp;</a>
+
+      <a                                                             >C Functions</a>
+      <a href=forthhierarchicallist.htm#dg_howhlistswork             >dg_howhlistswork</a>
+      <a href=forthhierarchicallist.htm#dg_forthnewhlist             >dg_forthnewhlist</a>
+      <a href=forthhierarchicallist.htm#dg_forthfreehlist            >dg_forthfreehlist</a>
+      <a href=forthhierarchicallist.htm#dg_forthprunehlistelement    >dg_forthprunehlistelement</a>
+      <a href=forthhierarchicallist.htm#dg_forthfreehlistelement     >dg_forthfreehlistelement</a>
+      <a href=forthhierarchicallist.htm#dg_forthnewhlistelement      >dg_forthnewhlistelement</a>
+      <a href=forthhierarchicallist.htm#dg_forthgethlistelementnom   >dg_forthgethlistelementnom</a>
+      <a href=forthhierarchicallist.htm#dg_forthgethlistelementvalue >dg_forthgethlistelementvalue</a>
+      <a href=forthhierarchicallist.htm#dg_forthsethlistelementvalue >dg_forthsethlistelementvalue</a>
+      <a href=forthhierarchicallist.htm#dg_forthgethlistnewestchild  >dg_forthgethlistnewestchild</a>
+      <a href=forthhierarchicallist.htm#dg_forthgethlistoldestchild  >dg_forthgethlistoldestchild</a>
+      <a href=forthhierarchicallist.htm#dg_forthgethlistoldersibling >dg_forthgethlistoldersibling</a>
+      <a href=forthhierarchicallist.htm#dg_forthgethlistnewersibling >dg_forthgethlistnewersibling</a>
+      <a href=forthhierarchicallist.htm#dg_forthchangehlistparent    >dg_forthchangehlistparent</a>
+      <a href=forthhierarchicallist.htm#dg_forthgethlistparent       >dg_forthgethlistparent</a>
+      <a href=forthhierarchicallist.htm#dg_forthfindclosesthlistchild>dg_forthfindclosesthlistchild</a>
+      <a href=forthhierarchicallist.htm#dg_forthfindhlistchild       >dg_forthfindhlistchild</a>
+      <a href=forthhierarchicallist.htm#dg_forthhlisttoxmlstring     >dg_forthhlisttoxmlstring</a>
+      <a href=forthhierarchicallist.htm#dg_forthgethowmanyhlistkids  >dg_forthgethowmanyhlistkids</a>
+      <a href=forthhierarchicallist.htm#dg_forthgethlistsortedchildn >dg_forthgethlistsortedchildn</a>
+      <a href=forthhierarchicallist.htm#dg_forthpackhlist            >dg_forthpackhlist</a>
+      <a href=forthhierarchicallist.htm#dg_forthunpackhlist          >dg_forthunpackhlist</a>
+      <a href=forthhierarchicallist.htm#dg_forthtoeh                 >dg_forthtoeh</a>
+      <a href=forthhierarchicallist.htm#dg_forthehfrom               >dg_forthehfrom</a>
+      <a href=forthhierarchicallist.htm#dg_forthdropeh               >dg_forthdropeh</a>
+      <a href=forthhierarchicallist.htm#dg_forthehtop                >dg_forthehtop</a>
+      <a href=forthhierarchicallist.htm#dg_forthdupeh                >dg_forthdupeh</a>
+      <a href=forthhierarchicallist.htm#dg_forthetoehtop             >dg_forthetoehtop</a>
+      <a href=forthhierarchicallist.htm#dg_forthehnewelement         >dg_forthehnewelement</a>
+      <a href=forthhierarchicallist.htm#dg_forthehnewelementtoeh     >dg_forthehnewelementtoeh</a>
+      <a href=forthhierarchicallist.htm#dg_forthnamestrtovaluestr    >dg_forthnamestrtovaluestr</a>
+      <a href=forthhierarchicallist.htm#dg_forthnamestrtovalue       >dg_forthnamestrtovalue</a>
+      <a href=forthhierarchicallist.htm#dg_forthehnamestrtovaluestr  >dg_forthehnamestrtovaluestr</a>
+      <a href=forthhierarchicallist.htm#dg_forthehnamestrtovalue     >dg_forthehnamestrtovalue</a>
+      <a href=forthhierarchicallist.htm#dg_forthnamewtovaluestr  >dg_forthnamewtovaluestr</a>
+      <a href=forthhierarchicallist.htm#dg_forthnamewtovalue     >dg_forthnamewtovalue</a>
+      <a href=forthhierarchicallist.htm#dg_forthehnamewtovaluestr>dg_forthehnamewtovaluestr</a>
+      <a href=forthhierarchicallist.htm#dg_forthehnamewtovalue   >dg_forthehnamewtovalue</a>
+      <a href=forthhierarchicallist.htm#dg_forthehoherewtonewelement >dg_forthehoherewtonewelement</a>
+
+    </div>
+
+    <div id=pagestuff>
+    
+      <div class=word id=dg_howhlistswork>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// How heirarchical lists work
+//
+// A hierarchical list is an array of name string value string pairs where each
+//  element in the array can have another element as it's parent. Elements
+//  with the same parent are sorted by their name strings and at the same time
+//  arranged in the order that they were added to the parent. This means
+//
+// Diaperglu maintains two orderings for an element's children:
+//  A linked list of the order in which they were added,
+//  and an array of the element ids of the children sorted by their name strings.
+//
+// If two elements with the same name string are added to a parent, and you
+//  try to find the element with the name string for that parent, the find
+//  function returns the index of the one added last.
+//
+// This means you can use hierarchical lists to represent various data
+//  structures such as hashes, symbol lists, word lists, and with a bit of work,
+//  even XML. To do XML you have to figure out a way to deal with when there
+//  are tags in the middle with text on both sides... since this implementation
+//  only has one value string for each name.
+//
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+      <div class=word id=dg_forthnewhlist>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthnewhlist ( NEW-HLIST )
+//
+// C prototype:
+//   void dg_forthnewhlist (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//   ( -- hlistid )
+//                                                            
+// Action:
+//  Creates a new empty hierarchical list and returns the new hierarchical list's id
+//    on the data stack.
+//
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthfreehlist>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfreehlist ( FREE-HLIST )
+//
+// C prototype:
+//   void dg_forthfreehlist (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//   ( hlistid -- )
+//                                                            
+// Action:
+//  Frees a previously created hierarchical list.
+//
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthprunehlistelement>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthprunehlistelement ( PRUNE-ELEMENT )
+//
+// C prototype:
+//   void dg_forthprunehlistelement(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//   ( elementid hlistid -- )
+//                                                            
+// Action:
+//  Frees the children of a hierarchical list element.
+//
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfreehlistelement>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfreehlistelement ( FREE-ELEMENT )
+//
+// C prototype:
+//   void dg_forthfreehlistelement(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//   ( elementid hlistid -- )
+//                                                            
+// Action:
+//  Frees a previously created hierarchical list element along with all it's children.
+//
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthnewhlistelement>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthnewhlistelement ( NEW-ELEMENT )
+//
+// C prototype:
+//   void dg_forthnewhlistelement (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( parentelementid hlistid -- elementid )
+//  ( value$ name$ -$- )
+//                                                            
+// Action:
+//  Create a new hlist element in hlist hlistid as a child element under the parent element
+//    parentelementid. This new element will have the name value pair name$ and value$.
+//    This new child becomes the 'newest' child of the parent element in the parent's list
+//    of how recently the element was added as a child of the parent. 
+//    It's also sorted into the parent's sorted list of children according to the name$.
+//    The name$ is treated as an unsigned byte array and the bytes are compared in order from
+//    lowest byte in memory to the highest against all the other children in the sorted list.  
+//
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgethlistelementnom>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgethlistelementnom ( GET-ELEMENT-NAME$ )
+//
+// C prototype:
+//   void dg_forthgethlistelementnom (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( elementid hlistid -- )
+//  ( -$- name$ )
+//                                                            
+// Action:
+//  Gets the name string of the indicated hlist element and pushes it to the string stack.  
+//
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgethlistelementvalue>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgethlistelementvalue ( GET-ELEMENT-VALUE$ )
+//
+// C prototype:
+//   void dg_forthgethlistelementvalue (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( elementid hlistid -- )
+//  ( -$- value$ )
+//                                                            
+// Action:
+//  Gets the value string of the indicated hlist element and pushes it to the string stack.  
+//
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthsethlistelementvalue>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthsethlistelementvalue ( SET-ELEMENT-VALUE$ )
+//
+// C prototype:
+//   void dg_forthsethlistelementvalue (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( elementid hlistid -- )
+//  ( value$ -$- )
+//                                                            
+// Action:
+//  Pops a string from the string stack and replaces the indicated hlist element's value 
+//   string with it.  
+//
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgethlistnewestchild>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgethlistnewestchild ( GET-ELEMENT-NEWEST-CHILD )
+//
+// C prototype:
+//   void dg_forthgethlistnewestchild (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( parentelementid hlistid -- newestchildid )
+//                                                            
+// Action:
+//  Gets the childid of child element most recently added to the indicated hlist element.  
+//
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgethlistoldestchild>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgethlistoldestchild ( GET-ELEMENT-OLDEST-CHILD )
+//
+// C prototype:
+//   void dg_forthgethlistoldestchild (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( parentelementid hlistid -- oldestchildid )
+//                                                            
+// Action:
+//  Gets the childid of child element first added to the indicated hlist element
+//   that is still a child of the indicated hlist element.
+//
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthgethlistoldersibling>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgethlistoldersibling ( GET-ELEMENT-OLDER-SIBLING )
+//
+// C prototype:
+//   void dg_forthgethlistoldersibling (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( childelementid hlistid -- nextoldersiblingid )
+//                                                            
+// Action:
+//  If parent of the indicated element has another child that was added to the parent 
+//   before the indicated child element, this routine returns the element id of the
+//   child added just before this element. Otherwise this routine returns DG_ENDOFWORDLIST (-1)
+//
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgethlistnewersibling>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgethlistnewersibling ( GET-ELEMENT-NEWER-SIBLING )
+//
+// C prototype:
+//   void dg_forthgethlistnewersibling (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( childelementid hlistid -- nextoldersiblingid )
+//                                                            
+// Action:
+//  If parent of the indicated element has another child that was added to the parent 
+//   more recently than the indicated child element, this routine returns the element id of the
+//   child added just after this element. Otherwise this routine returns DG_ENDOFWORDLIST (-1)
+//
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthchangehlistparent>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthchangehlistparent ( SET-ELEMENT-PARENT )
+//
+// C prototype:
+//   void dg_forthchangehlistparent (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( newparentelementid childelementid hlistid -- )
+//                                                            
+// Action:
+//  Removes the indicated child element from it's current parent and adds it as a child
+//    of the indicated new parent. This child becomes the most recently added child of the
+//    new parent and is also sorted into the new parent's list of sorted children by name$.
+//
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgethlistparent>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgethlistparent ( GET-ELEMENT-PARENT )
+//
+// C prototype:
+//   void dg_forthgethlistparent (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( newparentelementid childelementid hlistid -- )
+//                                                            
+// Action:
+//  Returns parent elemend id of the indicated child element.
+//
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfindclosesthlistchild>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfindclosesthlistchild ( FIND-CLOSEST-ELEMENT-CHILD-BY-NAME$ )
+//
+// C prototype:
+//   void dg_forthfindclosesthlistchild (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+// ( parentelementid hlistid -- closestchildid sortkeyindexafterlastmatch compareflag )
+// ( name$ -$- )
+//                                                            
+// Action:
+//  Searches the sorted child list of the indicated parent element for the child element have
+//   the next greater or equal name string as the indicated name string.
+//   If the found child's name string matches, the compare flag's value is 0, and the
+//   closestchildid is the element id of the most recently added child that has the same name
+//   string.
+//   If the found child's name string does not match, the compare flag is 1 (for greater than),
+//   and the closestchildid is the elemend id of the child with the name string just less than.
+//   sortkeyindexafterlastmatch is the index in the parent's sorted list of child element ids
+//   of the child element with the last matching name string or the first one greater.
+//
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfindhlistchild>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfindhlistchild ( FIND-ELEMENT-CHILD-BY-NAME$ )
+//
+// C prototype:
+//   void dg_forthfindhlistchild (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+// ( parentelementid hlistid -- childid )
+// ( name$ -$- )
+//                                                            
+// Action:
+//  Searches the sorted child list of the indicated parent element for the child element
+//   most recently added that has the same name string. If found the childid of the matching
+//   element is returned. Otherwise DG_ENDOFWORDLIST (-1) is returned.
+//
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthhlisttoxmlstring>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthhlisttoxmlstring ( ELEMENT&gt;DGLUML$ )
+//
+// C prototype:
+//   void dg_forthhlisttoxmlstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+// ( indentationstepsize rootelementid hlistid -- )
+// ( -$- dgluml$ )
+//                                                            
+// Action:
+//  Converts the indicated element and all it's children into an xml like string. The names and
+//   values are converted to an url form encoded string. In the event an element has both a value
+//   and an element, the element goes immediately after &lt;name$&gt;, then the children come, each
+//   on a separate line. Each nesting level of children is indented indentationstepsize.
+//  So for an indentionstepsize of 2 it looks like this:
+//   &lt;rootelementname$&gt;rootelementvalue$
+//     &lt;1stchildname$&gt;1stchildvalue$&lt;/1stchildname$&gt;
+//     &lt;2ndchildname$&gt;2ndchildvalue$&lt;/2ndchildname$&gt;
+//   &lt;/rootelementname$&gt;
+//
+//  The value strings are url encoded, which also encodes and carriage returns or line feeds in the value string.
+//  This way you can determine the true end of the value string when a parent has both a value string
+//  and children by looking for the first carriage return or line feed. &lt; and &gt; in the value strings 
+//  are also url encoded so in the event there is no children, you can just look for the next &lt; as the end
+//  of the value string. The DGLUML$&gt;ELEMENT routine when I write it will probably consider any character
+//  that should have been url encoded as a terminator for the value string. 
+//     
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgethowmanyhlistkids>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgethowmanyhlistkids ( GET-ELEMENT-NUMBER-OF-SORTED-CHILDREN )
+//
+// C prototype:
+//   void dg_forthgethowmanyhlistkids(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+// ( parentelementid hlistid -- numberofchildren )
+//                                                            
+// Action:
+//  Returns the number of children in the indicated parent element's list of sorted children.
+//
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgethlistsortedchildn>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgethlistsortedchildn ( FIND-ELEMENT-CHILD-N )
+//
+// C prototype:
+//   void dg_forthgethlistsortedchildn(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+// ( n parentelementid hlistid -- childelementid )
+//                                                            
+// Action:
+//  Returns the element id of the nth child in the indicated parent element's list of
+//   sorted children. n is a 0 based index.
+//
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthpackhlist>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthpackhlist ( PACK-HLIST )
+//
+// C prototype:
+//   void dg_forthpackhlist(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+// ( hlistid -- packedbufferid )
+//                                                            
+// Action:
+//  Packs the hlist into one new buffer. The hlist is unchanged.
+//
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthunpackhlist>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthunpackhlist ( UNPACK-HLIST )
+//
+// C prototype:
+//   void dg_forthunpackhlist(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( packedbufferid -- hlistid )
+//                                                            
+// Action:
+//  Unpacks the the buffer into a new hlist. The buffer is changed.
+//
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthtoeh>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthtoeh ( &gt;EH )
+//
+// C prototype:
+//   void dg_forthtoeh(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( elementid hlistid -- ) ( -EH- elementid hlistid )
+//                                                            
+// Action:
+//  Pops two UINT64s from the data stack and pushes the
+//   two UINT64s to the EH stack keeping the order the same.
+//
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthehfrom>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthehfrom ( EH&gt; )
+//
+// C prototype:
+//   void dg_forthehfrom(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( elementid hlistid -EH- ) ( -- elementid hlistid )
+//                                                            
+// Action:
+//  Pops two UINT64s from the EH stack and pushes the
+//   two UINT64s to the data stack keeping the order the same.
+//
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthdropeh>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdropeh ( DROPEH )
+//
+// C prototype:
+//   void dg_forthdropeh(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( elementid hlistid -EH- )
+//                                                            
+// Action:
+//  Pops two UINT64s from the EH stack and throws them away.
+//
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthehtop>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthehtop ( EH[TOP] EH )
+//
+// C prototype:
+//   void dg_forthehtop(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( elementid hlistid -EH- elementid hlistid ) ( -- elementid hlistid )
+//                                                            
+// Action:
+//  Copies the top two UINT64s from the EH stack amd
+//   pushes them onto the data stack in the same order.
+//
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthdupeh>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdupeh ( DUPEH )
+//
+// C prototype:
+//   void dg_forthdupeh(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( elementid hlistid -EH- elementid hlistid elementid hlistid )
+//                                                            
+// Action:
+//  Pushes a copy of the top element id hlist id pair on the EH stack
+//   onto the top of the EH stack.
+//
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthetoehtop>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthetoehtop ( E&gt;EH[TOP] )
+//
+// C prototype:
+//   void dg_forthetoehtop(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( newelementid -- )
+//  ( elementid hlistid -EH- newelementid hlistid )
+//                                                            
+// Action:
+//  Pops a new element id off of the data stack.
+//  The copies the new element id to the top element id hlist id pair
+//   on the EH stack.
+//
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthehnewelement>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthehnewelement ( EH-NEW-ELEMENT )
+//
+// C prototype:
+//   void dg_forthehnewelement(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( parentelementid hlistid -EH- parentelementid hlistid )
+//  ( value$ name$ -$- )
+//                                                            
+// Action:
+//  Makes a new element using the parent element id and hlist id on the top of
+//   of the EH stack and the name$ and value$ on the top of the string stack.
+//   Then drops the name$ and value$ from the string stack.
+//
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthehnewelementtoeh>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthehnewelementtoeh ( EH-NEW-ELEMENT&gt;EH )
+//
+// C prototype:
+//   void dg_forthehnewelementtoeh(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( parentelementid hlistid -EH- parentelementid hlistid childelementid hlistid )
+//  ( value$ name$ -$- )
+//                                                            
+// Action:
+//  Makes a new element using the parent element id and hlist id on the top of
+//   of the EH stack and the name$ and value$ on the top of the string stack.
+//   The new element's element id and hlist id are pushed onto the top of the
+//   EH stack, and the name$ and value$ are dropped from the string stack.
+//
+// Failure cases:
+//
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthnamestrtovaluestr>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthnamestrtovaluestr ( NAME$&gt;VALUE$ )
+//
+// C prototype:
+//   void dg_forthnamestrtovaluestr(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( parentelementid hlistid -- )
+//  ( name$ -$- value$ )
+//                                                            
+// Action:
+//  Pops parentelementid and hlistid of the data stack.
+//  Then finds the child element under the parent element in the hlist who's name
+//   is name$. Then drops the name$ and pushes the child element's value$ to the
+//   string stack.
+//
+// Failure cases:
+//  A child element with a matching name string wasn't found.
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthnamestrtovalue>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthnamestrtovalue ( NAME$&gt;VALUE )
+//
+// C prototype:
+//   void dg_forthnamestrtovalue(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( parentelementid hlistid -- value )
+//  ( name$ -$- )
+//                                                            
+// Action:
+//  Pops parentelementid and hlistid of the data stack.
+//  Then finds the child element under the parent element in the hlist who's name
+//   is name$. Then drops the name$ off the string stack and treats the
+//   child element's value$ as a UINT64 and pushes it to the data stack.
+//
+// Failure cases:
+//  A child element with a matching name string wasn't found.
+//  The child element's value string is not long enough to hold a UINT64
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthehnamestrtovaluestr>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthehnamestrtovaluestr ( EH-NAME$&gt;VALUE$ )
+//
+// C prototype:
+//   void dg_forthehnamestrtovaluestr(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( parentelementid hlistid -EH- parentelementid hlistid )
+//  ( name$ -$- value$ )
+//                                                            
+// Action:
+//  Uses the parentelementid and hlistid on top of the EH stack.
+//  Then finds the child element under the parent element in the hlist who's name
+//   is name$. Then drops the name$ and pushes the child element's value$ to the
+//   string stack.
+//
+// Failure cases:
+//  A child element with a matching name string wasn't found.
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+      <div class=word id=dg_forthehnamestrtovalue>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthehnamestrtovalue ( EH-NAME$&gt;VALUE )
+//
+// C prototype:
+//   void dg_forthehnamestrtovalue(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- value )
+//  ( parentelementid hlistid -EH- parentelementid hlistid )
+//  ( name$ -$- )
+//                                                            
+// Action:
+//  Uses the parentelementid and hlistid on top of the EH stack.
+//  Then finds the child element under the parent element in the hlist who's name
+//   is name$. Then drops the name$ off the string stack and treats the
+//   child element's value$ as a UINT64 and pushes it to the data stack.
+//
+// Failure cases:
+//  A child element with a matching name string wasn't found.
+//  The child element's value string is not long enough to hold a UINT64
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthnamewtovaluestr>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthnamewtovaluestr ( NAMEW&gt;VALUE$ )
+//
+// C prototype:
+//   void dg_forthnamewtovaluestr(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( parentelementid hlistid -- )
+//  ( -$- value$ )
+//  ( &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; -currentinputbuffer- 
+//     &quot;&lt;delimiters&gt;morestuff&quot; )
+//                                                            
+// Action:
+//  Pops parentelementid and hlistid of the data stack.
+//  Moves the current offset pointer in the current input buffer to skip 
+//   any leading delimiters or to the end of the buffer if that comes first
+//   to find the start of the next word.
+//  Then moves the current offset pointer in the current input buffer to the
+//   next occurrence of a delimiter or to the end of the buffer if that comes
+//   first, to find the end of the word.
+//  Then finds the child element under the parent element in the hlist who's name
+//   matches the parsed word. Then pushes the child element's value$ to the
+//   string stack.
+//
+// Failure cases:
+//  A child element with a matching name string wasn't found.
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthnamewtovalue>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthnamewtovalue ( NAMEW&gt;VALUE )
+//
+// C prototype:
+//   void dg_forthnamewtovalue(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( parentelementid hlistid -- )
+//  ( -- value )
+//  ( &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; -currentinputbuffer- 
+//     &quot;&lt;delimiters&gt;morestuff&quot; )
+//                                                            
+// Action:
+//  Pops parentelementid and hlistid of the data stack.
+//  Moves the current offset pointer in the current input buffer to skip 
+//   any leading delimiters or to the end of the buffer if that comes first
+//   to find the start of the next word.
+//  Then moves the current offset pointer in the current input buffer to the
+//   next occurrence of a delimiter or to the end of the buffer if that comes
+//   first, to find the end of the word.
+//  Then finds the child element under the parent element in the hlist who's name
+//   matches the parsed word. Then treats the child element's value$ as a UINT64
+//   and pushes it to the data stack.
+//
+// Failure cases:
+//  A child element with a matching name string wasn't found.
+//  The child element's value string was not long enough to hold a UINT64.
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthehnamewtovaluestr>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthehnamewtovaluestr ( EH-NAMEW&gt;VALUE$ )
+//
+// C prototype:
+//   void dg_forthehnamewtovaluestr(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( parentelementid hlistid -EH- parentelementid hlistid )
+//  ( -$- value$ )
+//  ( &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; -currentinputbuffer- 
+//     &quot;&lt;delimiters&gt;morestuff&quot; )
+//                                                            
+// Action:
+//  Gets the parentelementid and hlistid from the top of the EH stack.
+//  Moves the current offset pointer in the current input buffer to skip 
+//   any leading delimiters or to the end of the buffer if that comes first
+//   to find the start of the next word.
+//  Then moves the current offset pointer in the current input buffer to the
+//   next occurrence of a delimiter or to the end of the buffer if that comes
+//   first, to find the end of the word.
+//  Then finds the child element under the parent element in the hlist who's name
+//   matches the parsed word. Then pushes the child element's value$ to the
+//   string stack.
+//
+// Failure cases:
+//  A child element with a matching name string wasn't found.
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthehnamewtovalue>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthehnamewtovalue ( EH-NAMEW&gt;VALUE )
+//
+// C prototype:
+//   void dg_forthehnamewtovalue(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( parentelementid hlistid -EH- parentelementid hlistid )
+//  ( -- value )
+//  ( &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; -currentinputbuffer- 
+//     &quot;&lt;delimiters&gt;morestuff&quot; )
+//                                                            
+// Action:
+//  Gets the parentelementid and hlistid from the top of the EH stack.
+//  Moves the current offset pointer in the current input buffer to skip 
+//   any leading delimiters or to the end of the buffer if that comes first
+//   to find the start of the next word.
+//  Then moves the current offset pointer in the current input buffer to the
+//   next occurrence of a delimiter or to the end of the buffer if that comes
+//   first, to find the end of the word.
+//  Then finds the child element under the parent element in the hlist who's name
+//   matches the parsed word. Then treats the child element's value$ as a UINT64
+//   and pushes it to the data stack.
+//
+// Failure cases:
+//  A child element with a matching name string wasn't found.
+//  The child element's value string was not long enough to hold a UINT64.
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthehoherewtonewelement>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthehoherewtonewelement ( EH-OHERE-W&gt;NEW-ELEMENT OSYMBOL )
+//
+// C prototype:
+//   void dg_forthehoherewtonewelement(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( parentelementid hlistid -EH- parentelementid hlistid )
+//  ( &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; -currentinputbuffer- 
+//     &quot;&lt;delimiters&gt;morestuff&quot; )
+//                                                            
+// Action:
+//  Moves the current offset pointer in the current input buffer to skip 
+//   any leading delimiters or to the end of the buffer if that comes first
+//   to find the start of the next word.
+//  Then moves the current offset pointer in the current input buffer to the
+//   next occurrence of a delimiter or to the end of the buffer if that comes
+//   first, to find the end of the word.
+//  Makes a new element using the parent element id and hlist id on the top of
+//   of the EH stack and a name$ equal to the word parsed and a value
+//   equal to the UINT64 current offset in the current compile buffer.
+//
+// Failure cases:
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    </div>
+
+  </div></body>
+</html>

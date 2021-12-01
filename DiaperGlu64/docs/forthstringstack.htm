@@ -1,0 +1,2826 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<html>
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      forthstringstack.cpp functions
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>  
+      <a href=index.htm                                            >Directory</a>
+      <a href=documentationkey.htm                                 >Documentation key</a>
+      <a                                                           >&nbsp;</a>
+
+      <a                                                           >C Functions</a>
+      <a href=forthstringstack.htm#dg_howstringstackworks          >How string stack works</a>
+      <a href=forthstringstack.htm#dg_forthcomparestring           >dg_forthcomparestring</a>
+      <a href=forthstringstack.htm#dg_forthgetmidstring            >dg_forthgetmidstring</a>
+      <a href=forthstringstack.htm#dg_forthcatstring               >dg_forthcatstring</a>
+      <a href=forthstringstack.htm#dg_forthlengthstring            >dg_forthlengthstring</a>
+      <a href=forthstringstack.htm#dg_forthshortenstring           >dg_forthshortenstring</a>
+      <a href=forthstringstack.htm#dg_forthpickstring              >dg_forthpickstring</a>
+      <a href=forthstringstack.htm#dg_forthdupstring               >dg_forthdupstring</a>
+      <a href=forthstringstack.htm#dg_forthoverstring              >dg_forthoverstring</a>
+      <a href=forthstringstack.htm#dg_forthdropstring              >dg_forthdropstring</a>
+      <a href=forthstringstack.htm#dg_forthdeletestring            >dg_forthdeletestring</a>
+      <a href=forthstringstack.htm#dg_forthswapstring              >dg_forthswapstring</a>
+      <a href=forthstringstack.htm#dg_forthnipstring               >dg_forthnipstring</a>
+      <a href=forthstringstack.htm#dg_forthrotstring               >dg_forthrotstring</a>
+      <a href=forthstringstack.htm#dg_forthdepthstring             >dg_forthdepthstring</a>
+      <a href=forthstringstack.htm#dg_forthnewstring               >dg_forthnewstring</a>
+      <a href=forthstringstack.htm#dg_forthctonewstring            >dg_forthctonewstring</a>
+      <a href=forthstringstack.htm#dg_forthtonewstring             >dg_forthtonewstring</a>
+      <a href=forthstringstack.htm#dg_forthturnstringinto0string   >dg_forthturnstringinto0string</a>
+      <a href=forthstringstack.htm#dg_forthinsertinstring          >dg_forthinsertinstring</a>
+      <a href=forthstringstack.htm#dg_forthdeleteinstring          >dg_forthdeleteinstring</a>
+      <a href=forthstringstack.htm#dg_forthstringcfetch            >dg_forthstringcfetch</a>
+      <a href=forthstringstack.htm#dg_forthstringcstore            >dg_forthstringcstore</a>
+      <a href=forthstringstack.htm#dg_forthstringtoc               >dg_forthstringtoc</a>
+      <a href=forthstringstack.htm#dg_forthstringto                >dg_forthstringto</a>
+      <a href=forthstringstack.htm#dg_forthctostring               >dg_forthctostring</a>
+      <a href=forthstringstack.htm#dg_forthtostring                >dg_forthtostring</a>
+      <a href=forthstringstack.htm#dg_forthstringquotes            >dg_forthstringquotes</a>
+      <a href=forthstringstack.htm#dg_forthholdstring              >dg_forthholdstring</a>
+      <a href=forthstringstack.htm#dg_forthnumbersignstring        >dg_forthnumbersignstring</a>
+      <a href=forthstringstack.htm#dg_forthnumbersignsstring       >dg_forthnumbersignsstring</a>
+      <a href=forthstringstack.htm#dg_forthsignstring              >dg_forthsignstring</a>
+      <a href=forthstringstack.htm#dg_forthsplitstring             >dg_forthsplitstring</a>
+      <a href=forthstringstack.htm#dg_forthputmidstring            >dg_forthputmidstring</a>
+      <a href=forthstringstack.htm#dg_forthstostring               >dg_forthstostring</a>
+      <a href=forthstringstack.htm#dg_forthgetsstringnd            >dg_forthgetsstringnd</a>
+      <a href=forthstringstack.htm#dg_forthprintstring             >dg_forthprintstring</a>
+      <a href=forthstringstack.htm#dg_forthloadfilestring          >dg_forthloadfilestring</a>
+      <a href=forthstringstack.htm#dg_forthsavefilestring          >dg_forthsavefilestring</a>
+      <a href=forthstringstack.htm#dg_forthincludefilestring       >dg_forthincludefilestring</a>
+      <a href=forthstringstack.htm#dg_forthqueryincludefilestring  >dg_forthqueryincludefilestring</a>
+      <a href=forthstringstack.htm#dg_forthfreelibrary             >dg_forthfreelibrary</a>
+      <a href=forthstringstack.htm#dg_forthgetenvstring            >dg_forthgetenvstring</a>
+      <a href=forthstringstack.htm#dg_forthgetmethodstring         >dg_forthgetmethodstring</a>
+      <a href=forthstringstack.htm#dg_forthgetquerystring          >dg_forthgetquerystring</a>
+      <a href=forthstringstack.htm#dg_forthcscanstring             >dg_forthcscanstring</a>
+      <a href=forthstringstack.htm#dg_forthminuscscanstring        >dg_forthminuscscanstring</a>
+      <a href=forthstringstack.htm#dg_forthasciitounicodestring    >dg_forthasciitounicodestring</a>
+      <a href=forthstringstack.htm#dg_forthunicodetoasciistring    >dg_forthunicodetoasciistring</a>
+      <a href=forthstringstack.htm#dg_forthgrowstring              >dg_forthgrowstring</a>
+      <a href=forthstringstack.htm#dg_forthrollstring              >dg_forthrollstring</a>
+      <a href=forthstringstack.htm#dg_forthminusrollstring         >dg_forthminusrollstring</a>
+      <a href=forthstringstack.htm#dg_forthdeleteinstringnd        >dg_forthdeleteinstringnd</a>
+      <a href=forthstringstack.htm#dg_forthinsertinstringnd        >dg_forthinsertinstringnd</a>
+      <a href=forthstringstack.htm#dg_forthcatstringnd             >dg_forthcatstringnd</a>
+      <a href=forthstringstack.htm#dg_forthurlencodestring         >dg_forthurlencodestring</a>
+      <a href=forthstringstack.htm#dg_forthurldecodestring         >dg_forthurldecodestring</a>
+      <a href=forthstringstack.htm#dg_forthstripstring             >dg_forthstripstring</a>
+      <a href=forthstringstack.htm#dg_forthdotstrings              >dg_forthdotstrings</a>
+      <a href=forthstringstack.htm#dg_forthstrippathfromfilenamestring >dg_forthstrippathfromfilenamestring</a>
+      <a href=forthstringstack.htm#dg_forthvariableflstring        >dg_forthvariableflstring</a>
+      <a href=forthstringstack.htm#dg_forthfillnewstring           >dg_forthfillnewstring</a>
+      <a href=forthstringstack.htm#dg_forthpzerostrtonewstr        >dg_forthpzerostrtonewstr</a>
+      <a href=forthstringstack.htm#dg_forthnglufilestring          >dg_forthnglufilestring</a>
+      <a href=forthstringstack.htm#dg_forthglufilestring           >dg_forthglufilestring</a>
+      <a href=forthstringstack.htm#dg_forthwordsstringquotes       >dg_forthwordsstringquotes</a>
+      <a href=forthstringstack.htm#dg_forthwords0stringquotes      >dg_forthwords0stringquotes</a>
+      <a href=forthstringstack.htm#dg_forthgetargsfromnstrings     >dg_forthgetargsfromnstrings</a>
+      <a href=forthstringstack.htm#dg_forthrunfileandwaitnoenvquotes>dg_forthrunfileandwaitnoenvquotes</a>
+
+    </div>
+
+    <div id=pagestuff>
+    
+      <div class=word id=dg_howstringstackworks>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// How the string stack works
+//
+// The string stack is just an lstring stack. The string stack will grow in size
+//  as needed up until the operating system runs out of memory. Indexes into the
+//  string stack are 0 based depth indexes where 0 indexes the top of the string
+//  stack. Offsets into a string are 0 based and are in bytes. Lengths are in bytes.
+//
+// Many of the string stack operations are designed for efficiency and speed, to
+//  eliminate as many unnecessary copies as possible. For example, the catenate
+//  string function does not need to move any bytes of either string. It just
+//  deletes the end offset of one of the strings from the lstring stack.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthcomparestring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcomparestring ( COMPARE$ =$ )
+//
+// C prototype:
+//  void dg_forthcomparestring ( Bufferhandle* pBHarrayhead )
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( $1 $2 -$- $1 $2 )
+//  ( -- flag )
+//
+// String stack in:
+//  $1 $2
+//
+// String stack out:
+//  $1 $2
+//
+// Data stack out:
+//  flag                          flag = 1 if $1 &gt; $2, flag = 0 if $1 = $2, flag = -1 if $1 &lt; $2
+//                                                            
+// Action:
+//  pops parameters from the data stack
+//  removes the top lstring from the lstring stack
+//
+// Failure cases:
+//  error getting number of strings on string stack
+//  string stack underflow
+//  error getting pointer to string 1
+//  error getting pointer to string 2
+//  error pushing flag
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetmidstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetmidstring ( GETMID$ )
+//
+// C prototype:
+//  void dg_forthgetmidstring ( Bufferhandle* pBHarrayhead )
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( $1 -$- $1 $2 )
+//  ( offset length -- )
+//
+// String stack in:
+//  $1 
+//
+// String stack out:
+//  $1 $2
+//
+// Data stack in:
+//  offset                        offset in $1 of substring
+//  length                        length of substring
+//                                                            
+// Action:
+//  pops offset and length from data stack
+//  pushes the substring of $1 specified by offset and length to the string stack
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error getting number of strings on string stack
+//  string stack underflow
+//  error getting top string's start offset
+//  error getting top string's length
+//  length is longer than length of top string
+//  offset + length > length of top string 
+//  error growing string stack's string buffer by length
+//  error pushing new end offset to string stack's offset buffer
+//  error getting pointer to string stack's string buffer
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcatstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// $&gt;$ or CATENATE$
+//
+// C prototype:
+//  void dg_forthcatstring ( Bufferhandle* pBHarrayhead )
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( $1 $2 -$- $3 )
+//
+// String stack in:
+//  $1 $2
+//
+// String stack out:
+//  $3                            $1 and $2 joined into one string
+//                                                            
+// Action:
+//  joins $1 and $2 together with the bytes in $2 following the bytes in $1
+//
+// Failure cases:
+//  error getting pointer to the string offset stack
+//  string offset stack underflow
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthlengthstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthlengthstring ( LENGTH$ )
+//
+// C prototype:
+//  void dg_forthlengthstring ( Bufferhandle* pBHarrayhead )
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( $1 -$- $1 )
+//  ( -- length )
+//
+// String stack in:
+//  $1
+//
+// String stack out:
+//  $1
+//                                                           
+// Data stack out:
+//  length                        length of top string on string stack
+// 
+// Action:
+//  pushes the length of the top string on the string stack onto the data stack
+//
+// Failure cases:
+//  error getting number of strings on the string stack
+//  string stack underflow
+//  error getting length of the top string on the string stack
+//  error pushing length to the data stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthshortenstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthshortenstring ( SHORTEN$ )
+//
+// C prototype:
+//  void dg_forthshortenstring ( Bufferhandle* pBHarrayhead )
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( $1 -$- $1' )
+//  ( n -- )
+//
+// String stack in:
+//  $1
+//
+// String stack out:
+//  $1'                           shorter version of string 1
+//                                                           
+// Data stack in:
+//  n                             number of characters (bytes) to remove from the 
+//                                 end of $1
+// 
+// Action:
+//  removes n characters (bytes) from the end of the top string on the string stack
+//  if n is greater than the length of the string the string is shortened to 0 
+//   characters (bytes)
+//
+// Failure cases:
+//  error popping n from the data stack
+//  error getting pointer to the string offset stack
+//  string offset stack underflow
+//  string offset stack corrupt error - start offset > end offset
+//  error shrinking string string stack buffer
+//  
+////////////////////////////////////////////////////////////////////////////////////////            
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthpickstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthpickstring ( PICK$ )
+//
+// C prototype:
+//  void dg_forthpickstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( $x .. $3 $2 $1 $0 -$- $x ... $3 $2 $1 $0 $[nidx] )
+//  ( idx -- )
+//
+// String stack in:
+//  $x ... $3 $2 $1 $0
+//
+// String stack out:
+//  $x ... $3 $2 $1 $0 $x
+//                                                           
+// Data stack in:
+//  x                             string to push to the top of the string stack, 
+//                                 where x=0 pushes a copy of the top string on the 
+//                                 string stack
+// 
+// Action:
+//  pushes a copy of the string at x from top of the string stack onto the string 
+//   stack
+//
+// Failure cases:
+//  error popping x off of the data stack
+//  error pushing a copy of string x onto the top of the string stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthdupstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdupstring ( DUP$ )
+//
+// C prototype:
+//  void dg_forthdupstring ( Bufferhandle* pBHarrayhead )
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( $1 -$- $1 $1 )
+//
+// String stack in:
+//  $1 
+//
+// String stack out:
+//  $1 $1
+//                                                           
+// Action:
+//  pushes a copy of the string at the top of the string stack to the string stack
+//
+// Failure cases:
+//  error pushing 0 to the data stack
+//  error doing pick string
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthoverstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthoverstring ( OVER$ )
+//
+// C prototype:
+//  void dg_forthoverstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( $1 $0 -$- $1 $0 $1 )
+//
+// String stack in:
+//  $1 $0
+//
+// String stack out:
+//  $1 $0 $1
+//                                                           
+// Action:
+//  pushes a copy of the string at 1 from the top of the string stack to the string 
+//   stack
+//
+// Failure cases:
+//  error pushing 1 to the data stack
+//  error doing pick string
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthdropstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdropstring ( DROP$ )
+//
+// C prototype:
+//  void dg_forthdropstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( $0 -$- )
+//
+// String stack in:
+//  $0 
+//                                                           
+// Action:
+//  removes the top string from the string stack
+//
+// Failure cases:
+//  error doing dg_droplstring
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthdeletestring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdeletestring ( DELETE$ )
+//
+// C prototype:
+//  void dg_forthdeletestring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( ... $n+1 $n $n-1... $1 $0 -$- $n+1 $n-1 ... $1 $0 )
+//  ( n -- )
+//
+// String stack in:
+//  $n+1 $n $n-1 ... $1 $0
+//
+// String stack out:
+//  $n+1 $n-1 ... $1 $0
+//                                                           
+// Action:
+//  removes string at n from the top of the string stack from the string stack
+//
+// Failure cases:
+//  error popping n from the data stack
+//  error doing dg_deletelstring
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthswapstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthswapstring ( SWAP$ )
+//
+// C prototype:
+//  void dg_forthswapstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( $1 $0 -$- $0 $1 )
+//
+// String stack in:
+//  $1 $0
+//
+// String stack out:
+//  $0 $1
+//                                                           
+// Action:
+//  swaps the top two strings on the string stack
+//
+// Failure cases:
+//  error getting number of strings on string stack
+//  string stack underflow
+//  error doing dg_forthoverstring
+//  error doing dg_forthdeletestring
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthnipstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthnipstring ( NIP$ )
+//
+// C prototype:
+//  void dg_forthnipstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( $1 $0 -$- $0 )
+//
+// String stack in:
+//  $1 $0
+//
+// String stack out:
+//  $0 
+//                                                           
+// Action:
+//  removes the next to the top string from the string stack
+//
+// Failure cases:
+//  error getting string stack depth
+//  string stack underflow
+//  error doing dg_deletelstring
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthrotstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthrotstring ( ROT$ )
+//
+// C prototype:
+//  void dg_forthrotstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( $2 $1 $0 -$- $0 $1 $2 )
+//
+// String stack in:
+//  $2 $1 $0
+//
+// String stack out:
+//  $0 $1 $2
+//                                                           
+// Action:
+//  moves the string two away from the top of the string stack to the top of the 
+//   string stack
+//
+// Failure cases:
+//  error getting number of strings on string stack
+//  string stack underflow
+//  error doing dg_picklstring
+//  error doing dg_deletelstring
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthdepthstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdepthstring ( DEPTH$ )
+//
+// C prototype:
+//  void dg_forthdepthstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( -- n )
+//  ( $1 $2 $3 ... $n -$- $1 $2 $3 ... $n )
+//
+// String stack in:
+//  n$ ... $3 $2 $1
+//
+// String stack out:
+//  n$ ... $3 $2 $1
+//
+// Data stack out:
+//  n
+//                                                           
+// Action:
+//  pushes the number of strings on the string stack to the data stack
+//
+// Failure cases:
+//  error getting number of strings on string stack
+//  error pushing to data stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthnewstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthnewstring ( NEW$ or &lt;#$ )
+//
+// C prototype:
+//  void dg_forthnewstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( -$- empty$ )
+//
+// String stack out:
+//  empty$
+//                                                           
+// Action:
+//  pushes an empty string onto the string stack
+//
+// Failure cases:
+//  error doing dg_pushlstring  
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthctonewstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthctonewstring ( C&gt;NEW$ )
+//
+// C prototype:
+//  void dg_forthctonewstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( char -- )
+//  ( -$- char$ )      
+//
+// Data stack in:
+//  char
+// 
+// String stack out:
+//  char$
+//                                                           
+// Action:
+//  pushes a one character string containing the character (byte) onto the string 
+//   stack
+//
+// Failure cases:
+//  error popping the character from the data stack
+//  error doing dg_pushlstring  
+//
+////////////////////////////////////////////////////////////////////////////////////////     
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthtonewstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthtonewstring ( &gt;NEW$ )
+//
+// C prototype:
+//  void dg_forthtonewstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//     ( u -- )
+//     ( -$- u$ )      
+//
+// Data stack in:
+//  u
+// 
+// String stack out:
+//  u$
+//                                                           
+// Action:
+//  Pushes an four character string containing the bytes of the UINT64 u onto the 
+//   string stack.
+//  On an x86 machine these bytes are in low to high order (little endian) which 
+//   means HEX 41424344 >NEW$ .$ will show 'DCBA'
+//
+// Failure cases:
+//  error popping the UINT64 u from the data stack
+//  error doing dg_pushlstring  
+//
+////////////////////////////////////////////////////////////////////////////////////////     
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthturnstringinto0string>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////// 
+//
+// dg_forthturnstringinto0string ( $&gt;0$ )
+//
+// C prototype:
+//  void dg_forthturnstringinto0string (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( $1 -$- 0$1 )
+//
+// Data stack in:
+//  $1
+// 
+// String stack out:
+//  0$1
+//                                                           
+// Action:
+//  appends a null terminator to the end of the top string on the string stack
+//
+// Failure cases:
+//  error doing dg_pushlstring  
+//  error doing dg_forthcatstring
+//
+//////////////////////////////////////////////////////////////////////////////////////// 
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthinsertinstring>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////// 
+//
+// dg_forthinsertinstring ( INSERTIN$ )
+//
+// C prototype:
+//  void dg_forthinsertinstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( offset length -- )
+//  ( $1 -$- $' )
+//
+// Data stack in:
+//  offset                        offset into top string on string stack in characters 
+//                                 (bytes)
+//  length                        number of characters (bytes) to insert at offset 
+//  
+// String stack in:
+//  $1
+// 
+// String stack out:
+//  $1'
+//                                                         
+// Action:
+//  the length of the top string on the string stack is increased by length 
+//   characters (bytes)
+//  then the character at the offset and the ones following it in the top string 
+//   on the string stack are moved up length characters (bytes)
+//  the characters in the area of the insert are left unchanged
+//  note: the first character in the string is at offset 0
+//
+//  Example:
+//   $" abcdef" 2 3 INSERTIN$ 
+//   is the same as $" abcdecdef"
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow error
+//  error getting number of strings on the string stack
+//  string stack underflow error
+//  error getting start offset of top string
+//  error inserting in string stack's string buffer
+//  error getting new buffer length of string stack's string buffer
+//  error putting new end offset in string stack's offset buffer
+//
+//////////////////////////////////////////////////////////////////////////////////////// 
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthdeleteinstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdeleteinstring ( DELETEIN$ )
+//
+// C prototype:
+//  void dg_forthdeleteinstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( offset length -- )
+//  ( $1 -$- $1' )
+//
+// Data stack in:
+//  offset                        offset into top string on string stack in characters 
+//                                 (bytes)
+//  length                        number of characters (bytes) to delete at offset 
+//  
+// String stack in:
+//  $1
+// 
+// String stack out:
+//  $1'
+//                                                         
+// Action:
+//  then the character (bytes) at the offset and the ones following it in the top 
+//   string on the string stack are removed from the string shortening the length of 
+//   the string by length bytes
+//  note: the first character in the string is at offset 0
+//
+//  Example:
+//   $" abcdef" 2 3 DELETEIN$ 
+//   is the same as $" abf"
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow error
+//  error getting the depth of the string stack
+//  string stack underflow error
+//  error getting the pointer to the top string on the string stack
+//  length longer than top string on string stack's length
+//  specified segment goes off the end of the string
+//  error shortening the string
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthstringcfetch>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthstringcfetch ( $C@ )
+//
+// C prototype:
+//  void dg_forthstringcfetch (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( $1 -$- $1 )   
+//  ( position -- char )
+//
+// Data stack in:
+//  position                      offset of character in top string in bytes
+//
+// String stack in:
+//  $1
+//
+// Data stack out:
+//  char                          UINT64 representation of character (byte) (0 
+//                                 extended to 64 bits) from position in string 
+//  
+// String stack out:
+//  $1
+//                                                         
+// Action:
+//  removes position from the data stack and pushes the character at the position in 
+//   the top string on the string stack to the data stack
+//
+// Note:
+//  the first character in the string is at position 0
+//  
+// Failure cases:
+//  error getting the pointer to the data stack
+//  data stack underflow
+//  error getting the number of strings on the string stack
+//  string stack underflow
+//  error getting the pointer to the top string on the string stack
+//  position is off the end of the top string on the string stack
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthstringcstore>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthstringcstore ( $C! )
+//
+// C prototype:
+//  void dg_forthstringcstore (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( $1 -$- $1' )  
+//  ( char position -- )
+//
+// Data stack in:
+//  char                          UINT64 representation of character (byte) to put 
+//                                 into string
+//  position                      offset in bytes of where to put character in top 
+//                                 string  
+//
+// String stack in:
+//  $1
+// 
+// String stack out:
+//  $1'
+//                                                         
+// Action:
+//  removes character and position from the data stack 
+//  and puts the character into the top string on the string stack at the position
+//  
+// Note:
+//  the first character in the string is at position 0
+//  
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////   
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthstringtoc>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthstringtoc ( $&gt;C )
+//
+// C prototype:
+//  void dg_forthstringtoc (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( $1 -$- $1' )
+//  ( -- char )
+//
+// Data stack out:
+//  char                          character (byte) popped off the end of the 
+//                                 top string on the string stack 
+//
+// String stack in:
+//  $1
+// 
+// String stack out:
+//  $1'
+//                                                         
+// Action:
+//  removes the last character from the top string on the string stack
+//  and pushes the character to the data stack
+//  
+// Failure cases:
+//  error getting pointer to the string stack's offset buffer
+//  string stack underflow
+//  string stack corrupt error because end offset &lt; start offset for top
+//   string on string stack
+//  string underflow error
+//  error popping character from string stack's string buffer
+//  error shrinking string stack's string buffer
+//  error pushing the character to the data stack
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthstringto>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthstringto ( $&gt; )
+//
+// C prototype:
+//  void dg_forthstringto (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( $1 -$- $1' )
+//  ( -- u )
+//
+// Data stack out:
+//  u                             UINT64 popped off the end of the top string on the 
+//                                 string stack 
+//
+// String stack in:
+//  $1
+// 
+// String stack out:
+//  $1'
+//                                                         
+// Action:
+//  Removes the last four bytes from the top string on the string stack
+//   and pushes them as a UINT64 to the data stack.
+//  The order of the bytes is not changed, so on an x86 machine
+//    $" ZXYABCD" $> HEX U.
+//   shows '41424344' and leaves 'ZXY' as the top string on the string stack.
+//  
+//  
+// Failure cases:
+//  error getting pointer to the string stack's offset buffer
+//  string stack underflow
+//  string stack corrupt error because end offset &lt; start offset for top string 
+//   on string stack
+//  string underflow error
+//  error popping a UINT64 from string stack's string buffer
+//  error shrinking string stack's string buffer
+//  error pushing the UINT64 to the data stack
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthctostring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthctostring ( C&gt;$ )
+//
+// C prototype:
+//  void dg_forthctostring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( $1 -$- $1' )
+//  ( char -$- )
+//
+// Data stack in:
+//  char                          UINT64 representation of character (byte) (0 
+//                                 extended to 64 bits) to push onto the end of the 
+//                                 top string on the string stack
+//
+// String stack in:
+//  $1
+// 
+// String stack out:
+//  $1'
+//                                                         
+// Action:
+//  removes character from the data stack 
+//  and pushes the character onto the end of the top string on the string stack
+//  
+// Failure cases:
+//  error doing dg_forthchartostring
+//  error doing dg_forthcatstring
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthtostring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthtostring ( &gt;$ )
+//
+// C prototype:
+//  void dg_forthtostring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( $1 -$- $1' )
+//  ( u -$- )
+//
+// Data stack in:
+//  u                             UINT64 to push to the end of the top string on the 
+//                                 string stack
+//
+// String stack in:
+//  $1
+// 
+// String stack out:
+//  $1'
+//                                                         
+// Action:
+//  removes UINT64 from the data stack 
+//  and pushes the UINT64's bytes onto the end of the top string on the string stack
+//  
+// Failure cases:
+//  error doing dg_forthtonewstring
+//  error doing dg_forthcatstring
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthstringquotes>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthstringquotes ( $" execute mode )
+//
+// C prototype:
+//  void dg_forthstringquotes (Bufferhandle* pBHarrayhead )
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( "&lt;delimeter&gt;stuff&lt;quotes&gt;morestuff" -currentinputbuffer- 
+//     "morestuff" )
+//  ( -$- "stuff" )
+//
+// Current input buffer's current offset in:
+//  "&lt;delimeter&gt;stuff&lt;quotes&gt;morestuff"
+//
+// Current input buffer's current offset out:
+//  "morestuff"
+//
+// String stack out:
+//  $1
+//                                                         
+// Action:
+//  Everything up to the next ", the next line terminator delimiter, or end of buffer,
+//   whichever comes first, in the current input buffer is pushed to a new string 
+//   on top of the string stack.
+//
+// Note:
+//  In compile mode $" does not compile a call to this routine, 
+//   instead $" calls S" and then compiles a call to S>$
+//   for example:
+//   : t $" hi" ; 
+//   t TYPE
+//   is the same as $" hi" TYPE
+//
+// Note:
+//  A line terminator delimiter is one of:
+//   c shorthand      ascii code    name  
+//   '\n'             0x0a          &lt;line feed&gt;
+//   '\v'             0x0b          &lt;vertical tab&gt;
+//   '\b'             0x08          &lt;back space&gt;
+//   '\r'             0x0c          &lt;carriage return&gt;
+//   '\f'             0x0f          &lt;form feed&gt;
+//
+// Failure cases:
+//  error getting current input buffer id
+//  error getting the pointer to the current input buffer
+//  error pushing a new string onto the top of the string stack
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthholdstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthholdstring ( HOLD$ ) 
+//
+// C prototype:
+//  void dg_forthholdstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( char -- )
+//  ( $1 -$- $1' )
+//
+// Data stack in:
+//  char                          character (byte) to insert before start of string 
+//  
+// String stack in:
+//  $1
+// 
+// String stack out:
+//  $1'
+//                                                         
+// Action:
+//  inserts a character at the start of the top string on the string stack
+//
+//  Example:
+//   $" abcd" CHAR x HOLD$
+//   is the same as $" xabcd"
+//  
+// Failure cases:
+//  error in a subroutine
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthnumbersignstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthnumbersignstring ( #$ )
+//
+// C prototype:
+//  void dg_forthnumbersignstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( ud -- ud' )
+//  ( $1 -$- $1' )
+//
+// Data stack in:
+//  ud                            unsigned double integer (64 bit lo 64 bit hi) for 
+//                                 conversion
+//  
+// Data stack out:
+//  ud'                           ud divided by what's in BASE
+//
+// String stack in:
+//  $1
+// 
+// String stack out:
+//  $1'                           
+//                                                         
+// Action:
+//  same as # except result goes to the top string on the string stack instead of PAD
+//  ud1 is divided by BASE and left on the data stack
+//  the remainder of the division is converted to a character and insterted into the
+//  beginning of the top string on the string stack
+//  
+// Failure cases:
+//  error getting base
+//  base too low
+//  error pushing the base to the data stack
+//  error doing dg_forthudmslashmod
+//  error pushing the character to the data stack
+//  error inserting the character at the start of the top string on the string stack
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthnumbersignsstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthnumbersignsstring ( #S$ )
+//
+// C prototype:
+//  void dg_forthnumbersignsstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( $1 -$- $1' ) 
+//  ( ud -- 0 0)
+//
+// Data stack in:
+//  ud                            unsigned double integer for conversion 
+//                                 (64 bit lo 64 bit hi)
+//  
+// Data stack out:
+//  ud2 = 0                       double number equal to 0  (0 0)
+//
+// String stack in:
+//  $1
+// 
+// String stack out:
+//  $1'
+//                                                         
+// Action:
+//  same as #S except result goes to the top string on the string stack instead of PAD
+//  the number is dg_successively divided by what's in BASE until it is 0 and left on 
+//   the data stack
+//  the remainders of the divisions are converted to ascii characters and inserted 
+//   into the beginning of the top string on the string stack
+//  
+// Failure cases:
+//  error converting a digit
+//  error getting the pointer to the data stack
+//  data stack underflow
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthsignstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthsignstring ( SIGN$ )
+//
+// C prototype:
+//  void dg_forthsignstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( n -- )
+//  ( $1 -$- $1' )
+//
+// Data stack in:
+//  n                             signed single integer (64 bit)  
+//
+// String stack in:
+//  $1
+// 
+// String stack out:
+//  $1'
+//                                                         
+// Action:
+//  removes the number on top of the data stack and if it is negative inserts a '-' 
+//   character into the beginning of the top string on the string stack
+//  
+// Failure cases:
+//  error popping n from the data stack
+//  error pushing '-' character to the data stack
+//  error inserting '-' at the beginning of the top string on the string stack
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthsplitstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthsplitstring ( SPLIT$ )
+//
+// C prototype:
+//  void dg_forthsplitstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( nd -- )
+//  ( $1 -$- $2 $3 )
+//
+// Data stack in:
+//  nd                            number of characters to pop from top string to a new 
+//                                 string on top of string stack
+//
+// String stack in:
+//  $1                            string to split in two
+// 
+// String stack out:
+//  $2                            beginning part of $1 containing length of $1 - n 
+//                                 characters
+//  $3                            end part of $1 containing n characters
+//                                                         
+// Action:
+//  removes n from the data stack
+//  splits the top string on the string stack into two strings, the new top string on 
+//   the string stack contains the last n characters of the original string
+//  if n > length of top string, an empty string is pushed to the top of the string stack
+//  
+// Failure cases:
+//  error popping n from the data stack
+//  error getting pointer to the string stack's offset buffer
+//  string stack underflow
+//  string stack's offset buffer is corrupt
+//  --removed--n > length of top string
+//  error pushing new end offset to string stack's offset buffer
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthputmidstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthputmidstring ( PUTMID$ )
+//
+// C prototype:
+//  void dg_forthputmidstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( destinationoffset -- )
+//  ( destination$ source$ -$- destination$' )
+//
+// Data stack in:
+//  offset                        offset in the destination string of where to  
+//                                 overwrite with the top string   
+//
+// String stack in:
+//  destination$                   
+//  source$                       
+// 
+// String stack out:
+//  destination$'                 destination string with the source string 
+//                                 overwritting part of it
+//                                                         
+// Action:
+//  removes offset from the data stack
+//  copies the entire source string into the destination string at the offset in 
+//   the destination string
+//  
+// Failure cases:
+//  error popping n
+//  error getting pointer to the string stack's offset buffer
+//  string stack underflow
+//  string stack's offset buffer is corrupt, destination's end offset &lt; start offset
+//  string stack's offset buffer is corrupt, source's end offset &lt; start offset
+//  offset is off the end of the destination string
+//  source string wont fit into the destination string at the offset
+//  error getting pointer to the string stack's string buffer
+//  string buffer is corrupt, the string buffer's length doesn't match the last end 
+//   offset in the offset buffer
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthstostring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthstostring ( S&gt;NEW$ )
+//
+// C prototype:
+//  void dg_forthstostring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( addr length -- )
+//  ( -- $1 )
+//
+// Data stack in:
+//  addr                          start address of string 
+//  length                        length of string in characters (bytes)
+// 
+// String stack out:
+//  $1
+//                                                         
+// Action:
+//  removes addr and length from the data stack
+//  pushes a copy of the string starting at addr for length characters (bytes) to the 
+//   top of the string stack as a new string. (the string is NOT appended to the top 
+//   string on the string stack)
+//  
+// Warning:
+//  Do not use this routine to push a string already in this string stack because the 
+//   base address of the string stack may move when the push is done. This will 
+//   invalidate the address passed in. Instead use PICK$ 
+//
+// Failure cases:
+//  error getting pointer to the datastack
+//  data stack underlow
+//  error pushing to the string stack
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetsstringnd>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetsstringnd ( GETP$ GETS$[ND] )
+//  ( GETP$ is deprecated, use GETS$[ND] instead )
+//
+// C prototype:
+//  void dg_forthgetsstringnd (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( $n $n-1 ... $1 $0 -$- $n $n-1 ... $1 $0 )
+//  ( n -- addr length )
+//
+// Data stack in:
+//  n                             number of strings away from top of the string stack  
+//
+// Data stack out:
+//  addr                          pointer to start of string n away from the top of 
+//                                 the string stack
+//  length                        length of the string in characters (bytes)
+// 
+// String stack in:
+//  $n $n-1 ... $1 $0
+// 
+// String stack out:
+//  $n $n-1 ... $1 $0  (unchanged)
+//                                                         
+// Action:
+//  pushes the start address and length of the string n away from the top of the 
+//   string stack to the data stack
+//  
+// NOTE:
+//  the pointer returned is only valid until the next time something is pushed 
+//   onto the string stack because the base address of the string stack's string 
+//   buffer may move if it's length is increased
+//
+// Failure cases:
+//  error popping n from the data stack
+//  error getting the depth of the string stack
+//  string stack underlow
+//  error calling dg_getplstring
+//  error pushing the pointer to the string onto the data stack
+//  error pushing the length of the string onto the data stack
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthprintstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthprintstring ( .$ )
+//
+// C prototype:
+//  void dg_forthprintstring(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//
+// Stack action shorthand:
+//  ( $1 -$- )
+//
+// String stack in:
+//  $1                          string to display
+//
+// Action:
+//  displays top string on the string stack to the current output
+//  removes the top string from the string stack
+//
+// Failure cases:
+//  error getting string stack depth
+//  strings stack underflow
+//  error getting pointer to the top string on the string stack
+//  error sending a character to the current output
+//
+// Assumptions:
+//  assumes dg_forthprintstring returns -1 or a character between 0 and 0xFF
+//   
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthloadfilestring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthloadfilestring ( LOADFILE$ )
+//
+// C prototype:
+//  void dg_forthloadfilestring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.                          
+//  
+// Stack action shorthand:
+//  ( filename$ -$- )
+//  ( -- bufferid )
+//
+// String stack in:
+//  filename$                     file's name, and can include windows path stuff
+//
+// Data stack out:
+//  bufferid                      id of buffer where file was loaded
+//                                                            
+// Action:
+//  removes file name from the top of the string stack
+//  opens the file for reading in binary
+//  creates a new buffer
+//  copies the file to the buffer
+//  closes the file
+//  pushes the buffer id of the new buffer to the data stack
+// 
+// Failure cases:
+//  error pushing mode to the string stack
+//  error opening the file
+//  error popping filehandle from the data stack
+//  couldn't find file error
+//  error trying to seek the end of the file
+//  error using ftell to get the file length
+//  file is to big to load in one chunk
+//  error making a new buffer
+//  error growing a new buffer
+//  error getting pointer to the buffer segment
+//  error reading file, entire file not read
+//  error pushing new buffer id to the data stack
+//  error closing the file
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthsavefilestring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthsavefilestring ( SAVEFILE$ )
+//
+// C prototype:
+//  void dg_forthsavefilestring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.                          
+//  
+// Stack action shorthand:
+//  ( filename$ -$- )
+//  ( bufferid -- )
+//
+// String stack in:
+//  filename$                     file's name, and can include windows path stuff
+//
+// Data stack int:
+//  bufferid                      id of buffer to save to a file
+//                                                            
+// Action:
+//  removes file name from the top of the string stack
+//  removes the buffer id from the top of the data stack
+//  opens the file for writing in binary
+//  saves the buffer to the file
+//  closes the file
+// 
+// Failure cases:
+//  error popping buffer id
+//  error getting pointer to the buffer
+//  error pushing mode to the string stack
+//  error opening the file
+//  error writing the file
+//  error closing the file
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthincludefilestring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthincludefilestring ( INCLUDEFILE$ )
+//
+// C prototype:
+//  void dg_forthincludefilestring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.                          
+//  
+// Stack action shorthand:
+//  ( filename$ -$- )
+//
+// String stack in:
+//  filename$                     file's name, and can include windows path stuff
+//                                                            
+// Action:
+//  loads the file to a buffer, this removes the filename from the top of the string 
+//   stack
+//  evaluates the buffer returned from load file
+//  frees the buffer returned from load file
+// 
+// Failure cases:
+//  error loading the file into a buffer
+//  error popping the buffer id
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthqueryincludefilestring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthqueryincludefilestring ( ?INCLUDEFILE$ )
+//
+// C prototype:
+//  void dg_forthqueryincludefilestring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.                          
+// 
+// Stack action shorthand:
+//  ( filename$ -$- )
+//  ( flag -- )
+//
+// Data stack in:
+//  flag                          if true, the file is included
+//  
+// String stack in:
+//  filename$                     file's name, and can include windows path stuff
+//                                                            
+// Action:
+//  checks to see if the flag is true if it is the following is done:
+//   loads the file to a buffer, this removes the filename from the top of the 
+//    string stack
+//   evaluates the buffer returned from load file
+//   frees the buffer returned from load file
+// 
+// Failure cases:
+//  error popping the data stack
+//  error dropping the file name string
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfreelibrary>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfreelibrary ( FREELIBRARY )
+//
+// C prototype:
+//  void dg_forthfreelibrary (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.                          
+//  
+// Stack action shorthand:
+//  ( libraryhandle -- )
+//
+// Data stack in:
+//  libraryhandle                 handle to the library
+//                                                            
+// Action:
+//  pops the library handle from the data stack
+//  frees (unloads) the library specified by the library handle
+// 
+// Failure cases:
+//  error popping the library handle
+//  error freeing the library
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetenvstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetenvstring ( GETENV$ )
+//
+// C prototype:
+//  void dg_forthgetenvstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.                          
+//  
+// Stack action shorthand:
+//  ( name$ -$- value$ )
+//
+// String stack in:
+//  name$                         symbol name of environment variable
+//
+// String stack out:
+//  value$                        value assigned to environment variable name$
+//                                                            
+// Action:
+//  pops name$ of the string stack
+//  pushes the value assigned to the environment variable name$ to the string stack
+// 
+// Failure cases:
+//  error popping from the string stack
+//  error getting environment variable value
+//  error pushing to the string stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetmethodstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetmethodstring ( GETMETHOD$ )
+//
+// C prototype:
+//  void dg_forthgetmethodstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored          
+//
+// Stack action shorthand:
+//  ( -$- method$ )
+//
+// Action:
+//  pushes the cgi or isapi method string onto the string stack
+//
+// Failure cases:
+//  error getting script processing state
+//   
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetquerystring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetquerystring ( GETQUERY$ )
+//
+// C prototype:
+//  void dg_forthgetquerystring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the  
+//                                    other bufferhandles are stored          
+//
+// Stack action shorthand:
+//  ( -$- query$ )
+//
+// Action:
+//  pushes the cgi or isapi query string onto the string stack
+//
+// Failure cases:
+//  error getting script processing state
+//   
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+    
+
+      <div class=word id=dg_forthcscanstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcscanstring ( CSCAN$ )
+//
+// C prototype:
+//  void dg_forthcscanstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( index value -- index' )
+//  ( a$ -$- a$ )
+//
+// Data stack in:
+//  index                         0 based start index in string from beginning for scan
+//  value						  value of byte to scan for in string
+//
+// Data stack out:
+//  index                         index in string in range of 0 to length of string - 1 
+//                                 of first match in string or -1 if no match is found
+//                                                            
+// Action:
+//  Searches the memory in the string starting at index from beginning and working 
+//   towards the end of the string for the first occurence of the value 
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  process doesn't own the memory in the string
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthminuscscanstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthminuscscanstring ( -CSCAN$ )
+//
+// C prototype:
+//  void dg_forthminuscscanstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( index value -- index' )
+//  ( a$ -$- a$ )
+//
+// Data stack in:
+//  index                         0 based start index in string from beginnning for  
+//                                 scan, index can be off end of string
+//  value						  value of byte to scan for in string
+//
+// Data stack out:
+//  index                         index in string in range of 0 to length of string - 1 
+//                                 of first match in string or -1 if no match is found
+//                                                            
+// Action:
+//  Searches the memory backwards in the string starting at index from beginning 
+//   and working towards the beginning of the string for the first occurence of 
+//   the value
+//  If the start offset is greater than the string length, 
+//   the search starts with the last character in the string 
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  process doesn't own the memory in the string
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthasciitounicodestring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthasciitounicodestring ( ASCII&gt;UNICODE$ )
+//
+// C prototype:
+//  void dg_forthasciitounicodestring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( -- )
+//  ( ascii$ -$- unicode$ )
+//
+// String stack in:
+//   Ascii encoded string
+//
+// Data stack out:
+//   Unicode version of the ascii string
+//                                                            
+// Action:
+//   Replaces ascii string with unicode string
+//
+// Failure cases:
+//  buffer system corrupt
+//  string stack underflow
+//  not enough memory to grow string
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthunicodetoasciistring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthunicodetoasciistring ( UNICODE&gt;ASCII$ )
+//
+// C prototype:
+//  void dg_forthunicodetoasciistring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( -- )
+//  ( unicode$ -$- ascii$ )
+//
+// String stack in:
+//   Ascii encoded string
+//
+// Data stack out:
+//   Unicode version of the ascii string
+//                                                            
+// Action:
+//   Replaces ascii string with unicode string
+//
+// Failure cases:
+//  buffer system corrupt
+//  string stack underflow
+//  not enough memory to grow string
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgrowstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgrowstring ( GROW$ )
+//
+// C prototype:
+//  void dg_forthgrowstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( n -- )
+//  ( $1 -$- l$' )
+//
+// Data stack in:
+//  n                             amount to grow lstring by
+//
+// Action:
+//  grows the top lstring on the lstring stack by n bytes
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error growing lstring
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthrollstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthrollstring ( ROLL$ )
+//
+// C prototype:
+//  void dg_forthrollstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( nd -- )
+//  ( $bottom ... $nd+1 $nd $nd-1 ... $1 $0 -$- $bottom ... $nd+1 $nd-1 ... $1 $0 $nd )
+//
+// Data stack in:
+//  nd                            distance from top of string stack
+//
+// Action:
+//  does PICK$ then deletes the string picked from the string stack
+//
+// Failure cases:
+//   error pushing to data stack
+//   error doing ROLLL$
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthminusrollstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthminusrollstring ( -ROLL$ )
+//
+// C prototype:
+//  void dg_forthminusrollstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( nd -- )
+//  ( $depth-1{bottom} ... $nd+1 l$nd $nd-1 ... $1 $0{top} -l$- 
+//     $depth-1{bottom} ... $nd+1 $0 $nd $nd-1 ... $1 )
+//
+// Data stack in:
+//  nd                            distance from top of string stack
+//
+// Action:
+//  moves the top lstring on the l$stack to position nd on the l$stack
+//    (nd=0 does nothing, nd=1 does SWAP$, nd=2 does -ROT$)
+//
+// Failure cases:
+//   error pushing to data stack
+//   error doing -ROLLL$
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthdeleteinstringnd>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdeleteinstringnd ( DELETEIN$[ND] )
+//
+// C prototype:
+//  void dg_forthdeleteinstringnd (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( offset length nd -- )
+//  ( $bottom ... $nd+1 $nd $nd-1 ... $1 $0 -$- $bottom ... $nd+1 $nd' $nd-1 ... $1 $0 )
+//
+// Data stack in:
+//  offset                        start offset of segment in string
+//  length                        length of segment to delete in string
+//  nd                            distance from top of string stack
+//
+// Action:
+//  deletes segment from target string on the string stack
+//
+// Failure cases:
+//   error pushing to data stack
+//   error doing DELETEINL$
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthinsertinstringnd>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthinsertinstringnd ( INSERTIN$[ND] )
+//
+// C prototype:
+//  void dg_forthinsertinstringnd (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( offset length nd -- )
+//  ( $bottom ... $nd+1 $nd $nd-1 ... $1 $0 -$- $bottom ... $nd+1 $nd' $nd-1 ... $1 $0 )
+//
+// Data stack in:
+//  offset                        start offset of segment in string
+//  length                        length of segment to delete in string
+//  nd                            distance from top of string stack
+//
+// Action:
+//  inserts undefined characters into a the string at distance nd from the top of 
+//    the string stack
+//
+// Failure cases:
+//   error pushing to data stack
+//   error doing INSERTINL$
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcatstringnd>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcatstringnd ( CAT$[ND] )
+//
+// C prototype:
+//  void dg_forthcatstringnd (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//     
+// Stack action shorthand:
+//  ( offset length nd -- )
+//  ( $bottom ... $nd+1 $nd $nd-1 ... $1 $0 -$- $bottom ... $nd+1 $nd+nd-1 ... $1 $0 )
+//
+// Data stack in:
+//  nd                            distance from top of string stack
+//
+// Action:
+//  concatenates target string on the string stack with the one after it
+//
+// Failure cases:
+//   error getting pointer to data stack
+//   not enough parameters on data stack
+//   string stringid is not at least 1 below top of string stack
+//   error concatenating strings on the string stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+          <div class=word id=dg_forthurlencodestring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthurlencodestring ( URLENCODE$ )
+//
+// C prototype:
+//  void dg_forthurlencodestring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//                                                            
+// Stack action shorthand:
+//  ( -- )
+//  ( decodedurl$ -$- url$ )
+//
+// Action:
+// &lt;space&gt; changed to +,
+// non printable characters changed to %xx where xx is hex ascii code,
+// % changed to %25
+// non printable is 00-1F, 7F-FF
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthurldecodestring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthurldecodestring ( URLDECODE$ )
+//
+// C prototype:
+//  void dg_forthurldecodestring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//                                                            
+// Stack action shorthand:
+//  ( -- )
+//  ( url$ -$- decodedurl$ )
+//
+// Action:
+// + changed to &lt;space&gt;, %xx changed to character for xx hex ascii code
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthstripstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthstripstring( STRIP$ )
+//
+// C prototype:
+//  void dg_forthstripstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( a$ -$- a$' )
+//
+// Action:
+//  Removes leading and trailing delimiters from string.
+//  see dg_isdelimiter() for list of delimiters 
+//
+// Failure cases:
+//  string stack underflow
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthdotstrings>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdotstrings ( .$S )  
+//
+// C prototype:
+//  void dg_forthdotstrings (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//                                                            
+// Action:
+//  displays the contents of the string stack from first pushed to most recently 
+//   pushed
+//
+// Failure cases:
+//  not checked
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+ 
+           
+      <div class=word id=dg_forthstrippathfromfilenamestring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthstrippathfromfilenamestring ( STRIPPATHFROMFILENAME$ )  
+//
+// C prototype:
+//  void dg_forthstrippathfromfilenamestring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( path/filename$ -$- filename$ )
+//                                                            
+// Action:
+//  Keeps only the stuff after the last forward or back slash in a string.
+//  If there are no slashes in the string, keeps the whole string.
+//
+// Failure cases:
+//  not checked
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+      <div class=word id=dg_forthvariableflstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthvariableflstring ( VARIABLEFL$ )
+//
+// C prototype:
+//  void dg_forthvariableflstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( "&lt;delimiter&gt;word&lt;delimiters&gt;morestuff" -currentinputbuffer- 
+//     "&lt;delimiters&gt;morestuff" )
+//                                                            
+// Action:
+//  Makes a new freeable lstring in the DG_VARIABLEFLSTR_HEADER_BUFFERID freeable
+//   lstring array.
+//  Makes a constant word who's value is the id of the new freeable lstring and
+//   who's name is the next word parsed from the current input buffer.'
+//
+// Failure cases:
+//  not checked
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthfillnewstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfillnewstring ( FILL-NEW$ )
+//
+// C prototype:
+//  void dg_forthfillnewstring(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( char n -- )
+//  ( -$- a$ )
+//                                                            
+// Action:
+//  Creates a new string of length n in bytes filled with the character char.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthpzerostrtonewstr>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthpzerostrtonewstr ( P0$&gt;NEW$ )
+//
+// C prototype:
+//  void dg_forthpzerostrtonewstr(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( p0$ -- )
+//  ( -$- NEW$ )
+//                                                            
+// Action:
+//  Given a pointer to a C style 0 string on the data stack,
+//   pushes the 0 string to the string stack without the null terminator.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthnglufilestring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthnglufilestring ( NGLUFILE$ )
+//
+// C prototype:
+//  void dg_forthnglufilestring(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//  ( filename$ -$- )
+//                                                            
+// Action:
+//  Unpacks the file into an hlist, then for each child of root in the hlist,
+//   this function gets the child element's name and uses the name as a UINT64
+//   index into the glu function table to call the glu function.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthglufilestring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthglufilestring ( GLUFILE$ )
+//
+// C prototype:
+//  void dg_forthglufilestring(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//  ( filename$ -$- )
+//                                                            
+// Action:
+//  Unpacks the file into an hlist, then for each child of root in the hlist,
+//   this function gets the child element's name and looks up the name
+//   in the glu function list, then calls the glu function associated with the
+//   name.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+     <div class=word id=dg_forthwordsstringquotes>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthwordsstringquotes ( WORDS$" )
+//
+// C prototype:
+//  void dg_forthwordsstringquotes(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- u )
+//  ( -$- word$0 word$1 ... word$u )
+//  ( &quot;&lt;1stdelimiter&gr;&lt;delimiters&gt;word0&lt;delimiters&gt;word1
+//    &lt;delimiters&gt;...wordu-1&lt;delimiters&gt;&quot;morestuff&quot;
+//     -currentinputbuffer- &quot;morestuff&quot; )
+//
+// Action:
+//  First skips the next character in the current input buffer. This is to get off the
+//   delimiter after WORDS$". Then words are parsed from the current input buffer until
+//   either a &quot; or the end of the buffer is encountered. Each parsed word is pushed
+//   onto the string stack as separate string in the order they were encountered.
+//   Then the current input buffer's current parse offset is moved to the character
+//   after the terminating &quot; or the end of buffer depending on how the parsing
+//   stopped.
+//   Then the number of words parsed is pushed onto the data stack.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+     <div class=word id=dg_forthwords0stringquotes>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthwords0stringquotes ( WORDS0$" )
+//
+// C prototype:
+//  void dg_forthwords0stringquotes(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- u )
+//  ( -$- word0$0 word0$1 ... word0$u )
+//  ( &quot;&lt;1stdelimiter&gr;&lt;delimiters&gt;word0&lt;delimiters&gt;word1
+//    &lt;delimiters&gt;...wordu-1&lt;delimiters&gt;&quot;morestuff&quot;
+//     -currentinputbuffer- &quot;morestuff&quot; )
+//
+// Action:
+//  First skips the next character in the current input buffer. This is to get off the
+//   delimiter after WORDS$". Then words are parsed from the current input buffer until
+//   either a &quot; or the end of the buffer is encountered. Each parsed word is pushed
+//   onto the string stack as separate null terminated string in the order they were
+//   encountered. This means a byte with the value 0 is appended to the end of each
+//   word before it's pushed onto the string stack.
+//   Then the current input buffer's current parse offset is moved to the character
+//   after the terminating &quot; or the end of buffer depending on how the parsing
+//   stopped.
+//   Then the number of words parsed is pushed onto the data stack.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+     <div class=word id=dg_forthgetargsfromnstrings>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetargsfromnstrings ( GETARGSFROMN$S )
+//
+// C prototype:
+//  void dg_forthgetargsfromnstrings(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( u -- PARGS )
+//  ( $0 $1 ... $u-1 -$- $0 $1 ... $u-1 ARGS$ )
+//
+// Action:
+//  First this pops number of strings to get pointers for off the data stack.
+//  Then this function creates a new string with enough room for u+1 pointers.
+//  Then this function fills the new string with pointers to the top u strings from
+//   before the new string was created. The last pointer in the new string gets a null
+//   pointer. (A null pointer is a UINT64 with the value 0.) (A pointer is a UINT64
+//   address.) Then a pointer to the new string is returned on the data stack.
+//
+// Note:
+//  Since the string stack may move if you add stuff to it, the pointers returned from
+//   this function may become invalid if you add anything else to the string stack. And
+//   if you change anything on the string stack, that will also invalidate the pointers
+//   because the strings will move.
+//
+// For example:
+//  RUNFILEANDWAITNOENV" echo hello there"
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+     <div class=word id=dg_forthrunfileandwaitnoenvquotes>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthrunfileandwaitnoenvquotes ( RUNFILEANDWAITNOENV&quot; )
+//
+// C prototype:
+//  void dg_forthrunfileandwaitnoenvquotes(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//  ( -$- )
+//  ( &quot;&lt;1stdelimiter&gr;&lt;delimiters&gt;word0&lt;delimiters&gt;word1
+//    &lt;delimiters&gt;...wordu-1&lt;delimiters&gt;&quot;morestuff&quot;
+//     -currentinputbuffer- &quot;morestuff&quot; )
+//
+// Action:
+//  In script execute mode:
+//   First this function skips the next character in the current input buffer. This is
+//   to get beyond the delimiter after RUNFILEANDWAITNOENV&quot;
+//   Then this function parses words until the next &quot; or the end of buffer is
+//   reached. The first word parsed is used as the filename to run. All of the words
+//   parsed are passed to the filename to run as the arguments of the program. A null
+//   environment is passed to the filename to run. Then this function waits for the
+//   program to completely finish running before returning.
+//
+//  In script compile mode:
+//   First this function skips the next character in the current input buffer. This is
+//   to get beyond the delimiter after RUNFILEANDWAITNOENV&quot;
+//   Then this function parses words until the next &quot; or the end of buffer is
+//   reached. The first word parsed will be used as the filename to run. All of the
+//   words parsed will be passed to the filename to run as the arguments of the
+//   program.
+//   Then this function compiles code that does this:
+//    run the program with the arguments parsed and a null environment
+//    then wait for the program to completely finish running
+//
+// For example:
+//  : doecholater RUNFILEANDWAITNOENV" echo hello there" ;
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+    </div>
+  </div></body>
+</html>

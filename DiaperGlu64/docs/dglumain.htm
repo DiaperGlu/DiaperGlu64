@@ -1,0 +1,372 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<html>
+
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      dglumain.cpp functions
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>
+      <a                                                      >C Functions</a>
+      <a href=dglumain.htm#dg_initbuffers                     >dg_initbuffers</a>
+      <a href=dglumain.htm#dg_inithlists                      >dg_inithlists</a>
+      <a href=dglumain.htm#dg_initvariables                   >dg_initvariables</a>
+      <a href=dglumain.htm#dg_cleanup                         >dg_cleanup</a>
+      <a href=dglumain.htm#dg_gettruesize                     >dg_gettruesize</a>
+      <a href=dglumain.htm#dg_initwithoutwordlists            >dg_initwithoutwordlists</a>
+      <a href=dglumain.htm#dg_init                            >dg_init</a>
+      <a href=dglumain.htm#dg_main                            >dg_main</a>
+      <a href=dglumain.htm#main                               >main</a>
+    </div>
+
+    <div id=pagestuff>
+
+      <div class=word id=dg_initbuffers>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_initbuffers 
+//
+// C prototype:
+//  const char* dg_initbuffers( Bufferhandle* pBHarrayhead )
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Outputs:
+//  const char*   return          dg_success if function succeeded, otherwise function failed
+//                                                             
+// Action:
+//  initializes the Diaperglu process buffers
+//
+// Failure cases:
+//  computer could be out of memory
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_inithlists>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_inithlists
+//
+// C prototype:
+//  void dg_inithlists( Bufferhandle* pBHarrayhead )
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Outputs:
+//  none
+//                                                             
+// Action:
+//  Initializes the Diaperglu process hierarchical lists.
+//
+// Failure cases:
+//  computer could be out of memory
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_initvariables>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_initvariables  
+//
+// C prototype:
+//  void dg_initvariables (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Initializes the Diaperglu process variables
+//
+// Failure cases:
+//  There should not be any, since we are just writing to Diaperglu managed memory which should
+//   already be allocated.
+//  But if there are any failures, an error message will be pushed to the error stack.
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_cleanup>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_cleanup  
+//
+// C prototype:
+//  void dg_cleanup (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Calls any functions pushed to the cleanup stack, last pushed functions are called first
+//  Closes all open libraries in the library handle stack
+//  Frees all buffers held in the in the buffer handle array
+//  Frees the buffer handle array
+//  Frees the buffer handle array head
+//
+// Note:
+//  After this call, pBHarrayhead is invalid
+//
+// Failure cases:
+//  failures are ignored during this call
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_gettruesize>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_gettruesize
+//
+// C prototype:
+//  UINT64 dg_gettruesize()
+//
+// Inputs:
+//
+// Outputs:
+//  UINT64  return          true size of master buffer handle in bytes
+//
+// Action:
+//  Calculates the amount of memory needed to hold the bufferhandle array head
+//   and the jump buffer. Since some operating systems only allocate memory
+//   in units of the system page size, the true size is probably larger than
+//   just the size of a buffer handle and jump buffer added together.
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_initwithoutwordlists>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_initwithoutwordlists
+//
+// C prototype:
+//  Bufferhandle* dg_initwithoutwordlists(int argc, char* argv[])
+//
+// Inputs:
+//  int         argc        number of arguments from stdin command line
+//  char*       argv[]      array of pointers to argument strings from stdin command line
+//
+// Outputs:
+//  Bufferhandle* pBHarrayhead    On success contains a pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//                                 This one pointer points to all the data for this process, which
+//                                  is what allows Diaperglu to be reentrant.
+//                                On failure contains badbufferhandle (-1)
+//
+// Action:
+//  Takes the command line arguments from stdin and allocates the minimum memory for a Diaperglu
+//   process instance. Then initializes the allocated memory.
+//   This includes: 
+//    allocating memory for the Bufferhandle array head
+//    allocating memory for the bufferhandle array
+//    allocating memory for the initial Diaperglu process buffers
+//    initializing the jumpbuffer code for 'safe' function call returns
+//    initializing the Diaperglu process variables
+//    copying the arguments to the args buffer
+//
+// Failure cases:
+//  system could be out of memory
+//  the argv[] pointer array could point to invalid memory
+//  the operating system may not allow allocating the write execute memory Diaperglu needs
+//   to do just in time compiling (: definitions for Forth people) and the safe function call returns
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_init>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_init  
+//
+// C prototype:
+//  Bufferhandle* dg_init(int argc, char* argv[])
+//
+// Inputs:
+//  int         argc        number of arguments from stdin command line
+//  char*       argv[]      array of pointers to argument strings from stdin command line
+//
+// Outputs:
+//  Bufferhandle* pBHarrayhead    On success contains a pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//                                 This one pointer points to all the data for this process, which
+//                                  is what allows Diaperglu to be reentrant.
+//                                On failure contains badbufferhandle (-1)
+//
+// Action:
+//  Takes the command line arguments from stdin and allocates the minimum memory for a Diaperglu
+//   process instance. Then initializes the allocated memory.
+//   This includes: 
+//    allocating memory for the Bufferhandle array head
+//    allocating memory for the bufferhandle array
+//    allocating memory for the initial Diaperglu process buffers
+//    initializing the jumpbuffer code for 'safe' function call returns
+//    initializing the Diaperglu process variables
+//    copying the arguments to the args buffer
+//    initializing the Diaperglu process starting wordlists
+//
+// Failure cases:
+//  system could be out of memory
+//  the argv[] pointer array could point to invalid memory
+//  the operating system may not allow allocating the write execute memory Diaperglu needs
+//   to do just in time compiling (: definitions for Forth people) and the safe function call returns
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_main>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_main  
+//
+// C prototype:
+//  void dg_main (int argc, char* argv[])
+//
+// Inputs:
+//  int         argc        number of arguments from stdin command line
+//  char*       argv[]      array of pointers to argument strings from stdin command line
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Program main entry point which does:
+//   Initializes a Diaperglu instance, keeping track of held resources
+//   calls dg_forthquit which determines
+//    wether or not to process a cgi/isapi script file, a regular script file
+//    or to just interpret user entered commands from stdin in a loop
+//   then cleans up the Diaperglu instance, releasing all held resources
+//   and exits
+//
+// Failure cases:
+//  If an error occurs during initialization, the program exits
+//  If an error occurs during the dg_forthquit processing, hopefully it trapped and dealt with.
+//   This is after all the point of Diaperglu.
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=main>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// main  
+//
+// C prototype:
+//  int main(int argc, char* argv[])
+//
+// Inputs:
+//  int         argc        number of arguments from stdin command line
+//  char*       argv[]      array of pointers to argument strings from stdin command line
+//
+// Outputs:
+//  none
+//
+// Action:
+//  C standard program entry point
+//  calls dg_main and exits
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    </div>
+
+  </div></body>
+</html>

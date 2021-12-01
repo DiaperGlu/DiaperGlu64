@@ -1,0 +1,527 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<html>
+
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      Forth Error Words
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>
+      
+        <a href=index.htm                                       >Directory</a>
+        <a href=documentationkey.htm                            >Documentation key</a>
+        <a                                                      >&nbsp;</a>
+
+        <a                                                      >fortherror.cpp functions</a>
+        <a href=fortherror.htm#dg_forthpushoerror               >dg_forthpushoerror</a>
+        <a href=fortherror.htm#dg_forthpopoerror                >dg_forthpopoerror</a>
+        <a href=fortherror.htm#dg_forthgetoerror                >dg_forthgetoerror</a>
+        <a href=fortherror.htm#dg_forthgeterrorcount            >dg_forthgeterrorcount</a>
+        <a href=fortherror.htm#dg_forthcheckerrordepth          >dg_forthcheckerrordepth</a>
+        <a href=fortherror.htm#dg_forthcompilegetolderrorcount  >dg_forthcompilegetolderrorcount</a>
+        <a href=fortherror.htm#dg_forthdroptoerrorcount         >dg_forthdroptoerrorcount</a>
+        <a href=fortherror.htm#dg_forthdoterrors                >dg_forthdoterrors</a>
+        <a href=fortherror.htm#dg_clearerrors                   >dg_clearerrors</a>
+        <a href=fortherror.htm#dg_forthbracketwordnametoerror   >dg_forthbracketwordnametoerror</a>
+        <a href=fortherror.htm#dg_forthnametoe                  >dg_forthnametoe</a>
+        <a href=fortherror.htm#dg_fortherrorquotes              >dg_fortherrorquotes</a>
+        <a href=fortherror.htm#dg_forthqueryerrorif             >dg_forthqueryerrorif</a>
+        <a                                                      >&nbsp;</a>
+      
+    </div>
+
+    <div id=pagestuff>
+
+      <div class=word id=dg_forthpushoerror>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthpushoerror ( PUSHOERROR0$ &gt;ERROR &gt;E )
+//
+// C prototype:
+//  void dg_forthpushoerror (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored  
+//
+// Stack action shorthand:
+//  ( offset bufferid -- )
+//  ( -error- offset bufferid )
+//
+// Data stack in:
+//  offset
+//  buferid
+//
+// Error stack out:
+//  offset
+//  bufferid      
+//
+// Action:
+//  pushes the offset and bufferid of an error string to the error stack
+//
+// Failure cases:
+//  error in a subroutine - (no error is pushed from this routine)
+//   
+//////////////////////////////////////////////////////////////////////// 
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthpopoerror>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthpopoerror ( POPOERROR0$ ERROR&gt; E&gt; )
+//
+// C prototype:
+//  void dg_forthpopoerror (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored  
+//
+// Stack action shorthand:
+//  ( offset bufferid -error- )
+//  ( -- offset bufferid )
+//
+// Error stack in:
+//  offset
+//  bufferid      
+//
+// Data stack out:
+//  offset
+//  buferid
+//
+// Action:
+//  pops the offset and bufferid of an error string off the error stack
+//
+// Failure cases:
+//  error in a subroutine - (no error is pushed from this routine)
+//   
+//////////////////////////////////////////////////////////////////////// 
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetoerror>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetoerror ( GETOERROR0$ )
+//
+// C prototype:
+//  void dg_forthgetoerror (Bufferhandle* pBHarrayhead) 
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other
+//                                    bufferhandles are stored
+//
+// Stack action shorthand:
+//  ( errorstackindex -- pError0$ )
+//
+// Data stack in:
+//  errorstackindex                  0 indexes the bottom (first pushed) error on the error stack
+// 
+// Data stack out:
+//  error message 0$ offset          offset in buffer of C style 0$ error message
+//  error message 0$ bufferid        buffer id of C style 0 string error message
+//
+// Action:
+//  Pops the errorstackindex from the data stack
+//  Retrieves the pointer to the error 0 string from the error stack as if it were a 0 based array
+//  and pushes the pointer to the data stack.
+//
+// Failure cases:
+//  error in a subroutine - (no error is pushed from this routine)
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgeterrorcount>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgeterrorcount ( GETERRORCOUNT )
+//
+// C prototype:
+//  void dg_forthgeterrorcount (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored  
+//
+// Stack action shorthand:
+//  ( -- errorcount )
+//
+// Data stack out:
+//  errorcount                       this represents the number of times dg_pusherror was called
+//                                    but if the error was full, or missing or something, then
+//                                    this number can be higher than the number of errors on the stack
+//
+// Action:
+//  Pushes the error count to the data stack.
+//
+// Failure cases:
+//  error in a subroutine - (no error is pushed from this routine)
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcheckerrordepth>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcheckerrordepth ( GETERRORDEPTH )
+//
+// C prototype:
+//  void dg_forthcheckerrordepth (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored  
+//
+// Stack action shorthand:
+//  ( -- errorstackdepth )
+// 
+// Data stack out:
+//  errorstackdepth                  this is the number of pointers to 0 string error messages on
+//                                    the error stack.
+//
+// Action:
+//  Pushes the depth of the error stack to the data stack. If you fill up the error stack or it's 
+//   pointer gets lost or something, you can have an error count higher than the number of errors on 
+//   the stack. This routine lets you compare the two values to see if any errors occurred that were
+//   not pushed to the error stack.
+//
+// Failure cases:
+//  error in a subroutine - (no error is pushed from this routine)
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcompilegetolderrorcount>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcompilegetolderrorcount ( GETOLDERRORCOUNT )
+//
+// C prototype:
+//  void dg_forthcheckerrordepth (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored  
+//
+// Stack action shorthand:
+//  ( -- )
+//
+// Compiles code that does:
+//  ( -- olderrorcount )
+//
+// Compiled code data stack out:
+//  olderrorcount   UINT64           error count at the time the current subroutine was entered
+//
+// Action:
+//  This is an immediate word. This word does this action when encountered in compiling mode:
+//  Compiles code that pushes the number of errors on the error stack at the time the current subroutine
+//   was entered onto the data stack.
+//
+// Failure cases:
+//  error pushing to the data stack, data stack is full
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthdroptoerrorcount>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdroptoerrorcount ( DROPTOERRORCOUNT )
+//
+// C prototype:
+//  void dg_forthdroptoerrorcount (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored  
+//
+// Stack action shorthand:
+//  ( olderrorcount -- )
+// 
+// Data stack in:
+//  oldstackdepth                    a previous error level
+//
+// Action:
+//  Removes errors from the stack to return the error stack to a previous
+//   error level
+//
+// Failure cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+     
+     
+      <div class=word id=dg_forthdoterrors>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdoterrors ( .ERRORS SHOW-ERRORS .ES )
+//
+// C prototype:
+//  void dg_forthdoterrors (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//
+// Action:
+//  displays the contents of the error stack from first pushed to most recently pushed
+//
+// Failure cases:
+//  not checked
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_clearerrors>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_clearerrors ( EMPTY-ERRORS EES )
+//
+// C prototype:
+//  void dg_clearerrors (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where the other 
+//                               bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//  ( ... -error- )
+//                              
+// Action
+//  Clears all errors off the error stack and sets the error count to 0
+//
+////////////////////////////////////////////////////////////////////////
+//     ( -- )
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthbracketwordnametoerror>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthbracketwordnametoerror ( [WORDNAME&gt;ERROR] )
+//
+// C prototype:
+//  void dg_forthbracketwordnametoerror (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where the other 
+//                               bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//                             
+// Action
+//  Compiles code to push the name of the latest defined word, which is
+//   most likely the word being compiled, to the error stack.
+//
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthnametoe>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthnametoe ( NAME&gt;E NAME&gt;ERROR )
+//
+// C prototype:
+//  void dg_forthnametoe (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where the other 
+//                               bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//
+// Compiled code does:
+//  ( -error- latestname )
+//                             
+// Action
+//  Compiles code to push the offset and buffer id of the latest defined
+//   word's null terminated name string to the data stack.
+//  Then compiles a call to dg_forthpushoerror.
+//
+// Compiled code does:
+//  Pushes the offset and bufferid of the latest defined word's null terminated
+//   name string to the error stack.
+//
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_fortherrorquotes>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_fortherrorquotes ( ERROR&quot; E&quot; )
+//
+// C prototype:
+//  void dg_fortherrorquotes( Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( &quot;myerrormessage&lt;quotes&gt;morestuff&quot; -currentinputbuffer- 
+//     &quot;morestuff&quot; )
+//     
+// Current input buffer's current offset in:
+//  &quot;myerrormessage&lt;quotes&gt;morestuff&quot;
+//
+// Current input buffer's current offset out:
+//  &quot;morestuff&quot;
+//
+// Compiled code does:
+//  ( -error- omyerrormessage )
+//                                                              
+// Action:
+//  Moves the current input buffer's current offset pointer to the character 
+//   after the next ", the character after the next line terminator delimiter, or
+//   to the end of the buffer, whichever comes first.
+//  Then compiles a copy of the string to the current compile buffer. Then appends 
+//   a null terminator (byte 0x00) to the compiled string. Then compiles code to 
+//   push the offset and  buffer id of the copied string to the error stack.
+//
+// Failure cases:
+//  error calling dg_fortho0quotes
+//  error compiling a call to dg_forthpushoerror
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthqueryerrorif>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthqueryerrorif ( ?ERRORIF )
+//
+// C prototype:
+//  void dg_forthqueryerrorif (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- ifoffset )
+// 
+// Data stack out:
+//  branchresolutionoffset        next unused byte in current compile buffer which is used by THEN 
+//                     
+// Action:
+//  compiles code to check for a change in the errorcount since the start of the : definition 
+//  and compiles an unresolved branch that is taken if the errorcount has not changed
+//
+// Failure cases:
+//  error getting current compile buffer id
+//  error growing the current compile buffer
+//  error getting a pointer to the current compile buffer
+//  error pushing the branch resolution offset to the data stack
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+    </div>
+
+  </div></body>
+</html>

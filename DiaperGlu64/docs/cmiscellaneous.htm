@@ -1,0 +1,1857 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      cmiscellaneous.cpp functions
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>
+      <a                                                      >C Functions</a>
+      <a href=cmiscellaneous.htm#dg_getbharrayheadsize        >dg_getbharrayheadsize</a>
+      <a href=cmiscellaneous.htm#dg_getnearesthighestmultiple >dg_getnearesthighestmultiple</a>
+      <a href=cmiscellaneous.htm#dg_calcnearestpagesize       >dg_calcnearestpagesize</a>
+      <a href=cmiscellaneous.htm#dg_getlocalpath              >dg_getlocalpath</a>
+      <a href=cmiscellaneous.htm#dg_pushenvtobuf              >dg_pushenvtobuf</a>
+      <a href=cmiscellaneous.htm#dg_getevalstdinfileid        >dg_getevalstdinfileid</a>
+      <a href=cmiscellaneous.htm#dg_getevalfilenamefileid     >dg_getevalfilenamefileid</a>
+      <a href=cmiscellaneous.htm#dg_getevalargsfileid         >dg_getevalargsfileid</a>
+      <a href=cmiscellaneous.htm#dg_getnoscriptfileid         >dg_getnoscriptfileid</a>
+      <a href=cmiscellaneous.htm#dg_getiisquerystringfileid   >dg_getiisquerystringfileid</a>
+      <a href=cmiscellaneous.htm#dg_getapachequerystrfileid   >dg_getapachequerystrfileid</a>
+      <a href=cmiscellaneous.htm#dg_getquerystringfileid      >dg_getquerystringfileid</a>
+      <a href=cmiscellaneous.htm#dg_checkformatchafterslash   >dg_checkformatchafterslash</a>
+      <a href=cmiscellaneous.htm#dg_getevaluatefileid         >dg_getevaluatefileid</a>
+      <a href=cmiscellaneous.htm#dg_querygetpost              >dg_querygetpost</a>
+      <a href=cmiscellaneous.htm#dg_closeevalfileid           >dg_closeevalfileid</a>
+      <a href=cmiscellaneous.htm#dg_getline                   >dg_getline</a>
+      <a href=cmiscellaneous.htm#dg_captureerrorline          >dg_captureerrorline</a>
+      <a href=cmiscellaneous.htm#dg_evaluatefileid            >dg_evaluatefileid</a>
+      <a href=cmiscellaneous.htm#dg_sendnoscriptfilepage      >dg_sendnoscriptfilepage</a>
+      <a href=cmiscellaneous.htm#dg_sendfilenotfoundpage      >dg_sendfilenotfoundpage</a>
+      <a href=cmiscellaneous.htm#dg_showinputmode             >dg_showinputmode</a>
+      <a href=cmiscellaneous.htm#dg_showerrorspage            >dg_showerrorspage</a>
+      <a href=cmiscellaneous.htm#dg_sendgetenvvarerrorpage    >dg_sendgetenvvarerrorpage</a>
+      <a href=cmiscellaneous.htm#dg_doinputstuff              >dg_doinputstuff</a>
+      <a href=cmiscellaneous.htm#dg_evaluatebuffer            >dg_evaluatebuffer</a>
+      <a href=cmiscellaneous.htm#dg_argstoargsbuffer          >dg_argstoargsbuffer</a>
+      <a href=cmiscellaneous.htm#dg_readstdinavailabletobuffer>dg_readstdinavailabletobuffer</a>
+      <a href=cmiscellaneous.htm#dg_compilesegment            >dg_compilesegment</a>
+      <a href=cmiscellaneous.htm#dg_compilecallcore           >dg_compilecallcore</a>
+      <a href=cmiscellaneous.htm#dg_compilecallcorepreserveregs>dg_compilecallcorepreserveregs</a>
+      <a href=cmiscellaneous.htm#dg_compilepushdatastack      >dg_compilepushdatastack</a>
+      <a href=cmiscellaneous.htm#dg_isnegative                >dg_isnegative</a>
+      <a href=cmiscellaneous.htm#dg_smslashrem                >dg_smslashrem</a>
+      <a href=cmiscellaneous.htm#dg_fmslashmod                >dg_fmslashmod</a>
+      <a href=cmiscellaneous.htm#dg_checkbharrayhead          >dg_checkbharrayhead</a>
+      <a href=cmiscellaneous.htm#dg_checkbharray              >dg_checkbharray</a>
+      <a href=cmiscellaneous.htm#dg_stonewstring              >dg_stonewstring</a>
+      <a href=cmiscellaneous.htm#dg_pzerostringtonewstring    >dg_pzerostringtonewstring</a>
+      <a href=cmiscellaneous.htm#dg_getsenvnamevalue          >dg_getsenvnamevalue</a>
+      <a href=cmiscellaneous.htm#dg_checkargs                 >dg_checkargs</a>
+      <a href=cmiscellaneous.htm#dg_parseword                 >dg_parseword</a>
+      <a href=cmiscellaneous.htm#dg_parsewords                >dg_parsewords</a>
+      <a href=cmiscellaneous.htm#dg_f32tof64                  >dg_f32tof64</a>
+      <a href=cmiscellaneous.htm#dg_f64tof32                  >dg_f64tof32</a>
+      <a href=cmiscellaneous.htm#dg_ftod                      >dg_ftod</a>
+      <a href=cmiscellaneous.htm#dg_dftod                     >dg_dftod</a>
+      <a href=cmiscellaneous.htm#dg_dtodf                     >dg_dtodf</a>
+      
+    </div>
+
+    <div id=pagestuff>
+
+      <div class=word id=dg_getbharrayheadsize>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_getbharrayheadsize
+//
+// C prototype:
+//  UINT64 dg_getbharrayheadsize()
+//
+// Inputs:
+//  none
+//  
+// Outputs:
+//  Returns the UINT64 length of the Bufferhandle structure in bytes.
+//
+// Action:
+//  Returns the UINT64 length of the Bufferhandle structure in bytes.
+//
+// Note:
+//  This function is included because Diaperglu is designed to work with and as a 
+//   shared object libraries where you do not need a .h file. At some point
+//   the size of the Bufferhandle structure may change in a different versions
+//   of Diaperglu.
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getnearesthighestmultiple>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_getnearesthighestmultiple
+//
+// C prototype:
+//  UINT64 dg_getnearesthighestmultiple (
+//    UINT64 n,
+//    UINT64 pagesize)
+//
+// Inputs:
+//  UINT64 n           a length in bytes
+//  UINT64 pagesize    the thing that comes in multiples
+//  
+// Outputs:
+//  Returns the UINT64 length of the nearest larger or equal page size.
+//
+// Action:
+//  Returns the UINT64 length of the nearest larger or equal page size.
+//
+// Note:
+//  Different operating systems use different page sizes. Versions of Windows
+//   I've checked use 8 bytes. Some versions of Linux are 1K bytes. This 
+//   function is used for rounding up requested buffer sizes to match system
+//   page sizes.
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_calcnearestpagesize>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_calcnearestpagesize
+//
+// C prototype:
+//  UINT64 dg_calcnearestpagesize (UINT64 n)
+//
+// Inputs:
+//  UINT64 n           a length in bytes
+//  
+// Outputs:
+//  Returns the UINT64 length of the nearest larger or equal system page size.
+//
+// Action:
+//  Returns the UINT64 length of the nearest larger or equal system page size.
+//
+// Note:
+//  Different operating systems use different page sizes. Versions of Windows
+//   I've checked use 8 bytes. Some versions of Linux are 1K bytes. This 
+//   function is used for rounding up requested buffer sizes to match system
+//   page sizes.
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getlocalpath>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_getlocalpath
+//
+// C prototype:
+//  void dg_getlocalpath (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Action:
+//  This function does nothing which makes me wonder why it's here.
+//  I had these notes:
+//
+// Apache:
+//   
+//   ScriptInterpreterSource registry and shebang
+//   http://hostname/dirpath/scriptfile.dglu 
+//   on Windows XP mode
+//     PATH_TRANSLATED empty
+//     PATH_INFO empty
+//     args = drive:\full local path\scriptfile.dglu
+//     SCRIPT_NAME = dirpath/scriptfile.dglu
+//     
+//   ScriptInterpreterSource registry and shebang
+//   http://hostname/dirpath/dglu.exe?scriptfile.dglu
+//   on Windows XP mode
+//     PATH_TRANSLATED empty
+//     PATH_INFO empty
+//     args = scriptfile.dglu
+//     SCRIPT_NAME = dirpath/dglu.exe
+//
+//   ScriptInterpreterSource registry and shebang
+//   http://hostname/dirpath/dglu.exe
+//   on Windows XP mode
+//     PATH_TRANSLATED empty
+//     PATH_INFO empty
+//     args = empty
+//     SCRIPT_NAME = dirpath/dglu.exe
+//
+//  
+// IIS:
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_pushenvtobuf>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_pushenvtobuf
+//
+// C prototype:
+//  void dg_pushenvtobuf (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 bufferid,
+//    const char* penvname)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+//  UINT64 bufferid               id of destination buffer
+//
+//  const char* penvname          pointer to 0 string which is the name of an
+//                                 environment variable
+// Outputs:
+//  none
+//
+// Action:
+//  Pushes a copy of the environment variable's value onto the end of the buffer.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_getevalstdinfileid>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_getevalstdinfileid
+//
+// C prototype:
+//  UINT64 dg_getevalstdinfileid (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//  
+// Outputs:
+//  Success: Returns the UINT64 stdin file id. This is 0 in Linux
+//  Failure: Returns the UINT64 badfilehandle file id. This is -1 in the .h file.
+//
+// Action:
+//  Pushes "stdin" to the DG_SCRIPTFILENAME_BUFFERID buffer.
+//  Returns the UINT64 stdin file id. This is 0 in Linux
+//
+// Failure cases:
+//  Can't get hstdin
+//  Can't push to script file name buffer
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+     <div class=word id=dg_getevalfilenamefileid>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_getevalfilenamefileid
+//
+// C prototype:
+//  UINT64 dg_getevalfilenamefileid (
+//    Bufferhandle* pBHarrayhead,
+//    unsigned char* pbuf,
+//    UINT64* pbuflength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//  
+// Outputs:
+//  Success: Returns the UINT64 stdin file id. This is 0 in Linux
+//  Failure: Returns the UINT64 badfilehandle file id. This is -1 in the .h file.
+//
+// Action:
+//  Pushes "stdin" to the DG_SCRIPTFILENAME_BUFFERID buffer.
+//  Returns the UINT64 stdin file id. This is 0 in Linux
+//
+// Failure cases:
+//  Can't get hstdin
+//  Can't push to script file name buffer
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getevalargsfileid>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_getevalargsfileid
+//
+// C prototype:
+//  UINT64 dg_getevalargsfileid (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//  
+// Outputs:
+//  Success: Returns a UINT64 file id.
+//  Failure: Returns the UINT64 badfilehandle file id. This is -1 in the .h file.
+//
+// Action:
+//  When this routine is called, it assumes the C program arguments are in the
+//   DG_ARGS_BUFFERID buffer.
+//  Pushes a copy of the contents of DG_ARGS_BUFFERID to the DG_SCRIPTFILENAME_BUFFERID 
+//   buffer.
+//  Appends a null terminator to the contents of the DG_ARGS_BUFFERID buffer.
+//  Uses the contents of the DG_SCRIPTFILENAME_BUFFERID as a file name and attempts to
+//   open the file for reading.
+//  Returns file id of the newly opened file.
+//
+// Note:
+//  No errors with a badfilehandle returned means there were no program arguments.
+//
+// Failure cases:
+//  pBHarrayhead bad
+//  Can't get a pointer to the DG_ARGS_BUFFERID buffer
+//  There are no C program arguments
+//  Can't push a copy of DG_ARGS_BUFFERID buffer to the DG_SCRIPTFILENAME_BUFFERID buffer
+//  Can't append a null terminator to the end of the DG_SCRIPTFILENAME_BUFFERID buffer
+//  Can't get a pointer to the DG_SCRIPTFILENAME_BUFFERID buffer
+//  Can't open file
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getnoscriptfileid>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_getnoscriptfileid
+//
+// C prototype:
+//  UINT64 dg_getnoscriptfileid (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//  
+// Outputs:
+//  Success: Returns a UINT64 file id.
+//  Failure: Returns the UINT64 badfilehandle file id. This is -1 in the .h file.
+//
+// Action:
+//  Tries to open the file "noscript.dglu" for reading.
+//  Returns file id of the newly opened file.
+//
+// Note:
+//  If there is no script file specified in args or path translated
+//   and dglu is in cgi or isapi mode, try to run noscript.dglu
+//
+//  No errors with a badfilehandle returned means it could not open the file.
+//
+// Failure cases:
+//  pBHarrayhead bad
+//  Can't open file "noscript.dglu"
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+<!--
+      <div class=word id=dg_getscriptnotfoundfileid>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_getscriptnotfoundfileid
+//
+// C prototype:
+//  UINT64 dg_getscriptnotfoundfileid (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//  
+// Outputs:
+//  Success: Returns a UINT64 file id.
+//  Failure: Returns the UINT64 badfilehandle file id. This is -1 in the .h file.
+//
+// Action:
+//  Tries to open the file "scriptnotfound.dglu" for reading.
+//  Returns file id of the newly opened file.
+//
+// Note:
+//  If an args or path_translated file can not be found
+//   and dglu is in cgi or isapi mode, Diaperglu tries to run "scriptnotfound.dglu"
+//
+//  No errors with a badfilehandle returned means it could not open the file.
+//
+// Failure cases:
+//  pBHarrayhead bad
+//  Can't open file "scriptnotfound.dglu"
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+-->      
+      
+
+      <div class=word id=dg_getiisquerystringfileid>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_getiisquerystringfileid
+//
+// C prototype:
+//  UINT64 dg_getiisquerystringfileid (
+//    Bufferhandle* pBHarrayhead,
+//    unsigned char* pname,
+//    UINT64 namelength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+//  unsigned char* pname          pointer to file name
+//
+//  UINT64 namelength             length of file name in bytes
+//
+// Outputs:
+//  return UINT64                 buffer id of open file
+//
+// Action:
+//  Clears the DG_SCRIPTFILENAME_BUFFERID buffer
+//  Appends the file name to value of the PATH_TRANSLATED environment variable and
+//   makes sure the correct slash symbol DG_PATH_SLASH_SYMBOL is between them
+//   and copies it to the DG_SCRIPTFILENAME_BUFFERID buffer
+//  The file name with path is stored in the DG_SCRIPTFILENAME_BUFFERID buffer.
+//  The slashes in the path and file name are converted to a DG_PATH_SLASH_SYMBOL
+//  Then opens the file with that name and returns the file id.
+//
+// Failure cases:
+//  Error clearing the DG_SCRIPTFILENAME_BUFFERID buffer.
+//  Error pushing the value of the PATH_TRANSLATED environment variable to the
+//   DG_SCRIPTFILENAME_BUFFERID buffer
+//  Error scanning the DG_SCRIPTFILENAME_BUFFERID buffer for the null terminator
+//   of the pushed PATH_TRANSLATED value.
+//  Error pushing the file name to the end of the DG_SCRIPTFILENAME_BUFFERID buffer
+//  Error appending a null terminator to the end of the DG_SCRIPTFILENAME_BUFFERID buffer
+//  Error opening file for read
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_getapachequerystrfileid>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_getapachequerystrfileid
+//
+// C prototype:
+//  UINT64 dg_getapachequerystrfileid (
+//    Bufferhandle* pBHarrayhead,
+//    unsigned char* pname,
+//    UINT64 namelength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+//  unsigned char* pname          pointer to file name
+//
+//  UINT64 namelength             length of file name in bytes
+//
+// Outputs:
+//  return UINT64                 buffer id of open file
+//
+// Action:
+//  Gets a pointer to the DG_SCRIPTFILENAME_BUFFERID buffer.
+//  Drops the null terminator.
+//  Makes sure there is a slash on the end of the buffer
+//  Pushes the file name onto the end of the buffer
+//  The slashes in DG_SCRIPTFILENAME_BUFFERID buffer are converted to
+//   a DG_PATH_SLASH_SYMBOL
+//  Then opens the file with that name and returns the file id.
+//
+//
+// Failure cases:
+//  Error getting a pointer to the DG_SCRIPTFILENAME_BUFFERID buffer
+//  Error finding the null terminator in the buffer.
+//  Error pushing the file name onto the end of the DG_SCRIPTFILENAME_BUFFERID buffer
+//  Error pushing a null terminator onto the end of the DG_SCRIPTFILENAME_BUFFERID buffer
+//  Error opening the file
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_getquerystringfileid>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_getquerystringfileid
+//
+// C prototype:
+//  UINT64 dg_getquerystringfileid (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Outputs:
+//  return UINT64                 buffer id of open file
+//
+// Action:
+//  Clears the DG_SCRIPTFILENAME_BUFFERID buffer
+//  Appends the file name to value of the QUERY_STRING environment variable and
+//   makes sure the correct slash symbol DG_PATH_SLASH_SYMBOL is between them
+//   and copies it to the DG_SCRIPTFILENAME_BUFFERID buffer
+//  The file name with path is stored in the DG_SCRIPTFILENAME_BUFFERID buffer.
+//  The slashes in the path and file name are converted to a DG_PATH_SLASH_SYMBOL
+//  Then opens the file with that name and returns the file id.
+//
+// Failure cases:
+//  Error clearing the DG_SCRIPTFILENAME_BUFFERID buffer.
+//  Error pushing the value of the QUERY_STRING environment variable to the
+//   DG_SCRIPTFILENAME_BUFFERID buffer
+//  Error scanning the DG_SCRIPTFILENAME_BUFFERID buffer for the null terminator
+//   of the pushed QUERY_STRING value.
+//  Error pushing the file name to the end of the DG_SCRIPTFILENAME_BUFFERID buffer
+//  Error appending a null terminator to the end of the DG_SCRIPTFILENAME_BUFFERID buffer
+//  Error opening file for read
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_checkformatchafterslash>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_checkformatchafterslash
+//
+// C prototype:
+//  UINT64 dg_checkformatchafterslash (
+//    unsigned char* pbufa,
+//    UINT64 bufalength,
+//    unsigned char* pbufb,
+//    UINT64 bufblength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Outputs:
+//  return UINT64                 FORTH_TRUE if there is a match
+//                                FORTH_FALSE if there is no match
+//
+// Action:
+//  Returns FORTH_FALSE if either string is empty.
+//  Skips trailing null terminator
+//  Skips trailing slash
+//  Returns FORTH_FALSE if either string is now empty.
+//  Checks from end of what's left up to and including the last slash
+//   to see if they match. If they do, return FORTH_TRUE, Otherwise
+//   return FORTH_FALSE.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getevaluatefileid>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_getevaluatefileid
+//
+// C prototype:
+//  UINT64 dg_getevaluatefileid (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//  
+// Outputs:
+//  Success: Returns a UINT64 file id.
+//  Failure: Returns the UINT64 badfilehandle file id. This is -1 in the .h file.
+//
+// Action:
+//  Clears the DG_SCRIPTFILENAME_BUFFERID buffer.
+//  Then sees if there is a CGI ISAPI environment variable called SERVER_NAME defined.
+//  And also this routine sees if there are any C program command line arguments.
+//
+//  If no SERVER_NAME and there are command line arguments, this routine uses the
+//   command line arguments as a filename, opens the file and returns the file handle.
+//  If no SERVER_NAME and no command line arguments, this routine uses 'stdin' as the
+//   filename, and returns the file id for stdin
+//  If there is a SERVER_NAME and there are command line arguments, this routine uses
+//   the command line argumetns as a filename, opens the file and returns the file handle.
+//  If there is a SERVER_NAME and no command line arguments, this routine tries to use
+//   "scriptnotfound.dglu" as the filename, opens the file and returns the file handle.
+//
+// Note:
+//  No errors with a badfilehandle returned means it could not open "scriptnotfound.dglu".
+//  This also means there was a SERVER_NAME defined and Diaperglu is running in CGI/ISAPI
+//   mode.
+//
+// Failure cases:
+//  pBHarrayhead bad
+//  could not clear DG_SCRIPTFILENAME_BUFFERID buffer
+//  trying to look up an environment variable failed (an undefined variable is not an error)
+//  had trouble trying to use the arguments as a filename (file not exist is not an error)
+//  had trouble using stdin as the source file (this shouldn't happen)
+//  could not use "scriptnotfound.dglu" as the source file
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_querygetpost>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_querygetpost
+//
+// C prototype:
+//  void dg_querygetpost (Bufferhandle* pBHarrayhead, UINT64 firsttimethrough)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//  UINT64 firsttimethrough       whether or not first time through main loop
+//                                 stuff was not done yet flag
+//  
+// Outputs:
+//  none
+//
+// Action:
+//  Sees if there is a CGI ISAPI environment variable called SERVER_NAME defined.
+//  Sees if there is a CGI ISAPI environment variable called REQUEST_METHOD defined.
+//
+//  If SERVER_NAME does not have a value then Diaperglu is not in CGI/ISAPI mode, 
+//   so this routine does nothing.
+//  If firsttimethrough is not FORTH_TRUE, then this routine was already done,
+//   so this routine does nothing.
+//  If REQUEST_METHOD does not have value of "POST" when converted to upper case
+//   letters, this routine does nothing.
+//  If SERVER_NAME has a value, REQUEST_METHOD is "POST" and it's not the first time
+//   through, this routine reads what's available at stdin and copies it to the
+//   DG_POST_BUFFERID buffer.
+//  
+// Failure cases:
+//  pBHarrayhead bad
+//  error getting value of an environment variable (variable not defined is not an error)
+//  error comparing bytes (should not happen since this routine owns the memory)
+//  error reading available bytes from stdin to DG_POST_BUFFERID buffer
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_closeevalfileid>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_closeevalfileid
+//
+// C prototype:
+//  void dg_closeevalfileid (Bufferhandle* pBHarrayhead, UINT64 fileid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//  UINT64 fileid                 file id of an open file              
+//  
+// Outputs:
+//  none
+//
+// Action:
+//  If the fileid is the file id for stdin this routine does nothing.
+//  Otherwise this routine closes the file.
+//  
+// Failure cases:
+//  error getting stdin file id
+//  error closing the file
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getline>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_getline
+//
+// C prototype:
+//  UINT64 dg_getline(
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 fileid,
+//   UINT64 bufferid, 
+//   const char* pforceerror)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where the other 
+//                               bufferhandles are stored.
+//  UINT64  fileid              file id of a file open for reading
+//  UINT64  bufferid            index of the bufferhandle in the BHarray of the buffer 
+//                               where the line is put
+//  UINT64  forceerror          if not 0, getting a line fails 
+//                               when it tries to get a character
+//  
+// Outputs:
+//  returns FORTH_TRUE if eof reached
+//
+// Action:
+//  gets characters from the OS until an error occurs or until a line feed and puts them into a buffer
+//
+// Failure cases:
+//  unforseen problem in the OS
+//  error clearing the buffer id or pushing to the buffer
+//
+// Assumptions:
+//  assumes dg_getline2 returns EOF or a character between 0 and 0xFF
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+      <div class=word id=dg_captureerrorline>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_captureerrorline
+//
+// C prototype:
+//  void dg_captureerrorline(
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where the other 
+//                               bufferhandles are stored.
+//  UINT64  bufferid            index of the bufferhandle in the BHarray of the buffer 
+//                               where the line is put
+//  
+// Outputs:
+//  none
+//
+// Action:
+//  Copies everything up the first line terminator or the first 0x100 characters
+//   from the bufferid buffer to the DG_ERRORLINE_BUFFERID buffer.
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_evaluatefileid>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_evaluatefileid
+//
+// C prototype:
+//  void dg_evaluatefileid (
+//   Bufferhandle* pBHarrayhead, 
+//   UINT64 fileid, 
+//   UINT64* pfirsttimethrough)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where the other 
+//                               bufferhandles are stored.
+//  UINT64 fileid               file id of a file open for reading
+//  UINT64* pfirsttimethrough   pointer to the first time through main loop flag 
+//  
+// Outputs:
+//  none
+//
+// Action:
+//  gets the file type
+//  if the file type is a disk file, this routine loads the file into a buffer
+//   then if the file is a packed lstring file, this routine tries to unpack
+//    the buffer into an hlist.
+//    Then if the root element's name is "NGlu" with no null terminator,
+//     it will try to NGlu the unpacked hlist,
+//    otherwise it will try to Glu the unpacked hlist.
+//   If it was not a packed listring file then this routine evaluates the buffer
+//  if the file type is not a disk or unknown, this routine enters a loop
+//   where it repeatedly waits for a line from the file to the
+//   DG_TERMINALINPUT_BUFFERID buffer and then evaluates the line in the
+//   DG_TERMINALINPUT_BUFFERID buffer until an exit flag becomes FORTH_TRUE.
+//
+// Note:
+//  The script command BYE ( dg_forthbye ) will cause the exit flag to become FORTH_TRUE
+//
+// Failure cases:
+//  pBHarrayhead bad
+//  error getting the file type
+//  the file type is unknown
+//  error getting the file length
+//  error allocating a buffer to hold the file's contents
+//  error growing the buffer to the file's length (shouldn't happen)
+//  error getting a pointer to the buffer that will hold the file's contents
+//  error reading the file to the buffer
+//  if the operating system returns less bytes from the file than it said
+//   was the file's length (yes I have actually seen this happen under ISAPI)
+//  error getting a line from the file (usually stdin in this case)
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_sendnoscriptfilepage>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_sendnoscriptfilepage
+//
+// C prototype:
+//  void dg_sendnoscriptfilepage (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where the other 
+//                               bufferhandles are stored.
+//  
+// Outputs:
+//  none
+//
+// Action:
+//  sends a default html page to stdout
+//
+// Failure cases:
+//  none
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_sendfilenotfoundpage>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_sendfilenotfoundpage
+//
+// C prototype:
+//  void dg_sendfilenotfoundpage (Bufferhandle* pBHarrayhead, UINT64 olderrorcount)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where the other 
+//                               bufferhandles are stored.
+//  UINT64 olderrorcount        the error depth at the time the file load failed
+//  
+// Outputs:
+//  none
+//
+// Action:
+//  Looks at the environment variable SERVER_NAME to see if it has a value.
+//  If SERVER_NAME has a value this routine sends an HTML error page otherwise
+//   it sends an error message.
+//  The error page or message indicates Diaperglu could not load the script file
+//   and displays an error message indicating the error that occurred.
+//
+// Failure cases:
+//  errors ignored
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_showinputmode>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_showinputmode
+//
+// C prototype:
+//  void dg_showinputmode (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 fileid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where the other 
+//                               bufferhandles are stored.
+//  UINT64 filed                a file id of an open source file
+//  
+// Outputs:
+//  none
+//
+// Action:
+//  Debugging routine to display an html page showing the statistics of the 
+//   source file.
+//  It shows: the script file name, the command line arguments, and the file type.
+//
+// Failure cases:
+//  errors ignored
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_showerrorspage>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_showerrorspage
+//
+// C prototype:
+//  void dg_showerrorspage (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where the other 
+//                               bufferhandles are stored.
+//  
+// Outputs:
+//  none
+//
+// Action:
+//  Gets the value of the showerrorsonexitflag ( PSHOWERRORSONEXITFLAG ) flag.
+//  Gets the value of the CGI/ISAPI SERVER_NAME environment variable.
+//  If showerrorsonexitflag is FORTH_FALSE, this routine does nothing.
+//  If SERVER_NAME has a value this routine displays html, otherwise
+//   it displays standard text.
+//  This routine then displays the error stack contents and the last defined
+//   word's name.
+//
+// Failure cases:
+//  errors ignored
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_showinputmodepage>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_showinputmodepage
+//
+// C prototype:
+//  void dg_showinputmodepage (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 fileid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where the other 
+//                               bufferhandles are stored.
+//
+//  UINT64 fileid               input fileid to show
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Shows input mode html page.
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_sendgetenvvarerrorpage>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_sendgetenvvarerrorpage
+//
+// C prototype:
+//  void dg_sendgetenvvarerrorpage (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where the other 
+//                               bufferhandles are stored.
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Shows error stack for an error that occurred while trying to retrieve
+//   an environment variable.
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_doinputstuff>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_doinputstuff
+//
+// C prototype:
+//  void dg_doinputstuff (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64* pfirsttimethrough)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where the other 
+//                               bufferhandles are stored.
+//  UINT64* pfirsttimethrough   pointer to first time through main loop flag
+//  
+// Outputs:
+//  none
+//
+// Action:
+//  gets the evaluate file id and opens the file if needed
+//  if there are errors on the error stack from getting the evaluate
+//   file id, this routine sends the file not found error message/page and exits
+//  if there are no errors on the error stack from getting the evaluate
+//   file id but a bad file handle was returned, this routine sends the
+//   no script file page and exits
+//  Then this routine gets the CGI post data if needed
+//  Then this routine evaluates the file
+//  Then this routine closes the file
+//  Then this routine displays the html or text error messages if needed
+//
+// Failure cases:
+//  Except in the case of a bad pBHarrayhead, errors are handled or ignored in 
+//   this routine as needed, none are passed out.
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_evaluatebuffer>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_evaluatebuffer
+//
+// C prototype:
+//  void dg_evaluatebuffer (Bufferhandle* pBHarrayhead, UINT64 bufferid)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored
+//  UINT64   bufferid          buffer containing text to evaluate          
+//
+// Outputs:
+//  none
+//
+// Action:
+//  starts at the beginning of the buffer then gets each word in the buffer, looks it up
+//   in the current search order, then does the action for the word based on the current 
+//   script processing state  
+//  If it runs across a word it can't find, it stops
+//
+// Failure cases:
+//  error getting pointer to the buffer
+//  error putting to the current input buffer variable
+//  error getting from the base variable
+//  error pushing number to the data stack
+//  error getting the state variable
+//  error compiling push number to the data stack
+//  error trying to find the definition in the search order
+//  error executing the definition - this routine quietly exits for this one
+//  word not found error
+//  input buffer deleted during use ( what did you do??? %-O )
+//  input buffer's length changed during use
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_argstoargsbuffer>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_argstoargsbuffer
+//
+// C prototype:
+//  void dg_argstoargsbuffer (
+//   Bufferhandle* pBHarrayhead, 
+//   int argc, 
+//   char* argv[])
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored 
+//  int            argc              the number of arguments passed in to the process
+//  char*          argv              array of pointers to zero strings containing the arguments         
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Moves the command line arguments to a buffer. 
+//  The arguments are separated one space each. This is an attempt to handle
+//   spaces in the path/filename in case the operating system doesn't handle it.
+//  The arguments are used as the file name of the script file to evaluate.
+//
+// Things to check out: Do we just need the first argument? And if so will spaces
+//  in the path/filename be preserved in all operating systems?
+//  Or is there a way to get the entire command line at once without using
+//  the arguments in all operating systems?
+//
+// Note:
+//  Linux does not like having a space after the end of the file name when you try
+//   to open a file. Windows is ok with this.
+// 
+// Failure cases:
+//  error clearing the argsbuffer
+//  error pushing the argument to the argsbuffer
+//  error pushing a space to the argsbuffer
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_readstdinavailabletobuffer>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_readstdinavailabletobuffer 
+//
+// C prototype:
+//  void dg_readstdinavailabletobuffer(
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored 
+//  UINT64         bufferid          buffer id of the destination buffer
+//                                                              
+// Action:
+//  Pushes all characters (bytes) currently available at stdin onto the end of the
+//   destination buffer.  
+//
+// Failure cases:
+//  operating system reported error during read
+//  buffer is full
+//  not enough memory to grow buffer
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_compilesegment>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_compilesegment
+//
+// C prototype:
+//  void dg_compilesegment (Bufferhandle* pBHarrayhead, const char* psrc, UINT64 length)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+//  const char*   psrc            pointer to source segment
+//  UINT64        length          length of source segment
+//                                                          
+// Action:
+//  Compiles (pushes) segment (string) at psrc for length to the current compile buffer
+//
+// Notes:
+//  Calling source a segment so it won't be confused with coming from the string stack
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_compilecallcore>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_compilecallcore
+//
+// C prototype:
+//  void dg_compilecallcore (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 addr)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+//  const char*   psrc            pointer to source segment
+//  UINT64        length          length of source segment
+//                                                          
+// Action:
+//  Compiles a call to a Diaperglu colon routine at an address.
+//  This function expects the routine the call is compiled into to be using
+//   the Diaperglu standard frame.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_compilecallcorepreserveregs>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_compilecallcorepreserveregs
+//
+// C prototype:
+//  void dg_compilecallcorepreserveregs (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 addr)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+//  const char*   psrc            pointer to source segment
+//  UINT64        length          length of source segment
+//                                                          
+// Action:
+//  Compiles a call to a Diaperglu colon routine at an address.
+//  This function expects the routine the call is compiled into to be using
+//   the Diaperglu standard frame.
+//  The compiled call does not trash any registers.
+//  (I think the regular compile call core now does not trash regs anyways. 6/17/2017)
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+     <div class=word id=dg_compilepushdatastack>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_compilepushdatastack
+//
+// C prototype:
+//  void dg_compilepushdatastack (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//                                                          
+// Action:
+//  Compiles a call to dg_pushdatastack.
+//  This routine expects code to push n to the return stack to already be compiled.
+//  (I think I need to rewrite this to make it more efficient 6/17/2017)
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+     
+     
+     <div class=word id=dg_isnegative>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_isnegative
+//
+// C prototype:
+//  UINT64 dg_isnegative (UINT64 x)
+//
+// Inputs:
+//  UINT64          x             value to test to see if it is negative
+//                                                          
+// Outputs:
+//  UINT64          return        0 if positive
+//                                -1 if negative
+//
+// Action:
+//  Returns 0 if x is less than 0x80000000, otherwise returns -1.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_smslashrem>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_smslashrem
+//
+// C prototype:
+//  void dg_smslashrem (UINT64* pints)
+//
+// Inputs:
+//  UINT64*         pints         pints array in
+//                                 pints[0] = numeratorlo
+//                                 pints[1] = numeratorhi
+//                                 pints[2] = denominator
+//                                                          
+// Outputs:
+//  UINT64*         pints         pints array out
+//                                 pints[0[ = remainder
+//                                 pints[1] = quotient
+//                                 pints[2] = denominator
+//
+// Action:
+//  Does a forth SM/REM
+//
+// Note:
+//  // did it this way for two reasons
+//  1) its difficult to predict when an overflow will occur using IDIV
+//  2) less assembly language routines makes it easier to port
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_fmslashmod>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_fmslashmod
+//
+// C prototype:
+//  void dg_fmslashmod (UINT64* pints)
+//
+// Inputs:
+//  UINT64*         pints         pints array in
+//                                 pints[0] = numeratorlo
+//                                 pints[1] = numeratorhi
+//                                 pints[2] = denominator
+//                                                          
+// Outputs:
+//  UINT64*         pints         pints array out
+//                                 pints[0[ = remainder
+//                                 pints[1] = quotient
+//                                 pints[2] = denominator
+//
+// Action:
+//  Does a forth FM/MOD
+//
+// Note:
+//  // did it this way for two reasons
+//  1) its difficult to predict when an overflow will occur using IDIV
+//  2) less assembly language routines makes it easier to port
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_checkbharrayhead>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_checkbharrayhead
+//
+// C prototype:
+//  const char* dg_checkbharrayhead (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//                                                          
+// Outputs:
+//  const char*   return    pointer to dg_success message if everything worked
+//                          otherwise returns a pointer to an error message
+//
+// Action:
+//  Checks BHarrayhead magic code.
+//
+// Note:
+//  seeing if magic id is correct, memory checked in assembler routine
+//  I didn't check id in assembler routine because I don't know what's going
+//  on with the registers on the stack and what's goin on with the local stack
+//  frame. FreeBSD seems to change the frame differently in different routines
+//  when sigaction is called and local variables aren't where they are
+//  supposed to be.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+     
+     
+     <div class=word id=dg_checkbharray>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_checkbharray
+//
+// C prototype:
+//  const char* dg_checkbharray (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//                                                          
+// Outputs:
+//  const char*   return    pointer to dg_success message if everything worked
+//                          otherwise returns a pointer to an error message
+//
+// Action:
+//  Checks BHarrayhead magic code.
+//  Then checks to make sure the pointer to memory is not the bad buffer handle code.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+     
+
+     <div class=word id=dg_stonewstring>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_stonewstring
+//
+// C prototype:
+//  void dg_stonewstring (
+//    Bufferhandle* pBHarrayhead,
+//    unsigned char* pstring,
+//    UINT64 stringlength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+//  unsigned char* pstring        pointer to byte array to push to string stack.
+//
+//  UINT64 stringlength           length of byte array in bytes.
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Pushes segment to string stack.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+     
+
+     <div class=word id=dg_pzerostringtonewstring>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_pzerostringtonewstring
+//
+// C prototype:
+//  void dg_pzerostringtonewstring (
+//    Bufferhandle* pBHarrayhead,
+//    unsigned char* pzerostring)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+//  unsigned char* pzerostring    pointer to null terminated byte array.
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Pushes a C style zero string to the string stack.
+//  The null terminator is not pushed.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_checkargs>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_checkargs
+//
+// C prototype:
+//  const char* dg_checkargs (
+//    int argc,              // assumes argc is at least one less than largest signed int
+//    char* argv[])
+//
+// Inputs:
+//  int argc                   number of arguments
+//
+//  char* argv[]               pointer to argument array of zero strings
+//
+//  const char* return         pointer to dg_success message if everything worked
+//                              otherwise a pointer to an error message
+//
+// Action:
+//  Checks the argument array for errors.
+//
+// Note:
+//  for Linux, FreeBSD
+//  for Linux, FreeBSD, and MacOSX
+//  pointers to environment variables passed to diaperglu are in argv array starting at
+//   index argc+1 and go until argv[x]=0;
+//  environment variable strings are null terminated and are of form name=value
+//   the =value part is not necessarily there
+//
+//  for Windows, this may also be true but I'm not sure.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+     
+
+     <div class=word id=dg_parseword>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_parseword
+//
+// C prototype:
+//  const char* dg_parseword(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64* pwordlength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the 
+//                                  other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( "&lt;delimeters&gt;word&lt;delimeters&gt;morestuff" 
+//     -currentinputbuffer- "morestuff" )
+//
+// Outputs:
+//  const char*   return          pointer to word parsed
+//
+//  UINT64*       pwordlength     pointer to length of word parsed
+//
+// Action:
+//  Moved current input pointer past the next word and the delimiter after the next
+//   word in the current input buffer and returns a pointer to and length of the next 
+//   word parsed.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+     
+
+     <div class=word id=dg_parsewords>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_parsewords
+//
+// C prototype:
+//  unsigned char* dg_parsewords(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64* pwordlength,
+//    unsigned char enddelimiter,
+//    UINT64* pfoundendflag)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//
+//  unsigned char enddelimiter    an additional delimiter to add to the list of 
+//                                 white space delimiters
+//  
+// Stack action shorthand:
+//  ( "&lt;delimeters&gt;word&lt;delimeters&gt;morestuff" |
+//    "&lt;delimeters&gt;word&lt;enddelimeter&gt;" -currentinputbuffer- "morestuff" )
+//  
+// Outputs:
+//  const char*   return          pointer to word parsed
+//
+//  UINT64*       pwordlength     pointer to length of word parsed
+//
+//  UINT64*       pfoundendflag   pointer to foundendflag
+//                                 flag is FORTH_FALSE if parse ended on whitespace
+//                                 flag is FORTH_TRUE if parse ended on enddelimiter
+//                                  or parse reached the end of the current input
+//                                  buffer
+//
+// Action:
+//  Moved current input pointer past the next word and the delimiter after the next 
+//   word in the current input buffer and returns a pointer to and length of the next 
+//   word parsed. This also returns a flag indicating whether or not the end delimiter
+//   or the end of the current input buffer was reached. If the end delimiter or the
+//   end of current input buffer was reached then foundendflag is set to FORTH_TRUE,
+//   otherwise foundendflag is set to FORTH_FALSE.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_f32tof64>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_f32tof64
+//
+// C prototype:
+//  FLOAT64 dg_f32tof64 (FLOAT32 f32)
+//
+// Inputs:
+//  FLOAT32    f32                32 bit floating point number
+//
+// Outputs:
+//  FLOAT64    return             64 bit floating point number
+//
+// Action:
+//  Converts a 32 bit floating point number to a 64 bit floating point number
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_f64tof32>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_f64tof32
+//
+// C prototype:
+//  FLOAT32 dg_f64tof32 (FLOAT64 f64)
+//
+// Inputs:
+//  FLOAT64    f64                64 bit floating point number
+//
+// Outputs:
+//  FLOAT32    return             32 bit floating point number
+//
+// Action:
+//  Converts a 64 bit floating point number to a 32 bit floating point number
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+     
+
+     <div class=word id=dg_ftod>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_ftod
+//
+// C prototype:
+//  INT64 dg_ftod (FLOAT32 f32)
+//
+// Inputs:
+//  FLOAT32    f32                32 bit floating point number
+//
+// Outputs:
+//  INT64      return             64 bit integer number
+//
+// Action:
+//  Converts a 32 bit floating point number to a 64 bit integer number
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+     
+     
+     <div class=word id=dg_dftod>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_dftod
+//
+// C prototype:
+//  INT64 dg_dftod (FLOAT64 f64)
+//
+// Inputs:
+//  FLOAT64    f64                64 bit floating point number
+//
+// Outputs:
+//  INT64      return             64 bit integer number
+//
+// Action:
+//  Converts a 64 bit floating point number to a 64 bit integer number
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+     
+     
+     <div class=word id=dg_dtodf>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_dtodf
+//
+// C prototype:
+//  FLOAT64 dg_dtodf (INT64 i64)
+//
+// Inputs:
+//  INT64        i64                64 bit integer number
+//
+// Outputs:
+//  FLOAT64      return             64 bit floating point number
+//
+// Action:
+//  Converts a 32 bit floating point number to a 64 bit integer number
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    </div>
+
+  </div></body>
+</html>
+
+
+
+
+

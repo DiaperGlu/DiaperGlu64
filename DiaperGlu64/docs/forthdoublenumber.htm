@@ -1,0 +1,922 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<html>
+
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      forthdoublenumber.cpp functions
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>
+      
+      <a href=index.htm                                       >Directory</a>
+      <a href=documentationkey.htm                            >Documentation key</a>
+      <a                                                      >&nbsp;</a>
+
+      <a                                                      >WORDS</a>
+      <a href=forthdoublenumber.htm#dg_forthtwoconstant       >2CONSTANT</a>
+      <a href=forthdoublenumber.htm#dg_forthtwoliteral        >2LITERAL</a>
+      <a href=forthdoublenumber.htm#dg_forthtworot            >2ROT</a>
+      <a href=forthdoublenumber.htm#dg_forthtwovariable       >2VARIABLE</a>
+      <a href=forthdoublenumber.htm#dg_forthdplus             >D+</a>
+      <a href=forthdoublenumber.htm#dg_forthdminus            >D-</a>
+      <a href=forthdoublenumber.htm#dg_forthdzeroless         >D0&lt;</a>
+      <a href=forthdoublenumber.htm#dg_forthdzeroequals       >D0=</a>
+      <a href=forthdoublenumber.htm#dg_forthdtwostar          >D2*</a>
+      <a href=forthdoublenumber.htm#dg_forthdtwoslash         >D2/</a>
+      <a href=forthdoublenumber.htm#dg_forthdlessthan         >D&lt;</a>
+      <a href=forthdoublenumber.htm#dg_forthdequals           >D=</a>
+      <a href=forthdoublenumber.htm#dg_forthdtos              >D&gt;S</a>
+      <a href=forthdoublenumber.htm#dg_forthdabs              >DABS</a>
+      <a href=forthdoublenumber.htm#dg_forthdmax              >DMAX</a>
+      <a href=forthdoublenumber.htm#dg_forthdmin              >DMIN</a>
+      <a href=forthdoublenumber.htm#dg_forthdnegate           >DNEGATE</a>
+      <a href=forthdoublenumber.htm#dg_forthdulessthan        >DU&lt;</a>
+      <a href=forthdoublenumber.htm#dg_forthmstarslash        >M*/</a>
+      <a href=forthdoublenumber.htm#dg_forthmplus             >M+</a>
+      <a                                                      >&nbsp;</a>
+      
+    </div>
+
+    <div id=pagestuff>
+    
+      <div class=word id=dg_forthtwoconstant>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthtwoconstant ( 2CONSTANT )
+//
+// C prototype:
+//  void dg_forthtwoconstant (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( &quot;&lt;delimiters&gt;name&lt;delimiters&gt;morestuff&quot; 
+//     -currentinputbuffer- &quot;&lt;delimiters&gt;morestuff&quot; )
+//  ( xd -- )
+//
+// Data stack in:
+//  xd                            128 bit value of constant for new definition
+//  
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//
+// Current input buffer's current offset out:
+//  &quot;&lt;delimiters&gt;morestuff&quot; 
+//                                                            
+// Action:
+//  Moves the current input buffer's current offset to the delimeter after the next 
+//   series of non delimeter characters or the end of buffer if that comes first and 
+//   then creates a new word in the current new word wordlist using the series of 
+//   non delimiter characters at the name that:
+//    pushes xd onto the data stack when the process is in execute mode
+//    and compiles code that pushes xd onto the data stack when the process is in 
+//    compile mode
+//
+// Forth standard:
+//  8.6.1.0360
+//
+// Failure cases:
+//  error getting current input buffer id
+//  error gettint a pointer to the current input buffer
+//  error popping the data stack
+//  next word in input buffer wasn't found (no more non delimiters before the end of 
+//   the input buffer)
+//  error creating the new constant definition
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthtwoliteral>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthtwoliteral ( 2LITERAL )
+//
+// C prototype:
+//  void dg_forthtwoliteral (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( xd1 -- )
+//
+// Compiles code that does:
+//  ( -- xd1 )
+//  
+// Data stack in:
+//  xd1                           number to compile (128 bit integer)
+//                                                           
+// Action:
+//  compiles code to push xd1 to data stack
+//
+// Forth standard:
+//  8.6.1.0390
+//
+// Failure cases:
+//  error getting current compile buffer id
+//  error popping xd1 from the data stack
+//  error growing the current compile buffer
+//  error getting the pointer to the current compile buffer
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthtworot>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthtworot ( 2ROT )
+//
+// C prototype:
+//  void dg_forthtworot (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( xd1 xd2 xd3 -- xd2 xd3 xd1 )
+//
+// Data stack in:
+//  xd1, xd2, xd3                 128 bit integers
+//
+// Data stack out:
+//  xd1, xd2, xd3                 128 bit integers
+//                                                              
+// Action:
+//  The top three 128 bit numbers on the data stack are rotated.
+//  The second from the top double number is moved to the top, the top is moved to
+//  one below the top, and one below the top is moved to two below the top.
+//
+// Forth standard:
+//  8.6.2.0420
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  xd1 or n1 missing from datastack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthtwovariable>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthtwovariable ( 2VARIABLE )
+//
+// C prototype:
+//  void dg_forthtwovariable (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//     -currentinputbuffer- &quot;&lt;delimiters&gt;morestuff&quot; )
+//  ( -currentnewvariablebuffer- +sizeofUINT128 )
+//  
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//
+// Current input buffer's current offset out:
+//  &quot;&lt;delimiters&gt;morestuff&quot;          
+// 
+// Current data space buffer in:
+//  previously allocated variables
+// 
+// Current data space buffer out:
+//  previously allocated variables + a new variable of two address cells size 
+//  (sizeof UINT128)
+//
+// Forth standard:
+//  8.6.1.0440
+//                                                          
+// Action:
+//  moves the current offset pointer for the current input buffer to the character 
+//   after the next word or to the end of the buffer if no word is found
+//  creates a new definition in the current vocabulary that pushes the address of 
+//   a variable onto the data stack when the process is in execute mode
+//  and compiles code that calculates the address from the variable's bufferid and 
+//   offset and pushes it onto the data stack when the process is in compile mode
+//  the address of the variable used is the address of the next unused byte in the 
+//   current data space buffer
+//  then this routine allocates two cells size worth of memory (8 bytes) in the 
+//   data space buffer (current new variable buffer)
+//
+// Note:
+//  Please see CREATE for a discussion on the life of the pointer to the VARIABLE
+//   
+// Failure cases:
+//  error calling CREATE
+//  error getting the current new variable buffer id
+//  error growing the current new variable buffer
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthdplus>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdplus ( D+ )
+//
+// C prototype:
+//  void dg_forthdplus (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( xd1 xd2 -- xd3 )
+//
+// Data stack in:
+//  xd1 xd2                       2 128 bit integers to add
+//
+// Data stack out:
+//  xd3                           128 bit integer sum of xd1 and xd2
+//                                                              
+// Action:
+//  xd1 and xd2 are replaced with the sum of xd1 and xd2
+//  It does not matter if the intergers are signed or unsigned, the result is the
+//   same
+//
+// Forth standard:
+//  8.6.1.1040
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  xd1 or xd2 missing from datastack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthdminus>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdminus ( D- )
+//
+// C prototype:
+//  void dg_forthdminus (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( xd1 xd2 -- xd3 )
+//
+// Data stack in:
+//  xd1 xd2                       2 128 bit integers to subtract
+//
+// Data stack out:
+//  xd3                           128 bit integer = xd1 - xd2
+//                                                              
+// Action:
+//  xd1 and xd2 are replaced with the difference of xd1 and xd2
+//  It does not matter if the intergers are signed or unsigned, the result is the
+//   same
+//
+// Forth standard:
+//  8.6.1.1050
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  xd1 or xd2 missing from datastack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthdzeroless>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdzeroless ( D0&lt; )
+//
+// C prototype:
+//  void dg_forthdzeroless (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( xd1 -- flag )
+//
+// Data stack in:
+//  xd1                           128 bit integers
+//
+// Data stack out:
+//  flag                          64 bit true false flag
+//                                                              
+// Action:
+//  xd1 is replaced with a flag
+//  flag is TRUE (-1) if xd1 is less than 0, FALSE (0) otherwise
+//
+// Forth standard:
+//  8.6.1.1075
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  xd1 or xd2 missing from datastack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthdzeroequals>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdzeroequals ( D0= )
+//
+// C prototype:
+//  void dg_forthdzeroequals (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( xd1 -- flag )
+//
+// Data stack in:
+//  xd1                           128 bit integers
+//
+// Data stack out:
+//  flag                          64 bit true false flag
+//                                                              
+// Action:
+//  xd1 is replaced with a flag
+//  flag is TRUE (-1) if xd1 is 0, FALSE (0) otherwise
+//
+// Forth standard:
+//  8.6.1.1080
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  xd1 missing from datastack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_forthdtwostar>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdtwostar ( D2* )
+//
+// C prototype:
+//  void dg_forthdtwostar (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( xd1 -- xd2 )
+//
+// Data stack in:
+//  xd1                           128 bit integer
+//
+// Data stack out:
+//  xd2                           128 bit integer
+//                                                              
+// Action:
+//  xd1 is replaced with xd1 shifted to the left one bit
+//  It doesn't matter if xd1 is signed or unsigned, the result is the same
+//
+// Forth standard:
+//  8.6.1.1090
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  nd1 missing from datastack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_forthdtwoslash>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdtwoslash ( D2/ )
+//
+// C prototype:
+//  void dg_forthdtwoslash (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( nd1 -- nd2 )
+//
+// Data stack in:
+//  nd1                           128 bit signed integer
+//
+// Data stack out:
+//  nd2                           128 bit signed integer
+//                                                              
+// Action:
+//  xd1 is replaced with xd1 arithmetically shifted to the right one bit
+//  A copy of the highest bit is shifted in from the left.
+//
+// Forth standard:
+//  8.6.1.1100
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  nd1 missing from datastack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_forthdlessthan>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdlessthan ( D&lt; )
+//
+// C prototype:
+//  void dg_forthdlessthan (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( nd1 nd2 -- flag )
+//
+// Data stack in:
+//  nd1 nd2                       2 128 bit signed integers to compare
+//
+// Data stack out:
+//  flag                          nd1 and nd2 are replaced with a 64 bit flag
+//                                                              
+// Action:
+//  nd1 and nd2 are replaced with a flag
+//  flag is TRUE (-1) if nd1 is less than nd2, FALSE (0) otherwise
+//
+// Forth standard:
+//  8.6.1.1110
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  nd1 or nd2 missing from datastack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthdequals>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdequals ( D= )
+//
+// C prototype:
+//  void dg_forthdequals (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( xd1 xd2 -- flag )
+//
+// Data stack in:
+//  xd1 xd2                       2 128 bit integers to compare
+//
+// Data stack out:
+//  flag                          xd1 and xd2 are replaced with a flag
+//                                                              
+// Action:
+//  xd1 and xd2 are replaced with a flag
+//  flag is TRUE (-1) if xd1 and xd2 are bitwise equal, FALSE (0) otherwise
+//
+// Forth standard:
+//  8.6.1.1120
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  xd1 or xd2 missing from datastack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_forthdtos>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdtos ( D&gt;S )
+//
+// C prototype:
+//  void dg_forthdtos (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( nd1 -- n2 )
+//
+// Data stack in:
+//  nd1                           128 bit signed integer
+//
+// Data stack out:
+//  n2                            64 bit signed integer
+//                                                              
+// Action:
+//  nd1 is replaced with nd1 converted to it's 64 bit equivalent value
+//  if nd1 is greater than the most positive 64 bit integer, the most positive
+//   64 bit integer is returned
+//  if nd1 is lesser than the most negative 64 bit integer, the most negative
+//   64 bit integer is returned
+//
+// Forth standard:
+//  8.6.1.1140
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  nd1 missing from datastack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_forthdabs>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdabs ( DABS )
+//
+// C prototype:
+//  void dg_forthdabs (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( nd1 -- nd2 )
+//
+// Data stack in:
+//  nd1                           128 bit signed integer
+//
+// Data stack out:
+//  nd2                           128 bit signed integer
+//                                                              
+// Action:
+//  nd1 is replaced with the absolute value of nd1
+//
+// Forth standard:
+//  8.6.1.1160
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  nd1 missing from datastack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthdmax>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdmax ( DMAX )
+//
+// C prototype:
+//  void dg_forthdmax (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( nd1 nd2 -- nd3 )
+//
+// Data stack in:
+//  nd1 nd2                       2 128 bit signed integers to compare
+//
+// Data stack out:
+//  nd3                           128 bit signed integer
+//                                                              
+// Action:
+//  nd1 and nd2 are replaced the greater of nd1 or nd2
+//
+// Forth standard:
+//  8.6.1.1210
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  nd1 or nd2 missing from datastack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthdmin>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdmin ( DMIN )
+//
+// C prototype:
+//  void dg_forthdmin (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( nd1 nd2 -- nd3 )
+//
+// Data stack in:
+//  nd1 nd2                       2 128 bit signed integers to compare
+//
+// Data stack out:
+//  nd3                           128 bit signed integer
+//                                                              
+// Action:
+//  nd1 and nd2 are replaced the lesser of nd1 or nd2
+//
+// Forth standard:
+//  8.6.1.1220
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  nd1 or nd2 missing from datastack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_forthdnegate>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdnegate ( DNEGATE )
+//
+// C prototype:
+//  void dg_forthdnegate (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( nd1 -- nd2 )
+//
+// Data stack in:
+//  nd1                           128 bit signed integer
+//
+// Data stack out:
+//  nd2                           128 bit signed integer
+//                                                              
+// Action:
+//  nd1 is replaced with the two's complement of nd1
+//  nd2 = 0 - nd1
+//
+// Forth standard:
+//  8.6.1.1230
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  nd1 missing from datastack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_forthdulessthan>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdulessthan ( DU&lt; )
+//
+// C prototype:
+//  void dg_forthdulessthan (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( ud1 ud2 -- flag )
+//
+// Data stack in:
+//  nd1 nd2                       2 128 bit unsigned integers to compare
+//
+// Data stack out:
+//  flag                          ud1 and ud2 are replaced with a 64 bit flag
+//                                                              
+// Action:
+//  ud1 and ud2 are replaced with a flag
+//  flag is TRUE (-1) if ud1 is less than ud2, FALSE (0) otherwise
+//
+// Forth standard:
+//  8.6.2.1270
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  nd1 or nd2 missing from datastack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthmstarslash>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthmstarslash ( M*/ )
+//
+// C prototype:
+//  void dg_forthmstarslash (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( nd1 n1 n2 -- nd2 )
+//
+// Data stack in:
+//  nd1                           128 bit signed integer
+//  n1                            64 bit signed integer
+//  n2                            64 bit signed integer
+//
+// Data stack out:
+//  nd2                           128 bit signed integer
+//                                                              
+// Action:
+//  nd2 = (nd1 * n1) / n2
+//  multiplies nd1 by n1 making a 192 bit signed integer intermediate result
+//   then the intermediate result is divided by n2
+//  the remainder is thrown away
+//  if n2 is 0, or the absolute value of the result is larger than the largest 128
+//   bit signed integer, the largest positive 128 bit signed integer is returned
+//
+// Forth standard:
+//  8.6.1.1820
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  nd1, n2, or n3 missing from datastack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthmplus>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthmplus ( M+ )
+//
+// C prototype:
+//  void dg_forthmplus (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( xd1 n1 -- xd2 )
+//
+// Data stack in:
+//  xd1                           128 bit integer
+//  n1                            64 bit signed integer
+//
+// Data stack out:
+//  nd2                           128 bit integer
+//                                                              
+// Action:
+//  n1 is sign extended to a 128 bit signed integer then added to xd1
+//  It does not matter if xd1 is signed or unsigned, the result is the same
+//
+// Forth standard:
+//  8.6.1.1830
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  xd1 or n1 missing from datastack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    </div>
+
+  </div></body>
+</html>
+

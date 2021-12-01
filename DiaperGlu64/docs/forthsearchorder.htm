@@ -1,0 +1,354 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<html>
+
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      forthsearchorder.cpp functions
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>
+      
+      <a href=index.htm                                       >Directory</a>
+      <a href=documentationkey.htm                            >Documentation key</a>
+      <a                                                      >&nbsp;</a>
+
+      <a                                                      >C Functions</a>
+      <a href=forthsearchorder.htm#dg_forthdefinitions        >dg_forthdefinitions</a>
+      <a href=forthsearchorder.htm#dg_forthgetcurrent         >dg_forthgetcurrent</a>
+      <a href=forthsearchorder.htm#dg_forthgetorder           >dg_forthgetorder</a>
+      <a href=forthsearchorder.htm#dg_forthsearchwordlist     >dg_forthsearchwordlist</a>
+      <a href=forthsearchorder.htm#dg_forthsetcurrent         >dg_forthsetcurrent</a>
+      <a href=forthsearchorder.htm#dg_forthsetorder           >dg_forthsetorder</a>
+      <a href=forthsearchorder.htm#dg_forthwordlist           >dg_forthwordlist</a>
+      
+    </div>
+
+    <div id=pagestuff>
+
+      <div class=word id=dg_forthdefinitions>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdefinitions ( DEFINITIONS )
+//
+// C prototype:
+//   void dg_forthdefinitions (Bufferhandle* pBHarrayhead) 
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//   ( -- )
+//                                                            
+// Action:
+//  Set the current new word word list to be the same as the top 
+//  (first searched) word list in the search order.
+//
+// Failure cases:
+//   error getting pointer to the search order stack
+//   search order stack is empty
+//   error getting pointer to the word list header array
+//   word list id on top of search order is NOT in the word list header array
+//   error putting word list id to the current compile word list variable
+//
+// Tested cases:
+//   
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetcurrent>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetcurrent ( GET-CURRENT )
+//
+// C prototype:
+//   void dg_forthgetcurrent (Bufferhandle* pBHarrayhead) 
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//   ( -- CurrentNewWordWordListId )
+// 
+// Data stack out: 
+//  CurrentNewWordWordListId      identifier of the word list where newly defined
+//                                  words are currently added
+//                                                            
+// Action:
+//  pushes the word list id
+//  of the current wordlist where newly defined words are added 
+//  to the data stack.
+//
+// Failure cases:
+//  error getting current new word word list id
+//  error pushing current new word word list id to the data stack
+//   
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetorder>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetorder ( GET-ORDER )
+//
+// C prototype:
+//  void dg_forthgetorder (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- wid_n ... wid_1 n )
+// 
+// Data stack out:  
+//  wid_n ... wid_1               n word list identifiers
+//  n                             number of word list identifiers on the data stack 
+//                                 from GET-ORDER
+//                                                            
+// Action:
+//  Pushes the current search order to the data stack followed by the
+//  number of word list identifiers in the search order
+//
+// Failure cases:
+//  error getting pointer to the search order buffer
+//  search order buffer is not integer aligned (corrupt); 
+//   do -1 SET-ORDER to fix it
+//  error pushing search order word list identifiers to the data stack
+//  error pushing the number of word list identifiers in the search order to the data 
+//   stack
+//
+// Tested cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthsearchwordlist>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthsearchwordlist ( SEARCH-WORDLIST )
+//
+// C prototype: 
+//  void dg_forthsearchwordlist (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( c-addr u wid -- 0 )     if word not found
+//  ( c-addr u wid -- xt 1 )  if word found and it is immediate
+//  ( c-addr u wid -- xt -1 ) if word found and it is not immediate
+// 
+// Datastack in:
+//  c-addr                        address of word name string to find
+//  u                             length of word name string
+//  wid                           word list id of word list to search for name string
+//                                 
+// Datastack out:
+// 0                              if the word name wasn't found 0 is returned
+//  or xt 1                       if the word name was found and it is immediate, 
+//                                  the word's execute token along with 1 is returned
+//  or xt -1                      if the name was found and it is not immediate, 
+//                                  the word's execute token along with -1 is returned
+//                                                              
+// Action:
+//  searches all word lists in the search order stack for the word having 
+//  the same name as the counted string at c-addr
+//  and returns different flags and results based on what it finds
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  not enough items on data stack for this operation
+//  error finding definition in word list
+//  error getting pointer to the definition
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthsetcurrent>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthsetcurrent ( SET-CURRENT )
+//
+// C prototype:
+//  void dg_forthsetcurrent (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//   ( wid -- )
+// 
+// Data stack in:
+//  wid                           identifier of new current new word word list  
+//                              
+// Action:
+//  Pops word list identifier from the data stack
+//  Sets the current new word word list to this identifier.
+//    (This is the word list where newly created words go.)
+//
+// Failure cases:
+//  error popping current compile word list from the data stack
+//  word list header array is missing
+//  word list does not exist
+//  error storing word list id into current compile word list variable
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthsetorder>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthsetorder ( SET-ORDER )
+//
+// C prototype:
+//  void dg_forthsetorder (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( wid_n ... wid_1 n -- )
+// 
+// Data stack in:
+//  wid_n ... wid_1               n word list identifiers 
+//  n                             number of word list identifiers on the data stack 
+//                                 for SET-ORDER or 0 to specify an empty search 
+//                                 order (you are locked out after this)
+//                                 or -1 to specify the default search order
+//                              
+// Action:
+//  Pops word list identifiers and n from the data stack
+//  Sets the current search order to these identifiers. wid1 is searched first.
+//
+// Notes:
+//  Forth standard specifies the user is allowed to make the search order anything 
+//   they want, including an empty search order even though this locks out the user 
+//   if they do it.
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  n is missing from the data stack
+//  error getting pointer to the search order buffer
+//  error pushing the minimum word list to the search order buffer (n = -1 case)
+//  number of wordlists &lt; -1 error
+//  not enough word list ids on the data stack 
+//  error pushing the word list ids to the search order buffer
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthwordlist>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthwordlist ( WORDLIST )
+//
+// C prototype:
+//  void dg_forthwordlist (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- wid )
+//
+// Data stack out:
+//  wid                           new word list identifier 
+//                              
+// Action:
+//  creates a new word list
+//  pushes the identifier of the new word list onto the data stack.
+//
+// Failure cases:
+//  error creating the new wordlist
+//  error pushing the new word list id to the data stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+    </div>
+
+  </div></body>
+</html>

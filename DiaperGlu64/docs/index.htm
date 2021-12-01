@@ -1,0 +1,92 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<html>
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      Welcome to Diaperglu
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+    
+    <div id=pagedirectory>
+    </div>
+
+    <div id=pagestuff><div class=pagestuffsection>
+      <p>Diaperglu is all about extreme error checking. Is it possible to catch every problem that can come up? Out of memory? Memory access violations? Integer arithmetic overflows? Diaperglu tries to catch everything except return stack overflows.</p>
+      <p>What else does Diaperglu do?</p>
+      <p> Diaperglu:</p> 
+      <ul>
+        <li>uses an error stack to report errors.</li>
+        <li>has growable buffers and string stacks.</li>
+        <li>uses length strings and checks for boundary errors.</li>
+        <li>is tested using a test script to reduce bugs.</li>
+        <li>
+        is re-entrant except for when it uses operating system functions
+         that are not re-entrant.
+        </li>
+        <li>runs under Apache.</li>
+        <li>has defined behavior for many of the 'behavior undefined' situations
+         in the Forth Draft Standard.
+        </li>
+      </ul>
+       
+      <p>
+        Even if you don't like Forth, or are not interested in using 
+        Diaperglu as a script engine, your applications can gain reliability by linking to the Diaperglu 
+        shared library and accessing it's C function interface.
+      </p>
+      <p>
+        You can also use Diaperglu to test your shared libraries.
+      </p>
+
+    </div></div>
+    
+  </div></body>
+</html>

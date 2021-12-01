@@ -1,0 +1,190 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<html>
+
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      forthlocals.cpp functions
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>
+      
+      <a href=index.htm                                         >Directory</a>
+      <a href=documentationkey.htm                              >Documentation key</a>
+      <a                                                        >&nbsp;</a>
+
+      <a                                                        >C functions</a>
+      <a href=forthlocalslstring.htm#dg_forthlocalslstringfetch >dg_forthlocalslstringfetch</a>
+      <a href=forthlocalslstring.htm#dg_forthtolocalslstring    >dg_forthtolocalslstring</a>
+      <a href=forthlocalslstring.htm#dg_forthlocalslstringbar   >dg_forthlocalslstringbar</a>
+      <a                                                        >&nbsp;</a>
+      
+    </div>
+
+    <div id=pagestuff>
+
+      <div class=word id=dg_forthlocalslstringfetch>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthlocalslstringfetch ( LOCALSL$@ )
+//
+// C prototype:
+//  void dg_forthlocalslstringfetch (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( i -- )
+//  ( -$- u$ )
+//
+// Data stack in:
+//  i                             0 based index of local lstring variable in local lstring 
+//                                 variable stack
+//
+// String stack out:
+//  u$                            value of local variable lstring i
+//                                                              
+// Action:
+//  i is popped off the data stack.
+//  The value of local variable lstring i is pushed onto the string stack.
+//
+// Failure cases:
+//  error popping i from the data stack
+//  u missing from the local variable string stack
+//  error pushing local variable lstring to the string stack
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthtolocalslstring>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthtolocalslstring ( &gt;LOCALSL$ )
+//
+// C prototype:
+//  void dg_forthtolocalslstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( u$ -$- )
+//  ( -localsl$- u$ )
+//
+// String stack in:
+//  u$                            value of new local variable lstring
+//                                                              
+// Action:
+//  Pops u$ off the string stack.
+//  A new local variable is pushed onto the end of the locals lstring stack and it's
+//   value is set to u$.
+//
+// Failure cases:
+//  error popping u$ from the string stack
+//  error pushing u$ to the locals lstring stack
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthlocalslstringbar>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_forthlocalslstringbar ( LOCALSL$| )
+//
+// C prototype:
+//  void dg_forthlocalslstringbar (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( &quot;&lt;delimiters&gt;name0&lt;delimiters&gt;name1&lt;delimiters&gt;...
+//    namen&lt;delimiters&gt;|&lt;delimiters&gt;morestuff&quot; 
+//     -currentinputbuffer- 
+//     &quot;&lt;delimiters&gt;morestuff&quot; )
+//                                                              
+// Compile time action:
+//  The current input buffer is parsed for names up until a | followed by at least one
+//   delimiter is encountered. For each name found, a word with that name is
+//   created in the locals wordlist and a call to &gt;LOCALSL$ is compiled.
+//
+// Run time action:
+//  Pops a string for each local lstring word defined and pushes it to the locals lstring stack.
+//  This means the local lstring word names represent the string stack parameters in 
+//   reverse order.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    </div>
+
+  </div></body>
+</html>
+

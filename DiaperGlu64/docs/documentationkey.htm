@@ -1,0 +1,142 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<html>
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      Diaperglu Documention Directory
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>  
+        
+    </div>
+
+    <div id=pagestuff>
+      <div class=pagestuffsection>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// Documentation Key:
+// 
+// Stacks and buffer changes shorthand:
+//
+//   ( before -- after ) 
+//   for example, for the forth script token '+' :
+//   ( n1 n0 -- n1+n0 )
+//   if data stack before doing + is 3 5, afterwards it will be 8
+//
+// 
+// Stack and buffer names shorthand:
+//
+// ( -- )                           data stack 
+// ( -error- )                      error stack
+// ( -pad- )                        pad buffer for forth core number to string
+//                                   calculations
+// ( -r- )                          rstack (separate from return stack) 
+// ( -EH- )                         elementid hlistid stack (double number stack)
+// ( -currentinputbuffer- )         current script interpreter source
+// ( -currentnewvariablebuffer- )   where memory for new variables is allocated
+// ( -currentcompilebuffer- )       where new code is compiled
+// ( -$- )                          string stack
+// ( -l$- )                         lstring stack, caller specifies lstring stack 
+//                                    offset and data buffers somewhere on data stack
+//
+// 
+// Data stack items shorthand:
+//
+// ?            unknown number of items on stack
+// u            64 bit unsigned integer
+// n            64 bit signed integer
+// x            64 bit signed or unsigned integer (doesn't matter how you look at it)
+// ud           128 bit unsigned integer - low 64 bits then high 64 bits
+// nd           128 bit signed integer - low 64 bits then high 64 bits
+// xd           128 bit signed or unsigned integer - low 64 bits then high 64 bits
+// addr         64 bit address pointer
+// a-addr       64 bit address pointer which is 64 bit aligned (low 3 bits are 0)
+// c-addr       64 bit address pointer to a counted string,
+//                first character in string (which is a byte) specifies the length
+//              or 64 bit address pointer which is character aligned
+//                (in this implementation all address pointers are character aligned)
+// xt           execution token
+// char         8 bit character
+// wid          word list identifier
+// sf           32 bit IEEE single precision floating point number
+// df           64 bit IEEE double precision floating point number
+// 
+//
+// Current input buffer items shorthand:
+//
+// &lt;spaces&gt;   an arbitrary number of spaces
+// &lt;delimiters&gt; an arbitrary number of delimeters which are these:
+//                  &lt;backspace&gt; &lt;carriage return&gt; &lt;form feed&gt; 
+//                  &lt;line feed&gt; &lt;space&gt; &lt;tab&gt; &lt;vertical tab&gt;
+// 
+// Calling methods:
+//
+// call x           calls the subroutine x pushing the return address in the standard
+//                   method
+//
+// safe call x      calls the subroutine but saves the offset and bufferid of the
+//                   caller instead of a return address so that the return address can
+//                   be calculated when the called routine returns. This allows for a
+//                   valid return when the buffer the calling routine is in is
+//                   relocated during the call to the subroutine which can happen if
+//                   the subroutine is compiling to the buffer the caller is in.
+//      
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+    </div>
+  </div></body>
+</html>
+
+
+

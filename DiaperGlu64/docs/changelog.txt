@@ -1,0 +1,712 @@
+Changelog for Diaperglu
+  10 January 2020
+    Release v5.0
+
+  9 January 2021
+    on Win64, dg_free was not using VirtualFree properly and was getting an error;
+     changed VirtualFree to use size=0 with MEM_RELEASE
+
+  8 January 2021
+    Added SIZED-CONSTANTS<
+    Added [>ORDER]CONSTANT >CURRENT CURRENT> SEARCH-ORDER-DROP [SEARCH-ORDER-DROP]
+    Added OCR[>ORDER]
+    Added dg_createbrackettoorderconstantdef
+    Added dg_tocurrent dg_currentfrom
+    
+  3 October 2020
+    Release v4.9
+    Added dg_microsecondssince1970jan01 and MICROSECONDSSINCE1970JAN01
+    Added a port of DiaperGlu for 64 bit Windows
+    Changed library name on win64 from diaperglu.dll to libdiaperglu.dll to avoid a linking
+     problem caused by the compilation of diaperglu.exe overwriting diaperglu.lib and messing up
+     the import/export symbol lists.
+    Changed C functions that returned or passed UINT128 to instead return 
+     the low 64 bits as a UINT64, return the high 64 using a pointer to memory,
+     and pass in UINT128s using a pointer to memory. This is because Visual Studio's
+     C compiler does not support UINT128.
+      
+
+ 31 August 2020
+    Added FRAME< FRAME,< LOCAL-[RBP+N]<
+    Fixed names of words that changed from using { to < in this file
+
+ 15 August 2020
+    Release v4.8
+    Added CONSTANTS FCONSTANTS VARIABLES COMPILE-U8S
+    Added LOCAL-CONSTANTS< and LOCAL-CONSTANTS
+
+ 11 August 2020
+    Changed ( back to follow standard (it now uses dg_parsemultiline)
+
+  9 August 2020
+    Changed LOCALS| to use dg_parsewords
+    Fixed ?CLEAR-LOCALS to do dg_restorelocalstackdepth and dg_restorelocallsstackdepth
+
+
+  8 August 2020
+    Added COMPILE-U8S<
+    Added CONSTANTS<
+    Added FCONSTANTS<
+
+  7 August 2020
+    Added $CREATE
+    Added FVARIABLES<
+
+  6 August 2020
+    Added VARIABLES<
+
+  5 August 2020
+    Added alternate name PARSE-NAME for PARSE-WORD to comply with new standard
+    Added dg_parsemultiline and PARSE-BUFFER which do not end with line terminators
+
+  4 August 2020
+    Changed dg_parse and PARSE to consider line terminators as end delimiters.
+     This change is to follow the spirit of the standard.
+    Updated documentation for ." .( ABORT" C" PARSE S" ( to reflect the change.
+    Updated documentation for $" OS" O0" to reflect the change.
+    Updated documentation for RUNFILEANDWAIT" to reflect change.
+
+  30 July 2020
+    Added dg_parsewords and PARSE-WORDS
+
+  28 July 2020
+    Released v4.7
+    Added Forth Standard Double Number and Double Number Extension words
+    Added remaining Forth Standard String words
+    Added a sample program to show a way to make temporary constants for
+     assembler routines
+     
+  27 July 2020
+    Added PRUNE-ELEMENT
+    Added EMPTY-WORDLIST
+    Added SYNONYM
+
+  20 July 2020
+    Fixed D= to do a 128 bit compare instead of a 64 bit compare.
+    Changed functions that parsed a word to leave current input buffer pointer
+     on character after first delimiter instead of on first delimiter. This change
+     is to comply with the '94 draft standard.
+
+  19 July 2020
+    Added BLANK
+    Removed documentation for floating point words removed on July 9.
+    Added -ROT
+    Added CMOVE and CMOVE>
+    Added makefilenodiaperglu which uses a compile flag to remove some of the 
+     error checking. The output file is called nodiaperglu
+     This speeds things up by more than 6x.
+
+  13 July 2020
+    Released v4.6
+    Documentation fixes. (I'm still finding stuff worded for 32 bit version.)
+
+  11 July 2020
+    Combined Buffer, $, Error, and OS wordlists into Buffer wordlist. This doubled
+     the speed of worst case find which is finding a number.
+
+  10 July 2020
+    Added Forth floating point and Forth floating point extension words
+    
+  9 July 2020
+    Removed >FP0 FP0> FS> F32> F64> (not needed in 64 bit mode)
+    Removed DF>D D>DF DF>SF SF>DF (Forth standard words will replace these)
+    Removed DF* DF+ DF- DF/  (Forth standard words F* F+ F- F/ will replace these)
+    Replaced F>D with forth stardard version that uses separate floating point stack
+
+  27 June 2020
+    Changed lastnotfoundword size to be maxwordlength + 1 long, a very long not found word
+     could have overwritten dg_quitsavedstate because it was not long enough.
+    Changed dg_quitsavestate length to be 0x30. It looks like I'm putting 3 or 4 UINT64s
+     in it.... It was only 8 before. Allocating variables could have overwritten the
+     dg_quitsavestate information.
+
+  17 June 2020
+    Fixed regular shift ops to compile immediate shift values greater than 0x1f correctly.
+    It was anding the immediate value with 0x1f. (SHR, SHL, etc.)
+
+  16 June 2020
+    Added RETDROPN16,
+    Added RETFARDROPN16,
+
+  14 June 2020
+    Added ?CLEAR-LOCALS word name to the core wordlist
+    Added JMP, documentation
+    Added CALL[SS]+N16, CALL[SS]+N32, CALL[SS]+N64, documentation
+    Added JMP[SS]+N16, JMP[SS]+N32, JMP[SS]+N64, documentation
+    Added RETFAR,
+
+  11 June 2020
+    Released v4.5
+    Added VEX instructions
+    Numerous documentation fixes in cpux86.htm
+
+  2 June 2020
+    Fixed some of the examples for INSERTPS
+
+  1 June 2020
+    Changed dg_setmod to handle promotion of displacement size to 1 byte if displacement
+     is 0 and base reg is RBP or R13. Previously it only handled the ebp case 
+     which works for 32 bit address mode, but does not work for 64 bit address mode.
+
+  16 April 2020
+    Changed dg_urlencodelstring to %encode everything except alpha, numeric, and -_.~
+     The old way was converting both + and space to + which would make it impossible to
+     reconstruct the original string if it had a + in it.
+    dg_urldecodelstring was left alone because converting + to space will catch the case
+     where other people are doing that without breaking what dg_urlencodestring does
+
+  13 April 2020
+    Fixed word list entry for dg_forthemmscomma. It had wrong bufferid and was not a
+     function pointer.
+
+  12 April 2020
+    Fixed rex calculation so it would do SIL DIL BPL and SPL correctly
+    Also added an error if you try to use AH BH CH DH with REX
+
+  6 April 2020
+    Released v4.3
+    dg_waitpid
+    dg_execve
+    dg_fork
+    dg_runfileandwait
+    RUNFILEANDWAIT
+    added most x86 instructions except ones using VEX
+    added how to use assembler and how to run the examples to cpux86.htm 
+    
+  13 February 2020
+    Fixed MOVBE. The opcodes were set up wrong.
+
+  5 January 2020
+    In 64 bit mode the default size for MOVZX and MOVSX is 32 bits instead of 16,
+     changed when the 0x66 switch to non default size prefix is used, also changed it
+     so prefix is compiled before REX, although I think it was working even though
+     the docs said it would't work. (This is why I should test everything more
+     carefully :-)
+
+  26 December 2019
+    changed underflow error to say underflow error instead of not enough parameters
+    Added dg_forthehnd
+
+  28 November 2019
+    dg_loadlibrary was always returning dg_success when using forceerror, changed it
+      to return the forced error
+
+  16 August 2019
+    Added dg_forthtouleb128 (finished docs :-)
+
+  19 July 2019
+    Added dg_lobit dg_hibit dg_forthlobit dg_forthhibit
+    Added dg_touleb128 dg_gethctwolength dg_hctwostore
+
+  5 September 2018
+    Added x87 floating point compiling words to the assembler.
+
+  7 August 2018
+    Fixed docs for dg_forthcomma. Docs said it pushed onto the end of the current
+    compile buffer, when dg_forthcomma really pushes onto the end of the current
+    data space buffer.
+
+  15 July 2018
+    Fixed IMULN, to compile the immediate value of 64 bit targets correctly
+    (immediate values are limited to 32 bits and get sign extended)
+
+  14 July 2018
+    Updated docs for SHLD, SHRD,
+    Made DiaperGluLife demo handle most of the could not init case
+
+  8 July 2018
+    Added XLATB, CDO, CDQE,
+    Updated much of the assembler docs for 64 bit address mode stuff
+    Added CMPSQ, LODSQ, MOVSQ, SCASQ, STOSQ,
+    Updated MOVSX, and MOVZX, to support 64 bit targets and registers
+ 
+  1 July 2018
+    Fixed dg_compilequeryerror to not crash. It was using the wrong offsets in the
+     subroutine frame for pBHarrayhead and olderrorcount.
+
+  14 May 2018
+    Fixed compile rex calculation to add rex for modr/m reg targets < 64 bits
+    (Bug was that rex was not added for modr/m mod=3 < 64 bit register targets)
+
+  06 May 2018
+    Fixed one target instructions to support rex register targets (R8-R15)
+    Added rex support for SHLD, and SHRD, (64 bit src, dest, and rex extension registers)
+
+  Diaperglu64 Version 4.0
+
+  19 Feb 2018
+    Releasing Diaperglu v4.0 64 bits. Some things were removed like
+    loading entire wordlists from shared libraries and showing shared library
+    wordlists.
+
+  28 Jan 2018
+    Converted Mac OS X version of Diaperglu to 64 bits.
+
+  Version 3.2
+
+  25 Jun 2017
+    Changed Diaperglu initialization to look for glu/nglu hlists. 
+     If the file name in the arguments, isapi parameters, or cgi parameters
+     is for a glu/nglu hierarchical list file, then Diaperglu
+     will try to load the file, unpack the hiararchical list, and
+     glu/nglu the hierarchicacl list. (The actual check is for a packed
+     lstring file... then tries to unpack the hlist packed into the lstring).
+
+    Updated Mac OS X OpenGL draw pixels demo. It now compiles to a
+     precompiled buffer and nglu list.
+
+    Updated documentation for the new functions.
+     Removed some old functions that were not being used, like ones
+     for the stdcall compile type. (stdcall is the same as cdecl now.)
+
+    Renamed some functions so that their names make sense such as:
+     chaged dg_inithlistwordlist to dg_inithlists
+
+    Split the initialization of hlists and wordlists into two functions 
+     so it's possible to run Diaperglu without the wordlists.
+
+    Added dg_parseword and converted some of the existing functions to use
+     dg_parseword instead of doing their own parsing. Not all functions
+     have been converted yet.
+
+    Added support for linking in the form of glu/nglu hierarchical lists.
+     Added functions include:
+      dg_patchpnewbuffer
+      dg_patchaddressusingdlsym
+      dg_patchaddressusingdlsymb
+      dg_patchaddressusinghlist
+      dg_patchaddressusinghlistb
+      dg_patchaddressusingoffset
+      dg_patchaddressusingoffsetb
+      dg_loadsharedliblist
+      dg_loadfilelist
+      dg_loadhlistfilelist
+      dg_newbufferlist
+      dg_loadsymbollist
+      dg_setpatchdestbufid
+      dg_setpatchsrcbufid
+      dg_setpatchsrclib
+      dg_setpatchsrcsymbollist
+      dg_setpatchdestsymbollist
+      dg_callpatchsrclib
+      dg_callpatchsrclibtods
+      dg_callpatchsrcbufsymbol
+      dg_callpatchsrcbufsymboltods
+      dg_callpatchdestbufoffset
+      dg_callpatchdestbufoffsttods
+      dg_glueidhidtods
+      dg_gluuint32valuetods
+      dg_gluvaluetoss
+      dg_glufuncnglu
+      dg_glu
+      dg_nglu
+      dg_forthgluelement
+      dg_forthngluelement
+      dg_forthglu
+      dg_forthnglu
+      dg_forthnewnglulist
+      dg_forthnewcurrentnglulist
+      dg_createlinkcomma
+      dg_forthcreatecodelinkcomma
+      dg_forthcreateocodelinkcomma
+      dg_forthcreateobcodelinkcomma
+      dg_forthcreatecdecllinkcomma
+      dg_forthcreatecolonlinkcomma
+      dg_forthcreateodatalinkcomma
+      dg_forthcreateobdatalinkcomma
+      dg_forthwtolinkcomma
+      dg_forthwtocodelinkcomma
+      dg_forthwtodatalinkcomma
+      dg_forthsymbol
+      dg_stringtoglulinkcomma
+      dg_forthstrtolinkcomma
+      dg_forthstrtocodelinkcomma
+      dg_forthstrtodatalinkcomma
+
+    Added support functions for gluing to the cpux86.cpp code file.
+     Added functions include:
+      dg_compilemovntoeax
+      dg_compiledatalink
+      dg_compilejumptoeax
+      dg_ntoeaxcomma (this one is probably redunant :-)
+      dg_forthotormovcomma
+      dg_forthbracketotormovcomma
+      dg_forthopushcomma
+      dg_forthbracketopushcomma
+      dg_forthbracketopopcomma
+      dg_forthstrtopstrpushcomma 
+
+    Moved initialization of the X86 wordlist words to a presorted wordlist.   
+
+    Added an elementid hlistid ( EH ) stack to the hierchical list code files
+     and other support functions for gluing.
+     Added functions include:
+      dg_callhlistchildren
+      dg_callhlistchildrenbyn
+      dg_namestringtovaluestring
+      dg_forthtoeh
+      dg_forthehfrom
+      dg_forthdropeh
+      dg_forthehtop
+      dg_forthdupeh
+      dg_forthetoehtop
+      dg_forthehnewelement
+      dg_forthehnewelementtoeh
+      dg_forthnamestrtovaluestr
+      dg_forthnamestrtovalue
+      dg_forthehnamestrtovaluestr
+      dg_forthehnamestrtovalue
+      dg_forthnamewtovaluestr
+      dg_forthnamewtovalue
+      dg_forthehnamewtovaluestr
+      dg_forthehnamewtovalue
+      dg_forthehoherewtonewelement
+
+  19 Jun 2017
+    Fixed dg_forthinusebuffers, dg_forthinusebytes, dg_forthallocatedbytes to use
+     badbufferhandle instead of NULL when looking for free buffers.
+  13 Apr 2017
+    Added dg_packhlist with doc
+    Added dg_unpackhlist with doc
+    Added dg_forthpackhlist with doc ( PACK-HLIST )
+    Added dg_forthunpackhlist with doc ( UNPACK-HLIST )
+    Changed title of chierarchicallist.cpp from cbuffer.cpp to chierarchicallist.cpp
+    Removed references to csortedlist from diaperglu.h and cfunctions.htm
+    Added chierarchicallist functions to cfunctions.htm
+
+  31 Mar 2017
+    Changed dg_stonewstring to use the larger of source string length or growby for
+      the initial size of the buffer because it was using the string length and if
+      the string length is 0, this causes an error for dg_newbuffer because the
+      initial buffer size can't be 0
+
+  05 Oct 2016
+    Added dg_getuint32stackelement and docs
+    Added dg_putuint32stackelement and docs
+    Fixed typo for dg_putuint32arrayelement (C prototype function name was wrong)
+  20 Jun 2016
+    Removed references to searching for tag and key from dg_findsortedhlistchild in
+     chierarchicallist.cpp comments 
+  04 Feb 2016
+    Added dg_stonewbuffer
+    Added dg_getpbufferhandlefast
+
+  04 Aug 2013
+    Added docs for SF>DF and DF>SF
+
+  03 Aug 2013
+    Fixed GETPBUFFERPBUFFERLENGTH to point to dg_getpbuffer instead of 
+      dg_getpbufferlength
+
+  Version 3.1
+  
+  17 Jul 2013
+     Changed presorted os wordlist lengths from hard constants to #defines and
+      added code to check to make sure the number of entries in the buffers matches
+      the wordlist lengths. This is to fix problem where I made mistake with the
+      hardcoded length and overflowed the buffer in one wordlist and ended up
+      overwriting environ on FreeBSD static linked version. I'm not sure if this
+      bug is in last released version.
+
+  11 Jul 2013
+    Changed dg_sendnoscriptfilepage Content-type: declaration to include
+     both \r\n in same printzerostring statement because Apache in isapi
+     mode seems to require entire content header including new lines to
+     be in one write.
+    Fixed GetServerVariable call to use ConnID instead of just http
+     header as first parameter because win32 docs say it's supposed to
+     be this way. IIS is ok with bug, but Apache will throw exception.
+    Fixed dg_getenvironmentvariable call to return the true length
+     in bytes of values not including null terminator, but if you want
+     the value copied, you have to pass in a buffer with room for null
+     terminator. This is to meet a win32 requirement and also have this
+     function work the same way on all operating systems.
+
+  28 Jun 2013
+    Updated diaperglu?scriptname mode to use first parameter's value as target 
+      script's file name
+    Changed way Diaperglu determines run mode.
+      if SERVER_NAME or SERVER_SOFTWARE is not defined, Diaperglu runs in normal
+        mode. (any args is used as a script file name otherwise Diaperglu
+        runs in interpretive mode from stdin).
+      if SERVER_NAME and SERVER_SOFTWARE is defined, Diaperglu runs in CGI or
+        ISAPI mode.
+      if CGI and SCRIPT_NAME after last slash or backslash matches the filename
+        after the last slash or backslash passed into args, 
+        Diaperglu runs the script file passed into args.
+        (this is http://servername/cgi-bin/scriptfilename.dglu mode)
+      if ISAPI and SCRIPT_NAME after last slash or backslash matches the filename
+        passed in PATH_TRANSLATED after the last slash or backslash, 
+        Diaperglu runs the script file passed in SCRIPT_TRANSLATED. 
+        (this is http://servername/scriptfilename.dglu mode)
+      if CGI or ISAPI and no match after last slash and QUERY_STRING is emtpy,
+        then Diaperglu tries to run noscript.dglu. But if noscript.dglu is
+        missing, Diaperglu throws up a default page
+      if CGI or ISAPI and no match after last slash and there is anything in
+        QUERY_STRING, Diaperglu uses the first parameter's value in the
+        QUERY_STRING as the script filename to run.
+        
+      
+  15 Jun 2013
+    Added dg_forthf32fromsub to win32 assembly
+    Fixed dg_forthfsfromsub. Not sure how it ever worked.
+    
+  31 Apr 2013
+    Added some demos for Mac OS X Mountain Lion which use the objective c library
+     to access frameworks.
+    Fixed name of an assembler string instruction in wordlist. 
+     One was using another's name.
+
+  02 Apr 2013
+    Changed CALLPROCRETUINT64 to return 64 bit numbers in the Forth standard UD
+    format on the return stack. It was returning the low high values reversed.
+    Also updated documentation for this function to say what the return format
+    is.
+
+  11 Feb 2013
+    Fixed (I hope): dg_compilealignretstack ( and COMPILE-ALIGN-RET-FOR-N )
+     now works for return stack with any size local variables and starting 
+     alignment, not just 32 byte aligned. And also no longer trashes EAX.
+
+    Fixed (I hope): dg_compilealignretstackpreserveregs now works for return 
+     stack with any size local variables and starting alignment, 
+     not just 32 byte aligned.
+
+    Added COMPILE-ALIGN-RET-FOR-N-PRESERVE-FLAGS
+
+    Added F32> word and F64> alias for FS>
+
+  Version 3.0 23 Dec 2012
+    Fixed: USER-WORDLIST was incorrectly pointing to the operating system wordlist, 
+     it now points to the user wordlist.
+     
+    Added assembler.
+    
+    Improved hierarchical list find speed: put search in one routine and eliminated 
+     extra pointer fetch calculations.
+     
+    Added support for Mac OS X 10.8.2: Mac's image header format changed so the symbol
+     discovery routines for LOADLIBRARY$, SHOWLIBRARY$, and SHOWOPENLIBRARY
+     needed to be rewritten.
+     
+  03 Dec 2012
+    Fixed: dg_openfileforwritenew on Mac OS X was not emptying the file. 
+     Added O_TRUNC to file mode on Linux, FreeBSD, and Mac to fix this.
+
+    Fixed: changed all win32msvc kernel function calls to be 16 byte aligned. Not sure if this
+     is needed, but may fix issues when running the win32msvc version of Diaperglu through 
+     Parallels.
+
+    Fixed: changed win32msvc kernel writefile and writeisapi calls to check for how many bytes
+     were actually written and then sleep and attempt to rewrite the unsent bytes later. 
+     Earlier versions of Diaperglu treated this condition as an operating system error, but
+     apparently this is normal Windows operation on a blocking write. Something about system
+     I/O buffers being shared among all processes and being limited to 64k bytes total on
+     some versions of Windows. (XP and earlier?) Also broke up large writes into blocks of 1k
+     to help prevent the not enough system I/O buffer memory problem from occurring.
+
+  04 Nov 2012
+    Fixed documentation for CREATEOC and CREATEOV. They were incorrectly describing
+     their compile mode actions as compiling code to calculate an address when in fact
+     they just compile code to push an offset and bufferid.
+
+  29 Jun 2012
+    Added AGAIN
+    Added ROLL
+    Added PAD
+    Added HOLDBUFFERID
+    Moved <# # #S and HOLD functions to hold buffer from pad buffer
+    Added hold buffer
+    Added NIP
+    Added ERASE
+
+v2.0a 24 Jun 2012
+    Fixed versions in makefiles, they were still at 1.5
+    Fixed OpenGLHelloWorld.dglu, double floats passed to shared library routines were missing SWAPs
+
+v2.0
+  19 Jun 2012
+    Added sample scripts testmath.dglu and OpenGLHelloWorld.dglu to the macosx directory
+    Added DF+ DF- DF* DF/ FS> PACKDF UNPACKDF
+     (Threw these in so I could load use libm.dylib library on Mac OS X. I'm not sure how Mac OS X's method of
+      passing double float results on the x87 hardware floating point stack will prevent it from overflowing when
+      multiple applications could be using it at the same time. FS> pops the double float from the x87 hardeware stack
+      for you. Also DF+ DF- DF* DF/ uses gcc compiled code to do
+      the floating point calculations. Either those or libm.dylib's conversion routines are a bit inaccurate.
+      In any case, these functions are not very well tested.)
+    Added FILL-NEW$
+    Added VARIABLEFL$
+    Changed Mac OS X makefile to force 16 byte return stack alignment because gcc compiled code would
+     lose alignment if called from diapergluscript compiled code even if the diapergluscript compiled code
+     was aligned
+    Added OPENLIBRARY$ SHOWLIBRARY$ SHOWOPENLIBRARY
+    Updated Mac OS X LOADLIBRARY$ to find functions the same way Mac OS X does
+      (this might make it reentrant)
+    Changed wordlist initialization to use presorted wordlists
+     (The binary insertion sort was really slow so I added the presorted wordlists to speed things up.)
+    Converted wordlists to hierarchical lists
+     (This makes things more flexible, as wordlists can now have subwordlists, but it seems to slow things down a lot. However,
+       script files with lots of definitions, this may be faster in the long run.)
+    Added NEW-HLIST FREE-HLIST FREE-ELEMENT NEW-ELEMENT
+    Added GET-ELEMENT-NAME$ GET-ELEMENT-VALUE$ SET-ELEMENT-VALUE$
+    Added GET-ELEMENT-NEWEST-CHILD GET-ELEMENT-OLDER-SIBLING GET-ELEMENT-NEWER-SIBLING
+    Added SET-ELEMENT-PARENT GET-ELEMENT-PARENT
+    Added FIND-CLOSEST-ELEMENT-CHILD-BY-NAME$ FIND-ELEMENT-CHILD-BY-NAME$
+    Added ELEMENT>DGLUML$
+    Added GET-ELEMENT-NUMBER-OF-SORTED-CHILDREN FIND-ELEMENT-CHILD-N
+    Added dg_fillwithbyte
+    Added dg_insertwithcfillinlstringn
+    Added dg_comparestolstringn
+    Added dg_deleteuint32inlstringn
+    Added dg_gethlistheaderarrayheader
+    Added dg_querycreatehlistheaderarray
+    Added dg_gethlistheader
+    Added dg_freehlistmemory
+    Added dg_allocatehlistmemory
+    Added dg_newhlist
+    Added dg_freehlist
+    Added dg_linklasthlistchildelement
+    Added dg_unlinkhlistchildelement
+    Added dg_newhlistelement
+    Added dg_freehlistelement
+    Added dg_gethlistlastchildofparent
+    Added dg_prunehlistelement
+    Added dg_gethlistnextsibling
+    Added dg_gethlistprevioussibling
+    Added dg_gethlistelementparent
+    Added dg_getshlistelementnom
+    Added dg_getshlistelementvalue
+    Added dg_sethlistelementvalue
+    Added dg_getshlistelement
+    Added dg_sortcomparehlistnom
+    Added dg_dobinaryinsertsortstep
+    Added dg_findsortedhlistchild
+    Added dg_getshlistelementnamene
+    Added dg_changehlistelementparent
+    Added dg_getnumberofsortedchildren
+    Added dg_getidofsortedhlistchildn
+    Added dg_addnsamechartostring
+    Added dg_hlisttodglumlstring
+    Added dg_newunsortedhlistelement
+    Added dg_isfreeablelstringfree
+    Added dg_getsflstrheader
+    Added dg_copyflstrheadertos
+    Added dg_insertsintoflstrn
+    Added dg_copysfromflstrn
+    Added dg_copytoinsertflstrntom
+    Added dg_deleteinflstringn
+    Added dg_getlengthflstringn
+    Added dg_newfreeablelstringonend
+    Added dg_movebytesskipdestination
+    Added dg_savelocalstackdepth
+    Added dg_restorelocalstackdepth
+    Added LOCALS@
+    Added LOCALS!
+    Added >LOCALS
+    Added dg_forthdocompiletypelocal
+    Added LOCALS|
+    Added ?CLEAR-LOCALS
+    Added dg_savelocallsstackdepth
+    Added dg_restorelocallsstackdepth
+    Added LOCALSL$@
+    Added >LOCALSL$
+    Added dg_forthdocompiletypelocalls
+    Added LOCALSL$|
+    Added NEWFL$[]
+    Added FREEFL$[]
+  
+  27 Dec 2011
+    Fixed dg_comparebytes, it was incorrectly using the longer length instead of the shorter
+
+  29 Mar 2011
+    Added dg_freefreeablelstringarray
+    Added dg_newfreeablelstringarray
+    Added dg_freefreeablelstring
+    Added dg_newfreeablelstring
+
+    Added dg_findinsortedarraycompare - later removed
+    Added dg_findaftermatchinsortedarray - later removed
+    Added dg_addkeytosortedarray - later removed
+    Added dg_removekeyfromsortedarray - later replaced with dg_deleteuint32inlstringn
+    
+
+  7 Mar 2011
+    Added dg_getuint32arrayelement
+    Added dg_putuint32arrayelement
+    Added dg_newbufferset
+
+  26 Oct 2011
+    Added test for dg_checkbuffer
+    Added dg_freebufferset
+
+  24 Oct 2011
+    fixed documentation error for dg_getpbuffer. dg_getpbuffer returns badbufferhandle, not NULL on error.
+    
+  19 Oct 2009
+    Added dg_forthzerogreater and name 0>
+    Added dg_forthzeronotequals and name 0<>
+    Added dg_forthdotparen and name .(
+    Added dg_forthnotequals and name <>
+    Added dg_forthugreaterthan and name U>
+    
+v1.5
+  15 Aug 2009
+    Added dg_forthgetsbuffer and name GETSBUFFER
+    Renamed dg_forthabsolutevalue to dg_forthabs
+    Renamed dg_forthgetpstring to dg_forthgetsstringnd and added name GETS$[ND]
+    Renamed dg_forthgetplstring to dg_forthgetslstringn and added name GETSL$[N]
+    Renamed dg_forthgetpbufferhandle to dg_forthgetsbufferhandle and added name GETSBUFFERHANDLE
+    Renamed dg_forthgetpbufferhandlearrayhead to dg_forthgetsbufferhandlearrayhead and added name GETSBUFFERHANDLEARRAYHEAD
+    Changed SET-ORDER so errors doing SET-ORDER do not leave user with an empty search order
+    Changed most compiling routines to use a set of core compiling subroutines such as
+     dg_compilebranch, dg_resolvecompiledbranch, dg_compilecallcore, and dg_compilesegment
+     This makes it easier to port to other platforms. 
+    Compiling routines now generate 16 byte aligned calls to support Mac OS X requirements
+    Compiling routines no longer generate code to eat parameters after after subroutine calls,
+     instead they generate code to keep track of where local variables end on the return stack
+     and generate code to drop parameters and unalign the stack when the next subroutine call
+     is made and generate code to drop everything including local parameters with the subroutine
+     exits. This makes CDECL, STDCALL, CDECL return UINT64 calls the same on all platforms,
+     and makes CALLCPPMEMBER calls the same as CDECL and the others on Mac OS x.
+    Changed standard x86 subroutine frame to also save EBX to support Mac OX x requirements
+    Added a full x86 subroutine frame which also saves EBX, ESI, EDI, and EFLAGS (for direction flag)
+     to support Mac OS x requirements.
+    Added x86 specific compiling routines
+    Added ODOES>
+    Ported to Mac OS X platform
+    Removed all C inline assembly for Mac OS X, and FreeBSD and moved them to a .s file because
+     gcc inline assembler seems to be buggy
+    Bug fix for SM/REM and FM/MOD
+     Overflow check calculation was incorrect and would generate overflow exceptions on mac os x
+  24 Feb 2009 Bug fix for testdg_poperror() - overflow case. 
+   Was using pBH pointer to old error buffer
+   after freeing and re-allocating the buffer without setting pointer again. Changed it to 
+   get pointer again.
+  Moved forth processor dependent names to dg_forthnames.cpp file.
+  Reorganized which files functions are in and added 2 more categories.
+  Moved function documentation to html files in /docs directory.
+
+v1.4 16 Feb 2008
+  Fixed dg_getfiletype. It was using the wrong parameter and using octal constants as hex.
+  Changed Linux/FreeBSD OS calls write and fstat to use int 80 directly because Fedora 8 
+   has a name problem with the fstat symbol, and to reduce diaperglu's dependence on 
+   external libraries.
+  Updated documentation on using using Diaperglu as a dynamic html script engine.
+
+v1.3 12 Feb 2008
+  Changed most functions error reporting to build a trace using function names instead of
+   having separate errors
+  Added L$ and $ access functions to allow manipulation of strings deeper on stack
+  Reorganized processor and operating system dependent functions to allow maximum reuse among different systems
+  Changed ERROR" to not compile an exit
+  Added directories to hold binaries for each system
+  Added shortcut names for error reporting functions
+
+
+v1.2 31 Aug 2007 Added GETOCR, SETOCR, and name for OCRCALLCPPMEMBER
+
+26 Apr 2007 added extendable current compile and variable buffers when running under cgi or isapi
+
+9 Jan 2007 added dg_islineterminator
+9 Jan 2007 added dg_forthlinecomment as #! 
+

@@ -1,0 +1,314 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<html>
+
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      c signal catch functions
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+    
+    <div id=pagedirectory>
+      <a                                                      >C Functions</a>
+      <a href=csignalcatch.htm#dg_catchbadmemoryerror                 >dg_catchbadmemoryerror</a>
+      <a href=csignalcatch.htm#dg_trycatchbadmemoryerror              >dg_trycatchbadmemoryerror</a>
+      <a href=csignalcatch.htm#dg_endtrycatchbadmemoryerror           >dg_endtrycatchbadmemoryerror</a>
+      <a href=csignalcatch.htm#dg_catchbadmemoryerrorwithfullframe    >dg_catchbadmemoryerrorwithfullframe</a>
+      <a href=csignalcatch.htm#dg_trycatchbadmemoryerrorwithfullframe >dg_trycatchbadmemoryerrorwithfullframe</a>
+      <a href=csignalcatch.htm#dg_fstat                               >dg_fstat</a>
+      <a href=csignalcatch.htm#dg_write                               >dg_write</a>
+    </div>
+
+    <div id=pagestuff>
+
+      <div class=word id=dg_catchbadmemoryerror>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_catchbadmemoryerror
+//
+// C prototype: 
+//  void dg_catchbadmemoryerror (
+//   int signum, 
+//   siginfo_t* pinfo, 
+//   void* pcontext)
+//
+// Inputs:
+//  int                 signum
+//  siginfo_t*          pinfo, 
+//   void*              pcontext
+//                              
+//
+// Outputs:
+//  none
+//                              
+// Action:
+//  Signal handler invoked during a memory exception from subroutines with a standard
+//   diaperglu x86 stack frame. This routine sets the return vector to
+//   dg_catchbadmemoryexit
+//
+// Notes:
+//  standard diaperglu x86 subroutine stack frame
+//   parameter n
+//   ...
+//   parameter 2
+//   parameter 1
+//   parameter 0
+//   return address
+//   saved parent subroutine frame pointer ebp
+//   saved register ebx
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+      <div class=word id=dg_trycatchbadmemoryerror>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_trycatchbadmemoryerror
+//
+// C prototype: 
+//  void dg_trycatchbadmemoryerror ()
+//
+// Inputs:
+//  none                         
+//
+// Outputs:
+//  none
+//                              
+// Action:
+//  Sets the memory exception signal handlers to dg_catchbadmemoryerror which enables
+//   trapping of memory access errors for subroutines with a standard diaperglu
+//   x86 stack frame
+//
+// Notes:
+//  standard diaperglu x86 subroutine stack frame
+//   parameter n
+//   ...
+//   parameter 2
+//   parameter 1
+//   parameter 0
+//   return address
+//   saved parent subroutine frame pointer ebp
+//   saved register ebx
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_endtrycatchbadmemoryerror>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_endtrycatchbadmemoryerror
+//
+// C prototype: 
+//  void dg_endtrycatchbadmemoryerror ()
+//
+// Inputs:
+//  none                         
+//
+// Outputs:
+//  none
+//                              
+// Action:
+//  Resets the memory exception signal handlers to the system default handlers 
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_catchbadmemoryerrorwithfullframe>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_catchbadmemoryerrorwithfullframe
+//
+// C prototype: 
+//  void dg_catchbadmemoryerrorwithfullframe (
+//   int signum, 
+//   siginfo_t* pinfo, 
+//   void* pcontext)
+//
+// Inputs:
+//  int                 signum
+//  siginfo_t*          pinfo, 
+//   void*              pcontext
+//                              
+//
+// Outputs:
+//  none
+//                              
+// Action:
+//  Signal handler invoked during a memory exception from subroutines with a full
+//   diaperglu x86 stack frame. This routine sets the return vector to
+//   dg_catchbadmemoryexitwithfullframe
+//
+// Notes:
+//  full diaperglu x86 subroutine stack frame
+//   parameter n
+//   ...
+//   parameter 2
+//   parameter 1
+//   parameter 0
+//   return address
+//   saved parent subroutine frame pointer ebp
+//   saved register ebx
+//   saved register esi
+//   saved register edi
+//   saved register eflags (to save the value of the direction flag)
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_trycatchbadmemoryerrorwithfullframe>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_trycatchbadmemoryerrorwithfullframe
+//
+// C prototype: 
+//  void dg_trycatchbadmemoryerrorwithfullframe ()
+//
+// Inputs:
+//  none                         
+//
+// Outputs:
+//  none
+//                              
+// Action:
+//  Sets the memory exception signal handlers to dg_catchbadmemoryerror which enables
+//   trapping of memory access errors for subroutines with a standard diaperglu x86
+//    stack frame
+//
+// Notes:
+//  full diaperglu x86 subroutine stack frame
+//   parameter n
+//   ...
+//   parameter 2
+//   parameter 1
+//   parameter 0
+//   return address
+//   saved parent subroutine frame pointer ebp
+//   saved register ebx
+//   saved register esi
+//   saved register edi
+//   saved register eflags (to save the value of the direction flag)
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_fstat>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_fstat
+//
+// C prototype: 
+//  UINT64 dg_fstat(
+//   UINT64 fileid,
+//   UINT64 pstat)
+//
+// Inputs:
+//  UINT64      fileid          file id of an open file
+//  UINT64      pstat           pointer to a stat stucture which will be filled with
+//                               information about the file
+//
+// Outputs:
+//  UINT64      return          0 on success, -1 on error
+//                              
+// Action:
+//  fills a stat structure with information about file fileid
+//  see manpage for stat for more information 
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_write>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_write
+//
+// C prototype: 
+//  UINT64 dg_write(
+//   UINT64 fileid,
+//   UINT64 pbuf,
+//   UINT64 length)
+//
+// Inputs:
+//  UINT64      fileid          file id of an open file
+//  UINT64      pbuf            pointer to a buffer containing bytes to write
+//  UINT64      length          number of bytes to write
+//
+// Outputs:
+//  UINT64      return          0 on success, -1 on error
+//                              
+// Action:
+//  attempts to write length bytes to the file fileid 
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+    </div>
+
+  </div></body>
+</html>

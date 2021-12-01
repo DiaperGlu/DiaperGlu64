@@ -1,0 +1,1507 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<html>
+
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      forthlstringstack.cpp functions
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>
+      
+      <a href=index.htm                                        >Directory</a>
+      <a href=documentationkey.htm                             >Documentation key</a>
+      <a                                                       >&nbsp;</a>
+
+      <a                                                       >C functions</a>
+      <a href=forthlstringstack.htm#dg_howlstringswork         >How lstrings work</a>
+      <a href=forthlstringstack.htm#dg_forthdepthlstring       >dg_forthdepthlstring</a> 
+      <a href=forthlstringstack.htm#dg_forthstartoffsetlstring >dg_forthstartoffsetlstring</a>
+      <a href=forthlstringstack.htm#dg_forthlengthlstring      >dg_forthlengthlstring</a>
+      <a href=forthlstringstack.htm#dg_forthgetslstringn       >dg_forthgetslstringn</a>
+      <a href=forthlstringstack.htm#dg_forthgetlstring         >dg_forthgetlstring</a>
+      <a href=forthlstringstack.htm#dg_forthlstringtos         >dg_forthlstringtos</a>
+      <a href=forthlstringstack.htm#dg_forthstolstring         >dg_forthstolstring</a>
+      <a href=forthlstringstack.htm#dg_forthgrowlstring        >dg_forthgrowlstring</a>
+      <a href=forthlstringstack.htm#dg_forthpicklstring        >dg_forthpicklstring</a>
+      <a href=forthlstringstack.htm#dg_forthdroplstring        >dg_forthdroplstring</a>
+      <a href=forthlstringstack.htm#dg_forthdeletelstring      >dg_forthdeletelstring</a>
+      <a href=forthlstringstack.htm#dg_forthinsertlstring      >dg_forthinsertlstring</a>
+      <a href=forthlstringstack.htm#dg_forthcscanlstring       >dg_forthcscanlstring</a>
+      <a href=forthlstringstack.htm#dg_forthscanlstring        >dg_forthscanlstring</a>
+      <a href=forthlstringstack.htm#dg_forthshortenlstring     >dg_forthshortenlstring</a>
+      <a href=forthlstringstack.htm#dg_forthnewlstring         >dg_forthnewlstring</a>
+      <a href=forthlstringstack.htm#dg_forthrolllstring        >dg_forthrolllstring</a>
+      <a href=forthlstringstack.htm#dg_forthminusrolllstring   >dg_forthminusrolllstring</a>
+      <a href=forthlstringstack.htm#dg_forthdeleteinlstring    >dg_forthdeleteinlstring</a>
+      <a href=forthlstringstack.htm#dg_forthinsertinlstring    >dg_forthinsertinlstring</a>
+      <a href=forthlstringstack.htm#dg_forthcatlstringn        >dg_forthcatlstringn</a>
+      <a href=forthlstringstack.htm#dg_forthcopystolstringn    >dg_forthcopystolstringn</a>
+      <a href=forthlstringstack.htm#dg_forthcopysfromlstringn  >dg_forthcopysfromlstringn</a>
+      <a href=forthlstringstack.htm#dg_forthsetlengthlstringn  >dg_forthsetlengthlstringn</a>
+      <a href=forthlstringstack.htm#dg_forthcopystoreplacelstringn  >dg_forthcopystoreplacelstringn</a>
+      <a href=forthlstringstack.htm#dg_forthcopylstringntoreplacelstringn  >dg_forthcopylstringntoreplacelstringn</a>
+      <a href=forthlstringstack.htm#dg_forthnewfreeablelstringarray  >dg_forthnewfreeablelstringarray</a>
+      <a href=forthlstringstack.htm#dg_forthfreefreeablelstringarray >dg_forthfreefreeablelstringarray</a>
+      <a href=forthlstringstack.htm#dg_forthpacklstring        >dg_forthpacklstring</a>
+      <a href=forthlstringstack.htm#dg_forthunpacklstring      >dg_forthunpacklstring</a>
+      
+    </div>
+
+    <div id=pagestuff>
+    
+     <div class=word id=dg_howlstringswork>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// How lstrings work
+//
+// An lstring is just a byte array.
+//
+// Diaperglu uses two buffers to keep track of an array or stack of lstrings.
+//
+// One buffer is an array of each lstring's end offset plus 1. The other buffer
+//  just holds the bytes of each string packed end to end.
+//
+// To make a new lstring stack/array, just allocate two new buffers.
+//
+// Data stack parameters:
+//  stringoffsetbufferid          buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  stringstringbufferid          buffer id of lstring stack/array's string buffer
+//
+//  stringid n                    0 based index of lstring in lstring array,
+//                                 0 = bottom, depth - 1 = top
+//
+//  nd                            0 based depth from top of lstring stack, 0 = top
+//
+//  length maxlength              length in bytes
+//
+//  offset                        0 based offset in lstring in bytes
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+     
+
+      <div class=word id=dg_forthdepthlstring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdepthlstring ( DEPTHL$ )
+//
+// C prototype:
+//  void dg_forthdepthlstring(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand: 
+//  ( stringoffsetbufferid -- n );
+//  ( endoffset$1 endoffset$2 ... endoffset$n -offsetbuffer- 
+//   endoffset$1 endoffset$2 ... endoffset$n )
+//      
+// Data stack in:
+//  stringoffsetbufferid          buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+// Data stack out:
+//  n                             number of lstrings on the stack
+//                                                            
+// Action:
+//  returns the depth of the lstring stack.
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error getting depth of lstring stack
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthstartoffsetlstring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthstartoffsetlstring ( GETSTARTOFFSETL$[N] STARTOFFSETL$ )
+//
+// C prototype:
+//  void dg_forthstartoffsetlstring (Bufferhandle *pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//       
+// Stack action shorthand:
+//  ( stringid stringoffsetbufferid -- lstringstartoffset )
+//  ( endoffset$1 endoffset$2 ... endoffset$stringid ... endoffset$n -offsetbuffer- 
+//   endoffset$1 endoffset$2 ... endoffset$stringid ... endoffset$n )
+//       
+// Data stack in:
+//  stringid                      index of string in lstring stack, 0 = bottom,
+//                                 depth - 1 = top
+//
+//  stringoffsetbufferid          buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+// Data stack out:
+//  lstringstartoffset            start offset in bytes of lstring in lstring
+//                                 stack's string buffer
+//                                                            
+// Action:
+//  pops the stringid and stringoffsetbufferid from the data stack
+//  returns the start offset of the lstring in the lstring stack's string
+//   buffer on the data stack
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error getting lstring start offset
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthlengthlstring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthlengthlstring ( LENGTHL$[N] LENGTHL$ )
+//
+// C prototype:
+//  void dg_forthlengthlstring (Bufferhandle *pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( stringid stringoffsetbufferid -- topL$length )
+//  ( ... topL$ -L$- ... topL$ )
+//       
+//       
+// Data stack in:
+//  stringid                      index of string in lstring stack, 0 = bottom,
+//                                 depth - 1 = top
+//
+//  stringoffsetbufferid          buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+// Data stack out:
+//  topL$length                   length in bytes of lstring in lstring stack's
+//                                 string buffer
+//                                                            
+// Action:
+//  pops the stringid and stringoffsetbufferid from the data stack
+//  returns the length of the lstring in the lstring stack's string buffer on
+//   the data stack
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error getting lstring length
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetslstringn>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetslstringn ( GETPL$ GETSL$[N] )
+//   ( GETPL$ is deprecated, use GETSL$[N] instead )
+//
+// C prototype:
+//  void dg_forthgetslstringn(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( stringid offsetbufferid stringbufferid -- plstring lstringlength )
+//  ( $0 $1 ... $stringid ... $n -L$- $0 $1 ... $stringid ... $n )       
+//       
+// Data stack in:
+//  stringid                      index of string in lstring stack, 0 = bottom,
+//                                 depth - 1 = top
+//
+//  lstringstackoffsetbufferid    buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  stringstringbufferid          buffer id of buffer where the lstring stack's
+//                                 strings are kept
+//
+// Data stack out:
+//  plstring                      address of lstring
+//
+//  lstringlength                 length in bytes of lstring 
+//                                                            
+// Action:
+//  pops the stringid stringoffsetbufferid and stringstringbufferid from the
+//   data stack
+//  returns the start address and length of top the lstring on the lstring stack
+//
+// Warning:
+//  The pointer returned is only valid until the next time the lstring's string
+//   buffer grows beyond its size.
+//  When this happens, Diaperglu asks for a larger buffer from the OS and the OS
+//   may move the buffer to a new base address.
+//
+//  This can happen whenever you push more bytes onto the lstring stack's string
+//   buffer than you took off unless you made growby = maxsize when you created
+//   the lstring stack.
+//
+//  Making growby equal to maxsize when you create the string buffer tells
+//   Diaperglu to never grow or move the buffer. If you use up the memory in the
+//   buffer, Diaperglu will give you an error instead of growing it.
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error getting pointer to lstring
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetlstring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetlstring ( COPYL$[N]&gt;S L$S@ GETL$ )
+//
+//
+// C prototype:
+//  void dg_forthgetlstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( stringid offsetbufferid stringbufferid pdest maxlength -- )
+//  ( $0 $1 ... $stringid ... $n -L$- $0 $1 ... $stringid ... $n )       
+//       
+// Data stack in:
+//  stringid                      index of string in lstring stack, 0 = bottom,
+//                                 depth - 1 = top
+//
+//  lstringstackoffsetbufferid    buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  stringstringbufferid          buffer id of buffer where the lstring stack's
+//                                 strings are kept
+//
+//  pdest                         address where to put a copy of the string
+//
+//  maxlength                     maximum allowed length of the string 
+//                                                            
+// Action:
+//  pops parameters from the data stack
+//  copies the lstring to the address if the length of the lstring isn't too long
+//
+// Note:
+//  May need length returned... should I add that?
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error getting lstring
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthlstringtos>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthlstringtos ( DROPL$&gt;S )
+//
+// C prototype:
+//  void dg_forthlstringtos (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( offsetbufferid stringbufferid pdest maxlength -- )
+//  ( l$ -L$- )    
+//       
+// Data stack in:
+//  lstringstackoffsetbufferid    buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  stringstringbufferid          buffer id of buffer where the lstring stack's
+//                                 strings are kept
+//
+//  pdest                         address where to put a copy of the string
+//
+//  maxlength                     maximum allowed length of the string 
+//                                                            
+// Action:
+//  pops parameters from the data stack
+//  copies the top lstring to the address if the length of the lstring isn't
+//   too long
+//  drops the top lstring from the lstring stack
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error popping lstring
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthstolstring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthstolstring ( S&gt;NEWL$ )
+//
+// C prototype:
+//  void dg_forthstolstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( psrc length offsetbufferid stringbufferid -- )
+//  ( -L$- l$ )    
+//     
+// Data stack in:
+//  psrc                          address from which to copy the string
+//
+//  length                        length of the string
+//
+//  lstringstackoffsetbufferid    buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  stringstringbufferid          buffer id of buffer where the lstring stack's
+//                                 strings are kept
+//                                                            
+// Action:
+//  pops parameters from the data stack
+//  pushes a copy of the string to the top of the lstring stack
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error pushing lstring
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgrowlstring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgrowlstring ( GROWL$ )
+//
+// C prototype:
+//  void dg_forthgrowlstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( n offsetbufferid stringbufferid -- )
+//  ( $1 -L$- l$' )    
+//     
+// Data stack in:
+//  n                             amount to grow lstring by
+//
+//  lstringstackoffsetbufferid    buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  stringbufferid                string buffer for the lstring stack
+//
+// Action:
+//  grows the top lstring on the lstring stack by n bytes
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error growing lstring
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthpicklstring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthpicklstring ( PICKL$ )
+//
+// C prototype:
+//  void dg_forthpicklstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( n offsetbufferid stringbufferid -- )
+//  ( -L$- l$ )    
+//     
+// Data stack in:
+//  n                             distance from top of lstring stack
+//
+//  lstringstackoffsetbufferid    buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  stringstringbufferid          buffer id of buffer where the lstring stack's
+//                                 strings are kept
+//                                                            
+// Action:
+//  pops parameters from the data stack
+//  pushes a copy of the string at n away from the top of the lstring stack to
+//   the top of the lstring stack
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error picking lstring
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthdroplstring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdroplstring ( DROPL$ )
+//
+// C prototype:
+//  void dg_forthdroplstring (Bufferhandle* pBHarrayhead)
+//
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( offsetbufferid stringbufferid -- )
+//  ( l$ -L$- )  
+//     
+// Data stack in:
+//  lstringstackoffsetbufferid    buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  stringstringbufferid          buffer id of buffer where the lstring stack's
+//                                 strings are kept
+//                                                            
+// Action:
+//  pops parameters from the data stack
+//  removes the top lstring from the lstring stack
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error dropping lstring
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthdeletelstring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdeletelstring ( DELETEL$[N] DELETEL$ )
+//
+// C prototype:
+//  void dg_forthdeletelstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( stringid offsetbufferid stringbufferid -- )
+//  ( $0 $1 ... $stringid ... $n -L$- $0 $1 ... $n )    
+//     
+// Data stack in:
+//  stringid                      string id of lstring in lstring stack,
+//                                 0 = bottom, depth - 1 = top
+//
+//  lstringstackoffsetbufferid    buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  stringstringbufferid          buffer id of buffer where the lstring stack's
+//                                 strings are kept
+//                                                            
+// Action:
+//  pops parameters from the data stack
+//  removes the target stringid lstring from the lstring stack
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error deleting lstring
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthinsertlstring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthinsertlstring ( INSERTL$[N] INSERTL$ )
+//
+// C prototype:
+//  void dg_forthinsertlstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( length n offsetbufferid stringbufferid -- )
+//  ( L$0 L$1 L$2 ... L$N ... L$TOP -L$- 
+//     L$0 L$1 L$2 ... copyL$psrc L$N ... L$TOP )   
+//     
+// Data stack in:
+//  length                        length of the string
+//
+//  n                             index on l$stack (0 to depth)
+//
+//  lstringstackoffsetbufferid    buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  stringstringbufferid          buffer id of buffer where the lstring stack's
+//                                 strings are kept
+//                                                            
+// Action:
+//  pops parameters from the data stack
+//  inserts an uninitialized string onto the stack before the l$ at the index. 
+//   If index is depth, pushes an uninitialized string onto the end of the
+//   L$ stack.
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error inserting lstring
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcscanlstring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcscanlstring ( CSCANL$[N] CSCANL$ )
+//
+// C prototype:
+//  void dg_forthcscanlstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( l$offsetbufferid l$stringbufferid l$stackindex offset value -- offset' ) 
+//  should be
+//   ( offset value l$stackindex l$offsetbufferid l$stringbufferid -- offset' )
+// 
+// Data stack in:
+//  lstringstackoffsetbufferid    buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferid    buffer id of lstring character data
+//
+//  stackindex                    index of string in lstring stack 0 to n-1
+//                                 where 0 is bottom of stack
+//
+//  lstringindex                  start index in string for scan
+//
+//  value						  value of byte to scan for in string
+//
+// Data stack out:
+//  index                         index in string in range of 0 to length of
+//                                 string - 1 of first match in string
+//                                 or -1 if no match is found
+//                                                            
+// Action:
+//  Searches the memory in the lstring starting at offset from beginning for the
+//   first occurence of the value
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  process doesn't own the memory in the string
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthscanlstring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthscanlstring ( SCANL$[N] SCANL$ )
+//
+// C prototype:
+//  void dg_forthscanlstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( l$offsetbufferid l$stringbufferid stackindex offset value -- offset' )  
+// 
+// Data stack in:
+//  lstringstackoffsetbufferid    buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferid    buffer id of lstring character data
+//
+//  stackindex                    index of string in lstring stack 0 to n-1
+//                                 where 0 is bottom of stack
+//
+//  lstringindex                  start index in string for scan
+//
+//  value						  value of uint64 to scan for in string
+//
+// Data stack out:
+//  index                         index in string in range of 0 to length of
+//                                 string - 1 of first match in string
+//                                 or -1 if no match is found
+//                                                            
+// Action:
+//  Searches the memory in the lstring starting at offset from beginning for the
+//   first occurence of the value
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  process doesn't own the memory in the string
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthshortenlstring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthshortenlstring ( SHORTENL$ )
+//
+// C prototype:
+//  void dg_forthshortenlstring ( Bufferhandle* pBHarrayhead )
+//
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( $1 -l$- $1' )
+//  ( n l$stackoffsetbufferid l$stackstringbufferid -- )    
+//     
+// String stack in:
+//  $1
+//
+// String stack out:
+//  $1'                           shorter version of string 1
+//                                                           
+// Data stack in:
+//  n                             number of characters (bytes) to remove from $1
+//
+//  lstringstackoffsetbufferid    buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferid    buffer id of buffer containing lstring
+//                                 characters
+// 
+// Action:
+//  shortens the top string on the lstring stack by n characters
+//  if n is greater than the length of the string the string is shortened
+//   to 0 characters (bytes)
+//
+// Failure cases:
+//  error popping n or bufferids from the data stack
+//  error getting pointer to the string offset stack
+//  string offset stack underflow
+//  string offset stack corrupt error - start offset > end offset
+//  error shrinking string string stack buffer
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthnewlstring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthnewlstring ( NEWL$ )
+//
+// C prototype:
+//  void dg_forthnewlstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( offsetbufferid stringbufferid -- )
+//  ( -L$- empty$ )
+//     
+// Data stack in:
+//  lstringstackoffsetbufferid    buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferid    buffer id of buffer containing string characters
+//
+// LString stack out:
+//  empty$
+//                                                           
+// Action:
+//  pushes an empty string onto the string stack
+//
+// Failure cases:
+//  error doing dg_pushlstring  
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthrolllstring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthrolllstring ( ROLLL$ )
+//
+// C prototype:
+//  void dg_forthrolllstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( nd offsetbufferid stringbufferid -- )
+//  ( l$depth-1{bottom} ... l$nd+1 l$nd l$nd-1 ... l$1 l$0{top} -L$-
+//     l$depth-1{bottom} ... l$nd+1 l$nd-1 ... l$1 l$0 l$nd )    
+//     
+// Data stack in:
+//  nd                            distance from the top of the stack
+//
+//  lstringstackoffsetbufferid    buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferid    buffer id of buffer containing string characters
+//
+// String stack out:
+//  empty$
+//                                                           
+// Action:
+//  does PICKL$ then deletes the one picked from the stack
+//
+// Failure cases:
+//  error doing PICKL$ or ROLLL$
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthminusrolllstring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthminusrolllstring ( -ROLLL$ )
+//
+// C prototype:
+//  void dg_forthminusrolllstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( nd offsetbufferid stringbufferid -- )
+//  ( l$depth-1{bottom} ... l$nd+1 l$nd l$nd-1 ... l$1 l$0{top} -L$-
+//     l$depth-1{bottom} ... l$nd+1 l$0{top} l$nd l$nd-1 ... l$1 )    
+//     
+// Data stack in:
+//  nd                            distance from the top of the stack
+//
+//  lstringstackoffsetbufferid    buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferid    buffer id of buffer containing string characters
+//
+// String stack out:
+//  empty$
+//                                                           
+// Action:
+//  moves the top lstring on the l$stack to position nd on the l$stack
+//    (nd=0 does nothing, nd=1 does SWAPL$, nd=2 does -ROTL$)
+//
+// Failure cases:
+//  error doing INSERTL$
+//  error doing copy (shouldn't be able to get this error)
+//  error doing DROPL$ (shouldn't be able to get this error)
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthdeleteinlstring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdeleteinlstring ( DELETEINL$[N] DELETEINL$ )
+//
+// C prototype:
+//  void dg_forthdeleteinlstring (Bufferhandle* pBHarrayhead)
+//
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( offset length n offsetbufferid stringbufferid -- )
+//  ( l$depth-1{bottom} ... l$nd+1 l$nd l$nd-1 ... l$1 l$0{top} -l$- 
+//     l$depth-1{bottom} ... l$nd+1 l$nd' l$nd-1 ... l$1 l$0{top} ) 
+//     
+// Data stack in:
+//  offset                        start offset in lstring
+//
+//  length                        length of segment to delete in lstring
+//
+//  n                             index of lstring on lstring stack, 0 = bottom
+//
+//  lstringstackoffsetbufferid    buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferid    buffer id of buffer containing string characters
+//                                                           
+// Action:
+//  deletes segment in lstring
+//
+// Failure cases:
+//  error doing INSERTL$
+//  error doing copy (shouldn't be able to get this error)
+//  error doing DROPL$ (shouldn't be able to get this error)
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthinsertinlstring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthinsertinlstring ( INSERTINL$[N] INSERTINL$ )
+//
+// C prototype:
+//  void dg_forthinsertinlstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( offset length n offsetbufferid stringbufferid -- )
+//  ( l$depth-1{bottom} ... l$nd+1 l$nd l$nd-1 ... l$1 l$0{top} -l$- 
+//     l$depth-1{bottom} ... l$nd+1 l$nd' l$nd-1 ... l$1 l$0{top} )  
+//     
+// Data stack in:
+//  offset                        start offset in lstring
+//
+//  length                        length of segment to insert into lstring
+//
+//  n                             index of lstring on lstring stack, 0 = bottom
+//
+//  lstringstackoffsetbufferid    buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferid    buffer id of buffer containing string characters
+//                                                           
+// Action:
+//  inserts an uninitialized segment into lstring n
+//    if offset is at end, lstring n is grown by length
+//
+// Failure cases:
+//  error doing INSERTL$
+//  error doing copy (shouldn't be able to get this error)
+//  error doing DROPL$ (shouldn't be able to get this error)
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcatlstringn>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcatlstringn ( CATL$[N] )
+//
+// C prototype:
+//  void dg_forthcatlstringn (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( n lstringstackoffsetbufferid lstringstackstringbufferid -- )
+//  ( L$[0] L$[1] ... L$[n-1] L$[n] L$[n+1] ... L$[top] -L$- 
+//     L$[0] L$[1] ... L$[n-1] L$[n]:L$[n+1] ... L$[top]  
+//     
+// Data stack in:
+//  n                             index of lstring on lstring stack, 0 = bottom
+//
+//  lstringstackoffsetbufferid    buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferid    buffer id of buffer containing string characters
+//                                                           
+// Action:
+//  concatenates lstring stringid with the one after it
+//
+// Failure cases:
+//  error getting pointer to data stack
+//  error concatenating l$s
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcopystolstringn>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcopystolstringn ( COPYSTOL$[N] )
+//
+// C prototype:
+//  void dg_forthcopystolstringn (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( psrc length offset n L$OffsetBufID L$StringBufID -- )
+//  ( L$[0] L$[1] ... L$[n-1] L$[n] L$[n+1] ... L$[top] -L$- 
+//     L$[0] L$[1] ... L$[n-1] L$[n]' L$[n+1] ... L$[top]  
+//       
+//     
+// Data stack in:
+//  psrc                          pointer to source string
+//
+//  length                        length of source string
+//
+//  offset                        offset in lstring
+//
+//  n                             index of lstring on lstring stack, 0 = bottom
+//
+//  L$OffsetBufID                 buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  L$StringBufID                 buffer id of buffer containing string characters
+//                                                           
+// Action:
+//  copies string at s for length over segment at offset in lstring n
+//
+// Failure cases:
+//  error getting pointer to data stack
+//  error copying segment
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcopysfromlstringn>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcopysfromlstringn ( COPYSFROML$[N] )
+//
+// C prototype:
+//  void dg_forthcopysfromlstringn (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( offset n L$OffsetBufID L$StringBufID pdest length -- )
+//  ( L$[0] L$[1] ... L$[n-1] L$[n] L$[n+1] ... L$[top] -L$- 
+//     L$[0] L$[1] ... L$[n-1] L$[n] L$[n+1] ... L$[top]  
+//     
+// Data stack in:
+//  offset                        offset in lstring
+//
+//  n                             index of lstring on lstring stack, 0 = bottom
+//
+//  lstringstackoffsetbufferid    buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferid    buffer id of buffer containing string characters
+//
+//  pdest                         pointer to destination
+//
+//  length                        length of segment to copy to destination
+//                                                           
+// Action:
+//  copies string segment at at offset for length in lstring n to destination
+//
+// Failure cases:
+//  error getting pointer to data stack
+//  error copying segment
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthsetlengthlstringn>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthsetlengthlstringn ( SETLENGTHL$[N] )
+//
+// C prototype:
+//  void dg_forthsetlengthlstringn (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( newlength n L$OffsetBufID L$StringBufID -- )
+//  ( L$[0] L$[1] ... L$[n-1] L$[n] L$[n+1] ... L$[top] -L$- 
+//     L$[0] L$[1] ... L$[n-1] L$[n]' L$[n+1] ... L$[top]  )
+//     
+// Data stack in:
+//  newlength                     new length of L$ in bytes
+//
+//  n                             index of lstring on lstring stack, 0 = bottom
+//
+//  lstringstackoffsetbufferid    buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferid    buffer id of buffer containing string characters
+//                                                           
+// Action:
+//  changes the length of the nth L$ on the L$ stack to the new length
+//  grows or shrinks the L$ as needed, the bytes are added or removed from the
+//   end of the L$
+//
+// Failure cases:
+//  error getting a pointer to the data stack
+//  data stack underflow - not enough parameters
+//  error changing the length of the lstring which may be caused by:
+//   corrupt lstring stack
+//   not enough memory to grow the lstring buffers
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthcopystoreplacelstringn>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcopystoreplacelstringn ( COPYS&gt;REPLACEL$[N] )
+//
+// C prototype:
+//  void dg_forthcopystoreplacelstringn (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( addr length n L$OffsetBufID L$StringBufID -- )
+//  ( L$[0] L$[1] ... L$[n-1] L$[n] L$[n+1] ... L$[top] -L$- 
+//     L$[0] L$[1] ... L$[n-1] L$[n]' L$[n+1] ... L$[top]  )
+//     
+// Data stack in:
+//  addr                          source address
+//
+//  length                        length in bytes
+//
+//  n                             index of lstring on lstring stack, 0 = bottom
+//
+//  lstringstackoffsetbufferid    buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferid    buffer id of buffer containing string characters
+//                                                           
+// Action:
+//  replaces the nth lstring on the lstring stack with a copy of the length
+//   number of bytes at addr
+//
+// Failure cases:
+//  error getting a pointer to the data stack
+//  data stack underflow - not enough parameters
+//  error replacing the lstring which may be caused by:
+//   process does not own the memory for length bytes at addr
+//   corrupt lstring stack
+//   not enough memory to grow the lstring buffers
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcopylstringntoreplacelstringn>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcopylstringntoreplacelstringn ( COPYL$[N]&gt;REPLACEL$[N] )
+//
+// C prototype:
+//  void dg_forthcopylstringntoreplacelstringn (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( srcn srcL$OffsetBufID srcL$StringBufID destn destL$OffsetBufID destL$StringBufID -- )
+//  ( L$[0] L$[1] ... L$[srcn-1] L$[srcn] L$[srcn+1] ... L$[top] -srcL$- 
+//     L$[0] L$[1] ... L$[srcn-1] L$[srcn]' L$[srcn+1] ... L$[top] )
+//  ( L$[0] L$[1] ... L$[destn-1] L$[destn] L$[destn+1] ... L$[top] -destL$- 
+//     L$[0] L$[1] ... L$[destn-1] L$[destn]' L$[destn+1] ... L$[top] )
+//     
+// Data stack in:
+//  srcn                             index of lstring on source lstring stack, 0 = bottom
+//  srclstringstackoffsetbufferid    buffer id of buffer containing source string start offsets
+//  srclstringstackstringbufferid    buffer id of buffer containing source string characters
+//  destn                            index of destination lstring on lstring stack, 0 = bottom
+//  destlstringstackoffsetbufferid   buffer id of buffer containing destination string start offsets
+//  destlstringstackstringbufferid   buffer id of buffer containing destination string characters
+//                                                           
+// Action:
+//  replaces the destnth lstring on the destination lstring stack with a copy of the 
+//   srcnth lstring on the source lstring stack
+//
+// Failure cases:
+//  error getting a pointer to the data stack
+//  data stack underflow - not enough parameters
+//  error copying the source lstring and replacing the destination lstring which may be caused by:
+//   problem changing the length of the destination lstring such as
+//    corrupt destination lstring stack
+//    not enough memory to grow the destination lstring buffers
+//   problem getting a pointer to the source lstring
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthnewfreeablelstringarray>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthnewfreeablelstringarray ( NEWFL$[] )
+//
+// C prototype:
+//  void dg_forthnewfreeablelstringarray (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- flstringarrayid )
+//     
+// Data stack out:
+//  flstringarrayid               Id of the new freeable lstring array. This is also
+//                                 the buffer id of it's free index linked list array 
+//                                 buffer.
+//                                                          
+// Action:
+//  Creates a new freeable lstring array and pushes it's id on the data stack. This involves 
+//   allocating an lstring array's offset and string buffers, then allocating a free index 
+//   linked list array buffer.
+//
+// Note:
+//  At this time, the freeable lstrings are packed into an lstring array end to end. This means
+//   that if you resize or free a freeable lstring in the middle of the array, all the strings
+//   after it are blockmoved. This means right now, except for removing or adding lstrings to the
+//   array, you can use all of the normal lstring functions with freeable lstrings.
+//   In the future this will change. What will probably happen is there will be an empty lstring
+//   between each freeable lstring to allow for resizing.
+//
+// Failure cases:
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfreefreeablelstringarray>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfreefreeablelstringarray ( FREEFL$[] )
+//
+// C prototype:
+//  void dg_forthfreefreeablelstringarray (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( flstringarrayid -- )
+//     
+// Data stack out:
+//  flstringarrayid               Id of the new freeable lstring array. This is
+//                                 also the buffer id of it's free index linked
+//                                 list array buffer.
+//                                                          
+// Action:
+//  Frees all the buffers belonging to the freeable lstring array.
+//
+// Failure cases:
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthpacklstring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthpacklstring ( PACKL$[] )
+//
+// C prototype:
+//  void dg_forthpacklstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array
+//                                   where the other bufferhandles are stored.
+//
+// Outputs:
+//   none
+//
+// Stack action shorthand:
+//  ( lstringoffsetbufferid lstringstringbufferid -- )
+//
+// Data stack in:
+//  lstringstackstringbufferid    buffer id of buffer containing string characters
+//
+//  lstringstackoffsetbufferid    buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+// Action:
+//   Pushes an lstring onto the end of the lstring array. This string contains
+//    a magic string, which for now is "PACK" followed by what the lstring's offset
+//    buffer will be after the push.
+//   In other words, the lstring's string buffer now contains the entire array
+//    packed into one buffer, and the lstring array is still a valid lstring array.
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthunpacklstring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthunpacklstring ( UNPACKL$[] )
+//
+// C prototype:
+//  void dg_forthunpacklstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array
+//                                   where the other bufferhandles are stored.
+//
+// Outputs:
+//   none
+//
+// Stack action shorthand:
+//  ( lstringoffsetbufferid -- lstringstringbufferid )
+//
+// Data stack in:
+//  lstringstackstringbufferid    buffer id of buffer containing string characters
+//
+// Data stack out:
+//  lstringstackoffsetbufferid    buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+// Action:
+//   Pops the lstring string buffer id off the data stack.
+//   Unpacks a packed lstring array returning the index of the new lstring offset
+//    array's buffer.
+//   This routine does this by popping the offset array off the end of the packed
+//    lstring buffer, and then dropping the magic string from the packed lstring
+//    buffer.
+//   Then dropping the original packed buffer's length from the new offset buffer.
+//   The lstringstringbufferid passed in is the new unpacked lstring array's
+//    string buffer.
+//   Then pushes the new lstring offset buffer id onto the data stack.
+//
+// Failure cases:
+//   Error getting pointers to the packed lstring buffer.
+//   Packed lstring buffer is not long enough to hold the magic string.
+//   Length of packed lstring buffer does not match length stored at end of
+//    packed lstring buffer.
+//   Magic string does not match "PACK"
+//   Error making a new buffer
+//   Error pushing the offset array onto the end of the new buffer
+//   Error shrinking the string array to drop the magic string and the offset array
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+    </div>
+
+  </div></body>
+</html>

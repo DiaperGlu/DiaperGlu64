@@ -1,0 +1,270 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      Building and Installing Diaperglu
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>
+      <a                                                      >Building on</a>
+      <a href=building.htm#buildingonmacosx                   >Mac OS X</a>
+      <a href=building.htm#buildingon64bitwindows             >64 bit Windows</a>
+      <a                                                      >&nbsp;</a>
+      <a                                                      >Testing</a>
+      <a href=building.htm#testingonmacosx                    >on Mac OS X</a>
+      <a href=building.htm#testingon64bitwindows              >on 64 bit Windows</a>
+      <a                                                      >&nbsp;</a>
+      <a                                                      >Running</a>
+      <a href=building.htm#runmodesmacosx                     >on Mac OS X</a>
+      <a href=building.htm#runmodes64bitwindows               >on 64 bit Windows</a>
+      <a                                                      >&nbsp;</a>
+      <a                                                      >Sample Scripts</a>
+      <a href=building.htm#samplesmacosx                      >on Mac OS X</a>
+      <a href=building.htm#samples64bitwindows                >on 64 bit Windows</a>
+    </div>
+
+    <div id=pagestuff>
+    
+      <div class=pagestuffsection id=buildingonmacosx>
+      
+        <h3>Building diaperglu on Mac OS X</h3>
+      
+        <ul>
+          <li>Open a terminal</li>
+          <li>Change directories to the /diaperglu64/macosx subdirectory (e.g. cd /Users/yourname/Desktop/Diaperglu64/macosx10.15.6)</li>
+          <li>Compile diaperglu and remove temporary files (type the words <span class=command>sudo make</span> and hit return. <span class=command>sudo</span> is required on newer versions of Mac Os because make is writing a shared library.)</li>
+        </ul>
+        
+        <p>
+          This makes 5 files:
+          <ul>
+            <li>libdiaperglu.dylib</li>
+            <li>diaperglulinked</li>
+            <li>testdiaperglulinked</li>
+            <li>testosapi</li>
+            <li>diaperglu</li>
+          </ul>
+        </p>
+        
+        <h3>Building nodiaperglu on Mac OS X</h3>
+        
+          <ul>
+            <li>Open a terminal</li>
+            <li>Change directories to the /diaperglu64/macosx subdirectory (e.g. cd /Users/yourname/Desktop/Diaperglu64/macosx10.15.6)</li>
+            <li>Compile nodiaperglu and remove temporary files (type the words <span class=command>sudo make -f makefilenodiaper</span> and hit return. <span class=command>sudo</span> is required on newer versions of Mac Os because make is writing a shared library.)</li>
+          </ul>
+          
+          <p>
+            This makes 5 files:
+            <ul>
+              <li>libnodiaperglu.dylib</li>
+              <li>nodiaperglulinked</li>
+              <li>testnodiaperglulinked</li>
+              <li>testnodiaperosapi</li>
+              <li>nodiaperglu</li>
+            </ul>
+          </p>
+        
+      </div>
+      
+      
+      <div class=pagestuffsection id=buildingon64bitwindows>
+      
+        <h3>Building diaperglu on 64 bit Windows</h3>
+      
+        <ul>
+          <li>If you have Visual Studio 2019 with C++ installed, you can:</li>
+          <li>Open a Visual Studio x64 Native Tools Command Prompt from the start menu. The Visual Studio command prompt is required to run the Visual Studio command line tools. (You need the 64 bit tools.)</li>
+          <li>Change directories to the /DiaperGlu64/Win64MSVC2019 subdirectory (e.g. cd /Users/yourname/Desktop/DiaperGlu64/Win64MSVC2019)</li>
+          <li>Compile diaperglu and remove temporary files (type the word <span class=command>nmake</span> and hit return.</li>
+        </ul>
+        
+        <p>
+          This makes 8 files:
+          <ul>
+            <li>diapergluosapi.dll</li>
+            <li>diapergluosapi.lib</li>
+            <li>libdiaperglu.dll</li>
+            <li>libdiaperglu.lib</li>
+            <li>diaperglulinked</li>
+            <li>testdiaperglulinked</li>
+            <li>testosapi</li>
+            <li>diaperglu</li>
+          </ul>
+        </p>
+        
+      </div>
+
+      
+      <div class=pagestuffsection id=testingonmacosx>
+      
+        <h3>Testing on Mac OS X</h3>
+        
+        <p>Change back to the directory where you did the make for Diaperglu if needed.</p>
+        <p>Run operating system api tests. (./testosapi ./testnodiaperosapi) This test prints out whether or not each test succeeded or failed.</p>
+        <p>Run the functional tests. (./testdiaperglulinked ./testnodiaperglulinked) This test prints out one line for each function tested that looks like:</p>
+        <p>&nbsp;testing dg_popbufferdword</p>
+        <p>If any errors occur, a message is printed out that looks like:</p>
+        <p>&nbsp;FAIL! function name some test case - expected something but got something else.</P>
+        <p>Or the test may crash, usually indicating a bad memory access in a function.
+        A couple times during the test, it will ask you to input key strokes.
+        If all goes well, there will be no fail messages or crashes, and you will see
+        one line for each function tested.</p>
+        
+      </div>
+      
+      <div class=pagestuffsection id=testingon64bitwindows>
+    
+      <h3>Testing on 64 bit Windows</h3>
+      
+        <p>Change back to the directory where you did the nmake for Diaperglu if needed.</p>
+        <p>Run operating system api test. (testosapi) This test prints out whether or not each test succeeded or failed.</p>
+        <p>Run the functional test. (testdiaperglulinked) This test prints out one line for each function tested that looks like:</p>
+        <p>&nbsp;testing dg_popbufferdword</p>
+        <p>If any errors occur, a message is printed out that looks like:</p>
+        <p>&nbsp;FAIL! function name some test case - expected something but got something else.</P>
+        <p>Or the test may crash, usually indicating a bad memory access in a function.
+        A couple times during the test, it will ask you to input key strokes.
+        If all goes well, there will be no fail messages or crashes, and you will see
+        one line for each function tested.</p>
+      
+      </div>
+      
+      
+      <div class=pagestuffsection id=runmodesmacosx>
+      
+        <h3>Running Diaperglu on Mac OS X</h3>
+        
+        <p><span class=command>./diaperglu</span> from command line - enters Forth standard shell</p>
+        <p><span class=command>./diaperglu</span> <span class=commandtarget>scriptfilename</span>
+         from command line - interprets script file scriptfilename</p>
+        <p>http://www.yourwebsite.com/cgi-bin/diaperglu</p>
+        <p> - under apache, interprets noscript.dglu if it exist, or sends a default message page indicating no script file was specified.</p>
+        <p>http://www.yourwebsite.com/cgi-bin/diaperglu?scriptfilename</p>
+        <p> - interprets scriptfilename if scriptfilename exists. Your script file is responsible for sending the html header in addition to the rest of the page contents</p>
+        <p> - sends a default message page indicating the error opening the script file</p>
+      </div>
+      
+      
+      <div class=pagestuffsection id=runmodes64bitwindows>
+      
+        <h3>Running Diaperglu on 64 bit Windows</h3>
+        
+        <p><span class=command>diaperglu</span> from command line - enters Forth standard shell</p>
+        <p><span class=command>diaperglu</span> <span class=commandtarget>scriptfilename</span>
+         from command line - interprets script file scriptfilename</p>
+      </div>
+      
+      
+      <div class=pagestuffsection id=samplesmacosx>
+      
+        <h3>Running the sample command line scripts on Mac OS X</h3>
+        
+        <p>Change back to the directory where you did the make for Diaperglu if needed.</p>
+        <p>You can either enter <span class=command>./diaperglu</span> from command line to
+        enter the Forth standard shell, then type in lines like
+        <span class=command>$" samplescripts/helloworld.dglu" INCLUDEFILE$"</span>
+        to run a sample script or run the script from the command line using one of these:</p>
+        <p><span class=command>./diaperglu</span> <span class=commandtarget>samplescripts/helloworld.dglu</span> - script that prints out hello world!</p>
+        <p><span class=command>./diaperglu</span> <span class=commandtarget>samplescripts/testcodex86.dglu</span> - tests the 64 bit assembler</p>
+        <p><span class=command>./diaperglu</span> <span class=commandtarget>samplescripts/testdiaperglu.dglu</span> - tests the core Diaperglu script commands</p>
+        <p><span class=command>./diaperglu</span> <span class=commandtarget>samplescripts/testglulinking.dglu</span> - tests the linking function of the linker</p>
+        <p><span class=command>./diaperglu</span> <span class=commandtarget>samplescripts/testmakeexportglulist.dglu</span> - tests making an export glu list</p>
+        <p><span class=command>./diaperglu</span> <span class=commandtarget>samplescripts/TestMath.dglu</span> - tests loading the system math shared library and calling some floating point functions</p>
+        <p>For these samples in subdirectories: asmimportusingld, dg2dgraphicsdylib, helloword64exe, higherlevelasm, lifenglulib, sampleasmdylib, testmakedoto, and testmakedylib; you can cd into the subdirectory and do <span class=command>sudo make</span> to build and test the samples.</p>
+        <p>If you want to run the DiaperGluLifeApplication, you'll need to double click on the DiaperGluLifeApplication.xcodeproj file to open the project. Then, and I'm sorry about this, you'll need to edit the DiaperGluLifeApplication.m file to change the mylocalpath variable to have you're local path. More complete instructions are in the file. You need to do this because of Mac security precautions around using shared libraries. Then just click the play arrow in the top menu bar. Mac OS X will pop up a permission thing telling you the demo wants to access files in the local directories. This is to load the shared library because it isn't installed in one of the standard locations for shared libraries. If you give permission you get to see the demo.</p>
+        
+      </div>
+      
+      
+      <div class=pagestuffsection id=samples64bitwindows>
+      
+        <h3>Running the sample command line scripts on 64 bit Windows</h3>
+        
+        <p>Change back to the directory where you did the make for Diaperglu if needed.</p>
+        <p>You can either enter <span class=command>diaperglu</span> from command line to
+        enter the Forth standard shell, then type in lines like
+        <span class=command>$" samplescripts/helloworld.dglu" INCLUDEFILE$"</span>
+        to run a sample script or run the script from the command line using one of these:</p>
+        <p><span class=command>diaperglu</span> <span class=commandtarget>samplescripts/helloworld.dglu</span> - script that prints out hello world!</p>
+        <p>For these samples in subdirectories: asmimportusingld and testmakedoto; you can cd into the subdirectory and do <span class=command>nmake</span> to build and test the samples.</p>
+        
+      </div>
+      
+      
+      <div class=pagestuffsection id=releasing>
+      
+        <h3>Releasing a version of Diaperglu</h3>
+        
+        <p>This is for the me so I do not have to remember what I do to spin a release.</p>
+        <ul>
+          <li>Change license, version, and date comment in all source files - this includes architecture specific subdirectories. And the directory names in this file.</li>
+          <li>Rebuild for all platforms. Run test scripts. Verify operation under Apache.</li>
+          <li>Change license, version, and date comment in about.htm</li>
+          <li>Change shared object library version in makefiles.</li>
+          <li>Remove hidden files.</li>
+          <li>Make .tgz archive using this command on Mac OS X: <span class=command>tar cvfz DiaperGlu64</span><span class=commandtarget>dateversion</span><span class=command>.tgz DiaperGlu64/</span></li>
+          <li>Make .zip archive using Vista. Remember that a Mac OS X .zip does not unzip gracefully on Vista</li>
+          <li>Test opening archives on all platforms. Check file permissions. Remember that .zip does not save permissions so .zip is only for Win32</li>
+          <li>Put archives on rainbarrel.com website.</li>
+          <li>Update entry in the Free Software Directory.</li>
+          <li>Notify Forth.org</li>
+        </ul>
+      </div>
+
+    </div>
+
+  </div></body>
+</html>

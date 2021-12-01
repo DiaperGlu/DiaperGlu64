@@ -1,0 +1,260 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<html>
+
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      forthlocals.cpp functions
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>
+      
+      <a href=index.htm                                       >Directory</a>
+      <a href=documentationkey.htm                            >Documentation key</a>
+      <a                                                      >&nbsp;</a>
+
+      <a                                                      >C functions</a>
+      <a href=forthlocals.htm#dg_forthlocalsfetch             >dg_forthlocalsfetch</a>
+      <a href=forthlocals.htm#dg_forthlocalsstore             >dg_forthlocalsstore</a>
+      <a href=forthlocals.htm#dg_forthtolocals                >dg_forthtolocals</a>
+      <a href=forthlocals.htm#dg_forthlocalsbar               >dg_forthlocalsbar</a>
+      <a href=forthlocals.htm#dg_forthqueryclearlocals        >dg_forthqueryclearlocals</a>
+      <a                                                      >&nbsp;</a>
+      
+    </div>
+
+    <div id=pagestuff>
+
+      <div class=word id=dg_forthlocalsfetch>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthlocalsfetch ( LOCALS@ )
+//
+// C prototype:
+//  void dg_forthlocalsfetch (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( i -- u )
+//
+// Data stack in:
+//  i                             0 based index of local variable in local variable 
+//                                 stack
+//
+// Data stack out:
+//  u                             value of local variable i
+//                                                              
+// Action:
+//  i is popped off the data stack.
+//  The value of local variable i is pushed onto the data stack.
+//
+// Failure cases:
+//  error popping i from the data stack
+//  u missing from the local variable stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthlocalsstore>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthlocalsstore ( LOCALS! )
+//
+// C prototype:
+//  void dg_forthlocalsstore (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( u i -- )
+//
+// Data stack in:
+//  u                             new value of local variable i
+//  i                             0 based index of local variable in local variable 
+//                                 stack
+//                                                              
+// Action:
+//  Pops u and i off the data stack.
+//  The value of local variable i is changed to u.
+//
+// Failure cases:
+//  error popping u or i from the data stack
+//  error setting local variable i to the value of u
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthtolocals>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthtolocals ( &gt;LOCALS )
+//
+// C prototype:
+//  void dg_forthtolocals (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( u -- )
+//  ( -locals- u )
+//
+// Data stack in:
+//  u                             value of new local variable
+//                                                              
+// Action:
+//  Pops u off the data stack.
+//  A new local variable is pushed onto the end of the locals stack and it's value 
+//   is set to u.
+//
+// Failure cases:
+//  error popping u from the data stack
+//  error pushing u to the locals stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthlocalsbar>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthlocalsbar ( LOCALS| )
+//
+// C prototype:
+//  void dg_forthlocalsbar (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( &quot;&lt;delimiters&gt;name0&lt;delimiters&gt;name1&lt;delimiters&gt;...
+//    namen&lt;delimiters&gt;|&lt;delimiters&gt;morestuff&quot; 
+//     -currentinputbuffer- 
+//     &quot;&lt;delimiters&gt;morestuff&quot; )
+//                                                              
+// Compile time action:
+//  The current input buffer is parsed for names up until a | is encountered, the
+//   name ; is parsed or until the end of the current interpret buffer is reached.
+//   For each name found, a word with that name is created in the locals wordlist 
+//   and a call to &gt;LOCALS is compiled. If the name ; is parsed, an error is
+//   pushed to the error stack and this function returns.
+//
+// Run time action:
+//  Pops a number for each local word defined and pushes it to the locals stack.
+//  This means the local word names represent the data stack parameters in reverse 
+//   order.
+//
+// Note: (August 9, 2020 J.N.)
+//  You no longer need whitespace delimiters before and after | 
+//  Line terminators in the area before | are treated as white space delimiters. 
+//   (This means this function is multiline when loading from a file or using 
+//   EVALUATE.)
+//
+// Forth Standard:
+//  13.6.2.1795
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthqueryclearlocals>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthqueryclearlocals ( ?CLEAR-LOCALS )
+//
+// C prototype:
+//  void dg_forthqueryclearlocals (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//                                                              
+// Action:
+//  If the flag for using locals or the flag for using string locals is set,
+//   this routine removes all the words from the locals wordlist.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+    </div>
+
+  </div></body>
+</html>
+

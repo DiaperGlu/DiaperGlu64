@@ -1,0 +1,3371 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<html>
+
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      forthmiscellaneous.cpp functions
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>
+      
+      <a href=index.htm                                          >Directory</a>
+      <a href=documentationkey.htm                               >Documentation key</a>
+      <a                                                         >&nbsp;</a>
+
+      <a                                                         >C Functions</a>
+      <a href=forthmiscellaneous.htm#dg_evaluatebuffer           >dg_evaluatebuffer</a>
+      <a href=forthmiscellaneous.htm#dg_forthocall               >dg_forthocall</a>
+      <a href=forthmiscellaneous.htm#dg_forthqueryendevaluate    >dg_forthqueryendevaluate</a>
+      <a href=forthmiscellaneous.htm#dg_forthtype0string         >dg_forthtype0string</a>
+      <a href=forthmiscellaneous.htm#dg_forthshowlicense         >dg_forthshowlicense</a>
+      <a href=forthmiscellaneous.htm#dg_forthcrlf                >dg_forthcrlf</a>
+      <a href=forthmiscellaneous.htm#dg_forthgethstdin           >dg_forthgethstdin</a>
+      <a href=forthmiscellaneous.htm#dg_forthgethstdout          >dg_forthgethstdout</a>
+      <a href=forthmiscellaneous.htm#dg_forthgethstderror        >dg_forthgethstderror</a>
+      <a href=forthmiscellaneous.htm#dg_forthgetfilelength       >dg_forthgetfilelength</a>
+      <a href=forthmiscellaneous.htm#dg_forthreadavailabletobuffer >dg_forthreadavailabletobuffer</a>
+      <a href=forthmiscellaneous.htm#dg_forthreadwaitforntobuffer  >dg_forthreadwaitforntobuffer</a>
+      <a href=forthmiscellaneous.htm#dg_forthcompilecallcore       >dg_forthcompilecallcore</a>
+      <a href=forthmiscellaneous.htm#dg_forthcompilecallsamebuffer >dg_forthcompilecallsamebuffer</a>
+      <a href=forthmiscellaneous.htm#dg_forthcompilecallbuffer     >dg_forthcompilecallbuffer</a>
+      <a href=forthmiscellaneous.htm#dg_forthcompilesafecallbuffer >dg_forthcompilesafecallbuffer</a>
+      <a href=forthmiscellaneous.htm#dg_forthcscan               >dg_forthcscan</a>
+      <a href=forthmiscellaneous.htm#dg_forthscan                >dg_forthscan</a>
+      <a href=forthmiscellaneous.htm#dg_forthdoprompt            >dg_forthdoprompt</a>
+      <a href=forthmiscellaneous.htm#dg_forthbswap               >dg_forthbswap</a>
+      <a href=forthmiscellaneous.htm#dg_forthcompilebranch       >dg_forthcompilebranch</a>
+      <a href=forthmiscellaneous.htm#dg_forthresolvecompiledbranch>dg_forthresolvecompiledbranch</a>
+      <a href=forthmiscellaneous.htm#dg_forthosquotes            >dg_forthosquotes</a>
+      <a href=forthmiscellaneous.htm#dg_fortho0quotes            >dg_fortho0quotes</a>
+      <a href=forthmiscellaneous.htm#dg_forthpagesize            >dg_forthpagesize</a>
+      <a href=forthmiscellaneous.htm#dg_forthroundup             >dg_forthroundup</a>
+      <a href=forthmiscellaneous.htm#dg_forthcallprocaddress     >dg_forthcallprocaddress</a>
+      <a href=forthmiscellaneous.htm#dg_forthcalldfpprocaddress  >dg_forthcalldfpprocaddress</a>
+      <a href=forthmiscellaneous.htm#dg_forthcallprocaddressretuint64 >dg_forthcallprocaddressretuint128</a>
+      <a href=forthmiscellaneous.htm#dg_forthcallcppmemberfunction >dg_forthcallcppmemberfunction</a>
+      <a href=forthmiscellaneous.htm#dg_forthudmslashmod         >dg_forthudmslashmod</a>
+      <a href=forthmiscellaneous.htm#dg_forthodoes               >dg_forthodoes</a>
+      <a href=forthmiscellaneous.htm#dg_forthpackdf              >dg_forthpackdf</a>
+      <a href=forthmiscellaneous.htm#dg_forthunpackdf            >dg_forthunpackdf</a>
+      <a href=forthmiscellaneous.htm#dg_forthcodescomma          >dg_forthcodescomma</a>
+      <a href=forthmiscellaneous.htm#dg_forthcodeu8comma         >dg_forthcodeu8comma</a>
+      <a href=forthmiscellaneous.htm#dg_forthcodeu16comma        >dg_forthcodeu16comma</a>
+      <a href=forthmiscellaneous.htm#dg_forthcodeu32comma        >dg_forthcodeu32comma</a>
+      <a href=forthmiscellaneous.htm#dg_forthcodeu64comma        >dg_forthcodeu64comma</a>
+      <a href=forthmiscellaneous.htm#dg_forthcodeallot           >dg_forthcodeallot</a>
+      <a href=forthmiscellaneous.htm#dg_forthdoterrorline        >dg_forthdoterrorline</a>
+      <a href=forthmiscellaneous.htm#dg_forthohere               >dg_forthohere</a>
+      <a href=forthmiscellaneous.htm#dg_forthdglibstring         >dg_forthdglibstring</a>
+      <a href=forthmiscellaneous.htm#dg_forthlobit               >dg_forthlobit</a>
+      <a href=forthmiscellaneous.htm#dg_forthhibit               >dg_forthhibit</a>
+      <a href=forthmiscellaneous.htm#dg_forthcountbits           >dg_forthcountbits</a>
+      <a href=forthmiscellaneous.htm#dg_forthtouleb128           >dg_forthtouleb128</a>
+      <a href=forthmiscellaneous.htm#dg_forthhctwostore          >dg_forthhctwostore</a>
+      <a href=forthmiscellaneous.htm#dg_forthdrshift             >dg_forthdrshift</a>
+      <a href=forthmiscellaneous.htm#dg_forthdlshift             >dg_forthdlshift</a>
+      <a href=forthmiscellaneous.htm#dg_forthdarshift            >dg_forthdarshift</a>
+      <a href=forthmiscellaneous.htm#dg_forthbuftodotobuf        >dg_forthbuftodotobuf</a>
+      <a href=forthmiscellaneous.htm#dg_forthbuftodotofilestring >dg_forthbuftodotofilestring</a>
+      <a href=forthmiscellaneous.htm#dg_forthbuftomachodotobuf   >dg_forthbuftomachodotobuf</a>
+      <a href=forthmiscellaneous.htm#dg_forthpi                  >dg_forthpi</a>
+      <a href=forthmiscellaneous.htm#dg_forthe                   >dg_forthe</a>
+      <a href=forthmiscellaneous.htm#dg_forthinfinity            >dg_forthinfinity</a>
+      <a href=forthmiscellaneous.htm#dg_forthminusinfinity       >dg_forthminusinfinity</a>
+      <a href=forthmiscellaneous.htm#dg_forthdenormal            >dg_forthdenormal</a>
+      <a href=forthmiscellaneous.htm#dg_forthminusdenormal       >dg_forthminusdenormal</a>
+      <a href=forthmiscellaneous.htm#dg_forthnan                 >dg_forthnan</a>
+      <a href=forthmiscellaneous.htm#dg_forthminusnan            >dg_forthminusnan</a>
+      <a href=forthmiscellaneous.htm#dg_forthminusrot            >dg_forthminusrot</a>
+      <a href=forthmiscellaneous.htm#dg_forthrandom              >dg_forthrandom</a>
+      <a href=forthmiscellaneous.htm#dg_forthcompileu8s          >dg_forthcompileu8s</a>
+      <a href=forthmiscellaneous.htm#dg_forthcompileu8scurly     >dg_forthcompileu8scurly</a>
+      <a href=forthmiscellaneous.htm#dg_forthconstants           >dg_forthconstants</a>
+      <a href=forthmiscellaneous.htm#dg_forthconstantscurly      >dg_forthconstantscurly</a>
+      <a href=forthmiscellaneous.htm#dg_forthlocalconstants      >dg_forthlocalconstants</a>
+      <a href=forthmiscellaneous.htm#dg_forthlocalconstantscurly >dg_forthlocalconstantscurly</a>
+      <a href=forthmiscellaneous.htm#dg_forthfconstants          >dg_forthfconstants</a>
+      <a href=forthmiscellaneous.htm#dg_forthfconstantscurly     >dg_forthfconstantscurly</a>
+      <a href=forthmiscellaneous.htm#dg_forthvariables           >dg_forthvariables</a>
+      <a href=forthmiscellaneous.htm#dg_forthvariablescurly      >dg_forthvariablescurly</a>
+      <a href=forthmiscellaneous.htm#dg_forthmicrosecondssince1970jan01>dg_forthmicrosecondssince1970jan01</a>
+      <a href=forthmiscellaneous.htm#dg_forthsizedconstantscurly >dg_forthsizedconstantscurly</a>
+      
+      
+    </div>
+
+    <div id=pagestuff>
+
+
+      <div class=word id=dg_evaluatebuffer>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_evaluatebuffer ( EVALUATEBUFFER )
+//
+// C prototype:
+//  void dg_forthevaluatebuffer (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored
+//
+// Stack action shorthand:
+//  ( bufferid -- )
+//
+// Data stack in:
+//  bufferid                         buffer containing text to evaluate          
+//
+// Action:
+//  Removes buffer id from the data stack.
+//  Starts at the beginning of the buffer then gets each word in the buffer, looks it up
+//   in the current search order, then does the action for the word based on the current 
+//   script processing state  
+//  If it runs across a word it can't find, it stops.
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow error
+//  error evaluating the buffer (subroutine returns an error)
+//   
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthocall>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthocall ( OCALL )
+//
+// C prototype:
+//  void dg_forthocall ( Bufferhandle* pBHarrayhead ) 
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( compileroutineoffset compileroutinebufid -- )
+//
+// Data stack in:
+//  offset                        offset of routine to call in buffer bufferid
+//  bufferid                      routine to call is in this buffer
+//                                                       
+// Action:
+//  Calls the routine at the offset in the buffer.
+//  
+// Note:
+//  If the buffer id is DG_CORE_BUFFERID, this routine will use the offset as the 
+//   address.
+//
+// Failure cases:
+//  error popping bufferid or offset from the data stack
+//  error calling the routine
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+    
+
+      <div class=word id=dg_forthqueryendevaluate>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthqueryendevaluate ( ?ENDEVALUATE )
+//
+// C prototype:
+//  void dg_forthqueryendevaluate (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 other used as the bufferhandle for the array where the  
+//
+// Stack action shorthand:
+//  (  flag -- )
+//                                 bufferhandles are stored.
+// Data stack in:
+//  flag                          TRUE or FALSE flag
+//                                                              
+// Action:
+//  if the flag is TRUE, this routine moves the current input buffer's current offset
+//   to the end of the buffer which will cause the interpreter to skip the rest of the
+//   buffer and end the evaluation of this buffer
+//
+// Failure cases:
+//  error in a subroutine
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+        
+
+      <div class=word id=dg_forthtype0string>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthtype0string ( TYPE0$ )
+//
+// C prototype:
+//  void dg_forthtype0string (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( c-addr -- )
+// 
+// Data stack in:
+//  c-addr                        start address of a string
+//                                                              
+// Action:
+//  this displays the c style null terminated character string specified by c-addr
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  c-addr missing from the data stack
+//  process doesn't own all the memory in the string
+//  error sending character to the display
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+  
+
+      <div class=word id=dg_forthshowlicense>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthshowlicense ( SHOW-LICENSE )  
+//
+// C prototype:
+//  void dg_forthshowlicense (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//                                                            
+// Action:
+//  Shows the license for this program contained in the file gpl.doc
+//  (This function displays the contents of the file gpl.doc)
+//
+// Failure cases:
+//  Can't open gpl.doc.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+    
+
+      <div class=word id=dg_forthcrlf>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcrlf ( CRLF )  
+//
+// C prototype:
+//  void dg_forthcrlf (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//                                                            
+// Action:
+//  Writes a CRLF pair to stdout.
+//
+// Failure cases:
+//  not checked
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+    
+
+      <div class=word id=dg_forthgethstdin>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgethstdin ( GETHSTDIN )  
+//
+// C prototype:
+//  void dg_forthgethstdin (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- hstdin )
+//                                                            
+// Action:
+//  Pushes the file handle for stdin onto the data stack.
+//
+// Failure cases:
+//  not checked
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+    
+
+      <div class=word id=dg_forthgethstdout>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgethstdout ( GETHSTDOUT )  
+//
+// C prototype:
+//  void dg_forthgethstdout (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- hstdout )
+//                                                            
+// Action:
+//  Pushes the file handle for stdout onto the data stack.
+//
+// Failure cases:
+//  not checked
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+    
+
+      <div class=word id=dg_forthgethstderror>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgethstderror ( GETHSTDERR )  
+//
+// C prototype:
+//  void dg_forthgethstderror (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- hstderr )
+//                                                            
+// Action:
+//  Pushes the file handle for stderr onto the data stack.
+//
+// Failure cases:
+//  not checked
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+    
+
+      <div class=word id=dg_forthgetfilelength>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetfilelength ( GETFILELENGTH )  
+//
+// C prototype:
+//  void dg_forthgetfilelength (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( filehandle -- filelength )
+//                                                            
+// Action:
+//  Pops a file handle off of the data stack, then
+//  Pushes the file length of the file onto the data stack.
+//
+// Failure cases:
+//  not checked
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+    
+
+      <div class=word id=dg_forthreadavailabletobuffer>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthreadavailabletobuffer ( FILE&gt;BUF )
+//
+// C prototype:
+//  void dg_forthreadavailabletobuffer (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( filehandle bufferid -- )
+//  ( -bufferid- availabledata )
+//                                                              
+// Action:
+//  Pops filehandle and bufferid off the data stack, then
+//  reads whatever bytes are currently available from the file and pushes them
+//   onto the end of the buffer.
+//
+// Failure cases:
+//  error getting current vocabulary id
+//  error getting latest definition execute token
+//  error getting pointer to the latest definition 
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+    
+
+      <div class=word id=dg_forthreadwaitforntobuffer>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthreadwaitforntobuffer ( WAITREADN&gt;BUF )
+//
+// C prototype:
+//  void dg_forthreadwaitforntobuffer(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//     ( filehandle n timeout bufferid -- )
+//     ( -bufferid- uptondata )
+//                                                              
+// Action:
+//  pops filehandle, n, timeout, and bufferid off of the data stack then,
+//  waits and reads x bytes from the file and push it onto the end of the buffer 
+//
+// Note:
+//  timeout may be ignored on some operating systems
+//  (I don't like the idea waiting forever for the OS but that is how the standard
+//    CGI file transfer routines work.)
+//
+// Failure cases:
+//  error getting current vocabulary id
+//  error getting latest definition execute token
+//  error getting pointer to the latest definition 
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthcompilecallcore>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcompilecallcore ( COMPILE-CALLCORE )
+//
+// C prototype:
+//  void dg_forthcompilecallcore (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( addr -- )
+// 
+// Data stack in:
+//  addr                          target address not in a buffer
+//                                                            
+// Action:
+//  Compiles a call to the address. 
+//
+// Failure cases:
+//  error popping the offset from the data stack
+//  error getting the current compile buffer id
+//  error growing the current compile buffer
+//  error getting the pointer to the current compile buffer
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+    
+
+      <div class=word id=dg_forthcompilecallsamebuffer>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcompilecallsamebuffer ( COMPILE-CALLSAMEBUFFER )
+//
+// C prototype:
+//  void dg_forthcompilecallsamebuffer (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( offset -- )
+// 
+// Data stack in:
+//  offset                        target 0 based offset in bytes from beginning of 
+//                                 buffer
+//                                                            
+// Action:
+//  Compiles a call to the subroutine at an offset in the same buffer as the caller
+//
+// Failure cases:
+//  error popping the offset from the data stack
+//  error getting the current compile buffer id
+//  error growing the current compile buffer
+//  error getting the pointer to the current compile buffer
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+    
+
+      <div class=word id=dg_forthcompilecallbuffer>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcompilecallbuffer ( COMPILE-CALLBUFFER )
+//
+// C prototype:
+//  void dg_forthcompilecallbuffer (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( offset bufferid -- )
+// 
+// Data stack in:
+//  offset                        target 0 based offset in bytes from beginning of 
+//                                 buffer
+//  bufferid                      target buffer's id
+//                                                            
+// Action:
+//  Compiles a call to the subroutine at an offset in the target buffer which may not 
+//   be the same as the caller's buffer.
+//
+// Note:
+//  Do not use this to compile calls to compiling routines. 
+//   Use COMPILE-SAFECALLBUFFER instead.
+//   This is because the buffer may move while the compiling routine is compiling 
+//   to the buffer, invalidating the return address.
+//
+// Failure cases:
+//  error popping the offset from the data stack
+//  error getting the current compile buffer id
+//  error growing the current compile buffer
+//  error getting the pointer to the current compile buffer
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+        <div class=word id=dg_forthcompilesafecallbuffer>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcompilesafecallbuffer ( COMPILE-SAFECALLBUFFER ) 
+//
+// C prototype:
+//  void dg_forthcompilesafecallbuffer (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+// 
+// Data stack in:
+//  bufferid                      buffer the target routine is in
+//  bufferoffset                  offset of the target routine in the buffer
+//                                                            
+// Action:
+//  Compiles a safe call to a subroutine at an offset in a target buffer 
+//   onto the end of the current compile buffer. 
+//  If the buffer the call was made from moves, this call will return to the correct 
+//   place.
+//
+//  Notes:
+//   Compiles:
+//     (need to add compile align stack for 3 parameter subroutine)
+//    push offset in buffer of return
+//    push id of buffer of return
+//    push address of jump to offset in buffer code which is after the bufferhandle at 
+//     pBHarrayhead
+//      (this is the address for the subroutine return)
+//      (address calculated when this code compiled)
+//
+//     (the above is the return stack parameters and return address passed to the 
+//      called routine)
+//
+//  Because address of the jump to buffer routine is calculated when this code is run,
+//   the address of the jump to buffer code can change. However, if you change the size 
+//   of a bufferhandle, then any precompiled code with safe calls will become invalid 
+//   because the offset of the jump buffer code will change. (The jump buffer code is 
+//   after the head bufferhandle at pBHarrayhead.)
+//
+// What happens during a safe call:
+//  safe call occurs from a standard dglu subroutine frame
+//  the return stack is aligned for a 3 parameter call
+//  then 3 parameters are pushed to the return stack for a call to dg_getpbufferoffset 
+//  which will calculate the true return address then the address of the jump to buffer 
+//  code is pushed to the return stack, when the called routine returns, the return 
+//  will go to the jump to buffer code which will calculate the true return address and 
+//  jump to it then the control flow jumps to the target routine at its offset in its 
+//  buffer
+//  
+//  return stack looks like this:
+//    align space
+//    return offset
+//    return bufferid
+//    addr of jumptobuffer code
+//
+// Possibility:
+//  Another way to do this is to compile code that calculates the address of the jump 
+//   to buffer routine when the compiled code runs. Then the compiled safe call could 
+//   be used in a shared library without run time linking or binding. Of course this 
+//   still assumes the buffer ids and offsets of the called routines do not change.
+// 
+// Failure cases:
+//  error popping the bufferoffset and bufferid from the data stack
+//  error getting the current compile buffer id
+//  error growing the current compile buffer
+//  error getting the pointer to the current compile buffer
+//  offset is off the end of the buffer
+//  subroutine is too far away to call, > 0x80000000 away in the current compile buffer
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcscan>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcscan ( CSCAN ) 
+//
+// C prototype:
+//  void dg_forthcscan (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand: 
+//  ( caddr1 u1 value -- index )
+//
+// Data stack in:
+//  caddr1                        pointer to string to search
+//  u1                            length of string at caddr1 in characters (bytes)
+//  value						  value of byte to scan for in string
+//
+// Data stack out:
+//  index                         index in range of 0 to u1 - 1 of first match in 
+//                                 string or -1 if no match is found
+//                                                            
+// Action:
+//  Searches the memory at caddr1 for u1 characters for the first occurence of the 
+//   value 
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  process doesn't own the memory in the string
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+    
+
+      <div class=word id=dg_forthscan>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthscan ( SCAN ) 
+//
+// C prototype:
+//  void dg_forthscan (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( caddr1 u1 value -- index )
+// 
+// Data stack in:
+//  caddr1                        pointer to string to search
+//  u1                            length of string at caddr1 in characters (bytes)
+//  value						  value of uint64 to scan for in string
+//
+// Data stack out:
+//  index                         index in range of 0 to u1 - 1 of first match in 
+//                                 string or -1 if no match is found
+//                                                            
+// Action:
+//  Searches the memory at caddr1 for u1 characters for the first occurence of the 
+//   value 
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  process doesn't own the memory in the string
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+    
+
+      <div class=word id=dg_forthdoprompt>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdoprompt ( DOPROMPT )
+//
+// C prototype:
+//  void dg_forthdoprompt (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored          
+//
+// Stack action shorthand:
+//  ( -- )
+//
+// Action:
+//  checks the script processing state, the number of errors, and displays a prompt
+//
+// Failure cases:
+//  error getting script processing state
+//   
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthbswap>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthbswap ( BSWAP )
+//
+// C prototype:
+//  void dg_forthbswap (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the  
+//                                    other bufferhandles are stored          
+//
+// Stack action shorthand:
+//  ( u -- u' )
+//
+// Data stack in:
+//  u              UINT64            64 bit value
+//
+// Data stack out:
+//  u'             UINT64            64 bit value with bytes reversed
+//
+// Action:
+//  reverses the byte order of the bytes in u
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//   
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthcompilebranch>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcompilebranch ( COMPILE-BRANCH )
+//
+// C prototype:
+//  void dg_forthcompilebranch (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( branchtype -- afterbranchoffset )
+// 
+// Data stack in:
+//  branchtype                    branch type which is one of:
+//                                  DG_BRANCHTYPE_OVERFLOW = 0,
+//                                  DG_BRANCHTYPE_NOOVERFLOW = 1,
+//                                  DG_BRANCHTYPE_ULESSTHAN = 2,
+//                                  DG_BRANCHTYPE_UGREATERTHANOREQUAL = 3,
+//                                  DG_BRANCHTYPE_EQUAL = 4,
+//                                  DG_BRANCHTYPE_NOTEQUAL = 5,
+//                                  DG_BRANCHTYPE_ULESSTHANOREQUAL = 6,
+//                                  DG_BRANCHTYPE_UGREATERTHAN = 7,
+//                                  DG_BRANCHTYPE_MINUS = 8,
+//                                  DG_BRANCHTYPE_PLUS = 9,
+//                                  DG_BRANCHTYPE_PARITYEVEN = 10,
+//                                  DG_BRANCHTYPE_PARITYODD = 11,
+//                                  DG_BRANCHTYPE_LESSTHAN = 12,
+//                                  DG_BRANCHTYPE_GREATERTHANOREQUAL = 13,
+//                                  DG_BRANCHTYPE_LESSTHANOREQUAL = 14,
+//                                  DG_BRANCHTYPE_GREATERTHAN = 15,
+//                                  DG_BRANCHTYPE_ALWAYS = 16,
+//                                  DG_BRANCHTYPE_NEVER = 17 or greater,
+//                                  DG_BRANCHTYPE_CARRYSET = 2,
+//                                  DG_BRANCHTYPE_CARRYCLEAR = 3,
+//                                  DG_BRANCHTYPE_ZERO = 4,
+//                                  DG_BRANCHTYPE_NOTZERO = 5
+//
+// Data stack out:
+//  afterbranchoffset             current offset in bytes in current compile buffer 
+//                                 just after branch has been compiled
+//
+// Action:
+//  Compiles an unresolved branch, which is branch to instruction after branch.
+//  ( branch displacement is 0)
+//
+// Note:
+//  The branch type constants are defined in the X86-WORDLIST as condition
+//   codes. For example, CS = 2.
+//
+// Failure cases:
+//  data stack underflow
+//  can't get the current compile buffer id
+//  can't push the branch code to the current compile buffer
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthresolvecompiledbranch>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthresolvecompiledbranch ( RESOLVE-BRANCH )
+//
+// C prototype:
+//  void dg_forthresolvebranch (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( targetoffset afterbranchoffset -- )
+// 
+// Data stack in:
+//  targetoffset                  target offset in bytes from beginning of current
+//                                 compile buffer
+//  afterbranchoffset             current offset in bytes in current compile buffer 
+//                                 just after target branch was compiled
+//
+// Action:
+//  Resolves target branch to branch to target offset in current compile buffer
+//
+// Note: 
+//
+// Failure cases:
+//  data stack underflow
+//  can't get the current compile buffer id
+//  can't push the branch code to the current compile buffer
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthosquotes>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthosquotes ( OS" )
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//            
+// Current input buffer's current offset in:
+//  "somestuff&lt;quotes&gt;morestuff"
+//
+// Current input buffer's current offset out:
+//  "morestuff"
+//                                                              
+// Action:
+//  Moves the current input buffers' current offset pointer to the next character 
+//   after the next &quot;, the next line terminator delimiter, or the end of the 
+//   buffer, whichever comes first. The target string is the characters skipped except 
+//   for the &quot; or line terminator delimiter.
+//  Then copies the target string except for the leading delimiter to the current 
+//   compile buffer and compiles code to push its run time address and length to the 
+//   data stack.
+//
+// Note:
+//  A line terminator delimiter is one of:
+//   c shorthand      ascii code    name  
+//   '\n'             0x0a          &lt;line feed&gt;
+//   '\v'             0x0b          &lt;vertical tab&gt;
+//   '\b'             0x08          &lt;back space&gt;
+//   '\r'             0x0c          &lt;carriage return&gt;
+//   '\f'             0x0f          &lt;form feed&gt;
+//
+// Failure cases:
+//  error getting the current input buffer id
+//  error getting the pointer to the current input buffer
+//  error getting the current compile buffer id
+//  error growing the current compile buffer
+//  error getting the pointer to the current compile buffer
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+     
+</pre>
+      </div>
+      
+      <div class=word id=dg_fortho0quotes>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_fortho0quotes ( O0" )
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//            
+// Current input buffer's current offset in:
+//  "somestuff&lt;quotes&gt;morestuff"
+//
+// Current input buffer's current offset out:
+//  "morestuff"
+//                                                              
+// Action:
+//  Moves the current input buffers' current offset pointer to the next character after 
+//   the next &quot;, the next line terminator delimiter, or the end of the buffer,
+//   whichever comes first. The target string is the characters skipped except for the
+//   &quot; or line terminator delimiter.
+//  Then copies the target string except for the leading delimiter to the current 
+//   compile buffer, puts a 0 byte after the copied string, and then compiles code to 
+//   push its run time address and length to the data stack.
+//
+// Note:
+//  A line terminator delimiter is one of:
+//   c shorthand      ascii code    name  
+//   '\n'             0x0a          &lt;line feed&gt;
+//   '\v'             0x0b          &lt;vertical tab&gt;
+//   '\b'             0x08          &lt;back space&gt;
+//   '\r'             0x0c          &lt;carriage return&gt;
+//   '\f'             0x0f          &lt;form feed&gt;
+//
+// Failure cases:
+//  error getting the current input buffer id
+//  error getting the pointer to the current input buffer
+//  error getting the current compile buffer id
+//  error growing the current compile buffer
+//  error getting the pointer to the current compile buffer
+//  
+////////////////////////////////////////////////////////////////////////////////////////      
+</pre>
+      </div>
+            
+      
+      <div class=word id=dg_forthpagesize>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthpagesize ( PAGESIZE )
+//
+// C prototype:
+//  void dg_forthpagesize (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// Stack action shorthand:
+//  ( -- systempagesize )
+//
+// Action:
+//  Gets the operating system memory allocation page size. 
+// 
+// Note:
+//  On some operating systems, memory allocation sizes must be a
+//   multiple of the system page size. When Diaperglu allocates memory for buffers,
+//   it automatically rounds the requested growby and maxsize to the nearest highest
+//   system page size.
+//
+// Failure cases:
+//  data stack is full
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthroundup>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthroundup ( ROUNDUP )
+//
+// C prototype:
+//  void dg_forthroundup (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// Stack action shorthand:
+//  ( n unitsize -- nearesthighestmultiple )
+//
+// Action:
+//  Gets the nearest highest multiple of unitsize closest to n.
+//   If unitsize is 0, this returns n.
+//   If n is 0, this returns unitsize.
+//   If round up calculation would overflow a UINT64, this rounds down, using the 
+//    closest multiple of unitsize &lt;= n instead;
+//   Otherwise this returns the closest multiple of unitsize &gt;= n
+// 
+// Note:
+//  On some operating systems, memory allocation sizes must be a
+//   multiple of the system page size. When Diaperglu allocates memory for buffers,
+//   it automatically rounds the requested growby and maxsize to the nearest highest
+//   system page size using this calculation.
+//
+// Failure cases:
+//  data stack underflow
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcallprocaddress>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+//  dg_forthcallprocaddress ( CALLPROC CALLCDECL CALLSTDCALL CALLC++MEMBER )
+//
+// C prototype:
+//  void dg_forthcallprocaddress (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.                          
+//
+// Stack action shorthand:
+//  ( paramn paramn-1 paramn-2 ... param1 n procaddress -- returnvalue )
+//
+// Data stack in:
+//  paramn paramn-1 paramn-2 ... param1      integer parameters for the proceedure
+//  n                                        number of parameters for the proceedure
+//  procaddress                              address to call
+//              
+// Data stack out:
+//  returnvalue                              return value from the proceedure
+//                                            (whatever was in rax for x86 64bit AMD-V)
+//                                              
+// Action:
+//  Removes n, procaddress, and all the parameters from the datastack and sets up a
+//   c style call. In 32 bit address mode the parameters are set up on the return 
+//   stack.
+//  In 64 bit address mode, the first 6 integer parameters are passed in registers  
+//   and the rest are passed on the return stack. 
+//  Calls the procedure in a way which does not care how the procedure leaves the 
+//   return stack
+//  Pushes the return value from the procedure to the data stack
+//
+// Note:
+//  Even void procedures return a value, just ignore it. It will be whatever was in 
+//   EAX/RAX.
+//  If you are calling a C++ member function, push the object handle onto the data 
+//   stack after the parameters and treat the object handle as an additional parameter 
+//   when determining the parameter count. In other words n is the number of regular 
+//   parameters + 1. Unless, (according to a rumor on some message boards) you have
+//   a non trivial copy thing (passing out more than UINT128?), then a pointer to 
+//   the return value or copy constructor destructor thing is passed in the
+//   first parameter followed by the object handle in the second parameter.
+//  According to AMD64 ABI Draft 0.3 – July 17, 2013 – 15:26:
+//   integer parameters can be one of:
+//    _Bool, char, short, int, long and long long
+//   (basically any integer parameters 64 bits and less)
+//   (you can probably pass a 128 bit integer input parameter by using 2 data stack
+//    parameters where the high 64 bits get pushed to the data stack first)
+// 
+// Failure cases:
+//  error getting a pointer to the data stack
+//  n or procaddress is missing from the data stack
+//  there aren't n parameters on the data stack
+//  exception calling the proceedure, address or parameters may be incorrect
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthcalldfpprocaddress>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+//  dg_forthcalldfpprocaddress ( CALLDFPPROC )
+//
+// C prototype:
+//  void dg_forthcalldfpprocaddress (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.                          
+//
+// Stack action shorthand:
+//  ( dfpparamm dfpparamm-1 ... dfpparam1
+//    paramn paramn-1 ... param1
+//    m n procaddress -- dfpreturnvalue )
+//
+// Data stack in:
+//  dfpparamm dfpparamm-1 ... dfpparam1      floating point parameters for the 
+//                                            procedure
+//  paramn paramn-1 ... param1               parameters for the procedure
+//  m                                        number of floating point parameters for
+//                                            the procedure
+//  n                                        number of integer parameters for the 
+//                                            procedure
+//  procaddress                              address to call
+//              
+// Data stack out:
+//  dfpreturnvalue                           floating point return value from the 
+//                                            procedure (whatever was in xmm0 for 
+//                                            x86 64 bit AMD-V)
+//                                              
+// Action:
+//  Removes procaddress, n, m, and all the parameters from the datastack and sets up 
+//   a c style call to the proceedure
+//  Calls the proceedure in a way which does not care how the proceedure leaves the 
+//   return stack
+//  Pushes the double float return value from the procedure to the data stack
+//
+// Note:
+//  Even void procedures return a value, just ignore it, (which means DROP it).
+//  If you are calling a C++ member function, push the object handle onto the data 
+//   stack after the parameters and treat the object handle as an additional 
+//   parameter when determining the parameter count. In other words n is the 
+//   number of regular parameters + 1.
+//  If you are calling a c function with both floating point and integer input
+//   parameters, push the floating point parameters to the data stack in reverse
+//   order first followed by the integer parameters in reverse order.
+//  According to AMD64 ABI Draft 0.3 – July 17, 2013 – 15:26:
+//   floating point parameters can be one of:
+//    float, double, _Decimal32, _Decimal64 and __m64
+//   and integer parameters can be one of:
+//    _Bool, char, short, int, long and long long
+//    (basically any integer parameter 64 bits or less)
+//   (you can probably pass a 128 bit integer input parameter by using 2 data stack
+//    parameters where the high 64 bits get pushed to the data stack first)
+//
+// Failure cases:
+//  error getting a pointer to the data stack
+//  n or procaddress is missing from the data stack
+//  there aren't n parameters on the data stack
+//  exception calling the proceedure, address or parameters may be incorrect
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcallprocaddressretuint64>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcallprocaddressretuint128
+//  ( CALLPROCRETUINT128 CALLCDECLRETUINT128 CALLSTDCALLRETUINT128
+//    CALLC++MEMBERRETUINT128 )
+//
+// C prototype:
+//  void dg_forthcallprocaddressretuint128 (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where 
+//                                 the other bufferhandles are stored.                          
+//
+// Stack action shorthand:
+//  ( paramn paramn-1 paramn-2 ... param1 n procaddress
+//     -- returnvaluelo returnvaluehi )
+//
+// Data stack in:
+//  paramn paramn-1 paramn-2 ... param1      parameters for the proceedure
+//  n                                        number of parameters for the proceedure
+//  procaddress                              address to call
+//              
+// Data stack out:
+//  returnvalue                              return value from the proceedure
+//                                             64 bits low from RAX 2nd from top
+//                                             64 bits high from RDX on top
+//                                              
+// Action:
+//  removes n, procaddress, and all the parameters from the datastack and sets up a
+//  call on the return stack to the proceedure
+//  calls the proceedure in a way which does not care how the proceedure leaves the
+//   return stack
+//  pushes the 128 bit return value from the proceedure to the data stack
+// 
+// Note:
+//  If you are calling a C++ member function, push the object handle onto the data
+//   stack after the parameters and treat the object handle as an additional parameter
+//   when determining the parameter count. In other words n is the number of regular
+//   parameters + 1. Unless, (according to a rumor on some message boards) you have
+//   a non trivial copy thing (passing out more than UINT128?), then a pointer
+//   to the return value or copy constructor destructor thing is passed in the
+//   first parameter followed by the object handle in the second parameter.
+//  According to AMD64 ABI Draft 0.3 – July 17, 2013 – 15:26:
+//   integer input parameters can be one of:
+//    _Bool, char, short, int, long and long long
+//   (basically any integer parameters 64 bits and less)
+//   (you can probably pass a 128 bit integer input parameter by using 2 data stack
+//    parameters where the high 64 bits get pushed to the data stack first)
+//
+// Failure cases:
+//  error getting a pointer to the data stack
+//  n or procaddress is missing from the data stack
+//  there aren't n parameters on the data stack
+//  exception calling the proceedure, address or parameters may be incorrect
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthcallcppmemberfunction>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcallcppmemberfunction ( CALLWIN32C++MEMBER )
+//
+// C prototype:
+//  void dg_forthcallcppmemberfunction (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.                          
+// 
+// Stack action shorthand:
+//  ( paramn paramn-1 paramn-2 ... param1 n procaddress -- returnvalue )
+//  ( param1 is the object handle )
+// 
+// Data stack in:
+//  paramn paramn-1 paramn-2 ... param1      parameters for the proceedure
+//                                             param1 is the object handle
+//  n                                        number of parameters for the proceedure
+//                                            the object handle is included in the 
+//                                            parameter count
+//  procaddress                              address to call
+//              
+// Data stack out:
+//  returnvalue                              return value from the proceedure 
+//                                            (whatever was in eax)
+//                                              
+// Action:
+//  ( this does a call using the win32 c++ member function calling convention )
+//  removes n, procaddress, and all the parameters from the datastack and sets up a
+//  call with all parameters except the object handle on the return stack
+//    and the object handle in register ECX
+//  calls the proceedure 
+//  pushes the return value from the proceedure to the data stack
+//
+// Note:
+//  Even void proceedures return a value, just ignore it. It will be whatever was in 
+//   eax.
+//  Treat the object handle as an additional parameter when determining the 
+//   parameter count. In other words n is the number of regular parameters + 1.
+// 
+// Failure cases:
+//  error getting a pointer to the data stack
+//  n or procaddress is missing from the data stack
+//  there aren't n parameters on the data stack
+//  exception calling the proceedure, address or parameters may be incorrect
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthudmslashmod>
+<pre>     
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthudmslashmod ( UDM/MOD )
+//
+// C prototype:
+//  void dg_forthudmslashmod (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( ud u1 -- ud2 rem ) 
+//
+// Datastack in:
+//  ud              double UINT64 to be divided (top number) (64 bits lo, 64 bits hi)
+//  u1              single UINT64 used to divide (bottom number)
+//
+// Datastack out:
+//  u2              double UINT64 quotient (64 bits lo, 64 bits hi)
+//  u3              single UINT64 remainder
+//                                                              
+// Action:
+//  divides ud by u1 giving ud2 remainder u3
+//
+// Failure cases:
+//  error getting pointer to the datastack
+//  ud or u1 is missing from the data stack
+//  u1 is 0  - no error is reported and -1 -1 is returned
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+      
+      <div class=word id=dg_forthodoes>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthodoes ( ODOES&gt; )
+//
+// C prototype:
+//  void dg_forthodoes (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//
+// Action:
+//  compiles code to change the compile routine of the latest definition to call the 
+//   code compiled immediately after what this ODOES&gt; compiles
+//  compiles a return
+//  ( leaves the offset and bufferid from CREATE alone! )
+//
+// NOTE:
+//  ODOES&gt; is used after a CREATE in a colon definition to change the compile 
+//   routine from pushaddressorcompilepushaddress to the user defined code following 
+//   ODOES&gt; up until the semicolon.
+//  
+//  The offset bufferid from the CREATE is passed in to the user routine so to the 
+//   code following ODOES&gt; it looks like this:
+//
+//  void namelessusercompileroutine (Bufferhandle* pBHarrayhead)
+//                                  ( offset bufferid -- )
+//  
+//  The code between CREATE and ODOES&gt; is usually used to allocate and initialize 
+//   data field memory for the new definitions.
+//  Unlike DOES&gt;, this routine passes the offset and bufferid instead of an address.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+      <div class=word id=dg_forthpackdf>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthpackdf ( PACKDF )
+//
+// C prototype:
+//  void dg_forthpackdf (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                  used as the bufferhandle for the array where the  
+//                                  other bufferhandles are stored.
+//
+// Stack action shorthand:
+//   ( mantissa exponent-n sign-f -- df )
+//
+//   mantissa              UINT64  52 bit mantissa of fractional part of df.
+//                                 Bits are left aligned and only the lower 52 bits 
+//                                 are used.
+//
+//   exponent-n            INT64   Normal exponents go from -1022 to +1023
+//                                 Exponents -1023 and +1024 have special meaning.
+//
+//   sign-f                INT64   0 means the number is positve, -1 means the number 
+//                                  is negative
+//
+//   df                    double  64 bit floating point number in the standard IEEE
+//                                  floating point format. The bits are in the same 
+//                                  order in memory as the standard on an x86, 
+//                                  which is:
+//                                   The 8 bytes are ordered low byte to high byte.
+//                                   Highest bit is a sign bit (which is highest bit 
+//                                    of high byte)
+//                                   Next highest 11 bits are the the exponent, where 
+//                                    a value of 1023 is 0. 
+//                                   The rest is the mantissa.
+//
+// Action:
+//  Packs the parts of an IEEE 64 bit floating point number into it's standard 
+//   format.
+//
+// NOTE:
+//   Each double float on the data stack is 64 bits and occupies one 64 bit data cell.
+//
+//   The true absolute value of an IEEE double using a normal exponent is 
+//    (1 + (mantissa/ (2 ^ 52))) * (2 ^ exponent)
+//    or you can think of it in binary using 1.mantissa shifted left or right by the 
+//    exponent.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthunpackdf>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthunpackdf ( UNPACKDF )
+//
+// C prototype:
+//  void dg_forthpackdf (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                  used as the bufferhandle for the array where the 
+//                                  other bufferhandles are stored.
+//
+// Stack action shorthand:
+//   ( df -- mantissa exponent-n sign-f )
+//
+//   mantissa              UINT64  52 bit mantissa of fractional part of df.
+//                                 Bits are left aligned and only the lower 52 bits 
+//                                 are used.
+//
+//   exponent-n            INT64   Normal exponents go from -1022 to +1023
+//                                 Exponents -1023 and +1024 have special meaning.
+//
+//   sign-f                INT64   0 means the number is positve, -1 means the number 
+//                                  is negative
+//
+//   df                    double  64 bit floating point number in the standard IEEE
+//                                  floating point format. The bits are in the same  
+//                                  order in memory as the standard on an x86, 
+//                                  which is:
+//                                   The 8 bytes are ordered low byte to high byte.
+//                                   Highest bit is a sign bit (which is highest bit 
+//                                    of high byte)
+//                                   Next highest 11 bits are the the exponent, where 
+//                                    a value of 1023 is 0. 
+//                                   The rest is the mantissa.
+//
+// Action:
+//  Unpacks the parts of an IEEE 64 bit floating point number in standard format into 
+//   it's parts.
+//
+// NOTE:
+//   Each double float on the data stack is 64 bits and occupies one 64 bit data cell.
+//
+//    The true absolute value of an IEEE double using a normal exponent is 
+//     (1 + (mantissa/ (2 ^ 52))) * (2 ^ exponent)
+//    or you can think of it in binary using 1.mantissa shifted left or right by the 
+//    exponent.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+    
+      <div class=word id=dg_forthcodescomma>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcodescomma ( CODE-S, )
+//
+// C prototype:
+//  void dg_forthcodescomma (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                  used as the bufferhandle for the array where the 
+//                                  other bufferhandles are stored.
+//
+// Stack action shorthand:
+//   ( addr length -- )
+//
+//   caddr                 UINT64  start address of an unsigned character string 
+//
+//   length                INT64   length of an unsigned character string
+//
+//
+// Action:
+//  Pushes a copy of the unsigned character string onto the end of the current compile 
+//   buffer.
+//
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcodeu8comma>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcodeu8comma ( CODE-U8, )
+//
+// C prototype:
+//  void dg_forthcodeu8comma (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                  used as the bufferhandle for the array where the  
+//                                  other bufferhandles are stored.
+//
+// Stack action shorthand:
+//   ( addr length -- )
+//
+//   u                     UINT64  UINT64 representation of an 8 bit integer
+//
+//
+// Action:
+//   Pushes the unsigned character onto the end of the current compile buffer.
+//
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcodeu16comma>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcodeu16comma ( CODE-U16, )
+//
+// C prototype:
+//  void dg_forthcodeu16comma (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                  used as the bufferhandle for the array where the 
+//                                  other bufferhandles are stored.
+//
+// Stack action shorthand:
+//   ( addr length -- )
+//
+//   u                     UINT64  UINT64 representation of a 16 bit integer 
+//
+//
+// Action:
+//   Pushes the unsigned 16 bit integer onto the end of the current compile buffer.
+//
+//
+// Note:
+//  Stores the number in the corrent endianness format of the machine Diaperglu is 
+//   running on.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcodeu32comma>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcodeu32comma ( CODE-U32, )
+//
+// C prototype:
+//  void dg_forthcodeu32comma (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                  used as the bufferhandle for the array where the 
+//                                  other  bufferhandles are stored.
+//
+// Stack action shorthand:
+//   ( addr length -- )
+//
+//   u                     UINT64  UINT64 representation of a 32 bit integer
+//
+//
+// Action:
+//   Pushes the unsigned 32 bit integer onto the end of the current compile buffer.
+//
+//
+// Note:
+//  Stores the number in the corrent endianness format of the machine Diaperglu is 
+//   running on.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthcodeu64comma>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcodeu64comma ( CODE-U64, )
+//
+// C prototype:
+//  void dg_forthcodeu64comma (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                  used as the bufferhandle for the array where the 
+//                                  other bufferhandles are stored.
+//
+// Stack action shorthand:
+//   ( addr length -- )
+//
+//   ud                    UINT64  64 bit integer
+//
+//
+// Action:
+//   Pushes the unsigned 64 bit integer onto the end of the current compile buffer.
+//
+//
+// Note:
+//  Stores the number in the corrent endianness format of the machine Diaperglu is 
+//   running on.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthcodeallot>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcodeallot ( CODE-ALLOT, )
+//
+// C prototype:
+//  void dg_forthcodeallot (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                  used as the bufferhandle for the array where the 
+//                                  other bufferhandles are stored.
+//
+// Stack action shorthand:
+//   ( n -- )
+//   ( -currentcompilebuffer- +nbytes )
+//
+//   n                             signed 64 bit integer
+//
+//
+// Action:
+//   If n &gt; 0 then grows the current compile buffer n bytes.
+//   If n &lt; 0 then shrinks the current compile buffer |n| bytes.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+     
+     
+      <div class=word id=dg_forthdoterrorline>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdoterrorline ( .ERRORLINE )
+//
+// C prototype:
+//  void dg_forthdoterrorline (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )
+//
+// Action:
+//   Sends a new line character to stdout.
+//   Sends the data in the DG_ERRORLINE_BUFFERID buffer to stdout.
+//   Sends a new line character to stdout.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthohere>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthohere ( OHERE )
+//
+// C prototype:
+//  void dg_forthohere (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- currentoffset )
+//
+// Action:
+//   Pushes the in use length of the current compile buffer to the data stack.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthdglibstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdglibstring ( DGLIB$ )
+//
+// C prototype:
+//  void dg_forthdglibstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -$- dglibfilename$ )
+//
+// Action:
+//   Pushes the file name of the diaperglu shared library to the string stack.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthlobit>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthlobit ( LOBIT )
+//
+// C prototype:
+//  void dg_forthlobit (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( u -- lowestbitpos )
+//
+//   u                            unsigned 64 bit integer
+//   lowestbitpos                 0 based index of lowest set bit
+//                                 -1 if u is 0
+//
+// Action:
+//   Replaces the unsigned 64 bit integer on the top of the data stack with the index
+//    of the lowest bit set in the integer. If u is 0, u is replaced with -1.
+//   For example, if u is 0x0A (...1010), the result is 1.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthhibit>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthhibit ( HIBIT )
+//
+// C prototype:
+//  void dg_forthhibit (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( u -- highestbitpos )
+//
+//   u                            unsigned 64 bit integer
+//   highestbitpos                0 based index of highest set bit
+//                                 -1 if u is 0
+//
+// Action:
+//   Replaces the unsigned 64 bit integer on the top of the data stack with the index
+//    of the highest bit set in the integer. If u is 0, u is replaced with -1.
+//   For example, if u is 0x0A (...1010), the result is 3.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthcountbits>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcountbits ( COUNTBITS )
+//
+// C prototype:
+//  void dg_forthcountbits (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( u -- bitcount )
+//
+//   u                            unsigned 64 bit integer
+//   bitcount                     number of 1s in u
+//
+// Action:
+//   Replaces the unsigned 64 bit integer on the top of the data stack with the
+//    number of bits set to 1 in the integer. For example: HEX A001000200030004
+//    becomes 7.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthtouleb128>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthtouleb128 ( &gt;ULEB128 )
+//
+// C prototype:
+//  void dg_forthtouleb128 (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( u -- uleb128lo uleb128hiandcount )
+//
+//   u                            unsigned 64 bit integer
+//   uleb128lo                    first 8 low order bytes of the uleb128
+//   uleb128hiandcount            last 7 high order bytes of the uleb128 and the count
+//
+// Action:
+//   Replaces the unsigned 64 bit integer on the top of the data stack with a 128 bit
+//    unsigned integer that holds the uleb128 representation of the integer as a high
+//    counted byte string. In other words, every 7 bits of u starting with the 7 low
+//    order bits are put into the bytes of the result from low to high. The highest bit
+//    of the result bytes are set except for the last result byte converted. After the
+//    first 7 bits of u are converted, the conversion only continues if there are higher
+//    bits in u with 1 set.
+//   For example, if u is 0x40, the count byte of uleb128hiandcount is 1 and the
+//    first byte of uleb128lo is 0x40. If u is 0x80, then the count byte of
+//    uleb128hiandcount is 2 and the lowest byte is uleb128lo is 0x80 and the second
+//    lowest byte uleb128lo is 0x01. If u is 0x81, then the count byte is of
+//    uleb128hiandcount is 2 and the lowest byte of uleb128lo is 0x81 and the second
+//    lowest byte of uleb128lo is 0x01.
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthhctwostore>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthhctwostore ( HC2! )
+//
+// C prototype:
+//  void dg_forthhctwostore (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( uleb128lo uleb128hiandcount pdestination -- )
+//
+//   uleb128lo                   first 8 low order bytes of the uleb128
+//   uleb128hiandcount           last 7 high order bytes of the uleb128 and the count
+//   pdestination                pointer to the destination
+//
+// Action:
+//   Stores the uleb128 hi counted string to the destination. Only the count
+//    number of bytes are written.
+//
+// Note:
+//  The 128 bit high counted string format stores byte strings in a 128 bit unsigned
+//   integer with the first byte of the string in the lowest 8 bits of the unsigned
+//   integer. The number of bytes in the string is stored in the highest 8 bits of the
+//   unsigned integer.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthdrshift>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdrshift ( DRSHIFT )
+//
+// C prototype:
+//  void dg_forthdrshift (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( u128lo u128hi shiftcount -- u128lo' u128hi' )
+//
+//   u128lo                      low 64 bits of a 128 bit value
+//   u128hi                      high 64 bits of a 128 bit value
+//   shiftcount                  number of bits to shift
+//
+// Action:
+//  Logically shifts the 128 bit value to the right shiftcount bits. Zeros are shifted
+//   in from the left. This means the bits are shifted from high to low.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthdlshift>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdlshift ( DLSHIFT )
+//
+// C prototype:
+//  void dg_forthdlshift (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( u128lo u128hi shiftcount -- u128lo' u128hi' )
+//
+//   u128lo                      low 64 bits of a 128 bit value
+//   u128hi                      high 64 bits of a 128 bit value
+//   shiftcount                  number of bits to shift
+//
+// Action:
+//  Logically shifts the 128 bit value to the left shiftcount bits. Zeros are shifted
+//   in from the right. This means the bits are shifted from low to high.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthdarshift>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdarshift ( DARSHIFT )
+//
+// C prototype:
+//  void dg_forthdarshift (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( n128lo n128hi shiftcount -- n128lo' n128hi' )
+//
+//   n128lo                      low 64 bits of a 128 bit value
+//   n128hi                      high 64 bits of a 128 bit value
+//   shiftcount                  number of bits to shift
+//
+// Action:
+//  Arithmetically shifts the signed 128 bit value to the right shiftcount bits.
+//   The sign bit is copied and shifted in from the left. The sign bit is the highest
+//   bit. This means the bits are shifted from high to low.
+//   (This lets you divide signed 128 bit numbers by powers of 2.)
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthbuftodotobuf>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthbuftodotobuf ( BUF&gt;NEW.OBUF )
+//
+// C prototype:
+//  void dg_forthbuftodotobuf (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( rawcodebufid exportsymbollisthlistid, exportsymbollistelementid -- dotobufid )
+//
+//   rawcodebufid                buffer id of buffer containing raw code
+//   exportsymbollisthlistid     hlist id of hlist containing export symbol list
+//   exportsymbollistelementid   parent element id of export symbol list
+//   dotobufid                   buffer id of buffer containing the .o file image
+//
+// Action:
+//  Takes the raw code buffer and an export symbol list and generates a .o file image.
+//  The symbol list is a list of name value pairs where the name is the symbol name,
+//   and the value is an 8 byte integer representing an offset from the start of the
+//   rawcodebufid buffer.
+//  The function of this word will probably change, like doing more than just
+//   export offset symbols... so it might change. Also Mac OS keeps changing how
+//   they do stuff at this level. 4/6/2020 J.N.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthbuftodotofilestring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthbuftodotofilestring ( BUF&gt;.OFILE$ )
+//
+// C prototype:
+//  void dg_forthbuftodotofilestring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( rawcodebufid exportsymbollisthlistid, exportsymbollistelementid -- )
+//  ( filename$ -$- )
+//
+//   rawcodebufid                buffer id of buffer containing raw code
+//   exportsymbollisthlistid     hlist id of hlist containing export symbol list
+//   exportsymbollistelementid   parent element id of export symbol list
+//   filename$                   file name of the .o file to generate
+//
+// Action:
+//  Takes the raw code buffer and an export symbol list and generates a .o file.
+//  The symbol list is a list of name value pairs where the name is the symbol name,
+//   and the value is an 8 byte integer representing an offset from pcode.
+//
+// Note:
+//  The function of this word will probably change, like doing more than just
+//   export offset symbols... so it might change. Also Mac OS keeps changing
+//   how they do stuff at this level. 4/6/2020 J.N.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+      
+      <div class=word id=dg_forthbuftomachodotobuf>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthbuftomachodotobuf ( BUF&gt;NEWMACH-O.OBUF BUF&gt;NEWEXPORTIMPORT.OBUF )
+//
+// C prototype:
+//  void dg_forthbuftomachodotobuf (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( rawcodebufid exportsymbollisthlistid, exportsymbollistelementid
+//     importsymbollisthlistid importsymbollistelementid -- dotobufid )
+//
+//   rawcodebufid                buffer id of buffer containing raw code
+//   exportsymbollisthlistid     hlist id of hlist containing export symbol list
+//   exportsymbollistelementid   parent element id of export symbol list
+//   importsymbollisthlistid     hlist id of hlist containing import symbol list
+//   importsymbollistelementid   parent element id of import symbol list
+//   dotobufid                   buffer id of buffer containing the .o file image
+//
+// Action:
+//  Takes the raw code buffer, an export symbol list, and an import symbol list
+//   and generates a .o file image.
+//  The symbol list are lists of name value pairs where the name is the symbol name,
+//   and the value is an 8 byte integer representing an offset from the start of the
+//   rawcodebufid buffer.
+//   Mac OS X supports different kinds of import linking and exports but this
+//   routine only supports one type of export and import. Later I'll probably
+//   change it.
+//   The import offset represents the offset where ld should put a four byte
+//   offset to the real link pointer. What this means is ld will create an array
+//   of 8 byte link addresses for you and you are supposed to access them with pc
+//   relative instructions.
+// 
+//   Windows supports the same kind linking as Mac, but when I tried it, some
+//    weird stuff was going on. The links were linking to themselves instead of
+//    a compiler generated import table. So I'm guessing I was missing something.
+//    So instead I went with importing absolute addresses. This means you'll
+//    have to generate your own import link table on Windows. The offset that
+//    goes into the import symbol list is the offset of the memory used to
+//    hold the 8 byte imported address.
+//
+// Import link example of calling a Mac OS X imported function in 64 bit mode:
+//  RIP 0 [R+N] CALL,              // compile a call to address stored in pc relative
+//                                 //  link table
+//                                 //  when RIP is base reg, displacement size
+//                                 //  is always 4
+//  OHERE 4 - >NEW$   $" myimport" // import function name is myimport, offset is of
+//                                 //  CALL instruction's 4 byte displacement
+//  1 EH[ND]  NEW-ELEMENT          // this adds a name value pair to the 2nd from
+//                                 //  top current hierarchical list parent element
+//                                 //  pair on the EH stack
+//
+//
+// Import link example of getting address on Mac of imported function or 8 bit data:
+//  RIP 0 [R+N]  RAX  MOV,         // when RIP is base reg, displacement size
+//                                 //  is always 4
+//
+//  OHERE 4 - >NEW$   $" mydimp"   // import function name is mydimp, offset is of
+//                                 //  MOV instruction's 4 byte displacement
+//  1 EH[ND]  NEW-ELEMENT          // this adds a name value pair to the 2nd from
+//                                 //  top current hierarchical list parent element
+//                                 //  pair on the EH stack
+//
+// Making an import link on Win64
+//  OHERE CONSTANT omyimportlink   // CONSTANT does not compile anything
+//                                 //  it's only an entry in the new word wordlist
+//  OHERE 0 CODE-U64, >NEW$ $" myimport"
+//  1 EH[ND]  NEW-ELEMENT          // this adds a name value pair to the 2nd from
+//                                 //  top current hierarchical list parent element
+//                                 //  pair on the EH stack
+//
+// Example of calling the Win64 imported function in 64 bit mode:
+//  HEX 20 N  RSP  SUB,            // for the 4 shadow parameters
+//                                 //  this assumes you are already 16 byte aligned
+//  omyimportlink [O] CALL,        // compile a call to address stored in pc relative
+//                                 //  link table
+//  20 N  RSP  ADD,                // drop the shadow parameters
+//
+// Example of getting address on Win64 of imported function or 8 bit data:
+//  RIP omyimportlink [R+N]  RAX  MOV,   
+//
+// Note:
+//  The function of this word will probably change, like doing more than just
+//   one type of import and export symbols... so it might change. Also, Mac OS keeps
+//   changing how they do stuff at this level. Windows seems pretty stable, but
+//   if I figure out how to do the relative offset to a compiler generated 
+//   table, I may switch to that or add it. 10/2/2020 J.N.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthpi>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthpi ( PI )
+//
+// C prototype:
+//  none (it's a FLOAT64 constant)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -f64- df1 )
+//
+//  df1                           64 bit double precision floating point value pi
+//
+// Action:
+//  Pushes the IEEE 64 bit double precision floating point value for pi to the
+//   floating point stack.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthe>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthe ( e )
+//
+// C prototype:
+//  none (it's a FLOAT64 constant)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -f64- df1 )
+//
+//  df1                           64 bit double precision floating point value e
+//
+// Action:
+//  Pushes the 64 bit double precision floating point value for e to the
+//   floating point stack.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthinfinity>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthinfinity ( INFINITY )
+//
+// C prototype:
+//  none (it's a FLOAT64 constant)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -f64- df1 )
+//
+//  df1                           64 bit double precision floating point value
+//                                 infinity
+//
+// Action:
+//  Pushes the 64 bit double precision floating point value for infinity to the
+//   floating point stack.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthminusinfinity>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthminusinfinity ( -INFINITY )
+//
+// C prototype:
+//  none (it's a FLOAT64 constant)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -f64- df1 )
+//
+//  df1                           64 bit double precision floating point value
+//                                 -infinity
+//
+// Action:
+//  Pushes the 64 bit double precision floating point value for negative infinity to 
+//   the floating point stack.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthdenormal>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdenormal ( DENORMAL )
+//
+// C prototype:
+//  none (it's a FLOAT64 constant)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -f64- df1 )
+//
+//  df1                           64 bit double precision floating point value
+//                                 denormal (too close to 0)
+//
+// Action:
+//  Pushes the 64 bit double precision floating point value for denormal to the
+//   floating point stack.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthminusdenormal>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthminusdenormal ( -DENORMAL )
+//
+// C prototype:
+//  none (it's a FLOAT64 constant)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -f64- df1 )
+//
+//  df1                           64 bit double precision floating point value
+//                                 -denormal (too close to -0)
+//
+// Action:
+//  Pushes the 64 bit double precision floating point value for negative denormal to 
+//   the floating point stack.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthnan>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthnan ( NAN )
+//
+// C prototype:
+//  none (it's a FLOAT64 constant)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -f64- df1 )
+//
+//  df1                           64 bit double precision floating point value
+//                                 NaN (not a number)
+//
+// Action:
+//  Pushes the 64 bit double precision floating point value for NaN to the
+//   floating point stack.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthminusnan>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthminusnan ( -NAN )
+//
+// C prototype:
+//  none (it's a FLOAT64 constant)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -f64- df1 )
+//
+//  df1                           64 bit double precision floating point value
+//                                 -NaN (not a number)
+//
+// Action:
+//  Pushes the 64 bit double precision floating point value for negative NaN to the
+//   floating point stack.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthminusrot>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthminusrot ( -ROT )
+//
+// C prototype:
+//  void dg_forthminusrot (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( n1 n2 n3 -- n3 n1 n2 )
+//  
+// Data Stack In: 
+//  x1 x2 x3                      integers (64 bit)
+// 
+// Data Stack Out:
+//  x3 x1 x2                      integers (64 bit)
+// 
+// Action:
+//  Rearranges the top 3 integers on the data stack.
+//
+// Failure cases:
+//  Error getting pointer to the data stack
+//  there aren't 3 items on the data stack
+//
+////////////////////////////////////////////////////////////////////////////////////////         
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthrandom>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////// 
+//
+// dg_forthrandom ( RANDOM )
+//
+// C prototype:
+//  void dg_forthrandom (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- x1 )
+// 
+// Data Stack Out:
+//  x1                            random 64 bit integer
+// 
+// Action:
+//  Pushes a random 64 bit integer onto the data stack.
+//
+////////////////////////////////////////////////////////////////////////////////////////            
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcompileu8s>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcompileu8s ( COMPILE-U8S )
+//
+// C prototype:
+//  void dg_forthcompileu8s (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot; -currentinputbuffer- 
+//     &quot;morestuff&quot; )
+//  
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot;
+//
+// Current input buffer's current offset out:
+//  &quot;morestuff&quot;          
+//
+// Forth standard:
+//  none
+//                                                          
+// Action:
+//  Moves the current offset pointer for the current input buffer to the character 
+//   after the next ; or to the end of the line if ; is not found.
+//  For each word found before the ; or end of the line, whichever come first:
+//   Tries to convert the word to a number using the current BASE. 
+//   If the word can be converted to a number, the lowest byte of the number is
+//    pushed onto the end of the current compile buffer.
+//   If the word can not be converted to a number, then this function pushes errors
+//    to the error stack and returns.
+//
+// Examples:
+//  HEX COMPILE-U8S A5 22 C4 96 C3 
+//  HEX COMPILE-U8S A5 22 C4 96 C3 ;
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcompileu8scurly>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcompileu8scurly ( COMPILE-U8S&lt; )
+//
+// C prototype:
+//  void dg_forthcompileu8scurly (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot; -currentinputbuffer- 
+//     &quot;morestuff&quot; )
+//  
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot;
+//
+// Current input buffer's current offset out:
+//  &quot;morestuff&quot;          
+//
+// Forth standard:
+//  none
+//                                                          
+// Action:
+//  Moves the current offset pointer for the current input buffer to the character 
+//   after the next &gt; or to the end of the buffer if &gt; is not found.
+//  For each word found before the &gt; or end of buffer, whichever come first:
+//   Tries to convert the word to a number using the current BASE. 
+//   If the word can be converted to a number, the lowest byte of the number is
+//    pushed onto the end of the current compile buffer.
+//   If the word can not be converted to a number, then this function pushes errors
+//    to the error stack and returns.
+//
+// Example:
+//  HEX COMPILE-U8S&lt; 
+//   A5 22 
+//   C4 
+//   96 C3 &gt; 
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthconstants>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthconstants ( CONSTANTS )
+//
+// C prototype:
+//  void dg_forthconstants (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot; -currentinputbuffer- 
+//     &quot;morestuff&quot; )
+//  
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot;
+//
+// Current input buffer's current offset out:
+//  &quot;morestuff&quot;          
+//
+// Forth standard:
+//  none
+//                                                          
+// Action:
+//  Moves the current offset pointer for the current input buffer to the character 
+//   after the next ; or to the end of the line if ; is not found.
+//  For each word found before the ; or end of the line, whichever come first:
+//   Tries to convert the word to a number using the current BASE. 
+//   If the word can be converted to a number, it is pushed to the data stack.
+/    If the word can not be converted to a number, then this function pops a number
+//    from the data stack and then creates a new definition in the current new word
+//    wordlist that:
+//     In execute mode pushes the number onto the data stack
+//     In compile mode compiles code that pushes the number onto the data stack
+//
+// Examples:
+//  CONSTANTS 0 x  1 y  2 z  
+//  CONSTANTS 0 x  1 y  2 z  ;
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthconstantscurly>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthconstantscurly ( CONSTANTS&lt; )
+//
+// C prototype:
+//  void dg_forthconstantscurly (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot; -currentinputbuffer- 
+//     &quot;morestuff&quot; )
+//  
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot;
+//
+// Current input buffer's current offset out:
+//  &quot;morestuff&quot;          
+//
+// Forth standard:
+//  none
+//                                                          
+// Action:
+//  Moves the current offset pointer for the current input buffer to the character 
+//   after the next &gt; or to the end of the buffer if &gt; is not found.
+//  For each word found before the &gt; or end of buffer, whichever come first:
+//   Tries to convert the word to a number using the current BASE. 
+//   If the word can be converted to a number, it is pushed to the data stack.
+/    If the word can not be converted to a number, then this function pops a number
+//    from the data stack and then creates a new definition in the current new word
+//    wordlist that:
+//     In execute mode pushes the number onto the data stack
+//     In compile mode compiles code that pushes the number onto the data stack
+//
+// Example:
+//  CONSTANTS&lt; 
+//   0 x  
+//   1 y  2 z &gt; 
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthlocalconstants>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthlocalconstants ( LOCAL-CONSTANTS )
+//
+// C prototype:
+//  void dg_forthlocalconstants (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot; -currentinputbuffer- 
+//     &quot;morestuff&quot; )
+//  
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot;
+//
+// Current input buffer's current offset out:
+//  &quot;morestuff&quot;          
+//
+// Forth standard:
+//  none
+//                                                          
+// Action:
+//  Moves the current offset pointer for the current input buffer to the character 
+//   after the next ; or to the end of the line if ; is not found.
+//  For each word found before the ; or end of the line, whichever come first:
+//   Tries to convert the word to a number using the current BASE. 
+//   If the word can be converted to a number, it is pushed to the data stack.
+/    If the word can not be converted to a number, then this function pops a number
+//    from the data stack and then creates a new definition in the local wordlist that:
+//     In execute mode pushes the number onto the data stack
+//     In compile mode compiles code that pushes the number onto the data stack
+//
+//  This is an immediate word. In both execute and compile mode, the action for this
+//   word is done. Also, the local word list is emptied at the end of a : definition.
+//
+// Examples:
+//  : myword
+//    LOCAL-CONSTANTS 0 x  1 y  2 z  
+//    LOCAL-CONSTANTS 0 x2  1 y2  2 z2  ;
+//    
+//    x y z ;
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthlocalconstantscurly>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthlocalconstantscurly ( LOCAL-CONSTANTS&lt; )
+//
+// C prototype:
+//  void dg_forthlocalconstantscurly (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot; -currentinputbuffer- 
+//     &quot;morestuff&quot; )
+//  
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot;
+//
+// Current input buffer's current offset out:
+//  &quot;morestuff&quot;          
+//
+// Forth standard:
+//  none
+//                                                          
+// Action:
+//  Moves the current offset pointer for the current input buffer to the character 
+//   after the next &gt; or to the end of the buffer if &gt; is not found.
+//  For each word found before the &gt; or end of buffer, whichever come first:
+//   Tries to convert the word to a number using the current BASE. 
+//   If the word can be converted to a number, it is pushed to the data stack.
+/    If the word can not be converted to a number, then this function pops a number
+//    from the data stack and then creates a new definition in the local wordlist that:
+//     In execute mode pushes the number onto the data stack
+//     In compile mode compiles code that pushes the number onto the data stack
+//
+// Note:
+//  This is an immediate word. In both execute and compile mode, the action for this
+//   word is done. Also, the local word list is emptied at the end of a : definition.
+//
+// Example:
+//  : myword
+//    LOCAL-CONSTANTS&lt; 
+//     0 x  
+//     1 y  2 z &gt; 
+//
+//    x y z ;
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfconstants>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfconstants ( FCONSTANTS )
+//
+// C prototype:
+//  void dg_forthfconstants (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot; -currentinputbuffer- 
+//     &quot;morestuff&quot; )
+//  
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot;
+//
+// Current input buffer's current offset out:
+//  &quot;morestuff&quot;          
+//
+// Forth standard:
+//  none
+//                                                          
+// Action:
+//  Moves the current offset pointer for the current input buffer to the character 
+//   after the next ; or to the end of the line if ; is not found.
+//  For each word found before the ; or end of line, whichever come first:
+//   This function tries to convert the word to a floating point number. 
+//   If the word can be converted to a floating point number, it is pushed to the
+//    floating point stack.
+/    If the word can not be converted to a floating point number, then this function 
+//    pops a floating point number from the floating point stack and then creates a 
+//    new definition in the current new word wordlist that:
+//     In execute mode pushes the floating point number onto the floating point stack
+//     In compile mode compiles code that pushes the floating point number onto the
+//      floating point stack
+//
+// Note:
+//  BASE is ignored for this function. Decimal is used for the floating point
+//   conversion under the assumption that if you used this function, the words
+//   up to ; are either floating point numbers in base 10 or
+//   the names of new constants.
+//
+// Example:
+//  FCONSTANTS 2.0E x  3.1415E pie  10.9876E35 z
+//  FCONSTANTS 2.0E x  3.1415E pie  10.9876E35 z ; 
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfconstantscurly>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfconstantscurly ( FCONSTANTS&lt; )
+//
+// C prototype:
+//  void dg_forthfconstantscurly (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot; -currentinputbuffer- 
+//     &quot;morestuff&quot; )
+//  
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot;
+//
+// Current input buffer's current offset out:
+//  &quot;morestuff&quot;          
+//
+// Forth standard:
+//  none
+//                                                          
+// Action:
+//  Moves the current offset pointer for the current input buffer to the character 
+//   after the next &gt; or to the end of the buffer if &gt; is not found.
+//  For each word found before the &gt; or end of buffer, whichever come first:
+//   This function tries to convert the word to a floating point number. 
+//   If the word can be converted to a floating point number, it is pushed to the
+//    floating point stack.
+/    If the word can not be converted to a floating point number, then this function 
+//    pops a floating point number from the floating point stack and then creates a 
+//    new definition in the current new word wordlist that:
+//     In execute mode pushes the floating point number onto the floating point stack
+//     In compile mode compiles code that pushes the floating point number onto the
+//      floating point stack
+//
+// Note:
+//  BASE is ignored for this function. Decimal is used for the floating point
+//   conversion under the assumption that if you used this function, the words
+//   up to &gt; are either floating point numbers in base 10 or
+//   the names of new constants.
+//
+// Example:
+//  FCONSTANTS&lt; 
+//    2.0E x  
+//    3.1415E pie  
+//    10.9876E35 z &gt; 
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthvariables>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthvariables ( VARIABLES FVARIABLES )
+//
+// C prototype:
+//  void dg_forthvariables (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot; -currentinputbuffer- 
+//     &quot;morestuff&quot; )
+//  ( -currentnewvariablebuffer- +(u*sizeofUINT64) )
+//  
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot;
+//
+// Current input buffer's current offset out:
+//  &quot;morestuff&quot;          
+// 
+// Current data space buffer in:
+//  previously allocated variables
+// 
+// Current data space buffer out:
+//  previously allocated variables + u new variables of one address cell size 
+//   (one address cell size = size of UINT64 in this implementation)
+//
+// Forth standard:
+//  none
+//                                                          
+// Action:
+//  Moves the current offset pointer for the current input buffer to the character 
+//   after the next ; or to the end of the line if ; is not found.
+//  For each word name found before the ; or end of the line whichever come first:
+//   If the word name can be converted to a number using the current BASE, it is
+//    pushed to the data stack,
+//   Otherwise this function creates a new definition in the current vocabulary that:
+//    In execute mode pushes the address of a variable onto the data stack
+//    In compile mode compiles code that calculates the address from the variable's 
+//     bufferid and offset and pushes the address onto the data stack. The address 
+//     of the variable used is the address of the next unused byte in the current 
+//     data space buffer at the time this new definition was created.
+//   Then if the depth of the data stack is greater than when this function started,
+//    the initial value of the variable is popped from the data stack, otherwise 0
+//    is used as the initial value of the variable.
+//   Then this routine pushes the initial value of the variable onto the end of the
+//    current data space buffer (current new variable buffer). 
+//
+// Example:
+//  VARIABLES x y z 
+//  VARIABLES p q r ; 
+//
+//  VARIABLES 5 x 6 y z
+//  VARIABLES p 7 q 8 r ;
+//
+// Note:
+//  Please see CREATE for a discussion on the life of the pointer to the VARIABLE.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthvariablescurly>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthvariablescurly ( VARIABLES&lt; FVARIABLES&lt; )
+//
+// C prototype:
+//  void dg_forthvariablescurly (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot; -currentinputbuffer- 
+//     &quot;morestuff&quot; )
+//  ( -currentnewvariablebuffer- +(u*sizeofUINT64) )
+//  
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot;
+//
+// Current input buffer's current offset out:
+//  &quot;morestuff&quot;          
+// 
+// Current data space buffer in:
+//  previously allocated variables
+// 
+// Current data space buffer out:
+//  previously allocated variables + u new variables of one address cell size 
+//   (one address cell size = size of UINT64 in this implementation)
+//
+// Forth standard:
+//  none
+//                                                          
+// Action:
+//  Moves the current offset pointer for the current input buffer to the character 
+//   after the next &gt; or to the end of the buffer if &gt; is not found.
+//  For each word name found before the &gt; or end of buffer, whichever come first:
+//   If the word name can be converted to a number using the current BASE, it is
+//    pushed to the data stack,
+//   Otherwise this function creates a new definition in the current vocabulary that:
+//    In execute mode pushes the address of a variable onto the data stack
+//    In compile mode compiles code that calculates the address from the variable's 
+//     bufferid and offset and pushes the address onto the data stack. The address 
+//     of the variable used is the address of the next unused byte in the current 
+//     data space buffer at the time this new definition was created.
+//   Then if the depth of the data stack is greater than when this function started,
+//    the initial value of the variable is popped from the data stack, otherwise 0
+//    is used as the initial value of the variable.
+//   Then this routine pushes the initial value of the variable onto the end of the
+//    current data space buffer (current new variable buffer). 
+//
+// Example:
+//  VARIABLES&lt; 
+//   x y z 
+//   p q r &gt;
+//
+//  VARIABLES&lt;
+//   5 x 6 y z
+//   p 7 q 8 r &gt;
+//
+// Note:
+//  Please see CREATE for a discussion on the life of the pointer to the VARIABLE.
+//  When loading from a file or using EVALUATE, the words parsed can be over multiple
+//   lines. If you are using this function from the command line, the line entry system 
+//   treats everything you entered as one buffer, so you are limited by that.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthmicrosecondssince1970jan01>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////// 
+//
+// dg_forthmicrosecondssince1970jan01 ( MICROSECONDSSINCE1970JAN01 )
+//
+// C prototype:
+//  void dg_forthmicrosecondssince1970jan01 (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- x )
+// 
+// Data Stack Out:
+//  x                            microseconds elapsed since Jan 1, 1970
+// 
+// Action:
+//  Pushes the current number of microseconds that have passed since the start of
+//   January 1, 1970 in UTC time. 
+//
+////////////////////////////////////////////////////////////////////////////////////////            
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthbrackettoorderconstant>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthbrackettoorderconstant ( [&gt;ORDER]CONSTANT )
+//
+// C prototype:
+//  void dg_forthbrackettoorderconstant (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( wordlistid -- )
+//  ( &lt;delimiters&gt;word&lt;delimiters&gt;morestuff -currentinputbuffer- 
+//     delimiters&gt;morestuff )
+//
+// Forth standard:
+//  none
+//                                                          
+// Action:
+//  Moves the current offset pointer for the current input buffer to the character 
+//   after the next word or to the end of the buffer if the next word is not found.
+//  Then pops the top value off the data stack, then creates a new word which has
+//   the word name of the word parsed from the current input buffer, a compile type
+//   of OCR[&gt;ORDER], and a data type of wordlistid.
+//  In both script execute and compile mode, this new word pushes wordlistid to the
+//   search order stack.
+//
+// Example of making a rectangle structure:
+//  HEX
+//  WORDLIST DUP [&gt;ORDER]CONSTANT [rectangle] &gt;CURRENT
+//   : +x 0 + ;
+//   : +y 8 + ;
+//   : +w 10 + ;
+//   : +h 18 + ;
+//   : .size 20 ;
+//  CURRENT&gt; DROP
+//
+//  At this point you have created a new wordlist that has
+//   +x +y +w +h and .size in it that is not in the search order.
+//   This means +x +y +w +h and .size can exist in other word lists and
+//   not mess anything up.
+//
+//  : rectangle.y@ ( prectangle -- prectangle->y )
+//     [rectangle] +y [SEARCH-ORDER-DROP] @ ;
+//
+// Note:
+//  This word can help you make name spaces such as declaring a structure.
+//  Also, if you push something to the search order stack that is not a word list id, 
+//   the script parsing will error out and the script engine will get stuck. This 
+//   behavior may change in the future. I'm thinking of having the find word name
+//   in wordlist continue looking in the event a bad word list id is on the search
+//   order stack instead of just stopping. 1/8/2021 J.N.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthsizedconstantscurly>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthsizedconstantscurly ( SIZED-CONSTANTS&lt; )
+//
+// C prototype:
+//  void dg_forthsizedconstantscurly (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot; -currentinputbuffer- 
+//     &quot;morestuff&quot; )
+//  
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot;
+//
+// Current input buffer's current offset out:
+//  &quot;morestuff&quot;          
+//
+// Forth standard:
+//  none
+//                                                          
+// Action:
+//  The default value for each new two constant is set to 0 and the default size
+//   is set to 1.
+//  Moves the current offset pointer for the current input buffer to the character 
+//   after the next &gt; or to the end of the buffer if &gt; is not found.
+//  For each word found before the &gt; or end of buffer, whichever come first:
+//   Tries to convert the word to a number using the current BASE. 
+//   For the first word of each group words that can be converted to a number, the
+//    default size is set to this number.
+//   For the second and all following words of the group that can be converted to
+//    a number, the default value is set to the current default size, and the
+//    default size is set to this number. 
+/    If the word can not be converted to a number, then this function creates a 
+//    new definition in the current new word wordlist that:
+//     In execute mode pushes the current default value and default size onto the 
+//      data stack
+//     In compile mode compiles code that pushes the default value and default size
+//      onto the data stack
+//    Then a new group of words is started.
+//
+// Example:
+//  SIZED-CONSTANTS&lt; 
+//   20 2 x  
+//   3 y  z 
+//   1 w
+//   v&gt; 
+//
+//  x will push 20 2 onto the data stack
+//  y will push 22 3 onto the data stack
+//  z will push 25 3 onto the data stack
+//  w will push 28 1 onto the data stack
+//  v will push 29 1 onto the data stack
+//
+// Example making a structure:
+//  WORDLIST DUP [>ORDER]CONSTANT [rectangle] >CURRENT 
+//   SIZED-CONSTANTS&lt;8 x y w h size&gt;
+//  CURRENT> DROP
+//
+// Example making a function to access a member of the structure:
+//  : rectangle->w@ ( prectangle -- data )
+//     [rectangle] w [SEARCH-ORDER-DROP] 
+//     DROP ( drop the size of w )
+//     + @ ;
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    </div>
+
+  </div></body>
+</html>

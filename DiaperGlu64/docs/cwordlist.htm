@@ -1,0 +1,1026 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<html>
+
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      cwordlist.cpp functions
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>
+      <a                                                      >C Functions</a>
+      <a href=cwordlist.htm#dg_newwordlist                    >dg_newwordlist</a>
+      <a href=cwordlist.htm#dg_newword                        >dg_newword</a>
+      <a href=cwordlist.htm#dg_newwordcopyname                >dg_newwordcopyname</a>
+      <a href=cwordlist.htm#dg_new0stringnamecoreword         >dg_new0stringnamecoreword</a>
+      <a href=cwordlist.htm#dg_new0stringcorenameword         >dg_new0stringcorenameword</a>
+      <a href=cwordlist.htm#dg_getpdefinition                 >dg_getpdefinition</a>
+      <a href=cwordlist.htm#dg_linkdefinition                 >dg_linkdefinition</a>
+      <a href=cwordlist.htm#dg_createovariablebufdef          >dg_createovariablebufdef</a>
+      <a href=cwordlist.htm#dg_createocompilebufdef           >dg_createocompilebufdef</a>
+      <a href=cwordlist.htm#dg_createsubthreaddef             >dg_createsubthreaddef</a>
+      <a href=cwordlist.htm#dg_createvariabledef              >dg_createvariabledef</a>
+      <a href=cwordlist.htm#dg_createdconstantdef             >dg_createdconstantdef</a>
+      <a href=cwordlist.htm#dg_createconstantdef              >dg_createconstantdef</a>
+      <a href=cwordlist.htm#dg_getlatestdefinition            >dg_getlatestdefinition</a>
+      <a href=cwordlist.htm#dg_getnextdefinition              >dg_getnextdefinition</a>
+      <a href=cwordlist.htm#dg_executedefinition              >dg_executedefinition</a>
+      <a href=cwordlist.htm#dg_finddefinwordlist              >dg_finddefinwordlist</a>
+      <a href=cwordlist.htm#dg_finddefinsearchorder           >dg_finddefinsearchorder</a>
+      <a href=cwordlist.htm#dg_changelatestcompileroutine     >dg_changelatestcompileroutine</a>
+      <a href=cwordlist.htm#dg_newpresortedwordlist           >dg_newpresortedwordlist</a>
+      <a href=cwordlist.htm#dg_copyandrenamewordid            >dg_copyandrenamewordid</a>
+      <a href=cwordlist.htm#dg_findcopyandrenameword          >dg_findcopyandrenameword</a>
+      <a href=cwordlist.htm#dg_emptywordlist                  >dg_emptywordlist</a>
+      <a href=cwordlist.htm#dg_createbrackettoorderconstantdef>dg_createbrackettoorderconstantdef</a>
+    </div>
+
+    <div id=pagestuff>
+
+      <div class=word id=dg_newwordlist>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_newwordlist
+//
+// C prototype:
+//  UINT64 dg_newwordlist (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored
+//
+// Outputs:
+//  UINT64  return          id of newly created word list
+//
+// Action:
+//  creates a new word list and returns it's id
+//
+// Failure cases:
+//  error pushing to the word list buffer
+//  error getting the length of the word list buffer
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_newword>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_newword
+//
+// C prototype:
+//  UINT64 dg_newword (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 compilebufid, 
+//   UINT64 compilebufoffset,
+//   UINT64 databufid,
+//   UINT64 databufoffset,
+//   UINT64 namebufid,
+//   UINT64 nameoffset,
+//   UINT64 namelength)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored
+//  UINT64         compilebufid      buffer the compile type routine is in
+//  UINT64         compilebufoffset  offset of compile type routine in the compile routine's buffer
+//  UINT64         databufid         buffer where the data or code for this routine is
+//  UINT64         dataoffset        offset where the data or code for this routine is in the data's buffer
+//  UINT64         namebufid         buffer where name 0 string is
+//  UINT64         nameoffset        offset where name 0 string is
+//  UINT64         namelength        number of characters (bytes) in the name not counting terminating 0
+//
+// Outputs:
+//  UINT64  return          execution token of the new word
+//
+// Action:
+//  creates a new word with these parameters
+//  name is NOT copied
+//
+// Failure cases:
+//  name length is 0
+//  name length is > maxwordlength
+//  error getting length of definition buffer
+//  error pushing definition to the definition array
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_newwordcopyname>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_newwordcopyname
+//
+// C prototype:
+//  UINT64 dg_newwordcopyname (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 compilebufid, 
+//   UINT64 compilebufoffset,
+//   UINT64 databufid,
+//   UINT64 databufoffset,
+//   UINT64 namebufid,
+//   UINT64 nameoffset,
+//   UINT64 namelength)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored
+//  UINT64         compilebufid      buffer the compile type routine is in
+//  UINT64         compilebufoffset  offset of compile type routine in the compile routine's buffer
+//  UINT64         databufid         buffer where the data or code for this routine is
+//  UINT64         dataoffset        offset where the data or code for this routine is in the data's buffer
+//  UINT64         namebufid         buffer where name 0 string is
+//  UINT64         nameoffset        offset where name 0 string is
+//  UINT64         namelength        number of characters (bytes) in the name not counting terminating 0
+//
+// Outputs:
+//  UINT64  return          execution token of the new word
+//
+// Action:
+//  creates a new word with these parameters
+//
+// Failure cases:
+//  name length is 0
+//  name length is > maxwordlength
+//  error getting length of definition buffer
+//  error pushing definition to the definition array
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_new0stringnamecoreword>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_new0stringnamecoreword
+//
+// C prototype:
+//  UINT64 dg_new0stringnamecoreword (
+//   Bufferhandle* pBHarrayhead, 
+//   UINT64 compilebufoffset,
+//   UINT64 databufoffset,
+//   unsigned char* pname)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored
+//  UINT64         compilebufoffset  offset (address) of the compile type routine in the core buffer
+//  UINT64         dataoffset        offset (address ) where the data or code for this routine is in the core buffer
+//  unsigned char* pname             pointer to the null terminated name in the core buffer for this routine 
+//
+// Outputs:
+//  UINT64         return          execution token of the new definition
+//
+// Action:
+//  creates a new word with these parameters
+//  name is NOT copied
+//
+// Failure cases:
+//  name length is 0
+//  error getting the length of the definition buffer
+//  error pushing definition to the definition array
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_new0stringcorenameword>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_new0stringcorenameword
+//
+// C prototype:
+//  UINT64 dg_new0stringcorenameword (
+//   Bufferhandle* pBHarrayhead, 
+//   UINT64 compilebufid, 
+//   UINT64 compilebufoffset,
+//   UINT64 databufid,
+//   UINT64 databufoffset,
+//   unsigned char* pname)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored
+//  UINT64         compilebufid      buffer the compile type routine is in
+//  UINT64         compilebufoffset  offset of compile type routine in the compile routine's buffer
+//  UINT64         databufid         buffer where the data or code for this routine is
+//  UINT64         dataoffset        offset where the data or code for this routine is in the data's buffer
+//  unsigned char* pname             pointer to the null terminated name in the core buffer for this routine 
+//
+// Outputs:
+//  UINT64         return          execution token of the new definition
+//
+// Action:
+//  creates a new word with these parameters
+//  name is NOT copied
+//
+// Failure cases:
+//  name length is 0
+//  error getting the length of the definition buffer
+//  error pushing definition to the definition array
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getpdefinition>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_getpdefinition
+//
+// C prototype:
+//  Definitionheader* dg_getpdefinition (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 definitionid)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored
+//  UINT64   definitionid      execution token of the definition
+//
+// Outputs:
+//  Definitionheader* return         pointer to the definition header for the execution token or NULL
+//
+// Action:
+//  returns a pointer to the defintion header structure for this execution token
+//
+// Failure cases:
+//  definition id overflows array index calculation (you passed in -1 or something)
+//  error getting pointer to the buffer segment
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_linkdefinition>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_linkdefinition
+//
+// C prototype:
+//  void dg_linkdefinition (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 vocabularyid,
+//   UINT64 definitionid)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored
+//  UINT64   vocabularyid      word list identifer
+//  UINT64   definitionid      execution token of a definition
+//
+// Outputs:
+//  none
+//
+// Action:
+//  links (adds) the definition to the end of the specified word list
+//
+// Failure cases:
+//  error getting the pointer to the word list header array
+//  word list (vocabularyid) does not exist 
+//  error getting pointer to the definition
+//  definition is already linked in a word list
+//  trying to make a circular word list error, this definition id isn't greater than the ones already in the word list
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_createovariablebufdef>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_createovariablebufdef
+//
+// C prototype:
+//  UINT64 dg_createovariablebufdef (
+//   Bufferhandle* pBHarrayhead,
+//   unsigned char* pname,
+//   UINT64 namelength)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored
+//  unsigned char* pname             pointer to name string
+//  UINT64   namelength        number of characters (bytes) in the name string
+//
+// Outputs:
+//  UINT64   return            execution token (or definition id) of the new definition
+//
+// Action:
+//  Creates a new definition with the name specified
+//  Gets the next available offset in the current variable buffer
+//  In execute mode leaves the next available offset and buffer id 
+//    of the current variable buffer on the data stack
+//  In compile mode compiles code to put the next available offset and buffer id 
+//    of the current compile buffer on the data stack
+//  Links the definition to the current new definition word list
+//
+// Failure cases:
+//  error getting current compile buffer id
+//  error getting current compile buffer length
+//  error getting current new definition word list id (current compile word list)
+//  error creating the new definition
+//  error linking the definition to the current new definition word list
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_createocompilebufdef>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_createocompilebufdef
+//
+// C prototype:
+//  UINT64 dg_createocompilebufdef (
+//   Bufferhandle* pBHarrayhead,
+//   unsigned char* pname,
+//   UINT64 namelength)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored
+//  unsigned char* pname             pointer to name string
+//  UINT64   namelength        number of characters (bytes) in the name string
+//
+// Outputs:
+//  UINT64   return            execution token (or definition id) of the new definition
+//
+// Action:
+//  Creates a new definition with the name specified
+//  Gets the next available offset in the current compile buffer
+//  In execute mode leaves the next available offset and buffer id 
+//    of the current compile buffer on the data stack
+//  In compile mode compiles code to put the next available offset and buffer id 
+//    of the current compile buffer on the data stack
+//  Links the definition to the current new definition word list
+//
+// Failure cases:
+//  error getting current compile buffer id
+//  error getting current compile buffer length
+//  error getting current new definition word list id (current compile word list)
+//  error creating the new definition
+//  error linking the definition to the current new definition word list
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_createsubthreaddef>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_createsubthreaddef
+//
+// C prototype:
+//  UINT64 dg_createsubthreaddef (
+//   Bufferhandle* pBHarrayhead,
+//   unsigned char* pname,
+//   UINT64 namelength)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored
+//  unsigned char* pname             pointer to name string
+//  UINT64   namelength        number of characters (bytes) in the name
+//
+// Outputs:
+//  UINT64   return            execution token (or definition id) of the new definition
+//
+// Action:
+//  Creates a new subroutine threaded definition with the name specified
+//  The compile type will be call subroutine in execute mode or compile call subroutine
+//   in compile mode
+//  The data pointer for this definition will point to the next available offset in the
+//   current compile (compile space) buffer 
+//  
+// Note: 
+//   A subroutine definition does NOT get linked into a word list at time of creation - see the dg_forth standard
+//   This is to allow you to make a new definition with the same name that calls the old
+//    definition, among other things.
+//
+// Failure cases:
+//  error getting current compile buffer id
+//  error getting current compile buffer length
+//  error creating the new definition
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_createvariabledef>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_createvariabledef
+//
+// C prototype:
+//  UINT64 dg_createvariabledef (
+//   Bufferhandle* pBHarrayhead,
+//   unsigned char* pname,
+//   UINT64 namelength)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored
+//  unsigned char* pname             pointer to name string
+//  UINT64   namelength        number of characters (bytes) in the name
+//
+// Outputs:
+//  UINT64   return            execution token (or definition id) of the new definition
+//
+// Action:
+//  Creates a new variable definition with the name specified
+//  The compile type will be calculate and push address to the data stack in execute mode or
+//   compile calculate and push address to the data stack in compile mode
+//  The data pointer for this definition will point to the next available offset in the
+//   current new variable (data space) buffer
+//  Links the definition to the current new definition word list
+//
+// Failure cases:
+//  error getting current new variable buffer id
+//  error getting current new variable buffer length
+//  error getting current new definition word list id (current compile word list)
+//  error creating the new definition
+//  error linking the definition to the current new definition word list
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_createdconstantdef>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_createdconstantdef
+//
+// C prototype:
+//  UINT64 dg_createdconstantdef (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 databufoffset,
+//   UINT64 databufid,
+//   unsigned char* pname,
+//   UINT64 namelength)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead  pointer to a Bufferhandle structure which is
+//                                used as the bufferhandle for the array where the other
+//                                bufferhandles are stored
+//  UINT64   databufoffset       low part of UINT64 constant value for this definition
+//  UINT64   databufid           high part of UINT64 constant value for this definition
+//  unsigned char* pname         pointer to name string
+//  UINT64   namelength          number of characters (bytes) in the name
+//
+// Outputs:
+//  UINT64   return              execution token (or definition id) of the new definition
+//
+// Action:
+//  Creates a new constant definition with the name specified
+//  The compile type will be push integer to the data stack in execute mode or
+//   compile push integer to the data stack in compile mode
+//  The data offset for this definition will just be the integer
+//  The data buffer id will be 0 and not be used
+//  Links the definition to the current new definition word list
+//
+// Failure cases:
+//  error getting current new definition word list id (current compile word list)
+//  error creating the new definition
+//  error linking the definition to the current new definition word list
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_createconstantdef>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_createconstantdef
+//
+// C prototype:
+//  UINT64 dg_createconstantdef (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 dataid,
+//   unsigned char* pname,
+//   UINT64 namelength)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored
+//  UINT64   dataid            constant value (32 bit) for this definition
+//  unsigned char* pname             pointer to name string
+//  UINT64   namelength        number of characters (bytes) in the name
+//
+// Outputs:
+//  UINT64   return            execution token (or definition id) of the new definition
+//
+// Action:
+//  Creates a new constant definition with the name specified
+//  The compile type will be push integer to the data stack in execute mode or
+//   compile push integer to the data stack in compile mode
+//  The data offset for this definition will just be the integer
+//  The data buffer id will be 0 and not be used
+//  Links the definition to the current new definition word list
+//
+// Failure cases:
+//  error getting current new definition word list id (current compile word list)
+//  error creating the new definition
+//  error linking the definition to the current new definition word list
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getlatestdefinition>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_getlatestdefinition
+//
+// C prototype:
+//  UINT64 dg_getlatestdefinition (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 vocabularyid)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored
+//  UINT64   wid               word list id            
+//
+// Outputs:
+//  UINT64   return            execution token (or definition id) of the latest definition
+//
+// Action:
+//  returns the newest defined definition in the word list
+//
+// Failure cases:
+//  word list id overflows array index calculation (you passed in -1 or something)
+//  error getting the definition token from the word list buffer
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getnextdefinition>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_getnextdefinition
+//
+// C prototype:
+//  UINT64 dg_getnextdefinition (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 currentdefinition)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored
+//  UINT64   currentdefinition execution token (or definition id) of a definition           
+//
+// Outputs:
+//  UINT64   return            the execution token (or definition id) of the next definition
+//                                    in the word list's linked list
+//
+// Action:
+//  returns the execution token of the next definition in the word list's linked list
+//
+// Failure cases:
+//  error getting pointer to the definition
+//  circular or broken word list error
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_executedefinition>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_executedefinition
+//
+// C prototype:
+//  void dg_executedefinition (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 definitionid)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored
+//  UINT64   definitionid      execution token of a definition           
+//
+// Outputs:
+//  none
+//
+// Action:
+//  executes the definition by passing the databuf and data offset on the data stack to 
+//   the compile type routine 
+//
+// Failure cases:
+//  error getting pointer to the definition
+//  error pushing the data offset
+//  error pushing the data buffer
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_finddefinwordlist>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_finddefinwordlist
+//
+// C prototype:
+//  UINT64 dg_finddefinwordlist (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 vocabularyid,
+//   unsigned char* pname,
+//   UINT64 namelength)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored
+//  UINT64   vocabularyid      word list id
+//  unsigned char* pname             pointer to name to look up
+//  UINT64   namelength        length of name in character (bytes)           
+//
+// Outputs:
+//  if the name matches a definition's name in the word list exactly then this routine returns
+//   the execution token for that definition
+//  otherwise this routine returns DG_ENDOFWORDLIST (ENDOFWORDLIST)
+//
+// Action:
+//  looks up the name in the word list and returns the execution token of the first occurrence 
+//   in the word list
+//
+// Failure cases:
+//  name length is 0
+//  error getting latest definition for this vocabulary
+//  error getting pointer to definition's name string
+//  process doesn't owm all the memory at the name's address
+//  error getting  the next definition
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_finddefinsearchorder>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_finddefinsearchorder
+//
+// C prototype:
+//  UINT64 dg_finddefinsearchorder (
+//   Bufferhandle* pBHarrayhead,
+//   unsigned char* pname,
+//   UINT64 namelength)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored
+//  unsigned char* pname             pointer to name to look up
+//  UINT64   namelength        length of name in character (bytes)           
+//
+// Outputs:
+//  if the name matches a definition's name in the search order exactly then this routine returns
+//   the execution token for that definition 
+//  otherwise this routine returns DG_ENDOFWORDLIST (ENDOFWORDLIST)
+//
+// Action:
+//  looks up the name in the current search order and returns the execution token of the first
+//   occurrence of the name
+//
+// Failure cases:
+//  name length is 0
+//  error getting latest definition for this vocabulary
+//  error getting pointer to definition's name string
+//  process doesn't owm all the memory at the name's address
+//  error getting  the next definition
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_changelatestcompileroutine>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_changelatestcompileroutine
+//
+// C prototype:
+//  void dg_changelatestcompileroutine (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 compilebufid,
+//   UINT64 compilebufoffset)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the other 
+//                                    bufferhandles are stored
+//  UINT64   compilebufid      buffer id of new compile type routine for latest definition
+//  UINT64   compilebufoffset  offset of new compile type routine in it's buffer for latest definition           
+//
+// Outputs:
+//  none
+//
+// Action:
+//  changes the compile type routine of the latest created definition to this compile type routine
+//
+// Failure cases:
+//  error getting pointer to the definition header array buffer
+//  definition header array buffer does not have a definition in it
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+    
+
+      <div class=word id=dg_newpresortedwordlist>
+<pre>
+////////////////////////////////////////////////////////////////////////
+//
+// dg_newpresortedwordlist
+//
+// C prototype:
+//  void dg_newpresortedwordlist (
+//   Bufferhandle* pBHarrayhead,
+//   struct Premadeword *pmypresortedwordlist,
+//   UINT64 mypresortedwordlistlength)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead       pointer to a Bufferhandle structure which is
+//                                     used as the bufferhandle for the array where the other
+//                                     bufferhandles are stored
+//
+//  struct Premadeword *pmypresortedwordlist
+//                                    pointer to a presorted array of word headers
+//
+//  UINT64 mypresortedwordlistlength  number of word headers in presorted list
+//
+// Outputs:
+//  UINT64 return                     execution token (word id) of new presorted wordlist
+//
+// Action:
+//  Makes a new presorted wordlist, and fills it with the presorted words passed in.
+//
+// Failure cases:
+//   
+////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_copyandrenamewordid>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_copyandrenamewordid
+//
+// C prototype:
+//  UINT64 dg_copyandrenamewordid (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 definitionid,  // execution token
+//   unsigned char* pname,
+//   UINT64 namelength)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored
+//  UINT64   definitionid            execution token of a word
+//  unsigned char* pname             pointer to old name to look up
+//  UINT64   namelength              length of old name in characters (bytes)           
+//
+// Outputs:
+//  UINT64   return                  execution token of the new word
+//                                    or DG_ENDOFWORDLIST (-1) if unsuccessful
+//
+// Action:
+//  This routine creates a new word that has the name passed in but has the
+//   compile type (CFA) and data (PFA) of the definitionid passed in. The new
+//   word will have a new execution token. 
+//
+// Failure cases:
+//  name length is 0
+//  error getting definition
+//  error creating a new word
+//   
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_findcopyandrenameword>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_findcopyandrenameword
+//
+// C prototype:
+//  UINT64 dg_findcopyandrenameword (
+//   unsigned char* poldname,
+//   UINT64 oldnamelength,
+//   unsigned char* pnewname,
+//   UINT64 newnamelength)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored
+//  unsigned char* poldname          pointer to old name to look up
+//  UINT64   oldnamelength           length of old name in characters (bytes) 
+//  unsigned char* pnewname          pointer to new name to create
+//  UINT64   newnamelength           length of new name in characters (bytes)          
+//
+// Outputs:
+//  UINT64   return                  execution token of the new word
+//                                    or DG_ENDOFWORDLIST (-1) if unsuccessful
+//
+// Action:
+//  This routine creates a new word that has the new name passed in but has the
+//   compile type (CFA) and data (PFA) of the old name passed in. The new
+//   word will have a new execution token. 
+//
+// Failure cases:
+//  either name length is 0
+//  error finding old word
+//  error creating a new word
+//   
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_emptywordlist>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_emptywordlist
+//
+// C prototype:
+//  void dg_emptywordlist (
+//      Bufferhandle* pBHarrayhead,
+//      UINT64 parentelementid);
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored 
+//  UINT64   parentelementid         id of wordlist to empty          
+//
+// Outputs:
+//  none
+//
+// Action:
+//  This routine removes all words from a wordlist. It's really an hlist prune
+//   operation, so if the the words in the wordlist also have children, those are
+//   removed too. For example, if a wordlist is the child of this wordlist, the child
+//   wordlist and all the words in it are also removed. 
+//
+// Failure cases:
+//   
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_createbrackettoorderconstantdef>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_createbrackettoorderconstantdef
+//
+// C prototype:
+//  UINT64 dg_createbrackettoorderconstantdef (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 wordlistid,
+//   unsigned char* pname,
+//   UINT64 namelength)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored 
+//  UINT64 wordlistid                id of wordlist for the new definition.
+//  unsigned char* pname             pointer to the name to copy for the new word
+//  UINT64 namelength                length of the new word's name
+//
+// Outputs:
+//  Id of the new word.
+//
+// Action:
+//  This routine creates a new word that has the word name passed in, a compile type
+//   of OCR[>ORDER], and a data type of wordlistid. In both script execute and compile 
+//   mode, the created word pushes the wordlist id to the search order stack.
+//
+// Note:
+//  If you push something to the search order stack that is not a wordlist, script
+//   parsing errors out, so the script engine will get stuck. This behavior may
+//   change in the future... 1/8/2021 J.N.
+//
+// Failure cases:
+//   
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    </div>
+
+  </div></body>
+</html>

@@ -1,0 +1,426 @@
+<!--
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+-->
+
+<html>
+
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      forthstring.cpp functions
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=index.htm>Home</a>
+      <a href=building.htm>Building</a>
+      <a href=usingcgi.htm>DHTML Scripting</a>
+      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=documentationkey.htm>Documention Key</a>
+      <a href=diapergluwords.htm>Script Commands Reference</a>
+      <a href=cfunctions.htm>C Library API Reference</a>
+      <a href=reference.htm>Handy References</a>
+      <a href=about.htm>About</a>
+      <a href=license.htm>License</a>
+      <a href=contact.htm>Contact</a>
+      <a href=forthdraftstandard.htm>Forth Draft Standard</a>
+    </div>
+
+    <div id=pagedirectory>
+      
+      <a href=index.htm                                       >Directory</a>
+      <a href=documentationkey.htm                            >Documentation key</a>
+      <a                                                      >&nbsp;</a>
+
+      <a                                                      >WORDS</a>
+      <a href=forthstring.htm#dg_forthdashtrailing            >-TRAILING</a>
+      <a href=forthstring.htm#dg_forthslashstring             >/STRING</a>
+      <a href=forthstring.htm#dg_forthblank                   >BLANK</a>
+      <a href=forthstring.htm#dg_forthcmove                   >CMOVE</a>
+      <a href=forthstring.htm#dg_forthcmoveto                 >CMOVE&gt;</a>
+      <a href=forthstring.htm#dg_forthcompare                 >COMPARE</a>
+      <a href=forthstring.htm#dg_forthsearch                  >SEARCH</a>
+      <a href=forthstring.htm#dg_forthcompiles                >SLITERAL</a>
+      
+    </div>
+
+    <div id=pagestuff>
+
+
+      <div class=word id=dg_forthdashtrailing>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdashtrailing ( -TRAILING ) 
+//
+// C prototype:
+//  void dg_forthdashtrailing (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( c-addr1 u1 -- c-addr1 u2 )   
+//
+// Data stack in:
+//  c-addr1                       string
+//  u1                            length of string in bytes
+//
+// Data stack in:
+//  c-addr1                       string
+//  u2                            length of string in bytes without trailing spaces 
+//
+// Action:
+//  Adjusts u1 to remove any trailing spaces from the string. The contents of memory
+//   at c-addr1 is not changed.
+//
+// Forth standard:
+//  17.6.1.0170
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthslashstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthslashstring ( /STRING ) 
+//
+// C prototype:
+//  void dg_forthslashstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( c-addr1 u1 n1 -- c-addr2 u2 )   
+//
+// Data stack in:
+//  c-addr1                       string
+//  u1                            length of string in bytes (unsigned)
+//  n1                            length to adjust string in bytes (signed)
+//
+// Data stack in:
+//  c-addr2                       string
+//  u2                            length of string in bytes without trailing spaces 
+//
+// Action:
+//  Adjust c-addr1 and u1 to remove n1 characters from the beginning of the string.
+//  If n1 is less than 0, characters are added to the beginning of the string.
+//  If n1 is positive and greater than u1, n1 is clipped to u1, which will make u2 0,
+//   and c-addr2 = c-addr1 + u1.
+//  Otherwise, c-addr2 = c-addr1 + n1 and u2 = u1 - n1.
+//
+// Forth standard:
+//  17.6.1.0245
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthblank>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthblank ( BLANK ) 
+//
+// C prototype:
+//  void dg_forthblank (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( c-addr u -- )   
+//
+// Data stack in:
+//  c-addr                        destination address string
+//  u                             length of string
+//
+// Action:
+//  Fills the string with spaces. (Ascii 0x20)
+//
+// Forth standard:
+//  17.6.1.0780
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcmove>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcmove ( CMOVE ) 
+//
+// C prototype:
+//  void dg_forthcmove (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( c-addr1 c-addr2 length -- )   
+//
+// Data stack in:
+//  c-addr1                       address of source byte array
+//  c-addr2                       address of destination byte array
+//  length                        length to copy
+//
+// Action:
+//  Copies length bytes from c-addr1 to c-addr2 starting with the byte at c-addr1
+//   and going up in memory addresses.
+//
+// Forth standard:
+//  17.6.1.0910
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcmoveto>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcmoveto ( CMOVE&gt; ) 
+//
+// C prototype:
+//  void dg_forthcmoveto (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( c-addr1 c-addr2 length -- )   
+//
+// Data stack in:
+//  c-addr1                       address of source byte array
+//  c-addr2                       address of destination byte array
+//  length                        length to copy
+//
+// Action:
+//  Copies length bytes from c-addr1 to c-addr2 starting with the byte at c-addr1
+//   plus length - 1 and going down in memory addresses.
+//
+// Forth standard:
+//  17.6.1.0920
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcompare>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcompare ( COMPARE ) 
+//
+// C prototype:
+//  void dg_forthcompare (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( caddr1 u1 caddr2 u2 -- flag )
+// 
+// Data stack in:
+//  caddr1                        pointer to an array of unsigned 8 bit values
+//  u1                            length of array at caddr1 in bytes
+//  caddr2                        pointer to an array of unsigned 8 bit values
+//  u2                            length of array at caddr2 in bytes
+//
+// Data stack out:
+//  flag                          0 means both arrays are the same length and
+//                                 have the same number of characters 
+//                                -1 means values in array at caddr1 are less
+//                                 than values in array at caddr2
+//                                1 means values in array at caddr1 are greater
+//                                 than values in array at caddr2                            
+//                                                            
+// Action:
+//  Compares the memory at caddr1 with the memory at caddr2 starting from caddr1 and
+//   caddr2 and going up in memory addresses up to the lesser of u1 or u2 bytes. If
+//   a both u1 and u2 are the same and all the bytes match, 0 is returned. If a non
+//   matching byte is found, the array having the byte with the greater value is
+//   greater. If all the bytes are the same up to the shorter length, but the lengths
+//   are unequal, the longer array is greater. If array at caddr1 is less than
+//   array at caddr2, then -1 is returned. If array at caddr1 is greater than array
+//   at caddr2, then 1 is returned.
+//
+// Forth standard:
+//  17.6.1.0935
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  process doesn't own the memory in one or both of the arrays
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthsearch>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthsearch ( SEARCH ) 
+//
+// C prototype:
+//  void dg_forthsearch (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( caddr1 u1 caddr2 u2 -- caddr3 u3 flag )
+// 
+// Data stack in:
+//  caddr1                        pointer to string to search
+//  u1                            length of string at caddr1 in characters (bytes)
+//  caddr2                        pointer to string to look for
+//  u2                            length of string at caddr2 in characters (bytes)
+//
+// Data stack out:
+//  caddr3                        if a match was found, this is the pointer to the 
+//                                 first occurence of the match
+//                                 if a match was not found, this is caddr1
+//  u3                            if a match was found, this is the number of 
+//                                 characters remaining to search including the 
+//                                 characters in the match 
+//                                 (the forth standard isn't clear on this)
+//                                 if a match was not found, this is u1
+//  flag                          TRUE if a match was found, 
+//                                 FALSE if a match was not found
+//                                                            
+// Action:
+//  Searches the memory at caddr1 for u1 characters for an occurence of the string 
+//   at caddr2 that is u2 characters long. 
+//
+// For example:
+//   : findmydog S" wheresmydog?!?" S" dog" SEARCH TYPE ;
+//   findmydog
+//  is the same as 
+//   : t S" dog?!?" TYPE ;
+//   t
+//
+// Forth standard:
+//  17.6.1.2191
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  process doesn't own the memory in one or both of the strings
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcompiles>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcompiles ( COMPILE-S or SLITERAL )
+//  ( SLITERAL is an immediate word, COMPILE-S is not an immediate word ) 
+//
+// C prototype:
+//  void dg_forthcompiles (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( c-addr u -- )
+//
+// Compiles a copy of string at addr of length u and code that does: 
+//  ( -- c-addr' u )   
+//
+// Data stack in:
+//  c-addr                        source address string
+//  u                             length of string
+//
+// Compiled code data stack out:
+//  c-addr                        compiled address of string copy
+//                                 ( address is calculated when code is called )
+//  u                             length of string
+//
+// Action:
+//  Compiles copy of string then compiles code to calculate address of string based 
+//   on its current run time address.
+//  Then compiles code to push address and length of string to data stack.
+//
+// Note:
+//  Address is re-calculated every time code is called in case buffer moves.
+//
+// Forth standard:
+//  17.6.1.2212
+//
+// Failure cases:
+//  error popping the address from the data stack
+//  error getting the current compile buffer id
+//  error growing the current compile buffer
+//  error getting the pointer to the current compile buffer
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+    </div>
+
+  </div></body>
+</html>
