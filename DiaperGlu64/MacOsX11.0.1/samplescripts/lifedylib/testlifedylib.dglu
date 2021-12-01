@@ -1,0 +1,933 @@
+( //////////////////////////////////////////////////////////////////////////////////////// )
+( //                                                                                       )
+( //    Copyright 2020 James Patrick Norris                                                )
+( //                                                                                       )
+( //    This file is part of LifeLib 1.0.                                                  )
+( //                                                                                       )
+( //    LifeLib 1.0 is free software; you can redistribute it and/or modify                )
+( //    it under the terms of the GNU General Public License as published by               )
+( //    the Free Software Foundation; either version 2 of the License, or                  )
+( //    {at your option} any later version.                                                )
+( //                                                                                       )
+( //    LifeLib 1.0 is distributed in the hope that it will be useful,                     )
+( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
+( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
+( //    GNU General Public License for more details.                                       )
+( //                                                                                       )
+( //    You should have received a copy of the GNU General Public License                  )
+( //    along with LifeLib 1.0; if not, write to the Free Software                         )
+( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
+( //                                                                                       )
+( //////////////////////////////////////////////////////////////////////////////////////// )
+
+( /////////////////////////////// )
+( // James Patrick Norris      // )
+( // www.rainbarrel.com        // )
+( // thaine@mail87.pair.com    // )
+( // April 28, 2020            // )
+( // version 1.0               // )
+( /////////////////////////////// )
+
+// /////////////////////////////////////////
+//                                        //
+// Test the Life Diaperglu Shared Library //
+//                                        //
+// /////////////////////////////////////////
+
+
+// constants for the compilation
+
+DECIMAL
+1280 CONSTANT myscreenwidth
+752 CONSTANT myscreenheight
+
+HEX
+
+myscreenwidth myscreenheight * CONSTANT pixelsperscreen
+myscreenwidth 64 + CONSTANT rowbuffersize
+
+rowbuffersize DUP NEWBUFFER CONSTANT previousrownneighborsbufid
+  rowbuffersize previousrownneighborsbufid GROWBUFFER
+rowbuffersize DUP NEWBUFFER CONSTANT thisneighborsbufferbufid
+  rowbuffersize thisneighborsbufferbufid GROWBUFFER
+rowbuffersize DUP NEWBUFFER CONSTANT nextrownneighborsbufid
+  rowbuffersize nextrownneighborsbufid GROWBUFFER
+rowbuffersize DUP NEWBUFFER CONSTANT toprowneighborsbufid
+  rowbuffersize toprowneighborsbufid GROWBUFFER
+pixelsperscreen 8 / 64 + DUP NEWBUFFER CONSTANT cellsbufid
+  pixelsperscreen 8 / 64 + cellsbufid GROWBUFFER
+
+previousrownneighborsbufid GETSBUFFER DROP CONSTANT ppreviousrownneighborsaddr
+thisneighborsbufferbufid GETSBUFFER DROP CONSTANT pthisneighborsbufferaddr
+nextrownneighborsbufid GETSBUFFER DROP CONSTANT pnextrownneighborsaddr
+toprowneighborsbufid GETSBUFFER DROP CONSTANT ptoprowneighborsaddr
+cellsbufid GETSBUFFER DROP CONSTANT pcellsbufferaddr
+
+( rowbuffersize ) myscreenwidth 4 + 4 / CONSTANT rowsizeindwords
+
+myscreenwidth 8 + 8 / CONSTANT rowsizeinqwords
+
+
+// //////////////////////////
+// import the life library //
+// //////////////////////////
+
+$" liblife.dylib" OPENLIBRARY$ CONSTANT LIFE-LIBHANDLE CONSTANT LIFE-WORDLIST
+
+// tries to dlsym a symbol in the life lib
+//  and if it isn't found it pushes an error to the error stack
+//  which will cause the script to stop instead of creating a symbol
+//  with a value of 0 which will cause a crash
+//  if the symbol is found, a new constant definition is created with the
+//   name of the symbol with 'addr' appended on the end which has the value of the symbol
+
+: IMPORTLIFESYMBOL$
+    DUP$ LIFE-LIBHANDLE FINDLIBRARYSYMBOL DUP 
+    0= IF 
+      ." '" .$ ." ' symbol not found" CR ERROR"  symbol not found" CR  
+    THEN
+    $" addr" CATENATE$ 0 GETS$[ND] NEWCONSTANTDEFINITION
+;
+
+
+$" dg_getoverlapsegment" IMPORTLIFESYMBOL$ DROP
+
+$" dg_calcNeighborsForRow" IMPORTLIFESYMBOL$ DROP
+
+$" dg_calcNeighborsForRowFast" IMPORTLIFESYMBOL$ DROP
+
+$" dg_updateCellsForRow" IMPORTLIFESYMBOL$ DROP
+
+$" dg_clearNeighbors" IMPORTLIFESYMBOL$ DROP
+
+$" dg_copyNeighbors" IMPORTLIFESYMBOL$ DROP
+
+$" dg_moveQwords" IMPORTLIFESYMBOL$ DROP
+
+$" dg_calcNeighborsForRowN" IMPORTLIFESYMBOL$ DROP
+
+$" dg_updateCellsForRowN" IMPORTLIFESYMBOL$ DROP
+
+$" dg_lifeBitMapOnce" IMPORTLIFESYMBOL$ DROP
+
+$" dg_areaXor" IMPORTLIFESYMBOL$ DROP
+
+
+// ////////////
+// test code //
+// ////////////
+
+DECIMAL
+: TESTdg_getoverlapsegment ( -- )
+  // BL             +14  
+  // BSX            +10
+  // AL             +0C
+  // ASX            +8
+
+    ." testing dg_getoverlapsegment" CR
+
+    // case b starts in a, b ends first
+    ( BL BSX AL ASX -- OVERLAPL OVERLAPSX )
+    2 5 10 1 4 dg_getoverlapsegmentaddr CALLPROCRETUINT128 HEX
+    5 = 0= IF ." error, b starts in a, b ends first, wrong start" CR EXIT THEN
+    2 = 0= IF ." error, b starts in a, b ends first, wrong length" CR EXIT THEN
+
+    // case b starts in a, b ends with a
+    ( BL BSX AL ASX -- OVERLAPL OVERLAPSX )
+    5 5 10 1 4 dg_getoverlapsegmentaddr CALLPROCRETUINT128
+    5 = 0= IF ." error, b starts in a, b ends with a, wrong start" CR EXIT THEN
+    5 = 0= IF ." error, b starts in a, b ends with a, wrong length" CR EXIT THEN
+
+    // case b starts in a, a ends first
+    ( BL BSX AL ASX -- OVERLAPL OVERLAPSX )
+    6 5 11 1 4 dg_getoverlapsegmentaddr CALLPROCRETUINT128
+    5 = 0= IF ." error, b starts in a, a ends first, wrong start" CR EXIT THEN
+    6 = 0= IF ." error, b starts in a, a ends first, wrong length" CR EXIT THEN
+
+    // case a starts in b, a ends first
+    ( BL BSX AL ASX -- OVERLAPL OVERLAPSX )
+    11 1 7 3 4 dg_getoverlapsegmentaddr CALLPROCRETUINT128
+    3 = 0= IF ." error, a starts in b, a ends first, wrong start" CR EXIT THEN
+    7 = 0= IF ." error, a starts in b, a ends first, wrong length" CR EXIT THEN
+
+    // case a starts in b, b ends same
+    ( BL BSX AL ASX -- OVERLAPL OVERLAPSX )
+    11 1 9 3 4 dg_getoverlapsegmentaddr CALLPROCRETUINT128
+    3 = 0= IF ." error, a starts in b, a ends same, wrong start" CR EXIT THEN
+    9 = 0= IF ." error, a starts in b, a ends same, wrong length" CR EXIT THEN
+
+    // case a starts in b, b ends first
+    ( BL BSX AL ASX -- OVERLAPL OVERLAPSX )
+    11 1 12 4 4 dg_getoverlapsegmentaddr CALLPROCRETUINT128
+    4 = 0= IF ." error, a starts in b, b ends first, wrong start" CR EXIT THEN
+    8 = 0= IF ." error, a starts in b, b ends first, wrong length" CR EXIT THEN
+
+    // case no overlap
+    ( BL BSX AL ASX -- OVERLAPL OVERLAPSX )
+    11 1 5 12 4 dg_getoverlapsegmentaddr CALLPROCRETUINT128
+    12 = 0= IF ." error, case no overlap" CR EXIT THEN
+    0 = 0= IF ." error, case no overlap" CR EXIT THEN
+
+    // case b starts in a, b ends first with wrap
+    ( BL BSX AL ASX -- OVERLAPL OVERLAPSX )
+    6 -2 10 -5 4 dg_getoverlapsegmentaddr CALLPROCRETUINT128 HEX
+    -2 = 0= IF 
+      ." error, case b starts in a, b ends first with wrap, wrong start" CR EXIT 
+    THEN
+    6 = 0= IF 
+      ." error, case b starts in a, b ends first with wrap, wrong length" CR EXIT 
+    THEN
+
+    // case b starts in a, a ends first with wrap
+    ( BL BSX AL ASX -- OVERLAPL OVERLAPSX )
+    6 -2 8 -5 4 dg_getoverlapsegmentaddr CALLPROCRETUINT128 HEX
+    -2 = 0= IF 
+      ." error, case b starts in a, a ends first with wrap, wrong start" CR EXIT 
+    THEN
+    5 = 0= IF 
+      ." error, case b starts in a, a ends first with wrap, wrong length" CR EXIT 
+    THEN
+;
+
+HEX
+: TestClearNeighbors ( -- ) // didn't test overflow clear...
+
+    ." testing dg_clearNeighbors" CR
+
+    ppreviousrownneighborsaddr rowbuffersize FF FILL
+    pthisneighborsbufferaddr rowbuffersize FF FILL
+    pnextrownneighborsaddr rowbuffersize FF FILL
+    ptoprowneighborsaddr rowbuffersize FF FILL
+
+    ptoprowneighborsaddr
+    rowsizeinqwords 
+    pnextrownneighborsaddr 
+    pthisneighborsbufferaddr 
+    ppreviousrownneighborsaddr
+    5
+    dg_clearNeighborsaddr
+    CALLPROC DROP ( .S CRLF )
+
+    ppreviousrownneighborsaddr @ 0<> IF 
+      ." error, beginning of previous neighbor buffer not empty" CR EXIT
+    THEN
+
+    ppreviousrownneighborsaddr myscreenwidth + U32@ 0<> IF 
+      ." error, end of previous neighbor row not empty" CR EXIT
+    THEN
+
+    ppreviousrownneighborsaddr myscreenwidth + 8 + U32@ FFFFFFFF <> IF 
+      ." error, beyond end of previous neighbor row was changed" CR EXIT
+    THEN
+
+    pthisneighborsbufferaddr @ 0<> IF 
+      ." error, beginning of this neighbor buffer not empty" CR EXIT
+    THEN
+
+    pthisneighborsbufferaddr myscreenwidth + U32@ 0<> IF 
+      ." error, end of this neighbor row not empty" CR EXIT
+    THEN
+
+    pthisneighborsbufferaddr myscreenwidth + 8 + U32@ FFFFFFFF <> IF 
+      ." error, beyond end of this neighbor row changed" CR EXIT
+    THEN
+
+    pnextrownneighborsaddr @ 0<> IF 
+      ." error, beginning of next neighbor buffer not empty" CR EXIT
+    THEN
+
+    pnextrownneighborsaddr myscreenwidth + U32@ 0<> IF 
+      ." error, end of next neighbor row not empty" CR EXIT
+    THEN
+
+    pnextrownneighborsaddr myscreenwidth + 8 + U32@ FFFFFFFF <> IF 
+      ." error, beyond end of next neighbor row changed" CR EXIT
+    THEN
+;
+
+: testMoveQwords ( -- )
+
+    ." testing dg_moveQwords" CR
+    ppreviousrownneighborsaddr rowbuffersize FF FILL
+    pthisneighborsbufferaddr rowbuffersize 0 FILL
+    
+    rowsizeinqwords             // length
+    pthisneighborsbufferaddr    // source
+    ppreviousrownneighborsaddr  // destination
+    3
+    dg_moveQwordsaddr
+    CALLPROC DROP
+
+    ppreviousrownneighborsaddr U64@ 0<> IF 
+      ." error, beginning of previous neighbor buffer not empty" CR EXIT
+    THEN
+
+    ppreviousrownneighborsaddr myscreenwidth + U64@ 0<> IF 
+      ." error, end of previous neighbor row not empty" CR EXIT
+    THEN
+
+    ppreviousrownneighborsaddr myscreenwidth + 8 + U64@ FFFFFFFFFFFFFFFF <> IF 
+      ." error, beyond end of previous neighbor row changed" CR EXIT
+    THEN 
+;
+
+HEX
+: testcopyNeighbors ( -- )
+    ." testing dg_copyNeighbors" CR
+
+    ppreviousrownneighborsaddr rowbuffersize 55 FILL
+    pthisneighborsbufferaddr rowbuffersize 80 FILL
+    pnextrownneighborsaddr rowbuffersize FF FILL
+
+    rowsizeinqwords
+    pnextrownneighborsaddr
+    pthisneighborsbufferaddr
+    ppreviousrownneighborsaddr
+    4
+    dg_copyNeighborsaddr
+    CALLPROC
+
+    ppreviousrownneighborsaddr @ 8080808080808080 <> IF 
+      ." error, beginning of previous neighbor buffer not copied from thisneighbors, expected 8080808080808080, got " ppreviousrownneighborsaddr @ U. CR EXIT
+    THEN
+
+    ppreviousrownneighborsaddr myscreenwidth + U32@ 80808080 <> IF 
+      ." error, end of previous neighbors row not copied from this neighbors row" CR EXIT
+    THEN
+
+    ppreviousrownneighborsaddr myscreenwidth + 8 + U32@ 55555555 <> IF 
+      ." error, beyond end of previous neighbors row changed" CR EXIT
+    THEN
+
+    pthisneighborsbufferaddr @ FFFFFFFFFFFFFFFF <> IF 
+      ." error, beginning of this neighbor buffer not copied from nextneighbors" CR EXIT
+    THEN
+
+    pthisneighborsbufferaddr myscreenwidth + U32@ FFFFFFFF <> IF 
+      ." error, end of this neighbor row not not copied from nextneighbors" CR EXIT
+    THEN
+
+    pthisneighborsbufferaddr myscreenwidth + 8 + U32@ 80808080 <> IF 
+      ." error, beyond end of this neighbor row changed" CR EXIT
+    THEN
+
+    pnextrownneighborsaddr @ 0<> IF 
+      ." error, beginning of next neighbor buffer not empty" CR EXIT
+    THEN
+
+    pnextrownneighborsaddr myscreenwidth + U32@ 0<> IF 
+      ." error, end of next neighbor row not empty" CR EXIT
+    THEN
+
+    pnextrownneighborsaddr myscreenwidth + 8 + U32@ FFFFFFFF <> IF 
+      ." error, beyond end of next neighbor row changed" CR EXIT
+    THEN
+;
+
+HEX
+: testCalcNeighborsForRowFast ( -- )
+
+    ( prowbits              
+    pthisrownneighbors    
+    pnextrownneighbors     
+    dwordsperrow           
+    pthisrownneighborsend  
+    pnextrownneighborsend  
+    pthisaddtbl
+    pnextaddtbl -ret- )
+
+    ." testing dg_calcNeighborsForRowFast" CR
+
+    // ppreviousrownneighborsaddr rowbuffersize 0 FILL
+    pthisneighborsbufferaddr rowbuffersize 0 FILL
+    pnextrownneighborsaddr rowbuffersize 0 FILL
+    pcellsbufferaddr pixelsperscreen 8 / 0 FILL
+    
+    pnextrownneighborsaddr 10 + 
+    pthisneighborsbufferaddr 10 +
+    2
+    pnextrownneighborsaddr
+    pthisneighborsbufferaddr
+    pcellsbufferaddr
+    6
+    dg_calcNeighborsForRowFastaddr
+    CALLPROC DROP
+
+    pthisneighborsbufferaddr @ 0 <> IF // 0 from wrap calculation
+      ." error, beginning of this neighbor buffer not as expected, expected 0, got "
+      pthisneighborsbufferaddr @ U. CR
+      ." pthisneighborsbuffer is: " CR thisneighborsbufferbufid GETSBUFFER DUMP CR
+      // ." life buffer is: " CR life-bufferid GETSBUFFER DUMP CR
+      EXIT
+    THEN
+
+    pthisneighborsbufferaddr 8 + @ 0 <> IF 
+      ." error, end of this neighbor buffer not as expected" CR EXIT
+    THEN
+
+    pnextrownneighborsaddr @ 0 <> IF 
+      ." error, beginning of next neighbor buffer not as expected" CR EXIT
+    THEN
+
+    pnextrownneighborsaddr myscreenwidth ( 1+ 7 - ) + 6 - @ 0 <> IF 
+      ." error, end of next neighbor buffer not as expected" CR EXIT
+    THEN
+
+
+    pthisneighborsbufferaddr rowbuffersize 0 FILL
+    pnextrownneighborsaddr rowbuffersize 0 FILL
+    // pcellsbufferaddr pixelsperscreen 8 / 0 FILL
+
+    40 pcellsbufferaddr C!
+    
+    pnextrownneighborsaddr 10 + 
+    pthisneighborsbufferaddr 10 +
+    1
+    pnextrownneighborsaddr
+    pthisneighborsbufferaddr
+    pcellsbufferaddr
+    6
+    dg_calcNeighborsForRowFastaddr
+    CALLPROC DROP
+
+    pthisneighborsbufferaddr @ 02010200 <> IF // 0 from wrap calculation
+      ." error, beginning of this neighbor buffer not as expected, expected 02010200, got "
+      pthisneighborsbufferaddr @ U. CR
+      ." thisneighborsbuffer is: " CR thisneighborsbufferbufid GETSBUFFER DUMP CR
+      // ." life buffer is: " CR life-bufferid GETSBUFFER DUMP CR 
+      EXIT
+    THEN
+
+    pnextrownneighborsaddr @ 02020200 <> IF 
+      ." error, beginning of next neighbor buffer not as expected, expected 02020200, got "
+    pnextrownneighborsaddr @ U. CR EXIT
+    THEN
+
+
+    pthisneighborsbufferaddr rowbuffersize 0 FILL
+    pnextrownneighborsaddr rowbuffersize 0 FILL
+    // pcellsbufferaddr pixelsperscreen 8 / 0 FILL
+
+    20 pcellsbufferaddr C!
+    
+    pnextrownneighborsaddr 10 + 
+    pthisneighborsbufferaddr 10 +
+    1
+    pnextrownneighborsaddr
+    pthisneighborsbufferaddr
+    pcellsbufferaddr
+    6
+    dg_calcNeighborsForRowFastaddr
+    CALLPROC DROP
+
+    pthisneighborsbufferaddr @ 0201020000 <> IF // 0 from wrap calculation
+      ." error, beginning of this neighbor buffer not as expected, expected 0201020000, got "   
+    pthisneighborsbufferaddr @ U. CR EXIT
+    THEN
+
+    pnextrownneighborsaddr @ 0202020000 <> IF 
+      ." error, beginning of next neighbor buffer not as expected, expected 0202020000, got "
+    pnextrownneighborsaddr @ U. CR EXIT
+    THEN
+
+
+    pthisneighborsbufferaddr rowbuffersize 0 FILL
+    pnextrownneighborsaddr rowbuffersize 0 FILL
+    // pcellsbufferaddr pixelsperscreen 8 / 0 FILL
+
+    60 pcellsbufferaddr C!
+    
+    pnextrownneighborsaddr 10 + 
+    pthisneighborsbufferaddr 10 +
+    1
+    pnextrownneighborsaddr
+    pthisneighborsbufferaddr
+    pcellsbufferaddr
+    6
+    dg_calcNeighborsForRowFastaddr
+    CALLPROC DROP
+
+    pthisneighborsbufferaddr @ 0203030200 <> IF // 0 from wrap calculation
+      ." error, beginning of this neighbor buffer not as expected, expected 0203030200, got "   
+    pthisneighborsbufferaddr @ U. CR EXIT
+    THEN
+
+    pnextrownneighborsaddr @ 0204040200 <> IF 
+      ." error, beginning of next neighbor buffer not as expected, expected 0204040200, got "
+    pnextrownneighborsaddr @ U. CR EXIT
+    THEN
+;
+
+HEX
+: testCalcNeighborsForRow ( -- )
+
+    ( prowbits               0x08  RDI
+    pthisrownneighbors     0x0C  RSI
+    pnextrownneighbors     0x10  RDX
+    dwordsperrow           0x14  RCX
+    pthisrownneighborsend  0x18  R8
+    pnextrownneighborsend  0x1C  R9 )
+
+    ." testing dg_calcNeighborsForRow" CR
+
+    ppreviousrownneighborsaddr rowbuffersize 0 FILL
+    pthisneighborsbufferaddr rowbuffersize 2 FILL
+    pnextrownneighborsaddr rowbuffersize 6 FILL
+    pcellsbufferaddr pixelsperscreen 8 / 0 FILL
+
+    pnextrownneighborsaddr myscreenwidth + 
+    pthisneighborsbufferaddr myscreenwidth +
+    myscreenwidth 20 /
+    pnextrownneighborsaddr
+    pthisneighborsbufferaddr
+    pcellsbufferaddr
+    6
+    dg_calcNeighborsForRowaddr
+    CALLPROC DROP
+
+    // except for first and last, should be unchanged since all the cells are dead (0)
+    //  first cell is at index 1 in neighbor arrays
+    //  next[first-1] added to this[last] and next[last] for wrap calculation
+    //  next[last+1] added to this[first] and next[first] for wrap calculation
+    pthisneighborsbufferaddr @ 0202020202020802 <> IF // 8 from wrap calculation
+      ." error, beginning of this neighbor buffer not as expected, expected 0202020202020802, got " pthisneighborsbufferaddr @ U. CR EXIT
+    THEN
+
+    pthisneighborsbufferaddr myscreenwidth ( 1+ 7 - ) + 6 - @ 0208020202020202 <> IF 
+      ." error, end of this neighbor buffer not as expected" CR EXIT
+    THEN
+
+    pnextrownneighborsaddr @ 0606060606060C06 <> IF 
+      ." error, beginning of next neighbor buffer not as expected" CR EXIT
+    THEN
+
+    pnextrownneighborsaddr myscreenwidth ( 1+ 7 - ) + 6 - @ 060C060606060606 <> IF 
+      ." error, end of next neighbor buffer not as expected" CR EXIT
+    THEN
+
+    // putting a live cell near the beginning of the row
+    ppreviousrownneighborsaddr rowbuffersize 0 FILL
+    pthisneighborsbufferaddr rowbuffersize 2 FILL
+    pnextrownneighborsaddr rowbuffersize 6 FILL
+    pcellsbufferaddr pixelsperscreen 8 / 0 FILL
+
+    10 pcellsbufferaddr C!
+
+    pnextrownneighborsaddr myscreenwidth + 
+    pthisneighborsbufferaddr myscreenwidth +
+    myscreenwidth 20 /
+    pnextrownneighborsaddr
+    pthisneighborsbufferaddr
+    pcellsbufferaddr
+    6
+    dg_calcNeighborsForRowaddr
+    CALLPROC DROP
+
+    //  first cell is at index 1 in neighbor arrays
+    //  next[first-1] added to this[last] and next[last] for wrap calculation
+    //  next[last+1] added to this[first] and next[first] for wrap calculation
+    pthisneighborsbufferaddr @ 0202040304020802 <> IF // 8 from wrap calculation
+      ." error, one cell test, beginning of this neighbor buffer not as expected, expected 0202040304020802, got " pthisneighborsbufferaddr @ U. CR EXIT
+    THEN
+
+    pnextrownneighborsaddr @ 0606080808060C06 <> IF 
+      ." error, one cell test, beginning of next neighbor buffer not as expected" CR EXIT
+    THEN
+;
+
+HEX
+: testUpdateCellsForRow ( -- )
+    
+    ." testing dg_updateCellsForRow" CR
+
+    ppreviousrownneighborsaddr rowbuffersize 0 FILL
+    pnextrownneighborsaddr rowbuffersize 0 FILL
+    pcellsbufferaddr pixelsperscreen 8 / 0 FILL
+    F1F2F3F4F8F7F6F5 pcellsbufferaddr myscreenwidth 8 / + !
+
+    1 // if there are 0 neighbors and cell is dead, it is born, all others die
+    myscreenwidth 20 /
+    pnextrownneighborsaddr
+    ppreviousrownneighborsaddr 
+    pcellsbufferaddr
+    5
+    dg_updateCellsForRowaddr
+    CALLPROC DROP
+
+    pcellsbufferaddr @ FFFFFFFFFFFFFFFF <> IF 
+        ." error, dead 0 neighbors = live test a, beginning of cell buffer row not as expected" CR EXIT
+    THEN
+
+    pcellsbufferaddr myscreenwidth 8 / + @ F1F2F3F4F8F7F6F5 <> IF
+        ." error, dead 0 neighbors = live test a, beyond end of cell buffer row was changed" CR EXIT
+    THEN
+
+    1 ppreviousrownneighborsaddr 1+ C!
+
+    1 // if there are 0 neighbors and cell is dead, it is born, all others die
+    myscreenwidth 20 /
+    pnextrownneighborsaddr
+    ppreviousrownneighborsaddr 
+    pcellsbufferaddr
+    5
+    dg_updateCellsForRowaddr
+    CALLPROC DROP
+
+    pcellsbufferaddr @ FFFFFFFFFFFFFF7F <> IF 
+        ." error, dead 0 neighbors = live test b, beginning of cell buffer row not as expected" CR EXIT
+    THEN
+
+    pcellsbufferaddr myscreenwidth 8 / + @ F1F2F3F4F8F7F6F5 <> IF
+        ." error, dead 0 neighbors = live test b, beyond end of cell buffer row was changed" CR EXIT
+    THEN
+;
+
+: testCalcNeighborsForRowN ( -- )
+    ." testing dg_calcNeighborsForRowN" CR
+
+    ppreviousrownneighborsaddr rowbuffersize 0 FILL
+    pthisneighborsbufferaddr rowbuffersize 2 FILL
+    pnextrownneighborsaddr rowbuffersize 6 FILL
+    pcellsbufferaddr pixelsperscreen 8 / 0 FILL
+    
+    pcellsbufferaddr
+    myscreenwidth
+    pnextrownneighborsaddr
+    pthisneighborsbufferaddr
+    1  // row N
+    5
+    dg_calcNeighborsForRowNaddr
+    CALLPROC DROP
+
+    // except for first and last, should be unchanged since all the cells are dead (0)
+    //  first cell is at index 1 in neighbor arrays
+    //  next[first-1] added to this[last] and next[last] for wrap calculation
+    //  next[last+1] added to this[first] and next[first] for wrap calculation
+    pthisneighborsbufferaddr @ 0202020202020802 <> IF // 8 from wrap calculation
+      ." error, beginning of this neighbor buffer not as expected, expected 0202020202020802, got " pthisneighborsbufferaddr @ U. CR EXIT
+    THEN
+
+    pthisneighborsbufferaddr myscreenwidth ( 1+ 7 - ) + 6 - @ 0208020202020202 <> IF 
+      ." error, end of this neighbor buffer not as expected" CR EXIT
+    THEN
+
+    pnextrownneighborsaddr @ 0606060606060C06 <> IF 
+      ." error, beginning of next neighbor buffer not as expected" CR EXIT
+    THEN
+
+    pnextrownneighborsaddr myscreenwidth ( 1+ 7 - ) + 6 - @ 060C060606060606 <> IF 
+      ." error, end of next neighbor buffer not as expected" CR EXIT
+    THEN
+
+    // putting a live cell near the beginning of the row
+    ppreviousrownneighborsaddr rowbuffersize 0 FILL
+    pthisneighborsbufferaddr rowbuffersize 2 FILL
+    pnextrownneighborsaddr rowbuffersize 6 FILL
+    pcellsbufferaddr pixelsperscreen 8 / 0 FILL
+
+    10 pcellsbufferaddr myscreenwidth 8 / + C!
+
+    pcellsbufferaddr
+    myscreenwidth
+    pnextrownneighborsaddr
+    pthisneighborsbufferaddr
+    1  // row N
+    5
+    dg_calcNeighborsForRowNaddr
+    CALLPROC DROP
+
+    //  first cell is at index 1 in neighbor arrays
+    //  next[first-1] added to this[last] and next[last] for wrap calculation
+    //  next[last+1] added to this[first] and next[first] for wrap calculation
+    pthisneighborsbufferaddr @ 0202040304020802 <> IF // 8 from wrap calculation
+      ." error, one cell test, beginning of this neighbor buffer not as expected, expected 0202040304020802, got " pthisneighborsbufferaddr @ U. CR EXIT
+    THEN
+
+    pnextrownneighborsaddr @ 0606080808060C06 <> IF 
+      ." error, one cell test, beginning of next neighbor buffer not as expected" CR EXIT
+    THEN
+;
+
+
+: testUpdateCellsForRowN ( -- )
+    ." testing dg_updateCellsForRowN" CR
+
+    ppreviousrownneighborsaddr rowbuffersize 0 FILL
+    pnextrownneighborsaddr rowbuffersize 0 FILL
+    pcellsbufferaddr pixelsperscreen 8 / 0 FILL
+    
+    1  // logic function - if 0 neighbors and cell is dead, it is born, all others die
+    pcellsbufferaddr 
+    myscreenwidth   
+    pnextrownneighborsaddr
+    ppreviousrownneighborsaddr
+    2  // row
+    6
+    dg_updateCellsForRowNaddr
+    CALLPROC DROP
+
+    pcellsbufferaddr @ 0 <> IF 
+        ." error, dead 0 neighbors = live test a, wrong row was changed" CR EXIT
+    THEN
+
+    pcellsbufferaddr myscreenwidth 8 / 2 * + @ FFFFFFFFFFFFFFFF <> IF 
+        ." error, dead 0 neighbors = live test a, beginning of cell row not as expected" CR EXIT
+    THEN
+
+    1 ppreviousrownneighborsaddr 1+ C!
+
+    1  // logic function - if 0 neighbors and cell is dead, it is born, all others die
+    pcellsbufferaddr 
+    myscreenwidth   
+    pnextrownneighborsaddr
+    ppreviousrownneighborsaddr
+    2  // row
+    6
+    dg_updateCellsForRowNaddr
+    CALLPROC DROP
+
+    pcellsbufferaddr myscreenwidth 8 / 2 * + @ FFFFFFFFFFFFFF7F <> IF 
+        ." error, dead 0 neighbors = live test b, beginning of cell buffer row not as expected" CR EXIT
+    THEN
+;
+
+HEX
+: testAreaXor ( -- )
+    
+    ." testing dg_areaXor" CR
+
+
+    pcellsbufferaddr pixelsperscreen 8 / 0 FILL
+
+    A0B0C0D011223344 ppreviousrownneighborsaddr !
+    5566778899AABBCC ppreviousrownneighborsaddr 8 + !
+    2223242526272829 ppreviousrownneighborsaddr 10 + !
+
+    0   // src end of row bump in bytes
+    -1  // lastqwordinrowmask
+    C0  // dest width
+    0   // shiftsrc shiftdest
+    40  // src width to do
+    3   // src height
+    ppreviousrownneighborsaddr
+    pcellsbufferaddr
+    8
+    dg_areaXoraddr
+    CALLPROC DROP
+
+    pcellsbufferaddr @ A0B0C0D011223344 <> IF 
+        ." error, src empty dest case  3 row  1 column  0 shift a expected A0B0C0D011223344, got "
+        pcellsbufferaddr @ U. CR EXIT
+    THEN
+
+    pcellsbufferaddr 8 3 * + @ 5566778899AABBCC <> IF 
+        ." error, src empty dest case  3 row  1 column  0 shift b expected 5566778899AABBCC, got "
+        pcellsbufferaddr 8 3 * + @ U. CR EXIT
+    THEN
+
+    pcellsbufferaddr 8 6 * + @ 2223242526272829 <> IF 
+        ." error, src empty dest case  3 row  1 column  0 shift c expected 2223242526272829, got "
+        pcellsbufferaddr 8 6 * + @ U. CR EXIT
+    THEN
+
+
+    ppreviousrownneighborsaddr rowbuffersize 0 FILL
+    pthisneighborsbufferaddr rowbuffersize 0 FILL
+    pnextrownneighborsaddr rowbuffersize 0 FILL
+    ptoprowneighborsaddr rowbuffersize 0 FILL
+    pcellsbufferaddr pixelsperscreen 8 / 0 FILL
+    F0F1F3F4F9F8F6F4 pcellsbufferaddr pixelsperscreen 8 / + !
+
+    // pdest                // rdi
+    // psrc                 // rsi
+    // srcheightinrows      // rdx 
+    // srcwidthtodoinqwords // rcx
+    // srcxdestx            // r8  (R8L = destx, next 8 bits = srcx)
+    // destwidthinqwords    // r9
+
+    0   // src end of row bump
+    -1  // lastqwordinrowmask
+    40  // dest width
+    0   // shiftsrc shiftdest
+    40  // src width
+    1   // src height
+    ppreviousrownneighborsaddr
+    pcellsbufferaddr
+    8
+    dg_areaXoraddr
+    CALLPROC DROP
+
+    pcellsbufferaddr C@ 0 <> IF 
+        ." error, expected empty cells" CR EXIT
+    THEN
+
+    80 ppreviousrownneighborsaddr C!
+
+    0   // src end of row bump in bytes
+    -1  // lastqwordinrowmask
+    40  // dest width
+    1   // shiftsrc shiftdest
+    40  // src width
+    1   // src height
+    ppreviousrownneighborsaddr
+    pcellsbufferaddr
+    8
+    dg_areaXoraddr
+    CALLPROC DROP
+
+    pcellsbufferaddr C@ 40 <> IF 
+        ." error, 80 src empty dest case 1 row 1 column 1 shift expected 40, got "
+        pcellsbufferaddr @ U. CR EXIT
+    THEN
+
+    0 pcellsbufferaddr !
+    80 ppreviousrownneighborsaddr C!
+
+    0   // src end of row bump in bytes
+    -1  // lastqwordinrowmask
+    40  // dest width
+    2   // shiftsrc shiftdest
+    40  // src width to do in qwords
+    1   // src height
+    ppreviousrownneighborsaddr
+    pcellsbufferaddr
+    8
+    dg_areaXoraddr
+    CALLPROC DROP
+
+    pcellsbufferaddr C@ 20 <> IF 
+        ." error, 80 src empty dest case  1 row  1 column  2 shift  expected 20, got "
+        pcellsbufferaddr C@ U. CR EXIT
+    THEN
+
+    0 pcellsbufferaddr !
+    0 pcellsbufferaddr 8 + !
+    A0 ppreviousrownneighborsaddr C!
+    77 ppreviousrownneighborsaddr 7 + C!
+    55 ppreviousrownneighborsaddr 8 + C!
+
+    0   // src end of row bump in bytes
+    -1  // lastqwordinrowmask
+    80  // dest width
+    4   // srcshift destshift
+    80  // src width
+    1   // src height
+    ppreviousrownneighborsaddr
+    pcellsbufferaddr
+    8
+    dg_areaXoraddr
+    CALLPROC DROP
+
+    pcellsbufferaddr C@ 0A <> IF 
+        ." error, A0...77 src empty dest case  1 row  2 column  4 shift a expected 0A, got "
+        pcellsbufferaddr C@ U. CR EXIT
+    THEN
+
+    pcellsbufferaddr 7 + C@ 07 <> IF 
+        ." error, A0...77 src empty dest case  1 row  2 column  4 shift b expected 07, got "
+        pcellsbufferaddr 7 + C@ U. CR EXIT
+    THEN
+
+    pcellsbufferaddr 8 + C@ 75 <> IF 
+        ." error, A0...77 src empty dest case  1 row  2 column  4 shift c expected 75, got "
+        pcellsbufferaddr 8 + C@ U. CR EXIT
+    THEN
+
+    pcellsbufferaddr 9 + C@ 50 <> IF 
+        ." error, A0...77 src empty dest case  1 row  2 column  4 shift d expected 50, got "
+        pcellsbufferaddr 9 + C@ U. CR EXIT
+    THEN
+
+
+    pcellsbufferaddr pixelsperscreen 8 / 0 FILL
+
+    A0 ppreviousrownneighborsaddr C!
+    B0 ppreviousrownneighborsaddr 1+ C!
+    55 ppreviousrownneighborsaddr 8 + C!
+    66 ppreviousrownneighborsaddr 9 + C!
+    22 ppreviousrownneighborsaddr 10 + C!
+    33 ppreviousrownneighborsaddr 11 + C!
+
+    0     // src end of row bump in bytes
+    -1    // lastqwordinrowmask
+    C0    // dest width
+    0804  // shiftsrc shiftdest
+    40    // src width
+    3     // src height
+    ppreviousrownneighborsaddr
+    pcellsbufferaddr
+    8
+    dg_areaXoraddr
+    CALLPROC DROP
+
+    pcellsbufferaddr C@ 0B <> IF 
+        ." error, A0B0...5566 src empty dest case  2 row  1 column  0804 shift a expected 0B, got "
+        pcellsbufferaddr C@ U. CR EXIT
+    THEN
+
+    pcellsbufferaddr 8 3 * + C@ 06 <> IF 
+        ." error, A0B0...5566 src empty dest case  2 row  1 column  0804 shift b expected 05, got "
+        pcellsbufferaddr 8 3 * + C@ U. CR EXIT
+    THEN
+
+    pcellsbufferaddr 8 6 * + C@ 03 <> IF 
+        ." error, A0...55 src empty dest case  2 row  1 column  0804 shift c expected 06, got "
+        pcellsbufferaddr 8 6 * + C@ U. CR EXIT
+    THEN
+
+    
+    pcellsbufferaddr pixelsperscreen 8 / 0 FILL
+
+    24 pcellsbufferaddr C!
+    FF pcellsbufferaddr 8 3 * + C!
+    A0 ppreviousrownneighborsaddr C!
+    B0 ppreviousrownneighborsaddr 1+ C!
+    55 ppreviousrownneighborsaddr 8 + C!
+    66 ppreviousrownneighborsaddr 9 + C!
+    22 ppreviousrownneighborsaddr 10 + C!
+    33 ppreviousrownneighborsaddr 11 + C!
+
+    0    // src end of row bump in bytes
+    -1   // lastqwordinrowmask
+    C0   // dest width
+    0804 // shiftsrc shiftdest
+    40   // src width
+    3    // src height
+    ppreviousrownneighborsaddr
+    pcellsbufferaddr
+    8
+    dg_areaXoraddr
+    CALLPROC DROP
+
+    pcellsbufferaddr C@ 2F <> IF 
+        ." error, A0B0...5566 src not empty dest case  2 row  1 column  0804 shift a expected 2F, got "
+        pcellsbufferaddr C@ U. CR EXIT
+    THEN
+
+    pcellsbufferaddr 8 3 * + C@ F9 <> IF 
+        ." error, A0B0...5566 src not empty dest case  2 row  1 column  0804 shift b expected F9, got "
+        pcellsbufferaddr 8 3 * + C@ U. CR EXIT
+    THEN
+
+    pcellsbufferaddr 8 6 * + C@ 03 <> IF 
+        ." error, A0...55 src not empty dest case  2 row  1 column  0804 shift c expected 06, got "
+        pcellsbufferaddr 8 6 * + C@ U. CR EXIT
+    THEN
+;
+
+
+
+TESTdg_getoverlapsegment
+TestClearNeighbors
+testMoveQwords
+testcopyNeighbors
+testCalcNeighborsForRow
+testCalcNeighborsForRowFast
+testUpdateCellsForRow
+testCalcNeighborsForRowN
+testUpdateCellsForRowN
+// testLifeBitMapOnce
+testAreaXor
+
+
+

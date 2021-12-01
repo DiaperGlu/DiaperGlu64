@@ -1,0 +1,7 @@
+#! /Library/WebServer/CGI-Executables/diaperglu
+
+." CONTENT-TYPE: text/html" CRLF
+CRLF
+." <html><head></head><body>" CRLF
+." Hello Apache on Mac OS X!!" CRLF
+." </body></html>" CRLF

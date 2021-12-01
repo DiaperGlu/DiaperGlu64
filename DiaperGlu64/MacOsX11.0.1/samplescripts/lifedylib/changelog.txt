@@ -1,0 +1,8 @@
+
+2020 Dec 18 v1.1:
+    Changed ld command in makelifedylib.dglu to support Big Sur's new local dynamic library cache. This probably wasn't necessary since this library doesn't link to any system library functions... Hmm...
+
+
+	
+
+

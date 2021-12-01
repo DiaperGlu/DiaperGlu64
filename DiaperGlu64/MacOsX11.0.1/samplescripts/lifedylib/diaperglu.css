@@ -1,0 +1,221 @@
+/*
+////////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2020 James Patrick Norris
+//
+//    This file is part of LifeLib v1.0.
+//
+//    LifeLib v1.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    LifeLib v1.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with LifeLib v1.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////
+// James Patrick Norris      //
+// www.rainbarrel.com        //
+// thaine@mail87.pair.com    //
+// April 28, 2020            //
+// version 1.0               //
+///////////////////////////////
+*/
+      /* IE5 and higher fix for absolute positioning bug */
+      /* IE5 and possibly 6 can't position stuff correctly in top page element */
+      body { overflow: hidden }
+      
+      /* absolute positioning is relative to first non-static positioned element, otherwise it is <html> */
+      div#content { 
+        position: fixed; top: 0px; left: 0px;
+        height: 100%; width: 100%; overflow: scroll; 
+        border-width: 1px; border-color: #0000ff; border-style: solid;
+        margin: 0px; padding: 0px 
+      }
+
+      #pageheader {
+        position: absolute; top: 2px; left: 2px;
+        overflow: hidden;
+        width: 1096px; height: 38px; z-index: 1;
+        padding: 0px; margin: 0px;
+        border-width: 2px; border-color: #0000ff; border-style: solid;
+        text-align: center; color: #0000ff; font-size: 24px; background-color: #e0e0e0
+      }
+      
+      #sitedirectory {
+        position: absolute; top: 44px; left: 2px;
+        overflow: scroll;
+        width: 1096px; height: 36px; z-index: 3;
+        padding: 0px; margin: 0px;
+        border-width: 2px; border-color: #0000ff; border-style: solid;
+        text-align: left; color: #ff00ff; background-color: #808080; white-space: nowrap
+      }
+      
+      #sitedirectory a {
+        display: inline; 
+        overflow: hidden;
+        padding-top: 2px; padding-bottom: 2px; padding-left: 4px; padding-right: 4px; margin: 0px;
+        border-color: #8080e0; border-width: 2px; border-style: solid;
+        text-align: center; color: #ff00ff; background-color: #f0f0f0;
+        font-family: sans-serif; font-size: 8pt; white-space: nowrap
+      }
+      
+      #sitedirectory a:link { 
+        font-family: sans-serif; font-size: 8pt;
+        color: #ff00ff; text-decoration: none; border-style: outset
+      }
+
+      #sitedirectory a:visited { 
+        font-family: sans-serif; font-size: 8pt;
+        color: #e000e0; text-decoration: none; border-style: outset
+      }
+
+      #sitedirectory a:hover {
+        font-family: sans-serif; font-size: 8pt;
+        overflow: visible;
+        color: #ff00ff; background-color: #c0c0c0; text-decoration: none
+      }
+
+      #sitedirectory a:active {
+        font-family: sans-serif; font-size: 8pt; 
+        color: red; text-decoration: none; border-style: inset
+      }
+
+      #pagedirectory {
+        top: 80px; left: 2px; position: absolute;
+        width: 196px; height: 478px; overflow: scroll; z-index: 2;
+        padding: 0px; margin: 0px;
+        border-width: 2px; border-color: #0000ff; border-style: solid;
+        text-align: left; vertical-align: middle; color: #0000ff; background-color: #808080; 
+        font-family: sans-serif; font-size: 9pt
+      }
+      
+      .header { background-color: #e0e0e0 }
+
+      #pagedirectory a {
+        display: block; 
+        width: 168px; height: 24px; overflow: hidden;
+        padding-top: 2px; padding-bottom: 2px; padding-left: 4px; padding-right: 4px; margin: 0px;
+        border-color: #8080e0; border-width: 2px; border-style: solid;
+        text-align: center; vertical-align: middle; color: #00ff00; background-color: #f0f0f0;
+        font-family: sans-serif; font-size: 10pt; white-space: nowrap
+      }
+
+      #pagedirectory a:link {
+        vertical-align: middle;
+        font-family: sans-serif; font-size: 10pt; 
+        color: #00ff00; text-decoration: none; border-style: outset
+      }
+
+      #pagedirectory a:visited {
+        vertical-align: middle;
+        font-family: sans-serif; font-size: 10pt;
+        color: #00e000; text-decoration: none; border-style: outset
+      }
+
+      #pagedirectory a:hover {
+        vertical-align: middle;
+        font-family: sans-serif; font-size: 10pt;
+        overflow: visible;
+        color: #00ff00; background-color: #c0c0c0; text-decoration: none 
+      }
+
+      #pagedirectory a:active {
+        vertical-align: middle;
+        font-family: sans-serif; font-size: 10pt;
+        color: #ff0000; text-decoration: none; border-style: inset
+      }
+
+      #pagestuff {
+        position: absolute; top: 80px; left: 202px;
+        width: 896px; height: 478px; overflow: scroll; z-index: 1;
+        margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px;
+        padding-top: 0px; padding-bottom: 0px; padding-left: 0px; padding-right: 0px; 
+        border-width: 2px; border-color: #00ff00; border-style: solid;
+        text-align: left; color: #000000; font-size: 12pt 
+      }
+
+      table.words {
+        border-width: 2px; border-color: #c0c0c0; border-style: solid;
+        margin-top: 1em; margin-bottom: 1em; margin-left: 1em; margin-right: 1em;
+        padding-top: 1em; padding-bottom: 1em; padding-left: 1em; padding-right: 1em;
+        border-collapse: collapse        
+      }
+
+      table.words td {
+        border-width: 2px; border-color: #c0c0c0; border-style: solid;
+        padding-top: 0.5em; padding-bottom: 0.5em; padding-left: 1em; padding-right: 1em
+      }
+
+      table.words th {
+        background-color: #e0e0e0;
+        border-width: 2px; border-color: #c0c0c0; border-style: solid;
+        padding-top: 0.5em; padding-bottom: 0.5em; padding-left: 1em; padding-right: 1em
+      }
+
+      .word { 
+        border-width: 2px; border-color: #c0c0c0; border-style: solid; 
+        margin-top: 1em; margin-bottom: 1em; margin-left: 1em; margin-right: 1em;
+        padding-top: 1em; padding-bottom: 1em; padding-left: 1em; padding-right: 1em 
+      }
+      
+      .wordforthscripttoken { margin-top: 1em; margin-left: 1em; margin-bottom: 1em;color: #202020; font-size: 18pt }
+      .wordparametersshorthand { margin-top: 1em; margin-left: 1em; margin-bottom: 1em;color: #000000; font-size: 18pt }
+      .wordcparameters { margin-top: 1em; margin-left: 1em; margin-bottom: 1em;color: #000000; font-size: 14pt }
+      .wordforthparameters { margin-top: 1em; margin-left: 1em; margin-bottom: 1em;color: #000000; font-size: 14pt }
+      .wordaction { margin-top: 1em; margin-left: 1em; margin-bottom: 1em;color: #000000; font-size: 14pt }
+      .wordfailurecases { margin-top: 1em; margin-left: 1em; margin-bottom: 1em;color: #000000; font-size: 14pt }
+      .wordcprototype { margin-top: 1em; margin-left: 1em; margin-bottom: 1em; color: #000000; font-size: 14pt }
+
+      #pagelicense { 
+        border-width: 1px; border-color: #c0c0c0; border-style: solid;
+        margin-top: 1em; margin-bottom: 1em; margin-left: 1em; margin-right: 1em;
+        padding-top: 1em; padding-bottom: 1em; padding-left: 1em; padding-right: 1em
+      }
+
+      #pagecontact { 
+        border-width: 1px; border-color: #c0c0c0; border-style: solid;
+        margin-top: 1em; margin-bottom: 1em; margin-left: 1em; margin-right: 1em;
+        padding-top: 1em; padding-bottom: 1em; padding-left: 1em; padding-right: 1em
+      }
+      
+      .cfile {
+        border-width: 2px; border-color: #c0c0c0; border-style: solid;
+        margin-top: 1em; margin-bottom: 1em; margin-left: 1em; margin-right: 1em;
+        padding-top: 1em; padding-bottom: 1em; padding-left: 1em; padding-right: 1em
+        border-collapse: collapse; 
+      }
+      
+      .cfunctionprototype {
+        text-align: left; color: #101010; white-space: pre;
+        margin-top: 0em; margin-bottom: 0em; margin-left: 0em; margin-right: 0em;
+        padding-top: 0em; padding-bottom: 0em; padding-left: 0em; padding-right: 0em
+      }
+
+	  h3 {
+	    text-align: center
+      }
+      
+      .pagestuffsection {
+        border-width: 1px; border-color: #c0c0c0; border-style: solid;
+        margin-top: 0em; margin-bottom: 0em; margin-left: 0em; margin-right: 0em;
+        padding-top: 1em; padding-bottom: 1em; padding-left: 1em; padding-right: 1em 
+       }
+       
+       .command {
+         color: #800080; font-family: monotype
+       }
+       
+       .commandtarget {
+         color: #800080; font-family: cursive
+       }
+
+      

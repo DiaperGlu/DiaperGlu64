@@ -1,0 +1,2453 @@
+( //////////////////////////////////////////////////////////////////////////////////////// )
+( //                                                                                       )
+( //    Copyright 2020 James Patrick Norris                                                )
+( //                                                                                       )
+( //    This file is part of Diaperglu 4.9.                                                )
+( //                                                                                       )
+( //    Diaperglu 4.9 is free software; you can redistribute it and/or modify              )
+( //    it under the terms of the GNU General Public License as published by               )
+( //    the Free Software Foundation; either version 2 of the License, or                  )
+( //    {at your option} any later version.                                                )
+( //                                                                                       )
+( //    Diaperglu 4.9 is distributed in the hope that it will be useful,                   )
+( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
+( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
+( //    GNU General Public License for more details.                                       )
+( //                                                                                       )
+( //    You should have received a copy of the GNU General Public License                  )
+( //    along with Diaperglu 4.9; if not, write to the Free Software                       )
+( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
+( //                                                                                       )
+( //////////////////////////////////////////////////////////////////////////////////////// )
+
+( /////////////////////////////// )
+( // James Patrick Norris      // )
+( // www.rainbarrel.com        // )
+( // October 2, 2020           // )
+( // version 4.9               // )
+( /////////////////////////////// )
+
+
+// for generating add table
+HEX 1000 1000 NEWBUFFER GETSBUFFER DROP CONSTANT PTHISNEIGHBORSBUF
+HEX 1000 1000 NEWBUFFER GETSBUFFER DROP CONSTANT PNEXTNEIGHBORSBUF
+HEX 1000 1000 NEWBUFFER GETSBUFFER DROP CONSTANT PCELLSBUF
+
+PCURRENTCOMPILEBUFFER @ CONSTANT OLDCOMPILEBUFID
+
+
+// make new empty compile buffer
+
+HEX 10000 -1 NEWBUFFER CONSTANT LIFECOMPILEBUFID 
+LIFECOMPILEBUFID PCURRENTCOMPILEBUFFER ! 
+
+// making a new nglu list and making it the current elementid hlistid
+
+NEW-NGLULIST>EH
+
+
+// adding a symbol list to the current nglu list
+
+$" lifesymbols" NGLU-SYMBOLS >NEW$ EH-NEW-ELEMENT>EH
+
+
+// adding the assembler to the search order
+
+X86-WORDLIST >SEARCH-ORDER
+
+
+// ////////////////////////////////////////////
+//  Calculating overlap of two line segments //
+// ////////////////////////////////////////////
+
+
+// A ---------
+// B    ---------
+//
+// A ---------
+// B    ---
+//
+// A    ---------
+// B --------
+// 
+// A    ---
+// B ---------
+// 
+// A ----
+// B       ------
+//
+// I think that's all the cases
+//
+// assuming wraparound past 0 of line segments is ok
+( ASX AL BSX BL -- OVERLAPSX OVERLAPL )
+// calculate AEX, BEX
+//  AEX = ASX + AL
+//  BEX = BSX + BL
+
+// calculate distance between start points
+//  DL = BSX - ASX ( signed, unsigned does not matter, 
+//  same calculation, however DL is unsigned )
+
+// Case 1: B starts in A
+//  if DL <= AL, then OVERLAPSX = BSX 
+//   and OVERLAPL = smaller of  (AL - DL) or BL
+
+// Case 2: A starts in B
+//  if (0 - DL) <= BL, then OVERLAPSX = ASX 
+//   and OVERLAP = smaller of  BL - (0 - DL) or AL
+
+// Case 3: They don't overlap
+//  if neither of the above, then they don't overlap so...
+//  OVERLAPSX = ASX (actually don't care) and OVERLAPL = 0
+
+
+// Be nice if you could return more than one parameter on stack…
+// Be nice if you could use local constants inside CODE
+HEX
+// showing two ways to add a symbol for the current compile location
+OHERE >NEW$ $" dg_getoverlapsegment" EH-NEW-ELEMENT
+// OSYMBOL dg_getoverlapsegment 
+  ( ASX AL BSX BL pOVERLAPSX -ret- ) 
+  ( -regs- EAX=OVERLAPL EDX=OVERLAPSX )
+
+  // BL             RCX  
+  // BSX            RDX
+  // AL             RSI
+  // ASX            RDI
+  // ret            [RBP+8]
+  // saved RBP      [RBP+0]
+  RBP PUSH,
+  RSP RBP MOV,
+
+  RDX  RAX  MOV,  
+  RDI  RAX  SUB,  // RAX now holds DL = BSX - ASX
+  
+  // checking case one, 
+  // if BSX - ASX <= AL then b starts in a 
+  RSI RAX  CMP,  // comparing (BSX - ASX) with AL
+  ULE IF,
+    // OVERLAPSX = BSX
+
+    // OVERLAPL = smaller of BL or (ASX + AL) - BSX
+    //   (ASX + AL) - BSX = (ASX - BSX) + AL = AL - (BSX - ASX)
+    RSI RAX  SUB,  // RAX now holds (BSX - ASX) - AL
+    RAX NEG, // RAX now holds AL - (BSX - ASX)
+    RCX  RAX  CMP,  
+    UGT IF,
+      RCX  RAX  MOV,
+    THEN,
+    
+    RBP POP,
+    RET,
+  THEN,
+
+  // checking case two, 
+  // if ASX - BSX <= BL then a starts in b
+  RAX NEG,
+  RCX RAX  CMP,  // ASX - BSX <= BL
+  ULE IF,
+    // OVERLAPSX = EAX
+    RDI RDX  MOV,
+
+    // OVERLAPL = smaller of (ASX - BSX) - BL or AL
+    RCX RAX  SUB,  
+    RAX NEG,                  
+    RSI RAX  CMP,  
+    UGT IF,
+      RSI RAX  MOV,
+    THEN,
+    
+    RBP POP,
+    RET,
+  THEN,
+
+  // case 3, no overlap
+  // OVERLAPSX = EAX
+  RDI RDX  MOV,
+
+  // OVERLAPL = 0
+  RAX  RAX  XOR,
+  
+  RBP POP,
+  RET,
+
+HEX
+
+// to align buffer to make CalcNeighborsForRowFast additions faster
+//  really only need to align to nearest 8..
+LIFECOMPILEBUFID LENGTHBUF DUP 10 ROUNDUP SWAP - LIFECOMPILEBUFID GROWBUFFER
+OSYMBOL thisneighborsaddtbl 1000 CODE-ALLOT
+OSYMBOL nextneighborsaddtbl 1000 CODE-ALLOT
+
+// OSYMBOL TestFunction
+//  RET,
+
+// assumes little endian
+// This isn't not much faster than the other CalcNeighbors routine
+HEX
+OSYMBOL CalcNeighborsForRowFast 
+  ( prowbits                RDI
+    pthisrownneighbors      RSI
+    pnextrownneighbors      RDX
+    dwordsperrow            RCX
+    pthisrownneighborsend   R8
+    pnextrownneighborsend   R9 -ret- )
+
+  RBP PUSH,
+  RSP RBP MOV,
+
+  RDI PUSH,  // [RBP - 0x08]
+  RSI PUSH,  // [RBP - 0x10]
+  RDX PUSH,  // [RBP - 0x18]
+  RCX PUSH,  // [RBP - 0x20]
+  R8 PUSH,   // [RBP - 0x28]
+  R9 PUSH,   // [RBP - 0x30]
+
+  EH-NAMEW>VALUE thisneighborsaddtbl [O] R8 LEA,
+  // nextneighborsaddtbl at thisneighborsaddtbl + 0x1000
+
+  RCX R9 MOV,
+
+  BEGIN,
+    RDI [R]  RAX  MOV,
+    8 N RDI ADD,
+
+    RAX RAX AND,
+    NE IF,
+
+      RCX RCX XOR,
+      AL CL -> MOV,
+      4 N RCX SHL, // RCX now has index into the lookup tables
+
+      R8 SCALE1* RCX 0 [R+S*R+N] -> R10 MOV,
+      R10 RSI [R] -> ADD,
+      R8 SCALE1* RCX 8 [R+S*R+N] -> R10 MOV,
+      R10W RSI 8 [R+N] -> ADD,  
+
+      R8 SCALE1* RCX 1000 [R+S*R+N] -> R10 MOV,
+      R10 RDX [R] -> ADD,
+      R8 SCALE1* RCX 1008 [R+S*R+N] -> R10 MOV,
+      R10W RDX 8 [R+N] -> ADD,  
+
+
+      8 N  RAX  SHR,
+      RCX RCX XOR,
+      AL CL MOV,
+      4 N RCX SHL, 
+
+      R8 SCALE1* RCX 0 [R+S*R+N] -> R10 MOV,
+      R10 RSI 8 [R+N] -> ADD,
+      R8 SCALE1* RCX 8 [R+S*R+N] -> R10 MOV,
+      R10W RSI 10 [R+N] -> ADD,  
+
+      R8 SCALE1* RCX 1000 [R+S*R+N] -> R10 MOV,
+      R10 RDX 8 [R+N] -> ADD,
+      R8 SCALE1* RCX 1008 [R+S*R+N] -> R10 MOV,
+      R10W RDX 10 [R+N] -> ADD,  
+
+
+      8 N  RAX  SHR,
+      RCX RCX XOR,
+      AL CL MOV,
+      4 N RCX SHL, 
+
+      R8 SCALE1* RCX 0 [R+S*R+N] -> R10 MOV,
+      R10 RSI 10 [R+N] -> ADD,
+      R8 SCALE1* RCX 8 [R+S*R+N] -> R10 MOV,
+      R10W RSI 18 [R+N] -> ADD,  
+
+      R8 SCALE1* RCX 1000 [R+S*R+N] -> R10 MOV,
+      R10 RDX 10 [R+N] -> ADD,
+      R8 SCALE1* RCX 1008 [R+S*R+N] -> R10 MOV,
+      R10W RDX 18 [R+N] -> ADD,  
+
+
+      8 N  RAX  SHR,
+      RCX RCX XOR,
+      AL CL MOV,
+      4 N RCX SHL, 
+
+      R8 SCALE1* RCX 0 [R+S*R+N] -> R10 MOV,
+      R10 RSI 18 [R+N] -> ADD,
+      R8 SCALE1* RCX 8 [R+S*R+N] -> R10 MOV,
+      R10W RSI 20 [R+N] -> ADD,  
+
+      R8 SCALE1* RCX 1000 [R+S*R+N] -> R10 MOV,
+      R10 RDX 18 [R+N] -> ADD,
+      R8 SCALE1* RCX 1008 [R+S*R+N] -> R10 MOV,
+      R10W RDX 20 [R+N] -> ADD,  
+
+
+      8 N  RAX  SHR,
+      RCX RCX XOR,
+      AL CL MOV,
+      4 N RCX SHL, 
+
+      R8 SCALE1* RCX 0 [R+S*R+N] -> R10 MOV,
+      R10 RSI 20 [R+N] -> ADD,
+      R8 SCALE1* RCX 8 [R+S*R+N] -> R10 MOV,
+      R10W RSI 28 [R+N] -> ADD,  
+
+      R8 SCALE1* RCX 1000 [R+S*R+N] -> R10 MOV,
+      R10 RDX 20 [R+N] -> ADD,
+      R8 SCALE1* RCX 1008 [R+S*R+N] -> R10 MOV,
+      R10W RDX 28 [R+N] -> ADD,  
+
+
+      8 N  RAX  SHR,
+      RCX RCX XOR,
+      AL CL MOV,
+      4 N RCX SHL, 
+
+      R8 SCALE1* RCX 0 [R+S*R+N] -> R10 MOV,
+      R10 RSI 28 [R+N] -> ADD,
+      R8 SCALE1* RCX 8 [R+S*R+N] -> R10 MOV,
+      R10W RSI 30 [R+N] -> ADD,  
+
+      R8 SCALE1* RCX 1000 [R+S*R+N] -> R10 MOV,
+      R10 RDX 28 [R+N] -> ADD,
+      R8 SCALE1* RCX 1008 [R+S*R+N] -> R10 MOV,
+      R10W RDX 30 [R+N] -> ADD,  
+
+    
+      8 N  RAX  SHR,
+      RCX RCX XOR,
+      AL CL MOV,
+      4 N RCX SHL, 
+
+      R8 SCALE1* RCX 0 [R+S*R+N] -> R10 MOV,
+      R10 RSI 30 [R+N] -> ADD,
+      R8 SCALE1* RCX 8 [R+S*R+N] -> R10 MOV,
+      R10W RSI 38 [R+N] -> ADD,  
+
+      R8 SCALE1* RCX 1000 [R+S*R+N] -> R10 MOV,
+      R10 RDX 30 [R+N] -> ADD,
+      R8 SCALE1* RCX 1008 [R+S*R+N] -> R10 MOV,
+      R10W RDX 38 [R+N] -> ADD,  
+
+
+      8 N  RAX  SHR,
+      RCX RCX XOR,
+      AL CL MOV,
+      4 N RCX SHL, 
+
+      R8 SCALE1* RCX 0 [R+S*R+N] -> R10 MOV,
+      R10 RSI 38 [R+N] -> ADD,
+      R8 SCALE1* RCX 8 [R+S*R+N] -> R10 MOV,
+      R10W RSI 40 [R+N] -> ADD,  
+
+      R8 SCALE1* RCX 1000 [R+S*R+N] -> R10 MOV,
+      R10 RDX 38 [R+N] -> ADD,
+      R8 SCALE1* RCX 1008 [R+S*R+N] -> R10 MOV,
+      R10W RDX 40 [R+N] -> ADD, 
+
+    THEN,
+
+    40 N RSI ADD,
+    40 N RDX ADD,
+
+    R9 DEC,
+
+  EQ UNTIL, 
+
+  // wrap around calculation
+  RBP -30 [R+N]  RSI  MOV,    // stopaddressnext
+  RSI 1 [R+N]  AL  MOV,       //               
+  RBP -10 [R+N]  RSI  MOV,    // pThisRowsNeighbors   
+  AL  RSI 1 [R+N]  ADD,       //                
+  RBP -18 [R+N]  RSI  MOV,    // pNextRowsNeighbors    
+  AL  RSI 1 [R+N]  ADD,       // 
+
+  RSI [R]  AL  MOV,           // 
+  RBP -28 [R+N]  RSI  MOV,    // stopaddressthis
+  AL  RSI [R]  ADD,           // 
+  RBP -30 [R+N]  RSI  MOV,    // stopaddressnext
+  AL  RSI [R]  ADD,           // 
+
+  RBP RSP MOV,
+  RBP POP,
+  RET,
+
+
+
+// assumes little endian
+HEX
+OSYMBOL CalcNeighborsForRow 
+  ( prowbits               RDI
+    pthisrownneighbors     RSI
+    pnextrownneighbors     RDX
+    dwordsperrow           RCX
+    pthisrownneighborsend  R8
+    pnextrownneighborsend  R9  -ret- )
+
+  RBP PUSH,
+  RSP RBP MOV,
+
+  RDI PUSH, 
+  RSI PUSH, 
+  RDX PUSH, 
+  RCX PUSH, 
+  R8 PUSH,  
+  R9 PUSH,  
+
+  RDI RDX XCHG,  
+
+  BEGIN,                       
+    RDX [R]  EAX  MOV,           
+    EAX BSWAP,                   
+    4 N  RDX  ADD,               
+    0 N  EAX  CMP,               
+
+    EQ IF,                       
+
+      20 N  RSI  ADD,              
+      20 N  RDI  ADD,              
+                 
+      ELSE,	                                 				
+                                    
+        1 N  EAX  ROL,              
+        CS IF,                      
+          020102 N  RSI [R]  32BIT  ADD,
+          020202 N  RDI [R]  32BIT  ADD,
+        THEN,                       
+        RSI INC,                    
+        RDI INC,                    
+
+        1 N  EAX  ROL,              
+        CS IF,                      
+          020102 N  RSI [R]  32BIT  ADD,
+          020202 N  RDI [R]  32BIT  ADD,
+        THEN,
+
+        RSI INC,                    
+        RDI INC,                    
+
+        1 N  EAX  ROL,              
+        CS IF,                      
+          020102 N  RSI [R]  32BIT  ADD,
+          020202 N  RDI [R]  32BIT  ADD,
+        THEN,                       
+        RSI INC,                    
+        RDI INC,                    
+
+        1 N  EAX  ROL,              
+        CS IF,                      
+          020102 N  RSI [R]  32BIT  ADD,
+          020202 N  RDI [R]  32BIT  ADD,
+        THEN,                       
+        RSI INC,                    
+        RDI INC,                    
+
+        1 N  EAX  ROL,              
+        CS IF,                      
+          020102 N  RSI [R]  32BIT  ADD,
+          020202 N  RDI [R]  32BIT  ADD,
+        THEN,                       
+        RSI INC,                    
+        RDI INC,                    
+
+        1 N  EAX  ROL,              
+        CS IF,                      
+          020102 N  RSI [R]  32BIT  ADD,
+          020202 N  RDI [R]  32BIT  ADD,
+        THEN,                       
+        RSI INC,                    
+        RDI INC,                    
+
+        1 N  EAX  ROL,              
+        CS IF,                      
+          020102 N  RSI [R]  32BIT  ADD,
+          020202 N  RDI [R]  32BIT  ADD,
+        THEN,                       
+        RSI INC,                    
+        RDI INC,                    
+
+        1 N  EAX  ROL,              
+        CS IF,                      
+          020102 N  RSI [R]  32BIT  ADD,
+          020202 N  RDI [R]  32BIT  ADD,
+        THEN,                       
+        RSI INC,                    
+        RDI INC,                    
+
+        1 N  EAX  ROL,              
+        CS IF,                      
+          020102 N  RSI [R]  32BIT  ADD,
+          020202 N  RDI [R]  32BIT  ADD,
+        THEN,                       
+        RSI INC,                    
+        RDI INC,                    
+
+        1 N  EAX  ROL,              
+        CS IF,                      
+          020102 N  RSI [R]  32BIT  ADD,
+          020202 N  RDI [R]  32BIT  ADD,
+        THEN,                       
+        RSI INC,                    
+        RDI INC,                    
+
+          1 N  EAX  ROL,              // rol eax,1
+          CS IF,                      // jnc then1
+            020102 N  RSI [R]  32BIT  ADD,
+            020202 N  RDI [R]  32BIT  ADD,
+          THEN,                       // then1:
+          RSI INC,                    // add esi,1
+          RDI INC,                    // add edi,1
+
+          1 N  EAX  ROL,              // rol eax,1
+          CS IF,                      // jnc then1
+            020102 N  RSI [R]  32BIT  ADD,
+            020202 N  RDI [R]  32BIT  ADD,
+          THEN,                       // then1:
+          RSI INC,                    // add esi,1
+          RDI INC,                    // add edi,1
+
+          1 N  EAX  ROL,              // rol eax,1
+          CS IF,                      // jnc then1
+            020102 N  RSI [R]  32BIT  ADD,
+            020202 N  RDI [R]  32BIT  ADD,
+          THEN,                       // then1:
+          RSI INC,                    // add esi,1
+          RDI INC,                    // add edi,1
+
+          1 N  EAX  ROL,              // rol eax,1
+          CS IF,                      // jnc then1
+            020102 N  RSI [R]  32BIT  ADD,
+            020202 N  RDI [R]  32BIT  ADD,
+          THEN,                       // then1:
+          RSI INC,                    // add esi,1
+          RDI INC,                    // add edi,1
+
+          1 N  EAX  ROL,              // rol eax,1
+          CS IF,                      // jnc then1
+            020102 N  RSI [R]  32BIT  ADD,
+            020202 N  RDI [R]  32BIT  ADD,
+          THEN,                       // then1:
+          RSI INC,                    // add esi,1
+          RDI INC,                    // add edi,1
+
+          1 N  EAX  ROL,              // rol eax,1
+          CS IF,                      // jnc then1
+            020102 N  RSI [R]  32BIT  ADD,
+            020202 N  RDI [R]  32BIT  ADD,
+          THEN,                       // then1:
+          RSI INC,                    // add esi,1
+          RDI INC,                    // add edi,1
+
+          1 N  EAX  ROL,              // rol eax,1
+          CS IF,                      // jnc then1
+            020102 N  RSI [R]  32BIT  ADD,
+            020202 N  RDI [R]  32BIT  ADD,
+          THEN,                       // then1:
+          RSI INC,                    // add esi,1
+          RDI INC,                    // add edi,1
+
+          1 N  EAX  ROL,              // rol eax,1
+          CS IF,                      // jnc then1
+            020102 N  RSI [R]  32BIT  ADD,
+            020202 N  RDI [R]  32BIT  ADD,
+          THEN,                       // then1:
+          RSI INC,                    // add esi,1
+          RDI INC,                    // add edi,1
+
+          1 N  EAX  ROL,              // rol eax,1
+          CS IF,                      // jnc then1
+            020102 N  RSI [R]  32BIT  ADD,
+            020202 N  RDI [R]  32BIT  ADD,
+          THEN,                       // then1:
+          RSI INC,                    // add esi,1
+          RDI INC,                    // add edi,1
+
+          1 N  EAX  ROL,              // rol eax,1
+          CS IF,                      // jnc then1
+            020102 N  RSI [R]  32BIT  ADD,
+            020202 N  RDI [R]  32BIT  ADD,
+          THEN,                       // then1:
+          RSI INC,                    // add esi,1
+          RDI INC,                    // add edi,1
+
+          1 N  EAX  ROL,              // rol eax,1
+          CS IF,                      // jnc then1
+            020102 N  RSI [R]  32BIT  ADD,
+            020202 N  RDI [R]  32BIT  ADD,
+          THEN,                       // then1:
+          RSI INC,                    // add esi,1
+          RDI INC,                    // add edi,1
+
+          1 N  EAX  ROL,              // rol eax,1
+          CS IF,                      // jnc then1
+            020102 N  RSI [R]  32BIT  ADD,
+            020202 N  RDI [R]  32BIT  ADD,
+          THEN,                       // then1:
+          RSI INC,                    // add esi,1
+          RDI INC,                    // add edi,1
+
+          1 N  EAX  ROL,              // rol eax,1
+          CS IF,                      // jnc then1
+            020102 N  RSI [R]  32BIT  ADD,
+            020202 N  RDI [R]  32BIT  ADD,
+          THEN,                       // then1:
+          RSI INC,                    // add esi,1
+          RDI INC,                    // add edi,1
+
+          1 N  EAX  ROL,              // rol eax,1
+          CS IF,                      // jnc then1
+            020102 N  RSI [R]  32BIT  ADD,
+            020202 N  RDI [R]  32BIT  ADD,
+          THEN,                       // then1:
+          RSI INC,                    // add esi,1
+          RDI INC,                    // add edi,1
+
+          1 N  EAX  ROL,              // rol eax,1
+          CS IF,                      // jnc then1
+            020102 N  RSI [R]  32BIT  ADD,
+            020202 N  RDI [R]  32BIT  ADD,
+          THEN,                       // then1:
+          RSI INC,                    // add esi,1
+          RDI INC,                    // add edi,1
+
+          1 N  EAX  ROL,              // rol eax,1
+          CS IF,                      // jnc then1
+            020102 N  RSI [R]  32BIT  ADD,
+            020202 N  RDI [R]  32BIT  ADD,
+          THEN,                       // then1:
+          RSI INC,                    // add esi,1
+          RDI INC,                    // add edi,1
+
+          1 N  EAX  ROL,              // rol eax,1
+          CS IF,                      // jnc then1
+            020102 N  RSI [R]  32BIT  ADD,
+            020202 N  RDI [R]  32BIT  ADD,
+          THEN,                       // then1:
+          RSI INC,                    // add esi,1
+          RDI INC,                    // add edi,1
+
+          1 N  EAX  ROL,              // rol eax,1
+          CS IF,                      // jnc then1
+            020102 N  RSI [R]  32BIT  ADD,
+            020202 N  RDI [R]  32BIT  ADD,
+          THEN,                       // then1:
+          RSI INC,                    // add esi,1
+          RDI INC,                    // add edi,1
+
+          1 N  EAX  ROL,              // rol eax,1
+          CS IF,                      // jnc then1
+            020102 N  RSI [R]  32BIT  ADD,
+            020202 N  RDI [R]  32BIT  ADD,
+          THEN,                       // then1:
+          RSI INC,                    // add esi,1
+          RDI INC,                    // add edi,1
+
+          1 N  EAX  ROL,              // rol eax,1
+          CS IF,                      // jnc then1
+            020102 N  RSI [R]  32BIT  ADD,
+            020202 N  RDI [R]  32BIT  ADD,
+          THEN,                       // then1:
+          RSI INC,                    // add esi,1
+          RDI INC,                    // add edi,1
+
+          1 N  EAX  ROL,              // rol eax,1
+          CS IF,                      // jnc then1
+            020102 N  RSI [R]  32BIT  ADD,
+            020202 N  RDI [R]  32BIT  ADD,
+          THEN,                       // then1:
+          RSI INC,                    // add esi,1
+          RDI INC,                    // add edi,1
+
+          1 N  EAX  ROL,              // rol eax,1
+          CS IF,                      // jnc then1
+            020102 N  RSI [R]  32BIT  ADD,
+            020202 N  RDI [R]  32BIT  ADD,
+          THEN,                       // then1:
+          RSI INC,                    // add esi,1
+          RDI INC,                    // add edi,1
+
+       THEN,
+
+       RCX DEC,
+    ZS UNTIL,
+
+    // wrap around calculation
+    RBP -30 [R+N]  RSI  MOV,    // stopaddressnext
+    RSI 1 [R+N]  AL  MOV,                    
+    RBP -10 [R+N]  RSI  MOV,    // pThisRowsNeighbors   
+    AL  RSI 1 [R+N]  ADD,                      
+    RBP -18 [R+N]  RSI  MOV,    // pNextRowsNeighbors    
+    AL  RSI 1 [R+N]  ADD,      
+
+    RSI [R]  AL  MOV,          
+    RBP -28 [R+N]  RSI  MOV,     // stopaddressthis
+    AL  RSI [R]  ADD,          
+    RBP -30 [R+N]  RSI  MOV,     // stopaddressnext
+    AL  RSI [R]  ADD,          
+   
+  RBP RSP MOV,
+  RBP POP,
+  RET,
+
+
+
+HEX
+OSYMBOL UpdateCellsForRow 
+  ( prowbits               0x08  RDI
+    ppreviousrownneighbors 0x0C  RSI
+    pnextrownneighbors     0x10  RDX
+    dwordsperrow           0x14  RCX
+    logicfunction          0x18  R8  -ret- )
+
+  RBX PUSH,
+  RBP PUSH,
+  RSP RBP MOV,
+
+
+  RDI  RDX  XCHG,   
+  RSI  INC,                 
+  RDI  INC,                
+  RBX  RBX  XOR,
+
+  R8 RCX XCHG,
+
+  BEGIN,                    
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,         // bl should be < 18...
+    RSI INC,                  
+    RDI INC,                  
+    EBX  ECX  BT,  // could this be BL CL BT, ?
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                  
+    RDI INC,                  
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL,
+
+    RSI [R]  BL  MOV,        
+    RDI [R]  BL  ADD,        // bl should be < 18...
+    RSI INC,                 
+    RDI INC,                 
+    EBX  ECX  BT,  
+    1 N  EAX  RCL, 
+
+    EAX  BSWAP,                 
+    EAX  RDX [R]  MOV,          
+    4 N  RDX  ADD,             
+
+    R8 DEC,
+  ZS UNTIL,
+	
+  RBP RSP MOV,
+  RBP  POP, 
+  RBX  POP,
+  RET,
+
+
+OSYMBOL ClearNeighbors 
+( ppreviousrownneighbors   //  RDI
+  pthisneighborsbuffer     //  RSI
+  pnextrownneighbors       //  RDX
+  rowsizeinqwords          //  RCX  
+  ptoprowneighbors -ret- ) //  R8
+
+  RBP PUSH,
+  RSP RBP MOV,
+
+  PUSHFD,        // -0x08
+  CLD,
+  RCX PUSH,      // -0x10
+
+  RAX RAX XOR,
+
+  REP, STOSQ,
+
+  RSI  RDI            MOV,
+  RBP  -10 [R+N] RCX  MOV,
+  REP, STOSQ,
+
+  RDX  RDI  MOV,
+  RBP  -10 [R+N] RCX  MOV,
+  REP, STOSQ,
+
+  R8  RDI  MOV,
+  RBP  -10 [R+N] RCX  MOV,
+  REP, STOSQ,
+  
+  RCX POP,
+  POPFD,
+  RBP  POP,
+  RET,
+
+
+OSYMBOL copyNeighbors 
+( ppreviousrownneighbors 0x08  RDI
+  pthisneighborsbuffer   0x0C  RSI
+  pnextrownneighbors     0x10  RDX
+  rowsizeinqwords        0x14  RCX  -ret- )
+  RBP PUSH,
+  RSP RBP MOV,
+
+  PUSHFD,
+  CLD,
+
+  RCX PUSH,  // -0x10
+  RSI PUSH,  // -0x18
+
+  REP, MOVSQ,
+
+  RDX            RSI  MOV,
+  RBP -18 [R+N]  RDI  MOV,
+  RBP -10 [R+N]  RCX  MOV,
+  REP, MOVSQ,
+
+  RDX             RDI  MOV,
+  RBP -10 [R+N]   RCX  MOV,
+  RAX RAX XOR,
+  REP, STOSQ,
+  
+  RBP -8 [R+N]  RSP  LEA,
+  POPFD,
+  RBP  POP,
+  RET,
+
+
+OSYMBOL MoveDwords 
+( psrc            0x08    RDI       
+  pdest           0x0C    RSI      
+  lengthindwords  0x10    RDX  -ret- )  
+ 
+  PUSHFD,
+  CLD,
+
+  RDX  RCX  ->  MOV,
+  RSI  RDI  XCHG,
+  REP, MOVSD,
+  
+  POPFD,
+  RET,
+
+
+OSYMBOL MoveQwords 
+( pdest           RDI       
+  psrc            RSI      
+  lengthinqwords  RDX  -ret- )  
+ 
+  PUSHFD,
+  CLD,
+
+  RDX  RCX  ->  MOV,
+  REP, MOVSQ,
+  
+  POPFD,
+  RET,
+
+
+HEX
+OSYMBOL CalcNeighborsForRowN 
+( rowN                   0x08  RDI  -8
+  pthisrownneighbors     0x0C  RSI  -10
+  pnextrownneighbors     0x10  RDX  -18
+  myscreenwidth          0x14  RCX  -20
+  pmypixelbuffer         0x18  R8   -28 -ret- )
+
+  R8 PUSH,
+
+  // pnextrownneighborsend
+  RDX R9 MOV,  
+  RCX R9 ADD,      
+
+  // pthisrownneighborsend
+  RSI R8 MOV,
+  RCX R8 ADD,
+
+  // dwordsperrow        ( RCX already has correct value )
+  // pnextrownneighbors  ( RDX already has correct value )
+  // pthisrownneighbors  ( RSI already has correct value )
+
+  RDX PUSH, 
+  // rown myscreenwidth 8 /  *  pmypixelbuffer +  
+  RDI RAX MOV,          
+  
+  // myscreenwidth 8 / N  EDX  MOV,
+  RCX RDX MOV, 3 N RDX SHR,
+   
+  RDX MUL,
+  
+  RDX POP,
+                         
+  // pmypixelbuffer
+  RDI POP,  RAX RDI ADD, // prowbits
+
+  // 5 N RCX SHR,  // need dwordsperrow for CalcNeighborsForRow
+  6 N RCX SHR, // need uint64s per row for CalcNeighborsForRowFast               
+
+  // EH-NAMEW>VALUE CalcNeighborsForRow O CALL,
+  EH-NAMEW>VALUE CalcNeighborsForRowFast O CALL,
+  
+  RET,
+
+
+HEX
+OSYMBOL UpdateCellsForRowN 
+( rowN                   RDI
+  ppreviousrowneighbors  RSI
+  pnextrownneighbors     RDX
+  myscreenwidth          RCX
+  pmypixelbuffer         R8   
+  logicfunction          R9 -ret- )
+
+  RBP PUSH,
+  RSP RBP MOV,
+
+  RCX PUSH, // [RBP -8]  myscreenwidth
+
+  R9 R8 XCHG,
+
+  5 N RCX SHR, // dwordsperrow = (screenwidth / 32)
+
+  // rowN myscreenwidth 8 /  *  pmypixelbuffer +
+  RDI RAX MOV,
+  // myscreenwidth 8 /
+  RDX PUSH, RBP -8 [R+N]  RDX MOV,
+  3 N RDX SHR,
+  RDX MUL,
+  RDX POP,
+  // pmypixelbuffer
+  R9 RAX ADD,
+  RAX RDI MOV,
+  EH-NAMEW>VALUE UpdateCellsForRow O CALL,
+
+  RBP RSP MOV,
+  RBP POP,
+  RET,
+
+
+HEX
+OSYMBOL LifeBitMapOnce ( -ret- )
+( ppreviousrowneighbors  0x08  RDI
+  pthisrowneighbors      0x0C  RSI
+  pnextrownneighbors     0x10  RDX
+  myscreenwidth          0x14  RCX
+  myscreenheight         0x18  R8
+  pmypixelbuffer         0x1C  R9
+  logicfunction          0x20  rs0  [RBP + 10]
+  ptoprowneighbors       0x24  rs1  [RBP + 18] -ret- )
+
+                // [RBP + 8]  return address
+  RBP PUSH,     // [RBP + 0]  saved RBP
+  RSP RBP MOV,
+
+  RDI PUSH,  // [RBP -  8]  ppreviousrowneighbors
+  RSI PUSH,  // [RBP - 10]  pthisrowneighbors
+  RDX PUSH,  // [RBP - 18]  pnextrownneighbors
+  RCX PUSH,  // [RBP - 20]  myscreenwidth
+  R8 PUSH,   // [RBP - 28]  myscreenheight
+  R9 PUSH,   // [RBP - 30]  pmypixelbuffer
+             // [RBP - 38]  (w/64)+1
+             // [RBP - 40]  rown
+
+
+  // RCX already has the correct value 
+  3 N  RCX  SHR,  
+  RCX INC,  
+  RCX PUSH,  // [RBP - 38]
+  // RCX now = (myscreenwidth/8) + 1
+
+    // pnextneighborsbuffer
+    // RDX already has the correct value
+
+    // pthisneighborsbuffer
+    // RSI already has the correct value
+
+    // ppreviousneighborsbuffer
+    // RDI already has the correct value 
+
+    RBP 18 [R+N]  R8  MOV,
+  
+    EH-NAMEW>VALUE ClearNeighbors O CALL,
+
+
+    // do top row wrap
+    // pmypixelbuffer
+    RBP -30 [R+N]  R8   MOV,
+
+    // myscreenwidth
+    RBP -20 [R+N]  RCX  MOV,
+
+    // pnextneighborsbuffer
+    RBP -18 [R+N]  RDX  MOV,
+
+    // pthisneighborsbuffer
+    RBP -10 [R+N]  RSI  MOV,
+
+    // myscreenheight 1 -
+    RBP -28 [R+N]  RDI  MOV,  
+    RDI DEC,
+
+    EH-NAMEW>VALUE CalcNeighborsForRowN O CALL,
+
+    
+    // RCX = (myscreenwidth/8) + 1
+    RBP -38 [R+N]  RCX  MOV,
+
+    // pnextneighborsbuffer
+    RBP -18 [R+N]  RDX  MOV,
+
+    // pthisneighborsbuffer
+    RBP -10 [R+N]  RSI  MOV,
+
+    // ppreviousneighborsbuffer
+    RBP -8  [R+N]  RDI  MOV,
+
+    RBP -20 [R+N]  RCX  MOV,
+    6 N  RCX  SHR,
+    RCX INC,
+
+    EH-NAMEW>VALUE copyNeighbors O CALL,
+    
+
+
+    // pmypixelbuffer
+    RBP -30 [R+N]  R8  MOV,
+
+    // myscreenwidth
+    RBP -20 [R+N]  RCX  MOV,
+
+    // pnextneighborsbuffer
+    RBP -18 [R+N]  RDX  MOV,
+
+    // pthisneighborsbuffer
+    RBP -10 [R+N]  RSI  MOV,
+
+    RDI  RDI  XOR,
+
+    EH-NAMEW>VALUE CalcNeighborsForRowN O CALL,
+
+
+    // save top row
+    // (myscreenwidth / 8) + 1  
+    RBP -38 [R+N]  RDX  MOV, 
+
+    // ptoprowneighborssavebuffer
+    RBP 18 [R+N]   RDI  MOV,
+
+    // pnextneighborsbuffer
+    RBP -18 [R+N]  RSI  MOV,
+
+    EH-NAMEW>VALUE MoveQwords O CALL,
+
+
+    RCX RCX XOR,  RCX PUSH,  // local variable [RBP - 40]
+
+
+    BEGIN,
+      // (myscreenwidth/8) + 1
+      RBP -38 [R+N]  RCX  MOV,
+
+      // pnextneighborsbuffer N
+      RBP -18 [R+N]  RDX  MOV,
+
+      // pthisneighborsbuffer N
+      RBP -10 [R+N]  RSI  MOV,
+
+      // ppreviousneighborsbuffer N
+      RBP -8 [R+N]   RDI  MOV,
+
+      EH-NAMEW>VALUE copyNeighbors O CALL, 
+
+
+      // pmypixelbuffer N       32BIT  PUSH,
+      RBP -30 [R+N]  R8  MOV,
+
+      // myscreenwidth N        32BIT  PUSH,
+      RBP -20 [R+N]  RCX  MOV,
+
+      // pnextneighborsbuffer N 32BIT  PUSH,
+      RBP -18 [R+N]  RDX  MOV,
+
+      // pthisneighborsbuffer N 32BIT  PUSH,
+      RBP -10 [R+N]  RSI  MOV,
+
+      RBP -40 [R+N]  RDI  MOV,  RDI INC,
+
+      EH-NAMEW>VALUE CalcNeighborsForRowN O CALL,
+      // 14 N ESP ADD,
+
+
+      // plogicfunction
+      RBP 10 [R+N]  R9  MOV,
+
+      // pmypixelbuffer
+      RBP -30 [R+N]  R8  MOV,
+
+      // myscreenwidth
+      RBP -20 [R+N]  RCX  MOV,
+
+      // pnextneighborsbuffer
+      RBP -18 [R+N]  RDX  MOV,
+
+      // ppreviousneighborsbuffer
+      RBP -8 [R+N]  RSI  MOV,
+
+      RBP -40 [R+N]  RDI  MOV,
+ 
+      EH-NAMEW>VALUE UpdateCellsForRowN O CALL,
+
+
+      ( ECX INC, )                    RBP -40 [R+N]  64BIT  INC,
+
+      // myscreenheight 1 - N  ECX  CMP,
+      ( EBP 18 [R+N]  EAX MOV, )  RBP -28 [R+N]  RAX  MOV, 
+      RAX DEC, 
+      
+      RAX  RBP -40 [R+N]  CMP,   
+
+    UGE UNTIL,
+
+
+    RBP -38 [R+N]  RCX  MOV,
+
+    // pnextneighborsbuffer
+    RBP -18 [R+N]  RDX  MOV,
+
+    // pthisneighborsbuffer
+    RBP -10 [R+N]  RSI  MOV,
+
+    // ppreviousneighborsbuffer
+    RBP -8 [R+N]  RDI  MOV,
+
+    EH-NAMEW>VALUE copyNeighbors O CALL,
+
+
+    // set up bottom row wrap
+    // (myscreenwidth/8) + 1
+    RBP -38 [R+N]  RDX  MOV,
+
+    // pnextneighborsbuffer
+    RBP -18 [R+N]  RDI  MOV,
+
+    // ptoprowneighborssavebuffer
+    RBP 18 [R+N]  RSI  MOV,
+
+    EH-NAMEW>VALUE MoveQwords O CALL,
+
+
+    // plogicfunction
+    RBP 10 [R+N]  R9  MOV,
+
+    // pmypixelbuffer
+    RBP -30 [R+N]  R8  MOV,
+
+    // myscreenwidth
+    RBP -20 [R+N]  RCX  MOV,
+
+    // pnextneighborsbuffer
+    RBP -18 [R+N]  RDX  MOV,
+
+    // ppreviousneighborsbuffer
+    RBP -8 [R+N]  RSI  MOV,
+
+    // myscreenheight 1 -,
+    RBP -28 [R+N]  RDI  MOV,
+    RDI DEC,
+
+    EH-NAMEW>VALUE UpdateCellsForRowN O CALL,
+    
+
+  43474C554C494645 N  RAX  MOV,
+
+  RBP RSP MOV,
+  RBP POP,
+  RET,
+
+
+// pdest                // rdi
+// psrc                 // rsi
+// srcheightinrows      // rdx
+// srcwidthinqwords     // rcx
+// destxinbits (0-63)   // r8
+// destwidthinqwords    // r9
+// R11:RAX shifter
+// CL shift
+// R10 temp
+
+OSYMBOL XorSrcBitmapToDestBitmap ( -ret- )
+  
+  // if height = 0 return
+  RDX RDX AND,
+  EQ IF,
+    RET,
+  THEN,
+
+  // if width = 0 return
+  RCX RCX AND,
+  EQ IF,
+    RET,
+  THEN,
+
+  // if destwidth < srcwidth return
+  RCX R9 CMP,
+  CS IF,
+    RET,
+  THEN,
+
+  RCX R9 -> SUB,  // R9 now has dest bump in qwords
+
+  RBP PUSH,
+  RSP RBP MOV,
+
+  RCX PUSH,    // [RBP - 8]   srcwidthinqwords
+
+  40 N RCX MOV,
+  R8 RCX SUB,
+  3F N RCX AND, // not really necessary...
+
+  3 N  R9  SHL,  // get dest width in bytes
+    
+  BEGIN,
+    
+    R10 R10 XOR, // clear temp register to start the row
+    RBP -8 [R+N]  R8  MOV,
+    BEGIN,
+      R10 R11 MOV,
+      RSI [R] R10 -> MOV,
+      R10 BSWAP,
+      R10 RAX MOV,
+      CL R11 RAX <- SHLD,
+      R11 BSWAP,  
+      R11  RDI [R] ->  XOR,
+      8 N  RSI  ADD,
+      8 N  RDI  ADD,
+      R8 DEC,
+    EQ UNTIL,
+
+    R9  RDI  ADD,
+
+    RDX DEC,
+  EQ UNTIL,
+  
+  RBP RSP MOV,
+  RBP POP,
+  RET, 
+
+// pdest                  // rdi
+// psrc                   // rsi
+// srcheightinbits        // rdx
+// srcwidthinbits         // rcx
+// srcxinbitsdestxinbits  // r8   (low 8 bits = destx, next 8 bits = srcx, 0-63)
+// destwidthinbits        // r9
+// lastqwordinrowmask     // [RBP + 10]
+// srcendofrowbumpinbytes // [RBP + 18]
+
+// R11:RAX shifter
+// CL destx
+// CH srcx
+// R10 desttemp
+// RBX srctemp
+
+// to start row
+//  clear dest temp
+//  src temp = [psrc]
+//  bswap src temp
+//  psrc = psrc + 8
+
+// to do row
+//  shifter hi = src temp
+//  if last src row element
+//   src temp = 0
+//  else
+//   src temp = [psrc]
+//   psrc = psrc + 8
+//   shifter lo = src temp
+//  shift shifter ((64 - srcxinbits) mod 64)
+
+//  shifter lo = shifter hi
+//  shifter hi = dest temp  
+//  dest temp = shifter lo
+//  shift sifter ((64 - destxinbits) mod 64)
+
+//  bswap shifter hi
+//  [pdest] = [pdest] xor shifter hi
+
+HEX
+OSYMBOL AreaXor ( -ret- )
+  
+  // if height = 0 return
+  RDX RDX AND,
+  EQ IF,
+    RET,
+  THEN,
+
+  // if width = 0 return
+  RCX RCX AND,
+  EQ IF,
+    RET,
+  THEN,
+
+  // if destwidth < srcwidth return
+  RCX R9 CMP,
+  CS IF,
+    RET,
+  THEN,
+
+  // if srcwidth to do < srcwidth return
+  // RBP 18 [R+N]  RCX  ->  CMP,
+  // CS IF,
+  //  RET,
+  // THEN,
+
+  6 N R9 SHR,     // R9 now has dest width in qwords - assumes destination aligned to uint64
+
+  RBP PUSH,
+  RSP RBP MOV,
+
+  RBX PUSH,     // [RBP - 8]   desttemp 
+  RCX PUSH,     // [RBP - 10]  srcwidthinbits
+  RAX RAX XOR,
+  CL AL -> MOV,
+  3F N AL AND,
+  6 N RCX SHR,
+  0 N AL CMP,
+  NE IF,
+    RCX INC,
+  THEN,
+  RCX PUSH,     // [RBP - 18]  srcwidthinqwords
+  RAX PUSH,     // [RBP - 20]  leftoversrcbits
+
+  RCX R9 -> SUB,  // R9 now has dest bump in uint64s
+  3 N  R9  SHL,   // R9 now has dest bump in bytes
+
+  40 N CL MOV,  // convert destx to destshift
+  R8L CL SUB,
+
+  8 N  R8  SHR,
+  CH CL XCHG,
+  R8L CL MOV,
+    
+  BEGIN,
+    
+    // starting row
+    R10 R10 XOR,              // clear dest temp
+    RBP -18 [R+N]  R8  MOV,   // R8 = srcwidthinqwords 
+    RSI [R] RBX -> MOV,
+    8 N  RSI  ADD,
+    RBX BSWAP,
+
+    // doing row
+    BEGIN,
+      RBX R11 MOV, // shifterhi = srctemp
+      RBX RBX XOR, 
+      1 N  R8  CMP,
+      NE IF,
+        RSI [R] RBX -> MOV,
+        8 N  RSI  ADD,
+        RBX BSWAP,
+      THEN,
+      RBX RAX MOV,
+      CL R11 RAX <- SHLD,
+
+      // last qword mask happens here to R11
+      1 N  R8  CMP,
+      EQ IF,
+        RBP 10 [R+N]  R11  AND,
+      THEN,
+
+      40 N CH CMP, // if CH=40, R11 already has src
+      NE IF,
+        R11 RAX MOV,
+        R10 R11 MOV,
+        RAX R10 MOV,
+        CH CL XCHG,
+        CL R11 RAX <- SHLD,
+        CH CL XCHG,
+      THEN,
+      R11 BSWAP,  
+      R11  RDI [R] ->  XOR,
+      8 N  RDI  ADD,
+
+      R8 DEC,
+    EQ UNTIL,
+
+    // 40 - xoffset is what will fit
+    // if  40 - xoffset < leftoversrcbits then need to do last word
+    // do last part of row
+    RBP -20 [R+N] CH -> CMP,  // this shouldn't use REX.. can't use REX with CH
+    CC IF,  // CC works, CS doesn't... I'm confused... should be CS...
+      CH CL XCHG,
+      CL RAX <- SHL,
+      CH CL XCHG,
+      RAX BSWAP,
+      RAX  RDI [R] ->  XOR,
+    THEN,
+
+    R9  RDI  ADD,
+
+    RBP 18 [R+N]  RSI  ADD,
+
+    RDX DEC,
+  EQ UNTIL,
+  
+  RBP -8 [R+N]  RSP  LEA,
+  RBX POP,
+  RBP POP,
+  RET,
+
+
+// pdest                  // rdi
+// psrc                   // rsi
+// srcheightinbits        // rdx
+// srcwidthinqwordstodo   // rcx
+// srcxinbitsdestxinbits  // r8   (low 8 bits = destx, next 8 bits = srcx, 0-63)
+// destwidthinqwords      // r9
+// lastqwordinrowmask     // [RBP + 10]
+// srcendofrowbumpinbytes // [RBP + 18]
+
+// R11:RAX shifter
+// CL destx
+// CH srcx
+// R10 desttemp
+// RBX srctemp
+
+// to start row
+//  clear dest temp
+//  src temp = [psrc]
+//  bswap src temp
+//  psrc = psrc + 8
+
+// to do row
+//  shifter hi = src temp
+//  if last src row element
+//   src temp = 0
+//  else
+//   src temp = [psrc]
+//   psrc = psrc + 8
+//   shifter lo = src temp
+//  shift shifter ((64 - srcxinbits) mod 64)
+
+//  shifter lo = shifter hi
+//  shifter hi = dest temp  
+//  dest temp = shifter lo
+//  shift sifter ((64 - destxinbits) mod 64)
+
+//  bswap shifter hi
+//  [pdest] = [pdest] xor shifter hi
+
+HEX
+OSYMBOL AreaOr ( -ret- )
+  
+  // if height = 0 return
+  RDX RDX AND,
+  EQ IF,
+    RET,
+  THEN,
+
+  // if width = 0 return
+  RCX RCX AND,
+  EQ IF,
+    RET,
+  THEN,
+
+  // if destwidth < srcwidth return
+  RCX R9 CMP,
+  CS IF,
+    RET,
+  THEN,
+
+  // if srcwidth to do < srcwidth return
+  // RBP 18 [R+N]  RCX  ->  CMP,
+  // CS IF,
+  //  RET,
+  // THEN,
+
+  6 N R9 SHR,     // R9 now has dest width in qwords - assumes destination aligned to uint64
+
+  RBP PUSH,
+  RSP RBP MOV,
+
+  RBX PUSH,     // [RBP - 8]   desttemp 
+  RCX PUSH,     // [RBP - 10]  srcwidthinbits
+  RAX RAX XOR,
+  CL AL -> MOV,
+  3F N AL AND,
+  6 N RCX SHR,
+  0 N AL CMP,
+  NE IF,
+    RCX INC,
+  THEN,
+  RCX PUSH,     // [RBP - 18]  srcwidthinqwords
+  RAX PUSH,     // [RBP - 20]  leftoversrcbits
+
+  RCX R9 -> SUB,  // R9 now has dest bump in uint64s
+  3 N  R9  SHL,   // R9 now has dest bump in bytes
+
+  40 N CL MOV,  // convert destx to destshift
+  R8L CL SUB,
+
+  8 N  R8  SHR,
+  CH CL XCHG,
+  R8L CL MOV,
+    
+  BEGIN,
+    
+    // starting row
+    R10 R10 XOR,              // clear dest temp
+    RBP -18 [R+N]  R8  MOV,   // R8 = srcwidthinqwords 
+    RSI [R] RBX -> MOV,
+    8 N  RSI  ADD,
+    RBX BSWAP,
+
+    // doing row
+    BEGIN,
+      RBX R11 MOV, // shifterhi = srctemp
+      RBX RBX XOR, 
+      1 N  R8  CMP,
+      NE IF,
+        RSI [R] RBX -> MOV,
+        8 N  RSI  ADD,
+        RBX BSWAP,
+      THEN,
+      RBX RAX MOV,
+      CL R11 RAX <- SHLD,
+
+      // last qword mask happens here to R11
+      1 N  R8  CMP,
+      EQ IF,
+        RBP 10 [R+N]  R11  AND,
+      THEN,
+
+      40 N CH CMP, // if CH=40, R11 already has src
+      NE IF,
+        R11 RAX MOV,
+        R10 R11 MOV,
+        RAX R10 MOV,
+        CH CL XCHG,
+        CL R11 RAX <- SHLD,
+        CH CL XCHG,
+      THEN,
+      R11 BSWAP,  
+      R11  RDI [R] ->  OR,
+      8 N  RDI  ADD,
+
+      R8 DEC,
+    EQ UNTIL,
+
+    // 40 - xoffset is what will fit
+    // if  40 - xoffset < leftoversrcbits then need to do last word
+    // do last part of row
+    RBP -20 [R+N] CH -> CMP,  // this shouldn't use REX.. can't use REX with CH
+    CC IF,  // CC works, CS doesn't... I'm confused... should be CS...
+      CH CL XCHG,
+      CL RAX <- SHL,
+      CH CL XCHG,
+      RAX BSWAP,
+      RAX  RDI [R] ->  OR,
+    THEN,
+
+    R9  RDI  ADD,
+
+    RBP 18 [R+N]  RSI  ADD,
+
+    RDX DEC,
+  EQ UNTIL,
+  
+  RBP -8 [R+N]  RSP  LEA,
+  RBX POP,
+  RBP POP,
+  RET,
+
+
+
+// pdest                  // rdi
+// psrc                   // rsi
+// srcheightinbits        // rdx
+// srcwidthinqwordstodo   // rcx
+// srcxinbitsdestxinbits  // r8   (low 8 bits = destx, next 8 bits = srcx, 0-63)
+// destwidthinqwords      // r9
+// lastqwordinrowmask     // [RBP + 10]
+// srcendofrowbumpinbytes // [RBP + 18]
+
+// R11:RAX shifter
+// CL destx
+// CH srcx
+// R10 desttemp
+// RBX srctemp
+
+// to start row
+//  clear dest temp
+//  src temp = [psrc]
+//  bswap src temp
+//  psrc = psrc + 8
+
+// to do row
+//  shifter hi = src temp
+//  if last src row element
+//   src temp = 0
+//  else
+//   src temp = [psrc]
+//   psrc = psrc + 8
+//   shifter lo = src temp
+//  shift shifter ((64 - srcxinbits) mod 64)
+
+//  shifter lo = shifter hi
+//  shifter hi = dest temp  
+//  dest temp = shifter lo
+//  shift sifter ((64 - destxinbits) mod 64)
+
+//  bswap shifter hi
+//  [pdest] = [pdest] xor shifter hi
+
+HEX
+OSYMBOL AreaAnd ( -ret- )
+  
+  // if height = 0 return
+  RDX RDX AND,
+  EQ IF,
+    RET,
+  THEN,
+
+  // if width = 0 return
+  RCX RCX AND,
+  EQ IF,
+    RET,
+  THEN,
+
+  // if destwidth < srcwidth return
+  RCX R9 CMP,
+  CS IF,
+    RET,
+  THEN,
+
+  // if srcwidth to do < srcwidth return
+  // RBP 18 [R+N]  RCX  ->  CMP,
+  // CS IF,
+  //  RET,
+  // THEN,
+
+  6 N R9 SHR,     // R9 now has dest width in qwords - assumes destination aligned to uint64
+
+  RBP PUSH,
+  RSP RBP MOV,
+
+  RBX PUSH,     // [RBP - 8]   desttemp 
+  RCX PUSH,     // [RBP - 10]  srcwidthinbits
+  RAX RAX XOR,
+  CL AL -> MOV,
+  3F N AL AND,
+  6 N RCX SHR,
+  0 N AL CMP,
+  NE IF,
+    RCX INC,
+  THEN,
+  RCX PUSH,     // [RBP - 18]  srcwidthinqwords
+  RAX PUSH,     // [RBP - 20]  leftoversrcbits
+
+  RCX R9 -> SUB,  // R9 now has dest bump in uint64s
+  3 N  R9  SHL,   // R9 now has dest bump in bytes
+
+  40 N CL MOV,  // convert destx to destshift
+  R8L CL SUB,
+
+  8 N  R8  SHR,
+  CH CL XCHG,
+  R8L CL MOV,
+    
+  BEGIN,
+    
+    // starting row
+    R10 R10 XOR,              // clear dest temp
+    RBP -18 [R+N]  R8  MOV,   // R8 = srcwidthinqwords 
+    RSI [R] RBX -> MOV,
+    8 N  RSI  ADD,
+    RBX BSWAP,
+
+    // doing row
+    BEGIN,
+      RBX R11 MOV, // shifterhi = srctemp
+      RBX RBX XOR, 
+      1 N  R8  CMP,
+      NE IF,
+        RSI [R] RBX -> MOV,
+        8 N  RSI  ADD,
+        RBX BSWAP,
+      THEN,
+      RBX RAX MOV,
+      CL R11 RAX <- SHLD,
+
+      // last qword mask happens here to R11
+      1 N  R8  CMP,
+      EQ IF,
+        RBP 10 [R+N]  R11  AND,
+      THEN,
+
+      40 N CH CMP, // if CH=40, R11 already has src
+      NE IF,
+        R11 RAX MOV,
+        R10 R11 MOV,
+        RAX R10 MOV,
+        CH CL XCHG,
+        CL R11 RAX <- SHLD,
+        CH CL XCHG,
+      THEN,
+      R11 BSWAP,  
+      R11  RDI [R] ->  AND,
+      8 N  RDI  ADD,
+
+      R8 DEC,
+    EQ UNTIL,
+
+    // 40 - xoffset is what will fit
+    // if  40 - xoffset < leftoversrcbits then need to do last word
+    // do last part of row
+    RBP -20 [R+N] CH -> CMP,  // this shouldn't use REX.. can't use REX with CH
+    CC IF,  // CC works, CS doesn't... I'm confused... should be CS...
+      CH CL XCHG,
+      CL RAX <- SHL,
+      CH CL XCHG,
+      RAX BSWAP,
+      RAX  RDI [R] ->  AND,
+    THEN,
+
+    R9  RDI  ADD,
+
+    RBP 18 [R+N]  RSI  ADD,
+
+    RDX DEC,
+  EQ UNTIL,
+  
+  RBP -8 [R+N]  RSP  LEA,
+  RBX POP,
+  RBP POP,
+  RET,
+
+
+
+// pdest                  // rdi
+// psrc                   // rsi
+// srcheightinbits        // rdx
+// srcwidthinqwordstodo   // rcx
+// srcxinbitsdestxinbits  // r8   (low 8 bits = destx, next 8 bits = srcx, 0-63)
+// destwidthinqwords      // r9
+// lastqwordinrowmask     // [RBP + 10]
+// srcendofrowbumpinbytes // [RBP + 18]
+
+// R11:RAX shifter
+// CL destx
+// CH srcx
+// R10 desttemp
+// RBX srctemp
+
+// to start row
+//  clear dest temp
+//  src temp = [psrc]
+//  bswap src temp
+//  psrc = psrc + 8
+
+// to do row
+//  shifter hi = src temp
+//  if last src row element
+//   src temp = 0
+//  else
+//   src temp = [psrc]
+//   psrc = psrc + 8
+//   shifter lo = src temp
+//  shift shifter ((64 - srcxinbits) mod 64)
+
+//  shifter lo = shifter hi
+//  shifter hi = dest temp  
+//  dest temp = shifter lo
+//  shift sifter ((64 - destxinbits) mod 64)
+
+//  bswap shifter hi
+//  [pdest] = [pdest] xor shifter hi
+
+HEX
+OSYMBOL AreaNotSourceAnd ( -ret- )  // this uses a mask to clear where bit = 1 means clear
+  
+  // if height = 0 return
+  RDX RDX AND,
+  EQ IF,
+    RET,
+  THEN,
+
+  // if width = 0 return
+  RCX RCX AND,
+  EQ IF,
+    RET,
+  THEN,
+
+  // if destwidth < srcwidth return
+  RCX R9 CMP,
+  CS IF,
+    RET,
+  THEN,
+
+  // if srcwidth to do < srcwidth return
+  // RBP 18 [R+N]  RCX  ->  CMP,
+  // CS IF,
+  //  RET,
+  // THEN,
+
+  6 N R9 SHR,     // R9 now has dest width in qwords - assumes destination aligned to uint64
+
+  RBP PUSH,
+  RSP RBP MOV,
+
+  RBX PUSH,     // [RBP - 8]   desttemp 
+  RCX PUSH,     // [RBP - 10]  srcwidthinbits
+  RAX RAX XOR,
+  CL AL -> MOV,
+  3F N AL AND,
+  6 N RCX SHR,
+  0 N AL CMP,
+  NE IF,
+    RCX INC,
+  THEN,
+  RCX PUSH,     // [RBP - 18]  srcwidthinqwords
+  RAX PUSH,     // [RBP - 20]  leftoversrcbits
+
+  RCX R9 -> SUB,  // R9 now has dest bump in uint64s
+  3 N  R9  SHL,   // R9 now has dest bump in bytes
+
+  40 N CL MOV,  // convert destx to destshift
+  R8L CL SUB,
+
+  8 N  R8  SHR,
+  CH CL XCHG,
+  R8L CL MOV,
+    
+  BEGIN,
+    
+    // starting row
+    R10 R10 XOR,              // clear dest temp
+    RBP -18 [R+N]  R8  MOV,   // R8 = srcwidthinqwords 
+    RSI [R] RBX -> MOV,
+    8 N  RSI  ADD,
+    RBX BSWAP,
+
+    // doing row
+    BEGIN,
+      RBX R11 MOV, // shifterhi = srctemp
+      RBX RBX XOR, 
+      1 N  R8  CMP,
+      NE IF,
+        RSI [R] RBX -> MOV,
+        8 N  RSI  ADD,
+        RBX BSWAP,
+      THEN,
+      RBX RAX MOV,
+      CL R11 RAX <- SHLD,
+
+      // last qword mask happens here to R11
+      1 N  R8  CMP,
+      EQ IF,
+        RBP 10 [R+N]  R11  AND,
+      THEN,
+
+      40 N CH CMP, // if CH=40, R11 already has src
+      NE IF,
+        R11 RAX MOV,
+        R10 R11 MOV,
+        RAX R10 MOV,
+        CH CL XCHG,
+        CL R11 RAX <- SHLD,
+        CH CL XCHG,
+      THEN,
+      R11 BSWAP,  
+      R11 NOT,
+      R11  RDI [R] ->  AND,
+      8 N  RDI  ADD,
+
+      R8 DEC,
+    EQ UNTIL,
+
+    // 40 - xoffset is what will fit
+    // if  40 - xoffset < leftoversrcbits then need to do last word
+    // do last part of row
+    RBP -20 [R+N] CH -> CMP,  // this shouldn't use REX.. can't use REX with CH
+    CC IF,  // CC works, CS doesn't... I'm confused... should be CS...
+      CH CL XCHG,
+      CL RAX <- SHL,
+      CH CL XCHG,
+      RAX BSWAP,
+      RAX NOT,
+      RAX  RDI [R] ->  AND,
+    THEN,
+
+    R9  RDI  ADD,
+
+    RBP 18 [R+N]  RSI  ADD,
+
+    RDX DEC,
+  EQ UNTIL,
+  
+  RBP -8 [R+N]  RSP  LEA,
+  RBX POP,
+  RBP POP,
+  RET,
+
+
+
+// returns an offset 0 to srcwidth of where in the source the overlap occurs
+//  and a length which = srcwidth - returnoffset
+// return = 0 means the source is completely beyond the destination
+// return = srcwidth means the entire source fits in the destination
+
+// srcwidth               // rdi
+// destwidth              // rsi
+// destx                  // rdx
+
+// distancetoend = (destwidth - destx) (and amount that will fit)
+// if srcwidth <= distancetoend, return srcwidth
+// else return distancetoend
+
+OSYMBOL getOverlapOffset
+
+  RAX RAX XOR, // if destx >= destwidth, ret 0
+  RSI RDX -> CMP,
+  NC IF,
+    RET,
+  THEN,
+
+  RDX RSI -> SUB,  // RSI = distance to end
+  RSI RDI -> CMP,
+  NC IF,
+    RSI RAX -> MOV,
+  ELSE,
+    RDI RAX -> MOV,
+  THEN,
+  RET,
+
+
+// destpixels            // rdi
+// srcbitmap             // rsi
+// clearpixelvalue       // rdx
+// bitmapsizeinuint8s    // rcx
+// setpixelvalue         // r8
+
+OSYMBOL bitmapToPixels
+
+  BEGIN,
+  
+    RSI [R]  AL -> MOV,
+    // RAX BSWAP,
+    
+    1 N  AL  SHL,
+    CS IF,
+      R8D RDI [R] -> MOV,
+    ELSE,
+      EDX RDI [R] -> MOV,
+    THEN,
+    4 N RDI ADD,
+ 
+    1 N  AL  SHL,
+    CS IF,
+      R8D RDI [R] -> MOV,
+    ELSE,
+      EDX RDI [R] -> MOV,
+    THEN,
+    4 N RDI ADD,
+
+    1 N  AL  SHL,
+    CS IF,
+      R8D RDI [R] -> MOV,
+    ELSE,
+      EDX RDI [R] -> MOV,
+    THEN,
+    4 N RDI ADD,
+
+    1 N  AL  SHL,
+    CS IF,
+      R8D RDI [R] -> MOV,
+    ELSE,
+      EDX RDI [R] -> MOV,
+    THEN,
+    4 N RDI ADD,
+
+    1 N  AL  SHL,
+    CS IF,
+      R8D RDI [R] -> MOV,
+    ELSE,
+      EDX RDI [R] -> MOV,
+    THEN,
+    4 N RDI ADD,
+
+    1 N  AL  SHL,
+    CS IF,
+      R8D RDI [R] -> MOV,
+    ELSE,
+      EDX RDI [R] -> MOV,
+    THEN,
+    4 N RDI ADD,
+
+    1 N  AL  SHL,
+    CS IF,
+      R8D RDI [R] -> MOV,
+    ELSE,
+      EDX RDI [R] -> MOV,
+    THEN,
+    4 N RDI ADD,
+
+    1 N  AL  SHL,
+    CS IF,
+      R8D RDI [R] -> MOV,
+    ELSE,
+      EDX RDI [R] -> MOV,
+    THEN,
+    4 N RDI ADD,
+
+    RSI INC,
+
+    RCX DEC,
+  EQ UNTIL,
+
+  RET,
+
+// draw child n pixels to parent using map
+//  get x overlap offset in source image and length of x overlap
+//  get y overlap offset in source image and length of y overlap
+//  if overlap length of x or y is 0 then exit
+//  dest and child source map start offset is
+//   (4 * destination width in pixels) * (source y + source y start offset)
+//   + (4 * source x) + (4 * x overlap offset)
+//  source start offset is
+//   (4 * source width in pixels) * (source y start offset)
+//   + (4 * x overlap offset)
+//  dest and child source map end of row bump is
+//   (4 * destination width in pixels)
+//   - (4 * length of x overlap)
+//  source end of for bump
+//   (4  * source width in pixels)
+//   - (4 * length of x overlap)
+//
+//  for y overlap rows do
+//   for each pixel in row 
+//     if ([pchildsourcemap] == child index)
+//       [pdestination] <- [psource]
+//     pchildsourcemap+=4
+//     pdestination+=4
+//     psource+=4
+//   pchildsourcemap += dest end of row bump
+//   dest += dest end of row bump
+//   psrc += source end of row bump
+//
+
+HEX
+// hierarchical image structure
+00 CONSTANT  hi.pcompositeimage 
+08 CONSTANT  hi.ppixelsourcemap
+10 CONSTANT  hi.compositeimagewidth
+18 CONSTANT  hi.compositeimageheight
+20 CONSTANT  hi.psourceimage
+28 CONSTANT  hi.sourceimagewidth
+30 CONSTANT  hi.sourceimageheight
+38 CONSTANT  hi.sourceimagex
+40 CONSTANT  hi.sourceimagey
+48 CONSTANT  hi.horizontaloverlapwidth
+50 CONSTANT  hi.verticaloverlapheight
+58 CONSTANT  hi.horizontaloverlapxinsource
+60 CONSTANT  hi.verticaloverlapyinsource
+68 CONSTANT  hi.size
+//
+
+
+OSYMBOL calculateOverlaps
+  RDI R8 MOV,
+
+  RDI RDI XOR,                                // ASX
+  R8 hi.compositeimagewidth [R+N]  RSI  MOV,  // AL
+  R8 hi.sourceimagex [R+N]         RDX  MOV,  // BSX
+  R8 hi.sourceimagewidth [R+N]     RCX  MOV,  // BL
+  EH-NAMEW>VALUE  dg_getoverlapsegment O CALL,
+  RAX  R8 hi.horizontaloverlapwidth [R+N]  MOV,
+  RDX  R8 hi.horizontaloverlapxinsource [R+N]  MOV,
+
+  RDI RDI XOR,                                 // ASX
+  R8 hi.compositeimageheight [R+N]  RSI  MOV,  // AL
+  R8 hi.sourceimagey [R+N]          RDX  MOV,  // BSX
+  R8 hi.sourceimageheight [R+N]     RCX  MOV,  // BL
+  EH-NAMEW>VALUE  dg_getoverlapsegment O CALL,
+  RAX  R8 hi.verticaloverlapheight [R+N]  MOV,
+  RDX  R8 hi.verticaloverlapyinsource [R+N]  MOV,
+
+  RET,
+  
+
+
+// pparentimage          // rdi
+// pchildimage           // rsi
+// pparentsourcemap      // rdx
+// parentwidthheight     // rcx
+// childwidthheight      // r8
+// childxyinparent       // r9
+// --
+// ret                      [RBP+8]
+// saved RBP                [RBP+0]
+// pparentimage             [RBP-8]
+// pchildimage              [RBP-10]
+// pparentsourceimage       [RBP-18]
+// parentwidthheight        [RBP-20]
+// childwidthheight         [RBP-28]
+// childxyinparent          [RBP-30]
+// overlapwidth             [RBP-38]
+// overlapxinchild          [RBP-40]
+// overlapheight            [RBP-48]
+// overlapyinchild          [RBP-50]
+
+// overlapxinchild
+// overlapyinchild
+// overlapwidth
+// overlapheight (number of rows to do)
+// parentendofrowbump
+// childendofrowbump
+// rowcounter
+// 
+
+// HEX
+// OSYMBOL drawChildPixelsToParent
+//  RDI PUSH,
+//  RSI PUSH,
+//  RDX PUSH,
+//  RCX PUSH,
+//  R8 PUSH,
+//  R9 PUSH,
+
+//  RDI RDI XOR, // ASX for x
+//  RBP -20 [R+N]  ESI MOV, // AL   // MOV, automatically clears upper bits
+
+//  RBP -30 [R+N]  EDX MOV, // BSX  // ""  
+//  RBP -28 [R+N]  ECX MOV, // BL   // ""
+
+//  EH-NAMEW>VALUE  dg_getoverlapsegment O CALL,
+//  RAX PUSH,
+//  RDX PUSH,
+
+//  RDI RDI XOR, // ASX for y
+//  RBP -24 [R+N]  ESI MOV, // AL   // MOV, automatically clears upper bits
+
+//  RBP -34 [R+N]  EDX MOV, // BSX  // ""  
+//  RBP -2C [R+N]  ECX MOV, // BL   // ""
+
+//  EH-NAMEW>VALUE  dg_getoverlapsegment O CALL,
+//  RAX PUSH,
+//  RDX PUSH,
+
+//  RET,
+
+OLDCOMPILEBUFID PCURRENTCOMPILEBUFFER !
+
+// gettings addresses because EH-NAMEW>VALUE is not an immediate word 
+EH-NAMEW>VALUE CalcNeighborsForRow LIFECOMPILEBUFID GETSBUFFER DROP + 
+  CONSTANT CalcNeighborsForRowAddr
+EH-NAMEW>VALUE thisneighborsaddtbl LIFECOMPILEBUFID GETSBUFFER DROP +
+  CONSTANT thisneighborsaddtblAddr
+EH-NAMEW>VALUE nextneighborsaddtbl LIFECOMPILEBUFID GETSBUFFER DROP +
+  CONSTANT nextneighborsaddtblAddr
+// EH-NAMEW>VALUE TestFunction LIFECOMPILEBUFID GETSBUFFER DROP +
+//  CONSTANT TestFunctionAddr
+
+HEX
+PCELLSBUF 1000 0 FILL
+thisneighborsaddtblAddr 1000 0 FILL
+nextneighborsaddtblAddr 1000 0 FILL
+
+HEX
+: MakeAddTables ( -- )
+  100 0 DO
+
+    I PCELLSBUF 1+ C!
+    PTHISNEIGHBORSBUF 100 0 FILL
+    PNEXTNEIGHBORSBUF 100 0 FILL
+    
+    PNEXTNEIGHBORSBUF 100 + // don't really care about this one, just something unused
+    PTHISNEIGHBORSBUF 100 + // don't really care about this one, just something unused
+    1
+    PNEXTNEIGHBORSBUF
+    PTHISNEIGHBORSBUF
+    PCELLSBUF
+    6
+    CalcNeighborsForRowAddr 
+    CALLPROC
+    DROP
+
+    0A 0 DO
+
+      PTHISNEIGHBORSBUF 8 + I + C@
+      thisneighborsaddtblAddr J 10 * + I + C!
+      PNEXTNEIGHBORSBUF 8 + I + C@
+      nextneighborsaddtblAddr J 10 * + I + C!  
+  
+    LOOP
+   
+  LOOP
+;
+
+MakeAddTables
+
+// Copy 32 bits per pixel image using bit mask for source
+// psrcimage
+// srcimagewidth
+// srcimageheight
+// pdestimage
+// destimagewidth
+// destimageheight
+// destx
+// desty
+// psrcimagemask (width and height is same as src image except width is rounded up to nearest multiple of 64)
+
+//   get src x start offset and length
+//   get src y start offset and length
+//   get src start address and bump to next row
+//   get dest start address and bump to next row
+//   get mask start address, and bump to next row,
+//    start bit in first uint64 and end bit in last uint64
+
+//   copy image one row
+//    if more than one uint64 in mask row
+//     fetch first uint64 in mask
+//     shift mask to start bit, add number shifted * 4 to psrc and pdest
+//     for remaining bits in first uint64 of mask
+//      shift bits left 1
+//      if bit shifted out set, copy pixel from source to destination
+//     psrc <- psrc + 4
+//     pdest <- pdest + 4
+//     pmask <- pmask + 8
+//     for each uint64 left in mask row except last
+//      fetch next uint64 of mask
+//      for each bit in that uint64 of mask
+//       shift bits left 1
+//       if bit shifted out set, copy pixel from source to destination
+//     psrc <- psrc + 4
+//     pdest <- pdest + 4
+//     pmask <- pmask + 8
+//     for last uint64 mask row except last
+//      fetch next uint64 of mask
+//      for each bit in that uint64 of mask
+//       shift bits left 1
+//       if bit shifted out set, copy pixel from source to destination
+//     psrc <- psrc + 4
+//     pdest <- pdest + 4
+//     pmask <- pmask + 8
+//      fetch next uint64 of mask
+//      for number of bits used in last uint64 of mask
+//       shift bits left 1
+//       if bit shifted out set, copy pixel from source to destination
+
+
+// saving the compiled buffer
+
+LIFECOMPILEBUFID $" life.dglib" SAVEFILE$
+
+DROPEH ( dropping symbol list elementid hlistid )
+
+
+// saving the nglu list
+
+EH> PACK-HLIST $" life.glulist" SAVEFILE$ 
+
+DROP ( dropping nglu list element id )
+
+     
+

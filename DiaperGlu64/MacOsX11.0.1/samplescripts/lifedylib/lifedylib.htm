@@ -1,0 +1,1092 @@
+<!--
+////////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2020 James Patrick Norris
+//
+//    This file is part of LifeLib v1.0.
+//
+//    LifeLib v1.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    LifeLib v1.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with LifeLib v1.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////
+// James Patrick Norris      //
+// www.rainbarrel.com        //
+// thaine@mail87.pair.com    //
+// April 28, 2020            //
+// version 1.0               //
+///////////////////////////////
+-->
+
+<html>
+
+  <head>
+    <link rel='stylesheet' type='text/css' href='diaperglu.css'>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      Life Dylib Functions
+    </div>
+    
+    <div id=sitedirectory>
+      <a href=lifedylib.htm>Life Dylib</a>
+      <a href=license.htm>License</a>
+    </div>
+
+    <div id=pagedirectory>
+      <a href=lifedylib.htm#about                                >About</a>
+      <a href=lifedylib.htm#howtobuild                           >How To Build</a>
+      <a href=lifedylib.htm#howtouse                             >How To Use</a>
+      <a href=lifedylib.htm#howitworks                           >How It Works</a>
+      <a                                                         >C Functions</a>
+      <a href=lifedylib.htm#dg_getoverlapsegment                 >dg_getoverlapsegment</a>
+      <a href=lifedylib.htm#dg_calcNeighborsForRowFast           >dg_calcNeighborsForRowFast</a>
+      <a href=lifedylib.htm#dg_calcNeighborsForRow               >dg_calcNeighborsForRow</a>
+      <a href=lifedylib.htm#dg_updateCellsForRow                 >dg_updateCellsForRow</a>
+      <a href=lifedylib.htm#dg_clearNeighbors                    >dg_clearNeighbors</a>
+      <a href=lifedylib.htm#dg_copyNeighbors                     >dg_copyNeighbors</a>
+      <a href=lifedylib.htm#dg_moveQwords                        >dg_moveQwords</a>
+      <a href=lifedylib.htm#dg_calcNeighborsForRowN              >dg_calcNeighborsForRowN</a>
+      <a href=lifedylib.htm#dg_updateCellsForRowN                >dg_updateCellsForRowN</a>
+      <a href=lifedylib.htm#dg_lifeBitMapOnce                    >dg_lifeBitMapOnce</a>
+      <a href=lifedylib.htm#dg_areaXor                           >dg_areaXor</a>
+      <a href=lifedylib.htm#dg_areaOr                            >dg_areaOr</a>
+      <a href=lifedylib.htm#dg_areaAnd                           >dg_areaAnd</a>
+      <a href=lifedylib.htm#dg_areaNotSourceAnd                  >dg_areaNotSourceAnd</a>
+      <a href=lifedylib.htm#dg_getOverlapOffset                  >dg_getOverlapOffset</a>
+      <a href=lifedylib.htm#dg_thisneighborsaddtbl               >dg_thisneighborsaddtbl</a>
+      <a href=lifedylib.htm#dg_nextneighborsaddtbl               >dg_nextneighborsaddtbl</a>
+    </div>
+
+    <div id=pagestuff>
+
+      <div class=word id=about>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// About LifeDylib
+//
+// License:<a href=license.htm>GPL 2</a>
+// Version 1.0
+// April 28, 2020
+// Copyright 2020
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+      <div class=word id=howtobuild>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// How To Build
+//
+// This shared library uses Diaperglu v4.4 or higher to do the build. The makefile
+//  assumes the lifedylib folder is in the samplescripts subfolder of the Diaperglu
+//  distributable.
+//
+// One way to build this is:
+//  Copy the lifelib folder and it's contents to the
+//   /DiaperGlu64/MacOsX10.15.4/samplescripts/ subfolder.
+//
+//  open a terminal
+//
+//  change directories to the /DiaperGlu64/MacOsX10.15.4/samplescripts/lifedylib
+//   subfolder
+//
+//  do: <span class=command>sudo make</span>
+//
+// Another way to build this:
+//  Copy diaperglu v4.4 or higher to the lifedylib folder.
+//
+//  open a terminal
+//
+//  change directories to the /DiaperGlu64/MacOsX10.15.4/samplescripts/lifedylib
+//   subfolder
+//
+//  do: <span class=command>./diaperglu makelifedylib.dglu</span>
+//
+//  then do: <span class=command>./diaperglu testlifedylib.dglu</span>
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      <div class=word id=howtouse>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// How To Use
+//
+// First you need to make sure lifedlib.dylib is in a place where your program can
+//  find it. MacOs doesn't want you changing the /usr/lib folder so you can't put it
+//  there, not without some serious effort to get around MacOs security precautions.
+//  You can put it in a directory relative to the program using it and it will work.
+//
+// I tested these methods of opening a shared library on April 28, 2020 on
+//  Mac Os 10.15.4
+//
+// I copied the lifedylib directory and it's contents to Diaperglu's
+//  DiaperGlu64/MacOsX10.5.4/samplescripts/ subdirectory then
+//  ran Diaperglu from the /MacOsX10.15.4/ directory containing diaperglu
+//  and this worked:
+//   <span class=command>$" ./diaperglu</span>
+//   <span class=command>$" ./samplescripts/lifedylib/liblife.dylib" OPENLIBRARY$</span>
+//
+//  and also using an absolute path worked:
+//   <span class=command>$" ./diaperglu</span>
+//   <span class=command>$" /Users/jamespatricknorris/Desktop/DiaperGlu64/MacOsX10.15.4/samplescripts/lifedylib/liblife.dylib"</span>
+//   <span class=command>OPENLIBRARY$</span>
+//
+//  and even this:
+//   I copied liblife.dylib to the parent directory of /MacOsX10.15.4
+//   MacOs had to think about it for awhile... and I'm pretty sure this method didn't
+//   work in more recent versions of MacOs, but it works now.
+//   <span class=command>$" ./diaperglu</span>
+//   <span class=command>$" ../liblife.dylib" OPENLIBRARY$</span>
+//
+// Running Diaperglu from the /MacOsX10.15.4/samplescripts/lifedylib/ directory
+//  I did this successfully:
+//   <span class=command>$" ../../diaperglu</span>
+//   <span class=command>$" ./liblife.dylib" OPENLIBRARY$</span>
+//
+//  and this:
+//   <span class=command>$" ../../diaperglu</span>
+//   <span class=command>$" liblife.dylib" OPENLIBRARY$</span>
+//
+// After that, you need a monochrome bit map that has a width that is a multiple of
+//  64 cells. The height of the bit map does not matter. Each bit in the bit map
+//  represents one cell. The cells are ordered from left to right starting from the
+//  lowest byte of a row to the highest byte of a row and in each byte the bits are
+//  ordered from left to right from the highest bit to the lowest bit. In other
+//  words, the entire row is big endian.
+//
+// Then you need to allocate the memory for the 4 neighbors array. For each array
+//  you need one byte for each cell in a row plus 8 additional bytes.
+//
+// Then you need to figure out which logic function you want to use. Standard life
+//  uses a logic function of 0xE0.
+//
+// Then you dlopen liblife.dylib and get the pointer with dlsym.
+//
+//  In objective C this looks something like:
+//   In the .h file:
+//
+//    @property void* hlifelib;
+//
+//   In the .m file:
+//
+//    NSString* mylocalpath =
+//     @"/Users/jamespatricknorris/desktop/DiaperGlu64/macosx10.15.4/";
+//
+//    NSString* myliblifepathfilename = [mylocalpath stringByAppendingString:
+//     @"samplescripts/lifedylib/liblife.dylib"];
+//
+//    self.hlifelib = dlopen([myliblifepathfilename
+//     cStringUsingEncoding: NSASCIIStringEncoding], RTLD_LOCAL);
+//
+//    if (self.hlib == 0)
+//    {
+//      // handle the error... one way is this:
+//      //  set a user error message like "could not open liblife.dylib"
+//      //  set flag to let main routine know to show the error message
+//      return;
+//    }
+//
+//  Then you need to use dlsym to get the address of dg_lifeBitMapOnce.
+//   In objective C this looks something like:
+//    In the .h file:
+//
+//     @property uint64 (*LifeBitMapOnce) (
+//      uint64 ppreviousrowneighbors,
+//      uint64 pthisrowneighbors,
+//      uint64 pnextrownneighbors,
+//      uint64 cellsperrow,
+//      uint64 numberofrows,
+//      uint64 pmypixelbuffer,
+//      uint64 logicfunction,
+//      uint64 ptoprowneighbors);
+//
+//   In the .m file:
+//    self.LifeBitMapOnce = dlsym(self.hlifelib, "dg_lifeBitMapOnce");
+//
+//    if (self.LifeBitMapOnce == 0)
+//    {
+//      // handle the error... one way is this:
+//      //  set a user error message like
+//      //   "could not find dg_lifeBitMapOnce symbol in liblife.dylib"
+//      //  set flag to let main routine know to go to the show user the
+//      //   error message state
+//      return;
+//    }
+//
+//  Then you repeatedly call the dg_lifeBitMapOnce. Each call to dg_lifeBitMapOnce
+//   replaces the data in your monochrome bit map with the next generation of cells.
+//   In objective C this looks something like:
+//
+//      x = myApp.LifeBitMapOnce (
+//        (uint64)myApp.ppreviousrowneighbors,
+//        (uint64)myApp.pthisrowneighbors,
+//        (uint64)myApp.pnextrownneighbors,
+//        myApp.bitmapwidth, // myscreenwidth,
+//        myApp.bitmapheight, // myscreenheight,
+//        (uint64)myApp.pbitmapbuffer,
+//        myApp.logicfunction, // logicfunction, 11100000
+//        (uint64)myApp.ptoprowneighbors);
+//
+// Note:
+//  I cast the pointers to uint64. You can do something different if you like.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+    
+      <div class=word id=howitworks>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// How It Works
+//
+// Life is a math game where a cell in a rectangular array lives or dies in the next
+//  generation based on how many neighbors it has and whether or not it is alive in
+//  the current generation.
+//
+// In this implementation, the cells are represented by bits in a bitmap. One bit per
+//  cell. A zero means a cell is dead, a 1 means a cell is alive.
+//
+// This algorithm updates the cells one row at a time. To do this, the algorithm
+//  uses two passes per row. On the first pass it calculates the number of neighbors
+//  for each cell and determines whether or not a cell is alive. This generates a
+//  value for each cell of (2*neighbors)+alive. On the second pass, this value is used
+//  along with the logic function to replace each cell with the next generation cell.
+//  For example, if a cell is alive and has 3 neighbors, the final value is 7.
+//  (2*3)+1 = 7. If a cell is dead and has 4 neighbors, the final value is 8.
+//
+// You have to do three rows of neighbors to have enough information to replace one
+//  row of cells. To make it possible to only look at each row once for the calculate
+//  neighbor calculation, this algorithm remembers the partial results of 3 rows, and
+//  it also remembers the partial result of the top row for the wrap calculation.
+//
+// The three neighbors arrays are 0 based and have 2 more elements in them than the
+//  number of cells in a row. The addition calculation uses one element before
+//  the start of the row and one after the end of the row. The value for cell 0
+//  ends up in element 1.
+//
+// The number of bytes used for a row of cells needs to be a multiple of 8. This
+//  means the number of cells per row needs to be a multiple of 64.
+//
+// The number of bytes used for one of the neighbor arrays needs to be a multiple
+//  of 8. Since the number of cells per row is a multiple of 64, and there are
+//  number of cells plus two elements in a neighbor array, each neighbor array
+//  needs one byte for each cell in a row plus more 8 bytes.
+//
+// The use of the logic function allows all possible outcomes for the number of
+//  neighbors and whether or not the cell is alive. Bit 0 of the logic function is
+//  f(0), bit 1 of the logic function is f(1), etc.
+//
+// This is the standard life logic function where two neighbors stays the same,
+//  and three neighbors is always alive on the next generation:
+//
+//  this generation             (2*neighbors)+alive   next generation
+//   two neighbors and alive     5                     1
+//   three neigbors and dead     6                     1
+//   three neighbors and alive   7                     1
+//   anything else               anything but 5,6,7    0
+//
+//  logic function for standard life:
+//   binary   00000000 00000000 00000000 11100000
+//   hex            00       00       00       E0
+//   decimal  240
+//
+// An interesting game of life website:
+//  https://www.conwaylife.com (link checked April 28,2020)
+//
+// And a popular life tool that uses a different method to do the calculations:
+//  http://golly.sourceforge.net (link checked April 28,2020)
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+ 
+ 
+      <div class=word id=dg_getoverlapsegment>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getoverlapsegment
+//
+// C prototype: 
+// UINT128 dg_getoverlapsegment(
+//  UINT64 ASX,          // RDI
+//  UINT64 AL,           // RSI
+//  UINT64 BSX,          // RDX
+//  UINT64 BL);          // RCX
+//
+// Inputs:
+//  UINT64        ASX             start offset of A segment
+//  UINT64        AL              length of A segment
+//  UINT64        BSX             start offset of B segment
+//  UINT64        BL              length of B segment
+//
+// Outputs:
+//  UINT128       return[63:0]    (RAX) overlap length
+//                return[127:64]  (RDX) overlap start offset
+//                              
+// Action:
+//  Given the start offset and length of two segments, calculate the start offset
+//   and length where they overlap.
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_calcNeighborsForRowFast>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_calcNeighborsForRowFast
+//
+// C prototype:
+// void dg_calcNeighborsForRowFast(
+//  UINT8* prowbits,                // RDI
+//  UINT8* pthisrownneighbors,      // RSI
+//  UINT8* pnextrownneighbors,      // RDX
+//  UINT64 qwordsperrowofneighbors, // RCX
+//  UINT8* pthisrownneighborsend,   // R8
+//  UINT8* pnextrownneighborsend);  // R9
+//
+// Inputs:
+//  UINT8*        prowbits                pointer to the start of a row of cells
+//                                         one bit = one cell
+//  UINT8*        pthisrownneighbors      pointer to the beginning of the array that
+//                                         holds the number of neighbors tally for
+//                                         this row
+//  UINT8*        pnextrownneighbors      pointer to the beginning of the array that
+//                                         holds the number of neighbors tally for
+//                                         the next row
+//  UINT64        qwordsperrowofneighbors (number of cells per row / 64) + 1
+//  UINT8*        pthisrownneighborsend   pointer to the last element of the array
+//                                         that holds the number of neighbors tally
+//                                         for this row (for wrap calculation)
+//  UINT8*        pnextrownneighborsend   pointer to the last element of the array
+//                                         that holds the number of neighbors tally
+//                                         for next row (for wrap calculation)
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Uses a lookup table to add the neighbors for a row of cells 8 cells at a time.
+//
+// Note:
+//  Each element in the neighbors array gets +1 if the corresponding cell is alive
+//   and +2 for each neighbor that is alive.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_calcNeighborsForRow>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_calcNeighborsForRow
+//
+// C prototype:
+// void dg_calcNeighborsForRow(
+//  UINT8* prowbits,                       // RDI
+//  UINT8* pthisrownneighbors,             // RSI
+//  UINT8* pnextrownneighbors,             // RDX
+//  UINT64 dwordsperrowperrowofneighbors,  // RCX
+//  UINT8* pthisrownneighborsend,          // R8
+//  UINT8* pnextrownneighborsend);         // R9
+//
+// Inputs:
+//  UINT8*        prowbits                       pointer to the start of a row
+//                                                of cells one bit = one cell
+//  UINT8*        pthisrownneighbors             pointer to the beginning of the
+//                                                array that holds the number of
+//                                                neighbors tally for this row
+//  UINT8*        pnextrownneighbors             pointer to the beginning of the
+//                                                array that holds the number of
+//                                                neighbors tally for the next row
+//  UINT64        dwordsperrowperrowofneighbors  (number of cells per row / 32) + 1
+//  UINT8*        pthisrownneighborsend          pointer to the last element of
+//                                                the array that holds the number
+//                                                of neighbors tally for this row
+//                                                (for wrap calculation)
+//  UINT8*        pnextrownneighborsend          pointer to the last element of
+//                                                the array that holds the number
+//                                                of neighbors tally for next row
+//                                                (for wrap calculation)
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Uses a lookup table to add the neighbors and alive/dead state for a row of cells.
+//
+// Note:
+//  Each element in the neighbors array gets +1 if the corresponding cell is alive
+//   and +2 for each neighbor that is alive.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_updateCellsForRow>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_updateCellsForRow
+//
+// C prototype:
+// void dg_updateCellsForRow(
+//  UINT8* prowbits,                //  RDI
+//  UINT8* ppreviousrownneighbors,  //  RSI
+//  UINT8* pnextrownneighbors,      //  RDX
+//  UINT64 dwordsperrowofcells,     //  RCX
+//  UINT64 logicfunction);          //  R8
+//
+// Inputs:
+//  UINT8*        prowbits                pointer to the start of a row of cells
+//                                         one bit = one cell
+//  UINT8*        ppreviousrownneighbors  pointer to the beginning of the array that
+//                                         holds the number of neighbors tally for
+//                                         the previous row
+//  UINT8*        pnextrownneighbors      pointer to the beginning of the array that
+//                                         holds the number of neighbors tally for
+//                                         the next row
+//  UINT64        dwordsperrowofcells     number of cells per row / 32
+//  UINT64        logicfunction
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Uses a lookup table to add the neighbors for a row of cells.
+//
+// Note:
+//  Each element in the neighbors array gets +1 if the corresponding cell is alive
+//   and +2 for each neighbor that is alive.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_clearNeighbors>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_clearNeighbors
+//
+// C prototype:
+// void dg_clearNeighbors(
+//  UINT8* ppreviousrownneighbors,    //  RDI
+//  UINT8* pthisneighborsbuffer,      //  RSI
+//  UINT8* pnextrownneighbors,        //  RDX
+//  UINT64 qwordsperrowofneighbors,   //  RCX
+//  UINT8* ptoprownneighbors);        //  RDX
+//
+// Inputs:
+//  UINT8*        ppreviousrownneighbors  pointer to the beginning of the array that
+//                                         holds the number of neighbors tally for
+//                                         the previous row
+//  UINT8*        pthisrownneighbors      pointer to the beginning of the array that
+//                                         holds the number of neighbors tally for
+//                                         the next row
+//  UINT8*        pnextrownneighbors      pointer to the beginning of the array that
+//                                         holds the number of neighbors tally for
+//                                         the next row
+//  UINT64        qwordsperrowofneighbors (number of cells per row / 64) + 1
+//  UINT8*        ptoprownneighbors       pointer to the beginning of the array that
+//                                         holds the number of neighbors tally for
+//                                         the next row
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Changes the value of each element in the 4 neighbors arrays to 0.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_copyNeighbors>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_copyNeighbors
+//
+// C prototype:
+// void dg_copyNeighbors(
+//  UINT8* ppreviousrownneighbors,    //  RDI
+//  UINT8* pthisneighborsbuffer,      //  RSI
+//  UINT8* pnextrownneighbors,        //  RDX
+//  UINT64 qwordsperrowofneighbors);  //  RCX
+//
+// Inputs:
+//  UINT8*        ppreviousrownneighbors  pointer to the beginning of the array that
+//                                         holds the number of neighbors tally for
+//                                         the previous row
+//  UINT8*        pthisrownneighbors      pointer to the beginning of the array that
+//                                         holds the number of neighbors tally for
+//                                         the next row
+//  UINT8*        pnextrownneighbors      pointer to the beginning of the array that
+//                                         holds the number of neighbors tally for
+//                                         the next row
+//  UINT64        qwordsperrowofneighbors (number of cells per row / 64) + 1
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Copy nextrownneighbors to thisneighborsbuffer and then clear nextrownneighbors.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+ 
+
+      <div class=word id=dg_moveQwords>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_moveQwords
+//
+// C prototype:
+// void dg_moveQwords(
+//  UINT64* pdest,           // RDI
+//  UINT64* psrc,            // RSI
+//  UINT64 lengthinqwords);  // RDX
+//
+// Inputs:
+//  UINT64*        pdest           pointer to src
+//  UINT64*        psrc            pointer to dest
+//  UINT64         qwordsperrow    number of UINT64s to move
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Copy lengthinqwords UINT64s from psrc to pdest
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_calcNeighborsForRowN>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_calcNeighborsForRowN
+//
+// C prototype:
+// void dg_calcNeighborsForRowN(
+// UINT64  rowN,                   //  RDI
+// UINT8*  pthisrownneighbors,     //  RSI
+// UINT8*  pnextrownneighbors,     //  RDX
+// UINT64  cellsperrow,            //  RCX
+// UINT8*  pmypixelbuffer);        //  R8
+//
+// Inputs:
+//  UINT64        rowN                    0 based row index
+//  UINT8*        pthisrownneighbors      pointer to the beginning of the array that
+//                                         holds the number of neighbors tally for
+//                                         the next row
+//  UINT8*        pnextrownneighbors      pointer to the beginning of the array that
+//                                         holds the number of neighbors tally for
+//                                         the next row
+//  UINT64        cellsperrow             width of row in cells
+//  UINT8*        pmypixelbuffer          pointer to start of bitmap that holds the
+//                                         cells, one bit per cell
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Do the neighbors calculation for the nth row of cells.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_updateCellsForRowN>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_updateCellsForRowN
+//
+// C prototype:
+// void dg_updateCellsForRowN(
+//  UINT64 rowN,                   // RDI
+//  UINT8* ppreviousrowneighbors,  // RSI
+//  UINT8* pnextrownneighbors,     // RDX
+//  UINT64 cellsperrow,            // RCX
+//  UINT8* pmypixelbuffer,         // R8
+//  UINT64 logicfunction);         // R9
+//
+// Inputs:
+//  UINT64        rowN                    0 based row index
+//  UINT8*        ppreviousrownneighbors  pointer to the beginning of the array that
+//                                         holds the number of neighbors tally for
+//                                         the previous row
+//  UINT8*        pnextrownneighbors      pointer to the beginning of the array that
+//                                         holds the number of neighbors tally for
+//                                         the next row
+//  UINT64        cellsperrow             width of row in cells
+//  UINT8*        pmypixelbuffer          pointer to start of bitmap that holds the
+//                                         cells, one bit per cell
+//  UINT64        logicfunction           each bit represents whether a cell will
+//                                         be alive or dead in the next generation
+//                                         as f[2*numberofneighbors + cellstate]
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Calculate the next generation for the nth row of cells.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_lifeBitMapOnce>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_lifeBitMapOnce
+//
+// C prototype:
+// void dg_lifeBitMapOnce(
+//  UINT8*  ppreviousrowneighbors,  //  RDI
+//  UINT8*  pthisrowneighbors,      //  RSI
+//  UINT8*  pnextrownneighbors,     //  RDX
+//  UINT64  cellsperrow,            //  RCX
+//  UINT64  numberofrows,           //  R8
+//  UINT8*  pmypixelbuffer,         //  R9
+//  UINT64  logicfunction,          //  [RBP + 10]
+//  UINT8*  ptoprowneighbors);      //  [RBP + 18]
+//
+// Inputs:
+//  UINT8*        ppreviousrownneighbors  pointer to the beginning of the array that
+//                                         holds the number of neighbors tally for
+//                                         the previous row
+//  UINT8*        pthisrownneighbors      pointer to the beginning of the array that
+//                                         holds the number of neighbors tally for
+//                                         the current row
+//  UINT8*        pnextrownneighbors      pointer to the beginning of the array that
+//                                         holds the number of neighbors tally for
+//                                         the next row
+//  UINT64        cellsperrow             width of row in cells
+//  UINT64        numberofrows            number of rows
+//  UINT8*        pmypixelbuffer          pointer to start of bitmap that holds the
+//                                         cells, one bit per cell
+//  UINT64        logicfunction           each bit represents whether a cell will
+//                                         be alive or dead in the next generation
+//                                         as f[2*numberofneighbors + cellstate]
+//  UINT8*        ptoprownneighbors       pointer to the beginning of the array that
+//                                         holds the number of neighbors tally for
+//                                         the top row
+//
+// Outputs:
+//  none
+//
+// Action:
+//  Replaces a 1 bit per cell life bitmap with the next generation of cells.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_areaXor>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_areaXor
+//
+// C prototype:
+// void dg_areaXor(
+//  UINT8*  pdest,                   //  RDI
+//  UINT8*  psrc,                    //  RSI
+//  UINT64  xorheightinbits,         //  RDX
+//  UINT64  xorwidthinbits,          //  RCX
+//  UINT64  srcxinbitsdestxinbits,   //  R8 (low 8 bits = destx,
+//                                   //   next 8 bits = srcx, 0-63)
+//  UINT64  destwidthinbits,         //  R9
+//  UINT64  lastqwordinrowmask,      //  [RBP + 10]
+//  UINT64  srcendofrowbumpinbytes); //  [RBP + 18]
+//
+// Inputs:
+//  UINT8*        pdest                   pointer into destination bitmap
+//                                         should be aligned to an 8 byte offset
+//  UINT8*        psrc                    pointer into source bitmap
+//                                         should be aligned to an 8 byte offset
+//  UINT64        xorheightinbits         number of rows of subrectangle in source
+//                                         and destination bitmap to xor
+//  UINT64        xorwidthinbits          width in cells of subrectangle in source
+//                                         in destination bitmap to xor
+//  UINT64        srcxinbitsdestxinbits   srcxinbitsdestxinbits[7:0] = destoffset
+//                                         srcxinbitsdestxinbits[15:8] = srcoffset
+//                                         offsets are from 0-63
+//  UINT64        destwidthinbits         width of destination bitmap in cells
+//  UINT64        lastqwordinrowmask      mask of which bits of last 64 bits of
+//                                         source are used
+//  UINT64        srcendofrowbumpinbytes  bytes to add to source pointer after
+//                                         it finishes a row to get to start of
+//                                         next row in source
+//
+// Outputs:
+//  none
+//
+// Action:
+//  This function xors the bits in a subrectangle from a source bitmap with the bits
+//   in a subrectangle of a destination bitmap replacing the bits in the destination
+//   bitmap.
+//
+// Note:
+//  This function assumes the regions do not wrap off either the sides or the bottom.
+//  This function assumes the memory passed in is valid.
+//  The source bitmap's width must be a multiple of 8 bytes.
+//  The source bitmap startaddress should be aligned to an 8 byte address for speed.
+//  The destination bitmap's width must be a multiple of 8 bytes.
+//  The destination bitmap startaddress should be aligned to an 8 byte address
+//   for speed.
+//  Since pdest and psrc are aligned to an 8 byte offset, you need to specify which
+//   bit in the 8 byte regions of the source and destination is the start bit. That's
+//   what srcxinbitsdestxinbits is for.
+//  You need to pass in a mask for which bits of the last qword of the xor region you
+//   are using.
+//   For example if your xorwidthinbits is 1, you pass in 0x8000000000000000.
+//   If your xorwidthinbits is 2, you pass in 0xC000000000000000.
+//   I didn't build this into the function for speed and simplicity purposes.
+//  Since the source width can be wider than xorwidthinbits, and the source width is
+//   not passed in, you need to pass in the value to add to the source after it
+//   finishes a row. This value is the width of the source - width of the xor region
+//   in bytes after you round the width of the xor region in bytes up to the next
+//   multiple of 8 bytes.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_areaOr>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_areaOr
+//
+// C prototype:
+// void dg_areaOr(
+//  UINT8*  pdest,                   //  RDI
+//  UINT8*  psrc,                    //  RSI
+//  UINT64  orheightinbits,          //  RDX
+//  UINT64  orwidthinbits,           //  RCX
+//  UINT64  srcxinbitsdestxinbits,   //  R8 (low 8 bits = destx,
+//                                   //   next 8 bits = srcx, 0-63)
+//  UINT64  destwidthinbits,         //  R9
+//  UINT64  lastqwordinrowmask,      //  [RBP + 10]
+//  UINT64  srcendofrowbumpinbytes); //  [RBP + 18]
+//
+// Inputs:
+//  UINT8*        pdest                   pointer into destination bitmap
+//                                         should be aligned to an 8 byte offset
+//  UINT8*        psrc                    pointer into source bitmap
+//                                         should be aligned to an 8 byte offset
+//  UINT64        orheightinbits          number of rows of subrectangle in source
+//                                         and destination bitmap to or
+//  UINT64        orwidthinbits           width in cells of subrectangle in source
+//                                         in destination bitmap to or
+//  UINT64        srcxinbitsdestxinbits   srcxinbitsdestxinbits[7:0] = destoffset
+//                                         srcxinbitsdestxinbits[15:8] = srcoffset
+//                                         offsets are from 0-63
+//  UINT64        destwidthinbits         width of destination bitmap in cells
+//  UINT64        lastqwordinrowmask      mask of which bits of last 64 bits of
+//                                         source are used
+//  UINT64        srcendofrowbumpinbytes  bytes to add to source pointer after
+//                                         it finishes a row to get to start of
+//                                         next row in source
+//
+// Outputs:
+//  none
+//
+// Action:
+//  This function ors the bits in a subrectangle from a source bitmap with the bits
+//   in a subrectangle of a destination bitmap replacing the bits in the destination
+//   bitmap.
+//
+// Note:
+//  This function assumes the regions do not wrap off either the sides or the bottom.
+//  This function assumes the memory passed in is valid.
+//  The source bitmap's width must be a multiple of 8 bytes.
+//  The source bitmap startaddress should be aligned to an 8 byte address for speed.
+//  The destination bitmap's width must be a multiple of 8 bytes.
+//  The destination bitmap startaddress should be aligned to an 8 byte address
+//   for speed.
+//  Since pdest and psrc are aligned to an 8 byte offset, you need to specify which
+//   bit in the 8 byte regions of the source and destination is the start bit. That's
+//   what srcxinbitsdestxinbits is for.
+//  You need to pass in a mask for which bits of the last qword of the or region you
+//   are using.
+//   For example if your orwidthinbits is 1, you pass in 0x8000000000000000.
+//   If your orwidthinbits is 2, you pass in 0xC000000000000000.
+//   I didn't build this into the function for speed and simplicity purposes.
+//  Since the source width can be wider than orwidthinbits, and the source width is
+//   not passed in, you need to pass in the value to add to the source after it
+//   finishes a row. This value is the width of the source - width of the or region
+//   in bytes after you round the width of the or region in bytes up to the next
+//   multiple of 8 bytes.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_areaAnd>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_areaAnd
+//
+// C prototype:
+// void dg_areaAnd(
+//  UINT8*  pdest,                   //  RDI
+//  UINT8*  psrc,                    //  RSI
+//  UINT64  orheightinbits,          //  RDX
+//  UINT64  orwidthinbits,           //  RCX
+//  UINT64  srcxinbitsdestxinbits,   //  R8 (low 8 bits = destx,
+//                                   //   next 8 bits = srcx, 0-63)
+//  UINT64  destwidthinbits,         //  R9
+//  UINT64  lastqwordinrowmask,      //  [RBP + 10]
+//  UINT64  srcendofrowbumpinbytes); //  [RBP + 18]
+//
+// Inputs:
+//  UINT8*        pdest                   pointer into destination bitmap
+//                                         should be aligned to an 8 byte offset
+//  UINT8*        psrc                    pointer into source bitmap
+//                                         should be aligned to an 8 byte offset
+//  UINT64        andheightinbits         number of rows of subrectangle in source
+//                                         and destination bitmap to and
+//  UINT64        andwidthinbits           width in cells of subrectangle in source
+//                                         in destination bitmap to and
+//  UINT64        srcxinbitsdestxinbits   srcxinbitsdestxinbits[7:0] = destoffset
+//                                         srcxinbitsdestxinbits[15:8] = srcoffset
+//                                         offsets are from 0-63
+//  UINT64        destwidthinbits         width of destination bitmap in cells
+//  UINT64        lastqwordinrowmask      mask of which bits of last 64 bits of
+//                                         source are used
+//  UINT64        srcendofrowbumpinbytes  bytes to add to source pointer after
+//                                         it finishes a row to get to start of
+//                                         next row in source
+//
+// Outputs:
+//  none
+//
+// Action:
+//  This function ands the bits in a subrectangle from a source bitmap with the bits
+//   in a subrectangle of a destination bitmap replacing the bits in the destination
+//   bitmap.
+//
+// Note:
+//  This function assumes the regions do not wrap off either the sides or the bottom.
+//  This function assumes the memory passed in is valid.
+//  The source bitmap's width must be a multiple of 8 bytes.
+//  The source bitmap startaddress should be aligned to an 8 byte address for speed.
+//  The destination bitmap's width must be a multiple of 8 bytes.
+//  The destination bitmap startaddress should be aligned to an 8 byte address
+//   for speed.
+//  Since pdest and psrc are aligned to an 8 byte offset, you need to specify which
+//   bit in the 8 byte regions of the source and destination is the start bit. That's
+//   what srcxinbitsdestxinbits is for.
+//  You need to pass in a mask for which bits of the last qword of the and region you
+//   are using.
+//   For example if your andwidthinbits is 1, you pass in 0x8000000000000000.
+//   If your andwidthinbits is 2, you pass in 0xC000000000000000.
+//   I didn't build this into the function for speed and simplicity purposes.
+//  Since the source width can be wider than andwidthinbits, and the source width is
+//   not passed in, you need to pass in the value to add to the source after it
+//   finishes a row. This value is the width of the source - width of the and region
+//   in bytes after you round the width of the and region in bytes up to the next
+//   multiple of 8 bytes.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_areaNotSourceAnd>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_areaNotSourceAnd
+//
+// C prototype:
+// void dg_areaNotSourceAnd(
+//  UINT8*  pdest,                     //  RDI
+//  UINT8*  psrc,                      //  RSI
+//  UINT64  notsourceandheightinbits,  //  RDX
+//  UINT64  notsourceandwidthinbits,   //  RCX
+//  UINT64  srcxinbitsdestxinbits,     //  R8 (low 8 bits = destx,
+//                                     //   next 8 bits = srcx, 0-63)
+//  UINT64  destwidthinbits,           //  R9
+//  UINT64  lastqwordinrowmask,        //  [RBP + 10]
+//  UINT64  srcendofrowbumpinbytes);   //  [RBP + 18]
+//
+// Inputs:
+//  UINT8*        pdest                    pointer into destination bitmap
+//                                          should be aligned to an 8 byte offset
+//  UINT8*        psrc                     pointer into source bitmap
+//                                          should be aligned to an 8 byte offset
+//  UINT64        notsourceandheightinbits number of rows of subrectangle in source
+//                                          and destination bitmap to notsourceand
+//  UINT64        notsourceandwidthinbits  width in cells of subrectangle in source
+//                                          in destination bitmap to notsourceand
+//  UINT64        srcxinbitsdestxinbits    srcxinbitsdestxinbits[7:0] = destoffset
+//                                          srcxinbitsdestxinbits[15:8] = srcoffset
+//                                          offsets are from 0-63
+//  UINT64        destwidthinbits          width of destination bitmap in cells
+//  UINT64        lastqwordinrowmask       mask of which bits of last 64 bits of
+//                                          source are used
+//  UINT64        srcendofrowbumpinbytes   bytes to add to source pointer after
+//                                          it finishes a row to get to start of
+//                                          next row in source
+//
+// Outputs:
+//  none
+//
+// Action:
+//  This function inverts the source then ands the bits in a subrectangle from a
+//   source bitmap with the bits in a subrectangle of a destination bitmap replacing
+//   the bits in the destination bitmap.
+//
+// Note:
+//  This function assumes the regions do not wrap off either the sides or the bottom.
+//  This function assumes the memory passed in is valid.
+//  The source bitmap's width must be a multiple of 8 bytes.
+//  The source bitmap startaddress should be aligned to an 8 byte address for speed.
+//  The destination bitmap's width must be a multiple of 8 bytes.
+//  The destination bitmap startaddress should be aligned to an 8 byte address
+//   for speed.
+//  Since pdest and psrc are aligned to an 8 byte offset, you need to specify which
+//   bit in the 8 byte regions of the source and destination is the start bit. That's
+//   what srcxinbitsdestxinbits is for.
+//  You need to pass in a mask for which bits of the last qword of the and region you
+//   are using.
+//   For example if your notsourceandheightinbits is 1, you pass in
+//    0x8000000000000000.
+//   If your notsourceandheightinbits is 2, you pass in 0xC000000000000000.
+//   I didn't build this into the function for speed and simplicity purposes.
+//  Since the source width can be wider than andwidthinbits, and the source width is
+//   not passed in, you need to pass in the value to add to the source after it
+//   finishes a row. This value is the width of the source - width of the
+//   notsourceand region in bytes after you round the width of the and region in
+//   bytes up to the next multiple of 8 bytes.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_getOverlapOffset>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getOverlapOffset
+//
+// C prototype:
+// void dg_getOverlapOffset(
+//  UINT64  srcwidth,                   //  RDI
+//  UINT64  destwidth,                  //  RSI
+//  UINT64  destx);                     //  RDX
+//
+// Inputs:
+//  UINT64        srcwidth             width of source
+//  UINT64        destwidth            width of destination
+//  UINT64        destx                offset in destination of where source starts
+//
+// Outputs:
+//  UINT64        return               where the overlap occurs in the source
+//
+// Action:
+//  This returns an offset from 0 to srcwidth of where in the source the overlap
+//   occurs.
+//  The length of the overlap = srcwidth - return
+//  return = 0 means the source is completely beyond the destination
+//  return = srcwidth means the entire source fits in the destination
+//
+// Note:
+//  Destx is unsigned. You can't pass in a negative offset.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_thisneighborsaddtbl>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_thisneighborsaddtbl
+//
+// C prototype:
+//  unsigned char* dg_thisneighborsaddtbl;
+//
+// This is a pointer to the 256 entry table for the this neighbors array.
+// Each entry is 16 bytes but only 10 bytes are used.
+// dg_calcNeighborsForRowFast does 8 cells at once. For each group of 8 cells
+// there are 256 possible combinations. 10 bytes are needed because there are two
+// neighbors next to the 8 cells.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_nextneighborsaddtbl>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_nextneighborsaddtbl
+//
+// C prototype:
+//  unsigned char* dg_nextneighborsaddtbl;
+//
+// This is a pointer to the 256 entry table for the this neighbors array.
+// Each entry is 16 bytes but only 10 bytes are used.
+// dg_calcNeighborsForRowFast does 8 cells at once. For each group of 8 cells
+// there are 256 possible combinations. 10 bytes are needed because there are two
+// neighbors next to the 8 cells.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+    </div>
+
+  </div></body>
+</html>

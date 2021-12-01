@@ -1,0 +1,573 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		389FDF85207404A5003FF5D3 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 389FDF84207404A5003FF5D3 /* Cocoa.framework */; };
+		389FDF8F207404A5003FF5D3 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 389FDF8D207404A5003FF5D3 /* InfoPlist.strings */; };
+		389FDF91207404A5003FF5D3 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 389FDF90207404A5003FF5D3 /* main.m */; };
+		389FDF95207404A5003FF5D3 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 389FDF93207404A5003FF5D3 /* Credits.rtf */; };
+		389FDF98207404A5003FF5D3 /* DiaperGluLifeAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 389FDF97207404A5003FF5D3 /* DiaperGluLifeAppDelegate.m */; };
+		389FDF9B207404A5003FF5D3 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 389FDF99207404A5003FF5D3 /* MainMenu.xib */; };
+		389FDF9D207404A5003FF5D3 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 389FDF9C207404A5003FF5D3 /* Images.xcassets */; };
+		389FDFA4207404A5003FF5D3 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 389FDFA3207404A5003FF5D3 /* XCTest.framework */; };
+		389FDFA5207404A5003FF5D3 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 389FDF84207404A5003FF5D3 /* Cocoa.framework */; };
+		389FDFAD207404A5003FF5D3 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 389FDFAB207404A5003FF5D3 /* InfoPlist.strings */; };
+		389FDFAF207404A5003FF5D3 /* DiaperGluLifeApplicationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 389FDFAE207404A5003FF5D3 /* DiaperGluLifeApplicationTests.m */; };
+		389FDFBA207404CB003FF5D3 /* DiaperGluLifeOpenGLView.m in Sources */ = {isa = PBXBuildFile; fileRef = 389FDFB9207404CB003FF5D3 /* DiaperGluLifeOpenGLView.m */; };
+		38A4CAC0207AA63400742C0B /* DiaperGluLifeApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 38A4CABF207AA63400742C0B /* DiaperGluLifeApplication.m */; };
+		38A622662074250800582A28 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 38A622652074250700582A28 /* OpenGL.framework */; };
+		38A7D50320CF39BB00E01E56 /* clevelandgamedevs.rawbmp in Resources */ = {isa = PBXBuildFile; fileRef = 38A7D50220CF39BB00E01E56 /* clevelandgamedevs.rawbmp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		389FDFA6207404A5003FF5D3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 389FDF79207404A4003FF5D3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 389FDF80207404A4003FF5D3;
+			remoteInfo = DiaperGluLifeApplication;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		389FDF81207404A4003FF5D3 /* DiaperGluLifeApplication.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DiaperGluLifeApplication.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		389FDF84207404A5003FF5D3 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		389FDF87207404A5003FF5D3 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		389FDF88207404A5003FF5D3 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		389FDF89207404A5003FF5D3 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		389FDF8C207404A5003FF5D3 /* DiaperGluLifeApplication-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "DiaperGluLifeApplication-Info.plist"; sourceTree = "<group>"; };
+		389FDF8E207404A5003FF5D3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		389FDF90207404A5003FF5D3 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		389FDF92207404A5003FF5D3 /* DiaperGluLifeApplication-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DiaperGluLifeApplication-Prefix.pch"; sourceTree = "<group>"; };
+		389FDF94207404A5003FF5D3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
+		389FDF96207404A5003FF5D3 /* DiaperGluLifeAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DiaperGluLifeAppDelegate.h; sourceTree = "<group>"; };
+		389FDF97207404A5003FF5D3 /* DiaperGluLifeAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DiaperGluLifeAppDelegate.m; sourceTree = "<group>"; };
+		389FDF9A207404A5003FF5D3 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		389FDF9C207404A5003FF5D3 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		389FDFA2207404A5003FF5D3 /* DiaperGluLifeApplicationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DiaperGluLifeApplicationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		389FDFA3207404A5003FF5D3 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		389FDFAA207404A5003FF5D3 /* DiaperGluLifeApplicationTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "DiaperGluLifeApplicationTests-Info.plist"; sourceTree = "<group>"; };
+		389FDFAC207404A5003FF5D3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		389FDFAE207404A5003FF5D3 /* DiaperGluLifeApplicationTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DiaperGluLifeApplicationTests.m; sourceTree = "<group>"; };
+		389FDFB8207404CB003FF5D3 /* DiaperGluLifeOpenGLView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DiaperGluLifeOpenGLView.h; path = ../DiaperGluLifeOpenGLView.h; sourceTree = "<group>"; };
+		389FDFB9207404CB003FF5D3 /* DiaperGluLifeOpenGLView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DiaperGluLifeOpenGLView.m; path = ../DiaperGluLifeOpenGLView.m; sourceTree = "<group>"; };
+		38A4CABE207AA63400742C0B /* DiaperGluLifeApplication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DiaperGluLifeApplication.h; sourceTree = "<group>"; };
+		38A4CABF207AA63400742C0B /* DiaperGluLifeApplication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DiaperGluLifeApplication.m; sourceTree = "<group>"; };
+		38A622652074250700582A28 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
+		38A7D50220CF39BB00E01E56 /* clevelandgamedevs.rawbmp */ = {isa = PBXFileReference; lastKnownFileType = file; path = clevelandgamedevs.rawbmp; sourceTree = "<group>"; };
+		CBEC81FD245596C30094B5C1 /* liblife.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = liblife.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		389FDF7E207404A4003FF5D3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				38A622662074250800582A28 /* OpenGL.framework in Frameworks */,
+				389FDF85207404A5003FF5D3 /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		389FDF9F207404A5003FF5D3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				389FDFA5207404A5003FF5D3 /* Cocoa.framework in Frameworks */,
+				389FDFA4207404A5003FF5D3 /* XCTest.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		389FDF78207404A4003FF5D3 = {
+			isa = PBXGroup;
+			children = (
+				389FDF8A207404A5003FF5D3 /* DiaperGluLifeApplication */,
+				389FDFA8207404A5003FF5D3 /* DiaperGluLifeApplicationTests */,
+				389FDF83207404A4003FF5D3 /* Frameworks */,
+				389FDF82207404A4003FF5D3 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		389FDF82207404A4003FF5D3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				389FDF81207404A4003FF5D3 /* DiaperGluLifeApplication.app */,
+				389FDFA2207404A5003FF5D3 /* DiaperGluLifeApplicationTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		389FDF83207404A4003FF5D3 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				38A622652074250700582A28 /* OpenGL.framework */,
+				389FDF84207404A5003FF5D3 /* Cocoa.framework */,
+				389FDFA3207404A5003FF5D3 /* XCTest.framework */,
+				389FDF86207404A5003FF5D3 /* Other Frameworks */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		389FDF86207404A5003FF5D3 /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				389FDF87207404A5003FF5D3 /* AppKit.framework */,
+				389FDF88207404A5003FF5D3 /* CoreData.framework */,
+				389FDF89207404A5003FF5D3 /* Foundation.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		389FDF8A207404A5003FF5D3 /* DiaperGluLifeApplication */ = {
+			isa = PBXGroup;
+			children = (
+				389FDFB8207404CB003FF5D3 /* DiaperGluLifeOpenGLView.h */,
+				389FDFB9207404CB003FF5D3 /* DiaperGluLifeOpenGLView.m */,
+				389FDF96207404A5003FF5D3 /* DiaperGluLifeAppDelegate.h */,
+				389FDF97207404A5003FF5D3 /* DiaperGluLifeAppDelegate.m */,
+				389FDF99207404A5003FF5D3 /* MainMenu.xib */,
+				389FDF9C207404A5003FF5D3 /* Images.xcassets */,
+				389FDF8B207404A5003FF5D3 /* Supporting Files */,
+				38A4CABE207AA63400742C0B /* DiaperGluLifeApplication.h */,
+				CBEC81FD245596C30094B5C1 /* liblife.h */,
+				38A4CABF207AA63400742C0B /* DiaperGluLifeApplication.m */,
+			);
+			path = DiaperGluLifeApplication;
+			sourceTree = "<group>";
+		};
+		389FDF8B207404A5003FF5D3 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				38A7D50220CF39BB00E01E56 /* clevelandgamedevs.rawbmp */,
+				389FDF8C207404A5003FF5D3 /* DiaperGluLifeApplication-Info.plist */,
+				389FDF8D207404A5003FF5D3 /* InfoPlist.strings */,
+				389FDF90207404A5003FF5D3 /* main.m */,
+				389FDF92207404A5003FF5D3 /* DiaperGluLifeApplication-Prefix.pch */,
+				389FDF93207404A5003FF5D3 /* Credits.rtf */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		389FDFA8207404A5003FF5D3 /* DiaperGluLifeApplicationTests */ = {
+			isa = PBXGroup;
+			children = (
+				389FDFAE207404A5003FF5D3 /* DiaperGluLifeApplicationTests.m */,
+				389FDFA9207404A5003FF5D3 /* Supporting Files */,
+			);
+			path = DiaperGluLifeApplicationTests;
+			sourceTree = "<group>";
+		};
+		389FDFA9207404A5003FF5D3 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				389FDFAA207404A5003FF5D3 /* DiaperGluLifeApplicationTests-Info.plist */,
+				389FDFAB207404A5003FF5D3 /* InfoPlist.strings */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		389FDF80207404A4003FF5D3 /* DiaperGluLifeApplication */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 389FDFB2207404A5003FF5D3 /* Build configuration list for PBXNativeTarget "DiaperGluLifeApplication" */;
+			buildPhases = (
+				389FDF7D207404A4003FF5D3 /* Sources */,
+				389FDF7E207404A4003FF5D3 /* Frameworks */,
+				389FDF7F207404A4003FF5D3 /* Resources */,
+				CB6A2DB324562BE200CC61E3 /* Run Script */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DiaperGluLifeApplication;
+			productName = DiaperGluLifeApplication;
+			productReference = 389FDF81207404A4003FF5D3 /* DiaperGluLifeApplication.app */;
+			productType = "com.apple.product-type.application";
+		};
+		389FDFA1207404A5003FF5D3 /* DiaperGluLifeApplicationTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 389FDFB5207404A5003FF5D3 /* Build configuration list for PBXNativeTarget "DiaperGluLifeApplicationTests" */;
+			buildPhases = (
+				389FDF9E207404A5003FF5D3 /* Sources */,
+				389FDF9F207404A5003FF5D3 /* Frameworks */,
+				389FDFA0207404A5003FF5D3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				389FDFA7207404A5003FF5D3 /* PBXTargetDependency */,
+			);
+			name = DiaperGluLifeApplicationTests;
+			productName = DiaperGluLifeApplicationTests;
+			productReference = 389FDFA2207404A5003FF5D3 /* DiaperGluLifeApplicationTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		389FDF79207404A4003FF5D3 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				CLASSPREFIX = DiaperGluLife;
+				LastUpgradeCheck = 1110;
+				ORGANIZATIONNAME = "James Norris";
+				TargetAttributes = {
+					389FDF80207404A4003FF5D3 = {
+						ProvisioningStyle = Automatic;
+					};
+					389FDFA1207404A5003FF5D3 = {
+						TestTargetID = 389FDF80207404A4003FF5D3;
+					};
+				};
+			};
+			buildConfigurationList = 389FDF7C207404A4003FF5D3 /* Build configuration list for PBXProject "DiaperGluLifeApplication" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 389FDF78207404A4003FF5D3;
+			productRefGroup = 389FDF82207404A4003FF5D3 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				389FDF80207404A4003FF5D3 /* DiaperGluLifeApplication */,
+				389FDFA1207404A5003FF5D3 /* DiaperGluLifeApplicationTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		389FDF7F207404A4003FF5D3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				389FDF8F207404A5003FF5D3 /* InfoPlist.strings in Resources */,
+				389FDF9D207404A5003FF5D3 /* Images.xcassets in Resources */,
+				389FDF95207404A5003FF5D3 /* Credits.rtf in Resources */,
+				38A7D50320CF39BB00E01E56 /* clevelandgamedevs.rawbmp in Resources */,
+				389FDF9B207404A5003FF5D3 /* MainMenu.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		389FDFA0207404A5003FF5D3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				389FDFAD207404A5003FF5D3 /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		CB6A2DB324562BE200CC61E3 /* Run Script */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Run Script";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		389FDF7D207404A4003FF5D3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				389FDF98207404A5003FF5D3 /* DiaperGluLifeAppDelegate.m in Sources */,
+				389FDFBA207404CB003FF5D3 /* DiaperGluLifeOpenGLView.m in Sources */,
+				38A4CAC0207AA63400742C0B /* DiaperGluLifeApplication.m in Sources */,
+				389FDF91207404A5003FF5D3 /* main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		389FDF9E207404A5003FF5D3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				389FDFAF207404A5003FF5D3 /* DiaperGluLifeApplicationTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		389FDFA7207404A5003FF5D3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 389FDF80207404A4003FF5D3 /* DiaperGluLifeApplication */;
+			targetProxy = 389FDFA6207404A5003FF5D3 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		389FDF8D207404A5003FF5D3 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				389FDF8E207404A5003FF5D3 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		389FDF93207404A5003FF5D3 /* Credits.rtf */ = {
+			isa = PBXVariantGroup;
+			children = (
+				389FDF94207404A5003FF5D3 /* en */,
+			);
+			name = Credits.rtf;
+			sourceTree = "<group>";
+		};
+		389FDF99207404A5003FF5D3 /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				389FDF9A207404A5003FF5D3 /* Base */,
+			);
+			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+		389FDFAB207404A5003FF5D3 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				389FDFAC207404A5003FF5D3 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		389FDFB0207404A5003FF5D3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		389FDFB1207404A5003FF5D3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		389FDFB3207404A5003FF5D3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = "";
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "DiaperGluLifeApplication/DiaperGluLifeApplication-Prefix.pch";
+				INFOPLIST_FILE = "DiaperGluLifeApplication/DiaperGluLifeApplication-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "rainbarrel.com.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		389FDFB4207404A5003FF5D3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = "";
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "DiaperGluLifeApplication/DiaperGluLifeApplication-Prefix.pch";
+				INFOPLIST_FILE = "DiaperGluLifeApplication/DiaperGluLifeApplication-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "rainbarrel.com.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		389FDFB6207404A5003FF5D3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/DiaperGluLifeApplication.app/Contents/MacOS/DiaperGluLifeApplication";
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+					"$(inherited)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "DiaperGluLifeApplication/DiaperGluLifeApplication-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "DiaperGluLifeApplicationTests/DiaperGluLifeApplicationTests-Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = "rainbarrel.com.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Debug;
+		};
+		389FDFB7207404A5003FF5D3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/DiaperGluLifeApplication.app/Contents/MacOS/DiaperGluLifeApplication";
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+					"$(inherited)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "DiaperGluLifeApplication/DiaperGluLifeApplication-Prefix.pch";
+				INFOPLIST_FILE = "DiaperGluLifeApplicationTests/DiaperGluLifeApplicationTests-Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = "rainbarrel.com.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		389FDF7C207404A4003FF5D3 /* Build configuration list for PBXProject "DiaperGluLifeApplication" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				389FDFB0207404A5003FF5D3 /* Debug */,
+				389FDFB1207404A5003FF5D3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		389FDFB2207404A5003FF5D3 /* Build configuration list for PBXNativeTarget "DiaperGluLifeApplication" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				389FDFB3207404A5003FF5D3 /* Debug */,
+				389FDFB4207404A5003FF5D3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		389FDFB5207404A5003FF5D3 /* Build configuration list for PBXNativeTarget "DiaperGluLifeApplicationTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				389FDFB6207404A5003FF5D3 /* Debug */,
+				389FDFB7207404A5003FF5D3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 389FDF79207404A4003FF5D3 /* Project object */;
+}

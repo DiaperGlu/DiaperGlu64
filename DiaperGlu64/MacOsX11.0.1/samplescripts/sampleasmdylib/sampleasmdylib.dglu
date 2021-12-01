@@ -1,0 +1,425 @@
+( //////////////////////////////////////////////////////////////////////////////////////// )
+( //                                                                                       )
+( //    Copyright 2021 James Patrick Norris                                                )
+( //                                                                                       )
+( //    This file is part of Diaperglu 5.0.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.0 is free software; you can redistribute it and/or modify              )
+( //    it under the terms of the GNU General Public License as published by               )
+( //    the Free Software Foundation; either version 2 of the License, or                  )
+( //    {at your option} any later version.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.0 is distributed in the hope that it will be useful,                   )
+( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
+( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
+( //    GNU General Public License for more details.                                       )
+( //                                                                                       )
+( //    You should have received a copy of the GNU General Public License                  )
+( //    along with Diaperglu 5.0; if not, write to the Free Software                       )
+( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
+( //                                                                                       )
+( //////////////////////////////////////////////////////////////////////////////////////// )
+
+( /////////////////////////////// )
+( // James Patrick Norris      // )
+( // www.rainbarrel.com        // )
+( // January 9, 2021           // )
+( // version 5.0               // )
+( /////////////////////////////// )
+
+
+// this file expects a valid hlistid elementid on the top of the EH stack which represents the
+//  parent element of the export symbol list
+
+// this file also compiles to the current compile buffer
+
+
+// adding the assembler to the search order
+
+X86-WORDLIST >SEARCH-ORDER
+
+
+ OSYMBOL dg_bswap
+ ( u64                        RDI
+   -ret-
+   reverse byte order of u64  RAX )
+   
+   RDI RAX -> MOV,
+   RAX BSWAP,
+   RET,
+
+
+  HEX
+  OSYMBOL dg_udmslashmod
+  ( UINT64* pint                RDI )
+
+    RDI 8 [R+N]  RAX  MOV,    ( udhi )
+    RDX RDX XOR,
+    RDI 10 [R+N]  RCX  MOV,   ( u1 )
+    RCX RCX OR,
+
+    NZ IF,
+
+      RCX DIV,
+      RAX  RDI 8 [R+N]  MOV,   ( udhi )
+      RDI [R]  RAX  MOV,       ( udlo )
+      RDI 10 [R+N]  RCX  MOV,  ( u1 )
+        
+      RCX DIV,
+      RDX  RDI 10 [R+N]  MOV,  ( u1 )
+      RAX  RDI [R]  MOV,       ( udlo )
+
+    ELSE,
+        
+      -1 N  RAX  MOV,
+      RAX  RDI [R]  MOV,      ( udlo )
+      RAX  RDI 8 [R+N]  MOV,  ( udhi ) 
+      RAX  RDI 10 [R+N]  MOV, ( u1 )
+
+    THEN,
+    RET,
+
+   
+   
+  OSYMBOL dg_inc
+  ( u64                       RDI
+    -ret-
+    u64 + 1                   RAX )
+    
+    RDI RAX -> MOV,
+    RAX INC,
+    RET,
+  
+  
+  OSYMBOL dg_getrsp
+  ( -ret-
+    rsp during call         RAX )
+    
+    RSP RAX -> MOV,
+    RET,
+    
+    
+  OSYMBOL dg_twoslash
+  ( n64                          RDI
+    -ret-
+    n64'                         RAX )   // if n64 = 0, n64' = 0
+                                         // if n64 != 0, n64' = n64 / 2
+                                         
+    RDI RAX -> MOV,
+    1 N RAX SAR,
+    RET,
+ 
+ 
+  OSYMBOL dg_lshift
+  ( u64                    RDI
+    shiftcount             RSI
+    -ret-
+    u'64                   RAX )
+    
+    RDI RAX -> MOV,
+    ESI ECX -> MOV,
+    CL RAX SHL,
+    RET,
+
+
+  OSYMBOL dg_mstar
+  ( INT64  n1               RDI 
+    INT64  n2               RSI
+    -ret-
+    INT128 resultlo64       RAX
+           resulthi64       RDX )
+//  returns n1*n2
+
+    RDI RAX MOV,    
+    RSI RDX MOV,
+    RAX RDX IMUL,
+    RET,
+
+
+  OSYMBOL dg_rshift
+  ( UINT64 u64                 RDI
+    UINT64 shiftcount          RSI
+    -ret-
+    UINT64 u'64                RAX )
+    
+    RDI RAX MOV,  
+    RSI RCX MOV,
+    CL RAX  SHR,
+    RET,
+
+
+  OSYMBOL dg_umstar
+  ( UINT64 u1          RDI
+    UINT64 u2          RSI
+    -ret
+    UINT128  resultlo  RAX
+             resulthi  RDX )    
+
+    RDX RAX MOV,
+    RSI RDX MOV,
+    RDX MUL,
+    RET,
+
+
+  OSYMBOL dg_gethctwolength
+  ( hcstringlo64          RDI
+    hcstringhi64          RSI
+    -ret-
+    hcstringlength        RAX )
+
+    RAX RAX XOR,
+    RSI BSWAP,
+    SIL AL -> MOV,
+    RET,
+
+
+  OSYMBOL dg_touleb128
+  ( u64
+    -ret-
+    hcstringlo64          RAX
+    hcstringhi64          RDX )
+
+    RDX RDX XOR,
+    RAX RAX XOR,
+    CH CH XOR,
+    
+    BEGIN,
+      CH INC,
+      7 N  RDX  RAX  SHRD,
+      7 N  RDI  RDX  SHRD,
+      7 N  RDI  SHR,
+    NZ WHILE,
+      1 N  RDX  RAX  SHRD,
+      STC,
+      1 N  RDX  RCR,
+    REPEAT,
+
+    1 N  RDX  RAX  SHRD,
+    CLC,
+    1 N  RDX  RCR,
+
+    9 N  CH  CMP,
+    CS IF,
+      RDX RAX MOV,
+      RDX RDX XOR,
+      CH DL MOV,
+      RDX BSWAP,
+      8 N  CL  MOV,
+      CH CL SUB,
+      3 N  CL  SHL,
+      CL RAX SHR,
+      RET,
+    THEN,
+
+    10 N  CL  MOV,
+    CH CL SUB,
+    3 N  CL  SHL,
+    CL  RDX  RAX  SHRD,
+    CL  RDX  SHR,
+    RDX BSWAP,
+    CH DL MOV,
+    RDX BSWAP,
+    RET,
+
+
+  OSYMBOL dg_shrd
+  ( udlo        RDI
+    udhi        RSI
+    shiftcount  RDX
+    -ret-
+    ud'lo       RAX
+    ud'hi       RDX )
+
+    DL CL MOV,
+    40 N  CL  TEST,
+
+    NZ IF,
+      RSI RAX MOV,
+      RDX RDX XOR,
+      CL RAX SHR,
+      RET,
+    THEN,
+
+    RDI RAX MOV,
+    RSI RDX MOV,
+    CL RDX RAX SHRD,
+    CL RDX SHR,
+    
+    RET,
+
+  OHERE CONSTANT of64infinity  7FF0000000000000 CODE-U64,
+  OHERE CONSTANT of64zero      0000000000000000 CODE-U64,
+
+  DECIMAL
+  OSYMBOL dg_tentothex
+  ( x          RDI
+    -ret-
+    10^x       XMM0 )
+
+    309 N  RDI  CMP,
+    NC IF,
+      of64infinity [O]  XMM0  VMOVQ,
+      RET,
+    THEN,
+
+    1 N  EAX  MOV,
+    EAX  XMM0  CVTSI2SD,
+
+    10 N  EAX  MOV,
+    EAX  XMM1  CVTSI2SD,
+    
+    BEGIN,
+
+      RDI  RDI  TEST,  
+      ZS IF,
+        RET,
+      THEN,
+
+      1 N  RDI  SHR,
+      CS IF, 
+        XMM1  XMM0  MULSD,   
+      THEN,
+
+      XMM1  XMM1  MULSD,
+     
+    NEVER UNTIL,
+
+    RET,   
+      
+
+  HEX
+  OSYMBOL dg_f64timesf64tof128 (
+    f64a         RDI
+    f64b         RSI
+    -ret-
+    f128         RDX:RAX )
+
+    R8  R8  XOR,     // using this to hold the sign bit
+    RDI  RAX  MOV,
+    RSI  RDX  MOV,
+
+    RDX  RAX  XOR,
+    1 N  RAX  SHL,
+    1 N  R8  SHR,   // R8 now holds the sign bit result
+    
+    RDI  RAX  MOV,
+    RSI  RDX  MOV,
+
+    000FFFFFFFFFFFFF N  RCX  MOV,  // getting mantissas
+    RCX  RAX  AND,
+    RCX  RDX  AND,                 
+
+    0010000000000000 N  RCX  MOV,
+    RCX  RAX  OR,   // putting the assumed bit back in
+    RCX  RDX  OR,
+
+    7FF0000000000000 N  RCX  MOV,  // clearing the sign bit from exponents
+
+    RCX  RDI  AND,  // 0 times anything is 0... I'm including infinity in this
+    ZS IF,
+      RAX  RAX  XOR,
+      RDX  RDX  XOR,
+      RET,
+    THEN,
+
+    RCX  RSI  AND,  // 0 times anything is 0... I'm including infinity in this
+    ZS IF,
+      RAX  RAX  XOR,
+      RDX  RDX  XOR,
+      RET,
+    THEN,
+
+    // RDX and RAX now hold the two mantissas
+    // RDI and RSI now hold the two exponents
+
+    // minum case 0010000000000000 * 0010000000000000 = 100 00000000 00000000 00000000
+    // soo... to turn this back into a 64 bit floating point result... 
+    //  need to subtract 52 from the exponent or shift mantissa to the right 52
+    // soo... to turn this into a 64 bit floating point into a 128 bit floating point...
+    //  0001000000000000 0000000000000000  need to shift mantissa to the left 60
+    //  or add 60 to the exponent...
+    // soo.. for minimum case I'd shift mantissa to the left 8.... and that's it.
+    //  but if the first bit isn't in that position... I shift to the left less...
+    //  and I'd have to adjust the exponent...
+
+
+    RDX  MUL,       
+
+    RDX  RCX  BSR,  // because I ored in the assumed bits, there will always be
+                    //  a bit set in RDX somewhere between 40 and 64
+
+                      
+    -28 N  RCX  ADD,     // since 40 is 0...
+
+    34 N  RDI  SHR,     // getting exponents
+    34 N   RSI  SHR,
+    RSI  RDI  ADD,      // multiplying exponents   
+    3801 N RDI  ADD,    // need to adjust for change in bias after multiply + 1 for 2x2
+
+    RCX  RDI  ADD,      // and add in amount for mantissa shift
+                        // need to shift mantissa from result of multiply to f128
+                        // then check to see if there was an overflow
+                        // if exponent >= 16383 or <= 16382 then return + or - infinity
+
+    7FFF N  RDI  CMP,   // no possibililty of signed overflow...
+    GE IF,
+      // exponent too big return infinity
+      7FFF N  RDX  MOV,
+      RAX  RAX  XOR,
+      R8   RDX  OR,        // put in sign bit
+      RET,
+    THEN,
+    0 N  RDI  CMP,
+    LE IF,
+      // exponent too big return subnormal
+      RDX  RDX  XOR,
+      RAX  RAX  XOR,
+      RAX  INC,
+      R8   RDX  OR,        // then put in sign bit
+      RET,
+    THEN,
+   
+    // need to shift mantissa to the left 8 - whatever is in RCX
+    -8 N  CL  ADD,
+    CL  NEG,
+    CL  RAX  RDX  SHLD,  
+    CL  RAX  SHL, 
+
+    0000FFFFFFFFFFFF N  RCX  MOV,  // need to remove the assumed leading bit
+    RCX  RDX  AND, 
+
+    30 N  RDI  SHL,    // then recombine
+    RDI  RDX  OR,
+    R8  RDX  OR,        // then put in sign bit
+    
+    RET,
+
+
+// /////////////////////////////////////////////////////////
+// Diaperglu uses two files to represent a shared library //
+// /////////////////////////////////////////////////////////
+
+// The first file is just the raw code
+// saving the compiled buffer to a file
+
+// LIFECOMPILEBUFID $" life.dglib" SAVEFILE$
+
+// DROPEH ( dropping symbol list elementid hlistid )
+
+
+// The second file contains the linker information
+//   The Diaperglu linker can also allocate buffers
+
+// saving the nglu list which in this case just holds an export symbol list
+
+// EH> PACK-HLIST $" life.glulist" SAVEFILE$
+ 
+
+// DROP ( dropping nglu list element id )
+
+
+// I didn't free the life glulistHLIST or LIFECOMPILEBUFID buffer
+
+
+     
+

@@ -1,0 +1,43 @@
+( //////////////////////////////////////////////////////////////////////////////////////// )
+( //                                                                                       )
+( //    Copyright 2021 James Patrick Norris                                                )
+( //                                                                                       )
+( //    This file is part of Diaperglu 5.0.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.0 is free software; you can redistribute it and/or modify              )
+( //    it under the terms of the GNU General Public License as published by               )
+( //    the Free Software Foundation; either version 2 of the License, or                  )
+( //    {at your option} any later version.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.0 is distributed in the hope that it will be useful,                   )
+( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
+( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
+( //    GNU General Public License for more details.                                       )
+( //                                                                                       )
+( //    You should have received a copy of the GNU General Public License                  )
+( //    along with Diaperglu 5.0; if not, write to the Free Software                       )
+( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
+( //                                                                                       )
+( //////////////////////////////////////////////////////////////////////////////////////// )
+
+( /////////////////////////////// )
+( // James Patrick Norris      // )
+( // www.rainbarrel.com        // )
+( // January 9, 2021           // )
+( // version 5.0               // )
+( /////////////////////////////// )
+
+
+$" testmakedoto.dylib" OPENLIBRARY$ CONSTANT MYLIBHANDLE CONSTANT MYWORDLISTID
+
+$" dg_firstfunction" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT firstfunction
+$" dg_secondfunction" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT secondfunction
+
+CR ." Calling first function, I expect 1122334455667788, I got "
+0 firstfunction CALLPROC HEX U. CR
+
+CR ." Calling second function, I expect 1213141516171819, I got"  
+0 secondfunction CALLPROC HEX U. CR
+
+
+

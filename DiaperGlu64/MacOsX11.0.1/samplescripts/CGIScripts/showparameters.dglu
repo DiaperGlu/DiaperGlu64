@@ -1,0 +1,130 @@
+
+( last modified: April 14, 2007 )
+
+( $" skin.dglu" INCLUDEFILE$ )
+
+HEX
+: readstdin ( -- )
+   BEGIN
+     GETHSTDIN 400 0 POSTBUFFERID WAITREADN>BUF
+     ( OS is supposed to return 0 when file is completely sent )
+   0= UNTIL  
+;
+
+DECIMAL
+: .HTMLSPECIALCHAR ( char -- ) 
+    ( &#x00; doesn't work if I remember correctly )
+    DEPTH 1 U< IF EXIT THEN
+
+    DUP 0= IF
+      DROP [CHAR] . EMIT
+      EXIT
+    THEN
+
+    ." &#x" 
+    ( doing conversion this way instead of U. so there is no space after number )
+    BASE @ >R 16 BASE !
+    0 <#$ #S$ #>$ .$ 
+    R> BASE !
+    ." ;"
+;
+
+HEX
+: .HTML$ ( ascii$ -$- )
+         ( really just want to do non alphanumeric characters but doing all )
+         ( need to convert most non alphanumeric characters to &xxx; format to avoid confusion )
+         ( with special characters such as < > & )
+          
+         LENGTH$ 0= IF
+           DROP$ ." null" CRLF
+           EXIT
+         THEN
+  
+         LENGTH$ 0 DO
+
+           I $C@ 
+
+             DUP BL = IF
+               EMIT
+             ELSE 
+
+               DUP [CHAR] 0 U< IF
+                 .HTMLSPECIALCHAR
+               ELSE
+
+                 DUP [CHAR] 9 1+ U< IF
+                   EMIT
+                 ELSE
+ 
+                   DUP [CHAR] A U< IF            
+                     .HTMLSPECIALCHAR
+                   ELSE
+
+                     DUP [CHAR] Z 1+ U< IF
+                       EMIT
+                     ELSE
+                       DUP [CHAR] a U< IF
+                         .HTMLSPECIALCHAR 
+                       ELSE
+  
+                         DUP [CHAR] z 1+ U< IF
+                           EMIT
+                         ELSE
+                           .HTMLSPECIALCHAR
+                         THEN
+                       THEN
+                     THEN
+                   THEN
+                 THEN
+               THEN
+             THEN
+
+         LOOP
+
+         DROP$
+;
+
+readstdin
+
+." CONTENT-TYPE: text/html" CRLF  
+." Cache-Control: no-cache, must-revalidate" CRLF 
+." Expires: Mon, 12 Jul 1997 05:00:00 GMT" CRLF 
+CRLF
+
+." <html><head></head><body>" CRLF 
+
+( drawprojectheader )
+
+." <p>Method string = " GETMETHOD$ .$ ." </p>" CRLF
+
+." <p>CONTENT_LENGTH = " $" CONTENT_LENGTH" GETENV$ .$ ." </p>" CRLF
+." <p>CONTENT_TYPE = " $" CONTENT_TYPE" GETENV$ .$ ." </p>" CRLF
+." <p>GATEWAY_INTERFACE = " $" GATEWAY_INTERFACE" GETENV$ .$ ." </p>" CRLF
+." <p>PATH_INFO = " $" PATH_INFO" GETENV$ .$ ." </p>" CRLF
+( ." <p>QUERY_STRING = " $" QUERY_STRING" GETENV$ .$ ." </p>" CRLF )
+." <p>REMOTE_ADDR = " $" REMOTE_ADDR" GETENV$ .$ ." </p>" CRLF 
+." <p>REQUEST_METHOD = " $" REQUEST_METHOD" GETENV$ .$ ." </p>" CRLF 
+." <p>SCRIPT_NAME = " $" SCRIPT_NAME" GETENV$ .$ ." </p>" CRLF 
+." <p>SERVER_NAME = " $" SERVER_NAME" GETENV$ .$ ." </p>" CRLF
+." <p>SERVER_PORT = " $" SERVER_PORT" GETENV$ .$ ." </p>" CRLF
+." <p>SERVER_PROTOCOL = " $" SERVER_PROTOCOL" GETENV$ .$ ." </p>" CRLF
+." <p>SERVER_SOFTWARE = " $" SERVER_SOFTWARE" GETENV$ .$ ." </p>" CRLF
+." <p>AUTH_TYPE = " $" AUTH_TYPE" GETENV$ .$ ." </p>" CRLF
+." <p>REMOTE_HOST = " $" REMOTE_HOST" GETENV$ .$ ." </p>" CRLF
+." <p>PATH_TRANSLATED = " $" PATH_TRANSLATED" GETENV$ .$ ." </p>" CRLF
+." <p>REMOTE_IDENT = " $" REMOTE_IDENT" GETENV$ .$ ." </p>" CRLF
+." <p>REMOTE_USER = " $" REMOTE_USER" GETENV$ .$ ." </p>" CRLF
+
+." <p>Query string:<br>" CRLF
+GETQUERY$ .HTML$ CRLF
+." </p>" CRLF
+
+." <p>Post string:<br><pre>" CRLF
+POSTBUFFERID GETPBUFFER @ TYPE CRLF
+." </pre></p>" CRLF
+
+( drawprojectfooter )
+
+
+." </body></html>" CRLF
+         

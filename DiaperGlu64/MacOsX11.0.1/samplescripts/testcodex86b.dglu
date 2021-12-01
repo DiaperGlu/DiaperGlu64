@@ -1,0 +1,9009 @@
+( //////////////////////////////////////////////////////////////////////////////////////// )
+( //                                                                                       )
+( //    Copyright 2021 James Patrick Norris                                                )
+( //                                                                                       )
+( //    This file is part of Diaperglu 5.0.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.0 is free software; you can redistribute it and/or modify              )
+( //    it under the terms of the GNU General Public License as published by               )
+( //    the Free Software Foundation; either version 2 of the License, or                  )
+( //    {at your option} any later version.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.0 is distributed in the hope that it will be useful,                   )
+( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
+( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
+( //    GNU General Public License for more details.                                       )
+( //                                                                                       )
+( //    You should have received a copy of the GNU General Public License                  )
+( //    along with Diaperglu 5.0; if not, write to the Free Software                       )
+( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
+( //                                                                                       )
+( //////////////////////////////////////////////////////////////////////////////////////// )
+
+( /////////////////////////////// )
+( // James Patrick Norris      // )
+( // www.rainbarrel.com        // )
+( // January 9, 2021           // )
+( // version 5.0               // )
+( /////////////////////////////// )
+
+
+( Making sure the new variable buffer won't move when new variables are declared )
+HEX
+1000 1000 NEWBUFFER CONSTANT mylockeddownbuffer
+mylockeddownbuffer PCURRENTNEWVARIABLEBUFFER !
+
+200000 200000 NEWBUFFER PCURRENTCOMPILEBUFFER !  // this doesn't grow either
+
+VARIABLE VARX
+VARIABLE VARZ
+VARIABLE VARY  // a fixed address UINT64 variable
+0 VARY !
+100 ALLOT
+
+
+
+: CCO@ PCURRENTCOMPILEBUFFER @ O@ ;
+: CCO! PCURRENTCOMPILEBUFFER @ O! ;
+: CCOC! PCURRENTCOMPILEBUFFER @ OC! ;
+: CCOC@ PCURRENTCOMPILEBUFFER @ OC@ ;
+: CCO>P PCURRENTCOMPILEBUFFER @ GETSBUFFER DROP + ;
+
+: CCOU32@ PCURRENTCOMPILEBUFFER @ GETSBUFFER DROP + U32@ ;
+: CCOU32! PCURRENTCOMPILEBUFFER @ GETSBUFFER DROP + U32! ;
+
+( push and pop 32bit reg instructions already tested… )
+
+
+
+
+( HEX
+X86-WORDLIST >SEARCH-ORDER
+
+: testnop
+." Testing NOP, … "
+REGS> [ NOP, ] REGS> 
+
+09 ROLL =           
+SWAP 09 ROLL = AND
+SWAP 08 ROLL = AND
+SWAP 07 ROLL = AND
+SWAP 06 ROLL = AND
+SWAP 05 ROLL = AND
+SWAP 04 ROLL = AND
+SWAP 03 ROLL = AND
+SWAP 02 ROLL = AND
+IF ." success " ELSE ." fail " THEN CR ;
+
+SEARCH-ORDER> DROP
+
+testnop )
+
+
+HEX
+C000000000000000 CONSTANT FPD-2.0
+
+3FF0000000000000 CONSTANT FPD1.0
+3FF8000000000000 CONSTANT FPD1.5
+4000000000000000 CONSTANT FPD2.0
+4004000000000000 CONSTANT FPD2.5
+4008000000000000 CONSTANT FPD3.0
+4010000000000000 CONSTANT FPD4.0
+4012000000000000 CONSTANT FPD4.5
+4014000000000000 CONSTANT FPD5.0
+4018000000000000 CONSTANT FPD6.0
+4020000000000000 CONSTANT FPD8.0
+4022000000000000 CONSTANT FPD9.0
+
+C0000000 CONSTANT FPS-2.0
+
+3E000000 CONSTANT FPS0.125
+3E800000 CONSTANT FPS0.25
+3F000000 CONSTANT FPS0.5
+3F800000 CONSTANT FPS1.0
+3FC00000 CONSTANT FPS1.5
+40000000 CONSTANT FPS2.0
+40200000 CONSTANT FPS2.5
+40400000 CONSTANT FPS3.0
+40800000 CONSTANT FPS4.0
+40900000 CONSTANT FPS4.5
+40A00000 CONSTANT FPS5.0
+40C00000 CONSTANT FPS6.0
+41000000 CONSTANT FPS8.0
+41100000 CONSTANT FPS9.0
+
+
+
+
+
+// align to 16 byte boundary
+HEX
+10  PCURRENTCOMPILEBUFFER @ GETSBUFFER + 10 MOD -  10 MOD   CODE-ALLOT
+
+OHERE CONSTANT OU128A 10 CODE-ALLOT
+OHERE CONSTANT OU128B 20 CODE-ALLOT // added room so I can do unaligned tests
+OHERE CONSTANT OU128C 20 CODE-ALLOT // added room so I can do unaligned tests
+OHERE CONSTANT OU128D 10 CODE-ALLOT
+
+
+HEX
+CODE TESTMOVBE
+  VARX N  RDI  MOV,
+  RDI [R]  RAX  MOVBE,
+  RET,
+END-CODE
+
+: testmovbe ( -- )
+    ." testing MOVBE, "
+    1122334455667788  VARX !
+    0 ['] TESTMOVBE >BODY CALLPROC
+    VARZ !
+    VARZ @ 8877665544332211 = IF
+     ." SUCCESS!"
+    ELSE
+      ." FAIL! Expected " 8877665544332211 U. 
+      ." , got " VARZ @ U.
+    THEN
+    CR
+;
+
+testmovbe 
+
+
+HEX
+CODE TESTMOVQ2M64->XMM0
+  OU128A [O]  XMM0  MOVQ2,
+  XMM0  OU128C [O]  MOVQ,
+  RET,  
+END-CODE
+  
+: testmovq2m64->xmm0 ( -- )
+    ." testing OM64 [O]  XMM0  MOVQ2, "
+8000000100000005 OU128A CCO!  FFFFFFFE80000000 OU128A 8 + CCO!      
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTMOVQ2M64->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 8000000100000005 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  8000000100000005 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovq2m64->xmm0
+
+
+HEX
+CODE TESTMOVQ2M64->ST0
+  OU128A [O]  ST0  MOVQ2,
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testmovq2m64->st0 ( -- )
+    ." testing OM64 [O]  ST0  MOVQ2, "
+8000000100000005 OU128A CCO!  FFFFFFFE80000000 OU128A 8 + CCO!      
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTMOVQ2M64->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 8000000100000005 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  8000000100000005 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovq2m64->st0
+
+
+HEX
+CODE TESTMOVQ2RAX->XMM0
+  OU128A [O]  RAX  MOV,
+  OU128B [O]  XMM0  MOVQ,
+  RAX  XMM0  MOVQ2,
+  XMM0  OU128C [O]  MOVQ,
+  RET,  
+END-CODE
+  
+: testmovq2rax->xmm0 ( -- )
+    ." testing RAX  XMM0  MOVQ2, "
+8000000100000005 OU128A CCO!  FFFFFFFE80000000 OU128A 8 + CCO!
+1122334455667788 OU128B CCO!  1213141516171819 OU128B 8 + CCO!      
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTMOVQ2RAX->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 8000000100000005 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  8000000100000005 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovq2rax->xmm0
+
+
+HEX
+CODE TESTMOVQ2RAX->ST0
+  
+  OU128A [O]  RAX  MOV,
+  RAX  ST0  MOVQ2,
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testmovq2rax->st0 ( -- )
+    ." testing RAX  ST0  MOVQ2, "
+8000000100000005 OU128A CCO!  FFFFFFFE80000000 OU128A 8 + CCO!      
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTMOVQ2RAX->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 8000000100000005 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  8000000100000005 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovq2rax->st0
+
+
+HEX
+CODE TESTMOVQ2XMM0->M64
+  OU128A [O]  XMM0  MOVQ,
+  XMM0  OU128C [O]  MOVQ2,
+  RET,  
+END-CODE
+  
+: testmovq2xmm0->m64 ( -- )
+    ." testing  XMM0  OM64 [O]  MOVQ2, "
+8000000100000005 OU128A CCO!  FFFFFFFE80000000 OU128A 8 + CCO!      
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTMOVQ2XMM0->M64 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 8000000100000005 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  8000000100000005 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovq2xmm0->m64
+
+
+HEX
+CODE TESTMOVQ2ST0->M64
+  OU128A [O]  ST0  MOVQ,
+  ST0  OU128C [O]  MOVQ2,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testmovq2st0->m64 ( -- )
+    ." testing  ST0  OM64 [O]  MOVQ2, "
+8000000100000005 OU128A CCO!  FFFFFFFE80000000 OU128A 8 + CCO!      
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTMOVQ2ST0->M64 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 8000000100000005 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  8000000100000005 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovq2st0->m64
+
+
+HEX
+CODE TESTMOVQ2M64<-XMM0
+  OU128A [O]  XMM0  MOVQ,
+  OU128C [O]  XMM0 <-  MOVQ2,
+  RET,  
+END-CODE
+  
+: testmovq2m64<-xmm0 ( -- )
+    ." testing  OM64 [O]  XMM0 <-  MOVQ2, "
+8000000100000005 OU128A CCO!  FFFFFFFE80000000 OU128A 8 + CCO!      
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTMOVQ2M64<-XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 8000000100000005 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  8000000100000005 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovq2m64<-xmm0
+
+
+HEX
+CODE TESTMOVQ2M64<-ST0
+  OU128A [O]  ST0  MOVQ,
+  OU128C [O]  ST0 <-  MOVQ2,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testmovq2m64<-st0 ( -- )
+    ." testing  OM64 [O]  ST0 <-  MOVQ2, "
+8000000100000005 OU128A CCO!  FFFFFFFE80000000 OU128A 8 + CCO!      
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTMOVQ2M64<-ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 8000000100000005 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  8000000100000005 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovq2m64<-st0
+
+
+HEX
+CODE TESTMOVQ2M32->XMM0
+  OU128A [O]  32BIT  XMM0  MOVQ2,
+  XMM0  OU128C [O]  MOVQ,
+  RET,  
+END-CODE
+  
+: testmovq2m32->xmm0 ( -- )
+    ." testing OM32 [O] 32BIT  XMM0  MOVQ2, "
+8000000100000005 OU128A CCO!  FFFFFFFE80000000 OU128A 8 + CCO!      
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTMOVQ2M32->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 00000005 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  00000005 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovq2m32->xmm0
+
+
+
+HEX
+CODE TESTMOVQ2M32->ST0
+  OU128A [O]  32BIT  ST0  MOVQ2,
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testmovq2m32->st0 ( -- )
+    ." testing OM32 [O] 32BIT  ST0  MOVQ2, "
+8000000100000005 OU128A CCO!  FFFFFFFE80000000 OU128A 8 + CCO!      
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTMOVQ2M32->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 00000005 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  00000005 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovq2m32->st0
+
+
+HEX
+CODE TESTMOVQ2EAX->XMM0
+  OU128A [O]  RAX  MOV,
+  EAX  XMM0  MOVQ2,
+  XMM0  OU128C [O]  MOVQ,
+  RET,  
+END-CODE
+  
+: testmovq2eax->xmm0 ( -- )
+    ." testing EAX  XMM0  MOVQ2, "
+8000000100000005 OU128A CCO!  FFFFFFFE80000000 OU128A 8 + CCO!      
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTMOVQ2EAX->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 00000005 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  00000005 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovq2eax->xmm0
+
+
+
+HEX
+CODE TESTMOVQ2EAX->ST0
+  OU128A [O]  RAX  MOV,
+  EAX  ST0  MOVQ2,
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testmovq2eax->st0 ( -- )
+    ." testing EAX  ST0  MOVQ2, "
+8000000100000005 OU128A CCO!  FFFFFFFE80000000 OU128A 8 + CCO!      
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTMOVQ2EAX->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 00000005 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  00000005 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovq2eax->st0
+
+
+HEX
+CODE TESTMOVDEAX->XMM0
+  OU128A [O]  RAX  MOV,
+  EAX  XMM0  MOVD,
+  XMM0  OU128C [O]  MOVQ,
+  RET,  
+END-CODE
+  
+: testmovdeax->xmm0 ( -- )
+    ." testing EAX  XMM0  MOVD, "
+8000000100000005 OU128A CCO!  FFFFFFFE80000000 OU128A 8 + CCO!      
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTMOVDEAX->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 00000005 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  00000005 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovdeax->xmm0
+
+
+
+HEX
+CODE TESTMOVDEAX->ST0
+  OU128A [O]  RAX  MOV,
+  EAX  ST0  MOVD,
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testmovdeax->st0 ( -- )
+    ." testing EAX  ST0  MOVD, "
+8000000100000005 OU128A CCO!  FFFFFFFE80000000 OU128A 8 + CCO!      
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTMOVDEAX->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 00000005 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  00000005 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovdeax->st0
+
+
+HEX
+CODE TESTMOVDXMM0->M64
+  OU128A [O]  XMM0  MOVQ,
+  XMM0  OU128C [O] 64BIT  MOVD,
+  RET,  
+END-CODE
+  
+: testmovdxmm0->m64 ( -- )
+    ." testing  XMM0  OM64 [O] 64BIT  MOVD, "
+8000000100000005 OU128A CCO!  FFFFFFFE80000000 OU128A 8 + CCO!      
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTMOVDXMM0->M64 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 8000000100000005 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  8000000100000005 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovdxmm0->m64
+
+
+HEX
+CODE TESTMOVDST0->M64
+  OU128A [O]  ST0  MOVQ,
+  ST0  OU128C [O] 64BIT  MOVD,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testmovdst0->m64 ( -- )
+    ." testing  ST0  OM64 [O] 64BIT  MOVD, "
+8000000100000005 OU128A CCO!  FFFFFFFE80000000 OU128A 8 + CCO!      
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTMOVDST0->M64 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 8000000100000005 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  8000000100000005 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovdst0->m64
+
+
+HEX
+CODE TESTMOVDM32->XMM0
+  OU128A [O]  XMM0  MOVD,
+  XMM0  OU128C [O]  MOVQ,
+  RET,  
+END-CODE
+  
+: testmovdm32->xmm0 ( -- )
+    ." testing OM32 [O]  XMM0  MOVD, "
+8000000100000005 OU128A CCO!  FFFFFFFE80000000 OU128A 8 + CCO!      
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTMOVDM32->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 00000005 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  00000005 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovdm32->xmm0
+
+
+
+HEX
+CODE TESTMOVDM32->ST0
+  OU128A [O]  ST0  MOVD,
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testmovdm32->st0 ( -- )
+    ." testing OM32 [O] ST0  MOVD, "
+8000000100000005 OU128A CCO!  FFFFFFFE80000000 OU128A 8 + CCO!      
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTMOVDM32->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 00000005 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  00000005 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovdm32->st0
+
+
+HEX
+CODE TESTMOVDXMM0->M32
+  OU128A [O]  XMM0  MOVQ,
+  XMM0  OU128C [O]  MOVD,
+  RET,  
+END-CODE
+  
+: testmovdxmm0->m32 ( -- )
+    ." testing XMM0  OM32 [O]  MOVD, "
+8000000100000005 OU128A CCO!  FFFFFFFE80000000 OU128A 8 + CCO!      
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTMOVDXMM0->M32 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 00000005 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  00000005 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovdxmm0->m32
+
+
+
+HEX
+CODE TESTMOVDST0->M32
+  OU128A [O]  ST0  MOVQ,
+  ST0  OU128C [O]  MOVD,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testmovdst0->m32 ( -- )
+    ." testing ST0  OM32 [O]  MOVD, "
+8000000100000005 OU128A CCO!  FFFFFFFE80000000 OU128A 8 + CCO!      
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTMOVDST0->M32 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 00000005 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  00000005 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovdst0->m32
+
+
+HEX
+CODE TESTPORM128->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  OU128B [O]  XMM0  POR,
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testporm128->xmm0 ( -- )
+    ." testing OM128 [O]  XMM0  POR, "
+8000000100000005 OU128A CCO!  FFFFFFFE80000000 OU128A 8 + CCO! 
+00F0000000000F05 OU128B CCO!  800000007FFFFFFF OU128B 8 + CCO!     
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTPORM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 80F0000100000F05 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  80F0000100000F05 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ FFFFFFFEFFFFFFFF = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " FFFFFFFEFFFFFFFF U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testporm128->xmm0
+
+
+HEX
+CODE TESTPORM64->ST0
+  OU128A [O]  ST0  MOVQ,
+  OU128B [O]  ST0  POR,
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testporm64->st0 ( -- )
+    ." testing OM64 [O]  ST0  POR, "
+8000000100000005 OU128A CCO!  FFFFFFFE80000000 OU128A 8 + CCO! 
+00F0000000000F05 OU128B CCO!  800000007FFFFFFF OU128B 8 + CCO!     
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTPORM64->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 80F0000100000F05 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  80F0000100000F05 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testporm64->st0
+
+
+HEX
+CODE TESTPXORM128->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  OU128B [O]  XMM0  PXOR,
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpxorm128->xmm0 ( -- )
+    ." testing OM128 [O]  XMM0  PXOR, "
+8000000100000005 OU128A CCO!  FFFFFFFE80000000 OU128A 8 + CCO! 
+00F0000000000F05 OU128B CCO!  800000007FFFFFFF OU128B 8 + CCO!     
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTPXORM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 80F0000100000F00 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  80F0000100000F00 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 7FFFFFFEFFFFFFFF = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 7FFFFFFEFFFFFFFF U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpxorm128->xmm0
+
+
+HEX
+CODE TESTPXORM64->ST0
+  OU128A [O]  ST0  MOVQ,
+  OU128B [O]  ST0  PXOR,
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpxorm64->st0 ( -- )
+    ." testing OM64 [O]  ST0  PXOR, "
+8000000100000005 OU128A CCO!  FFFFFFFE80000000 OU128A 8 + CCO! 
+00F0000000000F05 OU128B CCO!  800000007FFFFFFF OU128B 8 + CCO!     
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTPXORM64->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 80F0000100000F00 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  80F0000100000F00 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpxorm64->st0
+
+
+
+HEX
+CODE TESTPMULHRSWM128->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  OU128B [O]  XMM0  PMULHRSW,
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpmulhrswm128->xmm0 ( -- ) 
+    ." testing OM128 [O]  XMM0  PMULHRSW, "
+0400030002000100 OU128A CCO!  0300020001000000 OU128A 8 + CCO! 
+0500040003000200 OU128B CCO!  0100020001000100 OU128B 8 + CCO!     
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTPMULHRSWM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 00280018000C0004 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  00280018000C0004 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0006000800020000 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0006000800020000 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpmulhrswm128->xmm0
+
+
+HEX
+CODE TESTPMULHRSWM64->ST0
+  OU128A [O]  ST0  MOVQ,
+  OU128B [O]  ST0  PMULHRSW,
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpmulhrswm64->st0 ( -- )
+    ." testing OM64 [O]  ST0  PMULHRSW, "
+0400030002000100 OU128A CCO!  0300020001000000 OU128A 8 + CCO! 
+0500040003000200 OU128B CCO!  0100020001000100 OU128B 8 + CCO!     
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTPMULHRSWM64->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 00280018000C0004 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  00280018000C0004 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpmulhrswm64->st0
+
+
+HEX
+CODE TESTPMULHUWM128->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  OU128B [O]  XMM0  PMULHUW,
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpmulhuwm128->xmm0 ( -- )  // need to change test to show this is different result from signed
+    ." testing OM128 [O]  XMM0  PMULHUW, "
+0400030002000100 OU128A CCO!  0300020001000000 OU128A 8 + CCO!  
+0500040003000200 OU128B CCO!  0100020001000100 OU128B 8 + CCO!     
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTPMULHUWM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0014000C00060002 = IF  
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  0014000C00060002 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0003000400010000 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0003000400010000 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpmulhuwm128->xmm0
+
+
+HEX
+CODE TESTPMULHUWM64->ST0
+  OU128A [O]  ST0  MOVQ,
+  OU128B [O]  ST0  PMULHUW,
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpmulhuwm64->st0 ( -- ) // need to change test to show this is different result from signed
+    ." testing OM64 [O]  ST0  PMULHUW, "
+0400030002000100 OU128A CCO!  0300020001000000 OU128A 8 + CCO! 
+0500040003000200 OU128B CCO!  0100020001000100 OU128B 8 + CCO!     
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTPMULHUWM64->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0014000C00060002 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  0014000C00060002 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpmulhuwm64->st0
+
+
+HEX
+CODE TESTPMULHWM128->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  OU128B [O]  XMM0  PMULHW,
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpmulhwm128->xmm0 ( -- ) 
+    ." testing OM128 [O]  XMM0  PMULHW, "
+040003000200FEFF OU128A CCO!  0300020001000000 OU128A 8 + CCO! 
+050004000300FDFF OU128B CCO!  0100020001000100 OU128B 8 + CCO!     
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTPMULHWM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0014000C00060002 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  0014000C00060002 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0003000400010000 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0003000400010000 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpmulhwm128->xmm0
+
+
+HEX
+CODE TESTPMULHWM64->ST0
+  OU128A [O]  ST0  MOVQ,
+  OU128B [O]  ST0  PMULHW,
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpmulhwm64->st0 ( -- )
+    ." testing OM64 [O]  ST0  PMULHW, "
+040003000200FEFF OU128A CCO!  0300020001000000 OU128A 8 + CCO! 
+050004000300FDFF OU128B CCO!  0100020001000100 OU128B 8 + CCO!     
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTPMULHWM64->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0014000C00060002 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  0014000C00060002 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpmulhwm64->st0
+
+
+
+HEX
+CODE TESTPMULLDM128->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  OU128B [O]  XMM0  PMULLD,
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpmulldm128->xmm0 ( -- ) 
+    ." testing OM128 [O]  XMM0  PMULLD, "
+00000003FFFFFFFE OU128A CCO!  0000000300000001 OU128A 8 + CCO! 
+00000004FFFFFFFD OU128B CCO!  0000000100000001 OU128B 8 + CCO!     
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTPMULLDM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0000000C00000006 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  0000000C00000006 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0000000300000001 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0000000300000001 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpmulldm128->xmm0
+
+
+HEX
+CODE TESTPMULLWM128->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  OU128B [O]  XMM0  PMULLW,
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpmullwm128->xmm0 ( -- ) 
+    ." testing OM128 [O]  XMM0  PMULLW, "
+00020003FFFFFFFE OU128A CCO!  0005000300020001 OU128A 8 + CCO! 
+00030004FFFFFFFD OU128B CCO!  0001000100040001 OU128B 8 + CCO!     
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTPMULLWM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0006000C00010006 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  0006000C00010006 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0005000300080001 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0005000300080001 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpmullwm128->xmm0
+
+
+HEX
+CODE TESTPMULUDQM128->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  OU128B [O]  XMM0  PMULUDQ,
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpmuludqm128->xmm0 ( -- ) 
+    ." testing OM128 [O]  XMM0  PMULUDQ, "
+0000000300000002 OU128A CCO!  0000000200000003 OU128A 8 + CCO! 
+0000000400000003 OU128B CCO!  0000000200000005 OU128B 8 + CCO!     
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTPMULUDQM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0000000000000006 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  0000000000000006 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 000000000000000F = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 000000000000000F U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpmuludqm128->xmm0
+
+
+HEX
+CODE TESTPMULUDQM64->ST0
+  OU128A [O]  ST0  MOVQ,
+  OU128B [O]  ST0  PMULUDQ,
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpmuludqm64->st0 ( -- )
+    ." testing OM64 [O]  ST0  PMULUDQ, "
+0000000300000002 OU128A CCO!  0000000200000000 OU128A 8 + CCO! 
+0000000400000003 OU128B CCO!  0000000200000001 OU128B 8 + CCO!     
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTPMULUDQM64->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0000000000000006 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  0000000000000006 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpmuludqm64->st0
+
+
+HEX
+CODE TESTPSHUFBM128->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  OU128B [O]  XMM0  PSHUFB,
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpshufbm128->xmm0 ( -- ) 
+    ." testing OM128 [O]  XMM0  PSHUFB, "
+3736353433323130 OU128A CCO!  3F3E3D3C3B3A3938 OU128A 8 + CCO! 
+800E0F01020E0403 OU128B CCO!  050609080B0C0A05 OU128B 8 + CCO!     
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTPSHUFBM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 003E3F31323E3433 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  003E3F31323E3433 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 353639383B3C3A35 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 353639383B3C3A35 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpshufbm128->xmm0
+
+
+HEX
+CODE TESTPSHUFBM64->ST0
+  OU128A [O]  ST0  MOVQ,
+  OU128B [O]  ST0  PSHUFB,
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpshufbm64->st0 ( -- )
+    ." testing OM64 [O]  ST0  PSHUFB, "
+3736353433323130 OU128A CCO!  3F3E3D3C3B3A3938 OU128A 8 + CCO! 
+800E0F01020E0403 OU128B CCO!  050609080B0C0A05 OU128B 8 + CCO!     
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTPSHUFBM64->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0036373132363433 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  0036373132363433 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpshufbm64->st0
+
+
+HEX
+CODE TESTPSHUFDM128->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  F6 N  OU128B [O]  XMM0  PSHUFD, // 3 3 1 2
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpshufdm128->xmm0 ( -- ) 
+    ." testing OM128 [O]  XMM0  PSHUFD, "
+3736353433323130 OU128A CCO!  3F3E3D3C3B3A3938 OU128A 8 + CCO! 
+800E0F01020E0403 OU128B CCO!  050609080B0C0A05 OU128B 8 + CCO!     
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTPSHUFDM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 800E0F010B0C0A05 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  800E0F010B0C0A05 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0506090805060908 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0506090805060908 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpshufdm128->xmm0
+
+
+HEX
+CODE TESTPSHUFHWM128->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  F6 N  OU128B [O]  XMM0  PSHUFHW, // 3 3 1 2
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpshufhwm128->xmm0 ( -- ) 
+    ." testing OM128 [O]  XMM0  PSHUFHW, "
+3736353433323130 OU128A CCO!  3F3E3D3C3B3A3938 OU128A 8 + CCO! 
+800E0F01020E0403 OU128B CCO!  050609080B0C0A05 OU128B 8 + CCO!     
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTPSHUFHWM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 800E0F01020E0403 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  800E0F01020E0403 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 050605060B0C0908 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 050605060B0C0908 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpshufhwm128->xmm0
+
+
+HEX
+CODE TESTPSHUFLWM128->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  F6 N  OU128B [O]  XMM0  PSHUFLW, // 3 3 1 2
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpshuflwm128->xmm0 ( -- ) 
+    ." testing OM128 [O]  XMM0  PSHUFLW, "
+3736353433323130 OU128A CCO!  3F3E3D3C3B3A3938 OU128A 8 + CCO! 
+800E0F01020E0403 OU128B CCO!  050609080B0C0A05 OU128B 8 + CCO!     
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTPSHUFLWM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 800E800E020E0F01 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  800E800E020E0F01 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 050609080B0C0A05 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 050609080B0C0A05 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpshuflwm128->xmm0
+
+
+HEX
+CODE TESTPSHUFWM64->ST0
+  OU128A [O]  ST0  MOVQ,
+  F6 N  OU128B [O]  ST0  PSHUFW,  // 3312
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpshufwm64->st0 ( -- )
+    ." testing OM64 [O]  ST0  PSHUFW, "
+3736353433323130 OU128A CCO!  3F3E3D3C3B3A3938 OU128A 8 + CCO! 
+800E0F01020E0403 OU128B CCO!  050609080B0C0A05 OU128B 8 + CCO!     
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTPSHUFWM64->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 800E800E020E0F01 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  800E800E020E0F01 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpshufwm64->st0
+
+
+HEX
+CODE TESTSHUFPDM128->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  01 N  OU128B [O]  XMM0  SHUFPD, // 1 0 
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testshufpdm128->xmm0 ( -- ) 
+    ." testing OM128 [O]  XMM0  SHUFPD, "
+FPD1.0 OU128A CCO!  FPD2.0 OU128A 8 + CCO! 
+FPD3.0 OU128B CCO!  FPD4.0 OU128B 8 + CCO!     
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTSHUFPDM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ FPD2.0 = IF
+      ." 1st fp64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st fp64 "  FPD2.0 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ FPD3.0 = IF
+      ." 2nd fp64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd fp64 " FPD3.0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testshufpdm128->xmm0
+
+
+HEX
+CODE TESTSHUFPSM128->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  47 N  OU128B [O]  XMM0  SHUFPS, // src 1 0 dest 1 3 (01 00 01 11)
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testshufpsm128->xmm0 ( -- ) 
+    ." testing OM128 [O]  XMM0  SHUFPS, "
+FPS1.0 OU128A CCOU32!  FPS5.0 OU128A 4 + CCOU32!  FPS2.0 OU128A 8 + CCOU32!   FPS3.0 OU128A 0C + CCOU32!
+FPS4.0 OU128B CCOU32!  FPS9.0 OU128B 4 + CCOU32!  FPS6.0 OU128B 8 + CCOU32!   FPS8.0 OU128B 0C + CCOU32!     
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTSHUFPSM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCOU32@ FPS3.0 = IF
+      ." 1st fp32 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u32 "  FPS3.0 U.  
+      ." , got " OU128C CCOU32@ U.
+    THEN
+
+    OU128C 4 + CCOU32@ FPS5.0 = IF
+      ." 2nd fp32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd fp32 " FPS5.0 U.  
+      ." , got " OU128C 4 + CCOU32@ U.
+    THEN
+
+    OU128C 8 + CCOU32@ FPS4.0 = IF
+      ." 3rd fp32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 3rd fp32 " FPS4.0 U.  
+      ." , got " OU128C 8 + CCOU32@ U.
+    THEN
+
+    OU128C 0C + CCOU32@ FPS9.0 = IF
+      ." 4th fp32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 4th fp32 " FPS9.0 U.  
+      ." , got " OU128C 0C + CCOU32@ U.
+    THEN
+
+    CR
+;
+
+testshufpsm128->xmm0
+
+
+HEX
+CODE TESTPSLLWM128->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  OU128B [O]  XMM0  PSLLW, 
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpsllwm128->xmm0 ( -- ) 
+    ." testing OM128 [O]  XMM0  PSLLW, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!   
+               4 OU128B CCO!                  0 OU128B 8 + CCO!     
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSLLWM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 23406780ABC0EF70 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  23406780ABC0EF70 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 1220344056607880 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 1220344056607880 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpsllwm128->xmm0
+
+
+HEX
+CODE TESTPSLLWN8->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  4 N  XMM0  PSLLW, 
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpsllwn8->xmm0 ( -- ) 
+    ." testing 4 N  XMM0  PSLLW, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSLLWN8->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 23406780ABC0EF70 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  23406780ABC0EF70 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 1220344056607880 = IF
+      ." 3rd fp32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 3rd fp32 " 1220344056607880 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpsllwn8->xmm0
+
+
+HEX
+CODE TESTPSLLWM64->ST0
+  OU128A [O]  ST0  MOVQ,
+  OU128B [O]  ST0  PSLLW, 
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpsllwm64->st0 ( -- ) 
+    ." testing OM64 [O]  ST0  PSLLW, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!   
+               4 OU128B CCO!                  0 OU128B 8 + CCO!     
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSLLWM64->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 23406780ABC0EF70 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  23406780ABC0EF70 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpsllwm64->st0
+
+
+HEX
+CODE TESTPSLLWN8->ST0
+  OU128A [O]  ST0  MOVQ,
+  4 N  ST0  PSLLW, 
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpsllwn8->st0 ( -- ) 
+    ." testing 4 N  ST0  PSLLW, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSLLWN8->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 23406780ABC0EF70 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  23406780ABC0EF70 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 3rd fp32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 3rd fp32 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpsllwn8->st0
+
+
+HEX
+CODE TESTPSLLDM128->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  OU128B [O]  XMM0  PSLLD, 
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpslldm128->xmm0 ( -- ) 
+    ." testing OM128 [O]  XMM0  PSLLD, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!   
+               4 OU128B CCO!                  0 OU128B 8 + CCO!     
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSLLDM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 23456780ABCDEF70 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  23456780ABCDEF70 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 1223344056677880 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 1223344056677880 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpslldm128->xmm0
+
+
+HEX
+CODE TESTPSLLDN8->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  4 N  XMM0  PSLLD, 
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpslldn8->xmm0 ( -- ) 
+    ." testing 4 N  XMM0  PSLLD, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSLLDN8->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 23456780ABCDEF70 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  23456780ABCDEF70 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 1223344056677880 = IF
+      ." 3rd fp32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 3rd fp32 " 1223344056677880 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpslldn8->xmm0
+
+
+HEX
+CODE TESTPSLLDM64->ST0
+  OU128A [O]  ST0  MOVQ,
+  OU128B [O]  ST0  PSLLD, 
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpslldm64->st0 ( -- ) 
+    ." testing OM64 [O]  ST0  PSLLD, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!   
+               4 OU128B CCO!                  0 OU128B 8 + CCO!     
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSLLDM64->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 23456780ABCDEF70 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  23456780ABCDEF70 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpslldm64->st0
+
+
+HEX
+CODE TESTPSLLDN8->ST0
+  OU128A [O]  ST0  MOVQ,
+  4 N  ST0  PSLLD, 
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpslldn8->st0 ( -- ) 
+    ." testing 4 N  ST0  PSLLD, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSLLDN8->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 23456780ABCDEF70 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  23456780ABCDEF70 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 3rd fp32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 3rd fp32 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpslldn8->st0
+
+
+HEX
+CODE TESTPSLLQM128->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  OU128B [O]  XMM0  PSLLQ, 
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpsllqm128->xmm0 ( -- ) 
+    ." testing OM128 [O]  XMM0  PSLLQ, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!   
+               4 OU128B CCO!                  0 OU128B 8 + CCO!     
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSLLQM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 23456789ABCDEF70 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  23456789ABCDEF70 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 1223344556677880 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 1223344556677880 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpsllqm128->xmm0
+
+
+HEX
+CODE TESTPSLLQN8->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  4 N  XMM0  PSLLQ, 
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpsllqn8->xmm0 ( -- ) 
+    ." testing 4 N  XMM0  PSLLQ, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSLLQN8->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 23456789ABCDEF70 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  23456789ABCDEF70 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 1223344556677880 = IF
+      ." 3rd fp32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 3rd fp32 " 1223344556677880 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpsllqn8->xmm0
+
+
+HEX
+CODE TESTPSLLQM64->ST0
+  OU128A [O]  ST0  MOVQ,
+  OU128B [O]  ST0  PSLLQ, 
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpsllqm64->st0 ( -- ) 
+    ." testing OM64 [O]  ST0  PSLLQ, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!   
+               4 OU128B CCO!                  0 OU128B 8 + CCO!     
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSLLQM64->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 23456789ABCDEF70 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  23456789ABCDEF70 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpsllqm64->st0
+
+
+HEX
+CODE TESTPSLLQN8->ST0
+  OU128A [O]  ST0  MOVQ,
+  4 N  ST0  PSLLQ, 
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpsllqn8->st0 ( -- ) 
+    ." testing 4 N  ST0  PSLLQ, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSLLQN8->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 23456789ABCDEF70 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  23456789ABCDEF70 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 3rd fp32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 3rd fp32 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpsllqn8->st0
+
+
+
+HEX
+CODE TESTPSRLWM128->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  OU128B [O]  XMM0  PSRLW, 
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpsrlwm128->xmm0 ( -- ) 
+    ." testing OM128 [O]  XMM0  PSRLW, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!   
+               4 OU128B CCO!                  0 OU128B 8 + CCO!     
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSRLWM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0123056709AB0DEF = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  0123056709AB0DEF U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0112033405560778 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0112033405560778 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpsrlwm128->xmm0
+
+
+HEX
+CODE TESTPSRLWN8->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  4 N  XMM0  PSRLW, 
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpsrlwn8->xmm0 ( -- ) 
+    ." testing 4 N  XMM0  PSRLW, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSRLWN8->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0123056709AB0DEF = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  0123056709AB0DEF U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0112033405560778 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0112033405560778 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpsrlwn8->xmm0
+
+
+HEX
+CODE TESTPSRLWM64->ST0
+  OU128A [O]  ST0  MOVQ,
+  OU128B [O]  ST0  PSRLW, 
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpsrlwm64->st0 ( -- ) 
+    ." testing OM64 [O]  ST0  PSRLW, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!   
+               4 OU128B CCO!                  0 OU128B 8 + CCO!     
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSRLWM64->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0123056709AB0DEF = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  0123056709AB0DEF U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpsrlwm64->st0
+
+
+HEX
+CODE TESTPSRLWN8->ST0
+  OU128A [O]  ST0  MOVQ,
+  4 N  ST0  PSRLW, 
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpsrlwn8->st0 ( -- ) 
+    ." testing 4 N  ST0  PSRLW, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSRLWN8->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0123056709AB0DEF = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  0123056709AB0DEF U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 3rd fp32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 3rd fp32 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpsrlwn8->st0
+
+
+HEX
+CODE TESTPSRLDM128->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  OU128B [O]  XMM0  PSRLD, 
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpsrldm128->xmm0 ( -- ) 
+    ." testing OM128 [O]  XMM0  PSRLD, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!   
+               4 OU128B CCO!                  0 OU128B 8 + CCO!     
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSRLDM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0123456709ABCDEF = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  0123456709ABCDEF U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0112233405566778 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0112233405566778 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpsrldm128->xmm0
+
+
+HEX
+CODE TESTPSRLDN8->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  4 N  XMM0  PSRLD, 
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpsrldn8->xmm0 ( -- ) 
+    ." testing 4 N  XMM0  PSRLD, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSRLDN8->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0123456709ABCDEF = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  0123456709ABCDEF U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0112233405566778 = IF
+      ." 3rd fp32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 3rd fp32 " 0112233405566778 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpsrldn8->xmm0
+
+
+HEX
+CODE TESTPSRLDM64->ST0
+  OU128A [O]  ST0  MOVQ,
+  OU128B [O]  ST0  PSRLD, 
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpsrldm64->st0 ( -- ) 
+    ." testing OM64 [O]  ST0  PSRLD, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!   
+               4 OU128B CCO!                  0 OU128B 8 + CCO!     
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSRLDM64->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0123456709ABCDEF = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  0123456709ABCDEF U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpsrldm64->st0
+
+
+HEX
+CODE TESTPSRLDN8->ST0
+  OU128A [O]  ST0  MOVQ,
+  4 N  ST0  PSRLD, 
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpsrldn8->st0 ( -- ) 
+    ." testing 4 N  ST0  PSRLD, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSRLDN8->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0123456709ABCDEF = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  0123456709ABCDEF U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 3rd fp32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 3rd fp32 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpsrldn8->st0
+
+
+HEX
+CODE TESTPSRLQM128->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  OU128B [O]  XMM0  PSRLQ, 
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpsrlqm128->xmm0 ( -- ) 
+    ." testing OM128 [O]  XMM0  PSRLQ, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!   
+               4 OU128B CCO!                  0 OU128B 8 + CCO!     
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSRLQM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0123456789ABCDEF = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  0123456789ABCDEF U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0112233445566778 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0112233445566778 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpsrlqm128->xmm0
+
+
+HEX
+CODE TESTPSRLQN8->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  4 N  XMM0  PSRLQ, 
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpsrlqn8->xmm0 ( -- ) 
+    ." testing 4 N  XMM0  PSRLQ, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSRLQN8->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0123456789ABCDEF = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  0123456789ABCDEF U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0112233445566778 = IF
+      ." 3rd fp32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 3rd fp32 " 0112233445566778 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpsrlqn8->xmm0
+
+
+HEX
+CODE TESTPSRLQM64->ST0
+  OU128A [O]  ST0  MOVQ,
+  OU128B [O]  ST0  PSRLQ, 
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpsrlqm64->st0 ( -- ) 
+    ." testing OM64 [O]  ST0  PSRLQ, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!   
+               4 OU128B CCO!                  0 OU128B 8 + CCO!     
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSRLQM64->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0123456789ABCDEF = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  0123456789ABCDEF U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpsrlqm64->st0
+
+
+HEX
+CODE TESTPSRLQN8->ST0
+  OU128A [O]  ST0  MOVQ,
+  4 N  ST0  PSRLQ, 
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpsrlqn8->st0 ( -- ) 
+    ." testing 4 N  ST0  PSRLQ, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSRLQN8->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0123456789ABCDEF = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  0123456789ABCDEF U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpsrlqn8->st0
+
+
+HEX
+CODE TESTPSRAWM128->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  OU128B [O]  XMM0  PSRAW, 
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpsrawm128->xmm0 ( -- ) 
+    ." testing OM128 [O]  XMM0  PSRAW, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!   
+               4 OU128B CCO!                  0 OU128B 8 + CCO!     
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSRAWM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 01230567F9ABFDEF = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  01230567F9ABFDEF U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0112033405560778 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0112033405560778 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpsrawm128->xmm0
+
+
+HEX
+CODE TESTPSRAWN8->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  4 N  XMM0  PSRAW, 
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpsrawn8->xmm0 ( -- ) 
+    ." testing 4 N  XMM0  PSRAW, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSRAWN8->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 01230567F9ABFDEF = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  01230567F9ABFDEF U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0112033405560778 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0112033405560778 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpsrawn8->xmm0
+
+
+HEX
+CODE TESTPSRAWM64->ST0
+  OU128A [O]  ST0  MOVQ,
+  OU128B [O]  ST0  PSRAW, 
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpsrawm64->st0 ( -- ) 
+    ." testing OM64 [O]  ST0  PSRAW, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!   
+               4 OU128B CCO!                  0 OU128B 8 + CCO!     
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSRAWM64->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 01230567F9ABFDEF = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  01230567F9ABFDEF U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpsrawm64->st0
+
+
+HEX
+CODE TESTPSRAWN8->ST0
+  OU128A [O]  ST0  MOVQ,
+  4 N  ST0  PSRAW, 
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpsrawn8->st0 ( -- ) 
+    ." testing 4 N  ST0  PSRAW, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSRAWN8->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 01230567F9ABFDEF = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  01230567F9ABFDEF U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 3rd fp32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 3rd fp32 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpsrawn8->st0
+
+
+HEX
+CODE TESTPSRADM128->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  OU128B [O]  XMM0  PSRAD, 
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpsradm128->xmm0 ( -- ) 
+    ." testing OM128 [O]  XMM0  PSRAD, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!   
+               4 OU128B CCO!                  0 OU128B 8 + CCO!     
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSRADM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 01234567F9ABCDEF = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  01234567F9ABCDEF U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0112233405566778 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0112233405566778 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpsradm128->xmm0
+
+
+HEX
+CODE TESTPSRADN8->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  4 N  XMM0  PSRAD, 
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpsradn8->xmm0 ( -- ) 
+    ." testing 4 N  XMM0  PSRAD, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSRADN8->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 01234567F9ABCDEF = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  01234567F9ABCDEF U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0112233405566778 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0112233405566778 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpsradn8->xmm0
+
+
+HEX
+CODE TESTPSRADM64->ST0
+  OU128A [O]  ST0  MOVQ,
+  OU128B [O]  ST0  PSRAD, 
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpsradm64->st0 ( -- ) 
+    ." testing OM64 [O]  ST0  PSRAD, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!   
+               4 OU128B CCO!                  0 OU128B 8 + CCO!     
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSRADM64->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 01234567F9ABCDEF = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  01234567F9ABCDEF U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpsradm64->st0
+
+
+HEX
+CODE TESTPSRADN8->ST0
+  OU128A [O]  ST0  MOVQ,
+  4 N  ST0  PSRAD, 
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpsradn8->st0 ( -- ) 
+    ." testing 4 N  ST0  PSRAD, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSRADN8->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 01234567F9ABCDEF = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  01234567F9ABCDEF U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpsradn8->st0
+
+
+HEX
+CODE TESTPSRLDQN8->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  4 N  XMM0  PSRLDQ,  // this one shifts bytes, not bits
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpsrldqn8->xmm0 ( -- ) 
+    ." testing 4 N  XMM0  PSRLDQ, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPSRLDQN8->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 5566778812345678 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  5566778812345678 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 11223344 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 11223344 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpsrldqn8->xmm0
+
+
+HEX
+CODE TESTPEXTRBN8XMM1->AL
+  OU128A [O]  XMM1  MOVDQA,
+  OU128B [O]  RAX   MOV,
+  4 N  XMM1  AL  PEXTRB,
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testpextrbn8xmm1->al ( -- ) 
+    ." testing 4 N  XMM1  AL  PEXTRB, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!
+1020304050607080 OU128B CCO!   90A0B0C0D0E0F0FE OU128B 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPEXTRBN8XMM1->AL >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 78 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  78 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpextrbn8xmm1->al
+
+
+HEX
+CODE TESTPEXTRBN8XMM3->AX
+  OU128A [O]  XMM3  MOVDQA,
+  OU128B [O]  RAX   MOV,
+  4 N  XMM3  AX  PEXTRB, // checking to see if PEXTRB ignores dest reg size
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testpextrbn8xmm3->ax ( -- ) 
+    ." testing 4 N  XMM3  AX  PEXTRB, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!
+1020304050607080 OU128B CCO!   90A0B0C0D0E0F0FE OU128B 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPEXTRBN8XMM3->AX >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 78 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  78 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpextrbn8xmm3->ax
+
+
+HEX
+CODE TESTPEXTRBN8XMM3->RAX
+  OU128A [O]  XMM3  MOVDQA,
+  OU128B [O]  RAX   MOV,
+  4 N  XMM3  RAX  PEXTRB, // checking to see if PEXTRB ignores dest reg size
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testpextrbn8xmm3->rax ( -- ) 
+    ." testing 4 N  XMM3  RAX  PEXTRB, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!
+1020304050607080 OU128B CCO!   90A0B0C0D0E0F0FE OU128B 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPEXTRBN8XMM3->RAX >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 78 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  78 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpextrbn8xmm3->rax
+
+
+HEX
+CODE TESTPEXTRBN8XMM3->RAXR
+  OU128A [O]  XMM3  MOVDQA,
+  OU128B [O]  RAX   MOV,
+  4 N  XMM3  RAX R  PEXTRB, // checking to see if PEXTRB works with rex.w
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testpextrbn8xmm3->raxr ( -- ) 
+    ." testing 4 N  XMM3  RAX R  PEXTRB, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!
+1020304050607080 OU128B CCO!   90A0B0C0D0E0F0FE OU128B 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPEXTRBN8XMM3->RAXR >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 78 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  78 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpextrbn8xmm3->raxr
+
+
+HEX
+CODE TESTPEXTRBN8XMM1->EAX
+  OU128A [O]  XMM1  MOVDQA,
+  OU128B [O]  RAX   MOV,
+  2 N  XMM1  EAX  PEXTRD,
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testpextrbn8xmm1->eax ( -- ) 
+    ." testing 2 N  XMM1  EAX  PEXTRD, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!
+1020304050607080 OU128B CCO!   90A0B0C0D0E0F0FE OU128B 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPEXTRBN8XMM1->EAX >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 55667788 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  55667788 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpextrbn8xmm1->eax
+
+
+HEX
+CODE TESTPEXTRBN8XMM0->RAX
+  OU128A [O]  XMM0  MOVDQA,
+  OU128B [O]  RAX   MOV,
+  1 N  XMM0  RAX  PEXTRQ,
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testpextrbn8xmm0->rax ( -- ) 
+    ." testing 4 N  XMM0  RAX  PEXTRQ, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!
+1020304050607080 OU128B CCO!   90A0B0C0D0E0F0FE OU128B 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPEXTRBN8XMM0->RAX >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 1122334455667788 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  1122334455667788 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpextrbn8xmm0->rax
+
+
+HEX
+CODE TESTPEXTRBN8XMM0->M8
+  OU128A [O]  XMM0  MOVDQA,
+  4 N  XMM0  OU128C [O]  PEXTRB,
+  RET,  
+END-CODE
+  
+: testpextrbn8xmm0->m8 ( -- ) 
+    ." testing 4 N  XMM0  M8  PEXTRB, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!
+1020304050607080 OU128C CCO!   90A0B0C0D0E0F0FE OU128C 8 + CCO!        
+    0 ['] TESTPEXTRBN8XMM0->M8 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 1020304050607078 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  1020304050607078 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 90A0B0C0D0E0F0FE = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 90A0B0C0D0E0F0FE U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpextrbn8xmm0->m8
+
+
+HEX
+CODE TESTPEXTRBN8XMM0->M32
+  OU128A [O]  XMM0  MOVDQA,
+  2 N  XMM0  OU128C [O]  PEXTRD,
+  RET,  
+END-CODE
+  
+: testpextrbn8xmm0->m32 ( -- ) 
+    ." testing 2 N  XMM0  M32  PEXTRD, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!
+1020304050607080 OU128C CCO!   90A0B0C0D0E0F0FE OU128C 8 + CCO!        
+    0 ['] TESTPEXTRBN8XMM0->M32 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 1020304055667788 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  1020304055667788 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 90A0B0C0D0E0F0FE = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 90A0B0C0D0E0F0FE U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpextrbn8xmm0->m32
+
+
+HEX
+CODE TESTPEXTRBN8XMM0->M64
+  OU128A [O]  XMM0  MOVDQA,
+  1 N  XMM0  OU128C [O]  PEXTRQ,
+  RET,  
+END-CODE
+  
+: testpextrbn8xmm0->m64 ( -- ) 
+    ." testing 4 N  XMM0  M64  PEXTRQ, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!
+1020304050607080 OU128C CCO!   90A0B0C0D0E0F0FE OU128C 8 + CCO!
+    0 ['] TESTPEXTRBN8XMM0->M64 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 1122334455667788 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  1122334455667788 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 90A0B0C0D0E0F0FE = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 90A0B0C0D0E0F0FE U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpextrbn8xmm0->m64
+
+
+
+HEX
+CODE TESTPEXTRWN8XMM1->AX
+  OU128A [O]  XMM1  MOVDQA,
+  OU128B [O]  RAX   MOV,
+  4 N  XMM1  AX  PEXTRW,
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testpextrwn8xmm1->ax ( -- ) 
+    ." testing 4 N  XMM1  AX  PEXTRW, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!
+1020304050607080 OU128B CCO!   90A0B0C0D0E0F0FE OU128B 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPEXTRWN8XMM1->AX >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 7788 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  7788 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpextrwn8xmm1->ax
+
+
+HEX
+CODE TESTPEXTRWN8ST1->AX
+  OU128A [O]  ST1  MOVQ,
+  OU128B [O]  RAX   MOV,
+  2 N  ST1  AX  PEXTRW,
+  RAX  OU128C [O]  MOV,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpextrwn8st1->ax ( -- ) 
+    ." testing 4 N  ST1  AX  PEXTRW, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!
+1020304050607080 OU128B CCO!   90A0B0C0D0E0F0FE OU128B 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPEXTRWN8ST1->AX >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 5678 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  5678 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpextrwn8st1->ax
+
+
+HEX
+CODE TESTPEXTRWN8XMM1->AX2
+  OU128A [O]  XMM1  MOVDQA,
+  OU128B [O]  RAX   MOV,
+  4 N  XMM1  AX R PEXTRW,
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testpextrwn8xmm1->ax2 ( -- ) 
+    ." testing 4 N  XMM1  AX R PEXTRW, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!
+1020304050607080 OU128B CCO!   90A0B0C0D0E0F0FE OU128B 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPEXTRWN8XMM1->AX2 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 7788 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  7788 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpextrwn8xmm1->ax2
+
+
+
+HEX
+CODE TESTPEXTRWN8XMM1->M16
+  OU128A [O]  XMM1  MOVDQA,
+  4 N  XMM1  OU128B [O]  PEXTRW,
+  RET,  
+END-CODE
+  
+: testpextrwn8xmm1->m16 ( -- ) 
+    ." testing 4 N  XMM1  OU128B [O]   PEXTRW, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!
+1020304050607080 OU128B CCO!   90A0B0C0D0E0F0FE OU128B 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPEXTRWN8XMM1->M16 >BODY CALLPROC
+    DROP  
+
+    OU128B CCO@ 1020304050607788 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  1020304050607788 U.  
+      ." , got " OU128B CCO@ U.
+    THEN
+
+    OU128B 8 + CCO@ 90A0B0C0D0E0F0FE = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 90A0B0C0D0E0F0FE U.  
+      ." , got " OU128B 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpextrwn8xmm1->m16
+
+
+
+
+HEX
+CODE TESTPMADDUBSWM128->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  OU128B [O]  XMM0  PMADDUBSW,
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpmaddubswm128->xmm0 ( -- ) 
+    ." testing  M128  XMM0  PMADDUBSW, "
+0102030405060708 OU128A CCO!   090A0B0C0D0E0F10 OU128A 8 + CCO!
+FF01FE02FD03FF00 OU128B CCO!   FF01FE02FD03FF00 OU128B 8 + CCO!
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPMADDUBSWM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 000100020003FFF9 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  000100020003FFF9 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 000100020003FFF1 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 000100020003FFF1 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpmaddubswm128->xmm0
+
+
+HEX
+CODE TESTPMADDUBSWM64->ST0
+  OU128A [O]  ST0  MOVQ,
+  OU128B [O]  ST0  PMADDUBSW,
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpmaddubswm64->st0 ( -- ) 
+    ." testing  M64  ST0  PMADDUBSW, "
+0102030405060708 OU128A CCO!   090A0B0C0D0E0F10 OU128A 8 + CCO!
+FF01FE02FD03FF00 OU128B CCO!   FF01FE02FD03FF00 OU128B 8 + CCO!
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPMADDUBSWM64->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 000100020003FFF9 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  000100020003FFF9 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpmaddubswm64->st0
+
+
+
+HEX
+CODE TESTPMADDWDM128->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  OU128B [O]  XMM0  PMADDWD,
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpmaddwdm128->xmm0 ( -- ) 
+    ." testing  M128  XMM0  PMADDWD, "
+0002000400060008 OU128A CCO!   000A000C000E0010 OU128A 8 + CCO!  
+FFFF0002FFFD0003 OU128B CCO!   00010002FFFD0000 OU128B 8 + CCO!
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPMADDWDM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0000000600000006 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  0000000600000006 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 00000022FFFFFFD6 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 00000022FFFFFFD6 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpmaddwdm128->xmm0
+
+
+HEX
+CODE TESTPMADDWDM64->ST0
+  OU128A [O]  ST0  MOVQ,
+  OU128B [O]  ST0  PMADDWD,
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpmaddwdm64->st0 ( -- ) 
+    ." testing  M64  ST0  PMADDWD, "
+0002000400060008 OU128A CCO!   000A000C000E0010 OU128A 8 + CCO!
+FFFF0002FFFD0003 OU128B CCO!   00010002FFFD0000 OU128B 8 + CCO!
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPMADDWDM64->ST0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0000000600000006 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  0000000600000006 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpmaddwdm64->st0
+
+
+HEX
+CODE TESTPTESTM128->XMM0
+  XMM1 XMM1 PXOR,
+  OU128A [O]  XMM0  MOVDQA,
+  OU128B [O]  XMM0  PTEST,
+  ZS IF,
+    OU128C [O]  XMM1  PADDB,
+    OU128C [O]  XMM1  PADDB,
+  THEN,
+  OU128A [O]  XMM0  PTEST,
+  NZ IF,
+    OU128C [O]  XMM1  PADDB,
+    OU128C [O]  XMM1  PADDB,
+  THEN,
+  XMM1  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testptestm128->xmm0 ( -- ) 
+    ." testing  M128  XMM0  PTEST, "
+0002000400060008 OU128A CCO!   000A000C000E0010 OU128A 8 + CCO!  
+F000F000F000F000 OU128B CCO!   F000F000F000F000 OU128B 8 + CCO!
+               1 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPTESTM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 4 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  4 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testptestm128->xmm0
+
+
+
+HEX
+CODE TESTRCPPSM128->XMM0
+  OU128B [O]  XMM0  RCPPS, 
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testrcppsm128->xmm0 ( -- ) 
+    ." testing OM128 [O]  XMM0  RCPPS, "
+    FPS4.0 OU128B CCOU32!  FPS1.0 OU128B 4 + CCOU32!  FPS2.0 OU128B 8 + CCOU32!   FPS0.125 OU128B 0C + CCOU32!     
+         0 OU128C CCO!                                     0 OU128C 8 + CCO!
+    0 ['] TESTRCPPSM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCOU32@ FPS0.25 = IF
+      ." 1st fp32 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u32 "  FPS0.25 U.  
+      ." , got " OU128C CCOU32@ U.
+    THEN
+
+    OU128C 4 + CCOU32@ FPS1.0 = IF
+      ." 2nd fp32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd fp32 " FPS1.0 U.  
+      ." , got " OU128C 4 + CCOU32@ U.
+    THEN
+
+    OU128C 8 + CCOU32@ FPS0.5 = IF
+      ." 3rd fp32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 3rd fp32 " FPS0.5 U.  
+      ." , got " OU128C 8 + CCOU32@ U.
+    THEN
+
+    OU128C 0C + CCOU32@ FPS8.0 = IF
+      ." 4th fp32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 4th fp32 " FPS8.0 U.  
+      ." , got " OU128C 0C + CCOU32@ U.
+    THEN
+
+    CR
+;
+
+// This instruction returns approximate reciprocals, not the exact reciprocals
+//  I checked the values... but did not build them into this test because
+//  I wasn't sure if they would be the same across all processors
+// testrcppsm128->xmm0  
+
+
+HEX
+CODE TESTRCPSSM128->XMM0
+  OU128A [O]  XMM0  MOVDQA,
+  OU128B [O]  XMM0  RCPSS, 
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testrcpssm128->xmm0 ( -- ) 
+    ." testing OM128 [O]  XMM0  RCPSS, "
+    FPS3.0 OU128A CCOU32!  FPS5.0 OU128A 4 + CCOU32!  FPS9.0 OU128A 8 + CCOU32!   FPS0.5 OU128A 0C + CCOU32!
+    FPS4.0 OU128B CCOU32!  FPS1.0 OU128B 4 + CCOU32!  FPS2.0 OU128B 8 + CCOU32!   FPS0.125 OU128B 0C + CCOU32!     
+         0 OU128C CCO!                                     0 OU128C 8 + CCO!
+    0 ['] TESTRCPSSM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCOU32@ FPS0.25 = IF
+      ." 1st fp32 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u32 "  FPS0.25 U.  
+      ." , got " OU128C CCOU32@ U.
+    THEN
+
+    OU128C 4 + CCOU32@ FPS5.0 = IF
+      ." 2nd fp32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd fp32 " FPS5.0 U.  
+      ." , got " OU128C 4 + CCOU32@ U.
+    THEN
+
+    OU128C 8 + CCOU32@ FPS9.0 = IF
+      ." 3rd fp32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 3rd fp32 " FPS9.0 U.  
+      ." , got " OU128C 8 + CCOU32@ U.
+    THEN
+
+    OU128C 0C + CCOU32@ FPS0.5 = IF
+      ." 4th fp32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 4th fp32 " FPS0.5 U.  
+      ." , got " OU128C 0C + CCOU32@ U.
+    THEN
+
+    CR
+;
+
+// This instruction returns an approximate reciprocal, not an exact reciprocal
+//  I checked the value... but did not build it into this test because
+//  I wasn't sure if it would be the same across all processors
+// testrcpssm128->xmm0 
+
+
+HEX
+CODE TESTRDRAND->AX
+  OU128B [O]  RAX   MOV,
+  BEGIN
+    AX RDRAND,
+  CS UNTIL,
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testrdrand->ax ( -- ) 
+    ." testing AX  RDRAND, "
+1020304050607080 OU128B CCO!   90A0B0C0D0E0F0FE OU128B 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTRDRAND->AX >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ FFFFFFFFFFFF0000 AND 1020304050600000 = IF
+      ." 1st u64 other bytes SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  1020304050600000 U.  
+      ." , got " OU128C CCO@ FFFFFFFFFFFF0000 AND U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    OU128C CCO@ FFFF AND 
+
+    0 ['] TESTRDRAND->AX >BODY CALLPROC
+    DROP
+
+    OU128C CCO@ FFFF AND =
+
+
+    0 ['] TESTRDRAND->AX >BODY CALLPROC
+    DROP
+
+    OU128C CCO@ FFFF AND 
+
+    
+    0 ['] TESTRDRAND->AX >BODY CALLPROC
+    DROP
+
+    OU128C CCO@ FFFF AND =
+
+    AND 0= IF
+      ." 1st u64 random bytes different SUCCESS! "
+    ELSE
+      ." 1st u64 random bytes one or two pairs of two the same FAIL! "  // test can fail.. but not very often :-)
+    THEN
+
+    CR
+;
+
+
+testrdrand->ax
+
+
+HEX
+CODE TESTRDRAND->EAX
+  OU128B [O]  RAX   MOV,
+  BEGIN
+    EAX RDRAND,
+  CS UNTIL,
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testrdrand->eax ( -- ) 
+    ." testing EAX  RDRAND, "
+1020304050607080 OU128B CCO!   90A0B0C0D0E0F0FE OU128B 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTRDRAND->EAX >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ FFFFFFFF00000000 AND 0 = IF
+      ." 1st u64 other bytes SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  0 U.  
+      ." , got " OU128C CCO@ FFFFFFFF00000000 AND U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    OU128C CCO@ FFFFFFFF AND 
+
+    0 ['] TESTRDRAND->EAX >BODY CALLPROC
+    DROP
+
+    OU128C CCO@ FFFFFFFF AND =
+
+
+    0 ['] TESTRDRAND->EAX >BODY CALLPROC
+    DROP
+
+    OU128C CCO@ FFFFFFFF AND 
+
+    
+    0 ['] TESTRDRAND->EAX >BODY CALLPROC
+    DROP
+
+    OU128C CCO@ FFFFFFFF AND =
+
+    AND 0= IF
+      ." 1st u64 random bytes different SUCCESS! "
+    ELSE
+      ." 1st u64 random bytes one or two pairs of two the same FAIL! "  // test can fail.. but not very often :-)
+    THEN
+
+    CR
+;
+
+
+testrdrand->eax
+
+
+
+HEX
+CODE TESTRDRAND->RAX
+  OU128B [O]  RAX   MOV,
+  BEGIN
+    RAX RDRAND,
+  CS UNTIL,
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testrdrand->rax ( -- ) 
+    ." testing RAX  RDRAND, "
+1020304050607080 OU128B CCO!   90A0B0C0D0E0F0FE OU128B 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTRDRAND->RAX >BODY CALLPROC
+    DROP  
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    OU128C CCO@  
+
+    0 ['] TESTRDRAND->RAX >BODY CALLPROC
+    DROP
+
+    OU128C CCO@ =
+
+
+    0 ['] TESTRDRAND->RAX >BODY CALLPROC
+    DROP
+
+    OU128C CCO@ FFFFFFFF AND 
+
+    
+    0 ['] TESTRDRAND->RAX >BODY CALLPROC
+    DROP
+
+    OU128C CCO@ =
+
+    AND 0= IF
+      ." 1st u64 random bytes different SUCCESS! "
+    ELSE
+      ." 1st u64 random bytes one or two pairs of two the same FAIL! "  // test can fail.. but not very often :-)
+    THEN
+
+    CR
+;
+
+
+testrdrand->rax
+
+
+
+HEX
+CODE TESTRDSEED->AX
+  OU128B [O]  RAX   MOV,
+  BEGIN
+    AX RDSEED,
+  CS UNTIL,
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testrdseed->ax ( -- ) 
+    ." testing AX  RDSEED, "
+1020304050607080 OU128B CCO!   90A0B0C0D0E0F0FE OU128B 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTRDSEED->AX >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ FFFFFFFFFFFF0000 AND 1020304050600000 = IF
+      ." 1st u64 other bytes SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  1020304050600000 U.  
+      ." , got " OU128C CCO@ FFFFFFFFFFFF0000 AND U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    OU128C CCO@ FFFF AND 
+
+    0 ['] TESTRDSEED->AX >BODY CALLPROC
+    DROP
+
+    OU128C CCO@ FFFF AND =
+
+
+    0 ['] TESTRDSEED->AX >BODY CALLPROC
+    DROP
+
+    OU128C CCO@ FFFF AND 
+
+    
+    0 ['] TESTRDSEED->AX >BODY CALLPROC
+    DROP
+
+    OU128C CCO@ FFFF AND =
+
+    AND 0= IF
+      ." 1st u64 random bytes different SUCCESS! "
+    ELSE
+      ." 1st u64 random bytes one or two pairs of two the same FAIL! "  // test can fail.. but not very often :-)
+    THEN
+
+    CR
+;
+
+
+testrdseed->ax
+
+
+HEX
+CODE TESTRDSEED->EAX
+  OU128B [O]  RAX   MOV,
+  BEGIN
+    EAX RDSEED,
+  CS UNTIL,
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testrdseed->eax ( -- ) 
+    ." testing EAX  RDSEED, "
+1020304050607080 OU128B CCO!   90A0B0C0D0E0F0FE OU128B 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTRDSEED->EAX >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ FFFFFFFF00000000 AND 0 = IF
+      ." 1st u64 other bytes SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  0 U.  
+      ." , got " OU128C CCO@ FFFFFFFF00000000 AND U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    OU128C CCO@ FFFFFFFF AND 
+
+    0 ['] TESTRDSEED->EAX >BODY CALLPROC
+    DROP
+
+    OU128C CCO@ FFFFFFFF AND =
+
+
+    0 ['] TESTRDSEED->EAX >BODY CALLPROC
+    DROP
+
+    OU128C CCO@ FFFFFFFF AND 
+
+    
+    0 ['] TESTRDSEED->EAX >BODY CALLPROC
+    DROP
+
+    OU128C CCO@ FFFFFFFF AND =
+
+    AND 0= IF
+      ." 1st u64 random bytes different SUCCESS! "
+    ELSE
+      ." 1st u64 random bytes one or two pairs of two the same FAIL! "  // test can fail.. but not very often :-)
+    THEN
+
+    CR
+;
+
+
+testrdseed->eax
+
+
+
+HEX
+CODE TESTRDSEED->RAX
+  OU128B [O]  RAX   MOV,
+  BEGIN
+    RAX RDSEED,
+  CS UNTIL,
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testrdseed->rax ( -- ) 
+    ." testing RAX  RDSEED, "
+1020304050607080 OU128B CCO!   90A0B0C0D0E0F0FE OU128B 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTRDSEED->RAX >BODY CALLPROC
+    DROP  
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    OU128C CCO@  
+
+    0 ['] TESTRDSEED->RAX >BODY CALLPROC
+    DROP
+
+    OU128C CCO@ =
+
+
+    0 ['] TESTRDSEED->RAX >BODY CALLPROC
+    DROP
+
+    OU128C CCO@ FFFFFFFF AND 
+
+    
+    0 ['] TESTRDSEED->RAX >BODY CALLPROC
+    DROP
+
+    OU128C CCO@ =
+
+    AND 0= IF
+      ." 1st u64 random bytes different SUCCESS! "
+    ELSE
+      ." 1st u64 random bytes one or two pairs of two the same FAIL! "  // test can fail.. but not very often :-)
+    THEN
+
+    CR
+;
+
+
+testrdseed->rax
+
+
+
+HEX
+CODE TESTPCMPESTRIN8M128->XMM0
+  RCX RCX XOR,
+  OU128A [O]  XMM0  MOVDQA,
+  10 N  RAX  MOV,
+  10 N  RDX  MOV,
+  8 N  OU128B [O]  XMM0  PCMPESTRI,  // unsigned byte string compare
+  RCX  OU128C [O]  MOV,  // RCX should equal index of first matching byte
+  RET,  
+END-CODE
+  
+: testpcmpestrin8m128->xmm0 ( -- ) 
+    ." testing  N8  OM128 [O]  XMM0  PCMPESTRI, "
+    0102030405060808 OU128A CCO!    1122334455557788 OU128A 8 + CCO!   
+    0009010207020406 OU128B CCO!    1122334455557889 OU128B 8 + CCO!       
+                   0 OU128C CCO!                   0 OU128C 8 + CCO!
+    0 ['] TESTPCMPESTRIN8M128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0A = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  0A U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpcmpestrin8m128->xmm0
+
+
+HEX
+CODE TESTPCMPESTRMN8M128->XMM0
+  RCX RCX XOR,
+  OU128A [O]  XMM0  MOVDQA,
+  10 N  RAX  MOV,
+  10 N  RDX  MOV,
+  8 N  OU128B [O]  XMM0  PCMPESTRM,  // unsigned byte string compare
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpcmpestrmn8m128->xmm0 ( -- ) 
+    ." testing  N8  OM128 [O]  XMM0  PCMPESTRM, "
+    0102030405060808 OU128A CCO!    1122334455557788 OU128A 8 + CCO!   
+    0009010207020406 OU128B CCO!    1122334455557889 OU128B 8 + CCO!       
+                   0 OU128C CCO!                   0 OU128C 8 + CCO!
+    0 ['] TESTPCMPESTRMN8M128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ FC00 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  FC00 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpcmpestrmn8m128->xmm0
+
+
+HEX
+CODE TESTPCMPISTRIN8M128->XMM0
+  RCX RCX XOR,
+  OU128A [O]  XMM0  MOVDQA,
+  8 N  OU128B [O]  XMM0  PCMPISTRI,  // unsigned byte string compare
+  RCX  OU128C [O]  MOV,  // RCX should equal index of first matching byte
+  RET,  
+END-CODE
+  
+: testpcmpistrin8m128->xmm0 ( -- ) 
+    ." testing  N8  OM128 [O]  XMM0  PCMPESTRI, "
+    0102030405060808 OU128A CCO!    1122334455557788 OU128A 8 + CCO!   
+    0009010207020406 OU128B CCO!    1122334455557889 OU128B 8 + CCO!       
+                   0 OU128C CCO!                   0 OU128C 8 + CCO!
+    0 ['] TESTPCMPISTRIN8M128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 10 = IF  // nothing will match after and including the null
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  10 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpcmpistrin8m128->xmm0
+
+
+HEX
+CODE TESTPCMPISTRMN8M128->XMM0
+  RCX RCX XOR,
+  OU128A [O]  XMM0  MOVDQA,
+  8 N  OU128B [O]  XMM0  PCMPISTRM,  // unsigned byte string compare
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpcmpistrmn8m128->xmm0 ( -- ) 
+    ." testing  N8  OM128 [O]  XMM0  PCMPISTRM, "
+    0102030407060808 OU128A CCO!    1122334455557788 OU128A 8 + CCO!   
+    0009010207020806 OU128B CCO!    1122334455557889 OU128B 8 + CCO!       
+                   0 OU128C CCO!                   0 OU128C 8 + CCO!
+    0 ['] TESTPCMPISTRMN8M128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0A = IF  // nothing will match after and including the null
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  0A U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpcmpistrmn8m128->xmm0
+
+
+HEX
+CODE TESTXADDAL->M8
+  OU128A [O]  RAX   MOV,
+  AL  OU128B [O]  XADD,
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testxaddal->m8 ( -- ) 
+    ." testing AL  OU128B [O]  XADD, "
+    1112131415161718 OU128A CCO!   
+    1020304050607080 OU128B CCO!          
+                   0 OU128C CCO!   
+    0 ['] TESTXADDAL->M8 >BODY CALLPROC
+    DROP  
+
+    OU128B CCO@ 1020304050607098 = IF
+      ." 1st dest u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 1st dest u64 " 1020304050607098 U.  
+      ." , got " OU128B CCO@ U.
+    THEN
+
+    OU128C CCO@ 1112131415161780 = IF
+      ." 1st src u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 1st src u64 " 1112131415161780 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testxaddal->m8
+
+
+HEX
+CODE TESTXADDM8<-AL
+  OU128A [O]  RAX   MOV,
+  OU128B [O]  AL <-  XADD,
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testxaddm8<-al ( -- ) 
+    ." testing OU128B [O]  AL <-  XADD, "
+    1112131415161718 OU128A CCO!   
+    1020304050607080 OU128B CCO!          
+                   0 OU128C CCO!   
+    0 ['] TESTXADDM8<-AL >BODY CALLPROC
+    DROP  
+
+    OU128B CCO@ 1020304050607098 = IF
+      ." 1st dest u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 1st dest u64 " 1020304050607098 U.  
+      ." , got " OU128B CCO@ U.
+    THEN
+
+    OU128C CCO@ 1112131415161780 = IF
+      ." 1st src u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 1st src u64 " 1112131415161780 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testxaddm8<-al
+
+
+HEX
+CODE TESTXADDAL->CL
+  OU128A [O]  RAX   MOV,
+  OU128B [O]  RCX   MOV,
+  AL  CL  XADD,
+  RCX  OU128B [O]  MOV,
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testxaddal->cl ( -- ) 
+    ." testing AL  CL  XADD, "
+    1112131415161718 OU128A CCO!   
+    1020304050607080 OU128B CCO!          
+                   0 OU128C CCO!   
+    0 ['] TESTXADDAL->CL >BODY CALLPROC
+    DROP  
+
+    OU128B CCO@ 1020304050607098 = IF
+      ." 1st dest u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 1st dest u64 " 1020304050607098 U.  
+      ." , got " OU128B CCO@ U.
+    THEN
+
+    OU128C CCO@ 1112131415161780 = IF
+      ." 1st src u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 1st src u64 " 1112131415161780 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testxaddal->cl
+
+
+HEX
+CODE TESTXADDAL<-CL
+  OU128A [O]  RAX   MOV,
+  OU128B [O]  RCX   MOV,
+  AL  CL <-  XADD,
+  RCX  OU128B [O]  MOV,
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testxaddal<-cl ( -- ) 
+    ." testing AL  CL <-  XADD, "
+    1112131415161718 OU128A CCO!   
+    1020304050607080 OU128B CCO!          
+                   0 OU128C CCO!   
+    0 ['] TESTXADDAL<-CL >BODY CALLPROC
+    DROP  
+
+    OU128B CCO@ 1020304050607018 = IF
+      ." 1st dest u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 1st dest u64 " 1020304050607018 U.  
+      ." , got " OU128B CCO@ U.
+    THEN
+
+    OU128C CCO@ 1112131415161798 = IF
+      ." 1st src u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 1st src u64 " 1112131415161798 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testxaddal<-cl
+
+
+HEX
+CODE TESTXADDAX->M16
+  OU128A [O]  RAX   MOV,
+  AX  OU128B [O]  XADD,
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testxaddax->m16 ( -- ) 
+    ." testing AX  OU128B [O]  XADD, "
+    1112131415161718 OU128A CCO!   
+    1020304050607080 OU128B CCO!          
+                   0 OU128C CCO!   
+    0 ['] TESTXADDAX->M16 >BODY CALLPROC
+    DROP  
+
+    OU128B CCO@ 1020304050608798 = IF
+      ." 1st dest u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 1st dest u64 " 1020304050608798 U.  
+      ." , got " OU128B CCO@ U.
+    THEN
+
+    OU128C CCO@ 1112131415167080 = IF
+      ." 1st src u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 1st src u64 " 1112131415167080 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testxaddax->m16
+
+
+
+HEX
+CODE TESTXADDEAX->M32
+  OU128A [O]  RAX   MOV,
+  EAX  OU128B [O]  XADD,
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testxaddeax->m32 ( -- ) 
+    ." testing EAX  OU128B [O]  XADD, "
+    1112131415161718 OU128A CCO!   
+    1020304050607080 OU128B CCO!          
+                   0 OU128C CCO!   
+    0 ['] TESTXADDEAX->M32 >BODY CALLPROC
+    DROP  
+
+    OU128B CCO@ 1020304065768798 = IF
+      ." 1st dest u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 1st dest u64 " 1020304065768798 U.  
+      ." , got " OU128B CCO@ U.
+    THEN
+
+    OU128C CCO@ 50607080 = IF  // 32 bit is zero extended to 64
+      ." 1st src u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 1st src u64 " 50607080 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testxaddeax->m32
+
+
+HEX
+CODE TESTXADDEAX->ECX
+  OU128A [O]  RAX   MOV,
+  OU128B [O]  RCX   MOV,
+  EAX  ECX  XADD,
+  RAX  OU128C [O]  MOV,
+  RCX  OU128B [O]  MOV,
+  RET,  
+END-CODE
+  
+: testxaddeax->ecx ( -- ) 
+    ." testing EAX  ECX  XADD, "
+    1112131415161718 OU128A CCO!   
+    1020304050607080 OU128B CCO!          
+                   0 OU128C CCO!   
+    0 ['] TESTXADDEAX->ECX >BODY CALLPROC
+    DROP  
+
+    OU128B CCO@ 65768798 = IF // 32 bit is zero extended to 64
+      ." 1st dest u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 1st dest u64 " 65768798 U.  
+      ." , got " OU128B CCO@ U.
+    THEN
+
+    OU128C CCO@ 50607080 = IF  // 32 bit is zero extended to 64
+      ." 1st src u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 1st src u64 " 50607080 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testxaddeax->ecx
+
+
+HEX
+CODE TESTXADDRAX->M64
+  OU128A [O]  RAX   MOV,
+  RAX  OU128B [O]  XADD,
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testxaddrax->m64 ( -- ) 
+    ." testing EAX  OU128B [O]  XADD, "
+    1112131415161718 OU128A CCO!   
+    1020304050607080 OU128B CCO!          
+                   0 OU128C CCO!   
+    0 ['] TESTXADDRAX->M64 >BODY CALLPROC
+    DROP  
+
+    OU128B CCO@ 2132435465768798 = IF
+      ." 1st dest u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 1st dest u64 " 2132435465768798 U.  
+      ." , got " OU128B CCO@ U.
+    THEN
+
+    OU128C CCO@ 1020304050607080 = IF  
+      ." 1st src u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 1st src u64 " 1020304050607080 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testxaddrax->m64
+
+
+HEX
+CODE TESTPINSRBN8AL->XMM1
+  OU128A [O]  XMM1  MOVDQA,
+  OU128B [O]  RAX   MOV,
+  4 N  AL  XMM1  PINSRB,
+  XMM1  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpinsrbn8al->xmm1 ( -- ) 
+    ." testing 4 N  AL  XMM1  PINSRB, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!
+1020304050607080 OU128B CCO!   90A0B0C0D0E0F0FE OU128B 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPINSRBN8AL->XMM1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 123456809ABCDEF7 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  123456809ABCDEF7 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 1122334455667788 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 1122334455667788 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpinsrbn8al->xmm1
+
+
+HEX
+CODE TESTPINSRBN8EAX->XMM1
+  OU128A [O]  XMM1  MOVDQA,
+  OU128B [O]  RAX   MOV,
+  4 N  EAX  XMM1  PINSRB,  // source register size is ignored
+  XMM1  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpinsrbn8eax->xmm1 ( -- ) 
+    ." testing 4 N  EAX  XMM1  PINSRB, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!
+1020304050607080 OU128B CCO!   90A0B0C0D0E0F0FE OU128B 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPINSRBN8EAX->XMM1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 123456809ABCDEF7 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  123456809ABCDEF7 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 1122334455667788 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 1122334455667788 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpinsrbn8eax->xmm1
+
+
+HEX
+CODE TESTPINSRBN8M8->XMM1
+  OU128A [O]  XMM1  MOVDQA,
+  4 N  OU128B [O]  XMM1  PINSRB, 
+  XMM1  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpinsrbn8m8->xmm1 ( -- ) 
+    ." testing 4 N  M8  XMM1  PINSRB, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!
+1020304050607080 OU128B CCO!   90A0B0C0D0E0F0FE OU128B 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPINSRBN8M8->XMM1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 123456809ABCDEF7 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  123456809ABCDEF7 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 1122334455667788 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 1122334455667788 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpinsrbn8m8->xmm1
+
+
+HEX
+CODE TESTPINSRDN8EAX->XMM1
+  OU128A [O]  XMM1  MOVDQA,
+  OU128B [O]  RAX   MOV,
+  2 N  EAX  XMM1  PINSRD,  // source register size is ignored
+  XMM1  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpinsrdn8eax->xmm1 ( -- ) 
+    ." testing 2 N  EAX  XMM1  PINSRD, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!
+1020304050607080 OU128B CCO!   90A0B0C0D0E0F0FE OU128B 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPINSRDN8EAX->XMM1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 123456789ABCDEF7 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  123456789ABCDEF7 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 1122334450607080 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 1122334450607080 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpinsrdn8eax->xmm1
+
+
+HEX
+CODE TESTPINSRDN8M32->XMM1
+  OU128A [O]  XMM1  MOVDQA,
+  2 N  OU128B [O]  XMM1  PINSRD,  
+  XMM1  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpinsrdn8m32->xmm1 ( -- ) 
+    ." testing 2 N  M32  XMM1  PINSRD, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!
+1020304050607080 OU128B CCO!   90A0B0C0D0E0F0FE OU128B 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPINSRDN8M32->XMM1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 123456789ABCDEF7 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  123456789ABCDEF7 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 1122334450607080 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 1122334450607080 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpinsrdn8m32->xmm1
+
+
+HEX
+CODE TESTPINSRQN8RAX->XMM1
+  OU128A [O]  XMM1  MOVDQA,
+  OU128B [O]  RAX   MOV,
+  1 N  RAX  XMM1  PINSRQ,  // source register size is ignored
+  XMM1  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpinsrqn8rax->xmm1 ( -- ) 
+    ." testing 1 N  RAX  XMM1  PINSRQ, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!
+1020304050607080 OU128B CCO!   90A0B0C0D0E0F0FE OU128B 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPINSRQN8RAX->XMM1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 123456789ABCDEF7 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  123456789ABCDEF7 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 1020304050607080 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 1020304050607080 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpinsrqn8rax->xmm1
+
+
+HEX
+CODE TESTPINSRQN8M64->XMM1
+  OU128A [O]  XMM1  MOVDQA,
+  1 N OU128B [O]  XMM1  PINSRQ,   
+  XMM1  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpinsrqn8m64->xmm1 ( -- ) 
+    ." testing 1 N  M64  XMM1  PINSRQ, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!
+1020304050607080 OU128B CCO!   90A0B0C0D0E0F0FE OU128B 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPINSRQN8M64->XMM1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 123456789ABCDEF7 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  123456789ABCDEF7 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 1020304050607080 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 1020304050607080 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpinsrqn8m64->xmm1
+
+
+HEX
+CODE TESTPINSRWN8AX->XMM1
+  OU128A [O]  XMM1  MOVDQA,
+  OU128B [O]  RAX   MOV,
+  1 N  AX  XMM1  PINSRW,  // source register size is ignored
+  XMM1  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpinsrwn8ax->xmm1 ( -- ) 
+    ." testing 1 N  AX  XMM1  PINSRW, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!
+1020304050607080 OU128B CCO!   90A0B0C0D0E0F0FE OU128B 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPINSRWN8AX->XMM1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 123456787080DEF7 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  123456787080DEF7 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 1122334455667788 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 1122334455667788 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpinsrwn8ax->xmm1
+
+
+HEX
+CODE TESTPINSRWN8M16->XMM1
+  OU128A [O]  XMM1  MOVDQA,
+  1 N  OU128B [O]  XMM1  PINSRW,  
+  XMM1  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpinsrwn8m16->xmm1 ( -- ) 
+    ." testing 1 N  M16  XMM1  PINSRW, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!
+1020304050607080 OU128B CCO!   90A0B0C0D0E0F0FE OU128B 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPINSRWN8M16->XMM1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 123456787080DEF7 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  123456787080DEF7 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 1122334455667788 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 1122334455667788 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpinsrwn8m16->xmm1
+
+
+HEX
+CODE TESTPINSRWN8AX->ST1
+  OU128A [O]  ST1  MOVQ,
+  OU128B [O]  RAX   MOV,
+  1 N  AX  ST1  PINSRW,  // source register size is ignored
+  ST1  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpinsrwn8ax->st1 ( -- ) 
+    ." testing 1 N  AX  ST1  PINSRW, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!
+1020304050607080 OU128B CCO!   90A0B0C0D0E0F0FE OU128B 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPINSRWN8AX->ST1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 123456787080DEF7 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  123456787080DEF7 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpinsrwn8ax->st1
+
+
+HEX
+CODE TESTPINSRWN8M16->ST1
+  OU128A [O]  ST1  MOVQ,
+  1 N  OU128B [O]  ST1  PINSRW,  
+  ST1  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpinsrwn8m16->st1 ( -- ) 
+    ." testing 1 N  M16  ST1  PINSRW, "
+123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!
+1020304050607080 OU128B CCO!   90A0B0C0D0E0F0FE OU128B 8 + CCO!        
+               0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTPINSRWN8M16->ST1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 123456787080DEF7 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  123456787080DEF7 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+
+testpinsrwn8m16->st1
+
+
+HEX
+CODE TESTRSQRTPSM128->XMM1
+  OU128A [O]  XMM1  MOVDQA,
+  OU128B [O]  XMM1  RSQRTPS,  
+  XMM1  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testrsqrtpsm128->xmm1 ( -- ) 
+    ." testing M128  XMM1  RSQRTPS, "
+    123456789ABCDEF7 OU128A CCO!                   1122334455667788 OU128A 8 + CCO!
+              FPS4.0 OU128B CCOU32!   FPS1.0 OU128B 4 + CCOU32!   FPS0.25 OU128B 8 + CCOU32!   FPS4.0 OU128B 0C + CCOU32!        
+                   0 OU128C CCO!                                  0 OU128C 8 + CCO!
+    0 ['] TESTRSQRTPSM128->XMM1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCOU32@ FPS0.5 = IF
+      ." 1st fp32 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st fp32 "  FPS0.5 U.  
+      ." , got " OU128C CCOU32@ U.
+    THEN
+
+    OU128C 4 + CCOU32@ FPS1.0 = IF
+      ." 2nd fp32 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 2nd fp32 "  FPS1.0 U.  
+      ." , got " OU128C 4 + CCOU32@ U.
+    THEN
+
+    OU128C 8 + CCOU32@ FPS2.0 = IF
+      ." 3rd fp32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 3rd fp32 " FPS2.0 U.  
+      ." , got " OU128C 8 + CCOU32@ U.
+    THEN
+
+    OU128C 0C + CCOU32@ FPS0.5 = IF
+      ." 1st fp32 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st fp32 "  FPS0.5 U.  
+      ." , got " OU128C 0C + CCOU32@ U.
+    THEN
+
+    CR
+;
+
+
+// testrsqrtpsm128->xmm1
+// since result is approximate the test doesn't work, I checked the result by eye
+
+
+HEX
+CODE TESTRSQRTPSXMM0->XMM1
+  OU128B [O]  XMM0  MOVDQA,
+  XMM0  XMM1  RSQRTPS,  
+  XMM1  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testrsqrtpsxmm0->xmm1 ( -- ) 
+    ." testing XMM0  XMM1  RSQRTPS, "
+    123456789ABCDEF7 OU128A CCO!                   1122334455667788 OU128A 8 + CCO!
+              FPS4.0 OU128B CCOU32!   FPS1.0 OU128B 4 + CCOU32!   FPS0.25 OU128B 8 + CCOU32!   FPS4.0 OU128B 0C + CCOU32!        
+                   0 OU128C CCO!                                  0 OU128C 8 + CCO!
+    0 ['] TESTRSQRTPSXMM0->XMM1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCOU32@ FPS0.5 = IF
+      ." 1st fp32 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st fp32 "  FPS0.5 U.  
+      ." , got " OU128C CCOU32@ U.
+    THEN
+
+    OU128C 4 + CCOU32@ FPS1.0 = IF
+      ." 2nd fp32 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 2nd fp32 "  FPS1.0 U.  
+      ." , got " OU128C 4 + CCOU32@ U.
+    THEN
+
+    OU128C 8 + CCOU32@ FPS2.0 = IF
+      ." 3rd fp32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 3rd fp32 " FPS2.0 U.  
+      ." , got " OU128C 8 + CCOU32@ U.
+    THEN
+
+    OU128C 0C + CCOU32@ FPS0.5 = IF
+      ." 1st fp32 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st fp32 "  FPS0.5 U.  
+      ." , got " OU128C 0C + CCOU32@ U.
+    THEN
+
+    CR
+;
+
+
+// testrsqrtpsxmm0->xmm1
+// since result is approximate the test doesn't work, I checked the result by eye
+
+
+HEX
+CODE TESTRSQRTSSM128->XMM1
+  OU128A [O]  XMM1  MOVDQA,
+  OU128B [O]  XMM1  RSQRTSS,  
+  XMM1  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testrsqrtssm128->xmm1 ( -- ) 
+    ." testing M128  XMM1  RSQRTSS, "
+    123456789ABCDEF7 OU128A CCO!                   1122334455667788 OU128A 8 + CCO!
+              FPS4.0 OU128B CCOU32!   FPS1.0 OU128B 4 + CCOU32!   FPS0.25 OU128B 8 + CCOU32!   FPS4.0 OU128B 0C + CCOU32!        
+                   0 OU128C CCO!                                  0 OU128C 8 + CCO!
+    0 ['] TESTRSQRTSSM128->XMM1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCOU32@ FPS0.5 = IF
+      ." 1st fp32 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st fp32 "  FPS0.5 U.  
+      ." , got " OU128C CCOU32@ U.
+    THEN
+
+    OU128C 4 + CCOU32@ 12345678 = IF
+      ." 2nd fp32 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 2nd fp32 "  12345678 U.  
+      ." , got " OU128C 4 + CCOU32@ U.
+    THEN
+
+    OU128C 8 + CCOU32@ 55667788 = IF
+      ." 3rd fp32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 3rd fp32 " 55667788 U.  
+      ." , got " OU128C 8 + CCOU32@ U.
+    THEN
+
+    OU128C 0C + CCOU32@ 11223344 = IF
+      ." 1st fp32 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st fp32 "  11223344 U.  
+      ." , got " OU128C 0C + CCOU32@ U.
+    THEN
+
+    CR
+;
+
+
+// testrsqrtssm128->xmm1
+// since result is approximate the test doesn't work, I checked the result by eye
+
+
+HEX
+CODE TESTRSQRTSSXMM0->XMM1
+  OU128A [O]  XMM1  MOVDQA,
+  OU128B [O]  XMM0  MOVDQA,
+  XMM0  XMM1  RSQRTSS,  
+  XMM1  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testrsqrtssxmm0->xmm1 ( -- ) 
+    ." testing XMM0  XMM1  RSQRTSS, "
+    123456789ABCDEF7 OU128A CCO!                   1122334455667788 OU128A 8 + CCO!
+              FPS4.0 OU128B CCOU32!   FPS1.0 OU128B 4 + CCOU32!   FPS0.25 OU128B 8 + CCOU32!   FPS4.0 OU128B 0C + CCOU32!        
+                   0 OU128C CCO!                                  0 OU128C 8 + CCO!
+    0 ['] TESTRSQRTSSXMM0->XMM1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCOU32@ FPS0.5 = IF
+      ." 1st fp32 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st fp32 "  FPS0.5 U.  
+      ." , got " OU128C CCOU32@ U.
+    THEN
+
+    OU128C 4 + CCOU32@ 12345678 = IF
+      ." 2nd fp32 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 2nd fp32 "  12345678 U.  
+      ." , got " OU128C 4 + CCOU32@ U.
+    THEN
+
+    OU128C 8 + CCOU32@ 55667788 = IF
+      ." 3rd fp32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 3rd fp32 " 55667788 U.  
+      ." , got " OU128C 8 + CCOU32@ U.
+    THEN
+
+    OU128C 0C + CCOU32@ 11223344 = IF
+      ." 1st fp32 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st fp32 "  11223344 U.  
+      ." , got " OU128C 0C + CCOU32@ U.
+    THEN
+
+    CR
+;
+
+
+// testrsqrtssxmm0->xmm1
+// since result is approximate the test doesn't work, I checked the result by eye
+
+
+HEX
+CODE TESTROUNDPSN8M128->XMM1
+  OU128A [O]  XMM1  MOVDQA,
+  2 N  OU128B [O]  XMM1  ROUNDPS,  
+  XMM1  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testroundpsn8m128->xmm1 ( -- ) 
+    ." testing  N8  M128  XMM1  ROUNDPS, "
+    123456789ABCDEF7 OU128A CCO!                   1122334455667788 OU128A 8 + CCO!
+              FPS2.5 OU128B CCOU32!   FPS1.0 OU128B 4 + CCOU32!   FPS0.5 OU128B 8 + CCOU32!   FPS1.5 OU128B 0C + CCOU32!        
+                   0 OU128C CCO!                                  0 OU128C 8 + CCO!
+    0 ['] TESTROUNDPSN8M128->XMM1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCOU32@ FPS3.0 = IF
+      ." 1st fp32 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st fp32 "  FPS3.0 U.  
+      ." , got " OU128C CCOU32@ U.
+    THEN
+
+    OU128C 4 + CCOU32@ FPS1.0 = IF
+      ." 2nd fp32 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 2nd fp32 "  FPS1.0 U.  
+      ." , got " OU128C 4 + CCOU32@ U.
+    THEN
+
+    OU128C 8 + CCOU32@ FPS1.0 = IF
+      ." 3rd fp32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 3rd fp32 " FPS1.0 U.  
+      ." , got " OU128C 8 + CCOU32@ U.
+    THEN
+
+    OU128C 0C + CCOU32@ FPS2.0 = IF
+      ." 1st fp32 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st fp32 "  FPS2.0 U.  
+      ." , got " OU128C 0C + CCOU32@ U.
+    THEN
+
+    CR
+;
+
+
+testroundpsn8m128->xmm1
+
+
+HEX
+CODE TESTROUNDPSN8XMM0->XMM1
+  OU128A [O]  XMM1  MOVDQA,
+  OU128B [O]  XMM0  MOVDQA,
+  2 N  XMM0  XMM1  ROUNDPS,  
+  XMM1  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testroundpsn8xmm0->xmm1 ( -- ) 
+    ." testing  N8  XMM0  XMM1  ROUNDPS, "
+    123456789ABCDEF7 OU128A CCO!                   1122334455667788 OU128A 8 + CCO!
+              FPS2.5 OU128B CCOU32!   FPS1.0 OU128B 4 + CCOU32!   FPS0.5 OU128B 8 + CCOU32!   FPS1.5 OU128B 0C + CCOU32!        
+                   0 OU128C CCO!                                  0 OU128C 8 + CCO!
+    0 ['] TESTROUNDPSN8XMM0->XMM1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCOU32@ FPS3.0 = IF
+      ." 1st fp32 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st fp32 "  FPS3.0 U.  
+      ." , got " OU128C CCOU32@ U.
+    THEN
+
+    OU128C 4 + CCOU32@ FPS1.0 = IF
+      ." 2nd fp32 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 2nd fp32 "  FPS1.0 U.  
+      ." , got " OU128C 4 + CCOU32@ U.
+    THEN
+
+    OU128C 8 + CCOU32@ FPS1.0 = IF
+      ." 3rd fp32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 3rd fp32 " FPS1.0 U.  
+      ." , got " OU128C 8 + CCOU32@ U.
+    THEN
+
+    OU128C 0C + CCOU32@ FPS2.0 = IF
+      ." 1st fp32 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st fp32 "  FPS2.0 U.  
+      ." , got " OU128C 0C + CCOU32@ U.
+    THEN
+
+    CR
+;
+
+
+testroundpsn8xmm0->xmm1
+
+
+HEX
+CODE TESTROUNDSSN8M128->XMM1
+  OU128A [O]  XMM1  MOVDQA,
+  2 N  OU128B [O]  XMM1  ROUNDSS,  
+  XMM1  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testroundssn8m128->xmm1 ( -- ) 
+    ." testing  N8  M128  XMM1  ROUNDSS, "
+    123456789ABCDEF7 OU128A CCO!                   1122334455667788 OU128A 8 + CCO!
+              FPS2.5 OU128B CCOU32!   FPS1.0 OU128B 4 + CCOU32!   FPS0.5 OU128B 8 + CCOU32!   FPS1.5 OU128B 0C + CCOU32!        
+                   0 OU128C CCO!                                  0 OU128C 8 + CCO!
+    0 ['] TESTROUNDSSN8M128->XMM1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCOU32@ FPS3.0 = IF
+      ." 1st fp32 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st fp32 "  FPS3.0 U.  
+      ." , got " OU128C CCOU32@ U.
+    THEN
+
+    OU128C 4 + CCOU32@ 12345678 = IF
+      ." 2nd fp32 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 2nd fp32 "  12345678 U.  
+      ." , got " OU128C 4 + CCOU32@ U.
+    THEN
+
+    OU128C 8 + CCOU32@ 55667788 = IF
+      ." 3rd fp32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 3rd fp32 " 55667788 U.  
+      ." , got " OU128C 8 + CCOU32@ U.
+    THEN
+
+    OU128C 0C + CCOU32@ 11223344 = IF
+      ." 1st fp32 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st fp32 "  11223344 U.  
+      ." , got " OU128C 0C + CCOU32@ U.
+    THEN
+
+    CR
+;
+
+
+testroundssn8m128->xmm1
+
+
+HEX
+CODE TESTROUNDPDN8M128->XMM1
+  OU128A [O]  XMM1  MOVDQA,
+  2 N  OU128B [O]  XMM1  ROUNDPD,  
+  XMM1  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testroundpdn8m128->xmm1 ( -- ) 
+    ." testing  N8  M128  XMM1  ROUNDPD, "
+    123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!
+              FPD2.5 OU128B CCO!             FPD1.5 OU128B 8 + CCO!         
+                   0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTROUNDPDN8M128->XMM1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ FPD3.0 = IF
+      ." 1st fp64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st fp64 "  FPD3.0 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ FPD2.0 = IF
+      ." 2nd fp64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd fp64 " FPD2.0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testroundpdn8m128->xmm1
+
+
+HEX
+CODE TESTROUNDSDN8M128->XMM1
+  OU128A [O]  XMM1  MOVDQA,
+  2 N  OU128B [O]  XMM1  ROUNDSD,  
+  XMM1  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testroundsdn8m128->xmm1 ( -- ) 
+    ." testing  N8  M128  XMM1  ROUNDSD, "
+    123456789ABCDEF7 OU128A CCO!   1122334455667788 OU128A 8 + CCO!
+              FPD2.5 OU128B CCO!             FPD1.5 OU128B 8 + CCO!         
+                   0 OU128C CCO!                  0 OU128C 8 + CCO!
+    0 ['] TESTROUNDSDN8M128->XMM1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ FPD3.0 = IF
+      ." 1st fp64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st fp64 "  FPD3.0 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 1122334455667788 = IF
+      ." 2nd fp64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd fp64 " 1122334455667788 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testroundsdn8m128->xmm1
+
+
+HEX
+CODE TESTAESKEYGENASSISTN8M128->XMM1
+  OU128A [O]  XMM1  MOVDQA,
+  0 N  OU128B [O]  XMM1  AESKEYGENASSIST,  
+  XMM1  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testaeskeygenassistn8m128->xmm1 ( -- ) 
+    ." testing  N8  M128  XMM1  AESKEYGENASSIST, "
+    0 OU128A CCO!   0 OU128A 8 + CCO!
+    0 OU128B CCO!   0 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTAESKEYGENASSISTN8M128->XMM1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 6363636363636363 = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 "  6363636363636363 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 6363636363636363 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 6363636363636363 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testaeskeygenassistn8m128->xmm1
+
+
+HEX
+CODE TESTAESIMCM128->XMM1
+  OU128A [O]  XMM1  MOVDQA,
+  OU128B [O]  XMM1  AESIMC,  
+  XMM1  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testaesimcm128->xmm1 ( -- ) 
+    ." testing  M128  XMM1  AESIMC, "
+    0 OU128A CCO!   0 OU128A 8 + CCO!
+    01 OU128B CCO!  02 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTAESIMCM128->XMM1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ B0D090E = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 "  B0D090E U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 161A121C = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 161A121C U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testaesimcm128->xmm1
+
+
+HEX
+CODE TESTLGDTM16
+  OU128C [O]  LGDT,  
+  RET,  
+END-CODE
+  
+// visually checked compilation, opcode correct, mod = 0, reg = 2, r/m = 5 correct
+
+
+HEX
+CODE TESTLIDTM16
+  OU128C [O]  LIDT,  
+  RET,  
+END-CODE
+  
+// visually checked compilation, opcode correct, mod = 0, reg = 3, r/m = 5 correct
+
+
+HEX
+CODE TESTLLDTM16
+  OU128C [O]  LLDT,  
+  RET,  
+END-CODE
+
+// visually checked compilation, opcode correct, mod = 0, reg = 2, r/m = 5 correct
+
+HEX
+CODE TESTLLDTAX
+  AX  LLDT,  
+  RET,  
+END-CODE
+
+// visually checked compilation, opcode correct, mod = 3, reg = 2, r/m = 0 correct
+
+HEX
+CODE TESTLLDTRAX
+  RAX  LLDT,  
+  RET,  
+END-CODE
+
+// visually checked compilation, opcode correct, mod = 3, reg = 2, r/m = 0 correct
+
+HEX
+CODE TESTLLDTR8
+  R8  LLDT,  
+  RET,  
+END-CODE
+
+// visually checked compilation, opcode correct, mod = 3, reg = 2, r/m = 0 correct, REX 41 correct
+
+HEX
+CODE TESTLMSWM16
+  OU128C [O]  LMSW,  
+  RET,  
+END-CODE
+
+// visually checked compilation, opcode correct, mod = 0, reg = 6, r/m = 5 correct
+
+
+HEX
+CODE TESTPUNPCKHBWM128->XMM1
+  OU128A [O]  XMM1  MOVDQA,
+  OU128B [O]  XMM1  PUNPCKHBW,  
+  XMM1  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpunpckhbwm128->xmm1 ( -- ) 
+    ." testing  M128  XMM1  PUNPCKHBW, "
+    0102040503060908 OU128A CCO!   1112131415171816 OU128A 8 + CCO!
+    2221232426252827 OU128B CCO!   3132353439383736 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTPUNPCKHBWM128->XMM1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 3915381737183616 = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 "  3915381737183616 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 3111321235133414 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 3111321235133414 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpunpckhbwm128->xmm1
+
+
+HEX
+CODE TESTPUNPCKHBWM128->ST1
+  OU128A [O]  ST1  MOVQ,
+  OU128B [O]  ST1 PUNPCKHBW,  
+  ST1  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpunpckhbwm128->st1 ( -- ) 
+    ." testing  M128  ST1  PUNPCKHBW, "
+    0102040503060908 OU128A CCO!   1112131415171816 OU128A 8 + CCO!
+    2221232426252827 OU128B CCO!   3132353439383736 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTPUNPCKHBWM128->ST1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 2201210223042405  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 2201210223042405  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpunpckhbwm128->st1
+
+
+HEX
+CODE TESTPUNPCKHWDM128->XMM1
+  OU128A [O]  XMM1  MOVDQA,
+  OU128B [O]  XMM1  PUNPCKHWD,  
+  XMM1  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpunpckhwdm128->xmm1 ( -- ) 
+    ." testing  M128  XMM1  PUNPCKHWD, "
+    0102040503060908 OU128A CCO!   1112131415171816 OU128A 8 + CCO!
+    2221232426252827 OU128B CCO!   3132353439383736 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTPUNPCKHWDM128->XMM1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 3938151737361816 = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 "  3938151737361816 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 3132111235341314 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 3132111235341314 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpunpckhwdm128->xmm1
+
+
+HEX
+CODE TESTPUNPCKHWDM128->ST1
+  OU128A [O]  ST1  MOVQ,
+  OU128B [O]  ST1 PUNPCKHWD,  
+  ST1  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpunpckhwdm128->st1 ( -- ) 
+    ." testing  M128  ST1  PUNPCKHWD, "
+    0102040503060908 OU128A CCO!   1112131415171816 OU128A 8 + CCO!
+    2221232426252827 OU128B CCO!   3132353439383736 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTPUNPCKHWDM128->ST1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 2221010223240405  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 2221010223240405  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpunpckhwdm128->st1
+
+
+HEX
+CODE TESTPUNPCKHDQM128->XMM1
+  OU128A [O]  XMM1  MOVDQA,
+  OU128B [O]  XMM1  PUNPCKHDQ,  
+  XMM1  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpunpckhdqm128->xmm1 ( -- ) 
+    ." testing  M128  XMM1  PUNPCKHDQ, "
+    0102040503060908 OU128A CCO!   1112131415171816 OU128A 8 + CCO!
+    2221232426252827 OU128B CCO!   3132353439383736 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTPUNPCKHDQM128->XMM1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@  3938373615171816 = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 3938373615171816 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 3132353411121314 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 3132353411121314 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpunpckhdqm128->xmm1
+
+
+HEX
+CODE TESTPUNPCKHDQM128->ST1
+  OU128A [O]  ST1  MOVQ,
+  OU128B [O]  ST1 PUNPCKHDQ,  
+  ST1  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpunpckhdqm128->st1 ( -- ) 
+    ." testing  M128  ST1  PUNPCKHDQ, "
+    0102040503060908 OU128A CCO!   1112131415171816 OU128A 8 + CCO!
+    2221232426252827 OU128B CCO!   3132353439383736 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTPUNPCKHDQM128->ST1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 2221232401020405  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 2221232401020405  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpunpckhdqm128->st1
+
+
+HEX
+CODE TESTPUNPCKLBWM128->XMM1
+  OU128A [O]  XMM1  MOVDQA,
+  OU128B [O]  XMM1  PUNPCKLBW,  
+  XMM1  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpunpcklbwm128->xmm1 ( -- ) 
+    ." testing  M128  XMM1  PUNPCKLBW, "
+    0102040503060908 OU128A CCO!   1112131415171816 OU128A 8 + CCO!
+    2221232426252827 OU128B CCO!   3132353439383736 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTPUNPCKLBWM128->XMM1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@  2603250628092708 = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 "  2603250628092708 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 2201210223042405 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 2201210223042405 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpunpcklbwm128->xmm1
+
+
+HEX
+CODE TESTPUNPCKLBWM128->ST1
+  OU128A [O]  ST1  MOVQ,
+  OU128B [O]  ST1 PUNPCKLBW,  
+  ST1  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpunpcklbwm128->st1 ( -- ) 
+    ." testing  M128  ST1  PUNPCKLBW, "
+    0102040503060908 OU128A CCO!   1112131415171816 OU128A 8 + CCO!
+    2221232426252827 OU128B CCO!   3132353439383736 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTPUNPCKLBWM128->ST1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 2603250628092708  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 2603250628092708  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpunpcklbwm128->st1
+
+
+HEX
+CODE TESTPUNPCKLWDM128->XMM1
+  OU128A [O]  XMM1  MOVDQA,
+  OU128B [O]  XMM1  PUNPCKLWD,  
+  XMM1  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpunpcklwdm128->xmm1 ( -- ) 
+    ." testing  M128  XMM1  PUNPCKLWD, "
+    0102040503060908 OU128A CCO!   1112131415171816 OU128A 8 + CCO!
+    2221232426252827 OU128B CCO!   3132353439383736 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTPUNPCKLWDM128->XMM1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 2625030628270908 = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 2625030628270908 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 2221010223240405 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 2221010223240405 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpunpcklwdm128->xmm1
+
+
+HEX
+CODE TESTPUNPCKLWDM128->ST1
+  OU128A [O]  ST1  MOVQ,
+  OU128B [O]  ST1 PUNPCKLWD,  
+  ST1  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpunpcklwdm128->st1 ( -- ) 
+    ." testing  M128  ST1  PUNPCKLWD, "
+    0102040503060908 OU128A CCO!   1112131415171816 OU128A 8 + CCO!
+    2221232426252827 OU128B CCO!   3132353439383736 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTPUNPCKLWDM128->ST1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 2625030628270908  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 2625030628270908  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpunpcklwdm128->st1
+
+
+HEX
+CODE TESTPUNPCKLDQM128->XMM1
+  OU128A [O]  XMM1  MOVDQA,
+  OU128B [O]  XMM1  PUNPCKLDQ,  
+  XMM1  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpunpckldqm128->xmm1 ( -- ) 
+    ." testing  M128  XMM1  PUNPCKLDQ, "
+    0102040503060908 OU128A CCO!   1112131415171816 OU128A 8 + CCO!
+    2221232426252827 OU128B CCO!   3132353439383736 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTPUNPCKLDQM128->XMM1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@  2625282703060908 = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 2625282703060908 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 2221232401020405 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 2221232401020405 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpunpckldqm128->xmm1
+
+
+HEX
+CODE TESTPUNPCKLDQM128->ST1
+  OU128A [O]  ST1  MOVQ,
+  OU128B [O]  ST1 PUNPCKLDQ,  
+  ST1  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpunpckldqm128->st1 ( -- ) 
+    ." testing  M128  ST1  PUNPCKLDQ, "
+    0102040503060908 OU128A CCO!   1112131415171816 OU128A 8 + CCO!
+    2221232426252827 OU128B CCO!   3132353439383736 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTPUNPCKLDQM128->ST1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 2625282703060908  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 2625282703060908  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpunpckldqm128->st1
+
+
+HEX
+CODE TESTCRC32M8->EAX
+  OU128A [O]  RAX  MOV,
+  OU128B [O] 8BIT EAX  CRC32,  
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testcrc32m8->eax ( -- ) 
+    ." testing  M8  EAX  CRC32, "
+    0 OU128A CCO!   0 OU128A 8 + CCO!
+    1 OU128B CCO!   0 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTCRC32M8->EAX >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ F26B8303  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " F26B8303  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testcrc32m8->eax
+
+
+HEX
+CODE TESTCRC32M16->EAX
+  OU128A [O]  RAX  MOV,
+  OU128B [O] 16BIT EAX  CRC32,  
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testcrc32m16->eax ( -- ) 
+    ." testing  M16  EAX  CRC32, "
+    0 OU128A CCO!   0 OU128A 8 + CCO!
+    1 OU128B CCO!   0 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTCRC32M16->EAX >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 13A29877  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 13A29877  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testcrc32m16->eax
+
+
+HEX
+CODE TESTCRC32M32->EAX
+  OU128A [O]  RAX  MOV,
+  OU128B [O] 32BIT EAX  CRC32,  
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testcrc32m32->eax ( -- ) 
+    ." testing  M32  EAX  CRC32, "
+    0 OU128A CCO!   0 OU128A 8 + CCO!
+    1 OU128B CCO!   0 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTCRC32M32->EAX >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ DD45AAB8  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " DD45AAB8  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testcrc32m32->eax
+
+
+HEX
+CODE TESTCRC32M64->EAX
+  OU128A [O]  RAX  MOV,
+  OU128B [O] 64BIT EAX  CRC32,  
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testcrc32m64->eax ( -- ) 
+    ." testing  M64  EAX  CRC32, "
+    0 OU128A CCO!   0 OU128A 8 + CCO!
+    1 OU128B CCO!   0 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTCRC32M64->EAX >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 493C7D27  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 493C7D27  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testcrc32m64->eax
+
+
+HEX
+CODE TESTCRC32R8->EAX
+  OU128A [O]  RAX  MOV,
+  OU128B [O]  RCX  MOV,
+  CL  EAX  CRC32,  
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testcrc32r8->eax ( -- ) 
+    ." testing  R8  EAX  CRC32, "
+    0 OU128A CCO!   0 OU128A 8 + CCO!
+    1 OU128B CCO!   0 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTCRC32R8->EAX >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ F26B8303  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " F26B8303  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testcrc32r8->eax
+
+
+HEX
+CODE TESTMOVNTQST0->M64
+  OU128A [O]  ST0  MOVQ,
+  ST0  OU128C [O]  MOVNTQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testmovntqst0->m64 ( -- ) 
+    ." testing  ST0  M64  MOVNTQ, "
+    1133224466558877 OU128A CCO!   1234567813141516 OU128A 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTMOVNTQST0->M64 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 1133224466558877  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 1133224466558877  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovntqst0->m64
+
+
+HEX
+CODE TESTPSADBWST0->M64
+  OU128A [O]  ST0  MOVQ,
+  OU128B [O]  ST0  PSADBW,
+  ST0  OU128C [O]  MOVQ,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testpsadbwst0->m64 ( -- ) 
+    ." testing  ST0  M64  PSADBW, "
+    1133224466558879 OU128A CCO!   1234567813141516 OU128A 8 + CCO!
+    1234234567568977 OU128B CCO!   1234567813141517 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTPSADBWST0->M64 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 9  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 9  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpsadbwst0->m64
+
+
+HEX
+CODE TESTPSADBWXMM0->M128
+  OU128A [O]  XMM0  MOVDQA,
+  OU128B [O]  XMM0  PSADBW,
+  XMM0  OU128C [O]  MOVDQA,
+  RET,  
+END-CODE
+  
+: testpsadbwxmm0->m128 ( -- ) 
+    ." testing  XMM0  M128  PSADBW, "
+    1133224466558879 OU128A CCO!   1234567813141516 OU128A 8 + CCO!
+    1234234567568977 OU128B CCO!   1234567813141517 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTPSADBWXMM0->M128 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 9  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 9  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 1 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 1 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testpsadbwxmm0->m128
+
+
+HEX
+CODE TESTMOVQ2DQST0->XMM1
+  OU128A [O]  ST0  MOVQ,
+  OU128B [O]  XMM1  MOVDQA,
+  ST0  XMM1  MOVQ2DQ,
+  XMM1 OU128C [O]  MOVDQA,
+  EMMS, // this is needed to undo mmx state (system V abi requirement)
+  RET,  
+END-CODE
+  
+: testmovq2dqst0->XMM1 ( -- ) 
+    ." testing  ST0  XMM1  MOVQ2DQ, "
+    1133224466558879 OU128A CCO!   1234567813141516 OU128A 8 + CCO!
+    1234234567568977 OU128B CCO!   1234567813141517 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTMOVQ2DQST0->XMM1 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 1133224466558879  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 1133224466558879  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovq2dqst0->XMM1
+
+
+HEX
+CODE TESTMOVMSKPDXMM1->RAX
+  OU128A [O]  RAX  MOV,
+  OU128B [O]  XMM1  MOVDQA,
+  XMM1  RAX  MOVMSKPD,
+  RAX OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testmovmskpdxmm1->rax ( -- ) 
+    ." testing  XMM1  RAX  MOVMSKPD, "
+    1133224466558879 OU128A CCO!   1234567813141516 OU128A 8 + CCO!
+    FPD2.0 OU128B CCO!   FPD-2.0 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTMOVMSKPDXMM1->RAX >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 2  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 2  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovmskpdxmm1->rax
+
+
+HEX
+CODE TESTMOVMSKPSXMM1->RAX
+  OU128A [O]  RAX  MOV,
+  OU128B [O]  XMM1  MOVDQA,
+  XMM1  RAX  MOVMSKPS,
+  RAX OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testmovmskpsxmm1->rax ( -- ) 
+    ." testing  XMM1  RAX  MOVMSKPS, "
+    1133224466558879 OU128A CCO!   1234567813141516 OU128A 8 + CCO!
+    FPS-2.0 OU128B CCOU32!  FPS-2.0 OU128B 4 + CCOU32!  FPS2.0 OU128B 8 + CCOU32!  FPS-2.0 OU128B 0C + CCOU32!        
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTMOVMSKPSXMM1->RAX >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0B  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 0B  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovmskpsxmm1->rax
+
+
+HEX
+CODE TESTUCOMISDM->XMM0
+  RAX RAX XOR,
+  OU128A [O]  XMM0  MOVDQA,
+  OU128B [O]  XMM0  UCOMISD,
+  EQ IF,
+    RAX DEC,
+  THEN,
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testucomisdm->xmm0 ( -- ) 
+    ." testing  M  XMM0  UCOMISD, "
+
+    FPD2.0  OU128A CCO!  FPD2.0 OU128A 8 + CCO!
+    FPD-2.0 OU128B CCO!  FPD2.0 OU128B 8 + CCO!     
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTUCOMISDM->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0 = IF
+      ." 1st U64 <> case SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 <> case " 0  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+
+    FPD-2.0  OU128A CCO!  FPD2.0 OU128A 8 + CCO!
+    FPD-2.0 OU128B CCO!  FPD2.0 OU128B 8 + CCO!     
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTUCOMISDM->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0 <> IF
+      ."  1st U64 = case SUCCESS! "
+    ELSE
+      ."  FAIL! Expected for 1st U64 = case " 0  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    
+
+    CR
+;
+
+testucomisdm->xmm0
+
+
+HEX
+CODE TESTUCOMISSM->XMM0
+  RAX RAX XOR,
+  OU128A [O]  XMM0  MOVDQA,
+  OU128B [O]  XMM0  UCOMISS,
+  EQ IF,
+    RAX DEC,
+  THEN,
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testucomissm->xmm0 ( -- ) 
+    ." testing  M  XMM0  UCOMISS, "
+
+    FPS2.0  OU128A CCOU32!  FPS2.0 OU128A 4 + CCOU32!
+    FPS-2.0 OU128B CCOU32!  FPS2.0 OU128B 4 + CCOU32!     
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTUCOMISSM->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0 = IF
+      ." 1st U64 <> case SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 <> case " 0  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+
+    FPS-2.0 OU128A CCOU32!  FPD2.0 OU128A 4 + CCOU32!
+    FPS-2.0 OU128B CCOU32!  FPD2.0 OU128B 4 + CCOU32!     
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTUCOMISSM->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0 <> IF
+      ."  1st U64 = case SUCCESS! "
+    ELSE
+      ."  FAIL! Expected for 1st U64 = case " 0  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    
+
+    CR
+;
+
+testucomissm->xmm0
+
+
+HEX
+CODE TESTSTOSB
+  OU128C [O]  RDI  LEA,
+  OU128A [O]  RAX  MOV,
+  STOSB,
+  RET,  
+END-CODE
+  
+: teststosb ( -- ) 
+    ." testing  STOSB, "
+    1133224466558879 OU128A CCO!   1234567813141516 OU128A 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTSTOSB >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 79  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 79  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+teststosb
+
+
+HEX
+CODE TESTSTOSW
+  OU128C [O]  RDI  LEA,
+  OU128A [O]  RAX  MOV,
+  STOSW,
+  RET,  
+END-CODE
+  
+: teststosw ( -- ) 
+    ." testing  STOSW, "
+    1133224466558879 OU128A CCO!   1234567813141516 OU128A 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTSTOSW >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 8879  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 8879  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+teststosw
+
+
+HEX
+CODE TESTSTOSD
+  OU128C [O]  RDI  LEA,
+  OU128A [O]  RAX  MOV,
+  STOSD,
+  RET,  
+END-CODE
+  
+: teststosd ( -- ) 
+    ." testing  STOSD, "
+    1133224466558879 OU128A CCO!   1234567813141516 OU128A 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTSTOSD >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 66558879  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 66558879  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+teststosd
+
+
+HEX
+CODE TESTSTOSQ
+  OU128C [O]  RDI  LEA,
+  OU128A [O]  RAX  MOV,
+  STOSQ,
+  RET,  
+END-CODE
+  
+: teststosq ( -- ) 
+    ." testing  STOSQ, "
+    1133224466558879 OU128A CCO!   1234567813141516 OU128A 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTSTOSQ >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 1133224466558879  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 1133224466558879  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+teststosq
+
+
+HEX
+CODE TESTLODSB
+  OU128A [O]  RAX  MOV, 
+  OU128B [O]  RSI  LEA,
+  LODSB,
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testlodsb ( -- ) 
+    ." testing  LODSB, "
+    1133224466558879 OU128A CCO!   1234567813141516 OU128A 8 + CCO!
+    1234567813141516 OU128B CCO!   1133224466558879 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTLODSB >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 1133224466558816  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 1133224466558816  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testlodsb
+
+
+HEX
+CODE TESTLODSW
+  OU128A [O]  RAX  MOV, 
+  OU128B [O]  RSI  LEA,
+  LODSW,
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testlodsw ( -- ) 
+    ." testing  LODSW, "
+    1133224466558879 OU128A CCO!   1234567813141516 OU128A 8 + CCO!
+    1234567813141516 OU128B CCO!   1133224466558879 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTLODSW >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 1133224466551516  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 1133224466551516  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testlodsw
+
+
+HEX
+CODE TESTLODSD
+  OU128A [O]  RAX  MOV, 
+  OU128B [O]  RSI  LEA,
+  LODSD,
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testlodsd ( -- ) 
+    ." testing  LODSD, "
+    1133224466558879 OU128A CCO!   1234567813141516 OU128A 8 + CCO!
+    1234567813141516 OU128B CCO!   1133224466558879 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTLODSD >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 13141516  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 13141516  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testlodsd
+
+
+HEX
+CODE TESTLODSQ
+  OU128A [O]  RAX  MOV, 
+  OU128B [O]  RSI  LEA,
+  LODSQ,
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testlodsq ( -- ) 
+    ." testing  LODSQ, "
+    1133224466558879 OU128A CCO!   1234567813141516 OU128A 8 + CCO!
+    1234567813141516 OU128B CCO!   1133224466558879 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTLODSQ >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 1234567813141516  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 1234567813141516  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testlodsq
+
+
+HEX
+CODE TESTMOVSB
+  OU128C [O]  RDI  LEA, 
+  OU128B [O]  RSI  LEA,
+  MOVSB,
+  RET,  
+END-CODE
+  
+: testmovsb ( -- ) 
+    ." testing  MOVSB, "
+    1234567813141516 OU128B CCO!   1133224466558879 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTMOVSB >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 16  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 16  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovsb
+
+
+HEX
+CODE TESTMOVSW
+  OU128C [O]  RDI  LEA, 
+  OU128B [O]  RSI  LEA,
+  MOVSW,
+  RET,  
+END-CODE
+  
+: testmovsw ( -- ) 
+    ." testing  MOVSW, "
+    1234567813141516 OU128B CCO!   1133224466558879 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTMOVSW >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 1516  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 1516  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovsw
+
+
+HEX
+CODE TESTMOVSD
+  OU128C [O]  RDI  LEA, 
+  OU128B [O]  RSI  LEA,
+  MOVSD,
+  RET,  
+END-CODE
+  
+: testmovsd ( -- ) 
+    ." testing  MOVSD, "
+    1234567813141516 OU128B CCO!   1133224466558879 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTMOVSD >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 13141516  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 13141516  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovsd
+
+
+HEX
+CODE TESTMOVSQ
+  OU128C [O]  RDI  LEA, 
+  OU128B [O]  RSI  LEA,
+  MOVSQ,
+  RET,  
+END-CODE
+  
+: testmovsq ( -- ) 
+    ." testing  MOVSQ, "
+    1234567813141516 OU128B CCO!   1133224466558879 OU128B 8 + CCO!         
+    0 OU128C CCO!   0 OU128C 8 + CCO!
+    0 ['] TESTMOVSQ >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 1234567813141516  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 1234567813141516  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd U64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd U64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovsq
+
+
+
+
+// the base address of the current data segment might have to be 0 for this to work...
+// but since mac os x is currently making everything load at 0... this will probably work
+//  in other words I think the segment registers get 0 as their base address in mac os x now... 3/16/2020
+// ( the intel docs on these 4 opcodes is hard for me to understand )
+HEX
+CODE TESTMOV[N]->AL
+  RAX RAX XOR,
+  VARY MOV[N]->AL,      // VARY is an address in a buffer that won't move
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testmov[n]->al ( -- ) 
+    ." testing  MOV[N]->AL, "
+    1234567813141516 VARY !  
+    0 OU128C CCO!
+    0 ['] TESTMOV[N]->AL >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 16  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 16  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    CR
+;
+
+testmov[n]->al
+
+
+HEX
+CODE TESTMOV[N]->AX
+  RAX RAX XOR,
+  VARY MOV[N]->AX,       // VARY is an address in a buffer that won't move
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testmov[n]->ax ( -- ) 
+    ." testing  MOV[N]->AX, "
+    1234567813141516 VARY !
+    0 OU128C CCO!
+    0 ['] TESTMOV[N]->AX >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 1516  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 1516  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    CR
+;
+
+testmov[n]->ax
+
+
+HEX
+CODE TESTMOV[N]->EAX
+  RAX RAX XOR,
+  VARY MOV[N]->EAX,      // VARY is an address in a buffer that won't move
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testmov[n]->eax ( -- ) 
+    ." testing  MOV[N]->EAX, "
+    1234567813141516 VARY !
+    0 OU128C CCO!
+    0 ['] TESTMOV[N]->EAX >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 13141516  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 13141516  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    CR
+;
+
+testmov[n]->eax
+
+
+HEX
+CODE TESTMOV[N]->RAX
+  RAX RAX XOR,
+  VARY MOV[N]->RAX,      // VARY is an address in a buffer that won't move
+  RAX  OU128C [O]  MOV,
+  RET,  
+END-CODE
+  
+: testmov[n]->rax ( -- ) 
+    ." testing  MOV[N]->RAX, "
+    1234567813141516 VARY !
+    0 OU128C CCO!
+    0 ['] TESTMOV[N]->RAX >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 1234567813141516  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 1234567813141516  U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    CR
+;
+
+testmov[n]->rax
+
+
+HEX
+CODE TESTMOVAL->[N]
+  OU128C [O]  RAX  MOV,
+  VARY MOVAL->[N],      // VARY is an address in a buffer that won't move
+  RET,  
+END-CODE
+  
+: testmoval->[n] ( -- ) 
+    ." testing  MOVAL->[N], "
+    0 VARY !  
+    1234567813141516 OU128C CCO!
+    0 ['] TESTMOVAL->[N] >BODY CALLPROC
+    DROP  
+
+    VARY @ 16  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 16  U.  
+      ." , got " VARY @ U.
+    THEN
+
+    CR
+;
+
+testmoval->[n]
+
+
+HEX
+CODE TESTMOVAX->[N]
+  OU128C [O]  RAX  MOV,
+  VARY MOVAX->[N],      // VARY is an address in a buffer that won't move
+  RET,  
+END-CODE
+  
+: testmovax->[n] ( -- ) 
+    ." testing  MOVAX->[N], "
+    0 VARY !  
+    1234567813141516 OU128C CCO!
+    0 ['] TESTMOVAX->[N] >BODY CALLPROC
+    DROP  
+
+    VARY @ 1516  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 1516  U.  
+      ." , got " VARY @ U.
+    THEN
+
+    CR
+;
+
+testmovax->[n]
+
+
+HEX
+CODE TESTMOVEAX->[N]
+  OU128C [O]  RAX  MOV,
+  VARY MOVEAX->[N],      // VARY is an address in a buffer that won't move
+  RET,  
+END-CODE
+  
+: testmoveax->[n] ( -- ) 
+    ." testing  MOVEAX->[N], "
+    0 VARY !  
+    1234567813141516 OU128C CCO!
+    0 ['] TESTMOVEAX->[N] >BODY CALLPROC
+    DROP  
+
+    VARY @ 13141516  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 13141516  U.  
+      ." , got " VARY @ U.
+    THEN
+
+    CR
+;
+
+testmoveax->[n]
+
+
+HEX
+CODE TESTMOVRAX->[N]
+  OU128C [O]  RAX  MOV,
+  VARY MOVRAX->[N],      // VARY is an address in a buffer that won't move
+  RET,  
+END-CODE
+  
+: testmovrax->[n] ( -- ) 
+    ." testing  MOVRAX->[N], "
+    0 VARY !  
+    1234567813141516 OU128C CCO!
+    0 ['] TESTMOVRAX->[N] >BODY CALLPROC
+    DROP  
+
+    VARY @ 1234567813141516  = IF
+      ." 1st U64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st U64 " 1234567813141516  U.  
+      ." , got " VARY @ U.
+    THEN
+
+    CR
+;
+
+testmovrax->[n]
+
+
+HEX
+CODE TESTMOVQ2M64->0XMMR
+  OU128A [O]  0 XMMR  MOVQ2,
+  0 XMMR  OU128C [O]  MOVQ,
+  RET,  
+END-CODE
+  
+: testmovq2m64->0xmmr ( -- )
+    ." testing OM64 [O]  0 XMMR  MOVQ2, "
+8000000100000005 OU128A CCO!  FFFFFFFE80000000 OU128A 8 + CCO!      
+               0 OU128C CCO!                 0 OU128C 8 + CCO!
+    0 ['] TESTMOVQ2M64->0XMMR >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 8000000100000005 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  8000000100000005 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testmovq2m64->0xmmr
+
+
+HEX
+CODE TESTDPPD0NM128->XMM0
+  OU128A [O]  XMM0  MOVDQU,
+  0 N  OU128B [O]  XMM0  DPPD,
+  XMM0  OU128C [O]  MOVDQU,
+  RET,  
+END-CODE
+  
+: testdppd0nm128->xmm0 ( -- )
+    ." testing 0 N  OM64 [O]  XMM0  DPPD, "
+FPD2.0 OU128A CCO!  FPD3.0 OU128A 8 + CCO!
+FPD4.0 OU128B CCO!  FPD1.0 OU128B 8 + CCO!      
+    -1 OU128C CCO!      -1 OU128C 8 + CCO!
+    0 ['] TESTDPPD0NM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  0 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testdppd0nm128->xmm0
+
+
+HEX
+CODE TESTDPPD11NM128->XMM0
+  OU128A [O]  XMM0  MOVDQU,
+  11 N  OU128B [O]  XMM0  DPPD,
+  XMM0  OU128C [O]  MOVDQU,
+  RET,  
+END-CODE
+  
+: testdppd11nm128->xmm0 ( -- )
+    ." testing 11 N  OM64 [O]  XMM0  DPPD, "
+FPD2.0 OU128A CCO!  FPD3.0 OU128A 8 + CCO!
+FPD4.0 OU128B CCO!  FPD1.0 OU128B 8 + CCO!      
+    -1 OU128C CCO!      -1 OU128C 8 + CCO!
+    0 ['] TESTDPPD11NM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ FPD8.0 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  FPD8.0 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " 0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testdppd11nm128->xmm0
+
+
+HEX
+CODE TESTDPPD33NM128->XMM0
+  OU128A [O]  XMM0  MOVDQU,
+  33 N  OU128B [O]  XMM0  DPPD,
+  XMM0  OU128C [O]  MOVDQU,
+  RET,  
+END-CODE
+  
+: testdppd33nm128->xmm0 ( -- )
+    ." testing 33 N  OM128 [O]  XMM0  DPPD, "
+FPD2.0 OU128A CCO!  FPD1.0 OU128A 8 + CCO!
+FPD3.0 OU128B CCO!  FPD2.0 OU128B 8 + CCO!      
+    -1 OU128C CCO!      -1 OU128C 8 + CCO!
+    0 ['] TESTDPPD33NM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ FPD8.0 = IF
+      ." 1st u64 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u64 "  FPD8.0 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 8 + CCO@ FPD8.0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u64 " FPD8.0 U.  
+      ." , got " OU128C 8 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testdppd33nm128->xmm0
+
+
+HEX
+CODE TESTDPPS0NM128->XMM0
+  OU128A [O]  XMM0  MOVDQU,
+  0 N  OU128B [O]  XMM0  DPPS,
+  XMM0  OU128C [O]  MOVDQU,
+  RET,  
+END-CODE
+  
+: testdpps0nm128->xmm0 ( -- )
+    ." testing 0 N  OM128 [O]  XMM0  DPPS, "
+FPD2.0 OU128A CCO!  FPD3.0 OU128A 8 + CCO!
+FPD4.0 OU128B CCO!  FPD1.0 OU128B 8 + CCO!      
+    -1 OU128C CCO!      -1 OU128C 8 + CCO!
+    0 ['] TESTDPPS0NM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCO@ 0 = IF
+      ." 1st u32 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u32 "  0 U.  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    OU128C 4 + CCO@ 0 = IF
+      ." 2nd u32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u32 " 0 U.  
+      ." , got " OU128C 4 + CCO@ U.
+    THEN
+
+    CR
+;
+
+testdpps0nm128->xmm0
+
+
+HEX
+CODE TESTDPPS11NM128->XMM0
+  OU128A [O]  XMM0  MOVDQU,
+  11 N  OU128B [O]  XMM0  DPPS,
+  XMM0  OU128C [O]  MOVDQU,
+  RET,  
+END-CODE
+  
+: testdpps11nm128->xmm0 ( -- )
+    ." testing 11 N  OM128 [O]  XMM0  DPPS, "
+FPS2.0 OU128A CCOU32!  FPS2.0 OU128A 4 + CCOU32!
+FPS4.0 OU128B CCOU32!  FPS1.0 OU128B 4 + CCOU32!      
+    -1 OU128C CCO!         -1 OU128C 8 + CCO!
+    0 ['] TESTDPPS11NM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCOU32@ FPS8.0 = IF
+      ." 1st u32 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u32 "  FPD8.0 U.  
+      ." , got " OU128C CCOU32@ U.
+    THEN
+
+    OU128C 4 + CCOU32@ 0 = IF
+      ." 2nd u64 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u32 " 0 U.  
+      ." , got " OU128C 4 + CCOU32@ U.
+    THEN
+
+    CR
+;
+
+testdpps11nm128->xmm0
+
+
+HEX
+CODE TESTDPPS33NM128->XMM0
+  OU128A [O]  XMM0  MOVDQU,
+  33 N  OU128B [O]  XMM0  DPPS,
+  XMM0  OU128C [O]  MOVDQU,
+  RET,  
+END-CODE
+  
+: testdpps33nm128->xmm0 ( -- )
+    ." testing 33 N  OM64 [O]  XMM0  DPPS, "
+FPS2.0 OU128A CCOU32!  FPS1.0 OU128A 4 + CCOU32!
+FPS3.0 OU128B CCOU32!  FPS2.0 OU128B 4 + CCOU32!      
+    -1 OU128C CCO!      -1 OU128C 8 + CCO!
+    0 ['] TESTDPPS33NM128->XMM0 >BODY CALLPROC
+    DROP  
+
+    OU128C CCOU32@ FPS8.0 = IF
+      ." 1st u32 SUCCESS! "
+    ELSE
+      ." FAIL! Expected for 1st u32 "  FPS8.0 U.  
+      ." , got " OU128C CCOU32@ U.
+    THEN
+
+    OU128C 4 + CCOU32@ FPS8.0 = IF
+      ." 2nd u32 SUCCESS!"
+    ELSE
+      ." FAIL! Expected for 2nd u32 " FPS8.0 U.  
+      ." , got " OU128C 4 + CCOU32@ U.
+    THEN
+
+    CR
+;
+
+testdpps33nm128->xmm0
+
+
+HEX
+CODE TESTADDN8->DIL
+  8 N DIL ADD,
+  RDI RAX MOV,
+  RET,  
+END-CODE
+  
+: testaddn8todil ( -- )
+    ." testing 8 N  DIL  ADD, "
+    HEX 7711 1 ['] TESTADDN8->DIL >BODY CALLPROC OU128C CCO! 
+
+    OU128C CCO@ 7719 = IF
+      ." SUCCESS! "
+    ELSE
+      ." FAIL! Expected "  7719  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    CR
+;
+
+testaddn8todil
+
+
+HEX
+CODE TESTADDN8->SIL
+  8 N SIL ADD,
+  RSI RAX MOV,
+  RET,  
+END-CODE
+  
+: testaddn8tosil ( -- )
+    ." testing 8 N  SIL  ADD, "
+    HEX 7711 1234 2 ['] TESTADDN8->SIL >BODY CALLPROC OU128C CCO! 
+
+    OU128C CCO@ 7719 = IF
+      ." SUCCESS! "
+    ELSE
+      ." FAIL! Expected "  7719  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    CR
+;
+
+testaddn8tosil
+
+
+HEX
+CODE TESTADDN8->BPL
+  RBP PUSH,
+  RDI RBP MOV,
+  RDI RDI XOR,
+  8 N BPL ADD,
+  RBP RAX MOV,
+  RBP POP,
+  RET,  
+END-CODE
+  
+: testaddn8tobpl ( -- )
+    ." testing 8 N  BPL  ADD, "
+    HEX 7711 1 ['] TESTADDN8->BPL >BODY CALLPROC OU128C CCO! 
+
+    OU128C CCO@ 7719 = IF
+      ." SUCCESS! "
+    ELSE
+      ." FAIL! Expected "  7719  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    CR
+;
+
+testaddn8tobpl
+
+
+HEX
+CODE TESTSUBN8->SPL
+  RSP RCX MOV,
+  -100 N RSP AND, // to get to a boundary so when we subtract 8... 
+  110 N RSP SUB,   // to make enough room so rsp can go up 
+  RSP RDX MOV,
+  F8 N SPL SUB,  // have to use sub in case an interrupt happens and I want it to go past 0...
+  RSP RAX MOV,
+  RCX RSP MOV,
+  RET,  
+END-CODE
+  
+: testsubn8tospl ( -- )
+    ." testing 8 N  SPL  SUB, "
+    0 ['] TESTSUBN8->SPL >BODY CALLPROCRETUINT128 
+    OU128C CCO!  // old
+    OU128C 8 + CCO! // new (-8)
+
+    OU128C CCOC@  OU128C 8 + CCOC@ - -8 = IF
+      ." SUCCESS! "
+    ELSE
+      ." FAIL! Expected "  -8 U.  
+      ." , got " OU128C CCOC@  OU128C 8 + CCOC@ - U.
+    THEN
+
+    OU128C CCO@ -100 AND
+    OU128C 8 + CCO@ -100 AND = IF
+      ."  rest of RSP unchanged SUCCESS! "
+    ELSE
+      ." FAIL! Expected same " 
+      ." , got " OU128C CCO@ -100 AND U. ."  and "  OU128C 8 + CCO@ -100 AND U.
+    THEN
+
+    CR
+;
+
+testsubn8tospl
+
+
+
+HEX
+CODE TESTNOTDIL
+  DIL NOT,
+  RDI RAX MOV,
+  RET,  
+END-CODE
+  
+: testnotdil ( -- )
+    ." testing  DIL  NOT, "
+    HEX 7311 1 ['] TESTNOTDIL >BODY CALLPROC OU128C CCO! 
+
+    OU128C CCO@ 73EE = IF
+      ." SUCCESS! "
+    ELSE
+      ." FAIL! Expected "  73EE  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    CR
+;
+
+testnotdil
+
+HEX
+CODE TESTNOTSIL
+  SIL NOT,
+  RSI RAX MOV,
+  RET,  
+END-CODE
+  
+: testnotsil ( -- )
+    ." testing  SIL  NOT, "
+    HEX 7311 1234 2 ['] TESTNOTSIL >BODY CALLPROC OU128C CCO! 
+
+    OU128C CCO@ 73EE = IF
+      ." SUCCESS! "
+    ELSE
+      ." FAIL! Expected "  73EE  
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    CR
+;
+
+testnotsil
+
+
+HEX
+CODE TESTADDSIL->AL
+  RDI RAX MOV,
+  SIL AL ADD,
+  RET,  
+END-CODE
+  
+: testaddsil->al ( -- )
+    ." testing  SIL  AL  ADD, "
+    HEX 73FF 1234 2 ['] TESTADDSIL->AL >BODY CALLPROC OU128C CCO! 
+
+    OU128C CCO@ 1233 = IF
+      ." SUCCESS! "
+    ELSE
+      ." FAIL! Expected "  1233 U.
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    CR
+;
+
+testaddsil->al
+
+
+HEX
+CODE TESTADDAL->SIL
+  RDI RAX MOV,
+  AL  SIL  ADD,
+  RSI  RAX  MOV,
+  RET,  
+END-CODE
+  
+: testaddal->sil ( -- )
+    ." testing  AL  SIL  ADD, "
+    HEX 73FF 1234 2 ['] TESTADDAL->SIL >BODY CALLPROC OU128C CCO! 
+
+    OU128C CCO@ 7333 = IF
+      ." SUCCESS! "
+    ELSE
+      ." FAIL! Expected "  7333 U.
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    CR
+;
+
+testaddal->sil
+
+
+HEX
+CODE TESTADDDIL->SIL
+  DIL  SIL  ADD,
+  RSI  RAX  MOV,
+  RET,  
+END-CODE
+  
+: testadddil->sil ( -- )
+    ." testing  DIL  SIL  ADD, "
+    HEX 73FF 1234 2 ['] TESTADDDIL->SIL >BODY CALLPROC OU128C CCO! 
+
+    OU128C CCO@ 7333 = IF
+      ." SUCCESS! "
+    ELSE
+      ." FAIL! Expected "  7333 U.
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    CR
+;
+
+testadddil->sil
+
+
+HEX
+CODE TESTADDDIL->M8
+  DIL  OU128C [O]  ADD,
+  RET,  
+END-CODE
+  
+: testadddil->m8 ( -- )
+    ." testing  DIL  M8  ADD, "
+    72FF OU128C CCO!
+    HEX 1234 1 ['] TESTADDDIL->M8 >BODY CALLPROC DROP 
+
+    OU128C CCO@ 7233 = IF
+      ." SUCCESS! "
+    ELSE
+      ." FAIL! Expected "  7233  U.
+      ." , got " OU128C CCO@ U.
+    THEN
+
+    CR
+;
+
+testadddil->m8
+
+
+HEX
+CODE TESTADDM8->DIL
+  OU128C [O]  DIL  ADD,
+  RDI  RAX  MOV,
+  RET,  
+END-CODE
+  
+: testaddm8->dil ( -- )
+    ." testing  M8  DIL  ADD, "
+    72FF OU128C CCO!
+    HEX 1234 1 ['] TESTADDM8->DIL >BODY CALLPROC  
+
+    1233 = IF
+      ." SUCCESS! "
+    ELSE
+      ." FAIL! Expected "  1233  U.
+      ." , got " U.
+    THEN
+
+    CR
+;
+
+testaddm8->dil
+
+
+HEX
+CODE TESTCPARAMETERS<a
+ RBP PUSH, 
+ RSP RBP MOV,
+ CPARAMETERS<
+  s 
+  t
+  u
+  v
+  w
+  x
+  y
+  z>s RAX MOV,
+ RBP RSP MOV,
+ RBP POP,
+ RET,
+END-CODE
+
+: testcparameters<a ( -- )
+    ." testing  CPARAMETERS< a "
+    HEX 18 17 16 15 14 13 12 11 8 ['] TESTCPARAMETERS<a >BODY CALLPROC  
+
+    11 = IF
+      ." SUCCESS! "
+    ELSE
+      ." FAIL! Expected "  11  U.
+      ." , got " U.
+    THEN
+
+    CR
+;
+
+testcparameters<a
+
+
+HEX
+CODE TESTCPARAMETERS<b
+ RBP PUSH, 
+ RSP RBP MOV,
+ CPARAMETERS<
+  s 
+  t
+  u
+  v
+  w
+  x
+  y
+  z>t RAX MOV,
+ RBP RSP MOV,
+ RBP POP,
+ RET,
+END-CODE
+
+: testcparameters<b ( -- )
+    ." testing  CPARAMETERS< b "
+    HEX 18 17 16 15 14 13 12 11 8 ['] TESTCPARAMETERS<b >BODY CALLPROC  
+
+    12 = IF
+      ." SUCCESS! "
+    ELSE
+      ." FAIL! Expected "  12  U.
+      ." , got " U.
+    THEN
+
+    CR
+;
+
+testcparameters<b
+  
+
+HEX
+CODE TESTCPARAMETERS<c
+ RBP PUSH, 
+ RSP RBP MOV,
+ CPARAMETERS<
+  s 
+  t
+  u
+  v
+  w
+  x
+  y
+  z>u RAX MOV,
+ RBP RSP MOV,
+ RBP POP,
+ RET,
+END-CODE
+
+: testcparameters<c ( -- )
+    ." testing  CPARAMETERS< c "
+    HEX 18 17 16 15 14 13 12 11 8 ['] TESTCPARAMETERS<c >BODY CALLPROC  
+
+    13 = IF
+      ." SUCCESS! "
+    ELSE
+      ." FAIL! Expected "  13  U.
+      ." , got " U.
+    THEN
+
+    CR
+;
+
+testcparameters<c
+
+
+HEX
+CODE TESTCPARAMETERS<d
+ RBP PUSH, 
+ RSP RBP MOV,
+ CPARAMETERS<
+  s 
+  t
+  u
+  v
+  w
+  x
+  y
+  z>v RAX MOV,
+ RBP RSP MOV,
+ RBP POP,
+ RET,
+END-CODE
+
+: testcparameters<d ( -- )
+    ." testing  CPARAMETERS< d "
+    HEX 18 17 16 15 14 13 12 11 8 ['] TESTCPARAMETERS<d >BODY CALLPROC  
+
+    14 = IF
+      ." SUCCESS! "
+    ELSE
+      ." FAIL! Expected "  14  U.
+      ." , got " U.
+    THEN
+
+    CR
+;
+
+testcparameters<d
+
+
+HEX
+CODE TESTCPARAMETERS<e
+ RBP PUSH, 
+ RSP RBP MOV,
+ CPARAMETERS<
+  s 
+  t
+  u
+  v
+  w
+  x
+  y
+  z>w RAX MOV,
+ RBP RSP MOV,
+ RBP POP,
+ RET,
+END-CODE
+
+: testcparameters<e ( -- )
+    ." testing  CPARAMETERS< e "
+    HEX 18 17 16 15 14 13 12 11 8 ['] TESTCPARAMETERS<e >BODY CALLPROC  
+
+    15 = IF
+      ." SUCCESS! "
+    ELSE
+      ." FAIL! Expected "  15  U.
+      ." , got " U.
+    THEN
+
+    CR
+;
+
+testcparameters<e
+
+
+HEX
+CODE TESTCPARAMETERS<f
+ RBP PUSH, 
+ RSP RBP MOV,
+ CPARAMETERS<
+  s 
+  t
+  u
+  v
+  w
+  x
+  y
+  z>x RAX MOV,
+ RBP RSP MOV,
+ RBP POP,
+ RET,
+END-CODE
+
+: testcparameters<f ( -- )
+    ." testing  CPARAMETERS< f "
+    HEX 18 17 16 15 14 13 12 11 8 ['] TESTCPARAMETERS<f >BODY CALLPROC  
+
+    16 = IF
+      ." SUCCESS! "
+    ELSE
+      ." FAIL! Expected "  16  U.
+      ." , got " U.
+    THEN
+
+    CR
+;
+
+testcparameters<f
+
+
+HEX
+CODE TESTCPARAMETERS<g
+ RBP PUSH, 
+ RSP RBP MOV,
+ CPARAMETERS<
+  s 
+  t
+  u
+  v
+  w
+  x
+  y
+  z>y RAX MOV,
+ RBP RSP MOV,
+ RBP POP,
+ RET,
+END-CODE
+
+: testcparameters<g ( -- )
+    ." testing  CPARAMETERS< g "
+    HEX 18 17 16 15 14 13 12 11 8 ['] TESTCPARAMETERS<g >BODY CALLPROC  
+
+    17 = IF
+      ." SUCCESS! "
+    ELSE
+      ." FAIL! Expected "  17  U.
+      ." , got " U.
+    THEN
+
+    CR
+;
+
+testcparameters<g
+
+
+HEX
+CODE TESTCPARAMETERS<h
+ RBP PUSH, 
+ RSP RBP MOV,
+ CPARAMETERS<
+  s 
+  t
+  u
+  v
+  w
+  x
+  y
+  z>z RAX MOV,
+ RBP RSP MOV,
+ RBP POP,
+ RET,
+END-CODE
+
+: testcparameters<h ( -- )
+    ." testing  CPARAMETERS< h "
+    HEX 18 17 16 15 14 13 12 11 8 ['] TESTCPARAMETERS<h >BODY CALLPROC  
+
+    18 = IF
+      ." SUCCESS! "
+    ELSE
+      ." FAIL! Expected "  18  U.
+      ." , got " U.
+    THEN
+
+    CR
+;
+
+testcparameters<h
+
+
+HEX
+CODE TESTCRETURNS<a
+ RBP PUSH, 
+ RSP RBP MOV,
+ CRETURNS<
+  s 
+  t>RDI s MOV,
+  RSI t MOV,
+ RBP RSP MOV,
+ RBP POP,
+ RET,
+END-CODE
+
+: testcreturns<a ( -- )
+    ." testing  TESTCRETURNS< a "
+    HEX 12 11 2 ['] TESTCRETURNS<a >BODY CALLPROCRETUINT128  
+
+    DUP 12 = IF DROP
+      ." SUCCESS! lo "
+    ELSE
+      ." FAIL! Expected lo "  12  U.
+      ." , got " U.
+    THEN
+
+    DUP 11 = IF DROP
+      ." SUCCESS! hi "
+    ELSE
+      ." FAIL! Expected hi "  11  U.
+      ." , got " U.
+    THEN
+
+    CR
+;
+
+testcreturns<a
+
+
+HEX
+CODE TESTFRAME<a
+ RBP PUSH, 
+ RSP RBP MOV,
+ 51 N PUSH,
+ 52 N PUSH,
+ 53 N PUSH,
+ FRAME<
+  s 
+  t
+  u>DROP
+ s RAX MOV,
+ RBP RSP MOV,
+ RBP POP,
+ RET,
+END-CODE
+
+: testframe<a ( -- )
+    ." testing  TESTFRAME< a "
+    HEX 0 ['] TESTFRAME<a >BODY CALLPROC  
+
+    DUP 51 = IF DROP
+      ." SUCCESS! lo "
+    ELSE
+      ." FAIL! Expected lo "  51  U.
+      ." , got " U.
+    THEN
+
+    CR
+;
+
+testframe<a
+
+
+HEX
+CODE TESTFRAME<b
+ RBP PUSH, 
+ RSP RBP MOV,
+ 51 N PUSH,
+ 52 N PUSH,
+ 53 N PUSH,
+ FRAME<
+  s 
+  t
+  u>DROP
+ t RAX MOV,
+ RBP RSP MOV,
+ RBP POP,
+ RET,
+END-CODE
+
+: testframe<b ( -- )
+    ." testing  TESTFRAME< b "
+    HEX 0 ['] TESTFRAME<b >BODY CALLPROC  
+
+    DUP 52 = IF DROP
+      ." SUCCESS! lo "
+    ELSE
+      ." FAIL! Expected lo "  52  U.
+      ." , got " U.
+    THEN
+
+    CR
+;
+
+testframe<b
+
+
+HEX
+CODE TESTFRAME<c
+ RBP PUSH, 
+ RSP RBP MOV,
+ 51 N PUSH,
+ 52 N PUSH,
+ 53 N PUSH,
+ FRAME<
+  s 
+  t
+  u>DROP
+ u RAX MOV,
+ RBP RSP MOV,
+ RBP POP,
+ RET,
+END-CODE
+
+: testframe<c ( -- )
+    ." testing  TESTFRAME< c "
+    HEX 0 ['] TESTFRAME<c >BODY CALLPROC  
+
+    DUP 53 = IF DROP
+      ." SUCCESS! lo "
+    ELSE
+      ." FAIL! Expected lo "  53  U.
+      ." , got " U.
+    THEN
+
+    CR
+;
+
+testframe<c
+
+
+HEX
+CODE TESTFRAME<d
+ RBP PUSH, 
+ RSP RBP MOV,
+ 51 N PUSH,
+ 52 N PUSH,
+ 53 N PUSH,
+ 54 N PUSH,
+ FRAME<
+  s 
+  2 t
+  u>DROP
+ t RAX MOV,
+ RBP RSP MOV,
+ RBP POP,
+ RET,
+END-CODE
+
+: testframe<d ( -- )
+    ." testing  TESTFRAME< d "
+    HEX 0 ['] TESTFRAME<d >BODY CALLPROC  
+
+    DUP 53 = IF DROP
+      ." SUCCESS! lo "
+    ELSE
+      ." FAIL! Expected lo "  53  U.
+      ." , got " U.
+    THEN
+
+    CR
+;
+
+testframe<d
+
+
+HEX
+CODE TESTFRAME,<a
+ FRAME,<
+  s 
+  t
+  u>51 N  s  MOV,
+  52 N  t  MOV,
+  53 N  u  MOV,
+  RAX POP,
+ RBP RSP MOV,
+ RBP POP,
+ RET,
+END-CODE
+
+: testframe,<a ( -- )
+    ." testing  TESTFRAME,< a "
+    HEX 0 ['] TESTFRAME,<a >BODY CALLPROC  
+
+    DUP 53 = IF DROP
+      ." SUCCESS! lo "
+    ELSE
+      ." FAIL! Expected lo "  53  U.
+      ." , got " U.
+    THEN
+
+    CR
+;
+
+testframe,<a
+
+
+HEX
+CODE TESTFRAME,<b
+ FRAME,<
+  s 
+  t
+  u>51 N  s  MOV,
+  52 N  t  MOV,
+  53 N  u  MOV,
+  RAX POP,
+  RAX POP,
+ RBP RSP MOV,
+ RBP POP,
+ RET,
+END-CODE
+
+: testframe,<b ( -- )
+    ." testing  TESTFRAME,< b "
+    HEX 0 ['] TESTFRAME,<b >BODY CALLPROC  
+
+    DUP 52 = IF DROP
+      ." SUCCESS! lo "
+    ELSE
+      ." FAIL! Expected lo "  52  U.
+      ." , got " U.
+    THEN
+
+    CR
+;
+
+testframe,<b
+
+
+HEX
+CODE TESTFRAME,<c
+ FRAME,<
+  s 
+  t
+  u>51 N  s  MOV,
+ 52 N  t  MOV,
+ 53 N  u  MOV,
+ RAX POP,
+ RAX POP,
+ RAX POP,
+ RBP RSP MOV,
+ RBP POP,
+ RET,
+END-CODE
+
+: testframe,<c ( -- )
+    ." testing  TESTFRAME,< c "
+    HEX 0 ['] TESTFRAME,<c >BODY CALLPROC  
+
+    DUP 51 = IF DROP
+      ." SUCCESS! lo "
+    ELSE
+      ." FAIL! Expected lo "  51  U.
+      ." , got " U.
+    THEN
+
+    CR
+;
+
+testframe,<c
+
+
+HEX
+CODE TESTFRAME,<d
+ FRAME,<
+  s 
+  t
+  2 u>51 N  s  MOV,
+ 52 N  t  MOV,
+ 53 N  u  MOV,
+ RAX POP,
+ RAX POP,
+ RAX POP,
+ RBP RSP MOV,
+ RBP POP,
+ RET,
+END-CODE
+
+: testframe,<d ( -- )
+    ." testing  TESTFRAME,< d "
+    HEX 0 ['] TESTFRAME,<d >BODY CALLPROC  
+
+    DUP 52 = IF DROP
+      ." SUCCESS! lo "
+    ELSE
+      ." FAIL! Expected lo "  52  U.
+      ." , got " U.
+    THEN
+
+    CR
+;
+
+testframe,<d
+
+
+HEX
+CODE TESTLOCAL-[RBP+N]<a
+ RBP PUSH,
+ RSP  RBP  MOV,
+ 51 N  PUSH,
+ 52 N  PUSH,
+ 53 N  PUSH,
+
+ LOCAL-[RBP+N]<
+  -10 s 
+  -8 t
+  -18 u>s RAX MOV,
+
+ RBP RSP MOV,
+ RBP POP,
+ RET,
+END-CODE
+
+: testlocal-[rbp+n]<a ( -- )
+    ." testing  TESTLOCAL-[RBP+N]< a "
+    HEX 0 ['] TESTLOCAL-[RBP+N]<a >BODY CALLPROC  
+
+    DUP 52 = IF DROP
+      ." SUCCESS! lo "
+    ELSE
+      ." FAIL! Expected lo "  52  U.
+      ." , got " U.
+    THEN
+
+    CR
+;
+
+testlocal-[rbp+n]<a
+
+
+
+CODE TESTIN[N8]->AL
+  23 IN[N8]->AL,
+  RET,
+END-CODE
+
+CODE TESTIN[N8]->AX
+  23 IN[N8]->AX,
+  RET,
+END-CODE
+
+CODE TESTIN[N8]->EAX
+  23 IN[N8]->EAX,
+  RET,
+END-CODE
+
+CODE TESTIN[DX]->AL
+  IN[DX]->AL,
+  RET,
+END-CODE
+
+CODE TESTIN[DX]->AX
+  IN[DX]->AX,
+  RET,
+END-CODE
+
+CODE TESTIN[DX]->EAX
+  IN[DX]->EAX,
+  RET,
+END-CODE
+
+CODE TESTINSB
+  INSB,
+  RET,
+END-CODE
+
+// 32 bit mode only
+// CODE TESTINSW
+//   INSW,
+//   RET,
+// END-CODE
+
+CODE TESTINSD
+  INSD,
+  RET,
+END-CODE
+
+CODE TESTINSQ
+  INSQ,
+  RET,
+END-CODE
+
+CODE TESTOUTSB
+  OUTSB,
+  RET,
+END-CODE
+
+CODE TESTOUTSD
+  OUTSD,
+  RET,
+END-CODE
+
+// 32 bit mode only
+// CODE TESTOUTSW
+//   OUTSW,
+//   RET,
+// END-CODE
+
+CODE TESTOUTSQ
+  OUTSQ,
+  RET,
+END-CODE
+
+CODE TESTFXSAVE
+  OU128A [O]  FXSAVE,
+  RET,
+END-CODE
+
+CODE TESTFXRSTOR
+  OU128A [O]  FXRSTOR,
+  RET,
+END-CODE
+
+CODE TESTINVLPG
+  OU128A [O]  INVLPG,
+  RET,
+END-CODE
+
+CODE TESTINVPCID
+  OU128A [O] RAX INVPCID,
+  RET,
+END-CODE
+
+
+CODE TESTIRETD
+  IRETD,
+  RET,
+END-CODE
+
+CODE TESTIRETQ
+  IRETQ,
+  RET,
+END-CODE
+
+CODE TESTLAR
+  OU128A [O] EAX LAR,
+  RET,
+END-CODE
+
+CODE TESTLAR->AX
+  OU128A [O] AX LAR,
+  RET,
+END-CODE
+
+CODE TESTLDDQU
+  OU128A [O] XMM0 LDDQU,
+  RET,
+END-CODE
+
+CODE TESTLDMXCSR
+  OU128A [O] LDMXCSR,
+  RET,
+END-CODE
+
+CODE TESTWAIT
+  WAIT,
+  RET,
+END-CODE
+
+CODE TESTWBINVD
+  WBINVD,
+  RET,
+END-CODE
+
+CODE TESTWRFSBASE32
+  EAX WRFSBASE,
+  RET,
+END-CODE
+
+CODE TESTWRFSBASE64
+  RAX WRFSBASE,
+  RET,
+END-CODE
+
+CODE TESTWRGSBASE32
+  EAX WRGSBASE,
+  RET,
+END-CODE
+
+CODE TESTWRGSBASE64
+  RAX WRGSBASE,
+  RET,
+END-CODE
+
+CODE TESTWRMSR
+  WRMSR,
+  RET,
+END-CODE
+
+CODE TESTXACQUIRE
+  XACQUIRE,
+  RET,
+END-CODE
+
+CODE TESTXRELEASE
+  XRELEASE,
+  RET,
+END-CODE
+
+HEX
+CODE TESTXABORT
+  37 N XABORT,
+  RET,
+END-CODE
+
+CODE TESTSTMXCSR
+  OU128A [O] STMXCSR,
+  RET,
+END-CODE
+
+CODE TESTSTMXCSR32BIT
+  OU128A [O] 32BIT STMXCSR,
+  RET,
+END-CODE
+
+CODE TESTSTR
+  OU128A [O] STR,
+  RET,
+END-CODE
+
+CODE TESTSTR16BIT
+  OU128A [O] 16BIT STR,
+  RET,
+END-CODE
+
+CODE TESTSTRAX
+  AX STR,
+  RET,
+END-CODE
+
+CODE TESTSWAPGS
+  SWAPGS,
+  RET,
+END-CODE
+
+CODE TESTSLDT
+  OU128A [O] SLDT,
+  RET,
+END-CODE
+
+CODE TESTSLDT16BIT
+  OU128A [O] 16BIT SLDT,
+  RET,
+END-CODE
+
+CODE TESTSLDTCX
+  CX SLDT,
+  RET,
+END-CODE
+
+CODE TESTSLDTRCX
+  RCX SLDT,
+  RET,
+END-CODE
+
+CODE TESTARPL // 32 bit mode only instruction
+  AX  OU128A [O]  ARPL,
+  RET,
+END-CODE
+
+CODE TESTARPLRTOR // 32 bit mode only instruction
+  AX  CX  ARPL,
+  RET,
+END-CODE
+
+CODE TESTEAXRDFSBASE
+  EAX RDFSBASE,
+  RET,
+END-CODE
+
+CODE TESTRAXRDFSBASE
+  RAX RDFSBASE,
+  RET,
+END-CODE
+
+CODE TESTEAXRDGSBASE
+  EAX RDGSBASE,
+  RET,
+END-CODE
+
+CODE TESTRAXRDGSBASE
+  RAX RDGSBASE,
+  RET,
+END-CODE
+
+CODE TESTRDMSR
+  RDMSR,
+  RET,
+END-CODE
+
+CODE TESTRDPMC
+  RDPMC,
+  RET,
+END-CODE
+
+CODE TESTRDTSC
+  RDTSC,
+  RET,
+END-CODE
+
+CODE TESTRDTSCP
+  RDTSCP,
+  RET,
+END-CODE
+
+CODE TESTPUSHAD
+  PUSHAD,
+  RET,
+END-CODE
+
+CODE TESTPUSHFD
+  PUSHFD,
+  RET,
+END-CODE
+
+CODE TESTXRSTOR
+  OU128A [O] XRSTOR,
+  RET,
+END-CODE
+
+CODE TESTXRSTOR64
+  OU128A [O] XRSTOR64,
+  RET,
+END-CODE
+
+CODE TESTXRSTORBRACKETRCX
+  RCX [R] XRSTOR,
+  RET,
+END-CODE
+
+CODE TESTXRSTORS
+  OU128A [O] XRSTORS,
+  RET,
+END-CODE
+
+CODE TESTXRSTORS64
+  OU128A [O] XRSTORS64,
+  RET,
+END-CODE
+
+CODE TESTXSAVE
+  OU128A [O] XSAVE,
+  RET,
+END-CODE
+
+CODE TESTXSAVE64
+  OU128A [O] XSAVE64,
+  RET,
+END-CODE
+
+CODE TESTXSAVEC
+  OU128A [O] XSAVEC,
+  RET,
+END-CODE
+
+CODE TESTXSAVEC64
+  OU128A [O] XSAVEC64,
+  RET,
+END-CODE
+
+CODE TESTXSAVEOPT
+  OU128A [O] XSAVEOPT,
+  RET,
+END-CODE
+
+CODE TESTXSAVEOPT64
+  OU128A [O] XSAVEOPT64,
+  RET,
+END-CODE
+
+CODE TESTXSAVES
+  OU128A [O] XSAVES,
+  RET,
+END-CODE
+
+CODE TESTXSAVES64
+  OU128A [O] XSAVES64,
+  RET,
+END-CODE
+
+CODE TESTXSETBV
+  XSETBV,
+  RET,
+END-CODE
+
+CODE TESTXTEST
+  XTEST,
+  RET,
+END-CODE
+
+HEX
+CODE TESTXBEGINN32
+  11223344 XBEGINN32,
+  RET,
+END-CODE
+
+HEX
+CODE TESTXBEGINN16
+  1122 XBEGINN16,
+  RET,
+END-CODE
+
+CODE TESTXBEGINBRANCH
+  XBEGINBRANCH,  
+    RET,
+  THEN, // compiled displacement should be 1... and it is
+END-CODE
+
+
+CODE TESTLGDT
+  OU128A [O] LGDT,
+  RET,
+END-CODE
+
+CODE TESTLIDT
+  OU128A [O] LIDT,
+  RET,
+END-CODE
+
+CODE TESTXEND
+  XEND,
+  RET,
+END-CODE
+
+CODE TESTXGETBV
+  XGETBV,
+  RET,
+END-CODE
+
+
+
+CODE TESTSMSWEAX
+  EAX SMSW,
+  RET,
+END-CODE
+
+CODE TESTSMSWRAX
+  RAX SMSW,
+  RET,
+END-CODE
+
+CODE TESTSMSWM16
+  OU128A [O] SMSW,
+  RET,
+END-CODE
+
+CODE TESTSIDT
+  OU128A [O] SIDT,
+  RET,
+END-CODE
+
+CODE TESTSGDT
+  OU128A [O] SGDT,
+  RET,
+END-CODE
+
+HEX
+CODE TESTPREFETCHT0
+  OU128A [O] PREFETCHT0,
+  RET,
+END-CODE
+
+CODE TESTPREFETCHT1
+  OU128A [O] PREFETCHT1,
+  RET,
+END-CODE
+
+CODE TESTPREFETCHT2
+  OU128A [O] PREFETCHT2,
+  RET,
+END-CODE
+
+CODE TESTPREFETCHNTA
+  OU128A [O] PREFETCHNTA,
+  RET,
+END-CODE
+
+CODE TESTPREFETCHW
+  OU128A [O] PREFETCHW,
+  RET,
+END-CODE
+
+CODE TESTPREFETCHWT1
+  OU128A [O] PREFETCHWT1,
+  RET,
+END-CODE
+
+CODE TESTPOPCNTAX
+  OU128A [O]  AX  POPCNT,
+  RET,
+END-CODE
+
+CODE TESTPOPCNTEAX
+  OU128A [O]  EAX  POPCNT,
+  RET,
+END-CODE
+
+CODE TESTLLDTM
+  OU128A [O]  LLDT,
+  RET,
+END-CODE
+
+CODE TESTLLDAX
+  AX  LLDT,
+  RET,
+END-CODE
+
+CODE TESTLMSWM
+  OU128A [O]  LMSW,
+  RET,
+END-CODE
+
+CODE TESTLMSWAX
+  AX  LMSW,
+  RET,
+END-CODE
+
+CODE TESTMOVNTI32
+  EAX OU128A [O]  MOVNTI,
+  RET,
+END-CODE
+
+CODE TESTMOVNTI64
+  RAX  OU128A [O]  MOVNTI,
+  RET,
+END-CODE
+
+CODE TESTMOVNTI64<-
+  OU128A [O]  <-  RAX  MOVNTI,
+  RET,
+END-CODE
+
+
+HEX
+CODE TESTAL->OUT[N8]
+  21 AL->OUT[N8],
+  RET,
+END-CODE
+
+HEX
+CODE TESTAX->OUT[N8]
+  21 AX->OUT[N8],
+  RET,
+END-CODE
+
+HEX
+CODE TESTEAX->OUT[N8]
+  21 EAX->OUT[N8],
+  RET,
+END-CODE
+
+HEX
+CODE TESTAL->OUT[DX]
+  AL->OUT[DX],
+  RET,
+END-CODE
+
+HEX
+CODE TESTAX->OUT[DX]
+  AX->OUT[DX],
+  RET,
+END-CODE
+
+HEX
+CODE TESTEAX->OUT[DX]
+  EAX->OUT[DX],
+  RET,
+END-CODE
+
+
+CODE TESTLDSAX
+  OU128A [O]  AX  LDS,
+  RET,
+END-CODE
+
+CODE TESTLDSEAX
+  OU128A [O]  EAX  LDS,
+  RET,
+END-CODE
+
+CODE TESTLESAX
+  OU128A [O]  AX  LES,
+  RET,
+END-CODE
+
+CODE TESTLESEAX
+  OU128A [O]  EAX  LES,
+  RET,
+END-CODE
+
+CODE TESTLFSAX
+  OU128A [O]  AX  LFS,
+  RET,
+END-CODE
+
+CODE TESTLFSEAX
+  OU128A [O]  EAX  LFS,
+  RET,
+END-CODE
+
+CODE TESTLFSRAX
+  OU128A [O]  RAX  LFS,
+  RET,
+END-CODE
+
+CODE TESTLGSAX
+  OU128A [O]  AX  LGS,
+  RET,
+END-CODE
+
+CODE TESTLGSEAX
+  OU128A [O]  EAX  LGS,
+  RET,
+END-CODE
+
+CODE TESTLGSRAX
+  OU128A [O]  RAX  LGS,
+  RET,
+END-CODE
+
+CODE TESTLSSAX
+  OU128A [O]  AX  LSS,
+  RET,
+END-CODE
+
+CODE TESTLSSEAX
+  OU128A [O]  EAX  LSS,
+  RET,
+END-CODE
+
+CODE TESTLSSRAX
+  OU128A [O]  RAX  LSS,
+  RET,
+END-CODE
+
+CODE TESTPOPCNTAX
+  OU128A [O]  AX  POPCNT,
+  RET,
+END-CODE
+
+CODE TESTPOPCNTEAX
+  OU128A [O]  EAX  POPCNT,
+  RET,
+END-CODE
+
+CODE TESTPOPCNTRAX
+  OU128A [O]  RAX  POPCNT,
+  RET,
+END-CODE
+
+CODE TESTPOPAD // 32 bit mode only instruction
+  POPAD,
+  RET,
+END-CODE
+
+CODE TESTREP
+  REP,
+  RET,
+END-CODE
+
+CODE TESTREPE
+  REPE,
+  RET,
+END-CODE
+
+CODE TESTREPNE
+  REPNE,
+  RET,
+END-CODE
+
+CODE TESTREPNZUNTILREP
+  NZUNTILREP,
+  RET,
+END-CODE
+
+CODE TESTREPZSUNTILREP
+  ZSUNTILREP,
+  RET,
+END-CODE
+
+CODE TESTLOOPNOTDONEWHILE
+  BEGIN,
+  LOOPNOTDONEWHILE,
+  REPEAT,
+  RET,
+END-CODE
+
+CODE TESTMOVCRRAX->CR2
+  RAX  CR2  MOVCR,
+  RET,
+END-CODE
+
+CODE TESTMOVCRRCX->CR8
+  RCX  CR8  MOVCR,
+  RET,
+END-CODE
+
+CODE TESTMOVCRCR2->RAX
+  CR2  RAX  MOVCR,
+  RET,
+END-CODE
+
+CODE TESTMOVCRCR8->RCX
+  CR8  RCX  MOVCR,
+  RET,
+END-CODE
+
+CODE TESTMOVCRRAX<-CR2
+  RAX  CR2 <- MOVCR,
+  RET,
+END-CODE
+
+CODE TESTMOVCRRCX<-CR8
+  RCX  CR8 <- MOVCR,
+  RET,
+END-CODE
+
+CODE TESTMOVCRCR2<-RAX
+  CR2  RAX <- MOVCR,
+  RET,
+END-CODE
+
+CODE TESTMOVCRCR8<-RCX
+  CR8  RCX <- MOVCR,
+  RET,
+END-CODE
+
+CODE TESTMOVCRRAX->2CR
+  RAX  2 CR  MOVCR,
+  RET,
+END-CODE
+
+
+CODE TESTMOVDRRAX->DR2
+  RAX  DR2  MOVDR,
+  RET,
+END-CODE
+
+CODE TESTMOVDRDR2->RAX
+  DR2  RAX  MOVDR,
+  RET,
+END-CODE
+
+CODE TESTMOVDRRAX<-DR2
+  RAX  DR2 <- MOVDR,
+  RET,
+END-CODE
+
+CODE TESTMOVDRDR2<-RAX
+  DR2  RAX <- MOVDR,
+  RET,
+END-CODE
+
+CODE TESTMOVDRRAX->2DR
+  RAX  2 DR  MOVDR,
+  RET,
+END-CODE
+
+
+CODE TESTMOVSRRAX->SRDS
+  RAX  SRDS  MOVSR,
+  RET,
+END-CODE
+
+CODE TESTMOVSRSRDS->RAX
+  SRDS  RAX  MOVSR,
+  RET,
+END-CODE
+
+CODE TESTMOVSRRAX<-SRDS
+  RAX  SRDS <- MOVSR,
+  RET,
+END-CODE
+
+CODE TESTMOVSRSRDS<-RAX
+  SRDS  RAX <- MOVSR,
+  RET,
+END-CODE
+
+CODE TESTMOVSRRAX->2SR
+  RAX  2 SR  MOVSR,
+  RET,
+END-CODE
+
+CODE TESTMOVSRAX->2SR
+  AX  2 SR  MOVSR,
+  RET,
+END-CODE
+
+CODE TESTMOVSEAX->2SR
+  EAX  2 SR  MOVSR,
+  RET,
+END-CODE
+
+CODE TESTSMSWAX // not getting 0x66 prefix... but does it matter? It seems it doesn't.
+  AX SMSW,
+  RET,
+END-CODE
+
+CODE TESTLSLM->AX 
+  OU128A [O]  AX  LSL,
+  RET,
+END-CODE
+
+CODE TESTLSLCX->AX 
+  CX  AX  LSL,
+  RET,
+END-CODE
+
+CODE TESTLSLRCX->RAX 
+  RCX  RAX  LSL,
+  RET,
+END-CODE
+
+CODE TESTLTRAX
+  AX  LTR,
+  RET,
+END-CODE
+
+CODE TESTLTRM
+  RAX [R]  LTR,
+  RET,
+END-CODE
+
+CODE TESTVERRM
+  RAX [R]  VERR,
+  RET,
+END-CODE
+
+CODE TESTVERWM
+  RAX [R]  VERW,
+  RET,
+END-CODE
+
+// ' TESTLTRAX >BODY 20 DUMP
+
+
+
+
+
+CR ." ***********"
+CR ." Stack Check"
+CR .S
+CR
+
