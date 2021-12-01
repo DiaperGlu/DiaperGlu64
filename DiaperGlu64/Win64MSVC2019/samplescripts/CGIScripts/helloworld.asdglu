@@ -1,0 +1,6 @@
+
+." Content-type: text/html" CRLF
+CRLF
+." <html><head></head><body>" CRLF
+." Hello World on ISAPI!" CRLF
+." </body></html>" CRLF

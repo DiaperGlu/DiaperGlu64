@@ -1,0 +1,45 @@
+( //////////////////////////////////////////////////////////////////////////////////////// )
+( //                                                                                       )
+( //    Copyright 2020 James Patrick Norris                                                )
+( //                                                                                       )
+( //    This file is part of Diaperglu 4.9.                                                )
+( //                                                                                       )
+( //    Diaperglu 4.9 is free software; you can redistribute it and/or modify              )
+( //    it under the terms of the GNU General Public License as published by               )
+( //    the Free Software Foundation; either version 2 of the License, or                  )
+( //    {at your option} any later version.                                                )
+( //                                                                                       )
+( //    Diaperglu 4.9 is distributed in the hope that it will be useful,                   )
+( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
+( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
+( //    GNU General Public License for more details.                                       )
+( //                                                                                       )
+( //    You should have received a copy of the GNU General Public License                  )
+( //    along with Diaperglu 4.9; if not, write to the Free Software                       )
+( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
+( //                                                                                       )
+( //////////////////////////////////////////////////////////////////////////////////////// )
+
+( /////////////////////////////// )
+( // James Patrick Norris      // )
+( // www.rainbarrel.com        // )
+( // October 2, 2020           // )
+( // version 4.9               // )
+( /////////////////////////////// )
+
+
+$" testmakedoto.dll" OPENLIBRARY$ CONSTANT MYLIBHANDLE CONSTANT MYWORDLISTID
+
+$" dg_firstfunction" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT firstfunction
+$" dg_secondfunction" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT secondfunction
+
+CR CR ." Test having diaperglu call functions in a dll made from a .o file using make .o buf function:" CR 
+
+CR ."   Calling first function, I expect 1122334455667788, I got "
+0 firstfunction CALLPROC HEX U. CR
+
+CR ."   Calling second function, I expect 1213141516171819, I got "  
+0 secondfunction CALLPROC HEX U. CR CR CR
+
+
+

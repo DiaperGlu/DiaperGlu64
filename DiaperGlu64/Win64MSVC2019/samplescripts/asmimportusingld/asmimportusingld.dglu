@@ -1,0 +1,206 @@
+( //////////////////////////////////////////////////////////////////////////////////////// )
+( //                                                                                       )
+( //    Copyright 2021 James Patrick Norris                                                )
+( //                                                                                       )
+( //    This file is part of Diaperglu 5.0.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.0 is free software; you can redistribute it and/or modify              )
+( //    it under the terms of the GNU General Public License as published by               )
+( //    the Free Software Foundation; either version 2 of the License, or                  )
+( //    {at your option} any later version.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.0 is distributed in the hope that it will be useful,                   )
+( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
+( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
+( //    GNU General Public License for more details.                                       )
+( //                                                                                       )
+( //    You should have received a copy of the GNU General Public License                  )
+( //    along with Diaperglu 5.0; if not, write to the Free Software                       )
+( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
+( //                                                                                       )
+( //////////////////////////////////////////////////////////////////////////////////////// )
+
+( /////////////////////////////// )
+( // James Patrick Norris      // )
+( // www.rainbarrel.com        // )
+( // January 9, 2021           // )
+( // version 5.0               // )
+( /////////////////////////////// )
+
+
+// last changed September 27, 2020
+
+// this script first makes a .o file for the shared library doing the export
+// then runs ld to build the .dylib file that will do the export from the .o file
+// then opens the .dylib and calls the test functions
+
+
+// making the export only shared library...
+// I'd use libdiaperglu.dylib except Mac OS X has new security stuff that makes changing the default shared library
+//  search path difficult.
+
+PCURRENTCOMPILEBUFFER @ CONSTANT OLDCOMPILEBUFID
+
+
+// make new empty compile buffer
+
+HEX 10000 -1 NEWBUFFER CONSTANT MYEXPORTONLYCOMPILEBUFID
+MYEXPORTONLYCOMPILEBUFID PCURRENTCOMPILEBUFFER !
+
+
+ // adding the assembler to the search order
+
+ X86-WORDLIST >SEARCH-ORDER
+ 
+
+// making an hlist to hold a symbol list and making it the current elementid hlistid
+
+NEW-NGLULIST>EH
+
+( noparentelementid_myhlistid -EH- )
+
+
+// adding a root element to the current EH hlist
+//  this element is not used other than as a parent to the export symbol list elements
+
+$" myexportsymbollistparent" 0 >NEW$  EH-NEW-ELEMENT>EH
+
+
+( noparentelementid_myhlistid exportsparentelemendid_mylistid -EH- )
+
+HEX
+// showing two ways to add a symbol for the current compile buffer offset
+
+OSYMBOL dg_myimportfunc
+  RCX RAX MOV,
+  RAX BSWAP,
+  RET,
+
+OLDCOMPILEBUFID PCURRENTCOMPILEBUFFER !
+
+// saving the compiled buffer in the mach-o .o format
+
+MYEXPORTONLYCOMPILEBUFID
+EH>                                              // export symbol list parent
+-1 -1                                            // import symbol list parent
+BUF>NEWMACH-O.OBUF
+
+$" asmexportonlyusingld.obj" SAVEFILE$
+
+CRLF ." running LINK to turn the .obj file into a .dll... this might take a minute" CRLF
+
+RUNFILEANDWAITNOENV" LINK asmexportonlyusingld.obj /DLL /NOENTRY"
+
+
+
+PCURRENTCOMPILEBUFFER @ CONSTANT OLDCOMPILEBUFID
+
+
+// make new empty compile buffer
+
+HEX 10000 -1 NEWBUFFER CONSTANT MYCOMPILEBUFID
+MYCOMPILEBUFID PCURRENTCOMPILEBUFFER !
+
+
+// adding the assembler to the search order... was done above, so don't need to do it here
+ 
+
+// making an hlist to hold a symbol list and making it the current elementid hlistid
+
+NEW-NGLULIST>EH
+
+( noparentelementid_myhlistid -EH- )
+
+
+ // adding a root element to the current EH hlist
+ //  this element is not used other than as a parent to the import symbol list elements
+$" myimportsymbollistparent" 0 >NEW$ EH-NEW-ELEMENT>EH
+
+( noparentelementid_myhlistid importsparentelementid_myhlistid -EH- )
+
+// it would be nice to be able to add symbol lists to the search order... 12/25/2019
+
+
+// adding another root element to the current EH hlist
+//  this element is not used other than as a parent to the export symbol list elements
+
+$" myexportsymbollistparent" 0 >NEW$
+1 EH[ND] // noparentelementid_myhlistid on data stack
+DUP >R   // saving a copy of the myhlistid
+NEW-ELEMENT
+R> >EH
+
+( noparentelementid_myhlistid importsparentelementid_myhlistid exportsparentelemendid_mylistid -EH- )
+
+HEX
+// showing two ways to add a symbol for the current compile buffer offset
+
+OHERE >NEW$ $" dg_firstfunction" EH-NEW-ELEMENT
+// OSYMBOL dg_firstfunction 
+  1122334455667788 N RAX MOV,
+  RET,
+
+OSYMBOL dg_secondfunction
+  1213141516171819 N RAX MOV,
+  RET,
+
+OHERE CONSTANT dg_importlinkoffset
+OSYMBOL dg_importlink 
+0 CODE-U64,
+
+OHERE 8 - >NEW$   $" dg_myimportfunc"  1 EH[ND]  NEW-ELEMENT  DROP  // this adds the import
+
+OSYMBOL dg_thirdfunction  // this shows how to do a .o file import
+  dg_importlinkoffset [O] CALL,  // this will call the import function
+  // RIP 0 [R+N] RAX MOV,
+  // dg_importlinkoffset [O] RAX MOV,
+  RET,
+
+
+OLDCOMPILEBUFID PCURRENTCOMPILEBUFFER !
+
+// saving the compiled buffer in the mach-o .o format
+
+MYCOMPILEBUFID
+EH>                                              // export symbol list parent
+EH>                                              // import symbol list parent
+BUF>NEWMACH-O.OBUF
+
+$" asmimportusingld.obj" SAVEFILE$
+
+
+CRLF ." running link to turn the import .obj file into a .dll" CRLF
+
+RUNFILEANDWAITNOENV" LINK asmimportusingld.obj asmexportonlyusingld.lib /DLL /NOENTRY" 
+
+
+CRLF ." opening the new shared library that does imports and calling the test functions " CRLF
+
+$" asmimportusingld.dll" OPENLIBRARY$ CONSTANT MYLIBHANDLE CONSTANT MYWORDLISTID
+
+$" dg_firstfunction" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT firstfunction
+$" dg_secondfunction" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT secondfunction
+$" dg_thirdfunction" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT thirdfunction
+
+CRLF ." Calling first function, I expect 1122334455667788, I got "
+0 firstfunction CALLPROC HEX U. CRLF
+
+CRLF ." Calling second function, I expect 1213141516171819, I got "  
+0 secondfunction CALLPROC HEX U. CRLF
+
+CRLF ." Calling third function, I expect FEEDABEADEADBEEF, I got "
+EFBEADDEEAABEDFE 1 thirdfunction CALLPROC HEX U. CRLF
+
+CRLF 
+CRLF
+
+// cleaning up
+
+MYLIBHANDLE FREELIBRARY
+
+
+
+
+
+     
+
