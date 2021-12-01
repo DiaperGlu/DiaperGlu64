@@ -1,0 +1,1918 @@
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2021 James Patrick Norris
+//
+//    This file is part of DiaperGlu v5.0.
+//
+//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// January 9, 2021            //
+// version 5.0                //
+// /////////////////////////////
+
+
+
+#include "diapergluforth.h"
+
+
+void dg_forthdepthlstring(Bufferhandle* pBHarrayhead)
+//                              ( stringoffsetbufferid -- n );
+//                              ( endoffset$1 endoffset$2 ... endoffset$n -offsetbuffer- 
+//                                  endoffset$1 endoffset$2 ... endoffset$n ) 
+{
+	UINT64* pbuflength;
+	unsigned char* pdatastack;
+
+	UINT64* pints;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+	if (baderrorcount == olderrorcount)
+	{
+		return;
+	}
+
+	pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthdepthlstringname);
+		return;
+	}
+
+	if (*pbuflength < sizeof(UINT64))
+	{
+		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthdepthlstringname);
+		return;
+	}
+
+	// could check for misaligned data stack pointer here
+
+	pints = (UINT64*)(pdatastack + *pbuflength - sizeof(UINT64));
+
+	// FreeBSD can't do this in one step, so doing it in two.
+	pints[0] = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        pints[0]);
+    
+	//depth = dg_getnumberoflstringsonstack(pBHarrayhead, pints[0]);
+	//pints[0] = depth;
+
+	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthdepthlstringname);
+		return;
+	}
+}
+
+
+void dg_forthstartoffsetlstring (Bufferhandle *pBHarrayhead)
+//                          ( stringid stringoffsetbufferid -- lstringstartoffset )
+//                          ( endoffset$1 endoffset$2 ... endoffset$stringid ... endoffset$n -offsetbuffer- 
+//                              endoffset$1 endoffset$2 ... endoffset$stringid ... endoffset$n )
+{
+	UINT64* pbuflength;
+	unsigned char* pdatastack;
+
+	UINT64* pints;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+	pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+	if (pdatastack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthstartoffsetlstringname);
+		return;
+	}
+
+	if (*pbuflength < (2 * sizeof(UINT64)))
+	{
+		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthstartoffsetlstringname);
+		return;
+	}
+
+	// could check for misaligned data stack pointer here
+
+	pints = (UINT64*)(pdatastack + *pbuflength - (2 * sizeof(UINT64)));
+
+	pints[0] = dg_getlstringstartoffset(
+        pBHarrayhead,
+        pints[1],
+        pints[0]);
+
+	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthstartoffsetlstringname);
+		return;
+	}
+
+	*pbuflength = *pbuflength - sizeof(UINT64);
+}
+
+
+void dg_forthlengthlstring (Bufferhandle *pBHarrayhead)
+//                     ( stringid stringoffsetbufferid -- lstringlength )
+//                          ( endoffset$1 endoffset$2 ... endoffset$stringid ... endoffset$n -offsetbuffer- 
+//                              endoffset$1 endoffset$2 ... endoffset$stringid ... endoffset$n )                     
+{
+	UINT64* pbuflength;
+	unsigned char* pdatastack;
+
+	UINT64* pints;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+	pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+	if (pdatastack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthlengthlstringname);
+		return;
+	}
+
+	if (*pbuflength < (2 * sizeof(UINT64)))
+	{
+		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthlengthlstringname);
+		return;
+	}
+
+	// could check for misaligned data stack pointer here
+
+	pints = (UINT64*)(pdatastack + *pbuflength - (2 * sizeof(UINT64)));
+
+	pints[0] = dg_getlstringlength(
+        pBHarrayhead,
+        pints[1],
+        pints[0]);
+
+	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthlengthlstringname);
+		return;
+	}
+
+	*pbuflength = *pbuflength - sizeof(UINT64);
+}
+
+
+void dg_forthgetslstringn(Bufferhandle* pBHarrayhead)
+//               ( stringid offsetbufferid stringbufferid -- plstring lstringlength )
+//               ( $0 $1 ... $stringid ... $n -offsetbuffer&stringbuffer- $0 $1 ... $stringid ... $n )
+{
+	UINT64* pbuflength;
+	unsigned char* pdatastack;
+
+	unsigned char* plstring;
+	UINT64 lstringlength;
+
+	UINT64* pints;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+	pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+	if (pdatastack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthgetslstringnname);
+		return;
+	}
+
+	if (*pbuflength < (3 * sizeof(UINT64)) )
+	{
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+		dg_pusherror(pBHarrayhead, dg_forthgetslstringnname);
+		return;
+	}
+
+	// could check for misaligned data stack pointer here
+
+	pints = (UINT64*)(pdatastack + *pbuflength - (3 * sizeof(UINT64)));
+
+	plstring = dg_getplstring(
+        pBHarrayhead,
+        pints[1],
+        pints[2],
+        pints[0],
+        &lstringlength);
+
+	pints[0] = (UINT64)plstring;
+	pints[1] = lstringlength;
+
+	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthgetslstringnname);
+		return;
+	}
+
+	*pbuflength = *pbuflength - sizeof(UINT64);
+}
+
+
+void dg_forthgetlstring (Bufferhandle* pBHarrayhead)
+//               ( stringid offsetbufferid stringbufferid pdest maxlength -- ) // may need length returned
+//               ( $0 $1 ... $stringid ... $n -offsetbuffer&stringbuffer- $0 $1 ... $stringid ... $n )
+{
+	UINT64* pbuflength;
+	unsigned char* pdatastack;
+
+	UINT64* pints;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+	pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+	if (pdatastack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthgetlstringname);
+		return;
+	}
+
+	if (*pbuflength < (5 * sizeof(UINT64)) )
+	{
+		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthgetlstringname);
+		return;
+	}
+
+	// could check for misaligned data stack pointer here
+
+	pints = (UINT64*)(pdatastack + *pbuflength - (5 * sizeof(UINT64)));
+
+	dg_getlstring(
+        pBHarrayhead,
+        pints[1],
+        pints[2],
+        pints[0],
+        pints[4],
+        (unsigned char*)(pints[3]));
+
+	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthgetlstringname);
+		return;
+	}
+
+	*pbuflength = *pbuflength - (5 * sizeof(UINT64));
+}
+
+
+void dg_forthlstringtos (Bufferhandle* pBHarrayhead)
+//               ( offsetbufferid stringbufferid pdest maxlength -- )
+//               ( l$ -offsetbuffer&stringbuffer- )
+{
+	UINT64* pbuflength;
+	unsigned char* pdatastack;
+
+	UINT64* pints;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+	pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+	if (pdatastack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthlstringtosname);
+		return;
+	}
+
+	if (*pbuflength < (4 * sizeof(UINT64)) )
+	{
+		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthlstringtosname);
+		return;
+	}
+
+	// could check for misaligned data stack pointer here
+
+	pints = (UINT64*)(pdatastack + *pbuflength - (4 * sizeof(UINT64)));
+
+	dg_poplstring(
+        pBHarrayhead,
+        pints[0],
+        pints[1],
+        pints[3],
+        (unsigned char*)(pints[2]));
+
+	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthlstringtosname);
+		return;
+	}
+
+	*pbuflength = *pbuflength - (4 * sizeof(UINT64));
+}
+
+
+void dg_forthstolstring (Bufferhandle* pBHarrayhead)
+//                ( psrc length offsetbufferid stringbufferid -- )
+//                ( -offsetbuffer&stringbuffer- l$ )
+{
+	UINT64* pbuflength;
+	unsigned char* pdatastack;
+
+	UINT64* pints;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+	pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+	if (pdatastack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthstolstringname);
+		return;
+	}
+
+	if (*pbuflength < (4 * sizeof(UINT64)) )
+	{
+		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthstolstringname);
+		return;
+	}
+
+	// could check for misaligned data stack pointer here
+
+	pints = (UINT64*)(pdatastack + *pbuflength - (4 * sizeof(UINT64)));
+
+	dg_pushlstring(
+        pBHarrayhead,
+        pints[2],
+        pints[3],
+        pints[1],
+        (unsigned char*)(pints[0]));
+
+	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthstolstringname);
+		return;
+	}
+
+	*pbuflength = *pbuflength - (4 * sizeof(UINT64));
+}
+
+
+void dg_forthgrowlstring (Bufferhandle* pBHarrayhead)
+//                ( n offsetbufferid stringbufferid -- )
+//                ( L$ -offsetbuffer&stringbuffer- L$' )
+{
+	UINT64* pbuflength;
+	unsigned char* pdatastack;
+
+	UINT64* pints;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+	pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+	if (pdatastack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthgrowlstringname);
+		return;
+	}
+
+	if (*pbuflength < (3 * sizeof(UINT64)) )
+	{
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+		dg_pusherror(pBHarrayhead, dg_forthgrowlstringname);
+		return;
+	}
+
+	// could check for misaligned data stack pointer here
+
+	pints = (UINT64*)(pdatastack + *pbuflength - (3 * sizeof(UINT64)));
+
+	dg_growlstring(
+        pBHarrayhead,
+        pints[1],
+        pints[2],
+        pints[0]);
+
+	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthgrowlstringname);
+		return;
+	}
+
+	*pbuflength = *pbuflength - (3 * sizeof(UINT64));
+}
+
+
+void dg_forthpicklstring (Bufferhandle* pBHarrayhead)
+//                ( n offsetbufferid stringbufferid -- )
+//                ( -offsetbuffer&stringbuffer- L$ )
+{
+	UINT64* pbuflength;
+	unsigned char* pdatastack;
+
+	UINT64* pints;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+	pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+	if (pdatastack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthpicklstringname);
+		return;
+	}
+
+	if (*pbuflength < (3 * sizeof(UINT64)) )
+	{
+		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthpicklstringname);
+		return;
+	}
+
+	// could check for misaligned data stack pointer here
+
+	pints = (UINT64*)(pdatastack + *pbuflength - (3 * sizeof(UINT64)));
+
+	dg_picklstring(
+        pBHarrayhead,
+        pints[1],
+        pints[2],
+        pints[0]);
+
+	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthpicklstringname);
+		return;
+	}
+
+	*pbuflength = *pbuflength - (3 * sizeof(UINT64));
+}
+
+
+void dg_forthdroplstring (Bufferhandle* pBHarrayhead)
+//                ( offsetbufferid stringbufferid -- )
+//                ( l$ -offsetbuffer&stringbuffer- )
+{
+	UINT64* pbuflength;
+	unsigned char* pdatastack;
+
+	UINT64* pints;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+	pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+	if (pdatastack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthdroplstringname);
+		return;
+	}
+
+	if (*pbuflength < (2 * sizeof(UINT64)) )
+	{
+		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthdroplstringname);
+		return;
+	}
+
+	// could check for misaligned data stack pointer here
+
+	pints = (UINT64*)(pdatastack + *pbuflength - (2 * sizeof(UINT64)));
+
+	dg_droplstring(
+        pBHarrayhead,
+        pints[0],
+        pints[1]);
+
+	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthdroplstringname);
+		return;
+	}
+
+	*pbuflength = *pbuflength - (2 * sizeof(UINT64));
+}
+
+
+void dg_forthdeletelstring (Bufferhandle* pBHarrayhead)
+//                  ( stringid offsetbufferid stringbufferid -- )
+//                  ( $0 $1 ... $stringid ... $n -offsetbuffer&stringbuffer- $0 $1 ... $n )
+{
+	UINT64* pbuflength;
+	unsigned char* pdatastack;
+
+	UINT64* pints;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+	pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+	if (pdatastack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthdeletelstringname);
+		return;
+	}
+
+	if (*pbuflength < (3 * sizeof(UINT64)) )
+	{
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+		dg_pusherror(pBHarrayhead, dg_forthdeletelstringname);
+		return;
+	}
+
+	// could check for misaligned data stack pointer here
+
+	pints = (UINT64*)(pdatastack + *pbuflength - (3 * sizeof(UINT64)));
+
+	dg_deletelstring(
+        pBHarrayhead,
+        pints[1],
+        pints[2],
+        pints[0]);
+
+	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthdeletelstringname);
+		return;
+	}
+
+	*pbuflength = *pbuflength - (3 * sizeof(UINT64));
+}
+
+
+void dg_forthinsertlstring (Bufferhandle* pBHarrayhead)
+//                ( length n offsetbufferid stringbufferid -- )
+//                ( L$0 L$1 L$2 ... L$N ... L$TOP -offsetbuffer&stringbuffer- 
+//                    L$0 L$1 L$2 ... copyL$psrc L$N ... L$TOP )
+{
+	UINT64* pbuflength;
+	unsigned char* pdatastack;
+
+	UINT64* pints;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+	pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+	if (pdatastack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthinsertlstringname);
+		return;
+	}
+
+	if (*pbuflength < (4 * sizeof(UINT64)) )
+	{
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+		dg_pusherror(pBHarrayhead, dg_forthinsertlstringname);
+		return;
+	}
+
+	// could check for misaligned data stack pointer here
+
+	pints = (UINT64*)(pdatastack + *pbuflength - (4 * sizeof(UINT64)));
+
+	dg_insertlstring(
+        pBHarrayhead,
+        pints[2],
+        pints[3],
+        pints[1],
+        pints[0]);
+
+	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthinsertlstringname);
+		return;
+	}
+
+	*pbuflength = *pbuflength - (4 * sizeof(UINT64));
+}
+
+
+void dg_forthcscanlstring (Bufferhandle* pBHarrayhead)
+//  ( l$offsetbufferid l$stringbufferid l$stackindex offset value -- offset' )
+{
+	UINT64* pbuflength = NULL;
+	unsigned char* pdatastack = NULL;
+
+	UINT64* pints = NULL;
+
+	UINT64 offset;
+	unsigned char* caddr1 = NULL;
+
+	UINT64 u1 = 0;
+	UINT64 value = 0;
+	UINT64 stringstackdepth;
+
+	UINT64 offsetbufferid;
+	UINT64 stringbufferid;
+	UINT64 stackindex;
+
+	const char* flag;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+	pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+	if (pdatastack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthcscanlstringname);
+		return;
+	}
+
+	if (*pbuflength < (5 * sizeof(UINT64)) )
+	{
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+		dg_pusherror(pBHarrayhead, dg_forthcscanlstringname);
+		return;
+	}
+
+	// could check for misaligned data stack here
+
+	pints = (UINT64*)(pdatastack + *pbuflength - (5 * sizeof(UINT64)));
+
+	offsetbufferid = (UINT64)(pints[0]);
+	stringbufferid = (UINT64)(pints[1]);
+	stackindex = (UINT64)(pints[2]);
+	offset = (UINT64)(pints[3]);
+	value =  (UINT64)(pints[4]);
+
+	// need to get depth of string stack first
+	stringstackdepth = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        offsetbufferid);
+
+	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthcscanlstringname);
+		return;
+	}
+
+	if (stringstackdepth <= stackindex)
+	{
+		// stack index off end of lstring stack
+        dg_pusherror(pBHarrayhead, dg_lstringidtoohigherror);
+		dg_pusherror(pBHarrayhead, dg_forthcscanlstringname);
+		return;
+	}
+
+	caddr1 = (unsigned char*)dg_getplstring(
+		pBHarrayhead, 
+		offsetbufferid, 
+		stringbufferid,
+		stackindex,
+		&u1);
+
+	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthcscanlstringname);
+	}
+
+	if (offset < u1)
+	{
+		u1 = u1 - offset;
+		caddr1 = caddr1 + offset;
+
+		flag = dg_scanforbyte(
+            (void*)caddr1,
+            &u1,
+            value);
+
+		if (flag != dg_success)
+		{
+			dg_pusherror(pBHarrayhead, flag);
+            dg_pusherror(pBHarrayhead, dg_scanforbytename);
+			dg_pusherror(pBHarrayhead, dg_forthcscanlstringname);
+		}
+
+		if (u1 != (UINT64)-1)
+		{
+			u1 = u1 + offset;
+		}
+	}
+	else
+	{
+		u1 = (UINT64)-1;
+	}
+
+	pints[0] = (UINT64)u1;
+
+	*pbuflength -= sizeof(UINT64);
+}
+
+
+void dg_forthscanlstring (Bufferhandle* pBHarrayhead)
+//  ( l$offsetbufferid l$stringbufferid stackindex offset value -- offset' )
+{
+	UINT64* pbuflength = NULL;
+	unsigned char* pdatastack = NULL;
+
+	UINT64* pints = NULL;
+
+	UINT64 offset;
+	unsigned char* caddr1 = NULL;
+
+	UINT64 u1 = 0;
+	UINT64 value = 0;
+	UINT64 stringstackdepth;
+
+	UINT64 offsetbufferid;
+	UINT64 stringbufferid;
+	UINT64 stackindex;
+
+	const char* flag;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+	pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+	if (pdatastack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthscanlstringname);
+		return;
+	}
+
+	if (*pbuflength < (5 * sizeof(UINT64)) )
+	{
+		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+		dg_pusherror(pBHarrayhead, dg_forthscanlstringname);
+		return;
+	}
+
+	// could check for misaligned data stack here
+
+	pints = (UINT64*)(pdatastack + *pbuflength - (5 * sizeof(UINT64)));
+
+	offsetbufferid = (UINT64)(pints[0]);
+	stringbufferid = (UINT64)(pints[1]);
+	stackindex = (UINT64)(pints[2]);
+	offset = (UINT64)(pints[3]);
+	value =  (UINT64)(pints[4]);
+
+	// need to get depth of string stack first
+	stringstackdepth = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        offsetbufferid);
+
+	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthscanlstringname);
+		return;
+	}
+
+	if (stringstackdepth <= stackindex)
+	{
+		dg_pusherror(pBHarrayhead, dg_lstringidtoohigherror);
+		dg_pusherror(pBHarrayhead, dg_forthscanlstringname);
+		return;
+	}
+
+	caddr1 = (unsigned char*)dg_getplstring(
+		pBHarrayhead, 
+		offsetbufferid, 
+		stringbufferid,
+		stackindex,
+		&u1);
+
+	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthscanlstringname);
+	}
+
+	if (offset < (u1 / sizeof(UINT64)))
+	{
+		u1 = u1 - offset;
+		caddr1 = caddr1 + offset;
+
+		flag = dg_scanforuint64(
+            (void*)caddr1,
+            &u1,
+            value);
+
+		if (flag != dg_success)
+		{
+			dg_pusherror(pBHarrayhead, flag);
+            dg_pusherror(pBHarrayhead, dg_scanforuint64name);
+			dg_pusherror(pBHarrayhead, dg_forthscanlstringname);
+		}
+
+		if (u1 != (UINT64)-1)
+		{
+			u1 = u1 + offset;
+		}
+	}
+	else
+	{
+		u1 = (UINT64)-1;
+	}
+
+	pints[0] = (UINT64)u1;
+
+	*pbuflength -= sizeof(UINT64);
+}
+
+
+void dg_forthshortenlstring ( Bufferhandle* pBHarrayhead )
+//     ( $1 -l$- $1' )
+//     ( n l$stackoffsetbufferid l$stackstringbufferid -- )
+{
+	UINT64* poffsetlength;
+	UINT64* poffsetstack;
+
+	UINT64 lssoffsetbufid;
+	UINT64 lssstringbufid;
+
+	UINT64 n;
+	UINT64 depth;
+	UINT64 slength;
+
+	UINT64 startoffset = 0;
+
+	const char* pError;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+	lssstringbufid = dg_popbufferuint64(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID);
+    
+	lssoffsetbufid = dg_popbufferuint64(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID);
+    
+	n = dg_popbufferuint64(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthshortenlstringname);
+		return;
+	}
+
+	poffsetstack = (UINT64*)dg_getpbuffer(
+        pBHarrayhead,
+        lssoffsetbufid,
+        &poffsetlength);
+
+	if (poffsetstack == (UINT64*)badbufferhandle)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthshortenlstringname);
+		return;
+	}
+
+	depth = *poffsetlength / sizeof (UINT64);
+
+	if (depth < 1)
+	{
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+		dg_pusherror(pBHarrayhead, dg_forthshortenlstringname);
+		return;
+	}
+
+	// could check for misaligned offset stack here
+
+	if (depth >= 2)
+	{
+		startoffset = poffsetstack[depth-2];
+	}
+
+	if (poffsetstack[depth-1] < startoffset)
+	{
+        dg_pusherror(pBHarrayhead, dg_lstringsoffsetscorrupt);
+		dg_pusherror(pBHarrayhead, dg_forthshortenlstringname);
+		return;
+	}
+
+	slength = poffsetstack[depth-1] - startoffset;
+
+	if (n > slength)
+	{
+		n = slength;
+	}
+
+	poffsetstack[depth-1] -= n;
+
+	dg_shrinkbuffer(
+        pBHarrayhead,
+        lssstringbufid,
+        n,
+        &pError);
+
+	if (pError != dg_success)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthshortenlstringname);
+	}
+}
+
+
+void dg_forthnewlstring (Bufferhandle* pBHarrayhead)
+//             ( offsetbufferid stringbufferid -- )
+//             ( -l$- empty$ )
+{
+	
+	UINT64* pbuflength;
+	unsigned char* pdatastack;
+
+	UINT64* pints;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+	pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+	if (pdatastack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthnewlstringname);
+		return;
+	}
+
+	if (*pbuflength < (2 * sizeof(UINT64)))
+	{
+		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthnewlstringname);
+		return;
+	}
+
+	// could check for misaligned data stack pointer here
+
+	pints = (UINT64*)(pdatastack + *pbuflength - (2 * sizeof(UINT64)));
+
+	dg_pushlstring(pBHarrayhead,
+		pints[0],
+		pints[1],
+		0,
+		(unsigned char*)"");
+
+	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthnewlstringname);
+		return;
+	}
+
+	*pbuflength = *pbuflength - (2 * sizeof(UINT64));
+}
+
+
+void dg_forthrolllstring (Bufferhandle* pBHarrayhead)
+//             ( nd offsetbufferid stringbufferid -- )
+//             ( l$depth-1{bottom} ... l$nd+1 l$nd l$nd-1 ... l$1 l$0{top} -l$- 
+//                 l$depth-1{bottom} ... l$nd+1 l$nd-1 ... l$1 l$0 l$nd )
+{
+    UINT64* pbuflength;
+	unsigned char* pdatastack;
+
+	UINT64* pints;
+
+    UINT64 numlstringsonstack;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+	pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+	if (pdatastack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthrolllstringname);
+		return;
+	}
+
+	if (*pbuflength < (3 * sizeof(UINT64)))
+	{
+		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthrolllstringname);
+		return;
+	}
+
+	// could check for misaligned data stack pointer here
+
+	pints = (UINT64*)(pdatastack + *pbuflength - (3 * sizeof(UINT64)));
+
+    numlstringsonstack = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        pints[1]);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthrolllstringname);
+		return;
+	}
+
+	dg_picklstring(
+        pBHarrayhead,
+        pints[1],
+        pints[2],
+        pints[0]);
+
+	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthrolllstringname);
+		return;
+	}
+    
+    dg_deletelstring(
+        pBHarrayhead,
+        pints[1],
+        pints[2],
+        numlstringsonstack - (pints[0] + 1));
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthrolllstringname);
+		return;
+	}
+
+    *pbuflength = *pbuflength - (3 * sizeof(UINT64));
+}
+
+
+void dg_forthminusrolllstring (Bufferhandle* pBHarrayhead)
+//             ( nd offsetbufferid stringbufferid -- )
+//             ( l$depth-1{bottom} ... l$nd+1 l$nd l$nd-1 ... l$1 l$0{top} -l$- 
+//                 l$depth-1{bottom} ... l$nd+1 l$0{top} l$nd l$nd-1 ... l$1 )
+{
+    UINT64* pbuflength;
+	unsigned char* pdatastack;
+
+	UINT64* pints;
+
+    UINT64 numlstringsonstack;
+    UINT64 lengthlstring;
+    unsigned char* plstring;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+	pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+	if (pdatastack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthminusrolllstringname);
+		return;
+	}
+
+	if (*pbuflength < (3 * sizeof(UINT64)) )
+	{
+		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthminusrolllstringname);
+		return;
+	}
+
+	// could check for misaligned data stack pointer here
+
+	pints = (UINT64*)(pdatastack + *pbuflength - (3 * sizeof(UINT64)));
+
+    numlstringsonstack = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        pints[1]);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthminusrolllstringname);
+		return;
+	}
+
+    // check l$stack depth error
+    if (numlstringsonstack <= pints[0])
+    {
+        dg_pusherror(pBHarrayhead, dg_lstringstackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthminusrolllstringname);
+		return;
+    }
+
+    // at least one lstring on stack garaunteed
+    lengthlstring = dg_getlstringlength(
+        pBHarrayhead,
+        pints[1],
+        numlstringsonstack - 1);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthminusrolllstringname);
+		return;
+	}
+
+    // nd + 1 <= numlstringsonstack checked above
+	dg_insertlstring(
+        pBHarrayhead, 
+        pints[1], 
+        pints[2], 
+        numlstringsonstack - (pints[0] + 1), 
+        lengthlstring);
+
+	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthminusrolllstringname);
+		return;
+	}
+
+    plstring = dg_getplstring(
+        pBHarrayhead,
+        pints[1],
+        pints[2],
+        numlstringsonstack - (pints[0] + 1),
+        &lengthlstring);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthminusrolllstringname);
+		return;
+	}
+    
+    // poplstring does copy before drop in case shrink with possible move added in future
+    dg_poplstring(
+        pBHarrayhead,
+        pints[1],
+        pints[2],
+        lengthlstring,
+        plstring);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthminusrolllstringname);
+		return;
+	}
+
+    *pbuflength = *pbuflength - (3 * sizeof(UINT64));
+}
+
+
+void dg_forthdeleteinlstring (Bufferhandle* pBHarrayhead)
+//             ( offset length n offsetbufferid stringbufferid -- )
+//             ( l$depth-1{bottom} ... l$nd+1 l$nd l$nd-1 ... l$1 l$0{top} -l$- 
+//                 l$depth-1{bottom} ... l$nd+1 l$nd' l$nd-1 ... l$1 l$0{top} )
+{
+    UINT64* pbuflength;
+	unsigned char* pdatastack;
+
+	UINT64* pints;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+	pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+	if (pdatastack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthdeleteinlstringname);
+		return;
+	}
+
+	if (*pbuflength < (5 * sizeof(UINT64)) )
+	{
+		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthdeleteinlstringname);
+		return;
+	}
+
+    // could check for misaligned data stack pointer here
+
+	pints = (UINT64*)(pdatastack + *pbuflength - (5 * sizeof(UINT64)));
+
+    dg_deleteinlstring(pBHarrayhead,
+        pints[3],
+        pints[4],
+        pints[2],
+        pints[0],
+        pints[1]);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdeleteinlstringname);
+        return;
+    }	
+
+    *pbuflength = *pbuflength - (5 * sizeof(UINT64));
+}
+
+
+void dg_forthinsertinlstring (Bufferhandle* pBHarrayhead)
+//             ( offset length n offsetbufferid stringbufferid -- )
+//             ( l$depth-1{bottom} ... l$nd+1 l$nd l$nd-1 ... l$1 l$0{top} -l$- 
+//                 l$depth-1{bottom} ... l$nd+1 l$nd' l$nd-1 ... l$1 l$0{top} )
+{
+    UINT64* pbuflength;
+	unsigned char* pdatastack;
+
+	UINT64* pints;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+	pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+	if (pdatastack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthinsertinlstringname);
+		return;
+	}
+
+	if (*pbuflength < (5 * sizeof(UINT64)) )
+	{
+		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthinsertinlstringname);
+		return;
+	}
+
+    // could check for misaligned data stack pointer here
+
+	pints = (UINT64*)(pdatastack + *pbuflength - (5 * sizeof(UINT64)));
+
+    dg_deleteinlstring(pBHarrayhead,
+        pints[3],
+        pints[4],
+        pints[2],
+        pints[0],
+        pints[1]);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthinsertinlstringname);
+        return;
+    }
+
+    *pbuflength = *pbuflength - (5 * sizeof(UINT64));
+}
+
+
+void dg_forthcatlstringn (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+	unsigned char* pdatastack;
+
+	UINT64* pints;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+	pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+	if (pdatastack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthcatlstringnname);
+		return;
+	}
+
+	if (*pbuflength < (3 * sizeof(UINT64)) )
+	{
+		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthcatlstringnname);
+		return;
+	}
+
+	// could check for misaligned data stack pointer here
+
+	pints = (UINT64*)(pdatastack + *pbuflength - (3 * sizeof(UINT64)));
+
+    dg_catlstringn(
+        pBHarrayhead,
+        pints[1],
+        pints[2],
+        pints[0]);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcatlstringnname);
+        return;
+    }
+
+    *pbuflength = *pbuflength - (3 * sizeof(UINT64));
+}
+
+
+void dg_forthcopystolstringn (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+	unsigned char* pdatastack;
+
+	UINT64* pints;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+	pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+	if (pdatastack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthcopystolstringnname);
+		return;
+	}
+
+	if (*pbuflength < (6 * sizeof(UINT64)) )
+	{
+		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthcopystolstringnname);
+		return;
+	}
+
+	// could check for misaligned data stack pointer here
+
+	pints = (UINT64*)(pdatastack + *pbuflength - (6 * sizeof(UINT64)));
+
+    dg_copystolstringn(
+        pBHarrayhead,
+        pints[4],
+        pints[5],
+        pints[3],
+        pints[2],
+        (unsigned char*)pints[0],
+        pints[1]);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcopystolstringnname);
+        return;
+    }
+
+    *pbuflength = *pbuflength - (6 * sizeof(UINT64));
+}
+
+
+void dg_forthcopysfromlstringn (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+	unsigned char* pdatastack;
+
+	UINT64* pints;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+	pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+	if (pdatastack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthcopysfromlstringnname);
+		return;
+	}
+
+	if (*pbuflength < (6 * sizeof(UINT64)) )
+	{
+		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthcopysfromlstringnname);
+		return;
+	}
+
+	// could check for misaligned data stack pointer here
+
+	pints = (UINT64*)(pdatastack + *pbuflength - (6 * sizeof(UINT64)));
+
+    dg_copysfromlstringn(
+        pBHarrayhead,
+        pints[2],
+        pints[3],
+        pints[1],
+        pints[0],
+        pints[5],
+        (unsigned char*)pints[4]);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcopysfromlstringnname);
+        return;
+    }
+
+    *pbuflength = *pbuflength - (6 * sizeof(UINT64));
+}
+
+
+void dg_forthsetlengthlstringn (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+	unsigned char* pdatastack;
+
+	UINT64* pints;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+	pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+	if (pdatastack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthsetlengthlstringnname);
+		return;
+	}
+
+	if (*pbuflength < (4 * sizeof(UINT64)) )
+	{
+		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthsetlengthlstringnname);
+		return;
+	}
+
+	// could check for misaligned data stack pointer here
+
+	pints = (UINT64*)(pdatastack + *pbuflength - (4 * sizeof(UINT64)));
+
+    dg_setlengthlstringn (
+        pBHarrayhead,
+        pints[2],
+        pints[3],
+        pints[1],
+        pints[0]);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthsetlengthlstringnname);
+        return;
+    }
+
+    *pbuflength = *pbuflength - (4 * sizeof(UINT64));
+}
+
+
+void dg_forthcopystoreplacelstringn (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+	unsigned char* pdatastack;
+
+	UINT64* pints;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+	pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+	if (pdatastack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthcopystoreplacelstringnname);
+		return;
+	}
+
+	if (*pbuflength < (5 * sizeof(UINT64)) )
+	{
+		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthcopystoreplacelstringnname);
+		return;
+	}
+
+	// could check for misaligned data stack pointer here
+
+	pints = (UINT64*)(pdatastack + *pbuflength - 5*sizeof(UINT64));
+
+    dg_replacelstringn (
+        pBHarrayhead,
+        pints[3],
+        pints[4],
+        pints[2],
+        (unsigned char*)pints[0],
+        pints[1]);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcopystoreplacelstringnname);
+        return;
+    }
+
+    *pbuflength = *pbuflength - (5 * sizeof(UINT64));
+}
+
+
+void dg_forthcopylstringntoreplacelstringn (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+	unsigned char* pdatastack;
+
+	UINT64* pints;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+	pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+	if (pdatastack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthcopylstringntoreplacelstringnname);
+		return;
+	}
+
+	if (*pbuflength < (6 * sizeof(UINT64)) )
+	{
+		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthcopylstringntoreplacelstringnname);
+		return;
+	}
+
+	// could check for misaligned data stack pointer here
+
+	pints = (UINT64*)(pdatastack + *pbuflength - (6 * sizeof(UINT64)));
+
+    dg_copylstringntoreplacelstringn (
+        pBHarrayhead,
+        pints[2],
+        pints[0],
+        pints[1],
+        pints[5],
+        pints[3],
+        pints[4]);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcopylstringntoreplacelstringnname);
+        return;
+    }
+
+    *pbuflength = *pbuflength - (6 * sizeof(UINT64));
+}
+
+
+void dg_forthnewfreeablelstringarray (Bufferhandle* pBHarrayhead)
+{
+    UINT64 myfreeablelstringarrayid;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    myfreeablelstringarrayid = dg_newfreeablelstringarray(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthnewfreeablelstringarrayname);
+        return;
+    }
+    
+    dg_pushdatastack(
+        pBHarrayhead,
+        myfreeablelstringarrayid);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthnewfreeablelstringarrayname);
+        return;
+    }
+}
+
+
+void dg_forthfreefreeablelstringarray (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+	unsigned char* pdatastack;
+
+	UINT64* pints;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+	pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+	if (pdatastack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthfreefreeablelstringarrayname);
+		return;
+	}
+
+	if (*pbuflength < sizeof(UINT64))
+	{
+		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthfreefreeablelstringarrayname);
+		return;
+	}
+
+	// could check for misaligned data stack pointer here
+
+	pints = (UINT64*)(pdatastack + *pbuflength - sizeof(UINT64));
+
+    dg_freefreeablelstringarray (
+        pBHarrayhead,
+        pints[0]);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthfreefreeablelstringarrayname);
+        return;
+    }
+
+    *pbuflength = *pbuflength - sizeof(UINT64);
+}
+
+
+void dg_forthpacklstring(Bufferhandle* pBHarrayhead)
+{
+    UINT64 lstringoffsetbufferid;
+    UINT64 lstringstringbufferid;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    lstringstringbufferid = dg_popbufferuint64(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthpacklstringname);
+        return;
+    }
+    
+    lstringoffsetbufferid = dg_popbufferuint64(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthpacklstringname);
+        return;
+    }
+    
+    dg_packlstring(
+        pBHarrayhead,
+        lstringoffsetbufferid,
+        lstringstringbufferid);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthpacklstringname);
+        return;
+    }
+}
+
+
+void dg_forthunpacklstring(Bufferhandle* pBHarrayhead)
+{
+    UINT64 lstringoffsetbufferid;
+    UINT64 lstringstringbufferid;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    lstringstringbufferid = dg_popbufferuint64(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthpacklstringname);
+        return;
+    }
+    
+    lstringoffsetbufferid = dg_unpacklstring (
+        pBHarrayhead,
+        lstringstringbufferid);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthpacklstringname);
+        return;
+    }
+    
+    dg_pushbufferuint64(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        lstringoffsetbufferid);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthpacklstringname);
+        return;
+    }
+}
+
