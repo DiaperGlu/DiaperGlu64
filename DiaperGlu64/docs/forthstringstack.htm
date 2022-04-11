@@ -1,22 +1,22 @@
 <!--
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 -->
 
@@ -130,6 +130,23 @@
       <a href=forthstringstack.htm#dg_forthwords0stringquotes      >dg_forthwords0stringquotes</a>
       <a href=forthstringstack.htm#dg_forthgetargsfromnstrings     >dg_forthgetargsfromnstrings</a>
       <a href=forthstringstack.htm#dg_forthrunfileandwaitnoenvquotes>dg_forthrunfileandwaitnoenvquotes</a>
+      <a href=forthstringstack.htm#dg_forthtostarulestring         >dg_forthtostarulestring</a>
+      <a href=forthstringstack.htm#dg_forthtoslashulestring        >dg_forthtoslashulestring</a>
+      <a href=forthstringstack.htm#dg_forthulestringtonumberstring >dg_forthulestringtonumberstring</a>
+      <a href=forthstringstack.htm#dg_forthnotstring               >dg_forthnotstring</a>
+      <a href=forthstringstack.htm#dg_forthreversestring           >dg_forthreversestring</a>
+      <a href=forthstringstack.htm#dg_forthlelshiftstring          >dg_forthlelshiftstring</a>
+      <a href=forthstringstack.htm#dg_forthulershiftstring         >dg_forthulershiftstring</a>
+      <a href=forthstringstack.htm#dg_forthslershiftstring         >dg_forthslershiftstring</a>
+      <a href=forthstringstack.htm#dg_forthlelshiftcstring         >dg_forthlelshiftcstring</a>
+      <a href=forthstringstack.htm#dg_forthlershiftcstring         >dg_forthlershiftcstring</a>
+      <a href=forthstringstack.htm#dg_forthuleandstring            >dg_forthuleandstring</a>
+      <a href=forthstringstack.htm#dg_forthuleorstring             >dg_forthuleorstring</a>
+      <a href=forthstringstack.htm#dg_forthulexorstring            >dg_forthulexorstring</a>
+      <a href=forthstringstack.htm#dg_forthulenandstring           >dg_forthulenandstring</a>
+      <a href=forthstringstack.htm#dg_forthulenorstring            >dg_forthulenorstring</a>
+      <a href=forthstringstack.htm#dg_forthulexnorstring           >dg_forthulexnorstring</a>
+      <a href=forthstringstack.htm#dg_forthtofactorialulestring    >dg_forthtofactorialulestring</a>
 
     </div>
 
@@ -1161,7 +1178,7 @@
 //     
 // Stack action shorthand:
 //  ( $1 -$- $1' )
-//  ( char -$- )
+//  ( char -- )
 //
 // Data stack in:
 //  char                          UINT64 representation of character (byte) (0 
@@ -2820,7 +2837,589 @@
 </pre>
       </div>
       
+
+      <div class=word id=dg_forthtostarulestring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthtostarulestring ( &gt;*ULE$ )
+//
+// C prototype:
+//  void dg_forthtostarulestring(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( u -- ) ( a$ -$- a$*u )
+//                                                            
+// Action:
+//  Pops u off the data stack.
+//  Multiplies the unsigned little endian value in the top string by u.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
       
+
+      <div class=word id=dg_forthtoslashulestring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthtoslashulestring ( &gt;/ULE$ )
+//
+// C prototype:
+//  void dg_forthtoslashulestring(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( u -- remainder ) ( a$ -$- a$/u )
+//                                                            
+// Action:
+//  Pops u off the data stack.
+//  If u is not 0:
+//   Divides the unsigned little endian value in the top string by u.
+//   Pushes the remainder from the division back onto the data stack.
+//  If u is 0:
+//   The top string is left unchanged and a remainder equal to the largest unsigned
+//   integer is pushed back onto the data stack.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthulestringtonumberstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthulestringtonumberstring ( ULE$&gt;NUMBER$ )
+//
+// C prototype:
+//  void dg_forthulestringtonumberstring(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( ule$ -$- number$ )
+//                                                            
+// Action:
+//  Converts the unsigned little endian value in the top string to it's ascii
+//   equivalent representation. For this conversion, the value of the current BASE
+//   variable is used as the base of the conversion. For example, a base of 10 is
+//   decimal. a base of 16 is Hex. Trying to use a base less than 2 gives an error.
+//   If the base is greater than 35, the digits are converted to exclamation marks.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthnotstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthnotstring ( NOT$ )
+//
+// C prototype:
+//  void dg_forthnotstring(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( a$ -$- a$' )
+//                                                            
+// Action:
+//  Flips all the bits in the top string on the string stack. 0s become 1s and 1s
+//   become 0s.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthreversestring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthreversestring ( REVERSE$ )
+//
+// C prototype:
+//  void dg_forthreversestring(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( a$ -$- a$' )
+//                                                            
+// Action:
+//  Reverses the order of the bytes in the string.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthlelshiftstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthlelshiftstring ( LELSHIFT$ )
+//
+// C prototype:
+//  void dg_forthlelshiftstring(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- carryout ) ( a$ -$- a$' )
+//                                                            
+// Action:
+//  Shifts the bits in the top string on the string stack to the left one.
+//  A zero is shifted in to the lowest bit.
+//  The value of the highest bit from before the shift is returned on the data stack.
+//   0 = no carry out. 1 = carry out.
+//  This is the same as multiplying the unsigned little endian value in the top string
+//   of the string stack by 2.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthulershiftstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthulershiftstring ( ULERSHIFT$ )
+//
+// C prototype:
+//  void dg_forthulershiftstring(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- carryout ) ( a$ -$- a$' )
+//                                                            
+// Action:
+//  Shifts the bits in the top string on the string stack to the right one.
+//  A zero is shifted in to the highest bit.
+//  The value of the lowest bit from before the shift is returned on the data stack.
+//   0 = no carry out. 1 = carry out.
+//  This is the same as dividing the unsigned little endian value in the top string
+//   of the string stack by 2.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_forthslershiftstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthslershiftstring ( SLERSHIFT$ )
+//
+// C prototype:
+//  void dg_forthslershiftstring(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- carryout ) ( a$ -$- a$' )
+//                                                            
+// Action:
+//  Shifts the bits in the top string on the string stack to the right one.
+//  The value of the highest bit is shifted back in to the highest bit.
+//  The value of the lowest bit from before the shift is returned on the data stack.
+//   0 = no carry out. 1 = carry out.
+//  This is the same as dividing the signed little endian value in the top string
+//   of the string stack by 2.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthlelshiftcstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthlelshiftcstring ( LELSHIFTC$ )
+//
+// C prototype:
+//  void dg_forthlelshiftcstring(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( carryin -- carryout ) ( a$ -$- a$' )
+//                                                            
+// Action:
+//  Shifts the bits in the top string on the string stack to the left one.
+//  The carryin is shifted in to the lowest bit.
+//  The value of the highest bit from before the shift is returned on the data stack.
+//   0 = no carry out. 1 = carry out.
+//  This is the same as multiplying the unsigned little endian value in the top string
+//   of the string stack by 2 and adding carryin to the result.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthlershiftcstring>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthlershiftcstring ( LERSHIFTC$ )
+//
+// C prototype:
+//  void dg_forthlershiftcstring(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( carryin -- carryout ) ( a$ -$- a$' )
+//                                                            
+// Action:
+//  Shifts the bits in the top string on the string stack to the right one.
+//  The carryin is shifted in to the highest bit.
+//   0 = no carry in. 1 = carry in. Only the lowest bit of carryin is used.
+//  The value of the lowest bit from before the shift is returned on the data stack.
+//   0 = no carry out. 1 = carry out.
+//  This is the same as dividing the unsigned little endian value in the top string
+//   of the string stack by 2 and setting the highest bit equal to carryin.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_forthuleandstring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthuleandstring ( ULEAND$ )
+//
+// C prototype:
+//  void dg_forthuleandstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array
+//                                   where the other bufferhandles are stored.
+//
+// Outputs:
+//   none
+//
+// Stack action shorthand:
+//  ( -- ) ( x$ y$ -$- xANDy$ )
+//
+// Data stack in:
+//  none
+//
+//
+// Action:
+//   If one string is shorter than the other string, it is treated as an unsigned
+//    little endian integer and extended to the length of the other lstring. (This
+//    means 0s are appended to the end of the shorter string to make it the same
+//    length as the longer string.)
+//   Then each byte in the top string is anded with the corresponding byte in the
+//    string one below the top and the result is put back in the string one below
+//    the top.
+//   Then the top string is dropped from the string stack. 
+//
+// Failure cases:
+//   Not enough strings on the string stack.
+//   Error anding the bytes in the strings.
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_forthuleorstring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthuleorstring ( ULEOR$ )
+//
+// C prototype:
+//  void dg_forthuleorstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array
+//                                   where the other bufferhandles are stored.
+//
+// Outputs:
+//   none
+//
+// Stack action shorthand:
+//  ( -- ) ( x$ y$ -$- xORy$ )
+//
+// Data stack in:
+//  none
+//
+//
+// Action:
+//   If one string is shorter than the other string, it is treated as an unsigned
+//    little endian integer and extended to the length of the other lstring. (This
+//    means 0s are appended to the end of the shorter string to make it the same
+//    length as the longer string.)
+//   Then each byte in the top string is ored with the corresponding byte in the
+//    string one below the top and the result is put back in the string one below
+//    the top.
+//   Then the top string is dropped from the string stack. 
+//
+// Failure cases:
+//   Not enough strings on the string stack.
+//   Error oring the bytes in the strings.
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_forthulexorstring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthulexorstring ( ULEXOR$ )
+//
+// C prototype:
+//  void dg_forthulexorstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array
+//                                   where the other bufferhandles are stored.
+//
+// Outputs:
+//   none
+//
+// Stack action shorthand:
+//  ( -- ) ( x$ y$ -$- xXORy$ )
+//
+// Data stack in:
+//  none
+//
+//
+// Action:
+//   If one string is shorter than the other string, it is treated as an unsigned
+//    little endian integer and extended to the length of the other lstring. (This
+//    means 0s are appended to the end of the shorter string to make it the same
+//    length as the longer string.)
+//   Then each byte in the top string is xored with the corresponding byte in the
+//    string one below the top and the result is put back in the string one below
+//    the top.
+//   Then the top string is dropped from the string stack. 
+//
+// Failure cases:
+//   Not enough strings on the string stack.
+//   Error xoring the bytes in the strings.
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_forthulenandstring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthulenandstring ( ULENAND$ )
+//
+// C prototype:
+//  void dg_forthulenandstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array
+//                                   where the other bufferhandles are stored.
+//
+// Outputs:
+//   none
+//
+// Stack action shorthand:
+//  ( -- ) ( x$ y$ -$- xNANDy$ )
+//
+// Data stack in:
+//  none
+//
+//
+// Action:
+//   If one string is shorter than the other string, it is treated as an unsigned
+//    little endian integer and extended to the length of the other lstring. (This
+//    means 0s are appended to the end of the shorter string to make it the same
+//    length as the longer string.)
+//   Then each byte in the top string is nanded with the corresponding byte in the
+//    string one below the top and the result is put back in the string one below
+//    the top.
+//   Then the top string is dropped from the string stack. 
+//
+// Failure cases:
+//   Not enough strings on the string stack.
+//   Error anding the bytes in the strings.
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_forthulenorstring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthulenorstring ( ULENOR$ )
+//
+// C prototype:
+//  void dg_forthulenorstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array
+//                                   where the other bufferhandles are stored.
+//
+// Outputs:
+//   none
+//
+// Stack action shorthand:
+//  ( -- ) ( x$ y$ -$- xNORy$ )
+//
+// Data stack in:
+//  none
+//
+//
+// Action:
+//   If one string is shorter than the other string, it is treated as an unsigned
+//    little endian integer and extended to the length of the other lstring. (This
+//    means 0s are appended to the end of the shorter string to make it the same
+//    length as the longer string.)
+//   Then each byte in the top string is nored with the corresponding byte in the
+//    string one below the top and the result is put back in the string one below
+//    the top.
+//   Then the top string is dropped from the string stack. 
+//
+// Failure cases:
+//   Not enough strings on the string stack.
+//   Error noring the bytes in the strings.
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_forthulexnorstring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthulexnorstring ( ULEXNOR$ )
+//
+// C prototype:
+//  void dg_forthulexnorstring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array
+//                                   where the other bufferhandles are stored.
+//
+// Outputs:
+//   none
+//
+// Stack action shorthand:
+//  ( -- ) ( x$ y$ -$- xXNORy$ )
+//
+// Data stack in:
+//  none
+//
+//
+// Action:
+//   If one string is shorter than the other string, it is treated as an unsigned
+//    little endian integer and extended to the length of the other lstring. (This
+//    means 0s are appended to the end of the shorter string to make it the same
+//    length as the longer string.)
+//   Then each byte in the top string is xnored with the corresponding byte in the
+//    string one below the top and the result is put back in the string one below
+//    the top.
+//   Then the top string is dropped from the string stack. 
+//
+// Failure cases:
+//   Not enough strings on the string stack.
+//   Error xnoring the bytes in the strings.
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_forthtofactorialulestring>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthtofactorialulestring ( &gt;FACTORIALULE$ )
+//
+// C prototype:
+//  void dg_forthtofactorialulestring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array
+//                                   where the other bufferhandles are stored.
+//
+// Outputs:
+//   none
+//
+// Stack action shorthand:
+//  ( u -- ) ( -$- ufactorialule$ )
+//
+// Data stack in:
+//  u                             64 bit unsigned integer
+//
+//
+// Action:
+//  Pops u off the data stack.
+//  Calculates u factorial and pushes the unsigned little endian result onto the
+//   string stack. 
+//
+// Failure cases:
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
     </div>
   </div></body>
 </html>

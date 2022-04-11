@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 
 
@@ -95,7 +95,7 @@ const char dg_branchopcodemissingerror[]   = " - branch opcode missing error";
 const char dg_branchtoobigerror[]          = " - branch offset too big, if you see this error, signed offset is > 4 bytes, OR you are using a LOOP instruction and offset is greater than one byte.";
 const char dg_branchalreadyresolvederror[] = " - branch already resolved error, default offset was not 0";
 
-const char dg_signedvaluetoobigerror[]     = " - signed value too big error, value probably must fit into an INT64";
+const char dg_signedvaluetoobigerror[]     = " - signed value too big error, value probably must fit into an INT64 or INT32";
 
 // const char dg_buffergrowby0error[]         = " - Buffer's grow by is 0. When a buffer is allocated or increased, units of growby are used.";
 // const char dg_bufferfullerror[]            = " - growing buffer would exceed maximum allowed size error";
@@ -107,8 +107,8 @@ const char dg_lstringtopoffsetwasbad[]     = " - top lstrings end offset was not
 const char dg_lstringstackdepthcorrupt[]   = " - lstring stack's offset array is not UINT64 aligned";
 const char dg_toobigfordesterror[]         = " - source is too big to fit in destination error";
 
-const char dg_wordidtoobigerror[]          = " - word's id too big to index word buffer, the calculation would overflow a UINT32";
-const char dg_wordlistidtoobigerror[]      = " - word list's id too big to index word list buffer, the calculation would overflow a UINT32";
+const char dg_wordidtoobigerror[]          = " - word's id too big to index word buffer, the calculation would overflow a UINT64";
+const char dg_wordlistidtoobigerror[]      = " - word list's id too big to index word list buffer, the calculation would overflow a UINT64";
 const char dg_wordalreadylinkederror[]     = " - word is already linked into a wordlist error";
 const char dg_newwordoldererror[]          = " - trying to link a new word that is older than latest word in wordlist error which could create a circular wordlist";
 const char dg_wordnotfoundinsearchordererror[] = " - word not found in search order error";
@@ -150,6 +150,8 @@ const char dg_initerrorsbuf0inuse[]        = " - could not initialize error stac
 // const char dg_badprocessiderror[]           = " - process does not exist or is not a child of the calling process";
 // const char dg_interruptedbysignalerror[]    = " - call was interrupted and not restarted error";
 // const char dg_toomanyprocesseserror[]       = " - too many processes error";
+
+const char dg_toomanyparameterserror[]         = " - too many parameters for this function";
 
 // yes, this 0xFF value is hard coded... and very vary bad :-( J.N. Nov. 30, 2019 ... and I couldn't get it to work anyways
 const char dg_couldnotrunfileerror[]        = " - could not run the file error... or the program exited with error code 0xFF";
@@ -209,6 +211,7 @@ const char dg_hlistparentlastchildbad[]    = " - hlist corrupt - element can not
 const char dg_hlistelementwasfreed[]       = " - hlist element holding this error was freed";
 const char dg_hlistgetsnameerror[]         = " - error getting pointer to and length of hlist name";
 const char dg_elementisfreeerror[]         = " - element is free error";
+// const char dg_wordnotfounderror[]          = " - word not found error";
 const char dg_namenotfounderror[]          = " - name not found error";
 
 const char dg_symbolnotfounderror[]        = " - symbol not found error";
@@ -217,6 +220,8 @@ const char dg_patchfunctionnotfounderror[] = " - patch function not found error"
 const char dg_tryingtofreehlist0error[]    = " - hlist 0 is reserved for wordlists, user tried to free it error";
 
 const char dg_glulisttypenotfounderror[]   = " - Glu/NGlu hlist root name not one of \"NGlu\" or \"Glu \"";
+
+const char dg_queueswitchlengthtoobigerror[]   = " - queue switchlength too big error. If you make your switchlength too big, and you didn't limit the buffer sizes, the queue will eat up all your memory.";
 
 void dg_initerrors (
     Bufferhandle* pBHarrayhead,
@@ -995,7 +1000,45 @@ void dg_clearerrors (Bufferhandle* pBHarrayhead)
     pBH = (Bufferhandle*)(pBHarrayhead->pbuf);
     pBH->nextunusedbyte = 0;
     
+    
+    
     // clear all wordlist element flags
+}
+
+
+void dg_clearerrorsanderrorline(Bufferhandle* pBHarrayhead)
+{
+    Bufferhandle* pBH = NULL;
+    const char* flag = dg_checkbharrayhead(pBHarrayhead);
+
+    if (flag != dg_success) 
+    {
+        return;
+    }
+    
+    // trying to clear the error line buffer
+    dg_clearbuffer(
+        pBHarrayhead,
+        DG_ERRORLINE_BUFFERID);
+
+    pBHarrayhead->errorcount = 0;
+
+    flag = dg_checkbharray(pBHarrayhead);
+
+    if (flag != dg_success)
+    {
+        return;
+    }
+
+    // seeing if there is a buffer handle for the error stack
+    if (pBHarrayhead->nextunusedbyte < sizeof (Bufferhandle))
+    {
+        return;
+    }
+
+    // assuming handle is correct
+    pBH = (Bufferhandle*)(pBHarrayhead->pbuf);
+    pBH->nextunusedbyte = 0;
 }
 
 
@@ -1275,6 +1318,9 @@ void dg_forthdoterrors (Bufferhandle* pBHarrayhead)
 
 	unsigned char c = '\n';
 	unsigned char* punknownword;
+ 
+    unsigned char* pbuffer;
+    UINT64* pbufferlength;   
 
 	errorcount = dg_checkerrorsonstack(pBHarrayhead);
 
@@ -1348,6 +1394,7 @@ void dg_forthdoterrors (Bufferhandle* pBHarrayhead)
     {
         dg_printzerostring(pBHarrayhead, (unsigned char*)"\nerror count was less than errors on stack, this shouldn't happen\n");
     }
+        
 }
 
 

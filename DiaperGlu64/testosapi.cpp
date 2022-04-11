@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,16 +23,109 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 
 #include <stdio.h>
 #include <stdlib.h>
 #include "diapergluforth.h"
 // #include <dlfcn.h>
+#ifdef DGLU_OS_FREEBSD
+#include <unistd.h>
+#endif
 
 unsigned char megabuf[0x10000]; // a test does not need to be re-entrant
+
+void testmaxu32comparecompilation()
+{
+    UINT64 x = 0;
+
+    printf("testing compilation of comparing UINT64 with max UINT32 constant\n");
+
+    if (x > 0xffffffff)
+    {
+        printf(" - FAIL! 0 compared greater than 0xFFFFFFFF\n");
+    }
+
+    ((UINT32*)(&x))[0] = 0xffffffff;
+
+    if (x > 0xffffffff)
+    {
+        printf(" - FAIL! 0xffffffff compared greater than 0xFFFFFFFF\n");
+    }
+
+    if (x != 0xffffffff)
+    {
+        printf(" - FAIL! 0xffffffff was not equal to 0xFFFFFFFF\n");
+    }
+
+    ((UINT32*)(&x))[0] = 0;
+
+    ((UINT32*)(&x))[1] = 1;
+
+    if (x <= 0xffffffff)
+    {
+        printf(" - FAIL! 0x100000000 compared less than or equal to 0xFFFFFFFF\n");
+    }
+}
+
+void testu64constantcompilation()
+{
+    UINT64 x = 0;
+
+    printf("testing compilation of UINT64 constant\n");
+
+    x = 0x1314151687868582;
+
+    if (((UINT32*)(&x))[1] != 0x13141516)
+    {
+        printf(" - FAIL! high 32 bits incorrect\n");
+    }
+
+    if (((UINT32*)(&x))[0] != 0x87868582)
+    {
+        printf(" - FAIL! low 32 bits incorrect\n");
+    }
+}
+
+void testmaxnegi32constantcompilation()
+{
+    INT64 x = 0;
+
+    printf("testing compilation of max negative int32 constant - this test fails on Windows. (so I'm not using this constant.)\n");
+
+    x = -0x80000000;
+
+    if (((UINT32*)(&x))[1] != 0xffffffff)
+    {
+        printf(" - FAIL! high 32 bits incorrect, got %x\n", ((UINT32*)(&x))[1]);
+    }
+
+    if (((UINT32*)(&x))[0] != 0x80000000)
+    {
+        printf(" - FAIL! low 32 bits incorrect\n");
+    }
+}
+
+void testneg1constantcompilation()
+{
+    INT64 x = 0;
+
+    printf("testing compilation -1 constant\n");
+
+    x = -1;
+
+    if (((UINT32*)(&x))[1] != 0xffffffff)
+    {
+        printf(" - FAIL! high 32 bits incorrect, got %x\n", ((UINT32*)(&x))[1]);
+    }
+
+    if (((UINT32*)(&x))[0] != 0xffffffff)
+    {
+        printf(" - FAIL! low 32 bits incorrect\n");
+    }
+}
 
 void testdg_initpbharrayhead()
 {
@@ -10416,6 +10509,2743 @@ void testdg_getenvironmentvariable()
 }
 
 
+void testdg_addbytes()
+{
+    UINT64 i;
+    unsigned char srcbuf[64];
+    unsigned char destbuf[64];
+    const char* perror;
+    UINT64 carryout;
+
+    printf("testing dg_addbytes\n");
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = (UINT8)i;
+        srcbuf[i] = 2*(UINT8)i + 1;
+    }
+
+    perror = dg_addbytes(
+        (unsigned char*)srcbuf, 
+        destbuf, 
+        9,
+        &carryout);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_addbytes no carry case failed with error %s\n", perror);
+    }
+    
+    if (carryout != 0)
+    {
+        printf("  dg_addbytes no carry case carry out incorrect, expected 0, got %d\n", (UINT32)carryout);
+    }
+
+    if (destbuf[0] != 1)
+    {
+        printf("  dg_addbytes no carry case first byte added incorrect, expected 1, got %d\n", destbuf[0]);
+    }
+
+    if (destbuf[8] != 25)
+    {
+        printf("  dg_addbytes no carry case last byte added incorrect, expected 25, got %d\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 9)
+    {
+        printf("  dg_addbytes no carry case changed buffer after last character added! expected 19, got %d\n", destbuf[9]);
+    }
+    
+    perror = dg_addbytes(
+        (unsigned char*)-0x1001, 
+        destbuf, 
+        9,
+        &carryout);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_addbytes bad memory at src case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+    
+    perror = dg_addbytes(
+        (unsigned char*)srcbuf, 
+        (unsigned char*)-0x1001, 
+        9,
+        &carryout);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_addbytes bad memory at dest case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+    
+    perror = dg_addbytes(
+        (unsigned char*)srcbuf, 
+        (unsigned char*)destbuf, 
+        9,
+        (UINT64*)-0x1001);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_addbytes bad memory at pcarryout case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = 0xff;
+    }
+
+    srcbuf[0] = 2;
+    srcbuf[1] = 5;
+    srcbuf[8] = 0xfe;
+    destbuf[9] = 33;
+
+    perror = dg_addbytes(
+        (unsigned char*)srcbuf, 
+        destbuf, 
+        9,
+        &carryout);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_addbytes carry case failed with error %s\n", perror);
+    }
+    
+    if (carryout != 1)
+    {
+        printf("  add bytes carry case carry out incorrect, expected 0, got %d\n", (UINT32)carryout);
+    }
+
+    if (destbuf[0] != 0x1)
+    {
+        printf("  add bytes carry case first byte added incorrect, expected 1, got %d\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 0x5)
+    {
+        printf("  add bytes carry case second byte added incorrect, expected 5, got %d\n", destbuf[1]);
+    }
+
+    if (destbuf[8] != 0xfe)
+    {
+        printf("  add bytes carry case last byte added incorrect, expected 0xfe, got %d\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 33)
+    {
+        printf("  dg_addbytes carry case changed buffer after last character moved! expected 33, got %d\n", destbuf[9]);
+    }
+}
+
+
+void testdg_adcbytes()
+{
+    UINT64 i;
+    unsigned char srcbuf[64];
+    unsigned char destbuf[64];
+    const char* perror;
+    UINT64 carryinout = 0;
+
+    printf("testing dg_adcbytes\n");
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = (UINT8)i;
+        srcbuf[i] = 2*(UINT8)i + 1;
+    }
+
+    perror = dg_adcbytes(
+        (unsigned char*)srcbuf, 
+        destbuf, 
+        9,
+        &carryinout);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_adcbytes no carry case failed with error %s\n", perror);
+    }
+    
+    if (carryinout != 0)
+    {
+        printf("  dg_adcbytes no carry case carry out incorrect, expected 0, got %d\n", (UINT32)carryinout);
+    }
+
+    if (destbuf[0] != 1)
+    {
+        printf("  dg_adcbytes no carry case first byte added incorrect, expected 1, got %d\n", destbuf[0]);
+    }
+
+    if (destbuf[8] != 25)
+    {
+        printf("  dg_adcbytes no carry case last byte added incorrect, expected 25, got %d\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 9)
+    {
+        printf("  dg_adcbytes no carry case changed buffer after last character added! expected 19, got %d\n", destbuf[9]);
+    }
+    
+    carryinout = 0;
+    perror = dg_adcbytes(
+        (unsigned char*)-0x1001, 
+        destbuf, 
+        9,
+        &carryinout);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_adcbytes bad memory at src case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+    
+    carryinout = 0;
+    perror = dg_adcbytes(
+        (unsigned char*)srcbuf, 
+        (unsigned char*)-0x1001, 
+        9,
+        &carryinout);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_adcbytes bad memory at dest case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+    
+    carryinout = 0;
+    perror = dg_adcbytes(
+        (unsigned char*)srcbuf, 
+        (unsigned char*)destbuf, 
+        9,
+        (UINT64*)-0x1001);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_adcbytes bad memory at pcarryout case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = 0xff;
+    }
+
+    srcbuf[0] = 2;
+    srcbuf[1] = 5;
+    srcbuf[8] = 0xfe;
+    destbuf[9] = 33;
+    carryinout = 1;
+
+    perror = dg_adcbytes(
+        (unsigned char*)srcbuf, 
+        destbuf, 
+        9,
+        &carryinout);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_adcbytes carry case failed with error %s\n", perror);
+    }
+    
+    if (carryinout != 1)
+    {
+        printf("  dg_adcbytes carry case carry out incorrect, expected 1, got %d\n", (UINT32)carryinout);
+    }
+
+    if (destbuf[0] != 0x2)
+    {
+        printf("  dg_adcbytes bytes carry case first byte added incorrect, expected 2, got %d\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 0x5)
+    {
+        printf("  dg_adcbytes bytes carry case second byte added incorrect, expected 5, got %d\n", destbuf[1]);
+    }
+
+    if (destbuf[8] != 0xfe)
+    {
+        printf("  dg_adcbytes bytes carry case last byte added incorrect, expected 0xfe, got %d\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 33)
+    {
+        printf("  dg_adcbytes carry case changed buffer after last character moved! expected 33, got %d\n", destbuf[9]);
+    }
+    
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = 0xff;
+    }
+
+    srcbuf[0] = 2;
+    srcbuf[1] = 5;
+    srcbuf[8] = 0xfe;
+    destbuf[9] = 33;
+    carryinout = 1;
+
+    perror = dg_adcbytes(
+        (unsigned char*)srcbuf, 
+        destbuf, 
+        0,
+        &carryinout);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_adcbytes length 0 case failed with error %s\n", perror);
+    }
+    
+    if (carryinout != 0)
+    {
+        printf("  dg_adcbytes length 0 case carry out incorrect, expected 1, got %d\n", (UINT32)carryinout);
+    }
+
+    if (destbuf[0] != 0xff)
+    {
+        printf("  dg_adcbytes bytes length 0 case first byte added incorrect, expected 255, got %d\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 0xff)
+    {
+        printf("  dg_adcbytes bytes length 0 case second byte added incorrect, expected 255, got %d\n", destbuf[1]);
+    }
+
+    if (destbuf[8] != 0xff)
+    {
+        printf("  dg_adcbytes bytes length 0 case last byte added incorrect, expected 255, got %d\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 33)
+    {
+        printf("  dg_adcbytes carry length 0 changed buffer after last character moved! expected 33, got %d\n", destbuf[9]);
+    }
+}
+
+
+void testdg_sbbbytes()
+{
+    UINT64 i;
+    unsigned char srcbuf[64];
+    unsigned char destbuf[64];
+    const char* perror;
+    UINT64 carryinout = 0;
+
+    printf("testing dg_sbbbytes\n");
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = 2*(UINT8)i + 1;
+        srcbuf[i] = (UINT8)i;
+    }
+
+    perror = dg_sbbbytes(
+        (unsigned char*)srcbuf, 
+        destbuf, 
+        9,
+        &carryinout);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_sbbbytes no borrow case failed with error %s\n", perror);
+    }
+    
+    if (carryinout != 0)
+    {
+        printf("  dg_sbbbytes no borrow case carry out incorrect, expected 0, got %d\n", (UINT32)carryinout);
+    }
+    
+    if (srcbuf[1] != 1)
+    {
+        printf("  dg_sbbbytes no borrow case src[1] changed, expected 1, got %d\n", srcbuf[0]);
+    }
+
+    if (destbuf[0] != 1)
+    {
+        printf("  dg_sbbbytes no borrow case first byte added incorrect, expected 1, got %d\n", destbuf[0]);
+    }
+
+    if (destbuf[8] != 9)
+    {
+        printf("  dg_sbbbytes no borrow case last byte added incorrect, expected 9, got %d\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 19)
+    {
+        printf("  dg_sbbbytes no borrow case buffer after last character changed! expected 19, got %d\n", destbuf[9]);
+    }
+    
+    carryinout = 0;
+    perror = dg_sbbbytes(
+        (unsigned char*)-0x1001, 
+        destbuf, 
+        9,
+        &carryinout);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_sbbbytes bad memory at src case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+    
+    carryinout = 0;
+    perror = dg_sbbbytes(
+        (unsigned char*)srcbuf, 
+        (unsigned char*)-0x1001, 
+        9,
+        &carryinout);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_sbbbytes bad memory at dest case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+    
+    carryinout = 0;
+    perror = dg_sbbbytes(
+        (unsigned char*)srcbuf, 
+        (unsigned char*)destbuf, 
+        9,
+        (UINT64*)-0x1001);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_sbbbytes bad memory at pcarryout case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+
+    for (i = 0; i < 20; i++)
+    {
+        srcbuf[i] = 0xff;
+    }
+
+    destbuf[0] = 2;
+    destbuf[1] = 5;
+    destbuf[8] = 0xfe;
+    destbuf[9] = 33;
+    carryinout = 1;
+
+    perror = dg_sbbbytes(
+        (unsigned char*)srcbuf, 
+        destbuf, 
+        9,
+        &carryinout);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_sbbbytes borrow case failed with error %s\n", perror);
+    }
+    
+    if (carryinout != 1)
+    {
+        printf("  dg_sbbbytes borrow case carry out incorrect, expected 1, got %d\n", (UINT32)carryinout);
+    }
+
+    if (destbuf[0] != 0x2)
+    {
+        printf("  dg_sbbbytes borrow case first byte added incorrect, expected 2, got %d\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 0x5)
+    {
+        printf("  dg_sbbbytes borrow case second byte added incorrect, expected 5, got %d\n", destbuf[1]);
+    }
+
+    if (destbuf[8] != 0xfe)
+    {
+        printf("  dg_sbbbytes borrow case last byte added incorrect, expected 0xfe, got %d\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 33)
+    {
+        printf("  dg_sbbbytes borrow case buffer after last character changed! expected 33, got %d\n", destbuf[9]);
+    }
+    
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = 0xff;
+    }
+
+    srcbuf[0] = 2;
+    srcbuf[1] = 5;
+    srcbuf[8] = 0xfe;
+    destbuf[9] = 33;
+    carryinout = 1;
+
+    perror = dg_sbbbytes(
+        (unsigned char*)srcbuf, 
+        destbuf, 
+        0,
+        &carryinout);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_sbbbytes length 0 case failed with error %s\n", perror);
+    }
+    
+    if (carryinout != 0)
+    {
+        printf("  dg_sbbbytes length 0 case carry out incorrect, expected 1, got %d\n", (UINT32)carryinout);
+    }
+
+    if (destbuf[0] != 0xff)
+    {
+        printf("  dg_sbbbytes bytes length 0 case first byte added incorrect, expected 255, got %d\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 0xff)
+    {
+        printf("  dg_sbbbytes bytes length 0 case second byte added incorrect, expected 255, got %d\n", destbuf[1]);
+    }
+
+    if (destbuf[8] != 0xff)
+    {
+        printf("  dg_sbbbytes bytes length 0 case last byte added incorrect, expected 255, got %d\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 33)
+    {
+        printf("  dg_sbbbytes carry length 0 changed buffer after last character moved! expected 33, got %d\n", destbuf[9]);
+    }
+}
+
+
+void testdg_shlbytes()
+{
+    UINT64 i;
+    unsigned char destbuf[64];
+    const char* perror;
+    UINT64 carryout;
+
+    printf("testing dg_shlbytes\n");
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = (UINT8)i + 2;
+    }
+
+    perror = dg_shlbytes( 
+        destbuf, 
+        9,
+        &carryout);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_shlbytes no carry case failed with error %s\n", perror);
+    }
+    
+    if (carryout !=0)
+    {
+        printf("  dg_shlbytes no carry case carry out incorrect, expected 0, got %d\n", (UINT32)carryout);
+    }
+
+    if (destbuf[0] != 4)
+    {
+        printf("  dg_shlbytes no carry case first byte added incorrect, expected 4, got %d\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 6)
+    {
+        printf("  dg_shlbytes no carry case second byte added incorrect, expected 6, got %d\n", destbuf[1]);
+    }
+
+    if (destbuf[8] != 20)
+    {
+        printf("  dg_shlbytes no carry case last byte added incorrect, expected 20, got %d\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 11)
+    {
+        printf("  dg_shlbytes no carry case changed buffer after last character added! expected 11, got %d\n", destbuf[9]);
+    }
+    
+    perror = dg_shlbytes( 
+        (unsigned char*)-0x1001, 
+        9,
+        &carryout);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_shlbytes bad memory at dest case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+    
+    perror = dg_shlbytes(
+        (unsigned char*)destbuf, 
+        9,
+        (UINT64*)-0x1001);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_shlbytes bad memory at pcarryout case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = 0xfe - i;
+    }
+
+    destbuf[9] = 33;
+
+    perror = dg_shlbytes( 
+        destbuf, 
+        9,
+        &carryout);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_shlbytes carry case failed with error %s\n", perror);
+    }
+    
+    if (carryout != 1)
+    {
+        printf("  dg_shlbytes bytes carry case carry out incorrect, expected 0, got %d\n", (UINT32)carryout);
+    }
+
+    if (destbuf[0] != 0xfc)
+    {
+        printf("  dg_shlbytes bytes carry case first byte added incorrect, expected 0xfc, got %x\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 0xfb)
+    {
+        printf("  dg_shlbytes bytes carry case second byte added incorrect, expected 0xfb, got %x\n", destbuf[1]);
+    }
+
+    if (destbuf[8] != 0xed)
+    {
+        printf("  dg_shlbytes bytes carry case last byte added incorrect, expected 0xed, got %x\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 33)
+    {
+        printf("  dg_shlbytes carry case changed buffer after last character moved! expected 33, got %d\n", destbuf[9]);
+    }
+}
+
+
+void testdg_rclbytes()
+{
+    UINT64 i;
+    unsigned char destbuf[64];
+    const char* perror;
+    UINT64 carryinout;
+
+    printf("testing dg_rclbytes\n");
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = (UINT8)i + 2;
+    }
+    
+    carryinout = 0;
+
+    perror = dg_rclbytes( 
+        destbuf, 
+        9,
+        &carryinout);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_rclbytes no carry case failed with error %s\n", perror);
+    }
+    
+    if (carryinout !=0)
+    {
+        printf("  dg_rclbytes no carry case carry out incorrect, expected 0, got %d\n", (UINT32)carryinout);
+    }
+
+    if (destbuf[0] != 4)
+    {
+        printf("  dg_rclbytes no carry case first byte added incorrect, expected 4, got %d\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 6)
+    {
+        printf("  dg_rclbytes no carry case second byte added incorrect, expected 6, got %d\n", destbuf[1]);
+    }
+
+    if (destbuf[8] != 20)
+    {
+        printf("  dg_rclbytes no carry case last byte added incorrect, expected 20, got %d\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 11)
+    {
+        printf("  dg_rclbytes no carry case changed buffer after last character added! expected 11, got %d\n", destbuf[9]);
+    }
+    
+    perror = dg_rclbytes( 
+        (unsigned char*)-0x1001, 
+        9,
+        &carryinout);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_rclbytes bad memory at dest case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+    
+    perror = dg_rclbytes(
+        (unsigned char*)destbuf, 
+        9,
+        (UINT64*)-0x1001);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_rclbytes bad memory at pcarryout case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = 0xfe - i;
+    }
+
+    destbuf[9] = 33;
+
+    carryinout = 1;
+    
+    perror = dg_rclbytes( 
+        destbuf, 
+        9,
+        &carryinout);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_rclbytes carry case failed with error %s\n", perror);
+    }
+    
+    if (carryinout != 1)
+    {
+        printf("  dg_rclbytes bytes carry case carry out incorrect, expected 0, got %d\n", (UINT32)carryinout);
+    }
+
+    if (destbuf[0] != 0xfd)
+    {
+        printf("  dg_rclbytes bytes carry case first byte added incorrect, expected 0xfd, got %x\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 0xfb)
+    {
+        printf("  dg_rclbytes bytes carry case second byte added incorrect, expected 0xfb, got %x\n", destbuf[1]);
+    }
+
+    if (destbuf[8] != 0xed)
+    {
+        printf("  dg_rclbytes bytes carry case last byte added incorrect, expected 0xed, got %x\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 33)
+    {
+        printf("  dg_rclbytes carry case changed buffer after last character moved! expected 33, got %d\n", destbuf[9]);
+    }
+}
+
+
+void testdg_shrbytes()
+{
+    UINT64 i;
+    unsigned char destbuf[64];
+    const char* perror;
+    UINT64 carryout;
+
+    printf("testing dg_shrbytes\n");
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = 2*((UINT8)i + 1);
+    }
+
+    perror = dg_shrbytes( 
+        destbuf, 
+        9,
+        &carryout);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_shrbytes no carry case failed with error %s\n", perror);
+    }
+    
+    if (carryout !=0)
+    {
+        printf("  dg_shrbytes no carry case carry out incorrect, expected 0, got %d\n", (UINT32)carryout);
+    }
+
+    if (destbuf[0] != 1)
+    {
+        printf("  dg_shrbytes no carry case first byte incorrect, expected 1, got %d\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 2)
+    {
+        printf("  dg_shrbytes no carry case second byte incorrect, expected 2, got %d\n", destbuf[1]);
+    }
+
+    if (destbuf[8] != 9)
+    {
+        printf("  dg_shrbytes no carry case last byte incorrect, expected 9, got %d\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 20)
+    {
+        printf("  dg_shrbytes no carry case changed buffer after last character added! expected 20, got %d\n", destbuf[9]);
+    }
+    
+    perror = dg_shrbytes( 
+        (unsigned char*)-0x1001, 
+        9,
+        &carryout);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_shrbytes bad memory at dest case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+    
+    perror = dg_shrbytes(
+        (unsigned char*)destbuf, 
+        9,
+        (UINT64*)-0x1001);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_shrbytes bad memory at pcarryout case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = 0xff - i; // ff fe fd fc fb fa f9 f8 f7 33
+                               //  00 f7f8f9fafbfcfdfeff -> 7b fc 7c fd 7d fe 7e ff 7f 33
+    }
+
+    destbuf[9] = 33;
+
+    perror = dg_shrbytes( 
+        destbuf, 
+        9,
+        &carryout);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_shrbytes carry case failed with error %s\n", perror);
+    }
+    
+    if (carryout != 1)
+    {
+        printf("  dg_shrbytes bytes carry case carry out incorrect, expected 1, got %d\n", (UINT32)carryout);
+    }
+
+    if (destbuf[0] != 0x7f)
+    {
+        printf("  dg_shrbytes bytes carry case first byte incorrect, expected 0x7f, got %x\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 0xff)
+    {
+        printf("  dg_shrbytes bytes carry case second byte incorrect, expected 0xff, got %x\n", destbuf[1]);
+    }
+
+    if (destbuf[8] != 0x7b)
+    {
+        printf("  dg_shrbytes bytes carry case last byte incorrect, expected 0x7b, got %x\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 33)
+    {
+        printf("  dg_shrbytes carry case changed buffer after last character moved! expected 33, got %d\n", destbuf[9]);
+    }
+}
+
+
+void testdg_sarbytes()
+{
+    UINT64 i;
+    unsigned char destbuf[64];
+    const char* perror;
+    UINT64 carryout;
+
+    printf("testing dg_sarbytes\n");
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = 2*((UINT8)i + 1);
+    }
+
+    perror = dg_sarbytes( 
+        destbuf, 
+        9,
+        &carryout);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_sarbytes no carry case failed with error %s\n", perror);
+    }
+    
+    if (carryout !=0)
+    {
+        printf("  dg_sarbytes no carry case carry out incorrect, expected 0, got %d\n", (UINT32)carryout);
+    }
+
+    if (destbuf[0] != 1)
+    {
+        printf("  dg_sarbytes no carry case first byte incorrect, expected 1, got %d\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 2)
+    {
+        printf("  dg_sarbytes no carry case second byte incorrect, expected 2, got %d\n", destbuf[1]);
+    }
+
+    if (destbuf[8] != 9)
+    {
+        printf("  dg_sarbytes no carry case last byte incorrect, expected 9, got %d\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 20)
+    {
+        printf("  dg_sarbytes no carry case changed buffer after last character added! expected 20, got %d\n", destbuf[9]);
+    }
+    
+    perror = dg_sarbytes( 
+        (unsigned char*)-0x1001, 
+        9,
+        &carryout);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_sarbytes bad memory at dest case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+    
+    perror = dg_sarbytes(
+        (unsigned char*)destbuf, 
+        9,
+        (UINT64*)-0x1001);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_sarbytes bad memory at pcarryout case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = 0xff - i; // ff fe fd fc fb fa f9 f8 f7 33
+                               //  00 f7f8f9fafbfcfdfeff -> 7b fc 7c fd 7d fe 7e ff 7f 33
+    }
+
+    destbuf[9] = 33;
+
+    perror = dg_sarbytes( 
+        destbuf, 
+        9,
+        &carryout);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_sarbytes carry case failed with error %s\n", perror);
+    }
+    
+    if (carryout != 1)
+    {
+        printf("  dg_sarbytes bytes carry case carry out incorrect, expected 1, got %d\n", (UINT32)carryout);
+    }
+
+    if (destbuf[0] != 0x7f)
+    {
+        printf("  dg_sarbytes bytes carry case first byte incorrect, expected 0x7f, got %x\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 0xff)
+    {
+        printf("  dg_sarbytes bytes carry case second byte incorrect, expected 0xff, got %x\n", destbuf[1]);
+    }
+
+    if (destbuf[8] != 0xfb)
+    {
+        printf("  dg_sarbytes bytes carry case last byte incorrect, expected 0xfb, got %x\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 33)
+    {
+        printf("  dg_sarbytes carry case changed buffer after last character moved! expected 33, got %d\n", destbuf[9]);
+    }
+}
+
+
+void testdg_rcrbytes()
+{
+    UINT64 i;
+    unsigned char destbuf[64];
+    const char* perror;
+    UINT64 carryinout;
+
+    printf("testing dg_rcrbytes\n");
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = 2*((UINT8)i + 1);
+    }
+    
+    carryinout = 0;
+
+    perror = dg_rcrbytes( 
+        destbuf, 
+        9,
+        &carryinout);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_rcrbytes no carry case failed with error %s\n", perror);
+    }
+    
+    if (carryinout !=0)
+    {
+        printf("  dg_rcrbytes no carry case carry out incorrect, expected 0, got %d\n", (UINT32)carryinout);
+    }
+
+    if (destbuf[0] != 1)
+    {
+        printf("  dg_rcrbytes no carry case first byte incorrect, expected 1, got %d\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 2)
+    {
+        printf("  dg_rcrbytes no carry case second byte incorrect, expected 2, got %d\n", destbuf[1]);
+    }
+
+    if (destbuf[8] != 9)
+    {
+        printf("  dg_rcrbytes no carry case last byte incorrect, expected 9, got %d\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 20)
+    {
+        printf("  dg_rcrbytes no carry case changed buffer after last character added! expected 20, got %d\n", destbuf[9]);
+    }
+    
+    perror = dg_rcrbytes( 
+        (unsigned char*)-0x1001, 
+        9,
+        &carryinout);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_rcrbytes bad memory at dest case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+    
+    perror = dg_rcrbytes(
+        (unsigned char*)destbuf, 
+        9,
+        (UINT64*)-0x1001);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_rcrbytes bad memory at pcarryout case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = 0xff - i; // ff fe fd fc fb fa f9 f8 f7 33
+                               //  00 f7f8f9fafbfcfdfeff -> 7b fc 7c fd 7d fe 7e ff 7f 33
+    }
+
+    destbuf[9] = 33;
+    
+    carryinout = 1;
+
+    perror = dg_rcrbytes( 
+        destbuf, 
+        9,
+        &carryinout);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_rcrbytes carry case failed with error %s\n", perror);
+    }
+    
+    if (carryinout != 1)
+    {
+        printf("  dg_rcrbytes bytes carry case carry out incorrect, expected 1, got %d\n", (UINT32)carryinout);
+    }
+
+    if (destbuf[0] != 0x7f)
+    {
+        printf("  dg_rcrbytes bytes carry case first byte incorrect, expected 0x7f, got %x\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 0xff)
+    {
+        printf("  dg_rcrbytes bytes carry case second byte incorrect, expected 0xff, got %x\n", destbuf[1]);
+    }
+
+    if (destbuf[8] != 0xfb)
+    {
+        printf("  dg_rcrbytes bytes carry case last byte incorrect, expected 0xfb, got %x\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 33)
+    {
+        printf("  dg_rcrbytes carry case changed buffer after last character moved! expected 33, got %d\n", destbuf[9]);
+    }
+}
+
+
+void testdg_notbytes()
+{
+    UINT64 i;
+    unsigned char destbuf[64];
+    const char* perror;
+
+    printf("testing dg_notbytes\n");
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = (UINT8)i + 2;
+    }
+
+    perror = dg_notbytes( 
+        destbuf, 
+        9);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_notbytes success case failed with error %s\n", perror);
+    }
+
+    if (destbuf[0] != 0xfd)
+    {
+        printf("  dg_notbytes success case first byte added incorrect, expected 0xfd, got %x\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 0xfc)
+    {
+        printf("  dg_notbytes success case second byte added incorrect, expected 0xfe, got %x\n", destbuf[1]);
+    }
+
+    if (destbuf[8] != 0xf5)
+    {
+        printf("  dg_notbytes success case last byte added incorrect, expected 0xf5, got %x\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 11)
+    {
+        printf("  dg_notbytes success case buffer changed after last character! expected 11, got %d\n", destbuf[9]);
+    }
+    
+    perror = dg_notbytes( 
+        (unsigned char*)-0x1001, 
+        9);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_notbytes bad memory at dest case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+}
+
+void testdg_andbytes()
+{
+    UINT64 i;
+    unsigned char srcbuf[64];
+    unsigned char destbuf[64];
+    const char* perror;
+
+    printf("testing dg_andbytes\n");
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = (UINT8)i;
+        srcbuf[i] = 2*(UINT8)i + 1;
+    }
+
+    perror = dg_andbytes(
+        (unsigned char*)srcbuf, 
+        destbuf, 
+        9);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_andbytes success case failed with error %s\n", perror);
+    }
+
+    if (destbuf[0] != 0)
+    {
+        printf("- FAIL!  dg_andbytes success case first byte incorrect, expected 0, got %d\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 1)
+    {
+        printf("- FAIL!  dg_andbytes success case second byte incorrect, expected 1, got %d\n", destbuf[1]);
+    }
+    
+    if (destbuf[2] != 0)
+    {
+        printf("- FAIL!  dg_andbytes success case third byte incorrect, expected 0, got %d\n", destbuf[2]);
+    }
+    
+    if (destbuf[3] != 3)
+    {
+        printf("- FAIL!  dg_andbytes success case fourth byte incorrect, expected 3, got %d\n", destbuf[3]);
+    }
+    
+    if (destbuf[4] != 0)
+    {
+        printf("- FAIL!  dg_andbytes success case fifth byte incorrect, expected 0, got %d\n", destbuf[3]);
+    }
+
+    if (destbuf[8] != 0)
+    {
+        printf("- FAIL!  dg_andbytes success case last byte incorrect, expected 0, got %d\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 9)
+    {
+        printf("- FAIL! dg_andbytes success case buffer changed after last character added! expected 9, got %d\n", destbuf[9]);
+    }
+    
+    perror = dg_andbytes(
+        (unsigned char*)-0x1001, 
+        destbuf, 
+        9);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_andbytes bad memory at src case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+    
+    perror = dg_andbytes(
+        (unsigned char*)srcbuf, 
+        (unsigned char*)-0x1001, 
+        9);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_addbytes bad memory at dest case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+}
+
+void testdg_orbytes()
+{
+    UINT64 i;
+    unsigned char srcbuf[64];
+    unsigned char destbuf[64];
+    const char* perror;
+
+    printf("testing dg_orbytes\n");
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = (UINT8)i;
+        srcbuf[i] = 2*(UINT8)i + 1;
+    }
+
+    perror = dg_orbytes(
+        (unsigned char*)srcbuf, 
+        destbuf, 
+        9);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_orbytes success case failed with error %s\n", perror);
+    }
+
+    if (destbuf[0] != 1)
+    {
+        printf("- FAIL!  dg_orbytes success case first byte incorrect, expected 1, got %d\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 3)
+    {
+        printf("- FAIL!  dg_orbytes success case second byte incorrect, expected 3, got %d\n", destbuf[1]);
+    }
+    
+    if (destbuf[2] != 7)
+    {
+        printf("- FAIL!  dg_orbytes success case third byte incorrect, expected 7, got %d\n", destbuf[2]);
+    }
+    
+    if (destbuf[3] != 7)
+    {
+        printf("- FAIL!  dg_orbytes success case fourth byte incorrect, expected 7, got %d\n", destbuf[3]);
+    }
+    
+    if (destbuf[4] != 13)
+    {
+        printf("- FAIL!  dg_orbytes success case fifth byte incorrect, expected 13, got %d\n", destbuf[3]);
+    }
+
+    if (destbuf[8] != 25)
+    {
+        printf("- FAIL!  dg_orbytes success case last byte incorrect, expected 25, got %d\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 9)
+    {
+        printf("- FAIL! dg_orbytes success case buffer changed after last character added! expected 9, got %d\n", destbuf[9]);
+    }
+    
+    perror = dg_orbytes(
+        (unsigned char*)-0x1001, 
+        destbuf, 
+        9);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_orbytes bad memory at src case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+    
+    perror = dg_orbytes(
+        (unsigned char*)srcbuf, 
+        (unsigned char*)-0x1001, 
+        9);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_orbytes bad memory at dest case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+}
+
+void testdg_xorbytes()
+{
+    UINT64 i;
+    unsigned char srcbuf[64];
+    unsigned char destbuf[64];
+    const char* perror;
+
+    printf("testing dg_xorbytes\n");
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = (UINT8)i;
+        srcbuf[i] = 2*(UINT8)i + 1;
+    }
+
+    perror = dg_xorbytes(
+        (unsigned char*)srcbuf, 
+        destbuf, 
+        9);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_xorbytes success case failed with error %s\n", perror);
+    }
+
+    if (destbuf[0] != 1)
+    {
+        printf("- FAIL!  dg_xorbytes success case first byte incorrect, expected 1, got %d\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 2)
+    {
+        printf("- FAIL!  dg_xorbytes success case second byte incorrect, expected 2, got %d\n", destbuf[1]);
+    }
+    
+    if (destbuf[2] != 7)
+    {
+        printf("- FAIL!  dg_xorbytes success case third byte incorrect, expected 7, got %d\n", destbuf[2]);
+    }
+    
+    if (destbuf[3] != 4)
+    {
+        printf("- FAIL!  dg_xorbytes success case fourth byte incorrect, expected 4, got %d\n", destbuf[3]);
+    }
+    
+    if (destbuf[4] != 14)
+    {
+        printf("- FAIL!  dg_xorbytes success case fifth byte incorrect, expected 14, got %d\n", destbuf[3]);
+    }
+
+    if (destbuf[8] != 25)
+    {
+        printf("- FAIL!  dg_xorbytes success case last byte incorrect, expected 25, got %d\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 9)
+    {
+        printf("- FAIL! dg_xorbytes success case buffer changed after last character added! expected 9, got %d\n", destbuf[9]);
+    }
+    
+    perror = dg_xorbytes(
+        (unsigned char*)-0x1001, 
+        destbuf, 
+        9);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_xorbytes bad memory at src case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+    
+    perror = dg_xorbytes(
+        (unsigned char*)srcbuf, 
+        (unsigned char*)-0x1001, 
+        9);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_xorbytes bad memory at dest case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+}
+
+void testdg_nandbytes()
+{
+    UINT64 i;
+    unsigned char srcbuf[64];
+    unsigned char destbuf[64];
+    const char* perror;
+
+    printf("testing dg_nandbytes\n");
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = (UINT8)i;
+        srcbuf[i] = 2*(UINT8)i + 1;
+    }
+
+    perror = dg_nandbytes(
+        (unsigned char*)srcbuf, 
+        destbuf, 
+        9);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_nandbytes success case failed with error %s\n", perror);
+    }
+
+    if (destbuf[0] != 0xff)
+    {
+        printf("- FAIL!  dg_nandbytes success case first byte incorrect, expected 0xff, got %d\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 0xfe)
+    {
+        printf("- FAIL!  dg_nandbytes success case second byte incorrect, expected 0xfe, got %d\n", destbuf[1]);
+    }
+    
+    if (destbuf[2] != 0xff)
+    {
+        printf("- FAIL!  dg_nandbytes success case third byte incorrect, expected 0xff, got %d\n", destbuf[2]);
+    }
+    
+    if (destbuf[3] != 0xfc)
+    {
+        printf("- FAIL!  dg_nandbytes success case fourth byte incorrect, expected 0xfc, got %d\n", destbuf[3]);
+    }
+    
+    if (destbuf[4] != 0xff)
+    {
+        printf("- FAIL!  dg_nandbytes success case fifth byte incorrect, expected 0xff, got %d\n", destbuf[3]);
+    }
+
+    if (destbuf[8] != 0xff)
+    {
+        printf("- FAIL!  dg_nandbytes success case last byte incorrect, expected 0xff, got %d\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 9)
+    {
+        printf("- FAIL! dg_nandbytes success case buffer changed after last character added! expected 9, got %d\n", destbuf[9]);
+    }
+    
+    perror = dg_nandbytes(
+        (unsigned char*)-0x1001, 
+        destbuf, 
+        9);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_nandbytes bad memory at src case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+    
+    perror = dg_nandbytes(
+        (unsigned char*)srcbuf, 
+        (unsigned char*)-0x1001, 
+        9);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_nandbytes bad memory at dest case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+}
+
+void testdg_norbytes()
+{
+    UINT64 i;
+    unsigned char srcbuf[64];
+    unsigned char destbuf[64];
+    const char* perror;
+
+    printf("testing dg_norbytes\n");
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = (UINT8)i;
+        srcbuf[i] = 2*(UINT8)i + 1;
+    }
+
+    perror = dg_norbytes(
+        (unsigned char*)srcbuf, 
+        destbuf, 
+        9);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_norbytes success case failed with error %s\n", perror);
+    }
+
+    if (destbuf[0] != 0xfe)
+    {
+        printf("- FAIL!  dg_norbytes success case first byte incorrect, expected 0xfe, got %d\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 0xfc)
+    {
+        printf("- FAIL!  dg_norbytes success case second byte incorrect, expected 0xfc, got %d\n", destbuf[1]);
+    }
+    
+    if (destbuf[2] != 0xf8)
+    {
+        printf("- FAIL!  dg_norbytes success case third byte incorrect, expected 0xf8, got %d\n", destbuf[2]);
+    }
+    
+    if (destbuf[3] != 0xf8)
+    {
+        printf("- FAIL!  dg_norbytes success case fourth byte incorrect, expected 0xf8, got %d\n", destbuf[3]);
+    }
+    
+    if (destbuf[4] != 0xf2) // !0x0D
+    {
+        printf("- FAIL!  dg_norbytes success case fifth byte incorrect, expected 0xf2, got %d\n", destbuf[3]);
+    }
+
+    if (destbuf[8] != 0xE6) // !0x19
+    {
+        printf("- FAIL!  dg_norbytes success case last byte incorrect, expected 0xE6, got %d\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 9)
+    {
+        printf("- FAIL! dg_norbytes success case buffer changed after last character added! expected 9, got %d\n", destbuf[9]);
+    }
+    
+    perror = dg_norbytes(
+        (unsigned char*)-0x1001, 
+        destbuf, 
+        9);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_norbytes bad memory at src case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+    
+    perror = dg_norbytes(
+        (unsigned char*)srcbuf, 
+        (unsigned char*)-0x1001, 
+        9);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_norbytes bad memory at dest case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+}
+
+void testdg_xnorbytes()
+{
+    UINT64 i;
+    unsigned char srcbuf[64];
+    unsigned char destbuf[64];
+    const char* perror;
+
+    printf("testing dg_xnorbytes\n");
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = (UINT8)i;
+        srcbuf[i] = 2*(UINT8)i + 1;
+    }
+
+    perror = dg_xnorbytes(
+        (unsigned char*)srcbuf, 
+        destbuf, 
+        9);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_xnorbytes success case failed with error %s\n", perror);
+    }
+
+    if (destbuf[0] != 0xfe)
+    {
+        printf("- FAIL!  dg_xnorbytes success case first byte incorrect, expected 0xfe, got %d\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 0xfd)
+    {
+        printf("- FAIL!  dg_xnorbytes success case second byte incorrect, expected 0xfd, got %d\n", destbuf[1]);
+    }
+    
+    if (destbuf[2] != 0xf8)
+    {
+        printf("- FAIL!  dg_xnorbytes success case third byte incorrect, expected 0xf8, got %d\n", destbuf[2]);
+    }
+    
+    if (destbuf[3] != 0xfb)
+    {
+        printf("- FAIL!  dg_xnorbytes success case fourth byte incorrect, expected 0xfb, got %d\n", destbuf[3]);
+    }
+    
+    if (destbuf[4] != 0xf2) // !(4 | 9) !0x0d
+    {
+        printf("- FAIL!  dg_xnorbytes success case fifth byte incorrect, expected 0xf2, got %d\n", destbuf[3]);
+    }
+
+    if (destbuf[8] != 0xE6) // !0x19
+    {
+        printf("- FAIL!  dg_xnorbytes success case last byte incorrect, expected 0xE6, got %d\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 9)
+    {
+        printf("- FAIL! dg_xnorbytes success case buffer changed after last character added! expected 9, got %d\n", destbuf[9]);
+    }
+    
+    perror = dg_xnorbytes(
+        (unsigned char*)-0x1001, 
+        destbuf, 
+        9);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_xnorbytes bad memory at src case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+    
+    perror = dg_xnorbytes(
+        (unsigned char*)srcbuf, 
+        (unsigned char*)-0x1001, 
+        9);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_xnorbytes bad memory at dest case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+}
+
+void testdg_reversebytes()
+{
+    UINT64 i;
+    unsigned char destbuf[64];
+    const char* perror;
+
+    printf("testing dg_reversebytes\n");
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = (UINT8)i + 2;
+    }
+
+    perror = dg_reversebytes( 
+        destbuf, 
+        9);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_reversebytes success case failed with error %s\n", perror);
+    }
+
+    if (destbuf[0] != 0x0a)
+    {
+        printf("  dg_reversebytes success case first byte added incorrect, expected 0x0a, got %x\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 0x09)
+    {
+        printf("  dg_reversebytes success case second byte added incorrect, expected 0x09, got %x\n", destbuf[1]);
+    }
+    
+    if (destbuf[2] != 0x08)
+    {
+        printf("  dg_reversebytes success case third byte added incorrect, expected 0x08, got %x\n", destbuf[2]);
+    }
+    
+    if (destbuf[3] != 0x07)
+    {
+        printf("  dg_reversebytes success case fourth byte added incorrect, expected 0x07, got %x\n", destbuf[3]);
+    }
+    
+    if (destbuf[4] != 0x06)
+    {
+        printf("  dg_reversebytes success case second byte added incorrect, expected 0x06, got %x\n", destbuf[4]);
+    }
+    
+    if (destbuf[5] != 0x05)
+    {
+        printf("  dg_reversebytes success case second byte added incorrect, expected 0x05, got %x\n", destbuf[5]);
+    }
+    
+    if (destbuf[6] != 0x04)
+    {
+        printf("  dg_reversebytes success case second byte added incorrect, expected 0x04, got %x\n", destbuf[6]);
+    }
+    
+    if (destbuf[7] != 0x03)
+    {
+        printf("  dg_reversebytes success case second byte added incorrect, expected 0x03, got %x\n", destbuf[7]);
+    }
+
+    if (destbuf[8] != 0x02)
+    {
+        printf("  dg_reversebytes success case last byte added incorrect, expected 0x02, got %x\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 11)
+    {
+        printf("  dg_reversebytes success case buffer changed after last character! expected 11, got %d\n", destbuf[9]);
+    }
+    
+    perror = dg_reversebytes( 
+        (unsigned char*)-0x1001, 
+        9);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_reversebytes bad memory at dest case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+    
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = (UINT8)i + 2;
+    }
+
+    perror = dg_reversebytes( 
+        destbuf, 
+        4);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_reversebytes success case failed with error %s\n", perror);
+    }
+
+    if (destbuf[0] != 0x05)
+    {
+        printf("  dg_reversebytes success case first byte added incorrect, expected 0x05, got %x\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 0x04)
+    {
+        printf("  dg_reversebytes success case second byte added incorrect, expected 0x04, got %x\n", destbuf[1]);
+    }
+    
+    if (destbuf[2] != 0x03)
+    {
+        printf("  dg_reversebytes success case third byte added incorrect, expected 0x03, got %x\n", destbuf[2]);
+    }
+    
+    if (destbuf[3] != 0x02)
+    {
+        printf("  dg_reversebytes success case fourth byte added incorrect, expected 0x02, got %x\n", destbuf[3]);
+    }
+
+    if (destbuf[4] != 6)
+    {
+        printf("  dg_reversebytes success case buffer changed after last character! expected 6, got %d\n", destbuf[9]);
+    }
+    
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = (UINT8)i + 2;
+    }
+
+    perror = dg_reversebytes( 
+        destbuf, 
+        1);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_reversebytes success case length 1 failed with error %s\n", perror);
+    }
+
+    if (destbuf[0] != 0x02)
+    {
+        printf("  dg_reversebytes success case length 1 first byte incorrect, expected 0x02, got %x\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 0x03)
+    {
+        printf("  dg_reversebytes success case length 1 second byte incorrect, expected 0x03, got %x\n", destbuf[1]);
+    }
+    
+    if (destbuf[2] != 0x04)
+    {
+        printf("  dg_reversebytes success case length 1 third byte incorrect, expected 0x04, got %x\n", destbuf[2]);
+    }
+    
+    if (destbuf[3] != 0x05)
+    {
+        printf("  dg_reversebytes success case length 1 fourth byte incorrect, expected 0x05, got %x\n", destbuf[3]);
+    }
+
+    if (destbuf[4] != 6)
+    {
+        printf("  dg_reversebytes success case length 1 fifth byte incorrect expected 6, got %d\n", destbuf[9]);
+    }
+    
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = (UINT8)i + 2;
+    }
+
+    perror = dg_reversebytes( 
+        destbuf, 
+        0);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_reversebytes success case length 0 failed with error %s\n", perror);
+    }
+
+    if (destbuf[0] != 0x02)
+    {
+        printf("  dg_reversebytes success case length 0 first byte incorrect, expected 0x02, got %x\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 0x03)
+    {
+        printf("  dg_reversebytes success case length 0 second byte incorrect, expected 0x03, got %x\n", destbuf[1]);
+    }
+    
+    if (destbuf[2] != 0x04)
+    {
+        printf("  dg_reversebytes success case length 0 third byte incorrect, expected 0x04, got %x\n", destbuf[2]);
+    }
+    
+    if (destbuf[3] != 0x05)
+    {
+        printf("  dg_reversebytes success case length 0 fourth byte incorrect, expected 0x05, got %x\n", destbuf[3]);
+    }
+
+    if (destbuf[4] != 6)
+    {
+        printf("  dg_reversebytes success case length 0 fifth byte incorrect expected 6, got %d\n", destbuf[9]);
+    }
+}
+
+
+void testdg_incbytes()
+{
+    UINT64 i;
+    unsigned char destbuf[64];
+    const char* perror;
+    UINT64 carryout;
+
+    printf("testing dg_incbytes\n");
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = (UINT8)i + 2;
+    }
+
+    perror = dg_incbytes( 
+        destbuf, 
+        9,
+        &carryout);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_incbytes no carry case failed with error %s\n", perror);
+    }
+    
+    if (carryout != 0)
+    {
+        printf("  dg_incbytes no carry case carry out incorrect, expected 0, got %d\n", (UINT32)carryout);
+    }
+
+    if (destbuf[0] != 3)
+    {
+        printf("  dg_incbytes no carry case first byte added incorrect, expected 4, got %d\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 3)
+    {
+        printf("  dg_incbytes no carry case second byte added incorrect, expected 6, got %d\n", destbuf[1]);
+    }
+
+    if (destbuf[8] != 10)
+    {
+        printf("  dg_incbytes no carry case last byte added incorrect, expected 20, got %d\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 11)
+    {
+        printf("  dg_incbytes no carry case changed buffer after last character added! expected 11, got %d\n", destbuf[9]);
+    }
+    
+    perror = dg_incbytes( 
+        (unsigned char*)-0x1001, 
+        9,
+        &carryout);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_incbytes bad memory at dest case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+    
+    perror = dg_incbytes(
+        (unsigned char*)destbuf, 
+        9,
+        (UINT64*)-0x1001);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_incbytes bad memory at pcarryout case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = 0xff;
+    }
+
+    destbuf[9] = 0x33;
+
+    perror = dg_incbytes( 
+        destbuf, 
+        9,
+        &carryout);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_incbytes carry case failed with error %s\n", perror);
+    }
+    
+    if (carryout != 1)
+    {
+        printf("  dg_incbytes bytes carry case carry out incorrect, expected 0, got %d\n", (UINT32)carryout);
+    }
+
+    if (destbuf[0] != 0x0)
+    {
+        printf("  dg_incbytes bytes carry case first byte added incorrect, expected 0xfc, got %x\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 0x0)
+    {
+        printf("  dg_incbytes bytes carry case second byte added incorrect, expected 0xfb, got %x\n", destbuf[1]);
+    }
+
+    if (destbuf[8] != 0x0)
+    {
+        printf("  dg_incbytes bytes carry case last byte added incorrect, expected 0xed, got %x\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 0x33)
+    {
+        printf("  dg_incbytes carry case changed buffer after last character moved! expected 0x33, got %x\n", destbuf[9]);
+    }
+}
+
+
+void testdg_decbytes()
+{
+    UINT64 i;
+    unsigned char destbuf[64];
+    const char* perror;
+    UINT64 carryout;
+
+    printf("testing dg_decbytes\n");
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = (UINT8)i + 2;
+    }
+
+    perror = dg_decbytes( 
+        destbuf, 
+        9,
+        &carryout);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_decbytes no carry case failed with error %s\n", perror);
+    }
+    
+    if (carryout != 0)
+    {
+        printf("  dg_decbytes no carry case carry out incorrect, expected 0, got %d\n", (UINT32)carryout);
+    }
+
+    if (destbuf[0] != 1)
+    {
+        printf("  dg_decbytes no carry case first byte added incorrect, expected 4, got %d\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 3)
+    {
+        printf("  dg_decbytes no carry case second byte added incorrect, expected 6, got %d\n", destbuf[1]);
+    }
+
+    if (destbuf[8] != 10)
+    {
+        printf("  dg_decbytes no carry case last byte added incorrect, expected 20, got %d\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 11)
+    {
+        printf("  dg_decbytes no carry case changed buffer after last character added! expected 11, got %d\n", destbuf[9]);
+    }
+    
+    perror = dg_decbytes( 
+        (unsigned char*)-0x1001, 
+        9,
+        &carryout);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_decbytes bad memory at dest case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+    
+    perror = dg_decbytes(
+        (unsigned char*)destbuf, 
+        9,
+        (UINT64*)-0x1001);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_decbytes bad memory at pcarryout case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = 0x00;
+    }
+
+    destbuf[9] = 0x33;
+
+    perror = dg_decbytes( 
+        destbuf, 
+        9,
+        &carryout);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_decbytes carry case failed with error %s\n", perror);
+    }
+    
+    if (carryout != 1)
+    {
+        printf("  dg_decbytes bytes carry case carry out incorrect, expected 0, got %d\n", (UINT32)carryout);
+    }
+
+    if (destbuf[0] != 0xff)
+    {
+        printf("  dg_decbytes bytes carry case first byte added incorrect, expected 0xfc, got %x\n", destbuf[0]);
+    }
+    
+    if (destbuf[1] != 0xff)
+    {
+        printf("  dg_decbytes bytes carry case second byte added incorrect, expected 0xfb, got %x\n", destbuf[1]);
+    }
+
+    if (destbuf[8] != 0xff)
+    {
+        printf("  dg_decbytes bytes carry case last byte added incorrect, expected 0xed, got %x\n", destbuf[8]);
+    }
+
+    if (destbuf[9] != 0x33)
+    {
+        printf("  dg_decbytes carry case changed buffer after last character moved! expected 0x33, got %x\n", destbuf[9]);
+    }
+}
+
+
+void testdg_mulu64tou64s()
+{
+    UINT64 i;
+    UINT64 destbuf[16];
+    UINT64 srcbuf[16];
+    const char* perror;
+    UINT64 x;
+    UINT32 xlo, xhi;
+    UINT64 carryout;
+
+    printf("testing dg_mulu64tou64s\n");
+    
+    for (i = 0; i < 15; i++)
+    {
+        destbuf[i] = 0;
+        srcbuf[i] = i + 2;
+    }
+    
+    perror = dg_mulu64tou64s (
+        destbuf,    // rdi // pdest is already offset and assumed large enough
+        srcbuf,     // rsi 
+        3,          // u,  // rdx 
+        5,          // srclengthinu64s // rcx
+        &carryout); // pcarryout
+
+    if (perror != dg_success)
+    {
+        printf("  dg_mulu64tou64s no carry case failed with error %s\n", perror);
+    }
+    
+    if (carryout != 0)
+    {
+        printf("  dg_mulu64tou64s no carry case carryout incorrect, expected 0, got %d\n", (UINT32)carryout);
+    }
+
+    if (destbuf[0] != 6)
+    {
+        printf("  dg_mulu64tou64s no carry case first uint64 incorrect, expected 6, got %d\n", (UINT32)destbuf[0]);
+    }
+    
+    if (destbuf[1] != 9)
+    {
+        printf("  dg_mulu64tou64s no carry case second uint64 incorrect, expected 9, got %d\n", (UINT32)destbuf[1]);
+    }
+
+    if (destbuf[4] != 18)
+    {
+        printf("  dg_mulu64tou64s no carry case last uint64 incorrect, expected 18, got %d\n", (UINT32)destbuf[4]);
+    }
+
+    if (destbuf[5] != 0)
+    {
+        printf("  dg_mulu64tou64s no carry case buffer after last character changed! expected 0, got %d\n", (UINT32)destbuf[5]);
+    }
+    
+    
+    perror = dg_mulu64tou64s( 
+        (UINT64*)-0x1001,
+        srcbuf, 
+        3,
+        5,
+        &carryout);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_mulu64tou64s bad memory at dest case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+    
+    perror = dg_mulu64tou64s(
+        (UINT64*)destbuf,
+        (UINT64*)-0x1001, 
+        3,
+        5,
+        &carryout);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_mulu64tou64s bad memory at src case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+    
+    perror = dg_mulu64tou64s(
+        (UINT64*)destbuf,
+        (UINT64*)srcbuf, 
+        3,
+        5,
+        (UINT64*)-0x1001);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_mulu64tou64s bad memory at carryout case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+    
+    
+    for (i = 0; i < 15; i++)
+    {
+        srcbuf[i] = i + 2;       //  2  3  4  5  6  7  8  9 10 11 12 ...
+        destbuf[i] = (UINT64)-1; // -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 ...
+    }
+                                 
+
+    perror = dg_mulu64tou64s(    //  5  9 12 15 18  8  8
+        (UINT64*)destbuf,
+        (UINT64*)srcbuf, 
+        3,
+        5,
+        &carryout);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_mulu64tou64s carry case failed with error %s\n", perror);
+    }
+
+    if (destbuf[0] != 5)
+    {
+        printf("  dg_mulu64tou64s carry case first uint64 incorrect, expected 5, got %x\n", (UINT32)destbuf[0]);
+    }
+    
+    if (destbuf[1] != 9)
+    {
+        printf("  dg_mulu64tou64s carry case second uint64 incorrect, expected 8, got %x\n", (UINT32)destbuf[1]);
+    }
+    
+    if (carryout != 1)
+    {
+        printf("  dg_mulu64tou64s carry case carryout incorrect, expected 1, got %x\n", (UINT32)carryout);
+    }
+    
+    x = destbuf[2];
+    if (x != 12)
+    {
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("  dg_mulu64tou64s carry case last uint64 incorrect, expected 12, got %08x%08x\n", xhi, xlo);
+    }
+    
+    x = destbuf[3];
+    if (x != 15)
+    {
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("  dg_mulu64tou64s carry case last uint64 incorrect, expected 15, got %08x%08x\n", xhi, xlo);
+    }
+
+    x = destbuf[4];
+    if (x != 18)
+    {
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("  dg_mulu64tou64s carry case last uint64 incorrect, expected 18, got %08x%08x\n", xhi, xlo);
+    }
+    
+    x = destbuf[5];
+    if (x != 0)
+    {
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("  dg_mulu64tou64s carry case last uint64 incorrect, expected 0, got %08x%08x\n", xhi, xlo);
+    }
+
+    if (destbuf[6] != (UINT64)-1)
+    {
+        printf("  dg_mulu64tou64s carry case buffer after last character changed! expected -1, got %x\n", (UINT32)destbuf[5]);
+    }
+    
+    
+    for (i = 0; i < 15; i++)
+    {
+        srcbuf[i] = (UINT64)-1;       
+        destbuf[i] = 0; 
+    }
+                                 
+
+    perror = dg_mulu64tou64s(    
+        (UINT64*)destbuf,
+        (UINT64*)srcbuf, 
+        (UINT64)-1,
+        2,
+        &carryout);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_mulu64tou64s max 128 bit x max 64 bit case failed with error %s\n", perror);
+    }
+    
+    if (carryout != 0)
+    {
+        printf("  dg_mulu64tou64s max 128 bit x max 64 bit case carryout incorrect, expected 0, got %x\n", (UINT32)carryout);
+    }
+
+    if (destbuf[0] != 1)
+    {
+        printf("  dg_mulu64tou64s max 128 bit x max 64 bit case first uint64 incorrect, expected 1, got %x\n", (UINT32)destbuf[0]);
+    }
+    
+    x = destbuf[1];
+    if (x != (UINT64)-1)
+    {
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("  dg_mulu64tou64s max 128 bit x max 64 bit case last uint64 incorrect, expected -1, got %08x%08x\n", xhi, xlo);
+    }
+    
+    x = destbuf[2];
+    if (x != (UINT64)-2)
+    {
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("  dg_mulu64tou64s max 128 bit x max 64 bit case last uint64 incorrect, expected -2, got %08x%08x\n", xhi, xlo);
+    }
+    
+    x = destbuf[3];
+    if (x != 0)
+    {
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("  dg_mulu64tou64s max 128 bit x max 64 bit case last uint64 incorrect, expected 0, got %08x%08x\n", xhi, xlo);
+    }
+}
+
+
+void testdg_divu64sbyu64()
+{
+    UINT64 i;
+    UINT64 srcbuf[16];
+    UINT64 destbuf[16];
+    const char* perror;
+    UINT64 x;
+    UINT32 xlo, xhi;
+    UINT64 remainder;
+
+    printf("testing dg_divu64sbyu64\n");
+    
+    for (i = 0; i < 15; i++)
+    {
+        destbuf[i] = (2*i) + 2;
+    }
+    
+    perror = dg_divu64sbyu64 (
+        destbuf,     // rdi // pdest is already offset and assumed large enough
+        &remainder,  // rsi // premainder
+        2,           // u,  // rdx 
+        5);          // srclengthinu64s // rcx
+
+    if (perror != dg_success)
+    {
+        printf("  dg_divu64sbyu64 no remainder success case failed with error %s\n", perror);
+    }
+    
+    if (remainder != 0)
+    {
+        printf("  dg_divu64sbyu64 no remainder success case remainder incorrect, expected 0, got %d\n", (UINT32)remainder);
+    }
+
+    if (destbuf[0] != 1)
+    {
+        printf("  dg_divu64sbyu64 no remainder success case first uint64 incorrect, expected 1, got %d\n", (UINT32)destbuf[0]);
+    }
+    
+    if (destbuf[1] !=  2)
+    {
+        printf("  dg_divu64sbyu64 no remainder success case second uint64 incorrect, expected 2, got %d\n", (UINT32)destbuf[1]);
+    }
+
+    if (destbuf[4] != 5)
+    {
+        printf("  dg_divu64sbyu64 no remainder success case last uint64 incorrect, expected 5, got %d\n", (UINT32)destbuf[4]);
+    }
+
+    if (destbuf[5] != 12)
+    {
+        printf("  dg_divu64sbyu64 no remainder success case buffer after last character changed! expected 12, got %d\n", (UINT32)destbuf[5]);
+    }
+    
+    
+    perror = dg_divu64sbyu64( 
+        (UINT64*)-0x1001,
+        &remainder, 
+        3,
+        5);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_divu64sbyu64 bad memory at dest case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+    
+    perror = dg_divu64sbyu64(
+        (UINT64*)destbuf,
+        (UINT64*)-0x1001, 
+        3,
+        5);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_divu64sbyu64 bad memory at premainder case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }    
+    
+    for (i = 0; i < 15; i++)
+    {
+        destbuf[i] = (2*i) + 2;
+    }
+    
+    destbuf[0] = destbuf[0] + 1;
+    
+    perror = dg_divu64sbyu64 (
+        destbuf,     // rdi // pdest is already offset and assumed large enough
+        &remainder,  // rsi 
+        2,           // u,  // rdx 
+        5);          // srclengthinu64s // rcx
+
+    if (perror != dg_success)
+    {
+        printf("  dg_divu64sbyu64 remainder success case failed with error %s\n", perror);
+    }
+    
+    if (remainder != 1)
+    {
+        printf("  dg_divu64sbyu64 remainder success case remainder incorrect, expected 1, got %d\n", (UINT32)remainder);
+    }
+
+    if (destbuf[0] != 1)
+    {
+        printf("  dg_divu64sbyu64 remainder success case first uint64 incorrect, expected 1, got %d\n", (UINT32)destbuf[0]);
+    }
+    
+    if (destbuf[1] !=  2)
+    {
+        printf("  dg_divu64sbyu64 remainder success case second uint64 incorrect, expected 2, got %d\n", (UINT32)destbuf[1]);
+    }
+
+    if (destbuf[4] != 5)
+    {
+        printf("  dg_divu64sbyu64 remainder success case last uint64 incorrect, expected 5, got %d\n", (UINT32)destbuf[4]);
+    }
+
+    if (destbuf[5] != 12)
+    {
+        printf("  dg_divu64sbyu64 remainder success case buffer after last character changed! expected 12, got %d\n", (UINT32)destbuf[5]);
+    }
+    
+    
+    for (i = 0; i < 15; i++)
+    {
+        destbuf[i] = 0;
+    }
+    
+    destbuf[0] = 1;
+    destbuf[1] = (UINT64)-2;
+    
+    perror = dg_divu64sbyu64 (
+        destbuf,     // rdi // pdest is already offset and assumed large enough
+        &remainder,  // rsi 
+        (UINT64)-1,  // u,  // rdx 
+        2);          // srclengthinu64s // rcx
+
+    if (perror != dg_success)
+    {
+        printf("  dg_divu64sbyu64 1 -2 / -1 success case failed with error %s\n", perror);
+    }
+    
+    if (remainder != 0)
+    {
+        printf("  dg_divu64sbyu64 1 -2 / -1 success case remainder incorrect, expected 1, got %d\n", (UINT32)remainder);
+    }
+
+    if (destbuf[0] != (UINT64)-1)
+    {
+        printf("  dg_divu64sbyu64 1 -2 / -1 success case first uint64 incorrect, expected 1, got %d\n", (UINT32)destbuf[0]);
+    }
+    
+    if (destbuf[1] !=  0)
+    {
+        printf("  dg_divu64sbyu64 1 -2 / -1 success case second uint64 incorrect, expected 2, got %d\n", (UINT32)destbuf[1]);
+    }
+
+    if (destbuf[4] != 0)
+    {
+        printf("  dg_divu64sbyu64 1 -2 / -1 success case last uint64 incorrect, expected 5, got %d\n", (UINT32)destbuf[4]);
+    }
+
+    if (destbuf[5] != 0)
+    {
+        printf("  dg_divu64sbyu64 1 -2 / -1 success case buffer after last character changed! expected 0, got %d\n", (UINT32)destbuf[5]);
+    }
+    
+    for (i = 0; i < 15; i++)
+    {
+        destbuf[i] = 0;
+        srcbuf[i] = ((UINT64)-1) - i;
+    }
+    
+    perror = dg_mulu64tou64s(    
+        (UINT64*)destbuf,
+        (UINT64*)srcbuf, 
+        (UINT64)-3,
+        4,
+        &remainder);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_divu64sbyu64 complicated success case failed with error %s\n", perror);
+    }
+    
+    perror = dg_divu64sbyu64 (
+        destbuf,     // rdi // pdest is already offset and assumed large enough
+        &remainder,  // rsi 
+        (UINT64)-3,  // u,  // rdx 
+        5);          // srclengthinu64s // rcx
+
+    if (perror != dg_success)
+    {
+        printf("  dg_divu64sbyu64 complicated success case failed with error %s\n", perror);
+    }
+    
+    if (remainder != 0)
+    {
+        printf("  dg_divu64sbyu64 complicated success case remainder incorrect, expected 1, got %d\n", (UINT32)remainder);
+    }
+
+    if (destbuf[0] != ((UINT64)-1) - 0)
+    {
+        printf("  dg_divu64sbyu64 complicated success case first uint64 incorrect, expected ((UINT64)-1) - 0, got %d\n", (UINT32)destbuf[0]);
+    }
+    
+    if (destbuf[1] !=  ((UINT64)-1) - 1)
+    {
+        printf("  dg_divu64sbyu64 complicated success case second uint64 incorrect, expected ((UINT64)-1) - 1, got %d\n", (UINT32)destbuf[1]);
+    }
+
+    if (destbuf[4] != 0)
+    {
+        printf("  dg_divu64sbyu64 complicated success case last uint64 incorrect, expected 0, got %d\n", (UINT32)destbuf[4]);
+    }
+
+    if (destbuf[5] != 0)
+    {
+        printf("  dg_divu64sbyu64 complicated success case buffer after last character changed! expected 0, got %d\n", (UINT32)destbuf[5]);
+    }
+    
+    for (i = 0; i < 15; i++)
+    {
+        destbuf[i] = 0;
+    }
+    
+    destbuf[0] = 1;
+    destbuf[1] = (UINT64)-2;
+    
+    perror = dg_divu64sbyu64 (
+        destbuf,     // rdi // pdest is already offset and assumed large enough
+        &remainder,  // rsi 
+        0,    // u,  // rdx 
+        2);          // srclengthinu64s // rcx
+
+    if (perror != dg_success)
+    {
+        printf("  dg_divu64sbyu64 /0 success case failed with error %s\n", perror);
+    }
+    
+    if (remainder != (UINT64)-1)
+    {
+        printf("  dg_divu64sbyu64 /0 success case remainder incorrect, expected -1, got %d\n", (UINT32)remainder);
+    }
+
+    if (destbuf[0] != 1)
+    {
+        printf("  dg_divu64sbyu64 /0 success case first uint64 incorrect, expected 1, got %d\n", (UINT32)destbuf[0]);
+    }
+    
+    if (destbuf[1] !=  (UINT64)-2)
+    {
+        printf("  dg_divu64sbyu64 /0 success case second uint64 incorrect, expected -2, got %d\n", (UINT32)destbuf[1]);
+    }
+}
+
+
+void testdg_newmutexanddg_freemutex()
+{
+    UINT64 x;
+    const char* perror;
+    
+    struct DG_Mutex_Holder mymutexholder;
+    
+    printf("testing dg_newmutex and dg_freemutex\n");
+    
+    // success case
+    perror = dg_newmutex(
+        &mymutexholder,     
+        dg_success);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_newmutex failed with error %s", perror);
+    }
+    
+    if (mymutexholder.aftermutexmem != 0)
+    {
+       printf("  dg_newmutex failed - memory after mutexmem changed... should be 0\n");
+    }
+
+    perror = dg_freemutex(
+        &mymutexholder,
+        dg_success);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_freemutex failed with error %s", perror);
+        printf("\n");
+    }
+    
+    // trying to free a bad id should give an error
+    perror = dg_freemutex(
+        &mymutexholder,
+        dg_success);
+
+    if (perror == dg_success)
+    {
+        printf("  doing dg_freemutex on already freed mutex did not give an error.\n");
+    }
+}
+
+void testdg_lockmutexanddg_unlockmutex()
+{
+    UINT64 x;
+    const char* perror;
+    
+    struct DG_Mutex_Holder mymutexholder;
+    
+    printf("testing dg_lockmutex and dg_unlockmutex\n");
+
+    perror = dg_newmutex(
+        &mymutexholder,
+        dg_success);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_newmutex failed with error %s", perror);
+    }
+
+    perror = dg_lockmutex(
+        &mymutexholder,
+        dg_success);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_lockmutex failed with error %s", perror);
+        
+        perror = dg_freemutex(
+            &mymutexholder,
+            dg_success);
+
+        if (perror != dg_success)
+        {
+            printf("  dg_freemutex failed with error %s", perror);
+            printf("\n");
+        }
+        
+        return;
+    }
+    
+    if (mymutexholder.aftermutexmem != 0)
+    {
+        printf("  dg_lockmutex failed - memory after mutexmem changed, should still be 0\n");
+    }
+    
+    // trying to lock mutex twice should cause an error
+    //   this test causes process to hang on mac os x
+    // perror = dg_lockmutex(pmutexmem, dg_success);
+    
+    // if (perror == dg_success)
+    // {
+    //    printf("  doing dg_lockmutex on locked mutex did not give an error.\n");
+    // }
+    
+    // trying to free a locked mutex should cause an error
+    perror = dg_freemutex(
+        &mymutexholder,
+        dg_success);
+    
+    if (perror == dg_success)
+    {
+        printf("  doing dg_freemutex on locked mutex should give an error.\n");
+    }
+    
+    perror = dg_unlockmutex(
+        &mymutexholder,
+        dg_success);
+    
+    if (perror != dg_success)
+    {
+        printf("  dg_unlockmutex returned an error, got error %s", perror);
+    }
+    
+    if (mymutexholder.aftermutexmem != 0)
+    {
+        printf("  dg_unlockmutex failed - memory after mutexmem changed, it should still be 0\n");
+    }
+    
+    perror = dg_freemutex(
+        &mymutexholder,
+        dg_success);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_freemutex failed with error %s", perror);
+        printf("\n");
+    }
+}
+
+void testdg_uaddclipped()
+{
+    UINT64 x;
+    UINT32 xlo, xhi;
+
+    printf("testing dg_uaddclipped\n");
+
+    x = dg_uaddclipped(5,3);
+
+    if (x != 8)
+    {
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("  dg_uaddclipped(5, 3) fail! - expected 8, got %08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_uaddclipped((UINT64)-3, 1);
+
+    if (x != (UINT64)-2)
+    {
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf(" dg_uaddclipped(-3, 1) fail!, expected -2, got %08x%08x\n", xhi, xlo);
+    }
+    
+    x = dg_uaddclipped((UINT64)-3, 2);
+
+    if (x != (UINT64)-1)
+    {
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf(" dg_uaddclipped(-3, 2) fail!, expected -1, got %08x%08x\n", xhi, xlo);
+    }
+    
+    x = dg_uaddclipped((UINT64)-3, 3);
+
+    if (x != (UINT64)-1)
+    {
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf(" dg_uaddclipped(-3, 3) fail!, expected -1, got %08x%08x\n", xhi, xlo);
+    }
+    
+    x = dg_uaddclipped((UINT64)-3, 4);
+
+    if (x != (UINT64)-1)
+    {
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf(" dg_uaddclipped(-3, 4) fail!, expected -1, got %08x%08x\n", xhi, xlo);
+    }
+}
+
+void* testfunctioninc(void* px)
+{
+    (*((UINT64*)px))++;
+    return ((void*)NULL);
+}
+
+void testdg_callfunctionasync()
+{
+    UINT64 threadhandle;
+    const char* pError;
+    UINT64 x = 0;
+    UINT32 xlo, xhi;
+    
+    void* (*functionptr)(void*) = &testfunctioninc;
+    
+    printf("testing dg_callfunctionasync\n");
+    
+    // success case
+    pError = dg_callfunctionasync(
+        &threadhandle,
+        functionptr, 
+        &x);
+        
+    if (pError != dg_success)
+    {
+        printf(" dg_callfunctionasync success case, got error calling test inc function\n");
+    }
+    
+    printf("   ... waiting 1 second to let child thread run ... ");
+#ifdef DGLU_OS_FREEBSD
+    usleep(1000); // wait a second
+#endif
+#ifdef DGLU_OS_WIN64
+    SleepEx(1000, false); // wait a second
+#endif
+    if (x != 1)
+    {
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf(" dg_callfunctionasync success case fail!, expected 1 after 1 second, got %08x%08x\n", xhi, xlo);
+    }
+    
+    printf("   ... it worked ... \n");
+}
+
+
 int main(int argc, char* argv[])
 { 
     /*
@@ -10564,27 +13394,50 @@ testdg_readfilewithlargemessage();
 testdg_openfileforwritenewwithexistingfile();
 testdg_getenvironmentvariable();
 
+testdg_addbytes();
+testdg_adcbytes();
+testdg_sbbbytes();
+testdg_shlbytes();
+testdg_shrbytes();
+testdg_rclbytes();
+testdg_rcrbytes();
+testdg_sarbytes();
+testdg_notbytes();
+testdg_andbytes();
+testdg_orbytes();
+testdg_nandbytes();
+testdg_norbytes();
+testdg_xnorbytes();
+testdg_reversebytes();
+testdg_incbytes();
+testdg_decbytes();
+testdg_mulu64tou64s();
+testdg_divu64sbyu64();
+
+testdg_newmutexanddg_freemutex();
+testdg_lockmutexanddg_unlockmutex();
+testdg_uaddclipped();
+
+testdg_callfunctionasync();
+
+testmaxu32comparecompilation();
+testu64constantcompilation();
+testneg1constantcompilation();
+testmaxnegi32constantcompilation();
+
+
 
 /*
-    
-    
-    
-    
     testdg_makedototobuf();
     
     // testdg_makesharedlibtobuf();
     testdg_runfileandwait();
-    
-    
-    
-    
-    
-    
-    dg_endtrycatchbadmemoryerror();
 */
     
 	return(0);
 }
+
+
 
 // testdg_calcoffsettovalue
 // testdg_makemachotrieforlt256

@@ -8,6 +8,7 @@ objects = compilecpux86.o \
           chierarchicallist.o \
           cinitwordlist.o \
           clstring.o \
+          clstringqueue.o \
           cmiscellaneous.o \
           cwordlist.o \
           dglumain.o \
@@ -35,6 +36,7 @@ testobjects = testcbuffer.o \
               testcompilecpux86.o \
               testchierarchicallist.o \
               testclstring.o \
+              testclstringqueue.o \
               testcmiscellaneous.o \
               testcwordlist.o \
               testcglu.o \
@@ -88,6 +90,8 @@ cinitwordlist.o : ../cinitwordlist.cpp ../diapergluforth.h
 	cc -c ../cinitwordlist.cpp -mmacosx-version-min=11.0 -mstackrealign -DDGLU_OS_FREEBSD
 clstring.o : ../clstring.cpp ../diapergluforth.h
 	cc -c ../clstring.cpp -mmacosx-version-min=11.0 -mstackrealign -DDGLU_OS_FREEBSD
+clstringqueue.o : ../clstringqueue.cpp ../diapergluforth.h
+	cc -c ../clstringqueue.cpp -mmacosx-version-min=11.0 -mstackrealign -DDGLU_OS_FREEBSD
 cmiscellaneous.o : ../cmiscellaneous.cpp ../diapergluforth.h
 	cc -c ../cmiscellaneous.cpp -mmacosx-version-min=11.0 -mstackrealign -DDGLU_OS_FREEBSD
 cwordlist.o : ../cwordlist.cpp ../diapergluforth.h
@@ -142,6 +146,8 @@ testchierarchicallist.o : ../testchierarchicallist.cpp ../diapergluforth.h
 	cc -c ../testchierarchicallist.cpp -mmacosx-version-min=11.0 -mstackrealign -DDGLU_OS_FREEBSD
 testclstring.o : ../testclstring.cpp ../diapergluforth.h
 	cc -c ../testclstring.cpp -mmacosx-version-min=11.0 -mstackrealign -DDGLU_OS_FREEBSD
+testclstringqueue.o : ../testclstringqueue.cpp ../diapergluforth.h
+	cc -c ../testclstringqueue.cpp -mmacosx-version-min=11.0 -mstackrealign -DDGLU_OS_FREEBSD
 testcmiscellaneous.o : ../testcmiscellaneous.cpp ../diapergluforth.h
 	cc -c ../testcmiscellaneous.cpp -mmacosx-version-min=11.0 -mstackrealign -DDGLU_OS_FREEBSD
 testcompilecpux86.o : ../testcompilecpux86.cpp ../diapergluforth.h

@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 
 
@@ -2532,7 +2532,7 @@ void dg_forthloadfilestring (Bufferhandle* pBHarrayhead)
 		return;
 	}
 
-	if (filelength >= largestsignedint) // setting a 2 gig limit for this operation :-)
+	if (filelength >= largestsignedint) 
 	{
 		dg_closefile(
             fileid,
@@ -2856,14 +2856,6 @@ void dg_forthincludefilestring (Bufferhandle* pBHarrayhead)
         pBHarrayhead,
         bufferid);
 	// not checking errors here on purpose
-    
-    // if there was an error, I want to capture the line that caused the error
-    if (pBHarrayhead->errorcount != olderrorcount)
-    {
-        dg_captureerrorline(
-            pBHarrayhead,
-            bufferid);
-    }
 
 	dg_freebuffer(
         pBHarrayhead,
@@ -5157,6 +5149,381 @@ void dg_forthgetargsfromnstrings(Bufferhandle* pBHarrayhead)
     }
 }
 
+// ( u -- ) ( ule$ -- ule$b )
+void dg_forthumulleutostring(Bufferhandle* pBHarrayhead)
+{
+    UINT64 u;
+    UINT64 stringstackdepth;
+    UINT64 localsstringstackdepth;
+    UINT64 t;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    // check string stack depth...
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+      dg_pusherror(pBHarrayhead, dg_forthumulleutostringname);
+      return;
+    }
+    
+    if (stringstackdepth == 0)
+    {
+        // underflow error
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthumulleutostringname);
+        return;
+    }
+    
+    u = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+      dg_pusherror(pBHarrayhead, dg_forthumulleutostringname);
+      return;
+    }
+    
+    t = 0;
+    
+    // push a new string holding 0 to the locals lstring stack
+    dg_pushlstring(
+        pBHarrayhead,
+        DG_LOCALS_STRINGOFFSETSTACK_BUFFERID, 
+        DG_LOCALS_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        (unsigned char*)&t);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+      dg_pusherror(pBHarrayhead, dg_forthumulleutostringname);
+      return;
+    }
+    
+    localsstringstackdepth = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        DG_LOCALS_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+      dg_pusherror(pBHarrayhead, dg_forthumulleutostringname);
+      return;
+    }
+        
+    dg_ulemulu64tolstringn (
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 1,
+        DG_LOCALS_STRINGOFFSETSTACK_BUFFERID,
+        DG_LOCALS_STRINGSTRINGSTACK_BUFFERID,
+        localsstringstackdepth - 1,
+        u);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        // just so everything is neat
+        dg_droplstring(
+            pBHarrayhead, 
+            DG_LOCALS_STRINGOFFSETSTACK_BUFFERID, 
+            DG_LOCALS_STRINGSTRINGSTACK_BUFFERID);
+        
+      dg_pusherror(pBHarrayhead, dg_forthumulleutostringname);
+      return;
+    }
+    
+    dg_droplstring(
+        pBHarrayhead, 
+        DG_LOCALS_STRINGOFFSETSTACK_BUFFERID, 
+        DG_LOCALS_STRINGSTRINGSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+      dg_pusherror(pBHarrayhead, dg_forthumulleutostringname);
+      return;
+    }
+}
+
+
+// ( u -- ) ( ule$ -- u*ule$ )
+void dg_forthtostarulestring(Bufferhandle* pBHarrayhead)
+{
+    UINT64 u;
+    UINT64 stringstackdepth;
+    UINT64 localsstringstackdepth;
+    UINT64 t;
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    // check string stack depth...
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+      dg_pusherror(pBHarrayhead, dg_forthtostarulestringname);
+      return;
+    }
+    
+    if (stringstackdepth == 0)
+    {
+        // underflow error
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthtostarulestringname);
+        return;
+    }
+    
+    u = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+      dg_pusherror(pBHarrayhead, dg_forthtostarulestringname);
+      return;
+    }
+    
+    t = 0;
+    
+    /*
+    // move top string to locals stack
+    plstring = dg_getplstring(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 1,
+        &lstringlength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtostarulestringname);
+        return;
+    }
+        
+    dg_pushlstring(
+        pBHarrayhead,
+        DG_LOCALS_STRINGOFFSETSTACK_BUFFERID, 
+        DG_LOCALS_STRINGSTRINGSTACK_BUFFERID,
+        lstringlength,
+        plstring);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtostarulestringname);
+        return;
+    }
+    
+    dg_droplstring(
+        pBHarrayhead, 
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID);
+
+	if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_poplstringname);
+		return;
+	}
+    */
+    
+    // push a new string holding 0 to the string stack
+    dg_pushlstring(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID, 
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        8,
+        (unsigned char*)&t);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+      dg_pusherror(pBHarrayhead, dg_forthtostarulestringname);
+      return;
+    }
+    
+    /*
+    localsstringstackdepth = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        DG_LOCALS_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+      dg_pusherror(pBHarrayhead, dg_forthtostarulestringname);
+      return;
+    }
+    */
+    
+    // string stack depth should be one more
+    stringstackdepth++;
+        
+    dg_mulu64bylstringnaddtolstringn (
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID, // DG_LOCALS_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID, // DG_LOCALS_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 2,          // localsstringstackdepth - 1,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 1,
+        u);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        // just so everything is neat
+        // dg_droplstring(
+        //    pBHarrayhead, 
+        //    DG_LOCALS_STRINGOFFSETSTACK_BUFFERID, 
+        //    DG_LOCALS_STRINGSTRINGSTACK_BUFFERID);
+        
+      dg_pusherror(pBHarrayhead, dg_forthtostarulestringname);
+      return;
+    }
+    
+    // dg_droplstring(
+    //    pBHarrayhead, 
+    //    DG_LOCALS_STRINGOFFSETSTACK_BUFFERID, 
+    //    DG_LOCALS_STRINGSTRINGSTACK_BUFFERID);
+        
+    // if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    // {
+    //  dg_pusherror(pBHarrayhead, dg_forthtostarulestringname);
+    //  return;
+    // }
+    
+    // need to trim trailing u64 0s from result string
+    //  could use scan for not byte reverse... then shorten string to the first non 0
+    //  or look at uint64s.... and I can assume it's u64 aligned...
+    plstring = dg_getplstring(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 1,
+        &lstringlength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtostarulestringname);
+        return;
+    }
+    
+    t = lstringlength / sizeof(UINT64);
+    while (t > 1)
+    {
+        if (((UINT64*)plstring)[t - 1] != 0)
+        {
+            break;
+        }
+        
+        t = t - 1;
+    }
+    
+    dg_pushdatastack(
+        pBHarrayhead,
+        lstringlength - (t * sizeof(UINT64)));
+        
+    dg_forthshortenstring(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtostarulestringname);
+        return;
+    }
+    
+    // DRIP$
+    dg_deletelstring (
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 2);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtostarulestringname);
+        return;
+    }    
+}
+
+
+// ( u -- remainder ) ( ule$ -- ule$/u )
+void dg_forthtoslashulestring(Bufferhandle* pBHarrayhead)
+{
+    UINT64 u;
+    UINT64 stringstackdepth;
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    UINT64 remainder;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    // check string stack depth...
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+      dg_pusherror(pBHarrayhead, dg_forthtoslashulestringname);
+      return;
+    }
+    
+    if (stringstackdepth == 0)
+    {
+        // underflow error
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthtoslashulestringname);
+        return;
+    }
+    
+    u = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+      dg_pusherror(pBHarrayhead, dg_forthtoslashulestringname);
+      return;
+    }
+    
+    dg_divlstringnbyu64 (
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 1,
+        u,
+        &remainder);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtoslashulestringname);
+        return;
+    }
+    
+    dg_pushdatastack(
+        pBHarrayhead,
+        remainder);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtoslashulestringname);
+        return;
+    }
+}
+
+
+
 // ( u -- )
 // ( $0 $1 ... $u-1 -$- $0:u-1 )
 //
@@ -5306,3 +5673,1079 @@ void dg_forthrunfileandwaitnoenvquotes(Bufferhandle* pBHarrayhead)
 }
 */
 
+void dg_forthlelshiftstring(Bufferhandle* pBHarrayhead)
+{
+    UINT64 stringstackdepth;
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    
+    UINT64 carryout;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    // check string stack depth...
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthlelshiftstringname);
+        return;
+    }
+    
+    if (stringstackdepth == 0)
+    {
+        // underflow error
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthlelshiftstringname);
+        return;
+    }
+    
+    dg_lelshiftlstringn (
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 1,
+        &carryout);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthlelshiftstringname);
+        return;
+    }
+    
+    dg_pushdatastack(
+        pBHarrayhead,
+        carryout);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthlelshiftstringname);
+        return;
+    }
+}
+
+
+void dg_forthulershiftstring(Bufferhandle* pBHarrayhead)
+{
+    UINT64 stringstackdepth;
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    
+    UINT64 carryout;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    // check string stack depth...
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthulershiftstringname);
+        return;
+    }
+    
+    if (stringstackdepth == 0)
+    {
+        // underflow error
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthulershiftstringname);
+        return;
+    }
+    
+    dg_ulershiftlstringn (
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 1,
+        &carryout);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthulershiftstringname);
+        return;
+    }
+    
+    dg_pushdatastack(
+        pBHarrayhead,
+        carryout);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthulershiftstringname);
+        return;
+    }
+}
+
+
+void dg_forthslershiftstring(Bufferhandle* pBHarrayhead)
+{
+    UINT64 stringstackdepth;
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    
+    UINT64 carryout;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    // check string stack depth...
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthslershiftstringname);
+        return;
+    }
+    
+    if (stringstackdepth == 0)
+    {
+        // underflow error
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthslershiftstringname);
+        return;
+    }
+    
+    dg_slershiftlstringn (
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 1,
+        &carryout);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthslershiftstringname);
+        return;
+    }
+    
+    dg_pushdatastack(
+        pBHarrayhead,
+        carryout);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthslershiftstringname);
+        return;
+    }
+}
+
+void dg_forthlelshiftcstring(Bufferhandle* pBHarrayhead)
+{
+    UINT64 stringstackdepth;
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    
+    UINT64 carryinout;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    carryinout = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthlelshiftcstringname);
+        return;
+    }
+    
+    // check string stack depth...
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthlelshiftcstringname);
+        return;
+    }
+    
+    if (stringstackdepth == 0)
+    {
+        // underflow error
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthlelshiftcstringname);
+        return;
+    }
+    
+    dg_lelshiftclstringn (
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 1,
+        &carryinout);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthlelshiftcstringname);
+        return;
+    }
+    
+    dg_pushdatastack(
+        pBHarrayhead,
+        carryinout);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthlelshiftcstringname);
+        return;
+    }
+}
+
+
+void dg_forthlershiftcstring(Bufferhandle* pBHarrayhead)
+{
+    UINT64 stringstackdepth;
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    
+    UINT64 carryinout;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    carryinout = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthlershiftcstringname);
+        return;
+    }
+    
+    // check string stack depth...
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthlershiftcstringname);
+        return;
+    }
+    
+    if (stringstackdepth == 0)
+    {
+        // underflow error
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthlershiftcstringname);
+        return;
+    }
+    
+    dg_lershiftclstringn (
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 1,
+        &carryinout);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthlershiftcstringname);
+        return;
+    }
+    
+    dg_pushdatastack(
+        pBHarrayhead,
+        carryinout);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthlershiftcstringname);
+        return;
+    }
+}
+
+// I need ULE$>NUMBER$
+//  push an empty answer string to... the top of the string stack?
+//   (If I put it somewhere else, I'll only need to get a pointer to the source string once)
+//  begin
+//    get address length top string on string stack
+//    scan for anything not 0 in top string
+//  while something is not 0
+//    divide top lstring on string stack by number base
+//    convert the remainder to a character digit (add 0x30) and push to answer string
+//  repeat
+//  drop the source string from the string stack
+//  reverse the answer string
+
+void dg_forthulestringtonumberstring(Bufferhandle* pBHarrayhead)
+{
+    UINT64 stringstackdepth;
+    UINT64 localsstringstackdepth;
+    UINT64 t = 0;
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    UINT64 base;
+    UINT64 u64alignedlstringlength;
+    const char* pError;
+    UINT64 remainder;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    // check string stack depth...
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+      dg_pusherror(pBHarrayhead, dg_forthulestringtonumberstringname);
+      return;
+    }
+    
+    if (stringstackdepth == 0)
+    {
+        // underflow error
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthulestringtonumberstringname);
+        return;
+    }
+    
+    base = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        basevariable);
+
+	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthbasename);
+		dg_pusherror(pBHarrayhead, dg_forthulestringtonumberstringname);
+		return;
+	}
+
+	if (base < 2)
+	{
+        dg_pusherror(pBHarrayhead, dg_basetoolowerror);
+		dg_pusherror(pBHarrayhead, dg_forthulestringtonumberstringname);
+		return;
+	}
+    
+    // move top string to locals stack
+    plstring = dg_getplstring(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 1,
+        &lstringlength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthulestringtonumberstringname);
+        return;
+    }
+        
+    dg_pushlstring(
+        pBHarrayhead,
+        DG_LOCALS_STRINGOFFSETSTACK_BUFFERID, 
+        DG_LOCALS_STRINGSTRINGSTACK_BUFFERID,
+        lstringlength,
+        plstring);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthulestringtonumberstringname);
+        return;
+    }
+    
+    dg_droplstring(
+        pBHarrayhead, 
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID);
+
+	if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthulestringtonumberstringname);
+		return;
+	}
+    
+    // push a new empty string to the string stack
+    dg_pushlstring(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID, 
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        (unsigned char*)&t);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+      dg_pusherror(pBHarrayhead, dg_forthulestringtonumberstringname);
+      return;
+    }
+    
+    
+    localsstringstackdepth = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        DG_LOCALS_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+      dg_pusherror(pBHarrayhead, dg_forthulestringtonumberstringname);
+      return;
+    }
+    
+    // need to align string to UINT64
+    u64alignedlstringlength = dg_getnearesthighestmultiple (
+        lstringlength,
+        sizeof(UINT64));
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthulestringtonumberstringname);
+		return;
+	}
+ 
+    dg_uleextendlstringntol (
+        pBHarrayhead,
+        DG_LOCALS_STRINGOFFSETSTACK_BUFFERID, 
+        DG_LOCALS_STRINGSTRINGSTACK_BUFFERID,
+        localsstringstackdepth - 1,
+        u64alignedlstringlength);
+            
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthulestringtonumberstringname);
+        return;
+    }   
+    
+    // get address length of top string on the locals lstring stack
+    //  only need to do this once since it won't move
+    plstring = dg_getplstring(
+        pBHarrayhead,
+        DG_LOCALS_STRINGOFFSETSTACK_BUFFERID, 
+        DG_LOCALS_STRINGSTRINGSTACK_BUFFERID,
+        localsstringstackdepth - 1,
+        &lstringlength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthulestringtonumberstringname);
+        return;
+    }
+    
+    // if the ule$ is already 0, put a 0 into the answer and stop
+    t = lstringlength;
+    
+    // a scan for not uint64 would be faster... but I don't have one yet 12/30/2021
+    pError = dg_scanfornotbytereverse (
+        (void*)plstring,
+        &t, // plength,
+        0); // value)
+    
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_scanfornotbytereversename);
+        dg_pusherror(pBHarrayhead, dg_forthulestringtonumberstringname);
+        return;
+    }
+    
+    if ((UINT64)-1 == t)
+    {
+        // was all 0s case
+        t = '0';
+        dg_stotoplstring (
+            pBHarrayhead,
+            DG_STRINGOFFSETSTACK_BUFFERID,
+            DG_STRINGSTRINGSTACK_BUFFERID,
+            1,
+            (unsigned char*)&t);
+            
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthulestringtonumberstringname);
+            return;
+        }
+        
+        // need to drop top localslstringstack string
+        dg_droplstring(
+            pBHarrayhead, 
+            DG_LOCALS_STRINGOFFSETSTACK_BUFFERID, 
+            DG_LOCALS_STRINGSTRINGSTACK_BUFFERID);
+        
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthulestringtonumberstringname);    
+            return;
+        }
+        
+        return;
+    }
+    
+    while(true)
+    {
+        t = lstringlength;
+        
+        pError = dg_scanfornotbytereverse (
+            (void*)plstring,
+            &t, // plength,
+            0); // value)
+    
+        if (pError != dg_success)
+        {
+            dg_pusherror(pBHarrayhead, pError);
+            dg_pusherror(pBHarrayhead, dg_scanfornotbytereversename);
+            dg_pusherror(pBHarrayhead, dg_forthulestringtonumberstringname);
+            return;
+        }
+    
+        if ((UINT64)-1 == t)
+        {
+            break;
+        }
+        
+        pError = dg_divu64sbyu64 (
+            (UINT64*)plstring,           
+            &remainder,      
+            base,                 
+            lstringlength / sizeof(UINT64));
+        
+        if (pError != dg_success)
+        {
+            dg_pusherror(pBHarrayhead, pError);
+            dg_pusherror(pBHarrayhead, dg_divu64sbyu64name);
+            dg_pusherror(pBHarrayhead, dg_forthulestringtonumberstringname);
+            return;
+        }
+        
+        // t = '0' + remainder;
+        t = dg_digittochar(remainder);
+        
+        dg_stotoplstring (
+            pBHarrayhead,
+            DG_STRINGOFFSETSTACK_BUFFERID,
+            DG_STRINGSTRINGSTACK_BUFFERID,
+            1,
+            (unsigned char*)&t);
+            
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthulestringtonumberstringname);
+            return;
+        }
+    }
+    
+    dg_forthreversestring(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthulestringtonumberstringname);
+        return;
+    }
+
+    dg_droplstring(
+        pBHarrayhead, 
+        DG_LOCALS_STRINGOFFSETSTACK_BUFFERID, 
+        DG_LOCALS_STRINGSTRINGSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthulestringtonumberstringname);
+        return;
+    }
+}
+
+
+void dg_forthreversestring(Bufferhandle* pBHarrayhead)
+{
+    UINT64 stringstackdepth;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    // check string stack depth...
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthreversestringname);
+        return;
+    }
+    
+    if (stringstackdepth == 0)
+    {
+        // underflow error
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthreversestringname);
+        return;
+    }
+    
+    dg_reverselstringn (
+        pBHarrayhead, 
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 1);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthreversestringname);
+        return;
+    }
+}
+
+
+void dg_forthnotstring(Bufferhandle* pBHarrayhead)
+{
+    UINT64 stringstackdepth;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    // check string stack depth...
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthnotstringname);
+        return;
+    }
+    
+    if (stringstackdepth == 0)
+    {
+        // underflow error
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthnotstringname);
+        return;
+    }
+    
+    dg_notlstringn (
+        pBHarrayhead, 
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 1);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthnotstringname);
+        return;
+    }
+}
+
+
+void dg_forthuleandstring(Bufferhandle* pBHarrayhead)
+{
+    UINT64 stringstackdepth;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    // check string stack depth...
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthuleandstringname);
+        return;
+    }
+    
+    if (stringstackdepth < 2)
+    {
+        // underflow error
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthuleandstringname);
+        return;
+    }
+    
+    dg_uleandlstringntolstringn (
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 1,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 2);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthuleandstringname);
+        return;
+    }
+    
+    dg_forthdropstring(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthuleandstringname);
+        return;
+    }
+}
+
+
+void dg_forthuleorstring(Bufferhandle* pBHarrayhead)
+{
+    UINT64 stringstackdepth;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    // check string stack depth...
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthuleorstringname);
+        return;
+    }
+    
+    if (stringstackdepth < 2)
+    {
+        // underflow error
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthuleorstringname);
+        return;
+    }
+    
+    dg_uleorlstringntolstringn (
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 1,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 2);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthuleorstringname);
+        return;
+    }
+    
+    dg_forthdropstring(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthuleorstringname);
+        return;
+    }
+}
+
+
+void dg_forthulexorstring(Bufferhandle* pBHarrayhead)
+{
+    UINT64 stringstackdepth;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    // check string stack depth...
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthulexorstringname);
+        return;
+    }
+    
+    if (stringstackdepth < 2)
+    {
+        // underflow error
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthulexorstringname);
+        return;
+    }
+    
+    dg_ulexorlstringntolstringn (
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 1,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 2);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthulexorstringname);
+        return;
+    }
+    
+    dg_forthdropstring(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthulexorstringname);
+        return;
+    }
+}
+
+
+void dg_forthulenandstring(Bufferhandle* pBHarrayhead)
+{
+    UINT64 stringstackdepth;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    // check string stack depth...
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthulenandstringname);
+        return;
+    }
+    
+    if (stringstackdepth < 2)
+    {
+        // underflow error
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthulenandstringname);
+        return;
+    }
+    
+    dg_ulenandlstringntolstringn (
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 1,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 2);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthulenandstringname);
+        return;
+    }
+    
+    dg_forthdropstring(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthulenandstringname);
+        return;
+    }
+}
+
+
+void dg_forthulenorstring(Bufferhandle* pBHarrayhead)
+{
+    UINT64 stringstackdepth;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    // check string stack depth...
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthulenorstringname);
+        return;
+    }
+    
+    if (stringstackdepth < 2)
+    {
+        // underflow error
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthulenorstringname);
+        return;
+    }
+    
+    dg_ulenorlstringntolstringn (
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 1,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 2);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthulenorstringname);
+        return;
+    }
+    
+    dg_forthdropstring(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthulenorstringname);
+        return;
+    }
+}
+
+
+void dg_forthulexnorstring(Bufferhandle* pBHarrayhead)
+{
+    UINT64 stringstackdepth;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    // check string stack depth...
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthulexnorstringname);
+        return;
+    }
+    
+    if (stringstackdepth < 2)
+    {
+        // underflow error
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthulexnorstringname);
+        return;
+    }
+    
+    dg_ulexnorlstringntolstringn (
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 1,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 2);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthulexnorstringname);
+        return;
+    }
+    
+    dg_forthdropstring(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthulexnorstringname);
+        return;
+    }
+}
+
+void dg_forthtofactorialulestring(Bufferhandle* pBHarrayhead)
+{
+    UINT64 u;
+    UINT64 x;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    u = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtofactorialulestringname);
+        return;
+    }
+    
+    x = 1;
+    
+    dg_stonewstring (
+        pBHarrayhead,
+        (unsigned char*)&x,
+        8);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtofactorialulestringname);
+        return;
+    }
+    
+    
+    while (x < u)
+    {
+        x++;
+        
+        dg_pushdatastack(pBHarrayhead, x);
+        
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthtofactorialulestringname);
+            return;
+        }
+        
+        dg_forthtostarulestring(pBHarrayhead);
+        
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthtofactorialulestringname);
+            return;
+        }
+    }
+}

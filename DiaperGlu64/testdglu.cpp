@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -104,6 +104,7 @@ void dg_forthselftest ()
     testdg_parse();
     testdg_parsemultiline();
     testdg_parsewords();
+    testdg_noparseentirecurrentline();
     testdg_tocurrent();
     testdg_currentfrom();
 
@@ -128,6 +129,7 @@ void dg_forthselftest ()
     testdg_insertinlstring();
     testdg_catlstringn();
     testdg_copystolstringn();
+    testdg_pushstolstringn();
     testdg_copysfromlstringn();
     testdg_setlengthlstringn();
 	testdg_replacelstringn();
@@ -155,6 +157,33 @@ void dg_forthselftest ()
     testdg_stonewstring();
     testdg_stonew0string();
     testdg_dropnlstrings();
+    testdg_uleextendlstringntol();
+    testdg_uleaddlstringntolstringn();
+    testdg_uleadclstringntolstringn();
+    testdg_ulesbblstringntolstringn();
+    testdg_uleandlstringntolstringn();
+    testdg_uleorlstringntolstringn();
+    testdg_ulexorlstringntolstringn();
+    testdg_ulenandlstringntolstringn();
+    testdg_ulenorlstringntolstringn();
+    testdg_ulexnorlstringntolstringn();
+    testdg_notlstringn();
+    testdg_reverselstringn();
+    testdg_lelshiftlstringn();
+    testdg_ulershiftlstringn();
+    testdg_slershiftlstringn();
+    testdg_lelshiftclstringn();
+    testdg_lershiftclstringn();
+    testdg_mulu64bylstringnaddtolstringn();
+    testdg_divlstringnbyu64();
+    
+    // test C lstring queue stuff
+    testdg_initlstringqueue();
+    testdg_pushlstringqueuehead();
+    testdg_poplstringqueuetail();
+    testdg_getslstringqueuetail();
+    testdg_dropslstringqueuetail();
+    testdg_newfreesharedlstringqueue();
  
  // test C hierarchical list routines
     testdg_gethlistheaderarrayheader();
@@ -219,6 +248,7 @@ void dg_forthselftest ()
 	testdg_evaluatebuffer();
     
     // test c compiling routines
+    testdg_bumpdisplacementsizeifneeded();
 	testdg_compilemovregtoreg();
 	testdg_compilenegatereg();
 	testdg_compileaddregtoreg();
@@ -244,6 +274,7 @@ void dg_forthselftest ()
 	testcompilecalloffsetinsamebuffer();
 	testdg_compilepushtodatastack();
     testdg_compilepushntodatastack();
+    
 
     testdg_initjumpbuffer();
 	testdg_compilesafecall();
@@ -258,6 +289,8 @@ void dg_forthselftest ()
     testdg_packtwobytevex();
     testdg_packthreebytevex();
     testdg_compilevex();
+    testdg_compileaddnlocalstocallsubsframe();
+    
 /*
     // test C sorted list routines
     //testdg_findaftermatchinsortedarray();
@@ -529,6 +562,26 @@ void dg_forthselftest ()
 	testdg_forthdroplstring();
 	testdg_forthdeletelstring();
     testdg_forthinsertlstring();
+    testdg_forthnotlstringn();
+    testdg_forthu8reverselstringn();
+    testdg_forthuleaddlstringntolstringn();
+    testdg_forthuleadclstringntolstringn();
+    testdg_forthulesbblstringntolstringn();
+    testdg_forthuleandlstringntolstringn();
+    testdg_forthuleorlstringntolstringn();
+    testdg_forthulexorlstringntolstringn();
+    testdg_forthulenandlstringntolstringn();
+    testdg_forthulenorlstringntolstringn();
+    testdg_forthulexnorlstringntolstringn();
+    testdg_forthlelshiftlstringn();
+    testdg_forthulershiftlstringn();
+    testdg_forthslershiftlstringn();
+    testdg_forthlelshiftclstringn();
+    testdg_forthlershiftclstringn();
+    testdg_forthu64starlstringnplustolstringn();
+    testdg_forthtoslashulelstringn();
+    
+    // testing Forth string stack stuff
 	testdg_forthcomparestring();
 	testdg_forthgetmidstring();
 	testdg_forthcatstring();
@@ -565,6 +618,19 @@ void dg_forthselftest ()
     testdg_forthwordsstringquotes();
     testdg_forthwords0stringquotes();
     testdg_forthgetargsfromnstrings();
+    testdg_forthnotstring();
+    testdg_forthreversestring();
+    testdg_forthlelshiftstring();
+    testdg_forthulershiftstring();
+    testdg_forthslershiftstring();
+    testdg_forthlelshiftcstring();
+    testdg_forthlershiftcstring();
+    testdg_forthuleandstring();
+    testdg_forthuleorstring();
+    testdg_forthulexorstring();
+    testdg_forthulenandstring();
+    testdg_forthulenorstring();
+    testdg_forthulexnorstring();
 	
     // test Forth search order words
     testdg_forthgetcurrent();
@@ -579,6 +645,9 @@ void dg_forthselftest ()
     testdg_forthnewhlist();
     testdg_forthfreehlist();
     testdg_forthnewhlistelement();
+    testdg_forthehdot();
+    testdg_forthehbracketnddot();
+    testdg_forthehbracket1ddot();
     
     // test Forth floating point
     testdg_timeslog2();
@@ -696,4 +765,7 @@ void dg_forthselftest ()
     
     testdg_getsenvnamevalue ();
     */
+    
+    testdg_determineparameterregister();
+    
 }

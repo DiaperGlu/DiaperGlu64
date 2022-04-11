@@ -1,22 +1,22 @@
 <!--
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 -->
 
@@ -111,6 +111,11 @@
       <a href=osapi.htm#dg_fork                               >dg_fork</a>
       <a href=osapi.htm#dg_execve                             >dg_execve</a>
       <a href=osapi.htm#dg_waitpid                            >dg_waitpid</a>
+      <a href=osapi.htm#dg_getmutexhandlesize                 >dg_getmutexhandlesize</a>
+      <a href=osapi.htm#dg_newmutex                           >dg_newmutex</a>
+      <a href=osapi.htm#dg_freemutex                          >dg_freemutex</a>
+      <a href=osapi.htm#dg_lockmutex                          >dg_lockmutex</a>
+      <a href=osapi.htm#dg_unlockmutex                        >dg_unlockmutex</a>
       <a href=osapi.htm#dg_runfileandwait                     >dg_runfileandwait</a>
       <a href=osapi.htm#dg_forthfixpathstring                 >dg_forthfixpathstring</a>
       <a href=osapi.htm#dg_forthloadlibrarystringsub          >dg_forthloadlibrarystringsub</a>
@@ -2141,6 +2146,223 @@
 </pre>
       </div>
       
+
+      <div class=word id=dg_getmutexhandlesize>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getmutexhandlesize
+//
+// C prototype:
+//  UINT64 dg_getmutexhandlesize ()
+//
+// Inputs:
+//  none
+//
+// Outputs:
+//  UINT64         return      the size of a mutex handle in bytes
+//
+// Action:
+//  Returns the size of a mutex handle in bytes.
+//
+// Failure cases:
+//
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_newmutex>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_newmutex
+//
+// C prototype:
+//  const char* dg_newmutex (
+//    unsigned char* pmutexhandle, 
+//    const char* forceerrorflag)
+//
+// Inputs:
+//  unsigned char*  pmutexfilehandle    pointer to the memory that will hold the
+//                                        new mutex handle
+//  char *const     forceerrorflag      if not dg_success, dg_newmutex
+//                                       will fail and return the error in
+//                                       forceerrorflag
+//
+// Outputs:
+//  UINT64         return      the size of a mutex handle in bytes
+//
+// Action:
+//  Creates a new mutex and puts the handle into the memory at pmutexhandle.
+//  The memory at pmutexhandle must large enough to hold the handle which is
+//   dg_getmutexhandlesize() bytes.
+//
+// How to use:
+//  Mutexes are used to make sure only one thread can access a resource at a time.
+//  To protect the resource from two threads trying to change something at the same
+//   time, first you need to make a mutex for that resource. Then each thread locks
+//   the mutex, accesses the resource, then unlocks the mutex.
+//  When you are all done with the mutex, for example, when your program is about
+//   to exit, free the mutex. Not all operating systems may automatically free
+//   the mutex if you forget. So if you forget to free the mutex, over time you
+//   may use up all the mutexes or memory in the system.
+//
+// Failure cases:
+//   Can not write to memory at dg_newmutex
+//   The operating system is out of memory (Max OS X)
+//   Too many mutexes (Max OS X)
+//
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_freemutex>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_freemutex
+//
+// C prototype:
+//  const char* dg_freemutex (
+//    unsigned char* pmutexhandle, 
+//    const char* forceerrorflag)
+//
+// Inputs:
+//  unsigned char*  pmutexfilehandle    pointer to the memory that holds the
+//                                        handle of the mutex to be freed
+//  char *const     forceerrorflag      if not dg_success, dg_newmutex
+//                                       will fail and return the error in
+//                                       forceerrorflag
+//
+// Outputs:
+//  const char*     return              pointer to null terminated c string error
+//                                       status message:
+//
+// Action:
+//  Frees a mutex that was created with dg_newmutex.
+//
+// How to use:
+//  Mutexes are used to make sure only one thread can access a resource at a time.
+//  To protect the resource from two threads trying to change something at the same
+//   time, first you need to make a mutex for that resource. Then each thread locks
+//   the mutex, accesses the resource, then unlocks the mutex.
+//  When you are all done with the mutex, for example, when your program is about
+//   to exit, free the mutex. Not all operating systems may automatically free
+//   the mutex if you forget. So if you forget to free the mutex, over time you
+//   may use up all the mutexes or memory in the system.
+//
+// Failure cases:
+//   Can not write to memory at dg_newmutex
+//   The operating system is out of memory (Max OS X)
+//   Too many mutexes (Max OS X)
+//
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_lockmutex>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_lockmutex
+//
+// C prototype:
+//  const char* dg_lockmutex (
+//    unsigned char* pmutexhandle, 
+//    const char* forceerrorflag)
+//
+// Inputs:
+//  unsigned char*  pmutexfilehandle    pointer to the memory that holds the
+//                                        handle of the mutex to be freed
+//  char *const     forceerrorflag      if not dg_success, dg_newmutex
+//                                       will fail and return the error in
+//                                       forceerrorflag
+//
+// Outputs:
+//  const char*     return              pointer to null terminated c string error
+//                                       status message:
+//
+// Action:
+//  If the mutex is not already locked, then this locks the mutex. 
+//  If the mutex is locked, then this function blocks until the mutex is unlocked.
+//  (Blocking means the thread that called this function releases control and waits
+//  until another thread unlocks this mutex.)
+//
+// How to use:
+//  Mutexes are used to make sure only one thread can access a resource at a time.
+//  To protect the resource from two threads trying to change something at the same
+//   time, first you need to make a mutex for that resource. Then each thread locks
+//   the mutex, accesses the resource, then unlocks the mutex.
+//  When you are all done with the mutex, for example, when your program is about
+//   to exit, free the mutex. Not all operating systems may automatically free
+//   the mutex if you forget. So if you forget to free the mutex, over time you
+//   may use up all the mutexes or memory in the system.
+//
+// Note:
+//  On Mac OS X, if a thread locks a mutex, and then tries to lock it again while
+//   it is still locked, it blocks. It doesn't return an error. 
+//   (J.N. 2022 January 24 Mac OS X 11.0.1)
+//
+// Failure cases:
+//   Can not write to memory at dg_newmutex 
+//
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_unlockmutex>
+<pre>
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_unlockmutex
+//
+// C prototype:
+//  const char* dg_unlockmutex (
+//    unsigned char* pmutexhandle, 
+//    const char* forceerrorflag)
+//
+// Inputs:
+//  unsigned char*  pmutexfilehandle    pointer to the memory that holds the
+//                                        handle of the mutex to be freed
+//  char *const     forceerrorflag      if not dg_success, dg_newmutex
+//                                       will fail and return the error in
+//                                       forceerrorflag
+//
+// Outputs:
+//  const char*     return              pointer to null terminated c string error
+//                                       status message:
+//
+// Action:
+//  If the mutex is locked, then this unlocks the mutex. 
+//
+// How to use:
+//  Mutexes are used to make sure only one thread can access a resource at a time.
+//  To protect the resource from two threads trying to change something at the same
+//   time, first you need to make a mutex for that resource. Then when a thread 
+//   needs to use a resource, first the thread locks the mutex, then accesses the 
+//   resource, then unlocks the mutex.
+//  When you are all done with the mutex, for example, when your program is about
+//   to exit, free the mutex. Not all operating systems may automatically free
+//   the mutex if you forget. So if you forget to free the mutex, over time you
+//   may use up all the mutexes or memory in the system.
+//
+// Note:
+//  On Mac OS X, if a thread locks a mutex, and then tries to lock it again while
+//   it is still locked, it blocks. It doesn't return an error. 
+//   (J.N. 2022 January 24 Mac OS X 11.0.1)
+//
+// Failure cases:
+//   Can not write to memory at dg_newmutex
+//   The mutex was already unlocked. (Mac OS X) 
+//
+//////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
 
       <div class=word id=dg_runfileandwait>
 <pre>

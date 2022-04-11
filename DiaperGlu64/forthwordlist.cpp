@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 
 
@@ -2397,6 +2397,190 @@ void dg_forthsearchorderdrop(Bufferhandle* pBHarrayhead)
         return;
     }
 }
+
+void dg_forthwordlistdot(Bufferhandle* pBHarrayhead)
+{
+    unsigned char* pname;
+    UINT64 namelength;
+    UINT64 wordlistid;
+    UINT64 definitionid;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    wordlistid = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthwordlistdotname);
+        return;
+    }
+    
+    pname = dg_parseword(
+        pBHarrayhead,
+        &namelength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthwordlistdotname);
+        return;
+    }
+    
+    if (0 == namelength)
+    {
+        dg_pusherror(pBHarrayhead, dg_nowordfounderror);
+        dg_pusherror(pBHarrayhead, dg_forthwordlistdotname);
+        return;
+    }
+    
+    definitionid = dg_finddefinwordlist (
+        pBHarrayhead,
+        wordlistid,
+        pname,
+        namelength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthwordlistdotname);
+        return;
+    }
+    
+    // word not found is an error
+    if (DG_ENDOFWORDLIST == definitionid)
+    {
+        if (namelength > maxwordlength)
+        {
+            namelength = maxwordlength;
+        }
+                            
+        dg_putbuffersegment(
+            pBHarrayhead,
+            DG_DATASPACE_BUFFERID,
+            lastnotfoundword,
+            namelength,
+            pname);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {    
+            dg_pusherror(pBHarrayhead, dg_forthwordlistdotname);
+            return;
+        }
+
+        dg_putbufferbyte(
+            pBHarrayhead,
+            DG_DATASPACE_BUFFERID,
+            lastnotfoundword + namelength,
+            0);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {    
+            dg_pusherror(pBHarrayhead, dg_forthwordlistdotname);
+            return;
+        }
+
+        // word is not found - standard says we can do what we want in this case so...
+        //  I want the script to stop what it's doing and tell me which word wasn't found
+        //  Copying last word not found to a buffer as a 0 string and pushing pointer
+        //  to copy to error stack so it will show up on error stack.
+        dg_pusherror(pBHarrayhead, dg_evaluatebufferwordnotfounderror);
+        dg_pusherror(pBHarrayhead, dg_forthwordlistdotname);
+            
+        return;
+    }
+    
+    dg_executedefinition(
+        pBHarrayhead,
+        definitionid);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthwordlistdotname);
+        return;
+    }
+}
+
+void dg_forthcreatebracketwordlistdot(Bufferhandle* pBHarrayhead)
+{
+    UINT64 currentcreatewordlistid;
+    UINT64 wordlistid;
+    UINT64 wordid;
+    unsigned char* pname;
+    UINT64 namelength;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    wordlistid = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthcreatebracketwordlistdotname);
+		return;
+	}
+    
+    pname = dg_parseword(
+        pBHarrayhead,
+        &namelength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthcreatebracketwordlistdotname);
+		return;
+	}
+ 
+    if (namelength != 0)
+    {   
+        currentcreatewordlistid = dg_getbufferuint64(
+            pBHarrayhead,
+            DG_DATASPACE_BUFFERID,
+            currentcompilewordlist);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthpcurrentcreatewordlistname);
+            dg_pusherror(pBHarrayhead, dg_forthcreatebracketwordlistdotname);
+            return;
+        }
+    
+        wordid = dg_newwordcopyname (
+            pBHarrayhead,
+            DG_CORE_BUFFERID,  // compilebufid,
+            (UINT64)&dg_forthdocompiletypebracketwordlistdot, // compilebufoffset,
+            0,                 // databufid,
+            wordlistid,        // databufoffset,
+            DG_CORE_BUFFERID,  // namebufid,
+            (UINT64)pname,
+            namelength);
+    
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthcreatebracketwordlistdotname);
+            return;
+        }
+    
+        dg_linkdefinition(
+            pBHarrayhead,
+            currentcreatewordlistid,
+            wordid);
+    
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthcreatebracketwordlistdotname);
+            return;
+        }
+    }   
+       
+}
+
+
 
 
 // $>PROCWORD $>OBWORD $>OWORD $>:WORD $>COMPILECALLWORD $>IMMEDIATEWORD

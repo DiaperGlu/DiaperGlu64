@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -3645,6 +3645,246 @@ void testdg_copystolstringn()
      	dg_writestdout(&BHarrayhead, &(pbuf[5]), 1);
 		dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
     }
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_pushstolstringn()
+{
+//    unsigned int tbuf = 555;
+    const char* pError = NULL;
+
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+//    Bufferhandle* pBH = NULL;
+		
+    UINT64 offsetbufferid = 0;
+    UINT64 stringbufferid = 0;
+
+//    unsigned int t1 = 0;
+//    unsigned int t2 = 0;
+
+//    UINT32 i=0;
+
+    unsigned char* psrc = (unsigned char*)"abcd";
+    unsigned char* pbuf;
+    UINT64* pbuflength;
+    UINT64 x;
+
+//    UINT32 pagesize = dg_getpagesize();
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_pushstolstringn\n");
+
+
+    // error getting start offset of lstring in string buffer
+    // dg_initbuffers(&BHarrayhead);
+    dg_initerrors(&BHarrayhead, 100, &pError);
+#ifndef DGLU_NO_DIAPER
+    dg_pushstolstringn(&BHarrayhead, 3498, 2348, 4, (unsigned char*)badbufferhandle, 2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_pushstolstringnname)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_pushstolstringn error getting lstring start offset case - got wrong error on top ");
+		dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_getlstringstartoffsetname)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_pushstolstringn error getting lstring start offset case - got wrong error 1 below top ");
+		dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    dg_freeallbuffers(&BHarrayhead);
+
+#endif
+
+    // success case
+    // dg_initbuffers(&BHarrayhead);
+    dg_initerrors(&BHarrayhead, 100, &pError);
+
+    offsetbufferid = dg_newbuffer(&BHarrayhead, 40, 40, &pError, FORTH_FALSE); // string offset buffer
+    stringbufferid = dg_newbuffer(&BHarrayhead, 100, 100, &pError, FORTH_FALSE); // string string buffer
+
+    dg_pushlstring(&BHarrayhead, offsetbufferid, stringbufferid, 3, (unsigned char*)"Hey");
+    dg_pushlstring(&BHarrayhead, offsetbufferid, stringbufferid, 5, (unsigned char*)"Pinky");
+
+    dg_pushstolstringn(
+        &BHarrayhead, 
+        offsetbufferid, 
+        stringbufferid, 
+        0,
+        psrc,
+        1);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_pushstolstringn - success case - got an error ");
+		dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    pbuf = dg_getpbuffer(&BHarrayhead, stringbufferid, &pbuflength);
+
+    if (dg_getbufferbyte(&BHarrayhead, stringbufferid, 1) != 'e')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_pushstolstringn - success case - string buffer character[1] wrong, expected e got ");
+     	dg_writestdout(&BHarrayhead, &(pbuf[1]), 1);
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    if (dg_getbufferbyte(&BHarrayhead, stringbufferid, 2) != 'y')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_pushstolstringn - success case - string buffer character[2] wrong, expected y got ");
+     	dg_writestdout(&BHarrayhead, &(pbuf[2]), 1);
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    if (dg_getbufferbyte(&BHarrayhead, stringbufferid, 3) != 'a')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_pushstolstringn - success case - string buffer character[3] wrong, expected a got ");
+     	dg_writestdout(&BHarrayhead, &(pbuf[3]), 1);
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+    
+    if (dg_getbufferbyte(&BHarrayhead, stringbufferid, 4) != 'P')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_pushstolstringn - success case - string buffer character[3] wrong, expected P got ");
+     	dg_writestdout(&BHarrayhead, &(pbuf[4]), 1);
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+    
+    x = dg_getlstringlength (
+		&BHarrayhead,
+		offsetbufferid,
+		0);
+  
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_pushstolstringn - success case - got an error getting string length, got ");
+		dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }    
+    
+    if (x != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_pushstolstringn - success case - string length wrong, expected 4, got ");
+     	dg_writestdoutuinttodec(&BHarrayhead, x);
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }  
+
+    dg_freeallbuffers(&BHarrayhead);
+
+    // success case 2
+    // dg_initbuffers(&BHarrayhead);
+    dg_initerrors(&BHarrayhead, 100, &pError);
+
+    offsetbufferid = dg_newbuffer(&BHarrayhead, 40, 40, &pError, FORTH_FALSE); // string offset buffer
+    stringbufferid = dg_newbuffer(&BHarrayhead, 100, 100, &pError, FORTH_FALSE); // string string buffer
+
+    dg_pushlstring(&BHarrayhead, offsetbufferid, stringbufferid, 3, (unsigned char*)"Hey");
+    dg_pushlstring(&BHarrayhead, offsetbufferid, stringbufferid, 5, (unsigned char*)"Pinky");
+
+    dg_pushstolstringn(
+        &BHarrayhead, 
+        offsetbufferid, 
+        stringbufferid, 
+        1,
+        psrc,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_pushstolstringn - success case 2 - got an error ");
+		dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    pbuf = dg_getpbuffer(&BHarrayhead, stringbufferid, &pbuflength);
+
+    if (dg_getbufferbyte(&BHarrayhead, stringbufferid, 3) != 'P')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_pushstolstringn - success case 2 - string buffer character[3] wrong, expected P got ");
+     	dg_writestdout(&BHarrayhead, &(pbuf[1]), 3);
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    if (dg_getbufferbyte(&BHarrayhead, stringbufferid, 4) != 'i')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_copystolstringn - success case 2 - string buffer character[4] wrong, expected a got ");
+     	dg_writestdout(&BHarrayhead, &(pbuf[4]), 1);
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    if (dg_getbufferbyte(&BHarrayhead, stringbufferid, 5) != 'n')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_copystolstringn - success case 2 - string buffer character[5] wrong, expected n got ");
+     	dg_writestdout(&BHarrayhead, &(pbuf[5]), 1);
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+    
+    if (dg_getbufferbyte(&BHarrayhead, stringbufferid, 6) != 'k')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_copystolstringn - success case 2 - string buffer character[6] wrong, expected k got ");
+     	dg_writestdout(&BHarrayhead, &(pbuf[6]), 1);
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+    
+    if (dg_getbufferbyte(&BHarrayhead, stringbufferid, 7) != 'y')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_copystolstringn - success case 2 - string buffer character[7] wrong, expected y got ");
+     	dg_writestdout(&BHarrayhead, &(pbuf[7]), 1);
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+    
+    if (dg_getbufferbyte(&BHarrayhead, stringbufferid, 8) != 'a')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_copystolstringn - success case 2 - string buffer character[8] wrong, expected a got ");
+     	dg_writestdout(&BHarrayhead, &(pbuf[8]), 1);
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+    
+    if (dg_getbufferbyte(&BHarrayhead, stringbufferid, 9) != 'b')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_copystolstringn - success case 2 - string buffer character[a] wrong, expected b got ");
+     	dg_writestdout(&BHarrayhead, &(pbuf[9]), 1);
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+    
+    x = dg_getlstringlength (
+		&BHarrayhead,
+		offsetbufferid,
+		1);
+  
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_pushstolstringn - success case 2 - got an error getting string length, got ");
+		dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }    
+    
+    if (x != 7)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_pushstolstringn - success case 2 - string length wrong, expected 7, got ");
+     	dg_writestdoutuinttodec(&BHarrayhead, x);
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }  
 
     dg_freeallbuffers(&BHarrayhead);
 }
@@ -9175,6 +9415,5049 @@ void testdg_dropnlstrings()
     }
     
          
+    // cleanup
+    dg_freeallbuffers(&BHarrayhead);
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = badbufferhandle;
+}
+
+void testdg_uleextendlstringntol()
+{
+    const char* pError = NULL;
+    
+    unsigned char* plstring;
+    UINT64 lstringlength;
+
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_uleextendlstringntol\n");
+
+    dg_initbuffers(&BHarrayhead); // gonna use the string stack for testing
+
+
+    // dg_success case growing from 4 to 6
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"abcd",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleextendlstringntol normal case 4 to 6 - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_uleextendlstringntol (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+        6); //  newlength)
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleextendlstringntol normal case 4 to 6 - got error unsigned extending string\n");
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleextendlstringntol normal case 4 to 6 - got error getting pointer to lstring\n");
+    }
+    
+    if (plstring[3] != 'd')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleextendlstringntol normal case 4 to 6 - character before extension got changed\n");
+    }
+    
+    if (lstringlength != 6)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleextendlstringntol normal case 4 to 6 - length wrong after extension\n");
+    }
+    
+    if (plstring[4] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleextendlstringntol normal case 4 to 6 - 1st extended byte not 0\n");
+    }
+    
+    if (plstring[5] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleextendlstringntol normal case 4 to 6 - 2nd extended byte not 0\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_dropnlstrings normal case - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // dg_success case not growing
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"abcd",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleextendlstringntol normal case not growing - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_uleextendlstringntol (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+        3); //  newlength)
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleextendlstringntol normal not growing - got error unsigned extending string\n");
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleextendlstringntol normal not growing - got error getting pointer to lstring\n");
+    }
+    
+    if (plstring[3] != 'd')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleextendlstringntol normal not growing - character before extension got changed\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleextendlstringntol normal not growing - length wrong after extension\n");
+    }
+         
+    // cleanup
+    dg_freeallbuffers(&BHarrayhead);
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = badbufferhandle;
+}
+
+
+void testdg_uleaddlstringntolstringn()
+{
+    const char* pError = NULL;
+    
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    
+    UINT64 carryout;
+
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_uleaddlstringntolstringn\n");
+
+    dg_initbuffers(&BHarrayhead); // gonna use the string stack for testing
+
+
+    // dg_success case no carry
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"abcd",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal case no carry - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x01\x02\x01\x03",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal case no carry - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_uleaddlstringntolstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        &carryout);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal case no carry - got error doing dg_uaddlelstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal case no carry - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (plstring[0] != 'a')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal case no carry - 1st character of 1st string got changed\n");
+    }
+    
+    if (plstring[3] != 'd')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal case no carry - 3rd character of 1st string got changed\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal case no carry - length wrong\n");
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal case no carry - got error getting pointer to 2nd lstring\n");
+    }
+    
+    if (plstring[0] != 'b')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal case no carry - 1st character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[1] != 'd')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal case no carry - 2nd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[2] != 'd')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal case no carry - 3rd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[3] != 'g')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal case no carry - 4th character of 2nd string incorrect\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal case no carry - length of 2nds string wrong\n");
+    }
+    
+    if (carryout != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal case no carry - carryout not 0\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal with carry case - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // dg_success case with carry
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\xff\xfc\xfc\xfb",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal case with carry - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x01\x02\x03\x05",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal case with carry - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_uleaddlstringntolstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        &carryout);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal case with carry - got error doing dg_uaddlelstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal case with carry - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (plstring[0] != 0xff)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal case with carry - 1st character of 1st string got changed\n");
+    }
+    
+    if (plstring[3] != 0xfb)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal case with carry - 3rd character of 1st string got changed\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal case with carry - length wrong\n");
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal case with carry - got error getting pointer to 2nd lstring\n");
+    }
+    
+    if (plstring[0] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal case with carry - 1st character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[1] != 0xff)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal case with carry - 2nd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[2] != 0xff)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal case with carry - 3rd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[3] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal case with carry - 4th character of 2nd string incorrect\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal case with carry - length of 2nds string wrong\n");
+    }
+    
+    if (carryout != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal case with carry - carryout not 1\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleaddlstringntolstringn normal with carry case - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+         
+    // cleanup
+    dg_freeallbuffers(&BHarrayhead);
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = badbufferhandle;
+}
+
+
+void testdg_uleadclstringntolstringn()
+{
+    const char* pError = NULL;
+    
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    
+    UINT64 carryinout;
+
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_uleadclstringntolstringn\n");
+
+    dg_initbuffers(&BHarrayhead); // gonna use the string stack for testing
+
+
+    // dg_success case no carry
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"abcd",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal case no carry - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x01\x02\x01\x03",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal case no carry - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    carryinout = 0;
+    
+    dg_uleadclstringntolstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        &carryinout);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal case no carry - got error doing dg_uleadclstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal case no carry - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (plstring[0] != 'a')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal case no carry - 1st character of 1st string got changed\n");
+    }
+    
+    if (plstring[3] != 'd')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal case no carry - 3rd character of 1st string got changed\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal case no carry - length wrong\n");
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal case no carry - got error getting pointer to 2nd lstring\n");
+    }
+    
+    if (plstring[0] != 'b')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal case no carry - 1st character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[1] != 'd')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal case no carry - 2nd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[2] != 'd')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal case no carry - 3rd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[3] != 'g')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal case no carry - 4th character of 2nd string incorrect\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal case no carry - length of 2nds string wrong\n");
+    }
+    
+    if (carryinout != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal case no carry - carryout not 0\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal with carry case - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // dg_success case with carry
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\xff\xfc\xfc\xfb",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal case with carry - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x01\x02\x03\x05",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal case with carry - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    carryinout = 1;
+    
+    dg_uleadclstringntolstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        &carryinout);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal case with carry - got error doing dg_uleadclstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal case with carry - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (plstring[0] != 0xff)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal case with carry - 1st character of 1st string got changed\n");
+    }
+    
+    if (plstring[3] != 0xfb)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal case with carry - 3rd character of 1st string got changed\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal case with carry - length wrong\n");
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal case with carry - got error getting pointer to 2nd lstring\n");
+    }
+    
+    if (plstring[0] != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal case with carry - 1st character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[1] != 0xff)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal case with carry - 2nd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[2] != 0xff)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal case with carry - 3rd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[3] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal case with carry - 4th character of 2nd string incorrect\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal case with carry - length of 2nds string wrong\n");
+    }
+    
+    if (carryinout != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal case with carry - carryout not 1\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleadclstringntolstringn normal with carry case - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+         
+    // cleanup
+    dg_freeallbuffers(&BHarrayhead);
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = badbufferhandle;
+}
+
+
+void testdg_ulesbblstringntolstringn()
+{
+    const char* pError = NULL;
+    
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    
+    UINT64 borrowinout;
+
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_ulesbblstringntolstringn\n");
+
+    dg_initbuffers(&BHarrayhead); // gonna use the string stack for testing
+
+
+    // dg_success case no borrow
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"abcd",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal case no borrow - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x00\x01\x02\x01",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal case no borrow - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    borrowinout = 0;
+    
+    dg_ulesbblstringntolstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        &borrowinout);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal case no borrow - got error doing dg_usbblelstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal case no borrow - got error getting pointer to 2nd lstring\n");
+    }
+    
+    if (plstring[0] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal case no borrow - 1st character of 2nd string got changed\n");
+    }
+    
+    if (plstring[3] != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal case no borrow - 4th character of 2nd string got changed\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal case no borrow - length wrong\n");
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal case no borrow - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (plstring[0] != 'a')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal case no borrow - 1st character of 1st string incorrect\n");
+    }
+    
+    if (plstring[1] != 'a')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal case no borrow - 2nd character of 1st string incorrect\n");
+    }
+    
+    if (plstring[2] != 'a')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal case no borrow - 3rd character of 1st string incorrect\n");
+    }
+    
+    if (plstring[3] != 'c')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal case no borrow - 4th character of 1st string incorrect\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal case no borrow - length of 2nds string wrong\n");
+    }
+    
+    if (borrowinout != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal case no borrow - borrowinout not 0\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal with borrow case - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // dg_success case with carry
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\xff\xfc\xfc\xfb",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal case with borrow - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x01\x02\x03\x05",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal case with borrow - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    borrowinout = 1;
+    
+    dg_ulesbblstringntolstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        &borrowinout);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal case with borrow - got error doing dg_ulesbblstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal case with borrow - got error getting pointer to 2nd lstring\n");
+    }
+    
+    if (plstring[0] != 0xff)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal case with borrow - 1st character of 1st string got changed\n");
+    }
+    
+    if (plstring[3] != 0xfb)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal case with borrow - 3rd character of 1st string got changed\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal case with borrow - length wrong\n");
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal case with borrow - got error getting pointer to 2nd lstring\n");
+    }
+    
+    if (plstring[0] != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal case with borrow - 2nd character of 1st string incorrect, got %x");
+        dg_writestdoutuint64tohex(&BHarrayhead, plstring[0]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        
+    }
+    
+    if (plstring[1] != 0x05)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal case with borrow - 2nd character of 2nd string incorrect, got %x ");
+        dg_writestdoutuint64tohex(&BHarrayhead, plstring[1]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+    
+    if (plstring[2] != 0x06)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal case with borrow - 3rd character of 2nd string incorrect, got %x ");
+        dg_writestdoutuint64tohex(&BHarrayhead, plstring[2]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+    
+    if (plstring[3] != 0x09)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal case with borrow - 4th character of 2nd string incorrect, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, plstring[3]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal case with borrow - length of 1st string wrong\n");
+    }
+    
+    if (borrowinout != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal case with borrow - borrowinout not 1, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, plstring[0]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulesbblstringntolstringn normal with carry borrow - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+         
+    // cleanup
+    dg_freeallbuffers(&BHarrayhead);
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = badbufferhandle;
+}
+
+
+
+void testdg_uleandlstringntolstringn()
+{
+    const char* pError = NULL;
+    
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    
+    UINT64 carryout;
+
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_uleandlstringntolstringn\n");
+
+    dg_initbuffers(&BHarrayhead); // gonna use the string stack for testing
+
+
+    // dg_success case
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x00\x00\x07\x06",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleandlstringntolstringn normal case no carry - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x01\x02\x01\x03",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleandlstringntolstringn normal case no carry - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_uleandlstringntolstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleandlstringntolstringn normal case - got error doing dg_uandlelstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleandlstringntolstringn normal case - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (plstring[0] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleandlstringntolstringn normal case - 1st byte of 1st string got changed\n");
+    }
+    
+    if (plstring[1] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleandlstringntolstringn normal case - 2nd byte of 1st string got changed\n");
+    }
+    
+    if (plstring[2] != 7)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleandlstringntolstringn normal case - 3rd byte of 1st string got changed\n");
+    }
+    
+    if (plstring[3] != 6)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleandlstringntolstringn normal case - 4th character of 1st string got changed\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleandlstringntolstringn normal case - length wrong\n");
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleandlstringntolstringn normal case - got error getting pointer to 2nd lstring\n");
+    }
+    
+    if (plstring[0] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleandlstringntolstringn normal case - 1st character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[1] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleandlstringntolstringn normal case - 2nd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[2] != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleandlstringntolstringn normal case - 3rd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[3] != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleandlstringntolstringn normal case - 4th character of 2nd string incorrect\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleandlstringntolstringn normal case - length of 2nds string wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleandlstringntolstringn normal case - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // cleanup
+    dg_freeallbuffers(&BHarrayhead);
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = badbufferhandle;
+}
+
+
+void testdg_uleorlstringntolstringn()
+{
+    const char* pError = NULL;
+    
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    
+    UINT64 carryout;
+
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_uleorlstringntolstringn\n");
+
+    dg_initbuffers(&BHarrayhead); // gonna use the string stack for testing
+
+
+    // dg_success case
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x00\x00\x07\x06",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleorlstringntolstringn normal case no carry - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x01\x02\x01\x03",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleorlstringntolstringn normal case no carry - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_uleorlstringntolstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleorlstringntolstringn normal case - got error doing dg_uleorlstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleorlstringntolstringn normal case - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (plstring[0] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleorlstringntolstringn normal case - 1st byte of 1st string got changed\n");
+    }
+    
+    if (plstring[1] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleorlstringntolstringn normal case - 2nd byte of 1st string got changed\n");
+    }
+    
+    if (plstring[2] != 7)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleorlstringntolstringn normal case - 3rd byte of 1st string got changed\n");
+    }
+    
+    if (plstring[3] != 6)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleorlstringntolstringn normal case - 4th character of 1st string got changed\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleorlstringntolstringn normal case - length wrong\n");
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleorlstringntolstringn normal case - got error getting pointer to 2nd lstring\n");
+    }
+    
+    if (plstring[0] != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleorlstringntolstringn normal case - 1st character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[1] != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleorlstringntolstringn normal case - 2nd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[2] != 7)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleorlstringntolstringn normal case - 3rd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[3] != 7)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleorlstringntolstringn normal case - 4th character of 2nd string incorrect\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleorlstringntolstringn normal case - length of 2nds string wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_uleorlstringntolstringn normal case - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // cleanup
+    dg_freeallbuffers(&BHarrayhead);
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = badbufferhandle;
+}
+
+
+void testdg_ulexorlstringntolstringn()
+{
+    const char* pError = NULL;
+    
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    
+    UINT64 carryout;
+
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_ulexorlstringntolstringn\n");
+
+    dg_initbuffers(&BHarrayhead); // gonna use the string stack for testing
+
+
+    // dg_success case
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x00\x00\x07\x06",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexorlstringntolstringn normal case no carry - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x01\x02\x01\x03",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexorlstringntolstringn normal case no carry - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_ulexorlstringntolstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexorlstringntolstringn normal case - got error doing dg_uleorlstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexorlstringntolstringn normal case - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (plstring[0] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexorlstringntolstringn normal case - 1st byte of 1st string got changed\n");
+    }
+    
+    if (plstring[1] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexorlstringntolstringn normal case - 2nd byte of 1st string got changed\n");
+    }
+    
+    if (plstring[2] != 7)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexorlstringntolstringn normal case - 3rd byte of 1st string got changed\n");
+    }
+    
+    if (plstring[3] != 6)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexorlstringntolstringn normal case - 4th character of 1st string got changed\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexorlstringntolstringn normal case - length wrong\n");
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexorlstringntolstringn normal case - got error getting pointer to 2nd lstring\n");
+    }
+    
+    if (plstring[0] != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexorlstringntolstringn normal case - 1st character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[1] != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexorlstringntolstringn normal case - 2nd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[2] != 6)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexorlstringntolstringn normal case - 3rd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[3] != 5)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexorlstringntolstringn normal case - 4th character of 2nd string incorrect\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexorlstringntolstringn normal case - length of 2nds string wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexorlstringntolstringn normal case - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // cleanup
+    dg_freeallbuffers(&BHarrayhead);
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = badbufferhandle;
+}
+
+
+void testdg_ulenandlstringntolstringn()
+{
+    const char* pError = NULL;
+    
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    
+    UINT64 carryout;
+
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_ulenandlstringntolstringn\n");
+
+    dg_initbuffers(&BHarrayhead); // gonna use the string stack for testing
+
+
+    // dg_success case
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x00\x00\x07\x06",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenandlstringntolstringn normal case no carry - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x01\x02\x01\x03",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenandlstringntolstringn normal case no carry - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_ulenandlstringntolstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenandlstringntolstringn normal case - got error doing dg_uandlelstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenandlstringntolstringn normal case - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (plstring[0] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenandlstringntolstringn normal case - 1st byte of 1st string got changed\n");
+    }
+    
+    if (plstring[1] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenandlstringntolstringn normal case - 2nd byte of 1st string got changed\n");
+    }
+    
+    if (plstring[2] != 7)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenandlstringntolstringn normal case - 3rd byte of 1st string got changed\n");
+    }
+    
+    if (plstring[3] != 6)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenandlstringntolstringn normal case - 4th character of 1st string got changed\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenandlstringntolstringn normal case - length wrong\n");
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenandlstringntolstringn normal case - got error getting pointer to 2nd lstring\n");
+    }
+    
+    if (plstring[0] != 0xff)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenandlstringntolstringn normal case - 1st character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[1] != 0xff)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenandlstringntolstringn normal case - 2nd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[2] != 0xfe)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenandlstringntolstringn normal case - 3rd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[3] != 0xfd)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenandlstringntolstringn normal case - 4th character of 2nd string incorrect\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenandlstringntolstringn normal case - length of 2nds string wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenandlstringntolstringn normal case - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // cleanup
+    dg_freeallbuffers(&BHarrayhead);
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = badbufferhandle;
+}
+
+
+void testdg_ulenorlstringntolstringn()
+{
+    const char* pError = NULL;
+    
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    
+    UINT64 carryout;
+
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_ulenorlstringntolstringn\n");
+
+    dg_initbuffers(&BHarrayhead); // gonna use the string stack for testing
+
+
+    // dg_success case
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x00\x00\x07\x06",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenorlstringntolstringn normal case no carry - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x01\x02\x01\x03",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenorlstringntolstringn normal case no carry - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_ulenorlstringntolstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenorlstringntolstringn normal case - got error doing dg_uleorlstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenorlstringntolstringn normal case - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (plstring[0] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenorlstringntolstringn normal case - 1st byte of 1st string got changed\n");
+    }
+    
+    if (plstring[1] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenorlstringntolstringn normal case - 2nd byte of 1st string got changed\n");
+    }
+    
+    if (plstring[2] != 7)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenorlstringntolstringn normal case - 3rd byte of 1st string got changed\n");
+    }
+    
+    if (plstring[3] != 6)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenorlstringntolstringn normal case - 4th character of 1st string got changed\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenorlstringntolstringn normal case - length wrong\n");
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenorlstringntolstringn normal case - got error getting pointer to 2nd lstring\n");
+    }
+    
+    if (plstring[0] != 0xfe)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenorlstringntolstringn normal case - 1st character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[1] != 0xfd)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenorlstringntolstringn normal case - 2nd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[2] != 0xf8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenorlstringntolstringn normal case - 3rd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[3] != 0xf8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenorlstringntolstringn normal case - 4th character of 2nd string incorrect\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenorlstringntolstringn normal case - length of 2nds string wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulenorlstringntolstringn normal case - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // cleanup
+    dg_freeallbuffers(&BHarrayhead);
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = badbufferhandle;
+}
+
+
+void testdg_ulexnorlstringntolstringn()
+{
+    const char* pError = NULL;
+    
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    
+    UINT64 carryout;
+
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_ulexnorlstringntolstringn\n");
+
+    dg_initbuffers(&BHarrayhead); // gonna use the string stack for testing
+
+
+    // dg_success case
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x00\x00\x07\x06",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexnorlstringntolstringn normal case - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x01\x02\x01\x03",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexnorlstringntolstringn normal case - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_ulexnorlstringntolstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexnorlstringntolstringn normal case - got error doing dg_uleorlstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexnorlstringntolstringn normal case - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (plstring[0] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexnorlstringntolstringn normal case - 1st byte of 1st string got changed\n");
+    }
+    
+    if (plstring[1] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexnorlstringntolstringn normal case - 2nd byte of 1st string got changed\n");
+    }
+    
+    if (plstring[2] != 7)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexnorlstringntolstringn normal case - 3rd byte of 1st string got changed\n");
+    }
+    
+    if (plstring[3] != 6)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexnorlstringntolstringn normal case - 4th character of 1st string got changed\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexnorlstringntolstringn normal case - length wrong\n");
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexnorlstringntolstringn normal case - got error getting pointer to 2nd lstring\n");
+    }
+    
+    if (plstring[0] != 0xfe)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexnorlstringntolstringn normal case - 1st character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[1] != 0xfd)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexnorlstringntolstringn normal case - 2nd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[2] != 0xf9)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexnorlstringntolstringn normal case - 3rd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[3] != 0xfa)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexnorlstringntolstringn normal case - 4th character of 2nd string incorrect\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexnorlstringntolstringn normal case - length of 2nds string wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulexnorlstringntolstringn normal case - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // cleanup
+    dg_freeallbuffers(&BHarrayhead);
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = badbufferhandle;
+}
+
+
+void testdg_notlstringn()
+{
+    const char* pError = NULL;
+    
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    
+    UINT64 carryout;
+
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_notlstringn\n");
+
+    dg_initbuffers(&BHarrayhead); // gonna use the string stack for testing
+
+
+    // dg_success case
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x00\x00\x07\x06",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_notlstringn normal case - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x09\x70\x37\x22",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_notlstringn normal case - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_notlstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_notlstringn normal case - got error doing dg_uleorlstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_notlstringn normal case - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (plstring[0] != 0xff)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_notlstringn normal case - 1st byte of 1st string got changed\n");
+    }
+    
+    if (plstring[1] != 0xff)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_notlstringn normal case - 2nd byte of 1st string got changed\n");
+    }
+    
+    if (plstring[2] != 0xf8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_notlstringn normal case - 3rd byte of 1st string got changed\n");
+    }
+    
+    if (plstring[3] != 0xf9)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_notlstringn normal case - 4th character of 1st string got changed\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_notlstringn normal case - length wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_notlstringn normal case - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // dg_success case 2
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x00\x00\x07\x06",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_notlstringn normal case 2 - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x09\x70\x37\x22",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_notlstringn normal case 2 - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_notlstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_notlstringn normal case 2 - got error doing dg_uleorlstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_notlstringn normal case 2 - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (plstring[0] != 0xf6)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_notlstringn normal case 2 - 1st byte of 2nd string not correct\n");
+    }
+    
+    if (plstring[1] != 0x8f)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_notlstringn normal case 2 - 2nd byte of 2nd string not correct\n");
+    }
+    
+    if (plstring[2] != 0xc8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_notlstringn normal case 2 - 3rd byte of 2nd string not correct\n");
+    }
+    
+    if (plstring[3] != 0xdd)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_notlstringn normal case 2 - 4th character of 2nd string not correct\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_notlstringn normal case 2 - length wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_notlstringn normal case 2 - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // cleanup
+    dg_freeallbuffers(&BHarrayhead);
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = badbufferhandle;
+}
+
+void testdg_reverselstringn()
+{
+    const char* pError = NULL;
+    
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    
+    UINT64 carryout;
+
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_reverselstringn\n");
+
+    dg_initbuffers(&BHarrayhead); // gonna use the string stack for testing
+
+
+    // dg_success case
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x01\x80\x07\x06",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_reverselstringn normal case - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x09\x70\x37\x22",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_reverselstringn normal case - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_reverselstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_reverselstringn normal case - got error doing dg_uleorlstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_reverselstringn normal case - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (plstring[0] != 0x06)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_reverselstringn normal case - 1st byte of 1st string not correct\n");
+    }
+    
+    if (plstring[1] != 0x07)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_reverselstringn normal case - 2nd byte of 1st string not correct\n");
+    }
+    
+    if (plstring[2] != 0x80)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_reverselstringn normal case - 3rd byte of 1st string not correct\n");
+    }
+    
+    if (plstring[3] != 0x01)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_reverselstringn normal case - 4th character of 1st string not correct\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_reverselstringn normal case - length wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_reverselstringn normal case - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // dg_success case 2
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x00\x00\x07\x06",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_reverselstringn normal case 2 - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x09\x70\x37\x22",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_reverselstringn normal case 2 - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_reverselstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_reverselstringn normal case 2 - got error doing dg_uleorlstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_reverselstringn normal case 2 - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (plstring[0] != 0x22)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_reverselstringn normal case 2 - 1st byte of 2nd string not correct\n");
+    }
+    
+    if (plstring[1] != 0x37)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_reverselstringn normal case 2 - 2nd byte of 2nd string not correct\n");
+    }
+    
+    if (plstring[2] != 0x70)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_reverselstringn normal case 2 - 3rd byte of 2nd string not correct\n");
+    }
+    
+    if (plstring[3] != 0x09)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_reverselstringn normal case 2 - 4th character of 2nd string not correct\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_reverselstringn normal case 2 - length wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_reverselstringn normal case 2 - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // cleanup
+    dg_freeallbuffers(&BHarrayhead);
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = badbufferhandle;
+}
+
+
+void testdg_lelshiftlstringn()
+{
+    const char* pError = NULL;
+    
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    
+    UINT64 carryout;
+
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_lelshiftlstringn\n");
+
+    dg_initbuffers(&BHarrayhead); // gonna use the string stack for testing
+
+
+    // dg_success case
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x01\x80\x07\x06",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftlstringn normal case - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x09\x70\x37\x22",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftlstringn normal case - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_lelshiftlstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        &carryout);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftlstringn normal case - got error doing dg_uleorlstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftlstringn normal case - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (carryout != 0x00)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftlstringn normal case - carry out not 0\n");
+    }
+    
+    if (plstring[0] != 0x02)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftlstringn normal case - 1st byte of 1st string not correct\n");
+    }
+    
+    if (plstring[1] != 0x00)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftlstringn normal case - 2nd byte of 1st string not correct\n");
+    }
+    
+    if (plstring[2] != 0x0f)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftlstringn normal case - 3rd byte of 1st string not correct\n");
+    }
+    
+    if (plstring[3] != 0x0c)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftlstringn normal case - 4th character of 1st string not correct\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftlstringn normal case - length wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftlstringn normal case - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // dg_success case 2
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x00\x00\x07\x06",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftlstringn normal case 2 - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x09\x70\x37\x82",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftlstringn normal case 2 - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_lelshiftlstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        &carryout);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftlstringn normal case 2 - got error doing dg_uleorlstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftlstringn normal case 2 - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (carryout != 0x01)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftlstringn normal case - carry out not 1\n");
+    }
+    
+    if (plstring[0] != 0x12)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftlstringn normal case 2 - 1st byte of 2nd string not correct\n");
+    }
+    
+    if (plstring[1] != 0xe0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftlstringn normal case 2 - 2nd byte of 2nd string not correct\n");
+    }
+    
+    if (plstring[2] != 0x6e)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftlstringn normal case 2 - 3rd byte of 2nd string not correct\n");
+    }
+    
+    if (plstring[3] != 0x04)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftlstringn normal case 2 - 4th byte of 2nd string not correct\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftlstringn normal case 2 - length wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftlstringn normal case 2 - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // cleanup
+    dg_freeallbuffers(&BHarrayhead);
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = badbufferhandle;
+}
+
+
+void testdg_ulershiftlstringn()
+{
+    const char* pError = NULL;
+    
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    
+    UINT64 carryout;
+
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_ulershiftlstringn\n");
+
+    dg_initbuffers(&BHarrayhead); // gonna use the string stack for testing
+
+
+    // dg_success case
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x00\x80\x07\x06",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulershiftlstringn normal case - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x09\x70\x37\x22",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulershiftlstringn normal case - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_ulershiftlstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        &carryout);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulershiftlstringn normal case - got error doing dg_uleorlstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulershiftlstringn normal case - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (carryout != 0x00)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulershiftlstringn normal case - carry out not 0\n");
+    }
+    
+    if (plstring[0] != 0x00)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulershiftlstringn normal case - 1st byte of 1st string not correct\n");
+    }
+    
+    if (plstring[1] != 0xc0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulershiftlstringn normal case - 2nd byte of 1st string not correct\n");
+    }
+    
+    if (plstring[2] != 0x03)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulershiftlstringn normal case - 3rd byte of 1st string not correct\n");
+    }
+    
+    if (plstring[3] != 0x03)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulershiftlstringn normal case - 4th character of 1st string not correct\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulershiftlstringn normal case - length wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulershiftlstringn normal case - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // dg_success case 2
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x00\x00\x07\x06",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulershiftlstringn normal case 2 - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x09\x70\x37\x83",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulershiftlstringn normal case 2 - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_ulershiftlstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        &carryout);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulershiftlstringn normal case 2 - got error doing dg_uleorlstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulershiftlstringn normal case 2 - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (carryout != 0x01)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulershiftlstringn normal case - carry out not 1\n");
+    }
+    
+    if (plstring[0] != 0x04)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulershiftlstringn normal case 2 - 1st byte of 2nd string not correct\n");
+    }
+    
+    if (plstring[1] != 0xb8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulershiftlstringn normal case 2 - 2nd byte of 2nd string not correct\n");
+    }
+    
+    if (plstring[2] != 0x9b)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulershiftlstringn normal case 2 - 3rd byte of 2nd string not correct\n");
+    }
+    
+    if (plstring[3] != 0x41)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulershiftlstringn normal case 2 - 4th byte of 2nd string not correct\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulershiftlstringn normal case 2 - length wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_ulershiftlstringn normal case 2 - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // cleanup
+    dg_freeallbuffers(&BHarrayhead);
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = badbufferhandle;
+}
+
+
+void testdg_slershiftlstringn()
+{
+    const char* pError = NULL;
+    
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    
+    UINT64 carryout;
+
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_slershiftlstringn\n");
+
+    dg_initbuffers(&BHarrayhead); // gonna use the string stack for testing
+
+
+    // dg_success case
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x00\x80\x07\x06",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_slershiftlstringn normal case - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x09\x70\x37\x22",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_slershiftlstringn normal case - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_slershiftlstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        &carryout);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_slershiftlstringn normal case - got error doing dg_uleorlstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_slershiftlstringn normal case - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (carryout != 0x00)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_slershiftlstringn normal case - carry out not 0\n");
+    }
+    
+    if (plstring[0] != 0x00)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_slershiftlstringn normal case - 1st byte of 1st string not correct\n");
+    }
+    
+    if (plstring[1] != 0xc0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_slershiftlstringn normal case - 2nd byte of 1st string not correct\n");
+    }
+    
+    if (plstring[2] != 0x03)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_slershiftlstringn normal case - 3rd byte of 1st string not correct\n");
+    }
+    
+    if (plstring[3] != 0x03)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_slershiftlstringn normal case - 4th character of 1st string not correct\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_slershiftlstringn normal case - length wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_slershiftlstringn normal case - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // dg_success case 2
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x00\x00\x07\x06",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_slershiftlstringn normal case 2 - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x09\x70\x37\x83",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_slershiftlstringn normal case 2 - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_slershiftlstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        &carryout);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_slershiftlstringn normal case 2 - got error doing dg_uleorlstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_slershiftlstringn normal case 2 - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (carryout != 0x01)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_slershiftlstringn normal case - carry out not 1\n");
+    }
+    
+    if (plstring[0] != 0x04)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_slershiftlstringn normal case 2 - 1st byte of 2nd string not correct\n");
+    }
+    
+    if (plstring[1] != 0xb8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_slershiftlstringn normal case 2 - 2nd byte of 2nd string not correct\n");
+    }
+    
+    if (plstring[2] != 0x9b)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_slershiftlstringn normal case 2 - 3rd byte of 2nd string not correct\n");
+    }
+    
+    if (plstring[3] != 0xc1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_slershiftlstringn normal case 2 - 4th byte of 2nd string not correct\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_slershiftlstringn normal case 2 - length wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_slershiftlstringn normal case 2 - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // cleanup
+    dg_freeallbuffers(&BHarrayhead);
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = badbufferhandle;
+}
+
+
+void testdg_lelshiftclstringn()
+{
+    const char* pError = NULL;
+    
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    
+    UINT64 carryinout;
+
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_lelshiftclstringn\n");
+
+    dg_initbuffers(&BHarrayhead); // gonna use the string stack for testing
+
+
+    // dg_success case
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x01\x80\x07\x06",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftclstringn normal case - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x09\x70\x37\x22",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftclstringn normal case - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    carryinout = 0;
+    
+    dg_lelshiftclstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        &carryinout);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftclstringn normal case - got error doing dg_uleorlstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftclstringn normal case - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (carryinout != 0x00)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftclstringn normal case - carry out not 0\n");
+    }
+    
+    if (plstring[0] != 0x02)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftclstringn normal case - 1st byte of 1st string not correct\n");
+    }
+    
+    if (plstring[1] != 0x00)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftclstringn normal case - 2nd byte of 1st string not correct\n");
+    }
+    
+    if (plstring[2] != 0x0f)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftclstringn normal case - 3rd byte of 1st string not correct\n");
+    }
+    
+    if (plstring[3] != 0x0c)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftclstringn normal case - 4th character of 1st string not correct\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftclstringn normal case - length wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftclstringn normal case - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // dg_success case 2
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x00\x00\x07\x06",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftclstringn normal case 2 - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x09\x70\x37\x82",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftclstringn normal case 2 - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    carryinout = 1;
+    
+    dg_lelshiftclstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        &carryinout);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftclstringn normal case 2 - got error doing dg_uleorlstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftclstringn normal case 2 - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (carryinout != 0x01)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftclstringn normal case - carry out not 1\n");
+    }
+    
+    if (plstring[0] != 0x13)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftclstringn normal case 2 - 1st byte of 2nd string not correct\n");
+    }
+    
+    if (plstring[1] != 0xe0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftclstringn normal case 2 - 2nd byte of 2nd string not correct\n");
+    }
+    
+    if (plstring[2] != 0x6e)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftclstringn normal case 2 - 3rd byte of 2nd string not correct\n");
+    }
+    
+    if (plstring[3] != 0x04)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftclstringn normal case 2 - 4th byte of 2nd string not correct\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftclstringn normal case 2 - length wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lelshiftclstringn normal case 2 - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // cleanup
+    dg_freeallbuffers(&BHarrayhead);
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = badbufferhandle;
+}
+
+
+void testdg_lershiftclstringn()
+{
+    const char* pError = NULL;
+    
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    
+    UINT64 carryinout;
+
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_lershiftclstringn\n");
+
+    dg_initbuffers(&BHarrayhead); // gonna use the string stack for testing
+
+
+    // dg_success case
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x00\x80\x07\x06",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lershiftclstringn normal case - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x09\x70\x37\x22",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lershiftclstringn normal case - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    carryinout = 0;
+    
+    dg_lershiftclstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        &carryinout);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lershiftclstringn normal case - got error doing dg_uleorlstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lershiftclstringn normal case - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (carryinout != 0x00)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lershiftclstringn normal case - carry out not 0\n");
+    }
+    
+    if (plstring[0] != 0x00)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lershiftclstringn normal case - 1st byte of 1st string not correct\n");
+    }
+    
+    if (plstring[1] != 0xc0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lershiftclstringn normal case - 2nd byte of 1st string not correct\n");
+    }
+    
+    if (plstring[2] != 0x03)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lershiftclstringn normal case - 3rd byte of 1st string not correct\n");
+    }
+    
+    if (plstring[3] != 0x03)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lershiftclstringn normal case - 4th character of 1st string not correct\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lershiftclstringn normal case - length wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lershiftclstringn normal case - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // dg_success case 2
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x00\x00\x07\x06",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lershiftclstringn normal case 2 - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x09\x70\x37\x83",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lershiftclstringn normal case 2 - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    carryinout = 1;
+    
+    dg_lershiftclstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        &carryinout);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lershiftclstringn normal case 2 - got error doing dg_uleorlstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lershiftclstringn normal case 2 - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (carryinout != 0x01)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lershiftclstringn normal case - carry out not 1\n");
+    }
+    
+    if (plstring[0] != 0x04)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lershiftclstringn normal case 2 - 1st byte of 2nd string not correct\n");
+    }
+    
+    if (plstring[1] != 0xb8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lershiftclstringn normal case 2 - 2nd byte of 2nd string not correct\n");
+    }
+    
+    if (plstring[2] != 0x9b)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lershiftclstringn normal case 2 - 3rd byte of 2nd string not correct\n");
+    }
+    
+    if (plstring[3] != 0xc1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lershiftclstringn normal case 2 - 4th byte of 2nd string not correct\n");
+    }
+    
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lershiftclstringn normal case 2 - length wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_lershiftclstringn normal case 2 - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // cleanup
+    dg_freeallbuffers(&BHarrayhead);
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = badbufferhandle;
+}
+
+void testdg_mulu64bylstringnaddtolstringn()
+{
+    const char* pError = NULL;
+    
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    
+    UINT64 carryinout;
+
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_mulu64bylstringnaddtolstringn\n");
+
+    dg_initbuffers(&BHarrayhead); // gonna use the string stack for testing
+
+
+    // dg_success case no carry
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x01\x00\x00\x00\x00\x00\x00\x00",
+        8);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00",
+        16);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_mulu64bylstringnaddtolstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        3); // u);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry - got error doing dg_uleadclstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (plstring[0] != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry - 1st character of 1st string got changed\n");
+    }
+    
+    if (plstring[7] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry - last character of 1st string got changed\n");
+    }
+    
+    if (lstringlength != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry - length wrong\n");
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry - got error getting pointer to 2nd lstring\n");
+    }
+    
+    if (plstring[0] != 3)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry - 1st character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[1] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry - 2nd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[2] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry - 3rd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[15] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry - 4th character of 2nd string incorrect\n");
+    }
+    
+    if (lstringlength != 16)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry - length of 2nds string wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal no carry case - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // dg_success case no carry need to align source
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x01\x00\x00\x00",
+        4);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry need to align source - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00",
+        16);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry need to align source - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_mulu64bylstringnaddtolstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        3); // u);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry need to align source - got error doing dg_uleadclstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry need to align source - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (plstring[0] != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry need to align source - 1st character of 1st string got changed\n");
+    }
+    
+    if (plstring[7] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry need to align source - last character of 1st string got changed\n");
+    }
+    
+    if (lstringlength != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry need to align source - length wrong\n");
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry need to align source - got error getting pointer to 2nd lstring\n");
+    }
+    
+    if (plstring[0] != 3)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry need to align source - 1st character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[1] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry need to align source - 2nd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[2] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry need to align source - 3rd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[15] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry need to align source - 4th character of 2nd string incorrect\n");
+    }
+    
+    if (lstringlength != 16)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry need to align source - length of 2nds string wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal no carry case need to align source - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // dg_success case no carry need to align destination
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x01\x00\x00\x00\x00\x00\x00\x00",
+        8);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry need to align destination - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x00",
+        1);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry need to align destination - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_mulu64bylstringnaddtolstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        3); // u);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry need to align destination - got error doing dg_uleadclstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry need to align destination - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (plstring[0] != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry need to align destination - 1st character of 1st string got changed\n");
+    }
+    
+    if (plstring[7] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry need to align destination - last character of 1st string got changed\n");
+    }
+    
+    if (lstringlength != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry need to align destination - length wrong\n");
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry need to align destination - got error getting pointer to 2nd lstring\n");
+    }
+    
+    if (plstring[0] != 3)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry need to align destination - 1st character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[1] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry need to align destination - 2nd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[2] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry need to align destination - 3rd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[15] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry need to align destination - 4th character of 2nd string incorrect\n");
+    }
+    
+    if (lstringlength != 16)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case no carry need to align destination - length of 2nds string wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal no carry case need to align destination - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    // dg_success case carry when u64destlength = u64srclength + 1
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x01\x00\x00\x00\x00\x00\x00\x00",
+        8);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength = u64srclength + 1 - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff",
+        16);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength = u64srclength + 1 - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_mulu64bylstringnaddtolstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        3); // u);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength = u64srclength + 1 - got error doing dg_uleadclstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength = u64srclength + 1 - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (plstring[0] != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength = u64srclength + 1 - 1st character of 1st string got changed\n");
+    }
+    
+    if (plstring[7] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength = u64srclength + 1 - last character of 1st string got changed\n");
+    }
+    
+    if (lstringlength != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength = u64srclength + 1 - length wrong\n");
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength = u64srclength + 1 - got error getting pointer to 2nd lstring\n");
+    }
+    
+    if (plstring[0] != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength = u64srclength + 1 - 1st character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[1] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength = u64srclength + 1 - 2nd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[2] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength = u64srclength + 1 - 3rd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[15] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength = u64srclength + 1 - 16th character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[16] != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength = u64srclength + 1 - 17th character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[17] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength = u64srclength + 1 - 17th character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[23] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength = u64srclength + 1 - last character of 2nd string incorrect\n");
+    }
+    
+    if (lstringlength != 24)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength = u64srclength + 1 - length of 2nds string wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal carry when u64destlength = u64srclength + 1 case - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // dg_success case carry when u64destlength > u64srclength + 1
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x01\x00\x00\x00\x00\x00\x00\x00",
+        8);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength = u64srclength + 1 - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x00\x00",
+        24);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_mulu64bylstringnaddtolstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        3); // u);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 - got error doing dg_uleadclstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (plstring[0] != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 - 1st character of 1st string got changed\n");
+    }
+    
+    if (plstring[7] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 - last character of 1st string got changed\n");
+    }
+    
+    if (lstringlength != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 - length wrong\n");
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 - got error getting pointer to 2nd lstring\n");
+    }
+    
+    if (plstring[0] != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 - 1st character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[1] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 - 2nd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[2] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 - 3rd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[15] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 - 16th character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[16] != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 - 17th character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[17] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 - 17th character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[23] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 - last character of 2nd string incorrect\n");
+    }
+    
+    if (lstringlength != 24)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 - length of 2nds string wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal carry when u64destlength > u64srclength + 1 case - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // dg_success case carry when u64destlength > u64srclength + 1 b
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x01\x00\x00\x00\x00\x00\x00\x00",
+        8);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength = u64srclength + 1 b - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00",
+        24);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 b - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_mulu64bylstringnaddtolstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        3); // u);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 b - got error doing dg_uleadclstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 b - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (plstring[0] != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 b - 1st character of 1st string got changed\n");
+    }
+    
+    if (plstring[7] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 b - last character of 1st string got changed\n");
+    }
+    
+    if (lstringlength != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 b - length wrong\n");
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 b - got error getting pointer to 2nd lstring\n");
+    }
+    
+    if (plstring[0] != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 b - 1st character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[1] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 b - 2nd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[2] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 b - 3rd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[15] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 b - 16th character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[16] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 b - 17th character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[17] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 b - 18th character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[18] != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 b - 19th character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[23] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 b - last character of 2nd string incorrect\n");
+    }
+    
+    if (lstringlength != 24)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 b - length of 2nds string wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 b - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // dg_success case carry when u64destlength > u64srclength + 1 c
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x01\x00\x00\x00\x00\x00\x00\x00",
+        8);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength = u64srclength + 1 c - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff",
+        24);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 b - got error pushing 2nd string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_mulu64bylstringnaddtolstringn (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        3); // u);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 c - got error doing dg_uleadclstringntolstringn, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 c - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (plstring[0] != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 c - 1st character of 1st string got changed\n");
+    }
+    
+    if (plstring[7] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 c - last character of 1st string got changed\n");
+    }
+    
+    if (lstringlength != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 c - length wrong\n");
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 c - got error getting pointer to 2nd lstring\n");
+    }
+    
+    if (plstring[0] != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 c - 1st character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[1] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 c - 2nd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[2] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 c - 3rd character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[15] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 c - 16th character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[16] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 c - 17th character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[17] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 c - 18th character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[18] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 c - 19th character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[23] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 c - 24th character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[24] != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 c - 25th character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[25] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 c - 26th character of 2nd string incorrect\n");
+    }
+    
+    if (plstring[31] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 c - last character of 2nd string incorrect\n");
+    }
+    
+    if (lstringlength != 32)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 c - length of 2nds string wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_mulu64bylstringnaddtolstringn normal case carry when u64destlength > u64srclength + 1 b - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+        
+    // cleanup
+    dg_freeallbuffers(&BHarrayhead);
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = badbufferhandle;
+}
+
+
+void testdg_divlstringnbyu64()
+{
+    const char* pError = NULL;
+    
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    UINT64 remainder;
+
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_divlstringnbyu64\n");
+
+    dg_initbuffers(&BHarrayhead); // gonna use the string stack for testing
+
+
+    // success case one uint64 already aligned
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x0f\x00\x00\x00\x00\x00\x00\x00",
+        8);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_divlstringnbyu64 success case one uint64 already aligned - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_divlstringnbyu64 (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,  // stringida
+        3,  // u
+        &remainder);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_divlstringnbyu64 success case one uint64 already aligned - got error doing dg_divlstringnbyu64, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_divlstringnbyu64 success case one uint64 already aligned - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (plstring[0] != 5)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_divlstringnbyu64 success case one uint64 already aligned - 1st character of 1st string wrong\n");
+    }
+    
+    if (plstring[1] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_divlstringnbyu64 success case one uint64 already aligned - 2nd character of 1st string wrong\n");
+    }
+    
+    if (plstring[7] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_divlstringnbyu64 success case one uint64 already aligned - last character of 1st string wrong\n");
+    }
+    
+    if (lstringlength != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_divlstringnbyu64 success case one uint64 already aligned - length wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_divlstringnbyu64 success case one uint64 already aligned - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    
+    // success case one uint64 not aligned
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x0f\x00\x00\x00\x00\x00\x00\x00",
+        1);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_divlstringnbyu64 success case one uint64 not aligned - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_divlstringnbyu64 (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,  // stringida
+        3,  // u
+        &remainder);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_divlstringnbyu64 success case one uint64 not aligned - got error doing dg_divlstringnbyu64, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_divlstringnbyu64 success case one uint64 not aligned - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (plstring[0] != 5)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_divlstringnbyu64 success case one uint64 not aligned - 1st character of 1st string wrong\n");
+    }
+    
+    if (plstring[1] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_divlstringnbyu64 success case one uint64 not aligned - 2nd character of 1st string wrong\n");
+    }
+    
+    if (plstring[7] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_divlstringnbyu64 success case one uint64 not aligned - last character of 1st string wrong\n");
+    }
+    
+    if (lstringlength != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_divlstringnbyu64 success case one uint64 not aligned - length wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_divlstringnbyu64 success case one uint64 not aligned - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+    
+    // success case two uint64s already aligned
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x06\x00\x00\x00\x00\x00\x00\x00\xfb\xff\xff\xff\xff\xff\xff\xff",
+        16);
+        
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_divlstringnbyu64 success case two uint64s already aligned - got error pushing 1st string to stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_divlstringnbyu64 (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,  // stringida
+        (UINT64)-2,  // u
+        &remainder);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_divlstringnbyu64 success case two uint64s already aligned - got error doing dg_divlstringnbyu64, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+		DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+		&lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_divlstringnbyu64 success case two uint64s already aligned - got error getting pointer to 1st lstring\n");
+    }
+    
+    if (plstring[0] != (unsigned char)-3)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_divlstringnbyu64 success case two uint64s already aligned - 1st character of 1st string got changed, expected -3, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, plstring[0]);
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+    
+    if (plstring[1] != (unsigned char)-1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_divlstringnbyu64 success case two uint64s already aligned - 2nd character of 1st string got changed, expected -1, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, plstring[1]);
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+    
+    if (plstring[7] != (unsigned char)-1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_divlstringnbyu64 success case two uint64s already aligned - 8th character of 1st string wrong, expected -1, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, plstring[7]);
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+    
+    if (plstring[15] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_divlstringnbyu64 success case two uint64s already aligned - last character of 1st string wrong, expected 0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, plstring[15]);
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+    
+    if (lstringlength != 16)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_divlstringnbyu64 success case two uint64s already aligned - length wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_divlstringnbyu64 success case two uint64s already aligned - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+        
     // cleanup
     dg_freeallbuffers(&BHarrayhead);
     dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);

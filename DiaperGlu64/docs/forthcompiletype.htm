@@ -1,22 +1,22 @@
 <!--
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 -->
 
@@ -79,6 +79,7 @@
         <a href=forthcompiletype.htm#dg_forthdocompiletypecdeclretuint128      >dg_forthdocompiletypecdeclretuint128</a>
         <a href=forthcompiletype.htm#dg_forthdocompiletypecppmemberfunction    >dg_forthdocompiletypecppmemberfunction</a>
         <a href=forthcompiletype.htm#dg_forthdocompiletypecall                 >dg_forthdocompiletypecall</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypebracketwordlistdot   >OCR[WORDLIST.]</a>
       
     </div>
 
@@ -736,7 +737,44 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
-      
+
+
+      <div class=word id=dg_forthdocompiletypebracketwordlistdot>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthdocompiletypebracketwordlistdot ( OCR[WORDLIST.] )
+//
+// C prototype:
+//  void dg_forthdocompiletypebracketwordlistdot (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( dataoffset databufid -- )
+// 
+// Data stack in:
+//  dataoffset                     word list id of the wordlist to search
+//  databufid                      not used
+//                                                            
+// Action:
+//  Removes databufid from the data stack then does WORDLIST which is the 
+//   following:
+//    Pops dataoffset off the data stack and uses it as the wordlist id of the
+//     wordlist to search.
+//    Then parses the next wordname in the current input buffer. 
+//    Then searches the wordlist for the wordname.
+//    If the wordname is found, this executes the word.
+//    If the wordname is not found, this pushes an error to the error stack.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
     </div>
 
   </div></body>

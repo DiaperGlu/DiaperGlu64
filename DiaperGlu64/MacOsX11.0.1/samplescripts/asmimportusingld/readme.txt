@@ -1,3 +1,6 @@
+04/112022 Jim Norris
+
+There is a new way to to compile imports. See the /testosymbolbuf example for details.
 
 12/29/2019 Jim Norris
 

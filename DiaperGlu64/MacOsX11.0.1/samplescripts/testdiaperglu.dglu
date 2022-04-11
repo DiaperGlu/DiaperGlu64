@@ -1,21 +1,21 @@
 ( //////////////////////////////////////////////////////////////////////////////////////// )
 ( //                                                                                       )
-( //    Copyright 2021 James Patrick Norris                                                )
+( //    Copyright 2022 James Patrick Norris                                                )
 ( //                                                                                       )
-( //    This file is part of Diaperglu 5.0.                                                )
+( //    This file is part of Diaperglu 5.2.                                                )
 ( //                                                                                       )
-( //    Diaperglu 5.0 is free software; you can redistribute it and/or modify              )
+( //    Diaperglu 5.2 is free software; you can redistribute it and/or modify              )
 ( //    it under the terms of the GNU General Public License as published by               )
 ( //    the Free Software Foundation; either version 2 of the License, or                  )
 ( //    {at your option} any later version.                                                )
 ( //                                                                                       )
-( //    Diaperglu 5.0 is distributed in the hope that it will be useful,                   )
+( //    Diaperglu 5.2 is distributed in the hope that it will be useful,                   )
 ( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
 ( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
 ( //    GNU General Public License for more details.                                       )
 ( //                                                                                       )
 ( //    You should have received a copy of the GNU General Public License                  )
-( //    along with Diaperglu 5.0; if not, write to the Free Software                       )
+( //    along with Diaperglu 5.2; if not, write to the Free Software                       )
 ( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
 ( //                                                                                       )
 ( //////////////////////////////////////////////////////////////////////////////////////// )
@@ -23,8 +23,8 @@
 ( /////////////////////////////// )
 ( // James Patrick Norris      // )
 ( // www.rainbarrel.com        // )
-( // January 9, 2021           // )
-( // version 5.0               // )
+( // April 11, 2022            // )
+( // version 5.2               // )
 ( /////////////////////////////// )
 
 ( test include file )
@@ -3965,12 +3965,35 @@ FDEPTH 1 = ?T
  ( /////////////////////////////////// )
 
   DECIMAL 55
+  
+  LOCAL-CONSTANTS 5 xx  2 yy  3 zz  8 ww;LOCAL-CONSTANTS 9 qq  6 rr  7 ss
+  
+  ss rr qq ww zz yy xx 
 
-  : testlocalconstants
-    LOCAL-CONSTANTS 5 xx  2 yy  3 zz  8 ww;LOCAL-CONSTANTS 9 qq  6 rr  7 ss
+  5 = ?T
+  2 = ?T
+  3 = ?T
+  8 = ?T
+  9 = ?T
+  6 = ?T
+  7 = ?T
+
+  DEPTH 1 = ?T
+   55 = ?T
+   
+( /////////////////////////////////// )
+
+ $" Testing [LOCAL-CONSTANTS]" .$ CR  
+
+ ( /////////////////////////////////// )
+
+  DECIMAL 55
+
+  : test[localconstants]
+    [LOCAL-CONSTANTS] 5 xx  2 yy  3 zz  8 ww;[LOCAL-CONSTANTS] 9 qq  6 rr  7 ss
     ss rr qq ww zz yy xx ;
 
-  testlocalconstants
+  test[localconstants]
 
   5 = ?T
   2 = ?T
@@ -3991,15 +4014,43 @@ FDEPTH 1 = ?T
 
   DECIMAL 55
 
-  : testlocalconstants<
-    LOCAL-CONSTANTS< 
+  LOCAL-CONSTANTS< 
       5 xx  2 yy  
       3 zz  8 ww>LOCAL-CONSTANTS< 
       9 qq  
       6 rr  7 ss >
+    
+  ss rr qq ww zz yy xx 
+
+  5 = ?T
+  2 = ?T
+  3 = ?T
+  8 = ?T
+  9 = ?T
+  6 = ?T
+  7 = ?T
+
+  DEPTH 1 = ?T
+   55 = ?T
+   
+   
+( /////////////////////////////////// )
+
+ $" Testing [LOCAL-CONSTANTS]<" .$ CR  
+
+ ( /////////////////////////////////// )
+
+  DECIMAL 55
+
+  : test[localconstants]<
+    [LOCAL-CONSTANTS]< 
+      5 xx  2 yy  
+      3 zz  8 ww>[LOCAL-CONSTANTS]< 
+      9 qq  
+      6 rr  7 ss >
     ss rr qq ww zz yy xx ;
 
-  testlocalconstants<
+  test[localconstants]<
 
   5 = ?T
   2 = ?T
@@ -4121,3 +4172,340 @@ FDEPTH 1 = ?T
 
 // putting things back the way they were
 USER-WORDLIST PCURRENTCREATEWORDLIST !
+
+
+( /////////////////////////////////// )
+
+ $" Testing ENUM<" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ 1 0 ENUM< aa bb >
+
+ 2 = ?T
+ aa 0 = ?T
+ bb 1 = ?T
+ 
+ 2 1 ENUM< cc dd >
+ 
+ 5 = ?T
+ cc 1 = ?T
+ dd 3 = ?T
+ 
+ 3 2 ENUM< ee ff 4 gg 1 0 hh ii >
+ 
+ 2 = ?T
+ ee 2 = ?T
+ ff 5 = ?T
+ gg 9 = ?T
+ hh 0 = ?T
+ ii 1 = ?T
+ 
+ 55 = ?T
+
+
+ ( /////////////////////////////////// )
+
+ $" Testing LOCAL-ENUM<" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ 1 0 LOCAL-ENUM< aaunique bb >  
+
+ 2 = ?T
+ aaunique 0 = ?T
+ bb 1 = ?T
+ 
+ 2 1 LOCAL-ENUM< cc dd >
+ 
+ 5 = ?T
+ cc 1 = ?T
+ dd 3 = ?T
+ 
+ 3 2 LOCAL-ENUM< ee ff 4 gg 1 0 hh ii >
+ 
+ 2 = ?T
+ ee 2 = ?T
+ ff 5 = ?T
+ gg 9 = ?T
+ hh 0 = ?T
+ ii 1 = ?T
+ 
+ ?CLEAR-LOCALS 
+ 
+ ' aaunique ENDOFLIST = ?T  // need a unique name for this test
+ 
+ 55 = ?T
+ 
+ 
+ ( /////////////////////////////////// )
+
+ $" Testing [LOCAL-ENUM]<" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ [LOCAL-ENUM]< aaunique bb >  
+
+ aaunique 0 = ?T
+ bb 1 = ?T
+ 
+ [LOCAL-ENUM]< 2 1 cc dd >
+ 
+ cc 1 = ?T
+ dd 3 = ?T
+ 
+ [LOCAL-ENUM]< 3 2 ee ff 4 gg 1 0 hh ii >
+ 
+ ee 2 = ?T
+ ff 5 = ?T
+ gg 9 = ?T
+ hh 0 = ?T
+ ii 1 = ?T
+ 
+ ?CLEAR-LOCALS 
+ 
+ ' aaunique ENDOFLIST = ?T  // need a name that isn't already in the search order for this test
+ 
+ : test[LOCAL-ENUM] 5 [LOCAL-ENUM]< aaau bb 3 cc 5 2 dd ee > 6 ee dd cc bb aaau ;
+ 
+ test[LOCAL-ENUM] 
+ 0 = ?T
+ 1 = ?T
+ 4 = ?T
+ 2 = ?T
+ 7 = ?T
+ 6 = ?T
+ 5 = ?T
+ 
+ 
+ ' aaau ENDOFLIST = ?T  // need a name that isn't already in the search order for this test
+ 
+ 55 = ?T
+ 
+
+ ( /////////////////////////////////// )
+
+ $" Testing LOCAL-ENUM<" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ 1 0 LOCAL-ENUM< aaunique bb >  
+
+ 2 = ?T
+ aaunique 0 = ?T
+ bb 1 = ?T
+ 
+ 2 1 LOCAL-ENUM< cc dd >
+ 
+ 5 = ?T
+ cc 1 = ?T
+ dd 3 = ?T
+ 
+ 3 2 LOCAL-ENUM< ee ff 4 gg 1 0 hh ii >
+ 
+ 2 = ?T
+ ee 2 = ?T
+ ff 5 = ?T
+ gg 9 = ?T
+ hh 0 = ?T
+ ii 1 = ?T
+ 
+ ?CLEAR-LOCALS 
+ 
+ ' aaunique ENDOFLIST = ?T  // need a unique name for this test
+ 
+ 55 = ?T
+ 
+ 
+ ( /////////////////////////////////// )
+
+ $" Testing TYPED-ENUM<" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ 1 0 99 TYPED-ENUM< aa bb >
+ 
+ 2 = ?T
+ aa 99 = ?T 0 = ?T
+ bb 99 = ?T 1 = ?T
+ 
+ 2 1 99 TYPED-ENUM< cc dd >
+ 
+ 5 = ?T
+ cc 99 = ?T 1 = ?T
+ dd 99 = ?T 3 = ?T
+ 
+ 3 2 99 TYPED-ENUM< ee ff 4 gg 1 0 hh ii >
+ 
+ 2 = ?T
+ ee 99 = ?T 2 = ?T
+ ff 99 = ?T 5 = ?T
+ gg 99 = ?T 9 = ?T
+ hh 99 = ?T 0 = ?T
+ ii 99 = ?T 1 = ?T
+ 
+ 55 = ?T
+ 
+ 
+ ( /////////////////////////////////// )
+
+ $" Testing TYPE-LOCAL-ENUM<" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ 1 0 99 TYPED-LOCAL-ENUM< aaunique bb >  
+
+ 2 = ?T
+ aaunique 99 = ?T 0 = ?T
+ bb 99 = ?T 1 = ?T
+ 
+ 2 1 99 TYPED-LOCAL-ENUM< cc dd >
+ 
+ 5 = ?T
+ cc 99 = ?T 1 = ?T
+ dd 99 = ?T 3 = ?T
+ 
+ 3 2 99 TYPED-LOCAL-ENUM< ee ff 4 gg 1 0 hh ii >
+ 
+ 2 = ?T
+ ee 99 = ?T 2 = ?T
+ ff 99 = ?T 5 = ?T
+ gg 99 = ?T 9 = ?T
+ hh 99 = ?T 0 = ?T
+ ii 99 = ?T 1 = ?T
+ 
+ ?CLEAR-LOCALS 
+ 
+ ' aaunique ENDOFLIST = ?T  // need a unique name for this test
+ 
+ 55 = ?T
+ 
+ 
+ ( /////////////////////////////////// )
+
+ $" Testing SYMBOL-ENUM<" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ // make a new hlist with a parent element
+ //  and push the EH of the parent to the eh stack
+ ENDOFLIST NEW-HLIST DUP >R
+ $" parent" NEW$ NEW-ELEMENT R> >EH
+ 
+ 1 0 EH SYMBOL-ENUM< aa bb >
+ 
+ 2 = ?T
+ EH. aa 0 = ?T
+ EH. bb 1 = ?T
+ 
+ 2 1 EH SYMBOL-ENUM< cc dd >
+ 
+ 5 = ?T
+ EH. cc 1 = ?T
+ EH. dd 3 = ?T
+ 
+ 3 2 EH SYMBOL-ENUM< ee ff 4 gg 1 0 hh ii >
+ 
+ 2 = ?T
+ EH. ee 2 = ?T
+ EH. ff 5 = ?T
+ EH. gg 9 = ?T
+ EH. hh 0 = ?T
+ EH. ii 1 = ?T
+ 
+ EH> FREE-HLIST DROP
+ 
+ 55 = ?T
+ 
+ 
+ ( /////////////////////////////////// )
+
+ $" Testing WORDLIST." .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ PCURRENTCREATEWORDLIST @ >R
+ WORDLIST PCURRENTCREATEWORDLIST !
+ 1236 CONSTANT subwordlisttestword
+ ' subwordlisttestword ENDOFLIST = ?T
+
+ PCURRENTCREATEWORDLIST @ WORDLIST. subwordlisttestword 1236 = ?T
+ R> PCURRENTCREATEWORDLIST !
+ 
+ 55 = ?T
+ 
+ 
+ ( /////////////////////////////////// )
+
+ $" Testing [WORDLIST.]" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ PCURRENTCREATEWORDLIST @ >R
+ WORDLIST PCURRENTCREATEWORDLIST !
+ 1236 CONSTANT subwordlisttestwordb
+ ' subwordlisttestwordb ENDOFLIST = ?T
+
+ : t [ PCURRENTCREATEWORDLIST @ ] [WORDLIST.] subwordlisttestwordb 1236 = ?T ;
+ t
+ R> PCURRENTCREATEWORDLIST !
+ 
+ 55 = ?T
+ 
+ 
+ ( /////////////////////////////////// )
+
+ $" Testing CREATE-[WORDLIST.]" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ PCURRENTCREATEWORDLIST @ >R
+ WORDLIST DUP CREATE-[WORDLIST.] [mytestwordlist.]
+ PCURRENTCREATEWORDLIST !
+ 1236 CONSTANT subwordlisttestwordc
+ ' subwordlisttestwordc ENDOFLIST = ?T
+ : t [mytestwordlist.] subwordlisttestwordc 1236 = ?T ;
+ t
+ R> PCURRENTCREATEWORDLIST !
+ 
+ 55 = ?T
+ 
+ 
+ ( /////////////////////////////////// )
+
+ $" Testing OSYMBOL-IMPORT" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ $" parent" NEW$ ENDOFLIST NEW-HLIST DUP >R 
+ NEW-ELEMENT R> >EH
+ 0 0 >EH
+ IMPORT-LINK-DATA-SIZE CODE-ALLOT  ( just in case it's at 0 )
+ OHERE IMPORT-LINK-DATA-SIZE - >R
+ OSYMBOL-IMPORT myimportsymbol
+ EH[1D]. myimportsymbol R> = ?T
+ DROPEH EH> FREE-HLIST DROP
+ 
+ 55 = ?T

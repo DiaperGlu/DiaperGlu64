@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 
 
@@ -1442,6 +1442,74 @@ void dg_copystolstringn (Bufferhandle* pBHarrayhead,
     if (pBHarrayhead->errorcount != olderrorcount)
 	{
 		dg_pusherror(pBHarrayhead, dg_copystolstringnname);
+		return;
+	}
+}
+
+
+const char* dg_pushstolstringnname = "dg_pushstolstringn";
+
+void dg_pushstolstringn (Bufferhandle* pBHarrayhead,
+    UINT64 offsetbufferid,
+    UINT64 stringbufferid,
+    UINT64 stringid,
+    unsigned char* psrc,
+    UINT64 length)
+{
+    UINT64 stringbufferstartoffset;
+    UINT64 lstringlength;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    // lstring stack underflow checked in this call
+    stringbufferstartoffset = ::dg_getlstringstartoffset(
+        pBHarrayhead,
+        offsetbufferid,
+        stringid);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_pushstolstringnname);
+		return;
+	}
+
+    lstringlength = ::dg_getlstringlength(pBHarrayhead, offsetbufferid, stringid);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_pushstolstringnname);
+		return;
+	}
+ 
+    dg_insertinlstring (
+        pBHarrayhead,
+        offsetbufferid,
+        stringbufferid,
+        stringid,
+        lstringlength, // inserting at end of lstring just to be neat
+        length);  
+        
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_pushstolstringnname);
+		return;
+	}
+
+    dg_putbuffersegment(
+        pBHarrayhead,
+        stringbufferid,
+        stringbufferstartoffset + lstringlength,
+        length,
+        psrc);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_pushstolstringnname);
 		return;
 	}
 }
@@ -3830,3 +3898,1992 @@ void dg_pzerostringtonewstring(
 		return;
 	}
 }
+
+
+const char dg_uleextendlstringntolname[] = "dg_uleextendlstringn";
+
+void dg_uleextendlstringntol (
+    Bufferhandle* pBHarrayhead,
+    UINT64 offsetbufferid,
+    UINT64 stringbufferid,
+    UINT64 stringid,
+    UINT64 newlength)
+{
+    UINT64 stringbufferstartoffset;
+    UINT64 lstringlength;
+    const char* pError;
+    unsigned char* plstring;
+    UINT64 growamount;
+    UINT64 insertoffset;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    // lstring stack underflow checked in this call
+    stringbufferstartoffset = ::dg_getlstringstartoffset(
+        pBHarrayhead,
+        offsetbufferid,
+        stringid);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_uleextendlstringntolname);
+		return;
+	}
+
+    lstringlength = ::dg_getlstringlength(pBHarrayhead, offsetbufferid, stringid);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_uleextendlstringntolname);
+		return;
+	}
+
+	if (newlength==lstringlength)
+	{
+		// nothing to be done
+		return;
+	}
+
+    // nothing needs to be done
+	if (newlength<lstringlength)
+	{
+        return;
+	}
+ 
+    growamount = newlength - lstringlength;
+    insertoffset = lstringlength;
+
+    dg_insertinlstring (
+        pBHarrayhead,
+        offsetbufferid,
+        stringbufferid,
+        stringid,
+        insertoffset, 
+        growamount);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_uleextendlstringntolname);
+	}
+ 
+    plstring = dg_getplstring(
+        pBHarrayhead,
+        offsetbufferid,
+        stringbufferid,
+        stringid,
+        &lstringlength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_uleextendlstringntolname);
+        return;
+    }
+    
+    pError = dg_fillwithbyte(
+        plstring + insertoffset, 
+        growamount, 
+        0);
+    
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_fillwithbytename);
+        dg_pusherror(pBHarrayhead, dg_uleextendlstringntolname);
+        return;
+    }   
+}
+
+const char dg_uleaddlstringntolstringnname[] = "dg_uleaddlstringntolstringn";
+
+void dg_uleaddlstringntolstringn (
+    Bufferhandle* pBHarrayhead,
+    UINT64 offsetbufferida,
+    UINT64 stringbufferida,
+    UINT64 stringida,
+    UINT64 offsetbufferidb,
+    UINT64 stringbufferidb,
+    UINT64 stringidb,
+    UINT64* pcarryout)
+{
+    UINT64 lstringlengtha;
+    UINT64 lstringlengthb;
+    unsigned char* plstringa;
+    unsigned char* plstringb;
+    const char* pError;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    lstringlengtha = dg_getlstringlength(
+        pBHarrayhead, 
+        offsetbufferida, 
+        stringida);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_uleaddlstringntolstringnname);
+		return;
+	}
+ 
+    lstringlengthb = dg_getlstringlength(
+        pBHarrayhead, 
+        offsetbufferidb, 
+        stringidb);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_uleaddlstringntolstringnname);
+		return;
+	}   
+
+	if (lstringlengtha < lstringlengthb)
+	{
+		dg_uleextendlstringntol (
+            pBHarrayhead,
+            offsetbufferida,
+            stringbufferida,
+            stringida,
+            lstringlengthb);
+            
+        if (pBHarrayhead->errorcount != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_uleaddlstringntolstringnname);
+            return;
+        }
+	}
+ 
+    if (lstringlengthb < lstringlengtha)
+	{
+		dg_uleextendlstringntol (
+            pBHarrayhead,
+            offsetbufferidb,
+            stringbufferidb,
+            stringidb,
+            lstringlengtha);
+            
+        if (pBHarrayhead->errorcount != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_uleaddlstringntolstringnname);
+            return;
+        }
+	}   
+
+    plstringa = dg_getplstring(
+        pBHarrayhead,
+        offsetbufferida,
+        stringbufferida,
+        stringida,
+        &lstringlengtha);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_uleaddlstringntolstringnname);
+        return;
+    }
+    
+    plstringb = dg_getplstring(
+        pBHarrayhead,
+        offsetbufferidb,
+        stringbufferidb,
+        stringidb,
+        &lstringlengthb);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_uleaddlstringntolstringnname);
+        return;
+    }
+    
+    pError = dg_addbytes (
+        plstringa, 
+        plstringb,
+        lstringlengtha,
+        pcarryout);
+    
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_addbytesname);
+        dg_pusherror(pBHarrayhead, dg_uleaddlstringntolstringnname);
+        return;
+    } 
+}
+
+const char dg_uleadclstringntolstringnname[] = "dg_uleadclstringntolstringn";
+
+void dg_uleadclstringntolstringn (
+    Bufferhandle* pBHarrayhead,
+    UINT64 offsetbufferida,
+    UINT64 stringbufferida,
+    UINT64 stringida,
+    UINT64 offsetbufferidb,
+    UINT64 stringbufferidb,
+    UINT64 stringidb,
+    UINT64* pcarryinout)
+{
+    UINT64 lstringlengtha;
+    UINT64 lstringlengthb;
+    unsigned char* plstringa;
+    unsigned char* plstringb;
+    const char* pError;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    lstringlengtha = dg_getlstringlength(
+        pBHarrayhead, 
+        offsetbufferida, 
+        stringida);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_uleadclstringntolstringnname);
+		return;
+	}
+ 
+    lstringlengthb = dg_getlstringlength(
+        pBHarrayhead, 
+        offsetbufferidb, 
+        stringidb);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_uleadclstringntolstringnname);
+		return;
+	}   
+
+	if (lstringlengtha < lstringlengthb)
+	{
+		dg_uleextendlstringntol (
+            pBHarrayhead,
+            offsetbufferida,
+            stringbufferida,
+            stringida,
+            lstringlengthb);
+            
+        if (pBHarrayhead->errorcount != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_uleadclstringntolstringnname);
+            return;
+        }
+	}
+ 
+    if (lstringlengthb < lstringlengtha)
+	{
+		dg_uleextendlstringntol (
+            pBHarrayhead,
+            offsetbufferidb,
+            stringbufferidb,
+            stringidb,
+            lstringlengtha);
+            
+        if (pBHarrayhead->errorcount != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_uleadclstringntolstringnname);
+            return;
+        }
+	}   
+
+    plstringa = dg_getplstring(
+        pBHarrayhead,
+        offsetbufferida,
+        stringbufferida,
+        stringida,
+        &lstringlengtha);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_uleadclstringntolstringnname);
+        return;
+    }
+    
+    plstringb = dg_getplstring(
+        pBHarrayhead,
+        offsetbufferidb,
+        stringbufferidb,
+        stringidb,
+        &lstringlengthb);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_uleadclstringntolstringnname);
+        return;
+    }
+    
+    pError = dg_adcbytes (
+        plstringa, 
+        plstringb,
+        lstringlengtha,
+        pcarryinout);
+    
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_adcbytesname);
+        dg_pusherror(pBHarrayhead, dg_uleadclstringntolstringnname);
+        return;
+    } 
+}
+
+const char dg_ulesbblstringntolstringnname[] = "dg_ulesbblstringntolstringn";
+
+void dg_ulesbblstringntolstringn (
+    Bufferhandle* pBHarrayhead,
+    UINT64 offsetbufferida,
+    UINT64 stringbufferida,
+    UINT64 stringida,
+    UINT64 offsetbufferidb,
+    UINT64 stringbufferidb,
+    UINT64 stringidb,
+    UINT64* pborrowinout)
+{
+    UINT64 lstringlengtha;
+    UINT64 lstringlengthb;
+    unsigned char* plstringa;
+    unsigned char* plstringb;
+    const char* pError;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    lstringlengtha = dg_getlstringlength(
+        pBHarrayhead, 
+        offsetbufferida, 
+        stringida);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_ulesbblstringntolstringnname);
+		return;
+	}
+ 
+    lstringlengthb = dg_getlstringlength(
+        pBHarrayhead, 
+        offsetbufferidb, 
+        stringidb);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_ulesbblstringntolstringnname);
+		return;
+	}   
+
+	if (lstringlengtha < lstringlengthb)
+	{
+		dg_uleextendlstringntol (
+            pBHarrayhead,
+            offsetbufferida,
+            stringbufferida,
+            stringida,
+            lstringlengthb);
+            
+        if (pBHarrayhead->errorcount != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_ulesbblstringntolstringnname);
+            return;
+        }
+	}
+ 
+    if (lstringlengthb < lstringlengtha)
+	{
+		dg_uleextendlstringntol (
+            pBHarrayhead,
+            offsetbufferidb,
+            stringbufferidb,
+            stringidb,
+            lstringlengtha);
+            
+        if (pBHarrayhead->errorcount != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_ulesbblstringntolstringnname);
+            return;
+        }
+	}   
+
+    plstringa = dg_getplstring(
+        pBHarrayhead,
+        offsetbufferida,
+        stringbufferida,
+        stringida,
+        &lstringlengtha);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_ulesbblstringntolstringnname);
+        return;
+    }
+    
+    plstringb = dg_getplstring(
+        pBHarrayhead,
+        offsetbufferidb,
+        stringbufferidb,
+        stringidb,
+        &lstringlengthb);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_ulesbblstringntolstringnname);
+        return;
+    }
+    
+    pError = dg_sbbbytes (
+        plstringa, 
+        plstringb,
+        lstringlengtha,
+        pborrowinout);
+    
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_sbbbytesname);
+        dg_pusherror(pBHarrayhead, dg_ulesbblstringntolstringnname);
+        return;
+    } 
+}
+
+const char dg_lelshiftlstringnname[] = "dg_lelshiftlstringn";
+
+void dg_lelshiftlstringn (
+    Bufferhandle* pBHarrayhead,
+    UINT64 offsetbufferid,
+    UINT64 stringbufferid,
+    UINT64 stringid,
+    UINT64* pcarryout)
+{
+    UINT64 lstringlength;
+    unsigned char* plstring;
+    const char* pError;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    plstring = dg_getplstring(
+        pBHarrayhead,
+        offsetbufferid,
+        stringbufferid,
+        stringid,
+        &lstringlength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_lelshiftlstringnname);
+        return;
+    }
+    
+    pError = dg_shlbytes ( 
+        plstring,
+        lstringlength,
+        pcarryout);
+    
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_shlbytesname);
+        dg_pusherror(pBHarrayhead, dg_lelshiftlstringnname);
+        return;
+    } 
+}
+
+
+const char dg_ulershiftlstringnname[] = "dg_ulershiftlstringn";
+
+void dg_ulershiftlstringn (
+    Bufferhandle* pBHarrayhead,
+    UINT64 offsetbufferid,
+    UINT64 stringbufferid,
+    UINT64 stringid,
+    UINT64* pcarryout)
+{
+    UINT64 lstringlength;
+    unsigned char* plstring;
+    const char* pError;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    plstring = dg_getplstring(
+        pBHarrayhead,
+        offsetbufferid,
+        stringbufferid,
+        stringid,
+        &lstringlength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_ulershiftlstringnname);
+        return;
+    }
+    
+    pError = dg_shrbytes ( 
+        plstring,
+        lstringlength,
+        pcarryout);
+    
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_shrbytesname);
+        dg_pusherror(pBHarrayhead, dg_ulershiftlstringnname);
+        return;
+    } 
+}
+
+
+const char dg_slershiftlstringnname[] = "dg_slershiftlstringn";
+
+void dg_slershiftlstringn (
+    Bufferhandle* pBHarrayhead,
+    UINT64 offsetbufferid,
+    UINT64 stringbufferid,
+    UINT64 stringid,
+    UINT64* pcarryout)
+{
+    UINT64 lstringlength;
+    unsigned char* plstring;
+    const char* pError;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    plstring = dg_getplstring(
+        pBHarrayhead,
+        offsetbufferid,
+        stringbufferid,
+        stringid,
+        &lstringlength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_slershiftlstringnname);
+        return;
+    }
+    
+    pError = dg_sarbytes ( 
+        plstring,
+        lstringlength,
+        pcarryout);
+    
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_sarbytesname);
+        dg_pusherror(pBHarrayhead, dg_slershiftlstringnname);
+        return;
+    } 
+}
+
+
+const char dg_lelshiftclstringnname[] = "dg_lelshiftclstringn";
+
+void dg_lelshiftclstringn (
+    Bufferhandle* pBHarrayhead,
+    UINT64 offsetbufferid,
+    UINT64 stringbufferid,
+    UINT64 stringid,
+    UINT64* pcarryinout)
+{
+    UINT64 lstringlength;
+    unsigned char* plstring;
+    const char* pError;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    plstring = dg_getplstring(
+        pBHarrayhead,
+        offsetbufferid,
+        stringbufferid,
+        stringid,
+        &lstringlength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_lelshiftclstringnname);
+        return;
+    }
+    
+    pError = dg_rclbytes ( 
+        plstring,
+        lstringlength,
+        pcarryinout);
+    
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_rclbytesname);
+        dg_pusherror(pBHarrayhead, dg_lelshiftclstringnname);
+        return;
+    } 
+}
+
+
+const char dg_lershiftclstringnname[] = "dg_lershiftclstringn";
+
+void dg_lershiftclstringn (
+    Bufferhandle* pBHarrayhead,
+    UINT64 offsetbufferid,
+    UINT64 stringbufferid,
+    UINT64 stringid,
+    UINT64* pcarryinout)
+{
+    UINT64 lstringlength;
+    unsigned char* plstring;
+    const char* pError;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    plstring = dg_getplstring(
+        pBHarrayhead,
+        offsetbufferid,
+        stringbufferid,
+        stringid,
+        &lstringlength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_lershiftclstringnname);
+        return;
+    }
+    
+    pError = dg_rcrbytes ( 
+        plstring,
+        lstringlength,
+        pcarryinout);
+    
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_rcrbytesname);
+        dg_pusherror(pBHarrayhead, dg_lershiftclstringnname);
+        return;
+    } 
+}
+
+
+const char dg_partialulemulu64tolstringnname[] = "dg_partialulemulu64tolstringn";
+
+void dg_partialulemulu64tolstringn (
+    Bufferhandle* pBHarrayhead,
+    UINT64 offsetbufferida,
+    UINT64 stringbufferida,
+    UINT64 stringida,
+    UINT64 offsetbufferidb,
+    UINT64 stringbufferidb,
+    UINT64 stringidb,
+    UINT64* px)
+{
+    UINT64 n;
+    const char* pError;
+    UINT64 carryout = 0;
+    UINT64 t = 1;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    // checking memory at px
+    pError = dg_getuint64(px, &n);
+    
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_getuint64name);
+        dg_pusherror(pBHarrayhead, dg_partialulemulu64tolstringnname);
+        return;
+    }
+    
+    if ((n & 1) == 1)
+    {
+        dg_uleaddlstringntolstringn (
+            pBHarrayhead,
+            offsetbufferida,
+            stringbufferida,
+            stringida,
+            offsetbufferidb,
+            stringbufferidb,
+            stringidb,
+            &carryout);
+            
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_partialulemulu64tolstringnname);
+            return;
+        }
+        
+        if (carryout != 0)
+        {
+            // push a 0x01 onto the end of stringb
+            dg_stotoplstring (
+                pBHarrayhead,
+                offsetbufferidb,
+                stringbufferidb,
+                1,
+                (unsigned char*)&t);
+                
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_partialulemulu64tolstringnname);
+                return;
+            }
+        }
+    }
+    
+    *px = *px / 2;
+    
+    dg_lelshiftlstringn (
+        pBHarrayhead,
+        offsetbufferida,
+        stringbufferida,
+        stringida,
+        &carryout);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_partialulemulu64tolstringnname);
+        return;
+    }
+    
+    if (carryout != 0)
+    {
+        // push a 0x01 onto the end of stringa
+        dg_stotoplstring (
+            pBHarrayhead,
+            offsetbufferida,
+            stringbufferida,
+            1,
+            (unsigned char*)&t);
+                
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_partialulemulu64tolstringnname);
+            return;
+        }
+    }
+}
+
+
+const char dg_ulemulu64tolstringnname[] = "dg_ulemulu64tolstringn";
+
+void dg_ulemulu64tolstringn (
+    Bufferhandle* pBHarrayhead,
+    UINT64 offsetbufferida,
+    UINT64 stringbufferida,
+    UINT64 stringida,
+    UINT64 offsetbufferidb,
+    UINT64 stringbufferidb,
+    UINT64 stringidb,
+    UINT64 x)
+{
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    UINT64 carryout;
+    UINT64 n = x;
+    const char* pError;
+    UINT64 t = 1;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    // set lstringb to 0
+    plstring = dg_getplstring(
+        pBHarrayhead,
+	    offsetbufferidb,
+	    stringbufferidb,
+	    stringidb,
+	    &lstringlength);
+     
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_ulemulu64tolstringnname);
+        return;
+    }
+    
+    pError = dg_fillwithbyte (
+        plstring,
+        lstringlength,
+        0);
+    
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_fillwithbytename);
+        dg_pusherror(pBHarrayhead, dg_ulemulu64tolstringnname);
+        return;
+    }
+    
+    // while x != 0
+    //  partialumulleu64tolstringn
+    while (n != 0)
+    {
+        dg_partialulemulu64tolstringn (
+            pBHarrayhead,
+            offsetbufferida,
+            stringbufferida,
+            stringida,
+            offsetbufferidb,
+            stringbufferidb,
+            stringidb,
+            &n);
+            
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_ulemulu64tolstringnname);
+            return;
+        }
+    }
+    
+    // copy lstringb to lstringa
+    dg_copylstringntoreplacelstringn (
+		pBHarrayhead,
+		offsetbufferidb,
+		stringbufferidb,
+		stringidb,
+		offsetbufferida,
+		stringbufferida,
+		stringida);
+  
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_ulemulu64tolstringnname);
+        return;
+    }
+}
+
+
+const char dg_notlstringnname[] = "dg_notlstringn";
+
+void dg_notlstringn (
+    Bufferhandle* pBHarrayhead, 
+    UINT64 lstringoffsetbufferid, 
+    UINT64 lstringstringbufferid,
+    UINT64 lstringindex)
+{
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    
+    const char* pError;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return; // probably should return a bad find index
+    }
+        
+    plstring = dg_getplstring(
+        pBHarrayhead,
+        lstringoffsetbufferid,
+        lstringstringbufferid,
+        lstringindex,
+        &lstringlength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_notlstringnname);
+        return;
+    }
+    
+    pError = dg_notbytes ( 
+        plstring,
+        lstringlength);
+    
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_notbytesname);
+        dg_pusherror(pBHarrayhead, dg_notlstringnname);
+        return;
+    }
+}
+
+
+const char dg_reverselstringnname[] = "dg_reverselstringn";
+
+void dg_reverselstringn (
+    Bufferhandle* pBHarrayhead, 
+    UINT64 lstringoffsetbufferid, 
+    UINT64 lstringstringbufferid,
+    UINT64 lstringindex)
+{
+    unsigned char* plstring;
+    UINT64 lstringlength;
+    
+    const char* pError;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return; // probably should return a bad find index
+    }
+        
+    plstring = dg_getplstring(
+        pBHarrayhead,
+        lstringoffsetbufferid,
+        lstringstringbufferid,
+        lstringindex,
+        &lstringlength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_reverselstringnname);
+        return;
+    }
+    
+    pError = dg_reversebytes ( 
+        plstring,
+        lstringlength);
+    
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_reversebytesname);
+        dg_pusherror(pBHarrayhead, dg_reverselstringnname);
+        return;
+    }
+}
+
+const char dg_uleandlstringntolstringnname[] = "dg_uleandlstringntolstringn";
+
+void dg_uleandlstringntolstringn (
+    Bufferhandle* pBHarrayhead,
+    UINT64 offsetbufferida,
+    UINT64 stringbufferida,
+    UINT64 stringida,
+    UINT64 offsetbufferidb,
+    UINT64 stringbufferidb,
+    UINT64 stringidb)
+{
+    UINT64 lstringlengtha;
+    UINT64 lstringlengthb;
+    unsigned char* plstringa;
+    unsigned char* plstringb;
+    const char* pError;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    lstringlengtha = dg_getlstringlength(
+        pBHarrayhead, 
+        offsetbufferida, 
+        stringida);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_uleandlstringntolstringnname);
+		return;
+	}
+ 
+    lstringlengthb = dg_getlstringlength(
+        pBHarrayhead, 
+        offsetbufferidb, 
+        stringidb);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_uleandlstringntolstringnname);
+		return;
+	}   
+
+	if (lstringlengtha < lstringlengthb)
+	{
+		dg_uleextendlstringntol (
+            pBHarrayhead,
+            offsetbufferida,
+            stringbufferida,
+            stringida,
+            lstringlengthb);
+            
+        if (pBHarrayhead->errorcount != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_uleandlstringntolstringnname);
+            return;
+        }
+	}
+ 
+    if (lstringlengthb < lstringlengtha)
+	{
+		dg_uleextendlstringntol (
+            pBHarrayhead,
+            offsetbufferidb,
+            stringbufferidb,
+            stringidb,
+            lstringlengtha);
+            
+        if (pBHarrayhead->errorcount != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_uleandlstringntolstringnname);
+            return;
+        }
+	}   
+
+    plstringa = dg_getplstring(
+        pBHarrayhead,
+        offsetbufferida,
+        stringbufferida,
+        stringida,
+        &lstringlengtha);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_uleandlstringntolstringnname);
+        return;
+    }
+    
+    plstringb = dg_getplstring(
+        pBHarrayhead,
+        offsetbufferidb,
+        stringbufferidb,
+        stringidb,
+        &lstringlengthb);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_uleandlstringntolstringnname);
+        return;
+    }
+    
+    pError = dg_andbytes (
+        plstringa, 
+        plstringb,
+        lstringlengtha);
+    
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_andbytesname);
+        dg_pusherror(pBHarrayhead, dg_uleandlstringntolstringnname);
+        return;
+    } 
+}
+
+
+const char dg_uleorlstringntolstringnname[] = "dg_uleorlstringntolstringn";
+
+void dg_uleorlstringntolstringn (
+    Bufferhandle* pBHarrayhead,
+    UINT64 offsetbufferida,
+    UINT64 stringbufferida,
+    UINT64 stringida,
+    UINT64 offsetbufferidb,
+    UINT64 stringbufferidb,
+    UINT64 stringidb)
+{
+    UINT64 lstringlengtha;
+    UINT64 lstringlengthb;
+    unsigned char* plstringa;
+    unsigned char* plstringb;
+    const char* pError;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    lstringlengtha = dg_getlstringlength(
+        pBHarrayhead, 
+        offsetbufferida, 
+        stringida);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_uleorlstringntolstringnname);
+		return;
+	}
+ 
+    lstringlengthb = dg_getlstringlength(
+        pBHarrayhead, 
+        offsetbufferidb, 
+        stringidb);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_uleorlstringntolstringnname);
+		return;
+	}   
+
+	if (lstringlengtha < lstringlengthb)
+	{
+		dg_uleextendlstringntol (
+            pBHarrayhead,
+            offsetbufferida,
+            stringbufferida,
+            stringida,
+            lstringlengthb);
+            
+        if (pBHarrayhead->errorcount != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_uleorlstringntolstringnname);
+            return;
+        }
+	}
+ 
+    if (lstringlengthb < lstringlengtha)
+	{
+		dg_uleextendlstringntol (
+            pBHarrayhead,
+            offsetbufferidb,
+            stringbufferidb,
+            stringidb,
+            lstringlengtha);
+            
+        if (pBHarrayhead->errorcount != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_uleorlstringntolstringnname);
+            return;
+        }
+	}   
+
+    plstringa = dg_getplstring(
+        pBHarrayhead,
+        offsetbufferida,
+        stringbufferida,
+        stringida,
+        &lstringlengtha);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_uleorlstringntolstringnname);
+        return;
+    }
+    
+    plstringb = dg_getplstring(
+        pBHarrayhead,
+        offsetbufferidb,
+        stringbufferidb,
+        stringidb,
+        &lstringlengthb);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_uleorlstringntolstringnname);
+        return;
+    }
+    
+    pError = dg_orbytes (
+        plstringa, 
+        plstringb,
+        lstringlengtha);
+    
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_orbytesname);
+        dg_pusherror(pBHarrayhead, dg_uleorlstringntolstringnname);
+        return;
+    } 
+}
+
+
+const char dg_ulexorlstringntolstringnname[] = "dg_ulexorlstringntolstringn";
+
+void dg_ulexorlstringntolstringn (
+    Bufferhandle* pBHarrayhead,
+    UINT64 offsetbufferida,
+    UINT64 stringbufferida,
+    UINT64 stringida,
+    UINT64 offsetbufferidb,
+    UINT64 stringbufferidb,
+    UINT64 stringidb)
+{
+    UINT64 lstringlengtha;
+    UINT64 lstringlengthb;
+    unsigned char* plstringa;
+    unsigned char* plstringb;
+    const char* pError;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    lstringlengtha = dg_getlstringlength(
+        pBHarrayhead, 
+        offsetbufferida, 
+        stringida);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_ulexorlstringntolstringnname);
+		return;
+	}
+ 
+    lstringlengthb = dg_getlstringlength(
+        pBHarrayhead, 
+        offsetbufferidb, 
+        stringidb);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_ulexorlstringntolstringnname);
+		return;
+	}   
+
+	if (lstringlengtha < lstringlengthb)
+	{
+		dg_uleextendlstringntol (
+            pBHarrayhead,
+            offsetbufferida,
+            stringbufferida,
+            stringida,
+            lstringlengthb);
+            
+        if (pBHarrayhead->errorcount != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_ulexorlstringntolstringnname);
+            return;
+        }
+	}
+ 
+    if (lstringlengthb < lstringlengtha)
+	{
+		dg_uleextendlstringntol (
+            pBHarrayhead,
+            offsetbufferidb,
+            stringbufferidb,
+            stringidb,
+            lstringlengtha);
+            
+        if (pBHarrayhead->errorcount != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_ulexorlstringntolstringnname);
+            return;
+        }
+	}   
+
+    plstringa = dg_getplstring(
+        pBHarrayhead,
+        offsetbufferida,
+        stringbufferida,
+        stringida,
+        &lstringlengtha);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_ulexorlstringntolstringnname);
+        return;
+    }
+    
+    plstringb = dg_getplstring(
+        pBHarrayhead,
+        offsetbufferidb,
+        stringbufferidb,
+        stringidb,
+        &lstringlengthb);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_ulexorlstringntolstringnname);
+        return;
+    }
+    
+    pError = dg_xorbytes (
+        plstringa, 
+        plstringb,
+        lstringlengtha);
+    
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_xorbytesname);
+        dg_pusherror(pBHarrayhead, dg_ulexorlstringntolstringnname);
+        return;
+    } 
+}
+
+
+const char dg_ulenandlstringntolstringnname[] = "dg_ulenandlstringntolstringn";
+
+void dg_ulenandlstringntolstringn (
+    Bufferhandle* pBHarrayhead,
+    UINT64 offsetbufferida,
+    UINT64 stringbufferida,
+    UINT64 stringida,
+    UINT64 offsetbufferidb,
+    UINT64 stringbufferidb,
+    UINT64 stringidb)
+{
+    UINT64 lstringlengtha;
+    UINT64 lstringlengthb;
+    unsigned char* plstringa;
+    unsigned char* plstringb;
+    const char* pError;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    lstringlengtha = dg_getlstringlength(
+        pBHarrayhead, 
+        offsetbufferida, 
+        stringida);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_ulenandlstringntolstringnname);
+		return;
+	}
+ 
+    lstringlengthb = dg_getlstringlength(
+        pBHarrayhead, 
+        offsetbufferidb, 
+        stringidb);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_ulenandlstringntolstringnname);
+		return;
+	}   
+
+	if (lstringlengtha < lstringlengthb)
+	{
+		dg_uleextendlstringntol (
+            pBHarrayhead,
+            offsetbufferida,
+            stringbufferida,
+            stringida,
+            lstringlengthb);
+            
+        if (pBHarrayhead->errorcount != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_ulenandlstringntolstringnname);
+            return;
+        }
+	}
+ 
+    if (lstringlengthb < lstringlengtha)
+	{
+		dg_uleextendlstringntol (
+            pBHarrayhead,
+            offsetbufferidb,
+            stringbufferidb,
+            stringidb,
+            lstringlengtha);
+            
+        if (pBHarrayhead->errorcount != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_ulenandlstringntolstringnname);
+            return;
+        }
+	}   
+
+    plstringa = dg_getplstring(
+        pBHarrayhead,
+        offsetbufferida,
+        stringbufferida,
+        stringida,
+        &lstringlengtha);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_ulenandlstringntolstringnname);
+        return;
+    }
+    
+    plstringb = dg_getplstring(
+        pBHarrayhead,
+        offsetbufferidb,
+        stringbufferidb,
+        stringidb,
+        &lstringlengthb);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_ulenandlstringntolstringnname);
+        return;
+    }
+    
+    pError = dg_nandbytes (
+        plstringa, 
+        plstringb,
+        lstringlengtha);
+    
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_nandbytesname);
+        dg_pusherror(pBHarrayhead, dg_ulenandlstringntolstringnname);
+        return;
+    } 
+}
+
+
+const char dg_ulenorlstringntolstringnname[] = "dg_ulenorlstringntolstringn";
+
+void dg_ulenorlstringntolstringn (
+    Bufferhandle* pBHarrayhead,
+    UINT64 offsetbufferida,
+    UINT64 stringbufferida,
+    UINT64 stringida,
+    UINT64 offsetbufferidb,
+    UINT64 stringbufferidb,
+    UINT64 stringidb)
+{
+    UINT64 lstringlengtha;
+    UINT64 lstringlengthb;
+    unsigned char* plstringa;
+    unsigned char* plstringb;
+    const char* pError;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    lstringlengtha = dg_getlstringlength(
+        pBHarrayhead, 
+        offsetbufferida, 
+        stringida);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_ulenorlstringntolstringnname);
+		return;
+	}
+ 
+    lstringlengthb = dg_getlstringlength(
+        pBHarrayhead, 
+        offsetbufferidb, 
+        stringidb);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_ulenorlstringntolstringnname);
+		return;
+	}   
+
+	if (lstringlengtha < lstringlengthb)
+	{
+		dg_uleextendlstringntol (
+            pBHarrayhead,
+            offsetbufferida,
+            stringbufferida,
+            stringida,
+            lstringlengthb);
+            
+        if (pBHarrayhead->errorcount != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_ulenorlstringntolstringnname);
+            return;
+        }
+	}
+ 
+    if (lstringlengthb < lstringlengtha)
+	{
+		dg_uleextendlstringntol (
+            pBHarrayhead,
+            offsetbufferidb,
+            stringbufferidb,
+            stringidb,
+            lstringlengtha);
+            
+        if (pBHarrayhead->errorcount != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_ulenorlstringntolstringnname);
+            return;
+        }
+	}   
+
+    plstringa = dg_getplstring(
+        pBHarrayhead,
+        offsetbufferida,
+        stringbufferida,
+        stringida,
+        &lstringlengtha);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_ulenorlstringntolstringnname);
+        return;
+    }
+    
+    plstringb = dg_getplstring(
+        pBHarrayhead,
+        offsetbufferidb,
+        stringbufferidb,
+        stringidb,
+        &lstringlengthb);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_ulenorlstringntolstringnname);
+        return;
+    }
+    
+    pError = dg_norbytes (
+        plstringa, 
+        plstringb,
+        lstringlengtha);
+    
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_norbytesname);
+        dg_pusherror(pBHarrayhead, dg_ulenorlstringntolstringnname);
+        return;
+    } 
+}
+
+
+const char dg_ulexnorlstringntolstringnname[] = "dg_ulexnorlstringntolstringn";
+
+void dg_ulexnorlstringntolstringn (
+    Bufferhandle* pBHarrayhead,
+    UINT64 offsetbufferida,
+    UINT64 stringbufferida,
+    UINT64 stringida,
+    UINT64 offsetbufferidb,
+    UINT64 stringbufferidb,
+    UINT64 stringidb)
+{
+    UINT64 lstringlengtha;
+    UINT64 lstringlengthb;
+    unsigned char* plstringa;
+    unsigned char* plstringb;
+    const char* pError;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    lstringlengtha = dg_getlstringlength(
+        pBHarrayhead, 
+        offsetbufferida, 
+        stringida);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_ulexnorlstringntolstringnname);
+		return;
+	}
+ 
+    lstringlengthb = dg_getlstringlength(
+        pBHarrayhead, 
+        offsetbufferidb, 
+        stringidb);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_ulexnorlstringntolstringnname);
+		return;
+	}   
+
+	if (lstringlengtha < lstringlengthb)
+	{
+		dg_uleextendlstringntol (
+            pBHarrayhead,
+            offsetbufferida,
+            stringbufferida,
+            stringida,
+            lstringlengthb);
+            
+        if (pBHarrayhead->errorcount != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_ulexnorlstringntolstringnname);
+            return;
+        }
+	}
+ 
+    if (lstringlengthb < lstringlengtha)
+	{
+		dg_uleextendlstringntol (
+            pBHarrayhead,
+            offsetbufferidb,
+            stringbufferidb,
+            stringidb,
+            lstringlengtha);
+            
+        if (pBHarrayhead->errorcount != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_ulexnorlstringntolstringnname);
+            return;
+        }
+	}   
+
+    plstringa = dg_getplstring(
+        pBHarrayhead,
+        offsetbufferida,
+        stringbufferida,
+        stringida,
+        &lstringlengtha);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_ulexnorlstringntolstringnname);
+        return;
+    }
+    
+    plstringb = dg_getplstring(
+        pBHarrayhead,
+        offsetbufferidb,
+        stringbufferidb,
+        stringidb,
+        &lstringlengthb);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_ulexnorlstringntolstringnname);
+        return;
+    }
+    
+    pError = dg_xnorbytes (
+        plstringa, 
+        plstringb,
+        lstringlengtha);
+    
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_xnorbytesname);
+        dg_pusherror(pBHarrayhead, dg_ulexnorlstringntolstringnname);
+        return;
+    } 
+}
+
+
+const char dg_mulu64bylstringnaddtolstringnname[] = "dg_mulu64bylstringnaddtolstringn";
+
+void dg_mulu64bylstringnaddtolstringn (
+    Bufferhandle* pBHarrayhead,
+    UINT64 offsetbufferida,
+    UINT64 stringbufferida,
+    UINT64 stringida,
+    UINT64 offsetbufferidb,
+    UINT64 stringbufferidb,
+    UINT64 stringidb,
+    UINT64 u)
+{
+    UINT64 lstringlengthainbytes;
+    UINT64 lstringlengthbinbytes;
+    UINT64 lstringlengthainu64s;
+    UINT64 lstringlengthbinu64s;
+    UINT64* plstringa; // src
+    UINT64* plstringb; // dest
+    const char* pError;
+    UINT64 carryout;
+    UINT64 x = 1;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    lstringlengthainbytes = dg_getlstringlength(
+        pBHarrayhead, 
+        offsetbufferida, 
+        stringida);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_mulu64bylstringnaddtolstringnname);
+		return;
+	}
+ 
+    lstringlengthainu64s = dg_getnearesthighestmultiple (
+        lstringlengthainbytes,
+        sizeof(UINT64)) / sizeof(UINT64);
+ 
+    lstringlengthbinbytes = dg_getlstringlength(
+        pBHarrayhead, 
+        offsetbufferidb, 
+        stringidb);
+        
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_mulu64bylstringnaddtolstringnname);
+		return;
+	}
+        
+    lstringlengthbinu64s = dg_getnearesthighestmultiple (
+        lstringlengthbinbytes,
+        sizeof(UINT64)) / sizeof(UINT64);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_mulu64bylstringnaddtolstringnname);
+		return;
+	}
+ 
+    // align lstring to a multiple of sizeof(u64) if needed
+    if (lstringlengthainbytes < lstringlengthainu64s * sizeof(UINT64))
+	{
+		dg_uleextendlstringntol (
+            pBHarrayhead,
+            offsetbufferida,
+            stringbufferida,
+            stringida,
+            lstringlengthainu64s * sizeof(UINT64));
+            
+        if (pBHarrayhead->errorcount != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_mulu64bylstringnaddtolstringnname);
+            return;
+        }
+	}   
+ 
+    // destination length must be at least 1 more than source length
+    if (lstringlengthbinbytes < ((lstringlengthainu64s + 1)*sizeof(UINT64)))
+	{
+		dg_uleextendlstringntol (
+            pBHarrayhead,
+            offsetbufferidb,
+            stringbufferidb,
+            stringidb,
+            ((lstringlengthainu64s + 1)*sizeof(UINT64)));
+            
+        if (pBHarrayhead->errorcount != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_mulu64bylstringnaddtolstringnname);
+            return;
+        }
+	}   
+
+    plstringa = (UINT64*)dg_getplstring(
+        pBHarrayhead,
+        offsetbufferida,
+        stringbufferida,
+        stringida,
+        &lstringlengthainbytes);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_mulu64bylstringnaddtolstringnname);
+        return;
+    }
+    
+    plstringb = (UINT64*)dg_getplstring(
+        pBHarrayhead,
+        offsetbufferidb,
+        stringbufferidb,
+        stringidb,
+        &lstringlengthbinbytes);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_mulu64bylstringnaddtolstringnname);
+        return;
+    }
+    
+    pError = dg_mulu64tou64s (
+        plstringb,
+        plstringa, 
+        u,
+        lstringlengthainu64s,
+        &carryout);
+    
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_mulu64tou64sname);
+        dg_pusherror(pBHarrayhead, dg_mulu64bylstringnaddtolstringnname);
+        return;
+    }
+    
+    if (0 == carryout)
+    {
+        return;
+    }
+    
+    if (lstringlengthainu64s + 1 == lstringlengthbinu64s)
+    {
+        // push a 1 onto the end of lstringb
+        dg_pushstolstringn (
+            pBHarrayhead,
+            offsetbufferidb,
+            stringbufferidb,
+            stringidb,
+            (unsigned char*)&x,
+            sizeof(UINT64));
+            
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_mulu64bylstringnaddtolstringnname);
+            return;
+        }
+        
+        return;
+    }
+    
+    // inc the rest of the string
+    
+    plstringb = (UINT64*)dg_getplstring(
+        pBHarrayhead,
+        offsetbufferidb,
+        stringbufferidb,
+        stringidb,
+        &lstringlengthbinbytes);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_mulu64bylstringnaddtolstringnname);
+        return;
+    }
+    
+    // if I had a dg_incu64s, I could use that instead
+    pError = dg_incbytes ( 
+        (unsigned char*)plstringb + lstringlengthainbytes + sizeof(UINT64),
+        lstringlengthbinbytes - (lstringlengthainbytes + sizeof(UINT64)), 
+        &carryout);
+        
+    if (carryout != 0)
+    {
+        // push a 1 onto the end of lstringb
+        dg_pushstolstringn (
+            pBHarrayhead,
+            offsetbufferidb,
+            stringbufferidb,
+            stringidb,
+            (unsigned char*)&x,
+            sizeof(UINT64));
+            
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_mulu64bylstringnaddtolstringnname);
+            return;
+        }
+    }
+}
+
+
+
+const char dg_divlstringnbyu64name[] = "dg_divlstringnbyu64";
+
+void dg_divlstringnbyu64 (
+    Bufferhandle* pBHarrayhead,
+    UINT64 offsetbufferida,
+    UINT64 stringbufferida,
+    UINT64 stringida,
+    UINT64 u,
+    UINT64* premainder)
+{
+    UINT64 lstringlengthainbytes;
+    UINT64 lstringlengthainu64s;
+    UINT64* plstringa; // dest
+    const char* pError;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    lstringlengthainbytes = dg_getlstringlength(
+        pBHarrayhead, 
+        offsetbufferida, 
+        stringida);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_divlstringnbyu64name);
+		return;
+	}
+ 
+    lstringlengthainu64s = dg_getnearesthighestmultiple (
+        lstringlengthainbytes,
+        sizeof(UINT64)) / sizeof(UINT64);
+ 
+    dg_uleextendlstringntol (
+        pBHarrayhead,
+        offsetbufferida,
+        stringbufferida,
+        stringida,
+        lstringlengthainu64s * sizeof(UINT64));
+            
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_divlstringnbyu64name);
+        return;
+    }
+
+    plstringa = (UINT64*)dg_getplstring(
+        pBHarrayhead,
+        offsetbufferida,
+        stringbufferida,
+        stringida,
+        &lstringlengthainbytes);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_divlstringnbyu64name);
+        return;
+    }
+    
+    pError = dg_divu64sbyu64 (
+        plstringa,
+        premainder, 
+        u,
+        lstringlengthainu64s);
+    
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_divu64sbyu64name);
+        dg_pusherror(pBHarrayhead, dg_divlstringnbyu64name);
+        return;
+    }
+}
+

@@ -31,5 +31,5 @@ testfromdglu : testmakedoto.dll testdll.dglu
 clean :
 	del $(objects) testmakedoto.exp testmakedoto.lib testmakedotomain.obj
 	
-
-
+superclean :
+	del testmakedoto.dll testmakedotomain.exe

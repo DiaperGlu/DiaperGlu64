@@ -1,22 +1,22 @@
 <!--
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 -->
 
@@ -81,7 +81,6 @@
       <a href=forthglu.htm#dg_forthwtolinkcomma               >dg_forthwtolinkcomma</a>
       <a href=forthglu.htm#dg_forthwtocodelinkcomma           >dg_forthwtocodelinkcomma</a>
       <a href=forthglu.htm#dg_forthwtodatalinkcomma           >dg_forthwtodatalinkcomma</a>
-      <a href=forthglu.htm#dg_forthsymbol                     >dg_forthsymbol</a>
       <a href=forthglu.htm#dg_stringtoglulinkcomma            >dg_stringtoglulinkcomma</a>
       <a href=forthglu.htm#dg_forthstrtolinkcomma             >dg_forthstrtolinkcomma</a>
       <a href=forthglu.htm#dg_forthstrtocodelinkcomma         >dg_forthstrtocodelinkcomma</a>
@@ -1077,55 +1076,6 @@
 //  This routine also adds an element with the name string equal to the
 //   next word in the input stream and value equal to the UINT64 offset of
 //   the compiled link's value under the parent element in the hlist given
-//   by the top element id hlist id pair on the EH stack.
-//  Then the current input stream buffer's current offset is moved past
-//   the word which was just used.
-//
-// Failure cases:
-//  
-/////////////////////////////////////////////////////////////////////////////////////
-</pre>
-      </div>
-
-
-      <div class=word id=dg_forthsymbol>
-<pre>
-/////////////////////////////////////////////////////////////////////////////////////
-//
-// dg_forthsymbol ( SYMBOL )
-//
-// C prototype:
-//  void dg_forthsymbol (Bufferhandle* pBHarrayhead)
-//
-// Inputs:
-//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where
-//                                 the other bufferhandles are stored.
-//
-// Stack action shorthand:
-//  ( symbolvalue -- )
-//  ( elementid hlistid -EH- elementid hlistid )
-//
-// Data stack in:
-//  symbolvalue                   UINT64 value of the new element
-//
-// Data stack out:
-//  none
-//
-// EH stack in and out:
-//  elementid                     current parent element id of the symbol list
-//  hlistid                       current hlist id of the glu/nglu list
-//
-// Current input buffer's current offset in:
-//  &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
-//
-// Current input buffer's current offset out:
-//  &quot;&lt;delimiters&gt;morestuff&quot;
-//
-// Action:
-//  This routine adds an element with the name string equal to the
-//   next word in the input stream and value equal to the UINT64 value
-//   popped off the data stack under the parent element in the hlist given
 //   by the top element id hlist id pair on the EH stack.
 //  Then the current input stream buffer's current offset is moved past
 //   the word which was just used.

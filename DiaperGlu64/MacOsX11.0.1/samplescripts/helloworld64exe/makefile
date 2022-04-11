@@ -15,6 +15,7 @@ clean :
 .PHONY: FORCE
 FORCE:
 
+.PHONY: superclean
 superclean : FORCE
 	rm helloworld64
 

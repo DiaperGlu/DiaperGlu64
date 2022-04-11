@@ -7,6 +7,7 @@ objects = cbuffer.obj \
           chierarchicallist.obj \
           cinitwordlist.obj \
           clstring.obj \
+          clstringqueue.obj \
           cmiscellaneous.obj \
           cwordlist.obj \
           dglumain.obj \
@@ -36,6 +37,7 @@ testobjects = testcbuffer.obj \
               testcglu.obj \
               testchierarchicallist.obj \
               testclstring.obj \
+              testclstringqueue.obj \
               testcmiscellaneous.obj \
               testcompilecpux86.obj \
               testcwordlist.obj \
@@ -104,6 +106,9 @@ cinitwordlist.obj : ../cinitwordlist.cpp ../diapergluforth.h
 
 clstring.obj : ../clstring.cpp ../diapergluforth.h
 	cl /c /Fo /DDGLU_OS_WIN64 /DDGLU_EXPORTS ../clstring.cpp
+
+clstringqueue.obj : ../clstringqueue.cpp ../diapergluforth.h
+	cl /c /Fo /DDGLU_OS_WIN64 /DDGLU_EXPORTS ../clstringqueue.cpp
 
 cmiscellaneous.obj : ../cmiscellaneous.cpp ../diapergluforth.h
 	cl /c /Fo /DDGLU_OS_WIN64 /DDGLU_EXPORTS ../cmiscellaneous.cpp
@@ -197,6 +202,9 @@ testchierarchicallist.obj : ../testchierarchicallist.cpp ../diapergluforth.h
 
 testclstring.obj : ../testclstring.cpp ../diapergluforth.h
 	cl /c /Fo /DDGLU_OS_WIN64 /DDGLU_IMPORTS ../testclstring.cpp
+
+testclstringqueue.obj : ../testclstringqueue.cpp ../diapergluforth.h
+	cl /c /Fo /DDGLU_OS_WIN64 /DDGLU_IMPORTS ../testclstringqueue.cpp
 
 testcmiscellaneous.obj : ../testcmiscellaneous.cpp ../diapergluforth.h
 	cl /c /Fo /DDGLU_OS_WIN64 /DDGLU_IMPORTS ../testcmiscellaneous.cpp

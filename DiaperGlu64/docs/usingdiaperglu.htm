@@ -1,22 +1,22 @@
 <!--
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 -->
 
@@ -72,7 +72,9 @@
       <a href=usingdiaperglu.htm#changingcompilebufs>Changing compile buffers</a>
       <a href=usingdiaperglu.htm#usingpointers>Using pointers</a>
       <a href=usingdiaperglu.htm#usingassembler>X86 Assembler</a>
+      <a href=usingdiaperglu.htm#usingstructures>Using structures</a>
       <a href=usingdiaperglu.htm#usingfloatingpoint>Using Floating Point</a>
+      <a href=usingdiaperglu.htm#usinglargeintegers>Using any size integers</a>
     </div>
 
     <div id=pagestuff>
@@ -697,7 +699,7 @@ awhile it won't.</p>
 
       <p><h3>Using Floating Point</h3></p>
 
-      <p>This program includes the Forth standard floating point words and floating point extension words. The
+      <p>This program includes the Forth '94 draft standard floating point words and floating point extension words. The
        main things you need to know are that this program uses a separate double precision (64 bit) floating
        point stack, and in order to push values to the floating point stack the BASE has to be DECIMAL and the 
        floating point number word has to have an d D e or E in it. The d D e E represents 'times ten raised to an exponent'.
@@ -708,7 +710,30 @@ awhile it won't.</p>
        buffer wordlist is in the search order. If you use d D or E by itself you will get 0.0</p>
 
       <p>The floating point words are documented in <a href=cpux86.htm#dg_forthfloatingpoint>forthfloatingpoint.htm</a></p>
-            </div>
+      </div>
+            
+      <div class=pagestuffsection id=usingstructures>
+
+        <p><h3>Using Structures</h3></p>
+
+        <p>This program includes words to help in declaring and using structures. The key word for this is
+         <a href=forthmiscellaneous.htm#dg_forthbrackettoorderconstant>[&gt;ORDER]CONSTANT</a> and it allows you to
+         make namespaces like a structure. There is an example in the documenation of [&gt;ORDER]CONSTANT that shows
+         you one way to use it. Some other words that can help you make structures are 
+         <a href=forthmiscellaneous.htm#dg_forthconstantscurly>CONSTANTS&lt;</a> and 
+         <a href=forthmiscellaneous.htm#dg_forthsizedconstantscurly>SIZED-CONSTANTS&lt;</a></p>
+      
+      </div>
+      
+      <div class=pagestuffsection id=usinglargeintegers>
+
+        <p><h3>Using Integers of Arbitrary Size</h3></p>
+
+        <p>This program has words to support using unsigned integers of arbitrary size. 
+         The integers are held on an lstring stack, lstring array, or on the string stack. 
+         These words are documented in the lstring and string stack pages.</p>
+      
+      </div>
 
       <div class=pagestuffsection>
 

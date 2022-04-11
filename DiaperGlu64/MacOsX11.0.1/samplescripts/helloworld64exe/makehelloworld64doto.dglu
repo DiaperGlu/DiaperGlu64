@@ -1,21 +1,21 @@
 ( //////////////////////////////////////////////////////////////////////////////////////// )
 ( //                                                                                       )
-( //    Copyright 2021 James Patrick Norris                                                )
+( //    Copyright 2022 James Patrick Norris                                                )
 ( //                                                                                       )
-( //    This file is part of Diaperglu 5.0.                                                )
+( //    This file is part of Diaperglu 5.2.                                                )
 ( //                                                                                       )
-( //    Diaperglu 5.0 is free software; you can redistribute it and/or modify              )
+( //    Diaperglu 5.2 is free software; you can redistribute it and/or modify              )
 ( //    it under the terms of the GNU General Public License as published by               )
 ( //    the Free Software Foundation; either version 2 of the License, or                  )
 ( //    {at your option} any later version.                                                )
 ( //                                                                                       )
-( //    Diaperglu 5.0 is distributed in the hope that it will be useful,                   )
+( //    Diaperglu 5.2 is distributed in the hope that it will be useful,                   )
 ( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
 ( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
 ( //    GNU General Public License for more details.                                       )
 ( //                                                                                       )
 ( //    You should have received a copy of the GNU General Public License                  )
-( //    along with Diaperglu 5.0; if not, write to the Free Software                       )
+( //    along with Diaperglu 5.2; if not, write to the Free Software                       )
 ( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
 ( //                                                                                       )
 ( //////////////////////////////////////////////////////////////////////////////////////// )
@@ -23,13 +23,65 @@
 ( /////////////////////////////// )
 ( // James Patrick Norris      // )
 ( // www.rainbarrel.com        // )
-( // January 9, 2021           // )
-( // version 5.0               // )
+( // April 11, 2022            // )
+( // version 5.2               // )
 ( /////////////////////////////// )
 
 
-// last changed April 5, 2020
+// last changed March 29, 2022
 
+// This makes a hello world .o file
+
+// Mac OS X deprecated SYSCALL so you need to use imported functions
+//  on the plus side, imported functions execute faster than syscalls
+
+NEW-FLAT-OSYMBOL-BUF
+( -R- oldcurrentcompilebufid )
+( -EH- importelementid_importhlistid exportelementid_exporthlistid )
+( // current compile buffer set to new buffer ) 
+
+X86-WORDLIST >SEARCH-ORDER
+
+DECIMAL
+
+OSYMBOL omyhelloworldmessage
+13 CODE-U8,  10 CODE-U8,                          // pushes crlf to the buffer
+$" Hello World!" PCURRENTCOMPILEBUFFER @ $>BUF    // pushes the message to the buffer
+13 CODE-U8,  10 CODE-U8,                          // appends another crlf
+13 CODE-U8,  10 CODE-U8,                          // and another crlf
+
+OSYMBOL myhelloworldstart 
+   1 N  RDI  MOV,                                                  // stdout handle
+   EH. omyhelloworldmessage [O]  RSI  LEA,                         // pmessageaddress
+   EH. myhelloworldstart EH. omyhelloworldmessage - N  RDX  MOV,   // messagelength
+
+IMP CALL,  OSYMBOL-IMPORT write
+
+IMP CALL,  OSYMBOL-IMPORT exit
+
+PCURRENTCOMPILEBUFFER @ 
+EH 
+1 EH[ND]
+BUF>NEWEXPORTIMPORT.OBUF
+
+$" helloworld64.o" SAVEFILE$
+
+SEARCH-ORDER> DROP
+
+FREE-FLAT-OSYMBOL-BUF
+( // current compile buf is freed )
+( //  and current compile buf is set to the oldcurrentcompilebbuf )
+( oldcurrentcompilebufid -R- )
+( importelementid_importhlistid exportelementid_exporthlistid -EH- )
+
+TRUE ?END-EVALUATE
+
+
+// ////////////////////////////////////////////////
+//  After here is another way to do hello world. //
+// ////////////////////////////////////////////////
+
+// last changed April 5, 2020
 
 
 // adding the assembler to the search order
@@ -107,4 +159,6 @@ EH>                                              // import symbol list parent
 BUF>NEWMACH-O.OBUF
 
 $" helloworld64.o" SAVEFILE$
+
+
 

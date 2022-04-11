@@ -1,22 +1,22 @@
 <!--
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 -->
 
@@ -104,6 +104,25 @@
       <a href=clstring.htm#dg_unpacklstring                >dg_unpacklstring</a>
       <a href=clstring.htm#dg_urlencodestring              >dg_urlencodestring</a>
       <a href=clstring.htm#dg_urldecodestring              >dg_urldecodestring</a>
+      <a href=clstring.htm#dg_uleextendlstringntol         >dg_uleextendlstringntol</a>
+      <a href=clstring.htm#dg_uleaddlstringntolstringn     >dg_uleaddlstringntolstringn</a>
+      <a href=clstring.htm#dg_uleadclstringntolstringn     >dg_uleadclstringntolstringn</a>
+      <a href=clstring.htm#dg_ulesbblstringntolstringn     >dg_ulesbblstringntolstringn</a>
+      <a href=clstring.htm#dg_notlstringn                  >dg_notlstringn</a>
+      <a href=clstring.htm#dg_reverselstringn              >dg_reverselstringn</a>
+      <a href=clstring.htm#dg_lelshiftlstringn             >dg_lelshiftlstringn</a>
+      <a href=clstring.htm#dg_ulershiftlstringn            >dg_ulershiftlstringn</a>
+      <a href=clstring.htm#dg_slershiftlstringn            >dg_slershiftlstringn</a>
+      <a href=clstring.htm#dg_lelshiftclstringn            >dg_lelshiftclstringn</a>
+      <a href=clstring.htm#dg_lershiftclstringn            >dg_lershiftclstringn</a>
+      <a href=clstring.htm#dg_uleandlstringntolstringn     >dg_uleandlstringntolstringn</a>
+      <a href=clstring.htm#dg_uleorlstringntolstringn      >dg_uleorlstringntolstringn</a>
+      <a href=clstring.htm#dg_ulexorlstringntolstringn     >dg_ulexorlstringntolstringn</a>
+      <a href=clstring.htm#dg_ulenandlstringntolstringn    >dg_ulenandlstringntolstringn</a>
+      <a href=clstring.htm#dg_ulenorlstringntolstringn     >dg_ulenorlstringntolstringn</a>
+      <a href=clstring.htm#dg_ulexnorlstringntolstringn    >dg_ulexnorlstringntolstringn</a>
+      <a href=clstring.htm#dg_mulu64bylstringnaddtolstringn>dg_mulu64bylstringnaddtolstringn</a>
+      <a href=clstring.htm#dg_divlstringnbyu64             >dg_divlstringnbyu64</a>
       <a href=clstring.htm#dg_stonewstring                 >dg_stonewstring</a>
       <a href=clstring.htm#dg_stonew0string                >dg_stonew0string</a>
       <a href=clstring.htm#dg_pzerostringtonewstring       >dg_pzerostringtonewstring</a>
@@ -2243,6 +2262,984 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
+      
+      <div class=word id=dg_uleextendlstringntol>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_uleextendlstringntol
+//
+// C prototype:
+//  UINT64 dg_uleextendlstringntol (
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 lstringoffsetbufferid,
+//    UINT64 lstringstringbufferid,
+//    UINT64 stringid,
+//    UINT64 newlength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  UINT64  lstringoffsetbufferid  index of the lstring's offset array bufferhandle
+//                                  in the BHarray
+//
+//  UINT64  lstringstringbufferid  index of the lstring's string buffer bufferhandle
+//                                  in the BHarray
+//
+//  UINT64  lstringid              0 based index of the lstring in the lstring array
+//
+//  UINT64  newlength              new length of the lstring in bytes
+//
+// Outputs:
+//  none
+//
+//
+// Action:
+//  If newlength is greater than the current length of the lstring, the lstring is
+//    grown to the new length, and the grown bytes are filled with 0s. 
+//    The extra bytes are added to the end of the lstring.
+//    This is the same as treating the lstring as an unsigned little endian integer
+//    and extending the integer to the new length.
+//
+// Failure cases:
+//   Error making the lstring longer.
+//   Error filling the new bytes with 0s.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+      
+      <div class=word id=dg_uleaddlstringntolstringn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_uleaddlstringntolstringn
+//
+// C prototype:
+//   void dg_uleaddlstringntolstringn (
+//      Bufferhandle* pBHarrayhead,
+//      UINT64 lstringoffsetbufferida,
+//      UINT64 lstringstringbufferida,
+//      UINT64 lstringida,
+//      UINT64 offsetbufferidb,
+//      UINT64 stringbufferidb,
+//      UINT64 stringidb,
+//      UINT64* pcarryout)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  UINT64  lstringoffsetbufferida index of the lstring a's offset array 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringstringbufferida index of the lstring a's string buffer 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringida             0 based index of lstring a in the lstring array
+//
+//  UINT64  lstringoffsetbufferidb index of the lstring b's offset array 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringstringbufferidb index of the lstring b's string buffer 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringidb             0 based index of lstring b in the lstring array
+//
+//  UINT64* pcarryout              pointer to UINT64 that will hold carryout
+//
+//
+// Outputs:
+//  carryout                       0 = no carry from add, 1 = carry from add
+//
+//
+// Action:
+//  Adds the bytes in lstring a to the bytes in lstring b.
+//  This add treats the lstrings as little endian integers.
+//  If there is a carry after the add, it is put in carryout.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_uleadclstringntolstringn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_uleadclstringntolstringn
+//
+// C prototype:
+//   void dg_uleaddlstringntolstringn (
+//      Bufferhandle* pBHarrayhead,
+//      UINT64 lstringoffsetbufferida,
+//      UINT64 lstringstringbufferida,
+//      UINT64 lstringida,
+//      UINT64 offsetbufferidb,
+//      UINT64 stringbufferidb,
+//      UINT64 stringidb,
+//      UINT64* pcarryinout)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  UINT64  lstringoffsetbufferida index of the lstring a's offset array 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringstringbufferida index of the lstring a's string buffer 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringida             0 based index of lstring a in the lstring array
+//
+//  UINT64  lstringoffsetbufferidb index of the lstring b's offset array 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringstringbufferidb index of the lstring b's string buffer 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringidb             0 based index of lstring b in the lstring array
+//
+//  UINT64* pcarryinout            pointer to UINT64 that holds the carryin and
+//                                  will hold carryout
+//
+//  UINT64  carryinout             0 = no carry in, 1 = carry in
+//                                  (only lowest bit of carryinout is used)
+//                                  
+//
+// Outputs:
+//  carryinout                     0 = no carryout from add, 1 = carryout from add
+//
+//
+// Action:
+//  Adds the carryin and the bytes in lstring a to the bytes in lstring b.
+//  This add treats the lstrings as little endian integers.
+//  If there is a carry after the add, it is put in carryout.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+      <div class=word id=dg_ulesbblstringntolstringn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_ulesbblstringntolstringn
+//
+// C prototype:
+//   void dg_ulesbblstringntolstringn (
+//      Bufferhandle* pBHarrayhead,
+//      UINT64 lstringoffsetbufferida,
+//      UINT64 lstringstringbufferida,
+//      UINT64 lstringida,
+//      UINT64 offsetbufferidb,
+//      UINT64 stringbufferidb,
+//      UINT64 stringidb,
+//      UINT64* pborrowinout)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  UINT64  lstringoffsetbufferida index of the lstring a's offset array 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringstringbufferida index of the lstring a's string buffer 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringida             0 based index of lstring a in the lstring array
+//
+//  UINT64  lstringoffsetbufferidb index of the lstring b's offset array 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringstringbufferidb index of the lstring b's string buffer 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringidb             0 based index of lstring b in the lstring array
+//
+//  UINT64* pborrowinout           pointer to UINT64 that holds the borrowin and
+//                                  will hold borrowout
+//
+//  UINT64  borrowinout            0 = no borrow in, 1 = borrow in
+//                                  (only lowest bit of borrowin is used)
+//                                  
+//
+// Outputs:
+//  borrowinout                    0 = no borrow from sub, 1 = borrow from sub
+//
+//
+// Action:
+//  Subtracts the borrowin and the bytes in lstring a from the bytes in lstring b.
+//  This subtract treats the lstrings as little endian integers.
+//  If there is a borrow after the subtract, it is put in borrowout.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_notlstringn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_notlstringn
+//
+// C prototype:
+//   void dg_notlstringn (
+//      Bufferhandle* pBHarrayhead,
+//      UINT64 lstringoffsetbufferid,
+//      UINT64 lstringstringbufferid,
+//      UINT64 lstringid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  UINT64  lstringoffsetbufferid  index of the lstring's offset array 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringstringbufferid  index of the lstring's string buffer 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringid              0 based index of lstring in the lstring array
+//        
+//
+// Outputs:
+//  none                                  
+//
+//
+// Action:
+//  Inverts all the bits in the lstring. (0s become 1s, 1s become 0s)
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_reverselstringn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_reverselstringn
+//
+// C prototype:
+//   void dg_reverselstringn (
+//      Bufferhandle* pBHarrayhead,
+//      UINT64 lstringoffsetbufferid,
+//      UINT64 lstringstringbufferid,
+//      UINT64 lstringid)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  UINT64  lstringoffsetbufferid  index of the lstring's offset array 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringstringbufferid  index of the lstring's string buffer 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringid              0 based index of lstring in the lstring array
+//        
+//
+// Outputs:
+//  none                                  
+//
+//
+// Action:
+//  Reverses the order of the bytes in the lstring.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_lelshiftlstringn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_lelshiftlstringn
+//
+// C prototype:
+//   void dg_lelshiftlstringn (
+//      Bufferhandle* pBHarrayhead,
+//      UINT64 lstringoffsetbufferid,
+//      UINT64 lstringstringbufferid,
+//      UINT64 lstringid,
+//      UINT64* pcarryout)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  UINT64  lstringoffsetbufferid  index of the lstring's offset array 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringstringbufferid  index of the lstring's string buffer 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringid              0 based index of lstring in the lstring array
+//
+//  UINT64* pcarryout              pointer to UINT64 that will hold carryout
+//         
+//
+// Outputs:
+//  carryout                       0 = no carry out, 1 = carry out                                  
+//
+//
+// Action:
+//  Shifts all the bits in the lstring one bit to the left.
+//  A zero is shifted in to the lowest bit of the lstring.
+//  This shift treats the lstring as a little endian integer.
+//  The value of the highest bit from before the shift is put into carryout.
+//  This is the same as multiplying the unsigned value in the string by 2.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_ulershiftlstringn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_ulershiftlstringn
+//
+// C prototype:
+//   void dg_ulershiftlstringn (
+//      Bufferhandle* pBHarrayhead,
+//      UINT64 lstringoffsetbufferid,
+//      UINT64 lstringstringbufferid,
+//      UINT64 lstringid,
+//      UINT64* pcarryout)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  UINT64  lstringoffsetbufferid  index of the lstring's offset array 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringstringbufferid  index of the lstring's string buffer 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringid              0 based index of lstring in the lstring array
+//
+//  UINT64* pcarryout              pointer to UINT64 that will hold carryout
+//         
+//
+// Outputs:
+//  carryout                       0 = no carry out, 1 = carry out                                  
+//
+//
+// Action:
+//  Shifts all the bits in the lstring one bit to the right.
+//  A zero is shifted in to the highest bit of the lstring.
+//  This shift treats the lstring as an unsigned little endian integer.
+//  The value of the lowest bit from before the shift is put into carryout.
+//  This is the same as dividing the unsigned value in the string by 2.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_slershiftlstringn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_slershiftlstringn
+//
+// C prototype:
+//   void dg_slershiftlstringn (
+//      Bufferhandle* pBHarrayhead,
+//      UINT64 lstringoffsetbufferid,
+//      UINT64 lstringstringbufferid,
+//      UINT64 lstringid,
+//      UINT64* pcarryout)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  UINT64  lstringoffsetbufferid  index of the lstring's offset array 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringstringbufferid  index of the lstring's string buffer 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringid              0 based index of lstring in the lstring array
+//
+//  UINT64* pcarryout              pointer to UINT64 that will hold carryout
+//         
+//
+// Outputs:
+//  carryout                       0 = no carry out, 1 = carry out                                  
+//
+//
+// Action:
+//  Shifts all the bits in the lstring one bit to the right.
+//  The highest bit of the lstring is copied and shifted back into the highest bit.
+//  This shift treats the lstring as a signed little endian integer.
+//  The value of the lowest bit from before the shift is put into carryout.
+//  This is the same as dividing the signed value in the string by 2.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_lelshiftclstringn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_lelshiftclstringn
+//
+// C prototype:
+//   void dg_lelshiftclstringn (
+//      Bufferhandle* pBHarrayhead,
+//      UINT64 lstringoffsetbufferid,
+//      UINT64 lstringstringbufferid,
+//      UINT64 lstringid,
+//      UINT64* pcarryinout)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  UINT64  lstringoffsetbufferid  index of the lstring's offset array 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringstringbufferid  index of the lstring's string buffer 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringid              0 based index of lstring in the lstring array
+//
+//  UINT64* pcarryinout            pointer to UINT64 that holds carryin and will 
+//                                  hold carryout
+//
+//  UINT64 carryin                 0 = no carry in, 1 = carry in
+//
+// Outputs:
+//  carryout                       0 = no carry out, 1 = carry out                                  
+//
+//
+// Action:
+//  Shifts all the bits in the lstring one bit to the left.
+//  carryin is shifted in to the lowest bit of the lstring.
+//  This shift treats the lstring as a little endian integer.
+//  The value of the highest bit from before the shift is put into carryout.
+//  This is the same as multiplying the unsigned value in the string by 2 and
+//   adding carryin to the result.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_lershiftclstringn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_lershiftclstringn
+//
+// C prototype:
+//   void dg_lershiftclstringn (
+//      Bufferhandle* pBHarrayhead,
+//      UINT64 lstringoffsetbufferid,
+//      UINT64 lstringstringbufferid,
+//      UINT64 lstringid,
+//      UINT64* pcarryinout)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  UINT64  lstringoffsetbufferid  index of the lstring's offset array 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringstringbufferid  index of the lstring's string buffer 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringid              0 based index of lstring in the lstring array
+//
+//  UINT64* pcarryinout            pointer to UINT64 that holds carryin and will 
+//                                  hold carryout
+//
+//  UINT64 carryin                 0 = no carry in, 1 = carry in
+//
+// Outputs:
+//  carryout                       0 = no carry out, 1 = carry out                                  
+//
+//
+// Action:
+//  Shifts all the bits in the lstring one bit to the right.
+//  carryin is shifted in to the highest bit of the lstring.
+//  This shift treats the lstring as a little endian integer.
+//  The value of the lowest bit from before the shift is put into carryout.
+//  This is the same as dividing the unsigned value in the string by 2 and
+//   setting the highest bit of the result to carry in.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_uleandlstringntolstringn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_uleandlstringntolstringn
+//
+// C prototype:
+//   void dg_uleandlstringntolstringn (
+//      Bufferhandle* pBHarrayhead,
+//      UINT64 lstringoffsetbufferida,
+//      UINT64 lstringstringbufferida,
+//      UINT64 lstringida,
+//      UINT64 offsetbufferidb,
+//      UINT64 stringbufferidb,
+//      UINT64 stringidb)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  UINT64  lstringoffsetbufferida index of the lstring a's offset array 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringstringbufferida index of the lstring a's string buffer 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringida             0 based index of lstring a in the lstring array
+//
+//  UINT64  lstringoffsetbufferidb index of the lstring b's offset array 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringstringbufferidb index of the lstring b's string buffer 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringidb             0 based index of lstring b in the lstring array
+//
+//
+// Outputs:
+//  none
+//
+//
+// Action:
+//  Logical Ands the bytes in lstring a to the bytes in lstring b.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_uleorlstringntolstringn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_uleorlstringntolstringn
+//
+// C prototype:
+//   void dg_uleorlstringntolstringn (
+//      Bufferhandle* pBHarrayhead,
+//      UINT64 lstringoffsetbufferida,
+//      UINT64 lstringstringbufferida,
+//      UINT64 lstringida,
+//      UINT64 offsetbufferidb,
+//      UINT64 stringbufferidb,
+//      UINT64 stringidb)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  UINT64  lstringoffsetbufferida index of the lstring a's offset array 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringstringbufferida index of the lstring a's string buffer 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringida             0 based index of lstring a in the lstring array
+//
+//  UINT64  lstringoffsetbufferidb index of the lstring b's offset array 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringstringbufferidb index of the lstring b's string buffer 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringidb             0 based index of lstring b in the lstring array
+//
+//
+// Outputs:
+//  none
+//
+//
+// Action:
+//  Logical Ors the bytes in lstring a to the bytes in lstring b.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_ulexorlstringntolstringn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_ulexorlstringntolstringn
+//
+// C prototype:
+//   void dg_ulexorlstringntolstringn (
+//      Bufferhandle* pBHarrayhead,
+//      UINT64 lstringoffsetbufferida,
+//      UINT64 lstringstringbufferida,
+//      UINT64 lstringida,
+//      UINT64 offsetbufferidb,
+//      UINT64 stringbufferidb,
+//      UINT64 stringidb)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  UINT64  lstringoffsetbufferida index of the lstring a's offset array 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringstringbufferida index of the lstring a's string buffer 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringida             0 based index of lstring a in the lstring array
+//
+//  UINT64  lstringoffsetbufferidb index of the lstring b's offset array 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringstringbufferidb index of the lstring b's string buffer 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringidb             0 based index of lstring b in the lstring array
+//
+//
+// Outputs:
+//  none
+//
+//
+// Action:
+//  Logical Xors the bytes in lstring a to the bytes in lstring b.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_ulenandlstringntolstringn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_ulenandlstringntolstringn
+//
+// C prototype:
+//   void dg_ulenandlstringntolstringn (
+//      Bufferhandle* pBHarrayhead,
+//      UINT64 lstringoffsetbufferida,
+//      UINT64 lstringstringbufferida,
+//      UINT64 lstringida,
+//      UINT64 offsetbufferidb,
+//      UINT64 stringbufferidb,
+//      UINT64 stringidb)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  UINT64  lstringoffsetbufferida index of the lstring a's offset array 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringstringbufferida index of the lstring a's string buffer 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringida             0 based index of lstring a in the lstring array
+//
+//  UINT64  lstringoffsetbufferidb index of the lstring b's offset array 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringstringbufferidb index of the lstring b's string buffer 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringidb             0 based index of lstring b in the lstring array
+//
+//
+// Outputs:
+//  none
+//
+//
+// Action:
+//  Logical Nands the bytes in lstring a to the bytes in lstring b.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_ulenorlstringntolstringn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_ulenorlstringntolstringn
+//
+// C prototype:
+//   void dg_ulenorlstringntolstringn (
+//      Bufferhandle* pBHarrayhead,
+//      UINT64 lstringoffsetbufferida,
+//      UINT64 lstringstringbufferida,
+//      UINT64 lstringida,
+//      UINT64 offsetbufferidb,
+//      UINT64 stringbufferidb,
+//      UINT64 stringidb)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  UINT64  lstringoffsetbufferida index of the lstring a's offset array 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringstringbufferida index of the lstring a's string buffer 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringida             0 based index of lstring a in the lstring array
+//
+//  UINT64  lstringoffsetbufferidb index of the lstring b's offset array 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringstringbufferidb index of the lstring b's string buffer 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringidb             0 based index of lstring b in the lstring array
+//
+//
+// Outputs:
+//  none
+//
+//
+// Action:
+//  Logical Nors the bytes in lstring a to the bytes in lstring b.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_ulexnorlstringntolstringn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_ulexnorlstringntolstringn
+//
+// C prototype:
+//   void dg_ulexnorlstringntolstringn (
+//      Bufferhandle* pBHarrayhead,
+//      UINT64 lstringoffsetbufferida,
+//      UINT64 lstringstringbufferida,
+//      UINT64 lstringida,
+//      UINT64 offsetbufferidb,
+//      UINT64 stringbufferidb,
+//      UINT64 stringidb)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  UINT64  lstringoffsetbufferida index of the lstring a's offset array 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringstringbufferida index of the lstring a's string buffer 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringida             0 based index of lstring a in the lstring array
+//
+//  UINT64  lstringoffsetbufferidb index of the lstring b's offset array 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringstringbufferidb index of the lstring b's string buffer 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringidb             0 based index of lstring b in the lstring array
+//
+//
+// Outputs:
+//  none
+//
+//
+// Action:
+//  Logical Xnors the bytes in lstring a to the bytes in lstring b.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_mulu64bylstringnaddtolstringn>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_mulu64bylstringnaddtolstringn
+//
+// C prototype:
+//   void dg_mulu64bylstringnaddtolstringn (
+//      Bufferhandle* pBHarrayhead,
+//      UINT64 lstringoffsetbufferida,
+//      UINT64 lstringstringbufferida,
+//      UINT64 lstringida,
+//      UINT64 offsetbufferidb,
+//      UINT64 stringbufferidb,
+//      UINT64 stringidb,
+//      UINT64 u)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  UINT64  lstringoffsetbufferida index of the lstring a's offset array 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringstringbufferida index of the lstring a's string buffer 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringida             0 based index of lstring a in the lstring array
+//
+//  UINT64  lstringoffsetbufferidb index of the lstring b's offset array 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringstringbufferidb index of the lstring b's string buffer 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringidb             0 based index of lstring b in the lstring array
+//
+//
+//  UINT64  u                      unsigned 64 bit integer
+//
+// Outputs:
+//  none
+//
+//
+// Action:
+//  Multiplies the unsigned little endian value in lstring a by u and adds the result
+//   to the unsigned little endian value in lstring b. lstring a and b are unsigned
+//   extended to a multiple of 64 bits if needed. (0 bytes are added to the end if
+//   needed.) lstring b is unsign extended to hold the whole result if needed.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_divlstringnbyu64>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_divlstringnbyu64
+//
+// C prototype:
+//   void dg_divlstringnbyu64 (
+//      Bufferhandle* pBHarrayhead,
+//      UINT64 lstringoffsetbufferida,
+//      UINT64 lstringstringbufferida,
+//      UINT64 lstringida,
+//      UINT64 u,
+//      UINT64* premainder)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is
+//                                  used as the bufferhandle for the array where
+//                                  the other bufferhandles are stored.
+//
+//  UINT64  lstringoffsetbufferida index of the lstring's offset array 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringstringbufferida index of the lstring's string buffer 
+//                                  bufferhandle in the BHarray
+//
+//  UINT64  lstringida             0 based index of lstring in the lstring array
+//
+//
+//  UINT64  u                      unsigned 64 bit integer
+//
+//  UINT64* premainder             pointer to 64 bit value that will hold the
+//                                  remainder
+//
+// Outputs:
+//  UINT64 remainder               64 bit remainder from the division
+//
+//
+// Action:
+//  Divides the unsigned little endian value in the lstring by u and puts the answer
+//   (quotient) back into the lstring. The remainder from the division goes into the
+//   remainder.
+//  The lstring is unsigned extended to a multiple of 64 bits if needed.
+//  If u is 0, the remainder is set to the largest unsigned 64 bit integer.
+//
+// Failure cases:
+//
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
 
       <div class=word id=dg_stonewstring>
 <pre>

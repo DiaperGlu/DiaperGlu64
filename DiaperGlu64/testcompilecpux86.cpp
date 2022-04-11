@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,12 +23,111 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 
 #include "diapergluforth.h"
 #include "testdglu.h"
+
+void testdg_bumpdisplacementsizeifneeded()
+{
+    dg_Sibformatter mysf;
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_bumpdisplacementsizeifneeded\n");
+    
+    // displacement 0 case
+    dg_initSibformatter(&mysf);
+    
+    dg_bumpdisplacementsizeifneeded (&mysf);
+    
+    if (mysf.displacementsize != dg_sizenone)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_bumpdisplacementsizeifneeded displacement 0 success case  - displacement was changed\n");
+        return;
+    }
+    
+    // displacement 1 case
+    dg_initSibformatter(&mysf);
+    
+    mysf.displacement = 1;
+    
+    dg_bumpdisplacementsizeifneeded (&mysf);
+    
+    if (mysf.displacementsize != dg_sizebyte)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_bumpdisplacementsizeifneeded displacement 1 success case  - displacement was not promoted to byte\n");
+        return;
+    }
+    
+    // displacement -1 case
+    dg_initSibformatter(&mysf);
+    
+    mysf.displacement = -1;
+    
+    dg_bumpdisplacementsizeifneeded (&mysf);
+    
+    if (mysf.displacementsize != dg_sizebyte)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_bumpdisplacementsizeifneeded displacement -1 success case  - displacement was not promoted to byte\n");
+        return;
+    }
+    
+    // displacement 0x7f case
+    dg_initSibformatter(&mysf);
+    
+    mysf.displacement = 0x7f;
+    
+    dg_bumpdisplacementsizeifneeded (&mysf);
+    
+    if (mysf.displacementsize != dg_sizebyte)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_bumpdisplacementsizeifneeded displacement 0x7f success case  - displacement was not promoted to byte\n");
+        return;
+    }
+    
+    // displacement -0x80 case
+    dg_initSibformatter(&mysf);
+    
+    mysf.displacement = -0x80;
+    
+    dg_bumpdisplacementsizeifneeded (&mysf);
+    
+    if (mysf.displacementsize != dg_sizebyte)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_bumpdisplacementsizeifneeded displacement -0x80 success case  - displacement was not promoted to byte\n");
+        return;
+    }
+    
+    // displacement 0x80 case
+    dg_initSibformatter(&mysf);
+    
+    mysf.displacement = 0x80;
+    
+    dg_bumpdisplacementsizeifneeded (&mysf);
+    
+    if (mysf.displacementsize != dg_sizedword)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_bumpdisplacementsizeifneeded displacement 0x80 success case  - displacement was not promoted to 32 bits\n");
+        return;
+    }
+    
+    // displacement -0x81 case
+    dg_initSibformatter(&mysf);
+    
+    mysf.displacement = -0x81;
+    
+    dg_bumpdisplacementsizeifneeded (&mysf);
+    
+    if (mysf.displacementsize != dg_sizedword)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_bumpdisplacementsizeifneeded displacement -0x81 success case  - displacement was not promoted to 32 bits\n");
+        return;
+    }
+}
 
 void testdg_compilemovregtoreg()
 {
@@ -8624,5 +8723,1327 @@ void testcompiles()
 }
 */
 
+
+// this test is not platform independent...
+void testdg_determineparameterregistermac()
+{
+    Bufferhandle BHarrayhead;
+    
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    UINT64 paramregister;
+    
+    dg_printzerostring(&BHarrayhead,  (unsigned char*)"testing dg_determineparameterregister\n");
+    
+    
+    // 0 int parameters extra floats success case
+    dg_initbuffers(&BHarrayhead);
+    
+    dg_initvariables(&BHarrayhead);
+    
+    dg_putbufferuint64 (
+        &BHarrayhead,
+		DG_DATASPACE_BUFFERID,
+        dg_numberofcparameters, // offset
+		0);                     // data);
+  
+    dg_putbufferuint64 (
+        &BHarrayhead,
+		DG_DATASPACE_BUFFERID,
+        dg_numberofcfparameters, // offset
+		0);                     // data); 
+  
+    dg_putbufferuint64 (
+        &BHarrayhead,
+		DG_DATASPACE_BUFFERID,
+        dg_extraparametersfloatsflag, // offset
+		FORTH_TRUE);                     // data);        
+    
+    paramregister =  dg_determineparameterregister (
+        &BHarrayhead,
+        0);              // parameterindex);
+        
+    if (paramregister != dg_xmm0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 0 int params extra floats param 0 success case - expected dg_xmm0 (0x50), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    paramregister =  dg_determineparameterregister (
+        &BHarrayhead,
+        1);              // parameterindex);
+        
+    if (paramregister != dg_xmm1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 0 int params extra floats param 1 success case - expected dg_xmm1 (0x51), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    paramregister =  dg_determineparameterregister (
+        &BHarrayhead,
+        7);              // parameterindex);
+        
+    if (paramregister != dg_xmm7)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 0 int params extra floats param 7 success case - expected dg_xmm7 (0x57), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    paramregister =  dg_determineparameterregister (
+        &BHarrayhead,
+        8);              // parameterindex);
+        
+    if (paramregister != dg_cparameteronstackflag)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 0 int params extra floats param 8 success case - expected dg_cparameteronstackflag (0x0100000000000000), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    paramregister =  dg_determineparameterregister (
+        &BHarrayhead,
+        9);              // parameterindex);
+        
+    if (paramregister != dg_cparameteronstackflag + 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 0 int params extra floats param 9 success case - expected dg_cparameteronstackflag + 1 (0x0100000000000001), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    // 0 int parameters extra ints success case
+    dg_initbuffers(&BHarrayhead);
+    
+    dg_initvariables(&BHarrayhead);
+    
+    dg_putbufferuint64 (
+        &BHarrayhead,
+		DG_DATASPACE_BUFFERID,
+        dg_numberofcparameters, // offset
+		0);                     // data);
+  
+    dg_putbufferuint64 (
+        &BHarrayhead,
+		DG_DATASPACE_BUFFERID,
+        dg_numberofcfparameters, // offset
+		0);                     // data); 
+  
+    dg_putbufferuint64 (
+        &BHarrayhead,
+		DG_DATASPACE_BUFFERID,
+        dg_extraparametersfloatsflag, // offset
+		FORTH_FALSE);                     // data);        
+    
+    paramregister =  dg_determineparameterregister (
+        &BHarrayhead,
+        0);              // parameterindex);
+        
+    if (paramregister != dg_rdi)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 0 int params extra ints param 0 success case - expected dg_rdi, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    paramregister =  dg_determineparameterregister (
+        &BHarrayhead,
+        1);              // parameterindex);
+        
+    if (paramregister != dg_rsi)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 0 int params extra ints param 1 success case - expected dg_rsi, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    paramregister =  dg_determineparameterregister (
+        &BHarrayhead,
+        5);              // parameterindex);
+        
+    if (paramregister != dg_r9)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 0 int params extra ints param 5 success case - expected dg_r9, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    paramregister =  dg_determineparameterregister (
+        &BHarrayhead,
+        6);              // parameterindex);
+        
+    if (paramregister != dg_cparameteronstackflag)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 0 int params extra ints param 6 success case - expected dg_cparameteronstackflag (0x0100000000000000), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    paramregister =  dg_determineparameterregister (
+        &BHarrayhead,
+        7);              // parameterindex);
+        
+    if (paramregister != dg_cparameteronstackflag + 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 0 int params extra ints param 7 success case - expected dg_cparameteronstackflag + 1 (0x0100000000000001), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    // 1 int parameter success case
+    dg_putbufferuint64 (
+        &BHarrayhead,
+		DG_DATASPACE_BUFFERID,
+        dg_numberofcparameters, // offset
+		1);                     // data);
+  
+    dg_putbufferuint64 (
+        &BHarrayhead,
+		DG_DATASPACE_BUFFERID,
+        dg_numberofcfparameters, // offset
+		0);                     // data);
+  
+    dg_putbufferuint64 (
+        &BHarrayhead,
+		DG_DATASPACE_BUFFERID,
+        dg_extraparametersfloatsflag, // offset
+		FORTH_TRUE);                     // data);         
+    
+    paramregister =  dg_determineparameterregister (
+        &BHarrayhead,
+        0);              // parameterindex);
+        
+    if (paramregister != dg_rdi)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 1 int params extra float param 0 success case - expected dg_rdi (0x3f), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    paramregister =  dg_determineparameterregister (
+        &BHarrayhead,
+        1);              // parameterindex);
+        
+    if (paramregister != dg_xmm0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 1 int params extra float param 1 success case - expected dg_xmm0 (0x50), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    paramregister =  dg_determineparameterregister (
+        &BHarrayhead,
+        8);              // parameterindex);
+        
+    if (paramregister != dg_xmm7)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 1 int params extra float param 8 success case - expected dg_xmm7 (0x57), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    paramregister =  dg_determineparameterregister (
+        &BHarrayhead,
+        9);              // parameterindex);
+        
+    if (paramregister != 0x0100000000000000)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 1 int params extra float param 9 success case - expected dg_cparameteronstackflag (0x0100000000000000), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    paramregister =  dg_determineparameterregister (
+        &BHarrayhead,
+        10);              // parameterindex);
+        
+    if (paramregister != 0x0100000000000001)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 1 int params extra float param 10 success case - expected dg_cparameteronstackflag + 1 (0x0100000000000001), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    // 7 int parameters success case
+    dg_putbufferuint64 (
+        &BHarrayhead,
+		DG_DATASPACE_BUFFERID,
+        dg_numberofcparameters, // offset
+		7);                     // data);
+  
+    dg_putbufferuint64 (
+        &BHarrayhead,
+		DG_DATASPACE_BUFFERID,
+        dg_numberofcfparameters, // offset
+		0);                     // data);
+  
+    dg_putbufferuint64 (
+        &BHarrayhead,
+		DG_DATASPACE_BUFFERID,
+        dg_extraparametersfloatsflag, // offset
+		FORTH_TRUE);                     // data);    
+    
+    paramregister =  dg_determineparameterregister (
+        &BHarrayhead,
+        0);              // parameterindex);
+        
+    if (paramregister != dg_rdi)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 7 int params extra float param 0 success case - expected dg_rdi (0x3f), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    paramregister =  dg_determineparameterregister (
+        &BHarrayhead,
+        1);              // parameterindex);
+        
+    if (paramregister != dg_rsi)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 7 int params extra float param 1 success case - expected dg_rsi (0x3e), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    paramregister =  dg_determineparameterregister (
+        &BHarrayhead,
+        2);              // parameterindex);
+        
+    if (paramregister != dg_rdx)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 7 int params extra float param 2 success case - expected dg_rdx (0x3a), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    paramregister =  dg_determineparameterregister (
+        &BHarrayhead,
+        3);              // parameterindex);
+        
+    if (paramregister != dg_rcx)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 7 int params extra float param 3 success case - expected dg_rcx (0x3b), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    paramregister =  dg_determineparameterregister (
+        &BHarrayhead,
+        4);              // parameterindex);
+        
+    if (paramregister != dg_r8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 7 int params extra float param 4 success case - expected dg_r8 (0x30), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    paramregister =  dg_determineparameterregister (
+        &BHarrayhead,
+        5);              // parameterindex);
+        
+    if (paramregister != dg_r9)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 7 int params extra float param 5 success case - expected dg_r9 (0x31), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    paramregister =  dg_determineparameterregister (
+        &BHarrayhead,
+        6);              // parameterindex);
+        
+    if (paramregister != 0x0100000000000000)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 7 int params extra float param 6 success case - expected dg_cparameteronstackflag (0x0100000000000000), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    paramregister =  dg_determineparameterregister (
+        &BHarrayhead,
+        7);              // parameterindex);
+        
+    if (paramregister != dg_xmm0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 7 int params extra float param 7 success case - expected dg_xmm0 (0x50), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    paramregister =  dg_determineparameterregister (
+        &BHarrayhead,
+        8);              // parameterindex);
+        
+    if (paramregister != dg_xmm1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 7 int params extra float param 8 success case - expected dg_xmm1 (0x51), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    paramregister =  dg_determineparameterregister (
+        &BHarrayhead,
+        14);              // parameterindex);
+        
+    if (paramregister != dg_xmm7)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 7 int params extra float param 14 success case - expected dg_xmm7 (0x57), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    paramregister =  dg_determineparameterregister (
+        &BHarrayhead,
+        15);              // parameterindex);
+        
+    if (paramregister != 0x0100000000000001)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 7 int params extra float param 15 success case - expected dg_cparameteronstackflag + 1 (0x0100000000000001), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_clearerrors(&BHarrayhead);
+	
+	dg_freeallbuffers(&BHarrayhead);
+}
+
+// this test is not platform independent...
+void testdg_determineparameterregisterwin()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    UINT64 paramregister;
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_determineparameterregister\n");
+
+
+    // 0 int parameters extra ints success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_cparameterregisters, // offset
+        0);                     // data);
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_cparameterregisters + 8, // offset
+        0);                     // data); 
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_cparameterregisters + 0x10, // offset
+        0);                     // data); 
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_cparameterregisters + 0x18, // offset
+        0);                     // data);      
+
+    paramregister = dg_determineparameterregister(
+        &BHarrayhead,
+        0);              // parameterindex);
+
+    if (paramregister != dg_rcx)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 0 int params extra ints param 0 success case - expected dg_rcx (0x039), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    paramregister = dg_determineparameterregister(
+        &BHarrayhead,
+        1);              // parameterindex);
+
+    if (paramregister != dg_rdx)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 0 int params extra ints param 1 success case - expected dg_cparameterpassinbothflag + 1 (0x0300000000000001), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    paramregister = dg_determineparameterregister(
+        &BHarrayhead,
+        7);              // parameterindex);
+
+    if (paramregister != dg_cparameteronstackflag + 3)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 0 int params extra ints param 7 success case - expected dg_cparameteronstackflag + 3 (0x0100000000000003), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    paramregister = dg_determineparameterregister(
+        &BHarrayhead,
+        8);              // parameterindex);
+
+    if (paramregister != dg_cparameteronstackflag + 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 0 int params extra ints param 8 success case - expected dg_cparameteronstackflag + 4 (0x0100000000000004), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    paramregister = dg_determineparameterregister(
+        &BHarrayhead,
+        9);              // parameterindex);
+
+    if (paramregister != dg_cparameteronstackflag + 5)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 0 int params extra ints param 9 success case - expected dg_cparameteronstackflag + 5 (0x0100000000000005), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    // 1 int parameter success case
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_cparameterregisters, // offset
+        0);                     // data);
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_cparameterregisters + 8, // offset
+        1);                     // data); 
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_cparameterregisters + 0x10, // offset
+        1);                     // data); 
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_cparameterregisters + 0x18, // offset
+        1);                     // data);            
+
+    paramregister = dg_determineparameterregister(
+        &BHarrayhead,
+        0);              // parameterindex);
+
+    if (paramregister != dg_rcx)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 1 int params extra float param 0 success case - expected dg_rcx (0x39), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    paramregister = dg_determineparameterregister(
+        &BHarrayhead,
+        1);              // parameterindex);
+
+    if (paramregister != dg_xmm1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 1 int params extra float param 1 success case - expected dg_xmm1 (0x51), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    paramregister = dg_determineparameterregister(
+        &BHarrayhead,
+        8);              // parameterindex);
+
+    if (paramregister != dg_cparameteronstackflag + 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 1 int params extra float param 8 success case - expected dg_cparameteronstackflag+4 (0x0100000000000004), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    paramregister = dg_determineparameterregister(
+        &BHarrayhead,
+        9);              // parameterindex);
+
+    if (paramregister != dg_cparameteronstackflag + 5)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 1 int params extra float param 9 success case - expected dg_cparameteronstackflag + 5 (0x0100000000000005), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    paramregister = dg_determineparameterregister(
+        &BHarrayhead,
+        10);              // parameterindex);
+
+    if (paramregister != dg_cparameteronstackflag + 6)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 1 int params extra float param 10 success case - expected dg_cparameteronstackflag + 6 (0x0100000000000006), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    // 7 int parameters success case
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_cparameterregisters, // offset
+        0);                     // data);
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_cparameterregisters + 8, // offset
+        0);                     // data); 
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_cparameterregisters + 0x10, // offset
+        0);                     // data); 
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_cparameterregisters + 0x18, // offset
+        0);                     // data);    
+
+    paramregister = dg_determineparameterregister(
+        &BHarrayhead,
+        0);              // parameterindex);
+
+    if (paramregister != dg_rcx)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 7 int params extra float param 0 success case - expected dg_rcx (0x39), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    paramregister = dg_determineparameterregister(
+        &BHarrayhead,
+        1);              // parameterindex);
+
+    if (paramregister != dg_rdx)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 7 int params extra float param 1 success case - expected dg_rdx (0x3a), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    paramregister = dg_determineparameterregister(
+        &BHarrayhead,
+        2);              // parameterindex);
+
+    if (paramregister != dg_r8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 7 int params extra float param 2 success case - expected dg_r8 (0x30), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    paramregister = dg_determineparameterregister(
+        &BHarrayhead,
+        3);              // parameterindex);
+
+    if (paramregister != dg_r9)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 7 int params extra float param 3 success case - expected dg_r9 (0x31), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    paramregister = dg_determineparameterregister(
+        &BHarrayhead,
+        4);              // parameterindex);
+
+    if (paramregister != dg_cparameteronstackflag)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 7 int params extra float param 4 success case - expected dg_cparameteronstackflag (0x0100000000000000), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    paramregister = dg_determineparameterregister(
+        &BHarrayhead,
+        5);              // parameterindex);
+
+    if (paramregister != dg_cparameteronstackflag + 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 7 int params extra float param 5 success case - dg_cparameteronstackflag + 1 (0x0100000000000001), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    paramregister = dg_determineparameterregister(
+        &BHarrayhead,
+        6);              // parameterindex);
+
+    if (paramregister != dg_cparameteronstackflag + 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 7 int params extra float param 6 success case - expected dg_cparameteronstackflag + 2 (0x0100000000000002), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    paramregister = dg_determineparameterregister(
+        &BHarrayhead,
+        7);              // parameterindex);
+
+    if (paramregister != dg_cparameteronstackflag + 3)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 7 int params extra float param 7 success case - expected dg_cparameteronstackflag + 3 (0x0100000000000003), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    paramregister = dg_determineparameterregister(
+        &BHarrayhead,
+        8);              // parameterindex);
+
+    if (paramregister != dg_cparameteronstackflag + 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 7 int params extra float param 8 success case - expected dg_cparameteronstackflag + 4 (0x0100000000000004), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    paramregister = dg_determineparameterregister(
+        &BHarrayhead,
+        14);              // parameterindex);
+
+    if (paramregister != dg_cparameteronstackflag + 10)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 7 int params extra float param 14 success case - expected dg_cparameteronstackflag + 10 (0x010000000000000A), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    paramregister = dg_determineparameterregister(
+        &BHarrayhead,
+        15);              // parameterindex);
+
+    if (paramregister != dg_cparameteronstackflag + 11)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_determineparameterregister 7 int params extra float param 15 success case - expected dg_cparameteronstackflag + 11 (0x010000000000000B), got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, paramregister);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+void testdg_determineparameterregister()
+{
+#ifdef DGLU_OS_WIN64
+    testdg_determineparameterregisterwin();
+#endif
+
+#ifdef DGLU_OS_FREEBSD
+    testdg_determineparameterregistermac();
+#endif
+}
+
+
+void testdg_compileaddnlocalstocallsubsframe()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    UINT64 mycurrentcompilebuffer = 0;
+    UINT64 mystartoffset = 0;
+    UINT64 x;
+
+    UINT64(*pfunct)();
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_compileaddnlocalstocallsubsframe\n");
+
+    // add 0x00 success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe 0x00 success case  - could not get current compile buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe 0x00 success case  - could not get current compile buffer's length\n");
+        return;
+    }
+    
+    dg_compilemovregtoreg (
+        &BHarrayhead,
+        dg_rsp,
+        dg_rax);
+    
+    dg_forthentercallsubsframecomma(&BHarrayhead);
+    
+    dg_compileaddnlocalstocallsubsframe (
+        &BHarrayhead,
+        0);
+    
+    dg_compilemovregtoreg (
+        &BHarrayhead,
+        dg_rsp,
+        dg_rcx);
+        
+    dg_compilenegatereg (
+        &BHarrayhead,
+        dg_rcx);
+        
+    dg_compileaddregtoreg (
+        &BHarrayhead,
+        dg_rcx,
+        dg_rax);
+
+    dg_forthexitframecomma(&BHarrayhead);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe 0x00 success case  - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe 0x00 success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    if (x != 0x28)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe subtract 0x00 success case - return not 0x28, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    // dg_printzerostring(&BHarrayhead, (unsigned char*)"  ... test done\n");
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+    
+    
+    // add 1 local (-0x08) success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe -1 success case  - could not get current compile buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe -1 success case  - could not get current compile buffer's length\n");
+        return;
+    }
+    
+    dg_compilemovregtoreg (
+        &BHarrayhead,
+        dg_rsp,
+        dg_rax);
+    
+    dg_forthentercallsubsframecomma(&BHarrayhead);
+    
+    dg_compileaddnlocalstocallsubsframe (
+        &BHarrayhead,
+        1);
+    
+    dg_compilemovregtoreg (
+        &BHarrayhead,
+        dg_rsp,
+        dg_rcx);
+        
+    dg_compilenegatereg (
+        &BHarrayhead,
+        dg_rcx);
+        
+    dg_compileaddregtoreg (
+        &BHarrayhead,
+        dg_rcx,
+        dg_rax);
+
+    dg_forthexitframecomma(&BHarrayhead);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe -1 success case  - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe -1 success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    if (x != 0x30)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe -1 success case - return not 0x28, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    // dg_printzerostring(&BHarrayhead, (unsigned char*)"  ... test done\n");
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+    
+    
+    // add 10 local (-0x50) success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe -10 success case  - could not get current compile buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe -10 success case  - could not get current compile buffer's length\n");
+        return;
+    }
+    
+    dg_compilemovregtoreg (
+        &BHarrayhead,
+        dg_rsp,
+        dg_rax);
+    
+    dg_forthentercallsubsframecomma(&BHarrayhead);
+    
+    dg_compileaddnlocalstocallsubsframe (
+        &BHarrayhead,
+        0X0A);
+    
+    dg_compilemovregtoreg (
+        &BHarrayhead,
+        dg_rsp,
+        dg_rcx);
+        
+    dg_compilenegatereg (
+        &BHarrayhead,
+        dg_rcx);
+        
+    dg_compileaddregtoreg (
+        &BHarrayhead,
+        dg_rcx,
+        dg_rax);
+
+    dg_forthexitframecomma(&BHarrayhead);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe -10 success case  - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe -10 success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    if (x != 0x78)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe -10 success case - return not 0x78, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    // dg_printzerostring(&BHarrayhead, (unsigned char*)"  ... test done\n");
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+    
+    
+    // add 11 local (-0x58) success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe -11 success case  - could not get current compile buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe -11 success case  - could not get current compile buffer's length\n");
+        return;
+    }
+    
+    dg_compilemovregtoreg (
+        &BHarrayhead,
+        dg_rsp,
+        dg_rax);
+    
+    dg_forthentercallsubsframecomma(&BHarrayhead);
+    
+    dg_compileaddnlocalstocallsubsframe (
+        &BHarrayhead,
+        0X0B);
+    
+    dg_compilemovregtoreg (
+        &BHarrayhead,
+        dg_rsp,
+        dg_rcx);
+        
+    dg_compilenegatereg (
+        &BHarrayhead,
+        dg_rcx);
+        
+    dg_compileaddregtoreg (
+        &BHarrayhead,
+        dg_rcx,
+        dg_rax);
+
+    dg_forthexitframecomma(&BHarrayhead);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe -11 success case  - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe -11 success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    if (x != 0x80)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe -11 success case - return not 0x80, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    // dg_printzerostring(&BHarrayhead, (unsigned char*)"  ... test done\n");
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+    
+    
+    // add 12 local (-0x88) success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe -12 success case  - could not get current compile buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe -12 success case  - could not get current compile buffer's length\n");
+        return;
+    }
+    
+    dg_compilemovregtoreg (
+        &BHarrayhead,
+        dg_rsp,
+        dg_rax);
+    
+    dg_forthentercallsubsframecomma(&BHarrayhead);
+    
+    dg_compileaddnlocalstocallsubsframe (
+        &BHarrayhead,
+        0X0C);
+    
+    dg_compilemovregtoreg (
+        &BHarrayhead,
+        dg_rsp,
+        dg_rcx);
+        
+    dg_compilenegatereg (
+        &BHarrayhead,
+        dg_rcx);
+        
+    dg_compileaddregtoreg (
+        &BHarrayhead,
+        dg_rcx,
+        dg_rax);
+
+    dg_forthexitframecomma(&BHarrayhead);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe -12 success case  - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe -12 success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    if (x != 0x88)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe -12 success case - return not 0x80, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    // dg_printzerostring(&BHarrayhead, (unsigned char*)"  ... test done\n");
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+    
+    
+    // add 16 local (-0xA8) success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe -16 success case  - could not get current compile buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe -16 success case  - could not get current compile buffer's length\n");
+        return;
+    }
+    
+    dg_compilemovregtoreg (
+        &BHarrayhead,
+        dg_rsp,
+        dg_rax);
+    
+    dg_forthentercallsubsframecomma(&BHarrayhead);
+    
+    dg_compileaddnlocalstocallsubsframe (
+        &BHarrayhead,
+        0X10);
+    
+    dg_compilemovregtoreg (
+        &BHarrayhead,
+        dg_rsp,
+        dg_rcx);
+        
+    dg_compilenegatereg (
+        &BHarrayhead,
+        dg_rcx);
+        
+    dg_compileaddregtoreg (
+        &BHarrayhead,
+        dg_rcx,
+        dg_rax);
+
+    dg_forthexitframecomma(&BHarrayhead);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe -16 success case  - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe -16 success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    if (x != 0xA8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileaddnlocalstocallsubsframe -16 success case - return not 0xA8, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    // dg_printzerostring(&BHarrayhead, (unsigned char*)"  ... test done\n");
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
 
 

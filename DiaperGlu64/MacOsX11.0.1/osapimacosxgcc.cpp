@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 
 #include <sys/mman.h>
@@ -34,6 +34,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <dlfcn.h>
+// #include <pthread.h>
 //#include <elf.h>
 
 #include <termios.h>
@@ -90,6 +91,9 @@ const char dg_fileopenforwriteerror[] = " - file open for write error";
 const char dg_badprocessiderror[] = " - process does not exist or is not a child of the calling process";
 const char dg_interruptedbysignalerror[] = " - call was interrupted and not restarted error";
 const char dg_toomanyprocesseserror[] = " - too many processes error";
+const char dg_freemutexwhilelockederror[] = " - can't free a mutex while it is locked error";
+const char dg_woulddeadlockerror[] = " - waiting for mutex will cause a deadlock error";
+const char dg_mutexisnotlockederror[] = " - mutex is not locked error";
 
 // const char dg_writeprotectederror[]        = " - write protected error";
 const char dg_diskisfullerror[] = " - disk is full error";
@@ -1827,6 +1831,291 @@ const char* dg_waitpid(
     return (dg_oserror);
 }
 
+UINT64 dg_getmutexhandlesize()
+{
+    return(DG_MUTEX_MEM_SIZE);
+}
+
+// Windows returns a mutex handle, user does not have to allocate any memory
+// Mac expects you to allocate fixed memory for a structure and uses the address
+//  of the structure as the handle
+
+// 2022 Jan 28
+// The problem is, allocating fixed memory for something small for an OS function
+//  is a bit tricky... I could:
+//  use cmalloc (not an option)
+//  recreate the functionality of cmalloc (don't like this one)
+//  have the user do the allocation... that way it could go whereever the user wants...
+//   but it would be better to automate it...
+//  allocate a fixed size buffer to specifically hold mutex handles....
+//   but then what if someoene is using and freeing them a lot...
+//  allocate a fixed size buffer to hold mutex handles that has a header
+//   and the header keeps track of which ones are free or in use (one bit each)
+//   and in the documentation tell the user about the limit on the number of open
+//   mutexes at once... and add a function to allow them to resize it, but you have
+//   do use the function when there are no in use mutexes...
+//     the header would have:
+//      magic
+//      size of each array element
+//      (number of elements can be calculated from array size... but...)
+//      one bit for each array element
+//      number of UINT64s used to hold the free list (64 * this number is the number of elements)
+//     or
+//      instead of a bit for each element... use a separate buffer and have next free list like freeable lstrings
+
+/*
+struct DG_Mutex_Holder
+    {
+        UINT64 magic; // 'mtxh'
+        UINT64 mutexhandle;
+        UINT64 ismutexlockedflag;
+        unsigned char mutexmem[DG_MUTEX_MEM_SIZE]; // not really used on windows... except for testing... 
+        UINT64 aftermutexmem;  // for testing... to see if memory after mutexmem gets corrupted by os call
+    };
+*/
+
+const char* dg_newmutexname = "dg_newmutex";
+
+const char* dg_newmutex(
+    struct DG_Mutex_Holder* pmutexholder,
+    const char* forceerrorflag)
+{
+    int myerrno;
+    const char* perror;
+    
+    if (forceerrorflag != dg_success)
+    {
+        return (forceerrorflag);
+    }
+    
+    // check the memory at the mutex handle
+    perror = dg_fillwithbyte (
+        (unsigned char*)pmutexholder,
+        sizeof(DG_Mutex_Holder),  // length,
+        0);                       // value);
+    
+    if (perror != dg_success)
+    {
+        return (perror);
+    }
+    
+    pmutexholder->magic = DG_MUTEX_HOLDER_MAGIC;
+    
+    // pmutexholder->ismutexlockedflag = 0; // is done with dg_fillwithbyte
+    
+    myerrno = pthread_mutex_init(
+        (pthread_mutex_t*)(&(pmutexholder->mutexmem)), 
+        NULL);
+    
+    if (0 == myerrno)
+    {
+        pmutexholder->mutexhandle = (UINT64)(&(pmutexholder->mutexmem));
+        return (dg_success);
+    }
+    
+    if (EAGAIN == myerrno)
+    {
+        return (dg_toomanyprocesseserror);
+    }
+        
+    if (ENOMEM == myerrno)
+    {
+        return (dg_outofmemoryerror);
+    }
+        
+    if (EINVAL == myerrno)
+    {
+        // the options are invalid
+        return (dg_invalidparametererror);
+    }
+        
+    // unknown error
+    return (dg_oserror);
+}
+
+
+const char* dg_freemutexname = "dg_freemutex";
+
+const char* dg_freemutex(
+    struct DG_Mutex_Holder* pmutexholder,
+    const char* forceerrorflag)
+{
+    int myerrno;
+    const char* perror;
+    
+    // check the memory at the mutex handle
+    perror = dg_readallbytes (
+        (unsigned char*)pmutexholder,
+        sizeof(DG_Mutex_Holder));  // length,
+    
+    if (perror != dg_success)
+    {
+        return (perror);
+    }
+    
+    if (forceerrorflag != dg_success)
+    {
+        return (forceerrorflag);
+    }
+    
+    if (pmutexholder->magic != DG_MUTEX_HOLDER_MAGIC)
+    {
+        return(dg_badmagicerror);
+    }
+    
+    // I want to return an error if the mutex is already locked...
+	//  this is for portability, and to force programmers to be careful
+	if (pmutexholder->ismutexlockedflag != FORTH_FALSE)
+	{
+		return(dg_freemutexwhilelockederror);
+	}
+
+	if (pmutexholder->mutexhandle == (UINT64)-1)
+	{
+		return(dg_invalidhandleerror);
+	}
+    
+    myerrno = pthread_mutex_destroy((pthread_mutex_t*)(pmutexholder->mutexhandle));
+    
+    if (0 == myerrno)
+    {
+        pmutexholder->mutexhandle = (UINT64)-1;
+        return (dg_success);
+    }
+    
+    if (EBUSY == myerrno)
+    {
+        return (dg_freemutexwhilelockederror);
+    }
+        
+    if (EINVAL == myerrno)
+    {
+        // the options are invalid
+        return (dg_invalidparametererror);
+    }
+        
+    // unknown error
+    return (dg_oserror);
+}
+
+
+const char* dg_lockmutexname = "dg_lockmutex";
+
+const char* dg_lockmutex(
+    struct DG_Mutex_Holder* pmutexholder,
+    const char* forceerrorflag)
+{
+    int myerrno;
+    const char* perror;
+    
+    // check the memory at the mutex handle
+    perror = dg_readallbytes (
+        (unsigned char*)pmutexholder,
+        sizeof(DG_Mutex_Holder));  // length,
+    
+    if (perror != dg_success)
+    {
+        return (perror);
+    }
+    
+    if (forceerrorflag != dg_success)
+    {
+        return (forceerrorflag);
+    }
+    
+    if (pmutexholder->magic != DG_MUTEX_HOLDER_MAGIC)
+    {
+        return(dg_badmagicerror);
+    }
+    
+    if (pmutexholder->ismutexlockedflag != FORTH_FALSE)
+	{
+		return(dg_woulddeadlockerror);
+	}
+    
+    myerrno = pthread_mutex_lock((pthread_mutex_t*)(pmutexholder->mutexhandle));
+    
+    if (0 == myerrno)
+    {
+        pmutexholder->ismutexlockedflag = FORTH_TRUE;  // locked while holding the mutex
+        return (dg_success);
+    }
+    
+    if (EDEADLK == myerrno)
+    {
+        return (dg_woulddeadlockerror);
+    }
+        
+    if (EINVAL == myerrno)
+    {
+        // the options are invalid
+        return (dg_invalidparametererror);
+    }
+        
+    // unknown error
+    return (dg_oserror);
+}
+
+
+const char* dg_unlockmutexname = "dg_unlockmutex";
+
+const char* dg_unlockmutex(
+    struct DG_Mutex_Holder* pmutexholder, 
+    const char* forceerrorflag)
+{
+    int myerrno;
+    const char* perror;
+    
+    // check the memory at the mutex handle
+    perror = dg_readallbytes (
+        (unsigned char*)pmutexholder,
+        sizeof(DG_Mutex_Holder));  // length,
+    
+    if (perror != dg_success)
+    {
+        return (perror);
+    }
+    
+    if (forceerrorflag != dg_success)
+    {
+        return (forceerrorflag);
+    }
+    
+    if (pmutexholder->ismutexlockedflag == FORTH_FALSE)
+	{
+		return(dg_mutexisnotlockederror);
+	}
+    
+    if (pmutexholder->magic != DG_MUTEX_HOLDER_MAGIC)
+    {
+        return(dg_badmagicerror);
+    }
+    
+    pmutexholder->ismutexlockedflag = FORTH_FALSE; // unlocked while holding the mutex
+    
+    myerrno = pthread_mutex_unlock((pthread_mutex_t*)(pmutexholder->mutexhandle));
+    
+    if (0 == myerrno)
+    {
+        return (dg_success);
+    }
+    
+    if (EPERM == myerrno)
+    {
+        return (dg_mutexisnotlockederror);
+    }
+        
+    if (EINVAL == myerrno)
+    {
+        // the options are invalid
+        return (dg_invalidparametererror);
+    }
+        
+    // unknown error
+    return (dg_oserror);
+}
+
+
 const char* dg_runfileandwaitname = "dg_runfileandwait";
 
 const char* dg_runfileandwait(
@@ -3362,7 +3651,7 @@ void dg_forthcallprocaddressretuint128 (Bufferhandle* pBHarrayhead)
 void dg_forthcalldfpprocaddress (Bufferhandle* pBHarrayhead)
 //     ( dfparamn dfparamn-1 ... dfparam1
 //       paramn paramn-1 paramn-2 ... param1
-//       nfloats n procaddress -- uint64returnvalue dfpreturnvalue )
+//       nfloats n procaddress -- dfpreturnvalue )
 {
 	UINT64* address;
 	UINT64 n, nfloats;
@@ -7544,7 +7833,46 @@ void dg_forthdocompiletyperunfileandwaitnoenvquotes(Bufferhandle* pBHarrayhead)
     }
 }
 
+const char* dg_callfunctionasyncname = "dg_callfunctionasync";
 
+const char* dg_callfunctionasync(
+    UINT64* pthreadhandle,
+    void *(*pfunction)(void *), 
+    void *parguments)
+{
+    const char* pError;
+    UINT64 myerrno;
+    
+    // check memory at pthreadhandle
+    pError = dg_putuint64(
+        pthreadhandle,
+        0);
+        
+    if (pError != dg_success)
+    {
+        return(pError);
+    }
+    
+    myerrno = pthread_create(
+        (pthread_t *)pthreadhandle, 
+        NULL, // pthread_attributes
+        pfunction, 
+        parguments);
+    
+    switch(myerrno)
+    {
+        case 0:
+            return(dg_success);
+        case EAGAIN:
+            return (dg_toomanyprocesseserror);
+        case EPERM:
+            return(dg_accessdeniederror);
+        case EINVAL:
+            return (dg_invalidparametererror);
+        default:
+            return(dg_oserror);
+    }
+}
 
 // I need a word that parses a string and pushes the parsed words as zero strings to an lstring array
 // I also think I need another lstring stack and data stack for holding local data in subroutines...

@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -9103,3 +9103,748 @@ void testdg_currentfrom()
     BHarrayhead.pbuf = (void*)-1;
 }
 
+void testdg_noparseentirecurrentline()
+{
+    const char* pError = NULL;
+
+    Bufferhandle BHarrayhead;
+    Bufferhandle* pBH;
+    
+    unsigned char* pstring;
+    UINT64 stringlength;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_noparseentirecurrentline\n");
+    
+    // success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" boo :) \n hoo");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    pstring = dg_noparseentirecurrentline(
+        &BHarrayhead,
+        &stringlength,
+        DG_TERMINALINPUT_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+        
+    if ((pstring[0] != ' ') ||
+        (pstring[1] != 'b') ||
+        (pstring[2] != 'o') ||
+        (pstring[3] != 'o') ||
+        (pstring[4] != ' ') ||
+        (pstring[5] != ':') ||
+        (pstring[6] != ')') ||
+        (pstring[7] != ' '))
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline success case - expected 'boo :) ' got wrong string. Got '");
+        dg_writestdoutraw(
+            &BHarrayhead,
+            pstring,
+            stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    if (stringlength != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline success case - expected 7 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // no end character case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+        
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" pickle");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline no end character success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    pstring = dg_noparseentirecurrentline(
+        &BHarrayhead,
+        &stringlength,
+        DG_TERMINALINPUT_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline no end character success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+        
+    if ((pstring[0] != ' ') ||
+        (pstring[1] != 'p') ||
+        (pstring[2] != 'i') ||
+        (pstring[3] != 'c') ||
+        (pstring[4] != 'k') ||
+        (pstring[5] != 'l') ||
+        (pstring[6] != 'e'))
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline no end character success case - expected ' pickle' got wrong string. Got '");
+        dg_writestdoutraw(
+            &BHarrayhead,
+            pstring,
+            stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    if (stringlength != 7)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline no end character success case - expected 6 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // line terminator case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+        
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" pick\nle)");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline line terminator success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    pstring = dg_noparseentirecurrentline(
+        &BHarrayhead,
+        &stringlength,
+        DG_TERMINALINPUT_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline line terminator success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+        
+    if ((pstring[0] != ' ') ||
+        (pstring[1] != 'p') ||
+        (pstring[2] != 'i') ||
+        (pstring[3] != 'c') ||
+        (pstring[4] != 'k'))
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline line terminator success case - expected ' pick' got wrong string. Got '");
+        dg_writestdoutraw(
+            &BHarrayhead,
+            pstring,
+            stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    if (stringlength != 5)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline line terminator success case - expected 5 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // cleanup
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = (void*)-1;
+    
+    
+    // line terminator start in middle case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+        
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" pick\nle)");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline line terminator start in middle success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH->currentoffset = pBH->currentoffset + 2;
+    
+    pstring = dg_noparseentirecurrentline(
+        &BHarrayhead,
+        &stringlength,
+        DG_TERMINALINPUT_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline line terminator start in middle success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+        
+    if ((pstring[0] != ' ') ||
+        (pstring[1] != 'p') ||
+        (pstring[2] != 'i') ||
+        (pstring[3] != 'c') ||
+        (pstring[4] != 'k'))
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline line terminator start in middle success case - expected ' pick' got wrong string. Got '");
+        dg_writestdoutraw(
+            &BHarrayhead,
+            pstring,
+            stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    if (stringlength != 5)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline line terminator start in middle success case - expected 5 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // cleanup
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = (void*)-1;
+    
+    
+    // two line terminators start in middle success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+        
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" \n pick\nle)");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline two line terminators start in middle success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH->currentoffset = pBH->currentoffset + 5;
+    
+    pstring = dg_noparseentirecurrentline(
+        &BHarrayhead,
+        &stringlength,
+        DG_TERMINALINPUT_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline two line terminators start in middle success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+        
+    if ((pstring[0] != ' ') ||
+        (pstring[1] != 'p') ||
+        (pstring[2] != 'i') ||
+        (pstring[3] != 'c') ||
+        (pstring[4] != 'k'))
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline two line terminators start in middle success case - expected ' pick' got wrong string. Got '");
+        dg_writestdoutraw(
+            &BHarrayhead,
+            pstring,
+            stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    if (stringlength != 5)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline two line terminators start in middle success case - expected 5 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // cleanup
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = (void*)-1;
+    
+    
+    // multiple line terminators start in middle of line terminators success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+        
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" \n pick\n\nle)");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline multiple line terminators start in middle of line terminators success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH->currentoffset = 8;
+    
+    pstring = dg_noparseentirecurrentline(
+        &BHarrayhead,
+        &stringlength,
+        DG_TERMINALINPUT_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline multiple line terminators start in middle of line terminators success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+        
+    if ((pstring[0] != ' ') ||
+        (pstring[1] != 'p') ||
+        (pstring[2] != 'i') ||
+        (pstring[3] != 'c') ||
+        (pstring[4] != 'k'))
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline multiple line terminators start in middle of line terminators success case - expected ' pick' got wrong string. Got '");
+        dg_writestdoutraw(
+            &BHarrayhead,
+            pstring,
+            stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    if (stringlength != 5)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline multiple line terminators start in middle of line terminators success case - expected 5 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // cleanup
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = (void*)-1; 
+    
+    
+    // line terminators at end success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+        
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" \n pick\n\n");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline line terminators at end success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH->currentoffset = 9;
+    
+    pstring = dg_noparseentirecurrentline(
+        &BHarrayhead,
+        &stringlength,
+        DG_TERMINALINPUT_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline line terminators at end success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+        
+    if ((pstring[0] != ' ') ||
+        (pstring[1] != 'p') ||
+        (pstring[2] != 'i') ||
+        (pstring[3] != 'c') ||
+        (pstring[4] != 'k'))
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline line terminators at end success case - expected ' pick' got wrong string. Got '");
+        dg_writestdoutraw(
+            &BHarrayhead,
+            pstring,
+            stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    if (stringlength != 5)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline line terminators at end success case - expected 5 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // cleanup
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = (void*)-1; 
+
+
+    // multiple lines error in middle success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" \n pick\nshoe\ntomato");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline multiple lines error in middle success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    pBH = &(((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID]);
+    pBH->currentoffset = 12;
+
+    pstring = dg_noparseentirecurrentline(
+        &BHarrayhead,
+        &stringlength,
+        DG_TERMINALINPUT_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline multiple lines error in middle success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    if ((pstring[0] != 's') ||
+        (pstring[1] != 'h') ||
+        (pstring[2] != 'o') ||
+        (pstring[3] != 'e'))
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline multiple lines error in middle success case - expected 'shoe' got wrong string. Got '");
+        dg_writestdoutraw(
+            &BHarrayhead,
+            pstring,
+            stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+
+    if (stringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline multiple lines error in middle success case - expected 5 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+
+    dg_freeallbuffers(&BHarrayhead);
+
+    // cleanup
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = (void*)-1;
+
+
+    // multiple lines error in middle b success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" \n pick\nshoe\ntomato");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline multiple lines error in middle b success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    pBH = &(((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID]);
+    pBH->currentoffset = 11;
+
+    pstring = dg_noparseentirecurrentline(
+        &BHarrayhead,
+        &stringlength,
+        DG_TERMINALINPUT_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline multiple lines error in middle b success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    if ((pstring[0] != 's') ||
+        (pstring[1] != 'h') ||
+        (pstring[2] != 'o') ||
+        (pstring[3] != 'e'))
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline multiple lines error in middle b success case - expected 'shoe' got wrong string. Got '");
+        dg_writestdoutraw(
+            &BHarrayhead,
+            pstring,
+            stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+
+    if (stringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline multiple lines error in middle b success case - expected 5 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+
+    dg_freeallbuffers(&BHarrayhead);
+
+    // cleanup
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = (void*)-1;
+
+
+    // multiple lines error in middle c success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" \n pick\nshoe\ntomato");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline multiple lines error in middle c success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    pBH = &(((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID]);
+    pBH->currentoffset = 9;
+
+    pstring = dg_noparseentirecurrentline(
+        &BHarrayhead,
+        &stringlength,
+        DG_TERMINALINPUT_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline multiple lines error in middle c success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    if ((pstring[0] != 's') ||
+        (pstring[1] != 'h') ||
+        (pstring[2] != 'o') ||
+        (pstring[3] != 'e'))
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline multiple lines error in middle c success case - expected 'shoe' got wrong string. Got '");
+        dg_writestdoutraw(
+            &BHarrayhead,
+            pstring,
+            stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+
+    if (stringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline multiple lines error in middle c success case - expected 5 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+
+    dg_freeallbuffers(&BHarrayhead);
+
+    // cleanup
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = (void*)-1;
+
+
+    // multiple lines error before middle success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" \n pick\nshoe\ntomato");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline multiple lines error before middle success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    pBH = &(((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID]);
+    pBH->currentoffset = 8;
+
+    pstring = dg_noparseentirecurrentline(
+        &BHarrayhead,
+        &stringlength,
+        DG_TERMINALINPUT_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline multiple lines error before middle success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    if ((pstring[0] != ' ') ||
+        (pstring[1] != 'p') ||
+        (pstring[2] != 'i') ||
+        (pstring[3] != 'c') ||
+        (pstring[4] != 'k'))
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline multiple lines error before middle success case - expected 'shoe' got wrong string. Got '");
+        dg_writestdoutraw(
+            &BHarrayhead,
+            pstring,
+            stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+
+    if (stringlength != 5)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparseentirecurrentline multiple lines error before middle success case - expected 5 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+
+    dg_freeallbuffers(&BHarrayhead);
+
+    // cleanup
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = (void*)-1;
+    
+}

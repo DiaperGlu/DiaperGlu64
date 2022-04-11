@@ -1,22 +1,22 @@
 /*
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 11, 2022             //
+// version 5.2                //
 // /////////////////////////////
 */
 
@@ -202,6 +202,10 @@ _dg_badmemoryerror4hctwostore:
 .globl _dg_badmemoryerrorreadallbytes
 _dg_badmemoryerrorreadallbytes:
 .asciz " - dg_readallbytes error, process could not read from memory at source address"
+
+.globl _dg_badmemoryaddbytes
+_dg_badmemoryerroraddbytes:
+.asciz " - dg_addbytes error, process could read or write memory at source or destination address"
 */
 // const char dg_oserror[]                    = " - operating system error";
 .globl _dg_oserror
@@ -478,6 +482,302 @@ _dg_invalidhandleerror:
       // leaq _dg_badmemoryerrorscanfornotbytereverse(%rip), %rax
       leaq _dg_badmemoryerror(%rip), %rax
     _dg_catchbadmemoryexit2then35:
+    
+    leaq _dg_addbyteserroraddress1(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then36
+      // leaq _dg_badmemoryerrormovebytesforward(%rip), %rax
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then36:
+    
+    leaq _dg_addbyteserroraddress2(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then37
+      // leaq _dg_badmemoryerrormovebytesforward(%rip), %rax
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then37:
+    
+    leaq _dg_addbyteserroraddress3(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then39
+      // leaq _dg_badmemoryerrormovebytesforward(%rip), %rax
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then39 :
+    
+    leaq _dg_shlbyteserroraddress1(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then40
+      // leaq _dg_badmemoryerrormovebytesforward(%rip), %rax
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then40 :
+    
+    leaq _dg_shlbyteserroraddress2(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then41
+      // leaq _dg_badmemoryerrormovebytesforward(%rip), %rax
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then41 :
+    
+    leaq _dg_adcbyteserroraddress1(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then42
+      // leaq _dg_badmemoryerrormovebytesforward(%rip), %rax
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then42:
+    
+    leaq _dg_adcbyteserroraddress2(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then43
+      // leaq _dg_badmemoryerrormovebytesforward(%rip), %rax
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then43:
+    
+    leaq _dg_adcbyteserroraddress3(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then44
+      // leaq _dg_badmemoryerrormovebytesforward(%rip), %rax
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then44:
+    
+    leaq _dg_rclbyteserroraddress1(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then45
+      // leaq _dg_badmemoryerrormovebytesforward(%rip), %rax
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then45:
+    
+    leaq _dg_rclbyteserroraddress2(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then46
+      // leaq _dg_badmemoryerrormovebytesforward(%rip), %rax
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then46:
+    
+    leaq _dg_sbbbyteserroraddress1(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then47
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then47:
+    
+    leaq _dg_sbbbyteserroraddress2(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then48
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then48:
+    
+    leaq _dg_sbbbyteserroraddress3(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then49
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then49:
+    
+    leaq _dg_andbyteserroraddress1(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then50
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then50:
+    
+    leaq _dg_andbyteserroraddress2(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then51
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then51:
+    
+    leaq _dg_orbyteserroraddress1(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then52
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then52:
+    
+    leaq _dg_orbyteserroraddress2(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then53
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then53:
+    
+    leaq _dg_xorbyteserroraddress1(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then54
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then54:
+    
+    leaq _dg_xorbyteserroraddress2(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then55
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then55:
+    
+    leaq _dg_nandbyteserroraddress1(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then56
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then56:
+    
+    leaq _dg_nandbyteserroraddress2(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then57
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then57:
+    
+    leaq _dg_nandbyteserroraddress3(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then58
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then58:
+    
+    leaq _dg_norbyteserroraddress1(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then59
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then59:
+    
+    leaq _dg_norbyteserroraddress2(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then60
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then60:
+    
+    leaq _dg_norbyteserroraddress3(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then61
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then61:
+    
+    leaq _dg_xnorbyteserroraddress1(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then62
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then62:
+    
+    leaq _dg_xnorbyteserroraddress2(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then63
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then63:
+    
+    leaq _dg_xnorbyteserroraddress3(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then64
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then64:
+    
+    leaq _dg_notbyteserroraddress1(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then65
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then65:
+    
+    leaq _dg_rcrbyteserroraddress1(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then66
+      // leaq _dg_badmemoryerrormovebytesforward(%rip), %rax
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then66:
+    
+    leaq _dg_rcrbyteserroraddress2(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then67
+      // leaq _dg_badmemoryerrormovebytesforward(%rip), %rax
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then67:
+    
+    leaq _dg_shrbyteserroraddress1(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then68
+      // leaq _dg_badmemoryerrormovebytesforward(%rip), %rax
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then68:
+    
+    leaq _dg_shrbyteserroraddress2(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then69
+      // leaq _dg_badmemoryerrormovebytesforward(%rip), %rax
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then69:
+    
+    leaq _dg_sarbyteserroraddress1(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then70
+      // leaq _dg_badmemoryerrormovebytesforward(%rip), %rax
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then70:
+    
+    leaq _dg_sarbyteserroraddress2(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then71
+      // leaq _dg_badmemoryerrormovebytesforward(%rip), %rax
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then71:
+    
+    leaq _dg_reversebyteserroraddress1(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then72
+      // leaq _dg_badmemoryerrormovebytesforward(%rip), %rax
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then72:
+    
+    leaq _dg_reversebyteserroraddress2(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then73
+      // leaq _dg_badmemoryerrormovebytesforward(%rip), %rax
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then73:
+    
+    leaq _dg_reversebyteserroraddress3(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then74
+      // leaq _dg_badmemoryerrormovebytesforward(%rip), %rax
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then74:
+    
+    leaq _dg_mulu64tou64serroraddress1(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then75
+      // leaq _dg_badmemoryerrormovebytesforward(%rip), %rax
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then75:
+    
+    leaq _dg_mulu64tou64serroraddress2(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then76
+      // leaq _dg_badmemoryerrormovebytesforward(%rip), %rax
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then76:
+    
+    leaq _dg_mulu64tou64serroraddress3(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then77
+      // leaq _dg_badmemoryerrormovebytesforward(%rip), %rax
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then77:
+    
+    leaq _dg_mulu64tou64serroraddress4(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then78
+      // leaq _dg_badmemoryerrormovebytesforward(%rip), %rax
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then78:
+
+    leaq _dg_divu64sbyu64erroraddress1(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then79
+      // leaq _dg_badmemoryerrormovebytesforward(%rip), %rax
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then79:
+    
+    leaq _dg_divu64sbyu64erroraddress2(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then80
+      // leaq _dg_badmemoryerrormovebytesforward(%rip), %rax
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then80:
+    
+    leaq _dg_divu64sbyu64erroraddress3(%rip), %rsi
+    cmpq %rsi, %rdi
+    jnz _dg_catchbadmemoryexit2then81
+      // leaq _dg_badmemoryerrormovebytesforward(%rip), %rax
+      leaq _dg_badmemoryerror(%rip), %rax
+    _dg_catchbadmemoryexit2then81:
     
     /* assuming flags register on stack */
     popfq
@@ -979,6 +1279,24 @@ L_umslashmodthen2:
 
     ret
 
+/*
+   UINT64 dg_uaddclipped (
+    UINT64 u1,          // rdi 
+    UINT64 u2)          // rsi
+    
+   // this is for preventing overflow errors
+   
+*/
+
+.globl _dg_uaddclipped
+_dg_uaddclipped:
+  movq %rdi, %rax
+  addq %rsi, %rax
+  jnc L_dg_uaddclipped
+    xorq %rax, %rax
+    decq %rax
+L_dg_uaddclipped:
+    ret
     
 /*
 const char* dg_scanforbyte (
@@ -1190,7 +1508,7 @@ _dg_movebyteserroraddress:
 
 
 /*
-    const char* dg_movebytesreverse (
+    const char* dg_movebytesforward (
         unsigned char* psrc,    // rdi
         unsigned char* pdest,   // rsi
         UINT64 stringlength);   // rdx
@@ -1231,6 +1549,14 @@ _dg_movebytesforwarderroraddress:
     leaq _dg_success(%rip), %rax
     popfq
     ret
+
+
+/*
+    const char* dg_movebytesreverse (
+        unsigned char* psrc,    // rdi
+        unsigned char* pdest,   // rsi
+        UINT64 stringlength);   // rdx
+*/
 
 .globl _dg_movebytesreverse
 _dg_movebytesreverse:
@@ -2929,18 +3255,12 @@ _dg_testasmretuint128:
 
 // need log function which does fyl2xp1 when in range and fyl2x when not
 
-// stringadd
-// stringsubtract
-// stringcompare
-// stringshiftleft
-// stringshiftright
-// stringashiftright
-// stringrotateleft
-// stringrotateleft
-// stringunsignedmultiply
-// stringunsigneddivide
-// stringsignedmultiply
-// strignsigneddivide
+
+// string unsigned multiply (faster)
+// string unsigned divide
+// string signed multiply
+// strign signed divide
+
 
 
 /*
@@ -2964,6 +3284,8 @@ _dg_scanfornotbytereverse:
     popq %rax // value
     popq %rsi // plength
     popq %rdi // pbuf
+.else
+    movq %rdx, %rax
 .endif
 
     pushfq      /* save direction flag, required under win32 and Mac OSx */
@@ -3001,6 +3323,8 @@ L_dg_scanfornotbytereversethen1:
 /*
 .globl _dg_plusuint128
 _dg_plusuint128:
+
+
     addq %rdi, %rdx
     adcq %rsi, %rcx
     movq %rdx, %rax
@@ -3013,3 +3337,1187 @@ _dg_random:
     rdseed %rax
     jnc _dg_random
     ret
+    
+
+/*
+    const char* dg_addbytes (
+        unsigned char* psrc,    // rdi   
+        unsigned char* pdest,   // rsi   
+        UINT64 stringlength,    // rdx   
+        UINT64* pcarryout);     // rcx   
+*/
+
+.globl _dg_addbytes
+_dg_addbytes:
+    pushfq /* for alignment */
+    
+.ifndef DGLU_NO_DIAPER
+    
+    pushq %rdi
+    pushq %rsi
+    pushq %rdx
+    pushq %rcx
+
+    call _dg_trycatchbadmemoryerror2
+
+    popq %rdx
+    popq %rcx
+    popq %rdi
+    popq %rsi
+.else
+    xchg %rdi, %rsi
+    xchg %rdx, %rcx  /* stringlength->rcx */
+                     /* pcarrout->rdx */
+.endif
+                     
+    xorq %rax, %rax
+.globl _dg_addbyteserroraddress1
+_dg_addbyteserroraddress1:
+    movq %rax, (%rdx)
+    
+    clc 
+    
+    /* if rcx is 0 then do nothing */
+    orq %rcx, %rcx
+    jz L_dg_addbytesthen1
+    
+.globl _dg_addbyteserroraddress2
+_dg_addbyteserroraddress2:
+    movb (%rsi), %al
+.globl _dg_addbyteserroraddress3
+_dg_addbyteserroraddress3:
+    adcb %al, (%rdi)
+
+    incq %rsi
+    incq %rdi
+    loop _dg_addbyteserroraddress2
+    
+    jnc L_dg_addbytesthen1
+    
+    incq (%rdx) // set carryout to 1
+
+L_dg_addbytesthen1:
+
+.ifndef DGLU_NO_DIAPER
+    call _dg_endtrycatchbadmemoryerror
+.endif
+    
+    leaq _dg_success(%rip), %rax
+    popfq
+    ret
+
+
+/*
+    const char* dg_adcbytes (
+        unsigned char* psrc,    // rdi
+        unsigned char* pdest,   // rsi
+        UINT64 stringlength,    // rdx
+        UINT64* pcarryinout);   // rcx
+*/
+
+.globl _dg_adcbytes
+_dg_adcbytes:
+    pushfq /* for alignment */
+    
+.ifndef DGLU_NO_DIAPER
+    
+    pushq %rdi
+    pushq %rsi
+    pushq %rdx
+    pushq %rcx
+
+    call _dg_trycatchbadmemoryerror2
+
+    popq %rdx   /* stringlength->rcx */
+    popq %rcx   /* pcarryinout->rdx */
+    popq %rdi
+    popq %rsi
+.else
+    xchg %rdi, %rsi
+    xchg %rdx, %rcx  /* stringlength->rcx */
+                     /* pcarryinout->rdx */
+                     
+.endif
+                     
+    xorq %rax, %rax
+    // movq $9, %rax
+    
+.globl _dg_adcbyteserroraddress1
+_dg_adcbyteserroraddress1:
+    xchgq %rax, (%rdx)
+    
+    /* if rcx is 0 then do nothing */
+    orq %rcx, %rcx /* orq clears the carry flag and must come before shrb */
+    
+    jz L_dg_adcbytesthen1
+    
+    shrb %al  /* move the carryin to the carry flag */
+    
+.globl _dg_adcbyteserroraddress2
+_dg_adcbyteserroraddress2:
+    movb (%rsi), %al
+.globl _dg_adcbyteserroraddress3
+_dg_adcbyteserroraddress3:
+    adcb %al, (%rdi)
+
+    incq %rsi
+    incq %rdi
+    loop _dg_adcbyteserroraddress2
+    
+    jnc L_dg_adcbytesthen1
+    
+    incq (%rdx) // set carryout to 1
+
+L_dg_adcbytesthen1:
+
+.ifndef DGLU_NO_DIAPER
+    call _dg_endtrycatchbadmemoryerror
+.endif
+    
+    leaq _dg_success(%rip), %rax
+    popfq
+    ret
+
+
+/*
+    const char* dg_sbbbytes (
+        unsigned char* psrc,    // rdi
+        unsigned char* pdest,   // rsi
+        UINT64 stringlength,    // rdx
+        UINT64* pborrowinout);  // rcx
+*/
+
+.globl _dg_sbbbytes
+_dg_sbbbytes:
+    pushfq /* for alignment */
+    
+.ifndef DGLU_NO_DIAPER
+    
+    pushq %rdi
+    pushq %rsi
+    pushq %rdx
+    pushq %rcx
+
+    call _dg_trycatchbadmemoryerror2
+
+    popq %rdx   /* stringlength->rcx */
+    popq %rcx   /* pborrowinout->rdx */
+    popq %rdi
+    popq %rsi
+.else
+    xchg %rdi, %rsi
+    xchg %rdx, %rcx  /* stringlength->rcx */
+                     /* pborrowinout->rdx */
+                     
+.endif
+                     
+    xorq %rax, %rax
+    
+.globl _dg_sbbbyteserroraddress1
+_dg_sbbbyteserroraddress1:
+    xchgq %rax, (%rdx)
+    
+    /* if rcx is 0 then do nothing */
+    orq %rcx, %rcx /* orq clears the carry and must come before shrb */
+    
+    jz L_dg_adcbytesthen1
+    
+    shrb %al  /* move the borrowin to the carry flag */
+    
+.globl _dg_sbbbyteserroraddress2
+_dg_sbbbyteserroraddress2:
+    movb (%rsi), %al
+.globl _dg_sbbbyteserroraddress3
+_dg_sbbbyteserroraddress3:
+    sbbb %al, (%rdi)
+
+    incq %rsi
+    incq %rdi
+    loop _dg_sbbbyteserroraddress2
+    
+    jnc L_dg_sbbbytesthen1
+    
+    incq (%rdx) // set borrowout to 1
+
+L_dg_sbbbytesthen1:
+
+.ifndef DGLU_NO_DIAPER
+    call _dg_endtrycatchbadmemoryerror
+.endif
+    
+    leaq _dg_success(%rip), %rax
+    popfq
+    ret
+        
+/*
+    const char* dg_andbytes (
+        unsigned char* psrc,    // rdi
+        unsigned char* pdest,   // rsi
+        UINT64 stringlength);   // rdx
+*/
+
+.globl _dg_andbytes
+_dg_andbytes:
+
+.ifndef DGLU_NO_DIAPER
+    pushq %rdi
+    pushq %rsi
+    pushq %rdx
+
+    call _dg_trycatchbadmemoryerror2
+
+    popq %rdx
+    popq %rdi
+    popq %rsi
+.else
+    xchg %rdi, %rsi
+.endif
+
+    pushfq      /* for frame */
+
+    movq %rdx, %rcx  /* stringlength->rcx */ 
+    
+.globl _dg_andbyteserroraddress1
+_dg_andbyteserroraddress1:
+    movb (%rsi), %al
+.globl _dg_andbyteserroraddress2
+_dg_andbyteserroraddress2:
+    andb %al, (%rdi)
+    incq %rdi
+    incq %rsi
+    loop _dg_andbyteserroraddress1
+
+.ifndef DGLU_NO_DIAPER
+    call _dg_endtrycatchbadmemoryerror
+.endif
+    
+    leaq _dg_success(%rip), %rax
+    popfq
+    ret
+
+
+/*
+    const char* dg_orbytes (
+        unsigned char* psrc,    // rdi
+        unsigned char* pdest,   // rsi
+        UINT64 stringlength);   // rdx
+*/
+
+.globl _dg_orbytes
+_dg_orbytes:
+
+.ifndef DGLU_NO_DIAPER
+    pushq %rdi
+    pushq %rsi
+    pushq %rdx
+
+    call _dg_trycatchbadmemoryerror2
+
+    popq %rdx
+    popq %rdi
+    popq %rsi
+.else
+    xchg %rdi, %rsi
+.endif
+
+    pushfq      /* for frame */
+
+    movq %rdx, %rcx  /* stringlength->rcx */ 
+    
+.globl _dg_orbyteserroraddress1
+_dg_orbyteserroraddress1:
+    movb (%rsi), %al
+.globl _dg_orbyteserroraddress2
+_dg_orbyteserroraddress2:
+    orb %al, (%rdi)
+    incq %rdi
+    incq %rsi
+    loop _dg_orbyteserroraddress1
+
+.ifndef DGLU_NO_DIAPER
+    call _dg_endtrycatchbadmemoryerror
+.endif
+    
+    leaq _dg_success(%rip), %rax
+    popfq
+    ret
+
+
+/*
+    const char* dg_xorbytes (
+        unsigned char* psrc,    // rdi
+        unsigned char* pdest,   // rsi
+        UINT64 stringlength);   // rdx
+*/
+
+.globl _dg_xorbytes
+_dg_xorbytes:
+
+.ifndef DGLU_NO_DIAPER
+    pushq %rdi
+    pushq %rsi
+    pushq %rdx
+
+    call _dg_trycatchbadmemoryerror2
+
+    popq %rdx
+    popq %rdi
+    popq %rsi
+.else
+    xchg %rdi, %rsi
+.endif
+
+    pushfq      /* for frame */
+
+    movq %rdx, %rcx  /* stringlength->rcx */ 
+    
+.globl _dg_xorbyteserroraddress1
+_dg_xorbyteserroraddress1:
+    movb (%rsi), %al
+.globl _dg_xorbyteserroraddress2
+_dg_xorbyteserroraddress2:
+    xorb %al, (%rdi)
+    incq %rdi
+    incq %rsi
+    loop _dg_xorbyteserroraddress1
+
+.ifndef DGLU_NO_DIAPER
+    call _dg_endtrycatchbadmemoryerror
+.endif
+    
+    leaq _dg_success(%rip), %rax
+    popfq
+    ret
+
+
+/*
+    const char* dg_nandbytes (
+        unsigned char* psrc,    // rdi
+        unsigned char* pdest,   // rsi
+        UINT64 stringlength);   // rdx
+*/
+
+.globl _dg_nandbytes
+_dg_nandbytes:
+
+.ifndef DGLU_NO_DIAPER
+    pushq %rdi
+    pushq %rsi
+    pushq %rdx
+
+    call _dg_trycatchbadmemoryerror2
+
+    popq %rdx
+    popq %rdi
+    popq %rsi
+.else
+    xchg %rdi, %rsi
+.endif
+
+    pushfq      /* for frame */
+
+    movq %rdx, %rcx  /* stringlength->rcx */ 
+    
+.globl _dg_nandbyteserroraddress1
+_dg_nandbyteserroraddress1:
+    movq (%rsi), %rax
+.globl _dg_nandbyteserroraddress2
+_dg_nandbyteserroraddress2:
+    andb (%rdi), %al
+    notb %al
+.globl _dg_nandbyteserroraddress3
+_dg_nandbyteserroraddress3:
+    movb %al, (%rdi)
+    incq %rdi
+    incq %rsi
+    loop _dg_nandbyteserroraddress1
+
+.ifndef DGLU_NO_DIAPER
+    call _dg_endtrycatchbadmemoryerror
+.endif
+    
+    leaq _dg_success(%rip), %rax
+    popfq
+    ret
+
+
+.globl _dg_norbytes
+_dg_norbytes:
+
+.ifndef DGLU_NO_DIAPER
+    pushq %rdi
+    pushq %rsi
+    pushq %rdx
+
+    call _dg_trycatchbadmemoryerror2
+
+    popq %rdx
+    popq %rdi
+    popq %rsi
+.else
+    xchg %rdi, %rsi
+.endif
+
+    pushfq      /* for frame */
+
+    movq %rdx, %rcx  /* stringlength->rcx */ 
+    
+.globl _dg_norbyteserroraddress1
+_dg_norbyteserroraddress1:
+    movb (%rsi), %al
+.globl _dg_norbyteserroraddress2
+_dg_norbyteserroraddress2:
+    orb (%rdi), %al
+    notb %al
+.globl _dg_norbyteserroraddress3
+_dg_norbyteserroraddress3:
+    movb %al, (%rdi)
+    incq %rdi
+    incq %rsi
+    loop _dg_norbyteserroraddress1
+
+.ifndef DGLU_NO_DIAPER
+    call _dg_endtrycatchbadmemoryerror
+.endif
+    
+    leaq _dg_success(%rip), %rax
+    popfq
+    ret
+
+
+.globl _dg_xnorbytes
+_dg_xnorbytes:
+
+.ifndef DGLU_NO_DIAPER
+    pushq %rdi
+    pushq %rsi
+    pushq %rdx
+
+    call _dg_trycatchbadmemoryerror2
+
+    popq %rdx
+    popq %rdi
+    popq %rsi
+.else
+    xchg %rdi, %rsi
+.endif
+
+    pushfq      /* for frame */
+
+    movq %rdx, %rcx  /* stringlength->rcx */ 
+    
+.globl _dg_xnorbyteserroraddress1
+_dg_xnorbyteserroraddress1:
+    movb (%rsi), %al
+.globl _dg_xnorbyteserroraddress2
+_dg_xnorbyteserroraddress2:
+    xorb (%rdi), %al
+    notb %al
+.globl _dg_xnorbyteserroraddress3
+_dg_xnorbyteserroraddress3:
+    movb %al, (%rdi)
+    incq %rdi
+    incq %rsi
+    loop _dg_xnorbyteserroraddress1
+
+.ifndef DGLU_NO_DIAPER
+    call _dg_endtrycatchbadmemoryerror
+.endif
+    
+    leaq _dg_success(%rip), %rax
+    popfq
+    ret
+
+
+/*
+    const char* dg_shlbytes (
+        unsigned char* pdest,    // rdi
+        UINT64 stringlength,     // rsi
+        UINT64* pcarryout);      // rdx
+*/
+    
+.globl _dg_shlbytes
+_dg_shlbytes:
+    
+.ifndef DGLU_NO_DIAPER
+    
+    pushq %rdi
+    pushq %rsi
+    pushq %rdx
+
+    call _dg_trycatchbadmemoryerror2
+
+    popq %rdx
+    popq %rcx
+    popq %rdi
+.else
+    movq %rsi, %rcx  /* stringlength->rcx */
+.endif
+
+    pushfq
+                     
+    xorq %rax, %rax
+.globl _dg_shlbyteserroraddress1
+_dg_shlbyteserroraddress1:
+    movq %rax, (%rdx)
+    
+    clc 
+    
+    /* if rcx is 0 then do nothing */
+    orq %rcx, %rcx
+    jz L_dg_shlbytesthen1
+    
+.globl _dg_shlbyteserroraddress2
+_dg_shlbyteserroraddress2:
+    rclb (%rdi)
+    incq %rdi
+    loop _dg_shlbyteserroraddress2
+    
+    jnc L_dg_shlbytesthen1
+    
+    incq (%rdx) // set carryout to 1
+
+L_dg_shlbytesthen1:
+
+.ifndef DGLU_NO_DIAPER
+    call _dg_endtrycatchbadmemoryerror
+.endif
+    
+    leaq _dg_success(%rip), %rax
+    popfq
+    ret
+    
+    
+/*
+    const char* dg_shrbytes (
+        unsigned char* pdest,    // rdi
+        UINT64 stringlength,     // rsi
+        UINT64* pcarryout);      // rdx
+*/
+    
+.globl _dg_shrbytes
+_dg_shrbytes:
+
+    addq %rsi, %rdi
+    
+.ifndef DGLU_NO_DIAPER
+    
+    pushq %rdi
+    pushq %rsi
+    pushq %rdx
+
+    call _dg_trycatchbadmemoryerror2
+
+    popq %rdx
+    popq %rcx
+    popq %rdi
+.else
+    movq %rsi, %rcx  /* stringlength->rcx */
+.endif
+
+    pushfq
+                     
+    xorq %rax, %rax
+.globl _dg_shrbyteserroraddress1
+_dg_shrbyteserroraddress1:
+    movq %rax, (%rdx)
+    
+    /* if rcx is 0 then do nothing */
+    orq %rcx, %rcx         /* or clears the carry */
+    jz L_dg_shrbytesthen1
+
+L_dg_shrbytesbegin1:
+
+    decq %rdi
+    
+.globl _dg_shrbyteserroraddress2
+_dg_shrbyteserroraddress2:
+    
+    rcrb (%rdi)
+    
+    loop L_dg_shrbytesbegin1
+    
+    jnc L_dg_shrbytesthen1
+    
+    incq (%rdx) // set carryout to 1
+
+L_dg_shrbytesthen1:
+
+.ifndef DGLU_NO_DIAPER
+    call _dg_endtrycatchbadmemoryerror
+.endif
+    
+    leaq _dg_success(%rip), %rax
+    popfq
+    ret
+ 
+
+/*
+    const char* dg_rclbytes (
+        unsigned char* pdest,    // rdi
+        UINT64 stringlength,     // rsi
+        UINT64* pcarryinout);    // rdx
+*/    
+    
+.globl _dg_rclbytes
+_dg_rclbytes:
+    
+.ifndef DGLU_NO_DIAPER
+    
+    pushq %rdi
+    pushq %rsi
+    pushq %rdx
+
+    call _dg_trycatchbadmemoryerror2
+
+    popq %rdx
+    popq %rcx
+    popq %rdi
+.else
+    movq %rsi, %rcx  /* stringlength->rcx */
+.endif
+
+    pushfq
+                     
+    xorq %rax, %rax
+.globl _dg_rclbyteserroraddress1
+_dg_rclbyteserroraddress1:
+    xchgq %rax, (%rdx)
+    
+    /* if rcx is 0 then do nothing */
+    orq %rcx, %rcx  /* orq clears the carry and must come before shrb */
+    jz L_dg_rclbytesthen1
+    
+    shrb %al  /* move the carryin to the carry */ 
+    
+.globl _dg_rclbyteserroraddress2
+_dg_rclbyteserroraddress2:
+    rclb (%rdi)
+    incq %rdi
+    loop _dg_rclbyteserroraddress2
+    
+    jnc L_dg_rclbytesthen1
+    
+    incq (%rdx) // set carryout to 1
+
+L_dg_rclbytesthen1:
+
+.ifndef DGLU_NO_DIAPER
+    call _dg_endtrycatchbadmemoryerror
+.endif
+    
+    leaq _dg_success(%rip), %rax
+    popfq
+    ret
+
+
+/*
+    const char* dg_rcrbytes (
+        unsigned char* pdest,    // rdi
+        UINT64 stringlength,     // rsi
+        UINT64* pcarryinout);    // rdx
+*/    
+    
+.globl _dg_rcrbytes
+_dg_rcrbytes:
+
+    // move pdest to character after string
+    addq %rsi, %rdi
+    
+.ifndef DGLU_NO_DIAPER
+    
+    pushq %rdi
+    pushq %rsi
+    pushq %rdx
+
+    call _dg_trycatchbadmemoryerror2
+
+    popq %rdx
+    popq %rcx
+    popq %rdi
+.else
+    movq %rsi, %rcx  /* stringlength->rcx */
+.endif
+
+    pushfq
+                     
+    xorq %rax, %rax
+.globl _dg_rcrbyteserroraddress1
+_dg_rcrbyteserroraddress1:
+    xchgq %rax, (%rdx)
+    
+    /* if rcx is 0 then do nothing */
+    orq %rcx, %rcx  /* orq clears the carry and must come before shrb */
+    jz L_dg_rcrbytesthen1
+    
+    shrb %al  /* move the carryin to the carry */
+ 
+ L_dg_rcrbytesbegin1: 
+    decq %rdi
+      
+.globl _dg_rcrbyteserroraddress2
+_dg_rcrbyteserroraddress2:
+    
+    rcrb (%rdi)
+    loop L_dg_rcrbytesbegin1
+    
+    jnc L_dg_rcrbytesthen1
+    
+    incq (%rdx) // set carryout to 1
+
+L_dg_rcrbytesthen1:
+
+.ifndef DGLU_NO_DIAPER
+    call _dg_endtrycatchbadmemoryerror
+.endif
+    
+    leaq _dg_success(%rip), %rax
+    popfq
+    ret
+
+
+/*
+    const char* dg_sarbytes (
+        unsigned char* pdest,    // rdi
+        UINT64 stringlength,     // rsi
+        UINT64* pcarryout);      // rdx
+*/
+    
+.globl _dg_sarbytes
+_dg_sarbytes:
+
+    addq %rsi, %rdi
+    
+.ifndef DGLU_NO_DIAPER
+    
+    pushq %rdi
+    pushq %rsi
+    pushq %rdx
+
+    call _dg_trycatchbadmemoryerror2
+
+    popq %rdx
+    popq %rcx
+    popq %rdi
+.else
+    movq %rsi, %rcx  /* stringlength->rcx */
+.endif
+
+    pushfq
+                     
+    xorq %rax, %rax
+.globl _dg_sarbyteserroraddress1
+_dg_sarbyteserroraddress1:
+    movq %rax, (%rdx)
+    
+    /* if rcx is 0 then do nothing */
+    orq %rcx, %rcx         
+    jz L_dg_sarbytesthen1
+    
+    /* 1st byte is asr */
+    decq %rdi
+    sarb (%rdi)
+    decq %rcx
+    
+    jz L_dg_sarbytesthen1
+
+L_dg_sarbytesbegin1:
+
+    decq %rdi
+    
+.globl _dg_sarbyteserroraddress2
+_dg_sarbyteserroraddress2:
+    
+    rcrb (%rdi)
+    
+    loop L_dg_sarbytesbegin1
+    
+    jnc L_dg_sarbytesthen1
+    
+    incq (%rdx) // set carryout to 1
+
+L_dg_sarbytesthen1:
+
+.ifndef DGLU_NO_DIAPER
+    call _dg_endtrycatchbadmemoryerror
+.endif
+    
+    leaq _dg_success(%rip), %rax
+    popfq
+    ret
+    
+
+/*
+    const char* dg_notbytes (
+        unsigned char* pdest,    // rdi
+        UINT64 stringlength);    // rsi
+*/
+    
+.globl _dg_notbytes
+_dg_notbytes:
+    pushfq      /* pushfq is up here for alignment for _dg_trycatchbadmemoryerror2 */
+    
+.ifndef DGLU_NO_DIAPER
+    
+    
+    pushq %rdi
+    pushq %rsi
+
+    call _dg_trycatchbadmemoryerror2
+
+    popq %rcx
+    popq %rdi
+.else
+    movq %rsi, %rcx  /* stringlength->rcx */
+.endif
+    
+    /* if rcx is 0 then do nothing */
+    orq %rcx, %rcx
+    jz L_dg_notbytesthen1
+    
+.globl _dg_notbyteserroraddress1
+_dg_notbyteserroraddress1:
+    notb (%rdi)
+    incq %rdi
+    loop _dg_notbyteserroraddress1
+
+L_dg_notbytesthen1:
+
+.ifndef DGLU_NO_DIAPER
+    call _dg_endtrycatchbadmemoryerror
+.endif
+    
+    leaq _dg_success(%rip), %rax
+    popfq
+    ret
+    
+    
+/*
+    const char* dg_reversebytes (
+        unsigned char* pdest,    // rdi
+        UINT64 stringlength);    // rsi
+*/
+    
+.globl _dg_reversebytes
+_dg_reversebytes:
+    pushfq      /* pushfq is up here for alignment for _dg_trycatchbadmemoryerror2 */
+    
+.ifndef DGLU_NO_DIAPER
+    
+    
+    pushq %rdi
+    pushq %rsi
+
+    call _dg_trycatchbadmemoryerror2
+
+    popq %rcx
+    popq %rdi
+.else
+    movq %rsi, %rcx  /* stringlength->rcx */
+.endif
+    
+    movq %rdi, %rsi
+    addq %rcx, %rsi
+    shrq %rcx
+    
+    /* if rcx was < 2 then do nothing */
+    // orq %rcx, %rcx
+    orq %rcx, %rcx
+    jz L_dg_reversebytesthen1
+    
+.globl _dg_reversebyteserroraddress1
+_dg_reversebyteserroraddress1:
+    movb (%rdi), %al
+    decq %rsi
+.globl _dg_reversebyteserroraddress2
+_dg_reversebyteserroraddress2:
+    xchgb (%rsi), %al
+.globl _dg_reversebyteserroraddress3
+_dg_reversebyteserroraddress3:
+    movb %al, (%rdi)
+    incq %rdi
+    loop _dg_reversebyteserroraddress1
+
+L_dg_reversebytesthen1:
+
+.ifndef DGLU_NO_DIAPER
+    call _dg_endtrycatchbadmemoryerror
+.endif
+    
+    leaq _dg_success(%rip), %rax
+    popfq
+    ret
+    
+
+/*
+    const char* dg_incbytes (
+        unsigned char* pdest,    // rdi
+        UINT64 stringlength,     // rsi
+        UINT64* pcarryout);      // rdx
+*/
+    
+.globl _dg_incbytes
+_dg_incbytes:
+    
+.ifndef DGLU_NO_DIAPER
+    
+    pushq %rdi
+    pushq %rsi
+    pushq %rdx
+
+    call _dg_trycatchbadmemoryerror2
+
+    popq %rdx
+    popq %rcx
+    popq %rdi
+.else
+    movq %rsi, %rcx  /* stringlength->rcx */
+.endif
+
+    pushfq
+                     
+    xorq %rax, %rax
+.globl _dg_incbyteserroraddress1
+_dg_incbyteserroraddress1:
+    movq %rax, (%rdx)
+    
+    /* if rcx is 0 then do nothing */
+    orq %rcx, %rcx  /* this clears the carry */
+    jz L_dg_incbytesthen1
+    
+    stc
+    
+.globl _dg_incbyteserroraddress2
+_dg_incbyteserroraddress2:
+    adcb %al, (%rdi)        /* al should be 0 */
+    jnc L_dg_incbytesthen1 /* if no carry, no need to look at the rest */
+    incq %rdi
+    loop _dg_incbyteserroraddress2
+    
+    incq (%rdx) // set carryout to 1
+
+L_dg_incbytesthen1:
+
+.ifndef DGLU_NO_DIAPER
+    call _dg_endtrycatchbadmemoryerror
+.endif
+    
+    leaq _dg_success(%rip), %rax
+    popfq
+    ret
+
+
+/*
+    const char* dg_decbytes (
+        unsigned char* pdest,    // rdi
+        UINT64 stringlength,     // rsi
+        UINT64* pcarryout);      // rdx
+*/
+    
+.globl _dg_decbytes
+_dg_decbytes:
+    
+.ifndef DGLU_NO_DIAPER
+    
+    pushq %rdi
+    pushq %rsi
+    pushq %rdx
+
+    call _dg_trycatchbadmemoryerror2
+
+    popq %rdx
+    popq %rcx
+    popq %rdi
+.else
+    movq %rsi, %rcx  /* stringlength->rcx */
+.endif
+
+    pushfq
+                     
+    xorq %rax, %rax
+.globl _dg_decbyteserroraddress1
+_dg_decbyteserroraddress1:
+    movq %rax, (%rdx)
+    
+    /* if rcx is 0 then do nothing */
+    orq %rcx, %rcx  /* this clears the carry */
+    jz L_dg_decbytesthen1
+    
+    stc
+    
+.globl _dg_decbyteserroraddress2
+_dg_decbyteserroraddress2:
+    sbbb %al, (%rdi)        /* al should be 0 */
+    jnc L_dg_decbytesthen1 /* if no borrow, no need to look at the rest */
+    incq %rdi
+    loop _dg_decbyteserroraddress2
+    
+    incq (%rdx) // set carryout to 1
+
+L_dg_decbytesthen1:
+
+.ifndef DGLU_NO_DIAPER
+    call _dg_endtrycatchbadmemoryerror
+.endif
+    
+    leaq _dg_success(%rip), %rax
+    popfq
+    ret
+
+
+/*
+    const char* dg_mulu64tou64s (
+        UINT64* pdest,           // rdi 
+        UINT64* psrc,            // rsi 
+        UINT64  u,               // rdx 
+        UINT64  srclengthinu64s, // rcx
+        UINT64* pcarryout);      // r8
+*/
+
+.globl _dg_mulu64tou64s
+_dg_mulu64tou64s:
+    
+.ifndef DGLU_NO_DIAPER
+    
+    pushq %rsi
+    pushq %rdi
+    pushq %rcx
+    pushq %rdx
+    pushq %r8
+
+    call _dg_trycatchbadmemoryerror2
+
+    popq %r8
+    popq %rdx
+    popq %rcx
+    popq %rdi
+    popq %rsi
+    
+.endif
+
+    pushfq /* for _dg_trycatchbadmemoryerror2 alignment and frame */
+
+    xorq %r9, %r9 // holds carry for next loop
+    
+    movq %rdx, %r10   /* r10 now has u */
+    /* if rcx is 0 then do nothing */
+    orq %rcx, %rcx
+    jz L_dg_mulu64tou64sthen1
+    
+.globl _dg_mulu64tou64serroraddress1
+_dg_mulu64tou64serroraddress1:
+    movq (%rsi), %rax    
+    addq $8, %rsi
+    mulq %r10      // R10 * RAX -> RDX:RAX
+    addq %r9, %rdx // to add in carry from previous loop
+                   // since it's impossible for RDX to be -1 
+                   //  there won't be a carry from this
+    xorq %r9, %r9  // clear the r9 to hold the carry...
+     
+.globl _dg_mulu64tou64serroraddress2
+_dg_mulu64tou64serroraddress2:
+    addq %rax, (%rdi)
+.globl _dg_mulu64tou64serroraddress3
+_dg_mulu64tou64serroraddress3:
+    adcq %rdx, 8(%rdi)  
+    rclq %r9 // to save carry for next time through loop
+    addq $8, %rdi
+    loop _dg_mulu64tou64serroraddress1
+
+L_dg_mulu64tou64sthen1:
+
+.globl _dg_mulu64tou64serroraddress4
+_dg_mulu64tou64serroraddress4:
+    movq %r9, (%r8)
+
+.ifndef DGLU_NO_DIAPER
+    call _dg_endtrycatchbadmemoryerror
+.endif
+    
+    leaq _dg_success(%rip), %rax
+    popfq
+    ret
+    
+
+/*
+    const char* dg_divu64sbyu64 (
+        UINT64* pdest,            // rdi // quotient and dividend
+        UINT64* premainder,       // rsi // remainder
+        UINT64  u,                // rdx // divisor
+        UINT64  destlengthinu64s) // rcx
+*/
+
+.globl _dg_divu64sbyu64
+_dg_divu64sbyu64:
+
+    pushfq /* for _dg_trycatchbadmemoryerror2 alignment and frame */
+    
+.ifndef DGLU_NO_DIAPER
+    
+    pushq %rsi
+    pushq %rdi
+    pushq %rcx
+    pushq %rdx
+
+    call _dg_trycatchbadmemoryerror2
+
+    popq %rdx
+    popq %rcx
+    popq %rdi
+    popq %rsi
+    
+.endif
+    
+    /* checking for divide by 0 case */
+    orq %rdx, %rdx
+    jnz L_dg_divu64sbyu64then2
+    
+    
+    xorq %rdx, %rdx  // this might be unnecessary since rdx is already 0
+    decq %rdx /* setting remainder to max UINT64 for div by 0 case */
+    
+    jmp L_dg_divu64sbyu64then1 
+    
+L_dg_divu64sbyu64then2:
+    
+    movq %rdx, %r10   /* r10 now has u */
+    
+    /* if rcx is 0 then do nothing */
+    orq %rcx, %rcx
+    jz L_dg_divu64sbyu64then1
+    
+    movq %rcx, %rax
+    shlq $3, %rax
+    addq %rax, %rdi /* move dest pointer to the end */
+    
+    xorq %rdx, %rdx /* clear rdx for first divide */
+    
+_dg_divu64sbyu64begin:
+    subq $8, %rdi
+    
+.globl _dg_divu64sbyu64erroraddress1
+_dg_divu64sbyu64erroraddress1:
+    movq (%rdi), %rax    
+    
+    divq %r10      // RDX:RAX / R10 -> RAX rem RDX
+
+.globl _dg_divu64sbyu64erroraddress2
+_dg_divu64sbyu64erroraddress2:
+    movq %rax, (%rdi)
+    
+    loop _dg_divu64sbyu64begin
+
+L_dg_divu64sbyu64then1:
+
+.globl _dg_divu64sbyu64erroraddress3
+_dg_divu64sbyu64erroraddress3:
+    movq %rdx, (%rsi)  /* save the remainder */
+
+.ifndef DGLU_NO_DIAPER
+    call _dg_endtrycatchbadmemoryerror
+.endif
+    
+    leaq _dg_success(%rip), %rax
+    popfq
+    ret    
+

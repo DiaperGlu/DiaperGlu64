@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 
 #if !defined(_INC_diapergluforth)
@@ -203,7 +203,14 @@ extern "C" {
 
     DGLU_API BOOL WINAPI TerminateExtension(DWORD dwFlags);
 
-    
+#define DG_IMPORT_LINK_SIZE (6)
+#define DG_IMPORT_LINK_IMPORT_OFFSET (2)
+#define DG_IMPORT_LINK_DATA_SIZE (4)
+
+#define DG_MUTEX_MEM_SIZE (8)
+
+#define dg_paramusingframeoffset        (0x6)   // in UINT64s   // savedrbp retaddress 4 shadow params
+#define dg_defaultnoframerstackdepth    (0x5)   // in UINT64s  retaddress and 4 shadow params
     
 #endif
 
@@ -295,12 +302,36 @@ extern "C" {
     
     DGLU_API void dg_putbyteerroraddress();
     DGLU_API void dg_movebyteserroraddress();
+ 
+#include <pthread.h>    
+
+#define DG_IMPORT_LINK_SIZE (6)
+#define DG_IMPORT_LINK_IMPORT_OFFSET (2)
+#define DG_IMPORT_LINK_DATA_SIZE (4)
+
+#define DG_MUTEX_MEM_SIZE (sizeof(pthread_mutex_t))
+
+#define dg_paramusingframeoffset        (0x2)   // in UINT64s  savedrbp retaddress
+#define dg_defaultnoframerstackdepth    (0x1)   // in UINT64s  retaddress
 	
 #endif
 	
 	// /////////////////////////////////////
 	// End of FreeBSD Linux MacOsX stuff  //
 	// /////////////////////////////////////
+
+#define DG_MUTEX_HOLDER_MAGIC 0x6878746D
+
+    struct DG_Mutex_Holder
+    {
+        UINT64 magic; // 'mtxh'
+        UINT64 mutexhandle;
+        UINT64 ismutexlockedflag;
+        unsigned char mutexmem[DG_MUTEX_MEM_SIZE]; // not really used on windows... except for testing... 
+        UINT64 aftermutexmem;  // for testing... to see if memory after mutexmem gets corrupted by os call
+    };
+
+    
 
     
 #define badbufferhandle ((void*)-1)
@@ -317,13 +348,13 @@ extern "C" {
     // presorted wordlist sizes  //
     // ////////////////////////////
 
-#define dg_presortedcorewordlistsize (288)
+#define dg_presortedcorewordlistsize (290)
 #define dg_presortedenvwordlistsize (21)
 // #define dg_presortedstringwordlistsize (0)
 // #define dg_presortederrorwordlistsize (0)
-#define dg_prestoredbufferwordlistsize (570)
+#define dg_prestoredbufferwordlistsize (629)
 // #define dg_presortedoswordlistsize (0)
-#define dg_presortedx86wordlistsize (1231)
+#define dg_presortedx86wordlistsize (1249)
 
 	// gcc inline assembly doesn't take 'FORTH_TRUE', so 0xFFFFFFFF was hardcoded in some places
     //  gcc inline assembly was buggy so stopped using it a long time ago JN 7/16/2013
@@ -385,6 +416,7 @@ extern "C" {
 #define colonnonamemarker  (0xFFFEFFFFFFFFFFF9)
 #define colonsysmarker  (0xFFFEFFFFFFFFFFF8)
 #define dg_codesysmarker (0xFFFEFFFFFFFFFFF7)
+#define dg_subparamscommamarker (0xFFFEFFFFFFFFFFF6)
 
 
 #define dg_writebuffersize (0x10000)
@@ -441,12 +473,12 @@ extern "C" {
         DG_SERVERNAME_BUFFERID,
         DG_SERVERSOFTWARE_BUFFERID,
         DG_LINKNEWBUFFERIDSTACK_BUFFERID,
-        DG_ERRORLINE_BUFFERID,
         DG_EHSTACK_BUFFERID,
         DG_F64STACK_BUFFERID,
         DG_CURRENTNEWWORDWORDLISTSTACK_BUFFERID,
         DG_CURRENTCOMPILEBUFFERSTACK_BUFFERID,
         DG_CURRENTVARIABLEBUFFERSTACK_BUFFERID,
+        DG_ERRORLINE_BUFFERID,
         DG_WORDVALUE_FAKE_BUFFERID = 0xFFFFFFFFFFFFFFFB,
         DG_WORDNAME_FAKE_BUFFERID  = 0xFFFFFFFFFFFFFFFD,
         DG_CORE_BUFFERID           = 0xFFFFFFFFFFFFFFFE
@@ -479,6 +511,33 @@ extern "C" {
 
     DGLU_API extern const char* dg_importselementname;
 #define DG_IMPORTSELEMENTNAMELENGTH     (7)
+
+
+    enum dg_parametertypes
+	{
+        DG_PARAMP = 0, // this is also N U8 U16 U32 U64 BOOL
+        DG_PARAMF,     // this is also F F32 F64
+        DG_PARAMO,
+        DG_PARAMRETURN,   // return value
+        DG_PARAMFRETURN,  
+        DG_PARAMBRACKETO,
+        DG_PARAMBRACKETP,
+        DG_PARAMBRACKETL,
+        DG_PARAMBRACKETU8,
+        DG_PARAMBRACKETU16,
+        DG_PARAMBRACKETU32,
+        DG_PARAMBRACKETU64, // this is also [N] and [P]
+        DG_PARAMBRACKETU128,
+        DG_PARAMBRACKETS8,
+        DG_PARAMBRACKETS16,
+        DG_PARAMBRACKETS32,
+        DG_PARAMBRACKETS64,
+        DG_PARAMBRACKETS128,
+        DG_PARAMBRACKETF32,
+        DG_PARAMBRACKETF64,
+        DG_PARAMBRACKETF128,
+        DG_PARAMCALLADDRESS
+    };
 	
 
 	// General error and success messages
@@ -529,6 +588,7 @@ extern "C" {
     DGLU_API extern const char dg_writeprotectederror[];
     
     DGLU_API extern const char dg_invalidparametererror[];
+    DGLU_API extern const char dg_toomanyparameterserror[];
     
 
 	DGLU_API extern const char dg_noerrors[];
@@ -635,7 +695,10 @@ extern "C" {
     DGLU_API extern const char dg_toomanyprocesseserror[];
     DGLU_API extern const char dg_couldnotrunfileerror[];
     DGLU_API extern const char dg_programexitedwitherrorerror[];
-	
+
+    DGLU_API extern const char dg_freemutexwhilelockederror[];
+    DGLU_API extern const char dg_woulddeadlockerror[];
+    DGLU_API extern const char dg_mutexisnotlockederror[];
 	
 	DGLU_API extern const char dg_diskisfullerror[];
     DGLU_API extern const char dg_invaliduserbuffererror[];
@@ -686,6 +749,7 @@ extern "C" {
     DGLU_API extern const char dg_hlistparentlastchildbad[];
     DGLU_API extern const char dg_hlistelementwasfreed[];
     DGLU_API extern const char dg_elementisfreeerror[];
+    // DGLU_API extern const char dg_wordnotfounderror[];
     DGLU_API extern const char dg_namenotfounderror[];
     DGLU_API extern const char dg_symbolnotfounderror[];
     DGLU_API extern const char dg_patchfunctionnotfounderror[];
@@ -693,6 +757,8 @@ extern "C" {
     DGLU_API extern const char dg_tryingtofreehlist0error[];
     
     DGLU_API extern const char dg_glulisttypenotfounderror[];
+    
+    DGLU_API extern const char dg_queueswitchlengthtoobigerror[];
 
 
 
@@ -739,14 +805,33 @@ extern "C" {
 #define dg_precision                 (0x138)
 #define dg_numberofcparameters       (0x140)
 #define dg_numberofcfparameters      (0x148)
-#define lastnotfoundword             (0x150) // this is 256 characters (bytes) long.. needs to be maxwordlength long which is 255.. I added 1
-#define dg_quitsavedstate            (0x250) // this is 9*4 = 36 bytes long, rounding up to 0x30  ... looks like it is only 0x18...
+#define dg_whichintparameter         (0x150)
+#define dg_whichfloatparameter       (0x158)
+#define dg_extraparametersfloatsflag (0x160)
+#define dg_noframereturnstackdepth   (0x168) // in UINT64s
+#define dg_cparameterregisters       (0x170) // room for 4 parameters...
+
+#define dg_callsubnumberofints       (0x190)
+#define dg_callsubnumberoffloats     (0x198)
+#define lastnotfoundword             (0x1A0) // this is 256 characters (bytes) long.. needs to be maxwordlength long which is 255.. I added 1
+
+#define dg_quitsavedstate            (0x2A0) // this is 9*4 = 36 bytes long, rounding up to 0x30  ... looks like it is only 0x18...
  
-
-
 // put more variables here and increase initialsizeofvariablebuffer
-#define initialsizeofvariablebuffer  (0x280)
-	
+#define initialsizeofvariablebuffer  (0x2D0)
+
+#define dg_cparameterregisterslength    (0x4)   // in number of parameters, Windows needs 4
+#define dg_cparameteronstackflag        (0x0100000000000000)
+#define dg_cparameteronstacknoframeflag (0x0200000000000000)
+#define dg_cparameterpassinbothflag     (0x0300000000000000)
+#define dg_cparameteronstackmask        (0xFF00000000000000)
+
+
+#define dg_dgluframelocaloffset         (0x5)   // in UINT64s - offset from rbp to address of local 0
+                                                //   need to add one here because you have to include saved RBP
+                                                //   so it's the 4 dglu frame items + saved RBP
+// #define dg_laststuffbeforeerrorsize     (0xA0) // has to be less than true size of dg_laststuffbeforeerror
+
 #define dg_quitsavedstatelength     (0x30) // 11/22/2017 - will figure out actual size later  
 
 
@@ -837,6 +922,56 @@ extern "C" {
 #define dg_freeablelstringlastfreeid  (-1)
 #define dg_freeablelstringisnotfreeid (-3)
 
+
+    struct Lstringqueueheader
+	{
+		UINT64 magic;                  // 'lstq'
+		UINT64 lstringoffsetbufferida;
+		UINT64 lstringstringbufferida;
+        UINT64 lstringoffsetbufferidb;
+		UINT64 lstringstringbufferidb;      
+		UINT64 pusharray;              // current push L$array (0 or 1)
+        UINT64 switchlength;
+        UINT64 poparray;               // current pop L$array (0 or 1)
+        UINT64 popindex;
+	};
+ 
+ #define dg_lstringqueuemagic (0x7074736c) 
+ #define dg_maxlstringqueueswitchlength (0x7FFFFFFF) 
+ // #define dg_lstringqueuemutexhandlemaxsize (0x80) 
+ 
+    struct SharedQueueHandleBufferStructs {
+        UINT64 magic; // 'sqhb'
+        struct Bufferhandle sharedQueueBHarrayhead;
+        struct Lstringqueueheader lsQueueHeader;
+        struct DG_Mutex_Holder mutexHolder;
+        // UINT64 mutexhandle;
+        // unsigned char mutexmem[DG_MUTEX_MEM_SIZE]; // mac os x needs this
+    };
+     
+#define dg_sharedqueuemagic (0x62687473)
+
+    struct DG_AsyncFunctionCallerHeader
+    {
+        UINT64 magic; // 'afch'
+        // UINT64 childgomutexhandle;
+        // unsigned char childgomutexmem[DG_MUTEX_MEM_SIZE];
+        struct DG_Mutex_Holder childgomutexHolder;
+        // UINT64 childstopmutexhandle;
+        //unsigned char childstopmutexmem[DG_MUTEX_MEM_SIZE];
+        struct DG_Mutex_Holder childstopmutexHolder;
+        // UINT64 childgotgomutexhandle;
+        // unsigned char childgotgomutexmem[DG_MUTEX_MEM_SIZE];
+        struct DG_Mutex_Holder childgotgomutexHolder;
+        // UINT64 childgotstopmutexhandle;
+        // unsigned char childgotstopmutexmem[DG_MUTEX_MEM_SIZE];
+        struct DG_Mutex_Holder childgotstopmutexHolder;
+        UINT64 threadhandle;
+        void (*pfunction)(Bufferhandle* pBHarrayhead); // function pointer
+        Bufferhandle childBHarrayhead; 
+    };
+
+#define dg_afchmagic (0x68636661)
 
 // used in testing, represents the number of elements added to the wordlist hlist
 //  dg_inithlists in dglumain.cpp
@@ -1137,6 +1272,7 @@ extern "C" {
     DGLU_API extern const char dg_forthdocompiletypeftcolonname[];
     DGLU_API extern const char dg_forthdocompiletypedpushbracketrbpplusnname[];
     DGLU_API extern const char dg_forthdocompiletypebrackettoordername[];
+    DGLU_API extern const char dg_forthdocompiletypebracketwordlistdotname[];
 	
 	
 	// forth compiling word names
@@ -1188,7 +1324,9 @@ extern "C" {
     DGLU_API extern const char dg_forthcurrentfromname[];
     DGLU_API extern const char dg_forthsearchorderdropname[];
     DGLU_API extern const char dg_forthbracketsearchorderdropname[];
-    DGLU_API extern const char dg_forthbrackettoorderconstantname[];   
+    DGLU_API extern const char dg_forthbrackettoorderconstantname[];
+    DGLU_API extern const char dg_forthwordlistdotname[];  
+    DGLU_API extern const char dg_forthcreatebracketwordlistdotname[]; 
 	
 	
 	// forth miscellaneous word names
@@ -1309,12 +1447,19 @@ extern "C" {
     DGLU_API extern const char dg_forthconstantscurlyname[];
     DGLU_API extern const char dg_forthfconstantscurlyname[];
     DGLU_API extern const char dg_forthlocalconstantsname[];
+    DGLU_API extern const char dg_forthbracketlocalconstantsname[];
     DGLU_API extern const char dg_forthlocalconstantscurlyname[];
+    DGLU_API extern const char dg_forthbracketlocalconstantscurlyname[];
     DGLU_API extern const char dg_forthvariablescurlyname[];
     DGLU_API extern const char dg_forthvariablesname[];
     DGLU_API extern const char dg_forthconstantsname[];
     DGLU_API extern const char dg_forthfconstantsname[];
     DGLU_API extern const char dg_forthsizedconstantscurlyname[];
+    DGLU_API extern const char dg_forthenumcurlyname[];
+    DGLU_API extern const char dg_forthlocalenumcurlyname[];
+    DGLU_API extern const char dg_forthbracketlocalenumcurlyname[];
+    DGLU_API extern const char dg_forthtypedenumcurlyname[];
+    DGLU_API extern const char dg_forthtypedlocalenumcurlyname[];
 
     
     // floating point words
@@ -1469,6 +1614,26 @@ extern "C" {
     DGLU_API extern const char dg_forthfreefreeablelstringarrayname[];
     DGLU_API extern const char dg_forthpacklstringname[];
     DGLU_API extern const char dg_forthunpacklstringname[];
+    DGLU_API extern const char dg_forthnotlstringnname[];
+    DGLU_API extern const char dg_forthu8reverselstringnname[];
+    DGLU_API extern const char dg_forthuleextendlstringntolname[];
+    DGLU_API extern const char dg_forthuleandlstringntolstringnname[];
+    DGLU_API extern const char dg_forthuleorlstringntolstringnname[];
+    DGLU_API extern const char dg_forthulexorlstringntolstringnname[];
+    DGLU_API extern const char dg_forthulenandlstringntolstringnname[];
+    DGLU_API extern const char dg_forthulenorlstringntolstringnname[];
+    DGLU_API extern const char dg_forthulexnorlstringntolstringnname[];
+    DGLU_API extern const char dg_forthuleaddlstringntolstringnname[];
+    DGLU_API extern const char dg_forthuleadclstringntolstringnname[];
+    DGLU_API extern const char dg_forthulesbblstringntolstringnname[];
+    DGLU_API extern const char dg_forthlelshiftlstringnname[];
+    DGLU_API extern const char dg_forthulershiftlstringnname[];
+    DGLU_API extern const char dg_forthslershiftlstringnname[];
+    DGLU_API extern const char dg_forthlelshiftclstringnname[];
+    DGLU_API extern const char dg_forthlershiftclstringnname[];
+    DGLU_API extern const char dg_forthu64starlstringnplustolstringnname[];
+    DGLU_API extern const char dg_forthtoslashulelstringnname[];
+    DGLU_API extern const char dg_forthtofactorialulestringname[];
     
 	
 	// forth string 
@@ -1556,6 +1721,23 @@ extern "C" {
     DGLU_API extern const char dg_forthglufilestringname[];
     
     DGLU_API extern const char dg_forthgetargsfromnstringsname[];
+    DGLU_API extern const char dg_forthumulleutostringname[];
+    DGLU_API extern const char dg_forthtostarulestringname[];
+    DGLU_API extern const char dg_forthtoslashulestringname[];
+    DGLU_API extern const char dg_forthreversestringname[];
+    DGLU_API extern const char dg_forthnotstringname[];
+    DGLU_API extern const char dg_forthuleandstringname[];
+    DGLU_API extern const char dg_forthuleorstringname[];
+    DGLU_API extern const char dg_forthulexorstringname[];
+    DGLU_API extern const char dg_forthulenandstringname[];
+    DGLU_API extern const char dg_forthulenorstringname[];
+    DGLU_API extern const char dg_forthulexnorstringname[];
+    DGLU_API extern const char dg_forthlelshiftstringname[];
+    DGLU_API extern const char dg_forthulershiftstringname[];
+    DGLU_API extern const char dg_forthslershiftstringname[];
+    DGLU_API extern const char dg_forthlelshiftcstringname[];
+    DGLU_API extern const char dg_forthlershiftcstringname[];
+    DGLU_API extern const char dg_forthulestringtonumberstringname[];
     DGLU_API extern const char dg_forthrunfileandwaitnoenvquotesname[];
     DGLU_API extern const char dg_forthrunfileandwaitnoenvstringname[];
     
@@ -1812,6 +1994,14 @@ extern "C" {
     DGLU_API extern const char dg_forthehnamewtovaluestrname[];
     DGLU_API extern const char dg_forthehnamewtovaluename[];
     DGLU_API extern const char dg_forthehoherewtonewelementname[];
+    DGLU_API extern const char dg_forthehdotname[];
+    DGLU_API extern const char dg_forthehbracketnddotname[];
+    DGLU_API extern const char dg_forthehbracket1ddotname[];
+    DGLU_API extern const char dg_forthsymbolenumcurlyname[];
+    DGLU_API extern const char dg_forthosymbolcodeimportscommacurlyname[];
+    DGLU_API extern const char dg_forthnewflatosymbolbufname[];
+    DGLU_API extern const char dg_forthfreeflatosymbolbufname[];
+    DGLU_API extern const char dg_forthosymbolimportname[];
     
     DGLU_API extern const char dg_wordlisthlistidname[];
     DGLU_API extern const char dg_stringhlistidname[];
@@ -1828,6 +2018,11 @@ extern "C" {
     DGLU_API extern const char dg_forthnamedbufstrtobufidname[];
     DGLU_API extern const char dg_forthnamedbufstrtopname[];
     DGLU_API extern const char dg_forthhsymbolstrtoname[];
+    DGLU_API extern const char dg_forthdashtoname[];
+    
+    
+    // DGLU_API extern const char dg_forthlibdashtoname[];
+    
   
 
 	//////////////////////////////////////
@@ -1992,14 +2187,35 @@ extern "C" {
 
     DGLU_API extern const char* dg_waitpidname;
     // DGLU_API const char* dg_waitpid(
-        // Bufferhandle* pBHarrayhead,
-   //     pid_t pid,
-   //     int *stat_loc,
-   //     int options,
-   //     pid_t* pchildprocessid,
-   //     const char* forceerrorflag);
-
+    //     Bufferhandle* pBHarrayhead,
+    //     pid_t pid,
+    //     int *stat_loc,
+    //     int options,
+    //     pid_t* pchildprocessid,
+    //     const char* forceerrorflag);
+   
+    DGLU_API UINT64 dg_getmutexhandlesize();
     
+    DGLU_API extern const char* dg_newmutexname;
+    DGLU_API const char* dg_newmutex(
+        struct DG_Mutex_Holder* pmutexholder,
+        const char* forceerrorflag);
+   
+    DGLU_API extern const char* dg_freemutexname;
+    DGLU_API const char* dg_freemutex(
+        struct DG_Mutex_Holder* pmutexholder,
+        const char* forceerrorflag);
+   
+    DGLU_API extern const char* dg_lockmutexname;
+    DGLU_API const char* dg_lockmutex(
+        struct DG_Mutex_Holder* pmutexholder,
+        const char* forceerrorflag);
+   
+    DGLU_API extern const char* dg_unlockmutexname;
+    DGLU_API const char* dg_unlockmutex(
+        struct DG_Mutex_Holder* pmutexholder,
+        const char* forceerrorflag);
+
     DGLU_API extern const char* dg_runfileandwaitname;
     DGLU_API const char* dg_runfileandwait(
         Bufferhandle* pBHarrayhead,
@@ -2007,6 +2223,12 @@ extern "C" {
         char *const argv[],
         char *const envp[],
         const char* forceerrorflag);
+        
+    DGLU_API extern const char* dg_callfunctionasyncname;
+    DGLU_API const char* dg_callfunctionasync(
+        UINT64* pthreadhandle,
+        void *(*pfunction)(void *), 
+        void *parguments);
     
     // DGLU_API extern const char* dg_setenvironmentvariablename;
     // DGLU_API const char* dg_setenvironmentvariable (
@@ -2271,6 +2493,234 @@ extern "C" {
     const char* dg_hctwostoresub(
         unsigned char* pdest, // string length can be up to size of UINT128
         UINT64* pud); // really UINT128*
+    
+    const char* dg_addbytessub(
+        unsigned char* psrc,
+        unsigned char* pdest,
+        UINT64 stringlength,
+        UINT64* pcarryout);
+
+    DGLU_API extern const char dg_addbytesname[];
+    DGLU_API const char* dg_addbytes (
+        unsigned char* psrc, 
+        unsigned char* pdest,
+        UINT64 stringlength,
+        UINT64* pcarryout);
+    
+    const char* dg_adcbytessub(
+        unsigned char* psrc,
+        unsigned char* pdest,
+        UINT64 stringlength,
+        UINT64* pcarryinout);
+
+    DGLU_API extern const char dg_adcbytesname[];
+    DGLU_API const char* dg_adcbytes (
+        unsigned char* psrc, 
+        unsigned char* pdest,
+        UINT64 stringlength,
+        UINT64* pcarryinout);
+    
+    const char* dg_sbbbytessub(
+        unsigned char* psrc,
+        unsigned char* pdest,
+        UINT64 stringlength,
+        UINT64* pcarryinout);
+
+    DGLU_API extern const char dg_sbbbytesname[];
+    DGLU_API const char* dg_sbbbytes (
+        unsigned char* psrc, 
+        unsigned char* pdest,
+        UINT64 stringlength,
+        UINT64* pcarryinout);
+    
+    const char* dg_shlbytessub(
+        unsigned char* pdest,
+        UINT64 stringlength,
+        UINT64* pcarryout);
+
+    DGLU_API extern const char dg_shlbytesname[];
+    DGLU_API const char* dg_shlbytes ( 
+        unsigned char* pdest,
+        UINT64 stringlength,
+        UINT64* pcarryout);
+    
+    const char* dg_rclbytessub(
+        unsigned char* pdest,
+        UINT64 stringlength,
+        UINT64* pcarryinout);
+
+    DGLU_API extern const char dg_rclbytesname[];
+    DGLU_API const char* dg_rclbytes ( 
+        unsigned char* pdest,
+        UINT64 stringlength,
+        UINT64* pcarryinout);
+    
+    const char* dg_shrbytessub(
+        unsigned char* pdest,
+        UINT64 stringlength,
+        UINT64* pcarryout);
+
+    DGLU_API extern const char dg_shrbytesname[];
+    DGLU_API const char* dg_shrbytes ( 
+        unsigned char* pdest,
+        UINT64 stringlength,
+        UINT64* pcarryout);
+    
+    const char* dg_sarbytessub(
+        unsigned char* pdest,
+        UINT64 stringlength,
+        UINT64* pcarryout);
+
+    DGLU_API extern const char dg_sarbytesname[];
+    DGLU_API const char* dg_sarbytes ( 
+        unsigned char* pdest,
+        UINT64 stringlength,
+        UINT64* pcarryout);
+    
+    const char* dg_rcrbytessub(
+        unsigned char* pdest,
+        UINT64 stringlength,
+        UINT64* pcarryinout);
+
+    DGLU_API extern const char dg_rcrbytesname[];
+    DGLU_API const char* dg_rcrbytes ( 
+        unsigned char* pdest,
+        UINT64 stringlength,
+        UINT64* pcarryinout);
+    
+    const char* dg_notbytessub(
+        unsigned char* pdest,
+        UINT64 stringlength);
+
+    DGLU_API extern const char dg_notbytesname[];
+    DGLU_API const char* dg_notbytes ( 
+        unsigned char* pdest,
+        UINT64 stringlength);
+    
+    const char* dg_andbytessub(
+        unsigned char* psrc,
+        unsigned char* pdest,
+        UINT64 stringlength);
+
+    DGLU_API extern const char dg_andbytesname[];
+    DGLU_API const char* dg_andbytes (
+        unsigned char* psrc, 
+        unsigned char* pdest,
+        UINT64 stringlength);
+    
+    const char* dg_orbytessub(
+        unsigned char* psrc,
+        unsigned char* pdest,
+        UINT64 stringlength);
+
+    DGLU_API extern const char dg_orbytesname[];
+    DGLU_API const char* dg_orbytes (
+        unsigned char* psrc, 
+        unsigned char* pdest,
+        UINT64 stringlength);
+    
+    const char* dg_xorbytessub(
+        unsigned char* psrc,
+        unsigned char* pdest,
+        UINT64 stringlength);
+
+    DGLU_API extern const char dg_xorbytesname[];
+    DGLU_API const char* dg_xorbytes (
+        unsigned char* psrc, 
+        unsigned char* pdest,
+        UINT64 stringlength);
+    
+    const char* dg_nandbytessub(
+        unsigned char* psrc,
+        unsigned char* pdest,
+        UINT64 stringlength);
+
+    DGLU_API extern const char dg_nandbytesname[];
+    DGLU_API const char* dg_nandbytes (
+        unsigned char* psrc, 
+        unsigned char* pdest,
+        UINT64 stringlength);
+    
+    const char* dg_norbytessub(
+        unsigned char* psrc,
+        unsigned char* pdest,
+        UINT64 stringlength);
+
+    DGLU_API extern const char dg_norbytesname[];
+    DGLU_API const char* dg_norbytes (
+        unsigned char* psrc, 
+        unsigned char* pdest,
+        UINT64 stringlength);
+    
+    const char* dg_xnorbytessub(
+        unsigned char* psrc,
+        unsigned char* pdest,
+        UINT64 stringlength);
+
+    DGLU_API extern const char dg_xnorbytesname[];
+    DGLU_API const char* dg_xnorbytes (
+        unsigned char* psrc, 
+        unsigned char* pdest,
+        UINT64 stringlength);
+    
+    const char* dg_reversebytessub(
+        unsigned char* pdest,
+        UINT64 stringlength);
+
+    DGLU_API extern const char dg_reversebytesname[];
+    DGLU_API const char* dg_reversebytes ( 
+        unsigned char* pdest,
+        UINT64 stringlength);
+    
+    const char* dg_incbytessub(
+        unsigned char* pdest,
+        UINT64 stringlength,
+        UINT64* pcarryout);
+
+    DGLU_API extern const char dg_incbytesname[];
+    DGLU_API const char* dg_incbytes ( 
+        unsigned char* pdest,
+        UINT64 stringlength,
+        UINT64* pcarryout);
+    
+    const char* dg_decbytessub(
+        unsigned char* pdest,
+        UINT64 stringlength,
+        UINT64* pcarryout);
+
+    DGLU_API extern const char dg_decbytesname[];
+    DGLU_API const char* dg_decbytes ( 
+        unsigned char* pdest,
+        UINT64 stringlength,
+        UINT64* pcarryout);
+    
+    const char* dg_mulu64tou64ssub(
+        UINT64* pdest,           // rdi 
+        UINT64* psrc,            // rsi 
+        UINT64 u,                // rdx 
+        UINT64 srclengthinu64s,  // rcx
+        UINT64* pcarryout);      // r8
+
+    DGLU_API extern const char dg_mulu64tou64sname[];   
+    DGLU_API const char* dg_mulu64tou64s (
+        UINT64* pdest,           // rdi 
+        UINT64* psrc,            // rsi 
+        UINT64 u,                // rdx 
+        UINT64 srclengthinu64s,  // rcx
+        UINT64* pcarryout);      // r8
+    
+    const char* dg_divu64sbyu64sub(
+        UINT64* pdest,            // rdi 
+        UINT64* premainder,       // rsi 
+        UINT64 u,                 // rdx 
+        UINT64 destlengthinu64s); // rcx
+
+    DGLU_API extern const char dg_divu64sbyu64name[];   
+    DGLU_API const char* dg_divu64sbyu64 (
+        UINT64* pdest,            // rdi 
+        UINT64* premainder,       // rsi 
+        UINT64 u,                 // rdx 
+        UINT64 destlengthinu64s); // rcx
 
     DGLU_API UINT64 dg_dplus(UINT64* pints);  // really a pointer to two UINT128s
 
@@ -2512,6 +2962,10 @@ extern "C" {
     
     DGLU_API void dg_umslashmod (UINT64* pints); // validity of memory at pints not checked
     
+    DGLU_API UINT64 dg_uaddclipped (
+        UINT64 u1,  // rdi 
+        UINT64 u2); // rsi
+    
     DGLU_API UINT64 dg_mstarslash (
         INT64* pnd1,
         INT64 n1,
@@ -2548,9 +3002,11 @@ extern "C" {
     DGLU_API void dg_forthprintstring(Bufferhandle* pBHarrayhead);
     //              ( $1 -$- )
 	
-    //////////////////////////
-    // C Compiling Routines //
-    //////////////////////////
+    // ////////////////////////
+    //  C Compiling Routines //
+    // ////////////////////////
+    
+    DGLU_API void dg_bumpdisplacementsizeifneeded (struct dg_Sibformatter* psf);
     
     DGLU_API extern const char* dg_forthraxjumpcommaname;
     DGLU_API void dg_compilejumptorax (Bufferhandle* pBHarrayhead);
@@ -2639,6 +3095,10 @@ extern "C" {
     DGLU_API void dg_compilejmpoffset(
         Bufferhandle* pBHarrayhead,
         INT64 offset);
+
+    DGLU_API void dg_compilejmpbracketoffset (
+        Bufferhandle* pBHarrayhead,
+        INT64 offset);
 	
     DGLU_API void dg_compilecalloffsetinsamebuffer (
         Bufferhandle* pBHarrayhead,
@@ -2667,6 +3127,14 @@ extern "C" {
     DGLU_API void dg_compilepopregfromret (
         Bufferhandle* pBHarrayhead,
         UINT64 reg);
+        
+    DGLU_API void dg_compileaddnlocalstocallsubsframe (
+        Bufferhandle* pBHarrayhead,
+        UINT64 n);
+        
+    DGLU_API void dg_forthentercallsubsframecomma (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthexitframecomma (Bufferhandle* pBHarrayhead);
 
 /*
     DGLU_API unsigned char dg_packmodrslashm (
@@ -2868,6 +3336,7 @@ extern "C" {
 	DGLU_API UINT64 dg_checkerrorsonstack (Bufferhandle* pBHarrayhead);
 	
 	DGLU_API void dg_clearerrors (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_clearerrorsanderrorline (Bufferhandle* pBHarrayhead);   
 	
 	DGLU_API void dg_droptoerrorcount (
         Bufferhandle* pBHarrayhead,
@@ -3263,11 +3732,6 @@ extern "C" {
        UINT64 bufferid, 
        const char* pforceerror);
     
-    DGLU_API extern const char dg_captureerrorlinename[];
-    DGLU_API void dg_captureerrorline(
-        Bufferhandle* pBHarrayhead,
-        UINT64 bufferid);
-    
     DGLU_API extern const char* dg_argstoargsbuffername;
     DGLU_API void dg_argstoargsbuffer (Bufferhandle* pBHarrayhead, int argc, char* argv[]);
     
@@ -3425,6 +3889,15 @@ extern "C" {
 		UINT64 offset,
 		unsigned char* psrc,
 		UINT64 length);
+  
+    DGLU_API extern const char* dg_pushstolstringnname;
+    DGLU_API void dg_pushstolstringn (
+        Bufferhandle* pBHarrayhead,
+        UINT64 offsetbufferid,
+        UINT64 stringbufferid,
+        UINT64 stringid,
+        unsigned char* psrc,
+        UINT64 length);
 	
 	DGLU_API extern const char* dg_copysfromlstringnname;
 	DGLU_API void dg_copysfromlstringn (
@@ -3628,10 +4101,296 @@ extern "C" {
         Bufferhandle* pBHarrayhead,
         UINT64 lstringoffsetbufferid,
         UINT64 lstringstringbufferid);
+        
+    DGLU_API extern const char dg_uleextendlstringntolname[];
+    DGLU_API void dg_uleextendlstringntol (
+        Bufferhandle* pBHarrayhead,
+        UINT64 offsetbufferid,
+        UINT64 stringbufferid,
+        UINT64 stringid,
+        UINT64 newlength);
+        
+    DGLU_API extern const char dg_uleaddlstringntolstringnname[];
+    DGLU_API void dg_uleaddlstringntolstringn (
+        Bufferhandle* pBHarrayhead,
+        UINT64 offsetbufferida,
+        UINT64 stringbufferida,
+        UINT64 stringida,
+        UINT64 offsetbufferidb,
+        UINT64 stringbufferidb,
+        UINT64 stringidb,
+        UINT64* pcarryout);
+        
+    DGLU_API extern const char dg_uleadclstringntolstringnname[];
+    DGLU_API void dg_uleadclstringntolstringn (
+        Bufferhandle* pBHarrayhead,
+        UINT64 offsetbufferida,
+        UINT64 stringbufferida,
+        UINT64 stringida,
+        UINT64 offsetbufferidb,
+        UINT64 stringbufferidb,
+        UINT64 stringidb,
+        UINT64* pcarryinout);
+        
+    DGLU_API extern const char dg_ulesbblstringntolstringnname[];
+    DGLU_API void dg_ulesbblstringntolstringn (
+        Bufferhandle* pBHarrayhead,
+        UINT64 offsetbufferida,
+        UINT64 stringbufferida,
+        UINT64 stringida,
+        UINT64 offsetbufferidb,
+        UINT64 stringbufferidb,
+        UINT64 stringidb,
+        UINT64* pcarryinout);
+        
+    DGLU_API extern const char dg_lelshiftlstringnname[];
+    DGLU_API void dg_lelshiftlstringn (
+        Bufferhandle* pBHarrayhead,
+        UINT64 offsetbufferid,
+        UINT64 stringbufferid,
+        UINT64 stringid,
+        UINT64* pcarryout);
+        
+    DGLU_API extern const char dg_ulershiftlstringnname[];
+    DGLU_API void dg_ulershiftlstringn (
+        Bufferhandle* pBHarrayhead,
+        UINT64 offsetbufferid,
+        UINT64 stringbufferid,
+        UINT64 stringid,
+        UINT64* pcarryout);
+        
+    DGLU_API extern const char dg_slershiftlstringnname[];
+    DGLU_API void dg_slershiftlstringn (
+        Bufferhandle* pBHarrayhead,
+        UINT64 offsetbufferid,
+        UINT64 stringbufferid,
+        UINT64 stringid,
+        UINT64* pcarryout);
+        
+    DGLU_API extern const char dg_lelshiftclstringnname[];
+    DGLU_API void dg_lelshiftclstringn (
+        Bufferhandle* pBHarrayhead,
+        UINT64 offsetbufferid,
+        UINT64 stringbufferid,
+        UINT64 stringid,
+        UINT64* pcarryinout);
+        
+    DGLU_API extern const char dg_lershiftclstringnname[];
+    DGLU_API void dg_lershiftclstringn (
+        Bufferhandle* pBHarrayhead,
+        UINT64 offsetbufferid,
+        UINT64 stringbufferid,
+        UINT64 stringid,
+        UINT64* pcarryinout);
+        
+    DGLU_API extern const char dg_partialulemulu64tolstringnname[];
+    DGLU_API void dg_partialulemulu64tolstringn (
+        Bufferhandle* pBHarrayhead,
+        UINT64 offsetbufferida,
+        UINT64 stringbufferida,
+        UINT64 stringida,
+        UINT64 offsetbufferidb,
+        UINT64 stringbufferidb,
+        UINT64 stringidb,
+        UINT64* px);
+        
+    DGLU_API extern const char dg_ulemulu64tolstringnname[];
+    DGLU_API void dg_ulemulu64tolstringn (
+        Bufferhandle* pBHarrayhead,
+        UINT64 offsetbufferida,
+        UINT64 stringbufferida,
+        UINT64 stringida,
+        UINT64 offsetbufferidb,
+        UINT64 stringbufferidb,
+        UINT64 stringidb,
+        UINT64 x);
+        
+    DGLU_API extern const char dg_notlstringnname[];
+    DGLU_API void dg_notlstringn (
+        Bufferhandle* pBHarrayhead,
+        UINT64 offsetbufferid,
+        UINT64 stringbufferid,
+        UINT64 stringid);
+        
+    DGLU_API extern const char dg_reverselstringnname[];
+    DGLU_API void dg_reverselstringn (
+        Bufferhandle* pBHarrayhead,
+        UINT64 offsetbufferid,
+        UINT64 stringbufferid,
+        UINT64 stringid);
+        
+    DGLU_API extern const char dg_uleandlstringntolstringnname[];
+    DGLU_API void dg_uleandlstringntolstringn (
+        Bufferhandle* pBHarrayhead,
+        UINT64 offsetbufferida,
+        UINT64 stringbufferida,
+        UINT64 stringida,
+        UINT64 offsetbufferidb,
+        UINT64 stringbufferidb,
+        UINT64 stringidb);
+        
+    DGLU_API extern const char dg_uleorlstringntolstringnname[];
+    DGLU_API void dg_uleorlstringntolstringn (
+        Bufferhandle* pBHarrayhead,
+        UINT64 offsetbufferida,
+        UINT64 stringbufferida,
+        UINT64 stringida,
+        UINT64 offsetbufferidb,
+        UINT64 stringbufferidb,
+        UINT64 stringidb);
+        
+    DGLU_API extern const char dg_ulexorlstringntolstringnname[];
+    DGLU_API void dg_ulexorlstringntolstringn (
+        Bufferhandle* pBHarrayhead,
+        UINT64 offsetbufferida,
+        UINT64 stringbufferida,
+        UINT64 stringida,
+        UINT64 offsetbufferidb,
+        UINT64 stringbufferidb,
+        UINT64 stringidb);
+        
+    DGLU_API extern const char dg_ulenandlstringntolstringnname[];
+    DGLU_API void dg_ulenandlstringntolstringn (
+        Bufferhandle* pBHarrayhead,
+        UINT64 offsetbufferida,
+        UINT64 stringbufferida,
+        UINT64 stringida,
+        UINT64 offsetbufferidb,
+        UINT64 stringbufferidb,
+        UINT64 stringidb);
+        
+    DGLU_API extern const char dg_ulenorlstringntolstringnname[];
+    DGLU_API void dg_ulenorlstringntolstringn (
+        Bufferhandle* pBHarrayhead,
+        UINT64 offsetbufferida,
+        UINT64 stringbufferida,
+        UINT64 stringida,
+        UINT64 offsetbufferidb,
+        UINT64 stringbufferidb,
+        UINT64 stringidb);
+        
+    DGLU_API extern const char dg_ulexnorlstringntolstringnname[];
+    DGLU_API void dg_ulexnorlstringntolstringn (
+        Bufferhandle* pBHarrayhead,
+        UINT64 offsetbufferida,
+        UINT64 stringbufferida,
+        UINT64 stringida,
+        UINT64 offsetbufferidb,
+        UINT64 stringbufferidb,
+        UINT64 stringidb);
+        
+    DGLU_API extern const char dg_mulu64bylstringnaddtolstringnname[];
+    DGLU_API void dg_mulu64bylstringnaddtolstringn (
+        Bufferhandle* pBHarrayhead,
+        UINT64 offsetbufferida,
+        UINT64 stringbufferida,
+        UINT64 stringida,
+        UINT64 offsetbufferidb,
+        UINT64 stringbufferidb,
+        UINT64 stringidb,
+        UINT64 u);
+        
+    DGLU_API extern const char dg_divlstringnbyu64name[];
+    DGLU_API void dg_divlstringnbyu64 (
+        Bufferhandle* pBHarrayhead,
+        UINT64 offsetbufferida,
+        UINT64 stringbufferida,
+        UINT64 stringida,
+        UINT64 u,
+        UINT64* premainder);
     
     // #define dg_packedlstringmagic (0x6b636170)
 	
     
+    // ///////////////////////////
+    // C Lstring Queue Routines //
+    // ///////////////////////////
+    
+    DGLU_API extern const char* dg_initlstringqueuename;
+
+    DGLU_API void dg_initlstringqueue (
+        Bufferhandle *pBHarrayhead,
+        UINT64 growby,
+        UINT64 maxsize,
+        UINT64 switchlength,
+        Lstringqueueheader* pLstringqueueheader);
+      
+        
+    DGLU_API extern const char* dg_pushlstringqueueheadname;
+
+    DGLU_API void dg_pushlstringqueuehead (
+        Bufferhandle* pBHarrayhead,
+        Lstringqueueheader* pLstringqueueheader,
+        unsigned char* pstring,
+        UINT64 stringlength);
+        
+        
+    DGLU_API extern const char* dg_poplstringqueuetailname;
+
+    DGLU_API unsigned char* dg_poplstringqueuetail (
+        Bufferhandle* pBHarrayhead,
+        Lstringqueueheader* pLstringqueueheader,
+        UINT64* pstringlength);
+    
+    DGLU_API extern const char* dg_getslstringqueuetailname;
+
+    DGLU_API unsigned char* dg_getslstringqueuetail (
+        Bufferhandle* pBHarrayhead,
+        Lstringqueueheader* pLstringqueueheader,
+        UINT64 lstringqueheaderlength,
+        UINT64* pstringlength);
+        
+    DGLU_API extern const char* dg_newsharedlstringqueuename;
+
+    DGLU_API UINT64 dg_newsharedlstringqueue(
+        Bufferhandle* pBHarrayhead,
+        UINT64 growby,       
+        UINT64 maxsize,      
+        UINT64 switchlength); 
+        
+    DGLU_API extern const char* dg_freesharedlstringqueuename;
+
+    DGLU_API void dg_freesharedlstringqueue(
+        Bufferhandle* pBHarrayhead,
+        UINT64 SharedQueueHandleBufferID);
+        
+    DGLU_API extern const char* dg_droplstringqueuetailname;
+
+    DGLU_API void dg_droplstringqueuetail (
+        Bufferhandle* pBHarrayhead,
+        Lstringqueueheader* pLstringqueueheader,
+        UINT64 lstringqueheaderlength);
+        
+    DGLU_API extern const char* dg_pushsharedlstringqueuename;
+
+    DGLU_API void dg_pushsharedlstringqueue(
+        Bufferhandle* pBHarrayhead,
+        SharedQueueHandleBufferStructs* psharedqueuebuffer, // has to be the pointer
+        UINT64 sharedquebufferlength,                       // making them pass the length too
+        unsigned char* pstring,
+        UINT64 stringlength);
+        
+    DGLU_API extern const char* dg_lockpopsharedlstringqueuetailname;
+
+    DGLU_API unsigned char* dg_lockpopsharedlstringqueuetail (
+        Bufferhandle* pBHarrayhead,
+        SharedQueueHandleBufferStructs* psharedqueuebuffer, 
+        UINT64 sharedquebufferlength,
+        UINT64* pstringlength);
+        
+    DGLU_API extern const char* dg_locksharedlstringqueuename;
+
+    DGLU_API void dg_locksharedlstringqueue(
+        Bufferhandle* pBHarrayhead,
+        SharedQueueHandleBufferStructs* psharedqueuebuffer, 
+        UINT64 sharedquebufferlength);
+        
+    DGLU_API extern const char* dg_unlocksharedlstringqueuename;
+
+    DGLU_API void dg_unlocksharedlstringqueue(
+        Bufferhandle* pBHarrayhead,
+        SharedQueueHandleBufferStructs* psharedqueuebuffer, 
+        UINT64 sharedquebufferlength);
     
 	// ///////////////////////
 	// C Wordlist Routines  //
@@ -5648,6 +6407,12 @@ extern "C" {
     
     DGLU_API void dg_forthbrackettoorderconstant (Bufferhandle* pBHarrayhead);
     
+    
+    DGLU_API void dg_forthwordlistdot(Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthcreatebracketwordlistdot(Bufferhandle* pBHarrayhead);
+    
      	
 	// /////////////////////////////////
 	// End of FORTH Definition Words  //
@@ -5703,6 +6468,21 @@ extern "C" {
     
     
     DGLU_API void dg_forthsizedconstantscurly (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthenumcurly (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthlocalenumcurly (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthbracketlocalenumcurly (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthtypedenumcurly (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthtypedlocalenumcurly (Bufferhandle* pBHarrayhead);
 	
 	
 	// //////////////////////
@@ -6067,6 +6847,35 @@ extern "C" {
 
     DGLU_API void dg_forthunpacklstring(Bufferhandle* pBHarrayhead);
     
+    
+    DGLU_API void dg_forthnotlstringn(Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthu8reverselstringn(Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthuleextendlstringntol(Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthuleandlstringntolstringn (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthuleorlstringntolstringn (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthulexorlstringntolstringn (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthulenandlstringntolstringn (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthulenorlstringntolstringn (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthulexnorlstringntolstringn (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthuleaddlstringntolstringn (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthuleadclstringntolstringn (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthulesbblstringntolstringn (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthlelshiftlstringn (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthulershiftlstringn (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthslershiftlstringn (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthlelshiftclstringn (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthlershiftclstringn (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthu64starlstringnplustolstringn (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthtoslashulelstringn (Bufferhandle* pBHarrayhead);
+    
 
     DGLU_API void dg_forthgetargsfromnstrings(Bufferhandle* pBHarrayhead);
     
@@ -6271,6 +7080,8 @@ extern "C" {
     DGLU_API void dg_forthdocompiletypedpushbracketrbpplusn(Bufferhandle* pBHarrayhead);
     
     DGLU_API void dg_forthdocompiletypebrackettoorder(Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthdocompiletypebracketwordlistdot(Bufferhandle* pBHarrayhead);
     
 	
 	// ////////////////////////////
@@ -6493,10 +7304,29 @@ extern "C" {
     
     DGLU_API void dg_forthwords0stringquotes (Bufferhandle* pBHarrayhead );
     
+    DGLU_API void dg_forthumulleutostring(Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthtostarulestring(Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthtoslashulestring(Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthreversestring(Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthnotstring(Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthuleandstring(Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthuleorstring(Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthulexorstring(Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthulenandstring(Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthulenorstring(Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthulexnorstring(Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthlelshiftstring(Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthulershiftstring(Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthslershiftstring(Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthlelshiftcstring(Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthlershiftcstring(Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthulestringtonumberstring(Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthtofactorialulestring(Bufferhandle* pBHarrayhead);
     
-	///////////////////////////////
-	// End of string stack words //
-	///////////////////////////////
+    
+	// /////////////////////////////
+	//  End of string stack words //
+	// /////////////////////////////
 	
 	
 	DGLU_API UINT64 dg_chartodigit (unsigned char c);
@@ -7088,6 +7918,22 @@ extern "C" {
     DGLU_API void dg_forthehnewelementtoeh(Bufferhandle* pBHarrayhead);
     
     DGLU_API void dg_forthehoherewtonewelement(Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthehdot(Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthehbracketnddot(Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthehbracket1ddot(Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthsymbolenumcurly (Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthosymbolcodeimportscommacurly(Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthnewflatosymbolbuf(Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthfreeflatosymbolbuf(Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthosymbolimport(Bufferhandle* pBHarrayhead);
  
     
     struct CompareNameData {
@@ -7197,7 +8043,7 @@ extern "C" {
 
     DGLU_API Premadeword* dg_getppresortederrorwords ();
 
-    DGLU_API Premadeword* dg_getppresortedbufferwords ();
+    DGLU_API Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead);
 
     DGLU_API Premadeword* dg_getppresortedoswords ();
     
@@ -7241,6 +8087,15 @@ extern "C" {
 #define dg_isymmreg                      ((UINT64)-17)
 #define dg_isthreebytevex                ((UINT64)-18)
 #define dg_isbasescalevindexdisplacement ((UINT64)-19) // technically [R+YMMR*I+N]
+#define dg_isparamusingframe             ((UINT64)-20)
+#define dg_isparamusingnoframe           ((UINT64)-21)
+#define dg_isdgluforthframelocal         ((UINT64)-22) // technically [RBP+8*(N+2)]
+#define dg_istointsubparam               ((UINT64)-23) // for setting up params for subroutine call
+#define dg_istofloatsubparam             ((UINT64)-24) // for setting up params for subroutine call
+#define dg_istointfloatsubparam          ((UINT64)-25) // for setting up params for subroutine call
+#define dg_isfromintsubparam             ((UINT64)-26) // for unloading return params after subroutine call
+#define dg_isfromfloatsubparam           ((UINT64)-27) // for unloading return params after subroutine call
+
 
 #define dg_memmodeimmediate    (0)
 #define dg_memmodedefaultreg   (1)
@@ -7796,6 +8651,16 @@ DGLU_API void dg_compiletwotargets (
     struct dg_Sibformatter* pfirsttarget, 
     struct dg_Sibformatter* psecondtarget);
     
+DGLU_API extern const char* dg_determineparameterregistername;
+DGLU_API UINT64 dg_determineparameterregister (
+    Bufferhandle* pBHarrayhead,
+    UINT64 parameterindex);
+    
+DGLU_API extern const char* dg_determineparameterregisternoframename;
+DGLU_API UINT64 dg_determineparameterregisternoframe (
+    Bufferhandle* pBHarrayhead,
+    UINT64 parameterindex);
+    
     
 // DGLU_API void dg_initcpux86wordlist (
 //    Bufferhandle* pBHarrayhead);
@@ -7846,6 +8711,12 @@ DGLU_API unsigned char* dg_parsewords(
     unsigned char enddelimiter,
     UINT64* pfoundendflag,
     UINT64 lineterminatorsareendflag);
+    
+DGLU_API extern const char dg_noparseentercurrentlinename[];
+DGLU_API unsigned char* dg_noparseentirecurrentline(
+    Bufferhandle* pBHarrayhead,
+    UINT64* plinelength,
+    UINT64 bufferid);
 
 DGLU_API extern const char* dg_addnamedbuffername;
 DGLU_API extern const char* dg_namedbuffervaluename;
@@ -8183,6 +9054,10 @@ DGLU_API void dg_forthnamedbufstrtop (Bufferhandle* pBHarrayhead);
 
 DGLU_API void dg_forthhsymbolstrto (Bufferhandle* pBHarrayhead);
 
+DGLU_API void dg_forthdashto (Bufferhandle* pBHarrayhead);
+
+// DGLU_API void dg_forthlibdashto (Bufferhandle* pBHarrayhead);
+
 DGLU_API extern const char dg_forthshowbuffersname[];
 DGLU_API void dg_forthshowbuffers(Bufferhandle* pBHarrayhead);
 
@@ -8208,6 +9083,12 @@ DGLU_API  void dg_nglufile (
     Bufferhandle* pBHarrayhead,
     unsigned char* pfilename,
     UINT64 filenamelength);
+
+DGLU_API extern const char* dg_compileosymbolimportstuffname;
+UINT64 dg_compileosymbolimportstuff(Bufferhandle* pBHarrayhead);
+
+DGLU_API extern const char* dg_compilecodelinkname;
+UINT64 dg_compilecodelink(Bufferhandle* pBHarrayhead);
 
 // winspecific stuff
 #ifdef DGLU_OS_WIN64

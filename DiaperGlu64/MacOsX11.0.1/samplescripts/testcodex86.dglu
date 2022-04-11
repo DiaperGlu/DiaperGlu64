@@ -1,21 +1,21 @@
 ( //////////////////////////////////////////////////////////////////////////////////////// )
 ( //                                                                                       )
-( //    Copyright 2021 James Patrick Norris                                                )
+( //    Copyright 2022 James Patrick Norris                                                )
 ( //                                                                                       )
-( //    This file is part of Diaperglu 5.0.                                                )
+( //    This file is part of Diaperglu 5.2.                                                )
 ( //                                                                                       )
-( //    Diaperglu 5.0 is free software; you can redistribute it and/or modify              )
+( //    Diaperglu 5.2 is free software; you can redistribute it and/or modify              )
 ( //    it under the terms of the GNU General Public License as published by               )
 ( //    the Free Software Foundation; either version 2 of the License, or                  )
 ( //    {at your option} any later version.                                                )
 ( //                                                                                       )
-( //    Diaperglu 5.0 is distributed in the hope that it will be useful,                   )
+( //    Diaperglu 5.2 is distributed in the hope that it will be useful,                   )
 ( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
 ( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
 ( //    GNU General Public License for more details.                                       )
 ( //                                                                                       )
 ( //    You should have received a copy of the GNU General Public License                  )
-( //    along with Diaperglu 5.0; if not, write to the Free Software                       )
+( //    along with Diaperglu 5.2; if not, write to the Free Software                       )
 ( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
 ( //                                                                                       )
 ( //////////////////////////////////////////////////////////////////////////////////////// )
@@ -23,8 +23,8 @@
 ( /////////////////////////////// )
 ( // James Patrick Norris      // )
 ( // www.rainbarrel.com        // )
-( // January 9, 2021           // )
-( // version 5.0               // )
+( // April 11, 2022            // )
+( // version 5.2               // )
 ( /////////////////////////////// )
 
 
@@ -20231,6 +20231,190 @@ END-CODE
 test20nrdishr
 
 // ' TEST20NRDISHR >BODY HEX 20 DUMP
+
+CODE TEST[R][R]MOV,
+    RDI PUSH,
+    RSP RDX MOV,
+    RSI PUSH,
+    RSP RCX MOV,
+    RDX [R]  RCX [R]  MOV,
+    RAX POP,  RDI POP,
+    RET,
+END-CODE
+
+
+: test[r][r]mov, ( -- )
+    ." testing RDX [R] RCX [R] MOV,"
+    1112131415161718 1 ['] TEST[R][R]MOV, >BODY CALLPROC VARZ !
+
+    CR
+    VARZ @ 1112131415161718 =
+    IF
+      ."  SUCCESS! correct result "
+    ELSE
+      ."  FAIL! Expected result = " 1112131415161718 U. 
+      ." , got " VARZ @ U.
+    THEN
+
+    CR
+;
+
+test[r][r]mov,
+
+
+CODE TEST[R+N][R+N]MOV,
+    RDI PUSH,
+    RSI PUSH,
+    RSP RDX MOV,
+    RSI PUSH,
+    RSP RCX MOV,
+    RDX 8 [R+N]  RCX 8 [R+N]  MOV,
+    RDI POP,  RAX POP,  RSI POP,
+    RET,
+END-CODE
+
+
+: test[r+n][r+n]mov, ( -- )
+    ." testing RDX 8 [R+N] RCX 8 [R+N] MOV,"
+    1112131415161718 1 ['] TEST[R+N][R+N]MOV, >BODY CALLPROC VARZ !
+
+    CR
+    VARZ @ 1112131415161718 =
+    IF
+      ."  SUCCESS! correct result "
+    ELSE
+      ."  FAIL! Expected result = " 1112131415161718 U. 
+      ." , got " VARZ @ U.
+    THEN
+
+    CR
+;
+
+test[r+n][r+n]mov,
+
+
+CODE TEST[R][R]MOVQ,
+    RDI PUSH,
+    RSP RDX MOV,
+    RSI PUSH,
+    RSP RCX MOV,
+    RDX [R]  RCX [R]  MOVQ,
+    RAX POP,  RDI POP,
+    RET,
+END-CODE
+
+
+: test[r][r]movq, ( -- )
+    ." testing RDX [R] RCX [R] MOVQ,"
+    1112131415161718 1 ['] TEST[R][R]MOVQ, >BODY CALLPROC VARZ !
+
+    CR
+    VARZ @ 1112131415161718 =
+    IF
+      ."  SUCCESS! correct result "
+    ELSE
+      ."  FAIL! Expected result = " 1112131415161718 U. 
+      ." , got " VARZ @ U.
+    THEN
+
+    CR
+;
+
+test[r][r]movq,
+
+
+CODE TEST[R]8BIT[R]MOV,
+    RDI PUSH,
+    RSP RDX MOV,
+    RSI RSI XOR,
+    RSI PUSH,
+    RSP RCX MOV,
+    RDX [R]  RCX [R]  8BIT  MOV,
+    RAX POP,  RDI POP,
+    RET,
+END-CODE
+
+
+: test[r][r]8bitmov, ( -- )
+    ." testing RDX [R] RCX [R] 8BIT MOV,"
+    1112131415161718 1 ['] TEST[R]8BIT[R]MOV, >BODY CALLPROC VARZ !
+
+    CR
+    VARZ @ 18 =
+    IF
+      ."  SUCCESS! correct result "
+    ELSE
+      ."  FAIL! Expected result = " 18 U. 
+      ." , got " VARZ @ U.
+    THEN
+
+    CR
+;
+
+test[r][r]8bitmov,
+
+
+CODE TEST[R]16BIT[R]MOV,
+    RDI PUSH,
+    RSP RDX MOV,
+    RSI RSI XOR,
+    RSI PUSH,
+    RSP RCX MOV,
+    RDX [R]  RCX [R]  16BIT  MOV,
+    RAX POP,  RDI POP,
+    RET,
+END-CODE
+
+
+: test[r][r]16bitmov, ( -- )
+    ." testing RDX [R] RCX [R] 16BIT MOV,"
+    1112131415161718 1 ['] TEST[R]16BIT[R]MOV, >BODY CALLPROC VARZ !
+
+    CR
+    VARZ @ 1718 =
+    IF
+      ."  SUCCESS! correct result "
+    ELSE
+      ."  FAIL! Expected result = " 1718 U. 
+      ." , got " VARZ @ U.
+    THEN
+
+    CR
+;
+
+test[r][r]16bitmov,
+
+
+
+CODE TEST[R]32BIT[R]MOV,
+    RDI PUSH,
+    RSP RDX MOV,
+    RSI RSI XOR,
+    RSI PUSH,
+    RSP RCX MOV,
+    RDX [R]  RCX [R]  32BIT  MOV,
+    RAX POP,  RDI POP,
+    RET,
+END-CODE
+
+
+: test[r][r]32bitmov, ( -- )
+    ." testing RDX [R] RCX [R] 32BIT MOV,"
+    1112131415161718 1 ['] TEST[R]32BIT[R]MOV, >BODY CALLPROC VARZ !
+
+    CR
+    VARZ @ 15161718 =
+    IF
+      ."  SUCCESS! correct result "
+    ELSE
+      ."  FAIL! Expected result = " 15161718 U. 
+      ." , got " VARZ @ U.
+    THEN
+
+    CR
+;
+
+test[r][r]32bitmov,
 
 
 CR ." ***********"

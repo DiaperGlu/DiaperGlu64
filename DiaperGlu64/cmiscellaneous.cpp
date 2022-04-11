@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 
 
@@ -36,7 +36,7 @@ FLOAT64 dg_testreturndfp () {
   
 const char* dg_evaluatebuffername = "dg_evaluatebuffer";
 
-void dg_evaluatebuffer (
+void dg_evaluatebuffersub (
     Bufferhandle* pBHarrayhead,
     UINT64 bufferid)
 {
@@ -59,7 +59,8 @@ void dg_evaluatebuffer (
 	UINT64 base;
 
 	UINT64 u;
-    FLOAT64 fnumber;   
+    FLOAT64 fnumber; 
+    UINT64 x;  
 
 
 	Bufferhandle* pBH;
@@ -170,11 +171,8 @@ void dg_evaluatebuffer (
                     pBHarrayhead,
                     definition);
 				
-				if (dg_geterrorcount(pBHarrayhead) != olderrorcount) // could use > ...
+				if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
 				{
-				//	dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
-					// not pushing an error here because it's redundant and messes up dg_clearerrors.
-					// but I still want to exit from processing the buffer
 					return;
 				}
 
@@ -405,6 +403,62 @@ void dg_evaluatebuffer (
 }
 
 
+void dg_evaluatebuffer (
+    Bufferhandle* pBHarrayhead,
+    UINT64 bufferid)
+{
+    unsigned char* perrorline;
+    UINT64 errorlinelength;
+    
+    const char* pError;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    dg_evaluatebuffersub(
+        pBHarrayhead,
+        bufferid);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        if (0 == olderrorcount)
+        {
+            // seeing if the buffer was freed before I try to capture the error line 
+            pError = dg_checkbuffer (
+                pBHarrayhead,
+                bufferid);
+                    
+            if (dg_success == pError)
+            {
+                // only capturing the line if one wasn't already captured
+                //  since the last time the errors were cleared using EES
+                if (0 == dg_getbufferlength (
+                    pBHarrayhead,
+                    DG_ERRORLINE_BUFFERID))
+                {
+                    perrorline = dg_noparseentirecurrentline(
+                        pBHarrayhead,
+                        &errorlinelength,
+                        bufferid);
+                            
+                    dg_pushbuffersegment (
+                        pBHarrayhead,
+                        DG_ERRORLINE_BUFFERID,
+                        errorlinelength,
+                        perrorline);
+                        
+                    // not checking errors on purpose
+                }
+            }
+        }
+    }
+}
+
+
 ///////////////////////
 // 
 // dg_getevalpathtranslatedfileid
@@ -589,6 +643,10 @@ void dg_evaluatefileid (
     UINT64 myeof;
     UINT64 isglulistflag;
     UINT64 hlistid;
+    const char* pError;
+    
+    unsigned char* perrorline;
+    UINT64 errorlinelength;
 
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
@@ -756,7 +814,7 @@ void dg_evaluatefileid (
 		dg_evaluatebuffer(
             pBHarrayhead,
             bufferid);
-
+        
 		dg_freebuffer(
             pBHarrayhead,
             bufferid);
@@ -1217,6 +1275,9 @@ void dg_showerrorspage (Bufferhandle* pBHarrayhead)
         // not a cgi script 
         dg_printzerostring(pBHarrayhead, (unsigned char*)"\r\nErrors:\r\n");
         dg_forthdoterrors(pBHarrayhead);
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"\r\n\r\n");
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"The line that probably caused the errors:\r\n");
+        dg_forthdoterrorline(pBHarrayhead);
         dg_printzerostring(pBHarrayhead, (unsigned char*)"\r\n\r\n");
 
         //dg_printzerostring(pBHarrayhead, (unsigned char*)"<br>Last name created: ");

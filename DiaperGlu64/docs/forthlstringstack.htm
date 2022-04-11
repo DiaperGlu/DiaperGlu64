@@ -1,22 +1,22 @@
 <!--
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 -->
 
@@ -94,6 +94,25 @@
       <a href=forthlstringstack.htm#dg_forthfreefreeablelstringarray >dg_forthfreefreeablelstringarray</a>
       <a href=forthlstringstack.htm#dg_forthpacklstring        >dg_forthpacklstring</a>
       <a href=forthlstringstack.htm#dg_forthunpacklstring      >dg_forthunpacklstring</a>
+      <a href=forthlstringstack.htm#dg_forthnotlstringn                   >dg_forthnotlstringn</a>
+      <a href=forthlstringstack.htm#dg_forthu8reverselstringn             >dg_forthu8reverselstringn</a>
+      <a href=forthlstringstack.htm#dg_forthuleadclstringntolstringn  >dg_forthuleadclstringntolstringn</a>
+      <a href=forthlstringstack.htm#dg_forthuleaddlstringntolstringn  >dg_forthuleaddlstringntolstringn</a>
+      <a href=forthlstringstack.htm#dg_forthulesbblstringntolstringn  >dg_forthulesbblstringntolstringn</a>
+      <a href=forthlstringstack.htm#dg_forthuleandlstringntolstringn  >dg_forthuleandlstringntolstringn</a>
+      <a href=forthlstringstack.htm#dg_forthuleorlstringntolstringn   >dg_forthuleorlstringntolstringn</a>
+      <a href=forthlstringstack.htm#dg_forthulexorlstringntolstringn  >dg_forthulexorlstringntolstringn</a>
+      <a href=forthlstringstack.htm#dg_forthulenandlstringntolstringn >dg_forthulenandlstringntolstringn</a>
+      <a href=forthlstringstack.htm#dg_forthulenorlstringntolstringn  >dg_forthulenorlstringntolstringnn/a>
+      <a href=forthlstringstack.htm#dg_forthulexnorlstringntolstringn >dg_forthulexnorlstringntolstringn</a>
+      <a href=forthlstringstack.htm#dg_forthlelshiftlstringn          >dg_forthlelshiftlstringnn</a>
+      <a href=forthlstringstack.htm#dg_forthulershiftlstringn         >dg_forthulershiftlstringn</a>
+      <a href=forthlstringstack.htm#dg_forthslershiftlstringn         >dg_forthslershiftlstringn</a>
+      <a href=forthlstringstack.htm#dg_forthlelshiftclstringn         >dg_forthlelshiftclstringn</a>
+      <a href=forthlstringstack.htm#dg_forthlershiftclstringn         >dg_forthlershiftclstringn</a>
+      <a href=forthlstringstack.htm#dg_forthu64starlstringnplustolstringn >dg_forthu64starlstringnplustolstringn</a>
+      <a href=forthlstringstack.htm#dg_forthtoslashulelstringn            >dg_forthtoslashulelstringn</a>
+      
       
     </div>
 
@@ -1500,7 +1519,1086 @@
 </pre>
       </div>
       
+
+      <div class=word id=dg_forthnotlstringn>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthnotlstringn ( NOTL$[N] )
+//
+// C prototype:
+//  void dg_forthnotlstringn (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array
+//                                   where the other bufferhandles are stored.
+//
+// Outputs:
+//   none
+//
+// Stack action shorthand:
+//  ( lstringindex lstringoffsetbufferid lstringstringbufferid -- )
+//
+// Data stack in:
+//  lstringstackstringbufferid    buffer id of buffer containing string characters
+//
+// Data stack out:
+//  lstringstackoffsetbufferid    buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+// Action:
+//   Pops the lstring index, offset buffer id, and string buffer id off the 
+//    data stack.
+//   Then logically inverts all the bytes in the lstring. This means all the bits
+//    in the string are flipped.
+//
+// Failure cases:
+//   Not enough elements on the data stack.
+//   Not enough strings in the lstring array.
+//   Error inverting the bytes in the lstring.
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
       
+
+      <div class=word id=dg_forthu8reverselstringn>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthu8reverselstringn ( U8REVERSEL$[N] )
+//
+// C prototype:
+//  void dg_forthu8reverselstringn (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array
+//                                   where the other bufferhandles are stored.
+//
+// Outputs:
+//   none
+//
+// Stack action shorthand:
+//  ( lstringindex lstringoffsetbufferid lstringstringbufferid -- )
+//
+// Data stack in:
+//  lstringstackstringbufferid    buffer id of buffer containing string characters
+//
+// Data stack out:
+//  lstringstackoffsetbufferid    buffer id of buffer containing string start
+//                                 offsets
+//                                 (this is really an array of end offsets+1)
+//
+// Action:
+//   Pops the lstring index, offset buffer id, and string buffer id off the 
+//    data stack.
+//   Then reverses the order of all the bytes in the string.
+//
+// Failure cases:
+//   Not enough elements on the data stack.
+//   Not enough strings in the lstring array.
+//   Error inverting the bytes in the lstring.
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+     <div class=word id=dg_forthuleadclstringntolstringn>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthuleadclstringntolstringn ( ULEADCL$[N]&gt;L$[N] )
+//
+// C prototype:
+//  void dg_forthuleadclstringntolstringn (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array
+//                                   where the other bufferhandles are stored.
+//
+// Outputs:
+//   none
+//
+// Stack action shorthand:
+//  ( carryin lstringindexa lstringoffsetbufferida lstringstringbufferida 
+//     lstringindexb lstringoffsetbufferidb lstringstringbufferidb -- carryout )
+//
+// Data stack in:
+//  carryin                       if 1, 1 is added to the result
+//                                if 0, nothing is added to the result
+//                                if other than 0 or 1, only the lowest bit is used
+//
+//  lstringindexa                 index of the source lstring in the lstring array
+//
+//  lstringstackoffsetbufferida   buffer id of buffer containing source string 
+//                                 start offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferida   buffer id of buffer containing source string 
+//                                 bytes
+//
+//  lstringindexb                 index of the destination lstring in the lstring 
+//                                 array
+//
+//  lstringstackoffsetbufferidb   buffer id of buffer containing destination string 
+//                                 start offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferidb   buffer id of buffer containing destination string
+//                                 bytes
+//
+// Data stack out:
+//  carryout                      0 = no carry out, 1 = carry out
+//
+// Action:
+//   Pops carryin off the data stack.
+//   Pops source lstring index, offset buffer id, and string buffer id off the 
+//    data stack.
+//   Pops destination lstring index, offset buffer id, and string buffer id off 
+//    the data stack.
+//   If one lstring is shorter than the other lstring, it is treated as an unsigned
+//    little endian integer and extended to the length of the other lstring. (This
+//    means 0s are appended to the end of the shorter string to make it the same
+//    length as the longer string.)
+//   Then the source string is added to the destination string. If the lowest bit
+//    of carryin is 1, then 1 is also added to the result.
+//   Then the carryout is pushed to the data stack. 0 = no carry out, 1 = carry out.
+//
+// Failure cases:
+//   Not enough elements on the data stack.
+//   Not enough strings in the lstring array.
+//   Error adcing the bytes in the lstrings.
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+     <div class=word id=dg_forthuleaddlstringntolstringn>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthuleaddlstringntolstringn ( ULEADDL$[N]&gt;L$[N] )
+//
+// C prototype:
+//  void dg_forthuleaddlstringntolstringn (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array
+//                                   where the other bufferhandles are stored.
+//
+// Outputs:
+//   none
+//
+// Stack action shorthand:
+//  ( lstringindexa lstringoffsetbufferida lstringstringbufferida 
+//     lstringindexb lstringoffsetbufferidb lstringstringbufferidb -- carryout )
+//
+// Data stack in:
+//  lstringindexa                 index of the source lstring in the lstring array
+//
+//  lstringstackoffsetbufferida   buffer id of buffer containing source string 
+//                                 start offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferida   buffer id of buffer containing source string 
+//                                 bytes
+//
+//  lstringindexb                 index of the destination lstring in the lstring 
+//                                 array
+//
+//  lstringstackoffsetbufferidb   buffer id of buffer containing destination string 
+//                                 start offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferidb   buffer id of buffer containing destination string
+//                                 bytes
+//
+// Data stack out:
+//  carryout                      0 = no carry out, 1 = carry out
+//
+// Action:
+//   Pops source lstring index, offset buffer id, and string buffer id off the 
+//    data stack.
+//   Pops destination lstring index, offset buffer id, and string buffer id off 
+//    the data stack.
+//   If one lstring is shorter than the other lstring, it is treated as an unsigned
+//    little endian integer and extended to the length of the other lstring. (This
+//    means 0s are appended to the end of the shorter string to make it the same
+//    length as the longer string.)
+//   Then the source string is added to the destination string. 
+//   Then the carryout is pushed to the data stack. 0 = no carry out, 1 = carry out.
+//
+// Failure cases:
+//   Not enough elements on the data stack.
+//   Not enough strings in the lstring array.
+//   Error adding the bytes in the lstrings.
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+     <div class=word id=dg_forthulesbblstringntolstringn>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthulesbblstringntolstringn ( ULESBBL$[N]&gt;L$[N] )
+//
+// C prototype:
+//  void dg_forthulesbblstringntolstringn (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array
+//                                   where the other bufferhandles are stored.
+//
+// Outputs:
+//   none
+//
+// Stack action shorthand:
+//  ( borrowin lstringindexa lstringoffsetbufferida lstringstringbufferida 
+//     lstringindexb lstringoffsetbufferidb lstringstringbufferidb -- borrowout )
+//
+// Data stack in:
+//  borrowin                      if 1, 1 is subtracted from the result
+//                                if 0, nothing is subtracted from the result
+//                                if other than 0 or 1, only the lowest bit is used
+//
+//  lstringindexa                 index of the source lstring in the lstring array
+//
+//  lstringstackoffsetbufferida   buffer id of buffer containing source string 
+//                                 start offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferida   buffer id of buffer containing source string 
+//                                 bytes
+//
+//  lstringindexb                 index of the destination lstring in the lstring 
+//                                 array
+//
+//  lstringstackoffsetbufferidb   buffer id of buffer containing destination string 
+//                                 start offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferidb   buffer id of buffer containing destination string
+//                                 bytes
+//
+// Data stack out:
+//  borrowout                     0 = no borrow out, 1 = borrow out
+//
+// Action:
+//   Pops borrowout off the data stack.
+//   Pops source lstring index, offset buffer id, and string buffer id off the 
+//    data stack.
+//   Pops destination lstring index, offset buffer id, and string buffer id off 
+//    the data stack.
+//   If one lstring is shorter than the other lstring, it is treated as an unsigned
+//    little endian integer and extended to the length of the other lstring. (This
+//    means 0s are appended to the end of the shorter string to make it the same
+//    length as the longer string.)
+//   Then the source string is subtracted from the destination string. If the lowest 
+//    bit of borrowin is 1, then 1 is also subtracted from the result.
+//   Then the borrowout is pushed to the data stack. 0 = no borrow out, 1 = borrow
+//    out.
+//
+// Failure cases:
+//   Not enough elements on the data stack.
+//   Not enough strings in the lstring array.
+//   Error sbbing the bytes in the lstrings.
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+     <div class=word id=dg_forthuleandlstringntolstringn>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthuleandlstringntolstringn ( ULEANDL$[N]&gt;L$[N] )
+//
+// C prototype:
+//  void dg_forthuleandlstringntolstringn (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array
+//                                   where the other bufferhandles are stored.
+//
+// Outputs:
+//   none
+//
+// Stack action shorthand:
+//  ( lstringindexa lstringoffsetbufferida lstringstringbufferida 
+//     lstringindexb lstringoffsetbufferidb lstringstringbufferidb -- )
+//
+// Data stack in:
+//  lstringindexa                 index of the source lstring in the lstring array
+//
+//  lstringstackoffsetbufferida   buffer id of buffer containing source string 
+//                                 start offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferida   buffer id of buffer containing source string 
+//                                 bytes
+//
+//  lstringindexb                 index of the destination lstring in the lstring 
+//                                 array
+//
+//  lstringstackoffsetbufferidb   buffer id of buffer containing destination string 
+//                                 start offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferidb   buffer id of buffer containing destination string
+//                                 bytes
+//
+//
+// Action:
+//   Pops source lstring index, offset buffer id, and string buffer id off the 
+//    data stack.
+//   Pops destination lstring index, offset buffer id, and string buffer id off 
+//    the data stack.
+//   If one lstring is shorter than the other lstring, it is treated as an unsigned
+//    little endian integer and extended to the length of the other lstring. (This
+//    means 0s are appended to the end of the shorter string to make it the same
+//    length as the longer string.)
+//   Then the source string is anded to the destination string. 
+//
+// Failure cases:
+//   Not enough elements on the data stack.
+//   Not enough strings in the lstring array.
+//   Error anding the bytes in the lstrings.
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_forthuleorlstringntolstringn>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthuleorlstringntolstringn ( ULEORL$[N]&gt;L$[N] )
+//
+// C prototype:
+//  void dg_forthuleorlstringntolstringn (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array
+//                                   where the other bufferhandles are stored.
+//
+// Outputs:
+//   none
+//
+// Stack action shorthand:
+//  ( lstringindexa lstringoffsetbufferida lstringstringbufferida 
+//     lstringindexb lstringoffsetbufferidb lstringstringbufferidb -- )
+//
+// Data stack in:
+//  lstringindexa                 index of the source lstring in the lstring array
+//
+//  lstringstackoffsetbufferida   buffer id of buffer containing source string 
+//                                 start offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferida   buffer id of buffer containing source string 
+//                                 bytes
+//
+//  lstringindexb                 index of the destination lstring in the lstring 
+//                                 array
+//
+//  lstringstackoffsetbufferidb   buffer id of buffer containing destination string 
+//                                 start offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferidb   buffer id of buffer containing destination string
+//                                 bytes
+//
+//
+// Action:
+//   Pops source lstring index, offset buffer id, and string buffer id off the 
+//    data stack.
+//   Pops destination lstring index, offset buffer id, and string buffer id off 
+//    the data stack.
+//   If one lstring is shorter than the other lstring, it is treated as an unsigned
+//    little endian integer and extended to the length of the other lstring. (This
+//    means 0s are appended to the end of the shorter string to make it the same
+//    length as the longer string.)
+//   Then the source string is ored to the destination string. 
+//
+// Failure cases:
+//   Not enough elements on the data stack.
+//   Not enough strings in the lstring array.
+//   Error oring the bytes in the lstrings.
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_forthulexorlstringntolstringn>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthulexorlstringntolstringn ( ULEXORL$[N]&gt;L$[N] )
+//
+// C prototype:
+//  void dg_forthulexorlstringntolstringn (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array
+//                                   where the other bufferhandles are stored.
+//
+// Outputs:
+//   none
+//
+// Stack action shorthand:
+//  ( lstringindexa lstringoffsetbufferida lstringstringbufferida 
+//     lstringindexb lstringoffsetbufferidb lstringstringbufferidb -- )
+//
+// Data stack in:
+//  lstringindexa                 index of the source lstring in the lstring array
+//
+//  lstringstackoffsetbufferida   buffer id of buffer containing source string 
+//                                 start offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferida   buffer id of buffer containing source string 
+//                                 bytes
+//
+//  lstringindexb                 index of the destination lstring in the lstring 
+//                                 array
+//
+//  lstringstackoffsetbufferidb   buffer id of buffer containing destination string 
+//                                 start offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferidb   buffer id of buffer containing destination string
+//                                 bytes
+//
+//
+// Action:
+//   Pops source lstring index, offset buffer id, and string buffer id off the 
+//    data stack.
+//   Pops destination lstring index, offset buffer id, and string buffer id off 
+//    the data stack.
+//   If one lstring is shorter than the other lstring, it is treated as an unsigned
+//    little endian integer and extended to the length of the other lstring. (This
+//    means 0s are appended to the end of the shorter string to make it the same
+//    length as the longer string.)
+//   Then the source string is xored to the destination string. 
+//
+// Failure cases:
+//   Not enough elements on the data stack.
+//   Not enough strings in the lstring array.
+//   Error xoring the bytes in the lstrings.
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+     <div class=word id=dg_forthulenandlstringntolstringn>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthulenandlstringntolstringn ( ULENANDL$[N]&gt;L$[N] )
+//
+// C prototype:
+//  void dg_forthulenandlstringntolstringn (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array
+//                                   where the other bufferhandles are stored.
+//
+// Outputs:
+//   none
+//
+// Stack action shorthand:
+//  ( lstringindexa lstringoffsetbufferida lstringstringbufferida 
+//     lstringindexb lstringoffsetbufferidb lstringstringbufferidb -- )
+//
+// Data stack in:
+//  lstringindexa                 index of the source lstring in the lstring array
+//
+//  lstringstackoffsetbufferida   buffer id of buffer containing source string 
+//                                 start offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferida   buffer id of buffer containing source string 
+//                                 bytes
+//
+//  lstringindexb                 index of the destination lstring in the lstring 
+//                                 array
+//
+//  lstringstackoffsetbufferidb   buffer id of buffer containing destination string 
+//                                 start offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferidb   buffer id of buffer containing destination string
+//                                 bytes
+//
+//
+// Action:
+//   Pops source lstring index, offset buffer id, and string buffer id off the 
+//    data stack.
+//   Pops destination lstring index, offset buffer id, and string buffer id off 
+//    the data stack.
+//   If one lstring is shorter than the other lstring, it is treated as an unsigned
+//    little endian integer and extended to the length of the other lstring. (This
+//    means 0s are appended to the end of the shorter string to make it the same
+//    length as the longer string.)
+//   Then the source string is nanded to the destination string. 
+//
+// Failure cases:
+//   Not enough elements on the data stack.
+//   Not enough strings in the lstring array.
+//   Error nanding the bytes in the lstrings.
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_forthulenorlstringntolstringn>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthulenorlstringntolstringn ( ULENORL$[N]&gt;L$[N] )
+//
+// C prototype:
+//  void dg_forthulenorlstringntolstringn (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array
+//                                   where the other bufferhandles are stored.
+//
+// Outputs:
+//   none
+//
+// Stack action shorthand:
+//  ( lstringindexa lstringoffsetbufferida lstringstringbufferida 
+//     lstringindexb lstringoffsetbufferidb lstringstringbufferidb -- )
+//
+// Data stack in:
+//  lstringindexa                 index of the source lstring in the lstring array
+//
+//  lstringstackoffsetbufferida   buffer id of buffer containing source string 
+//                                 start offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferida   buffer id of buffer containing source string 
+//                                 bytes
+//
+//  lstringindexb                 index of the destination lstring in the lstring 
+//                                 array
+//
+//  lstringstackoffsetbufferidb   buffer id of buffer containing destination string 
+//                                 start offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferidb   buffer id of buffer containing destination string
+//                                 bytes
+//
+//
+// Action:
+//   Pops source lstring index, offset buffer id, and string buffer id off the 
+//    data stack.
+//   Pops destination lstring index, offset buffer id, and string buffer id off 
+//    the data stack.
+//   If one lstring is shorter than the other lstring, it is treated as an unsigned
+//    little endian integer and extended to the length of the other lstring. (This
+//    means 0s are appended to the end of the shorter string to make it the same
+//    length as the longer string.)
+//   Then the source string is nored to the destination string. 
+//
+// Failure cases:
+//   Not enough elements on the data stack.
+//   Not enough strings in the lstring array.
+//   Error noring the bytes in the lstrings.
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_forthulexnorlstringntolstringn>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthulexnorlstringntolstringn ( ULEXNORL$[N]&gt;L$[N] )
+//
+// C prototype:
+//  void dg_forthulexnorlstringntolstringn (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array
+//                                   where the other bufferhandles are stored.
+//
+// Outputs:
+//   none
+//
+// Stack action shorthand:
+//  ( lstringindexa lstringoffsetbufferida lstringstringbufferida 
+//     lstringindexb lstringoffsetbufferidb lstringstringbufferidb -- )
+//
+// Data stack in:
+//  lstringindexa                 index of the source lstring in the lstring array
+//
+//  lstringstackoffsetbufferida   buffer id of buffer containing source string 
+//                                 start offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferida   buffer id of buffer containing source string 
+//                                 bytes
+//
+//  lstringindexb                 index of the destination lstring in the lstring 
+//                                 array
+//
+//  lstringstackoffsetbufferidb   buffer id of buffer containing destination string 
+//                                 start offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferidb   buffer id of buffer containing destination string
+//                                 bytes
+//
+//
+// Action:
+//   Pops source lstring index, offset buffer id, and string buffer id off the 
+//    data stack.
+//   Pops destination lstring index, offset buffer id, and string buffer id off 
+//    the data stack.
+//   If one lstring is shorter than the other lstring, it is treated as an unsigned
+//    little endian integer and extended to the length of the other lstring. (This
+//    means 0s are appended to the end of the shorter string to make it the same
+//    length as the longer string.)
+//   Then the source string is xnored to the destination string. 
+//
+// Failure cases:
+//   Not enough elements on the data stack.
+//   Not enough strings in the lstring array.
+//   Error xnoring the bytes in the lstrings.
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_forthlelshiftlstringn>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthlelshiftlstringn ( LELSHIFTL$[N] )
+//
+// C prototype:
+//  void dg_forthlelshiftlstringn (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array
+//                                   where the other bufferhandles are stored.
+//
+// Outputs:
+//   none
+//
+// Stack action shorthand:
+//  ( lstringindex lstringoffsetbufferid lstringstringbufferid -- carryout )
+//
+// Data stack in:
+//  lstringindex                  index of the source lstring in the lstring array
+//
+//  lstringstackoffsetbufferid    buffer id of buffer containing source string 
+//                                 start offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferid    buffer id of buffer containing source string 
+//                                 bytes
+//
+// Data stack out:
+//  carryout                      0 = no carry out, 1 = there was a carry out
+//
+// Action:
+//   Pops destination lstring index, offset buffer id, and string buffer id off 
+//    the data stack.
+//   Then the destination string is shifted one bit to the left. The lstring is
+//    treated as an unsigned little endian integer. This means the lowest byte
+//    of the integer is the first byte of the lstring. (lowest in memory)
+//   This is the same as multiplying the value of the lstring by 2.
+//   Then the highest bit of the lstring from before the shift is pushed to the
+//    data stack as the carryout. 
+//
+// Failure cases:
+//   Not enough elements on the data stack.
+//   No lstrings in the lstring array.
+//   Error shifting the bytes in the lstrings.
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+
+     <div class=word id=dg_forthulershiftlstringn>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthulershiftlstringn ( ULERSHIFTL$[N] )
+//
+// C prototype:
+//  void dg_forthulershiftlstringn (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array
+//                                   where the other bufferhandles are stored.
+//
+// Outputs:
+//   none
+//
+// Stack action shorthand:
+//  ( lstringindex lstringoffsetbufferid lstringstringbufferid -- carryout )
+//
+// Data stack in:
+//  lstringindex                  index of the source lstring in the lstring array
+//
+//  lstringstackoffsetbufferid    buffer id of buffer containing source string 
+//                                 start offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferid    buffer id of buffer containing source string 
+//                                 bytes
+//
+// Data stack out:
+//  carryout                      0 = no carry out, 1 = there was a carry out
+//
+// Action:
+//   Pops destination lstring index, offset buffer id, and string buffer id off 
+//    the data stack.
+//   Then the destination string is shifted one bit to the right. The lstring is
+//    treated as an unsigned little endian integer. This means the lowest byte
+//    of the integer is the first byte of the lstring. (lowest in memory)
+//   This is the same as dividing the unsigned value of the lstring by 2.
+//   Then the lowest bit of the lstring from before the shift is pushed to the
+//    data stack as the carryout. 
+//
+// Failure cases:
+//   Not enough elements on the data stack.
+//   No lstrings in the lstring array.
+//   Error shifting the bytes in the lstrings.
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_forthslershiftlstringn>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthslershiftlstringn ( SLERSHIFTL$[N] )
+//
+// C prototype:
+//  void dg_forthslershiftlstringn (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array
+//                                   where the other bufferhandles are stored.
+//
+// Outputs:
+//   none
+//
+// Stack action shorthand:
+//  ( lstringindex lstringoffsetbufferid lstringstringbufferid -- carryout )
+//
+// Data stack in:
+//  lstringindex                  index of the source lstring in the lstring array
+//
+//  lstringstackoffsetbufferid    buffer id of buffer containing source string 
+//                                 start offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferid    buffer id of buffer containing source string 
+//                                 bytes
+//
+// Data stack out:
+//  carryout                      0 = no carry out, 1 = there was a carry out
+//
+// Action:
+//   Pops destination lstring index, offset buffer id, and string buffer id off 
+//    the data stack.
+//   Then the destination string is shifted one bit to the right. The lstring is
+//    treated as a signed little endian integer. This means the lowest byte
+//    of the integer is the first byte of the lstring. (lowest in memory)
+//   This is the same as dividing the signed value of the lstring by 2.
+//   The highest bit of the result remains unchanged after the shift and the
+//    rest of the bits are shifted normally.
+//   Then the lowest bit of the lstring from before the shift is pushed to the
+//    data stack as the carryout. 
+//
+// Failure cases:
+//   Not enough elements on the data stack.
+//   No lstrings in the lstring array.
+//   Error shifting the bytes in the lstrings.
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_forthlelshiftclstringn>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthlelshiftclstringn ( LELSHIFTCL$[N] )
+//
+// C prototype:
+//  void dg_forthlelshiftclstringn (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array
+//                                   where the other bufferhandles are stored.
+//
+// Outputs:
+//   none
+//
+// Stack action shorthand:
+//  ( carryin lstringindex lstringoffsetbufferid lstringstringbufferid -- 
+//     carryout )
+//
+// Data stack in:
+//  carryin                       0 = no carry in, 1 = carry in
+//                                 (the lowest bit of carryin is shifted into
+//                                 lowest bit of the result)
+//  lstringindex                  index of the source lstring in the lstring array
+//
+//  lstringstackoffsetbufferid    buffer id of buffer containing source string 
+//                                 start offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferid    buffer id of buffer containing source string 
+//                                 bytes
+//
+// Data stack out:
+//  carryout                      0 = no carry out, 1 = there was a carry out
+//
+// Action:
+//   Pops destination lstring index, offset buffer id, and string buffer id off 
+//    the data stack.
+//   Then the destination string is shifted one bit to the left. The lstring is
+//    treated as a little endian integer. This means the lowest byte
+//    of the integer is the first byte of the lstring. (lowest in memory)
+//   The lowest bit of carryin is shifted into the lowest bit of the result.
+//   This is the same as multiplying the value of the lstring by 2 and adding
+//    the carryin.
+//   Then the highest bit of the lstring from before the shift is pushed to the
+//    data stack as the carryout. 
+//
+// Failure cases:
+//   Not enough elements on the data stack.
+//   No lstrings in the lstring array.
+//   Error shifting the bytes in the lstrings.
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_forthlershiftclstringn>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthlershiftclstringn
+//
+// C prototype:
+//  void dg_forthlershiftclstringn (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array
+//                                   where the other bufferhandles are stored.
+//
+// Outputs:
+//   none
+//
+// Stack action shorthand:
+//  ( carryin lstringindex lstringoffsetbufferid lstringstringbufferid -- 
+//     carryout )
+//
+// Data stack in:
+//  carryin                       0 = no carry in, 1 = carry in
+//                                 (the lowest bit of carryin is shifted into
+//                                 highest bit of the result)
+//  lstringindex                  index of the source lstring in the lstring array
+//
+//  lstringstackoffsetbufferid    buffer id of buffer containing source string 
+//                                 start offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferid    buffer id of buffer containing source string 
+//                                 bytes
+//
+// Data stack out:
+//  carryout                      0 = no carry out, 1 = there was a carry out
+//
+// Action:
+//   Pops destination lstring index, offset buffer id, and string buffer id off 
+//    the data stack.
+//   Then the destination string is shifted one bit to the right. The lstring is
+//    treated as a little endian integer. This means the lowest byte
+//    of the integer is the first byte of the lstring. (lowest in memory)
+//   The lowest bit of carryin is shifted into the highest bit of the result.
+//   This is the same as dividing the value of the lstring by 2 and setting
+//    the highest bit equal to carryin.
+//   Then the lowest bit of the lstring from before the shift is pushed to the
+//    data stack as the carryout. 
+//
+// Failure cases:
+//   Not enough elements on the data stack.
+//   No lstrings in the lstring array.
+//   Error shifting the bytes in the lstrings.
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_forthu64starlstringnplustolstringn>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthu64starlstringnplustolstringn ( U64*L$[N]+>L$[N] )
+//
+// C prototype:
+//  void dg_forthu64starlstringnplustolstringn (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array
+//                                   where the other bufferhandles are stored.
+//
+// Outputs:
+//   none
+//
+// Stack action shorthand:
+//  ( u lstringindexa lstringoffsetbufferida lstringstringbufferida 
+//     lstringindexb lstringoffsetbufferidb lstringstringbufferidb -- )
+//
+// Data stack in:
+//  u                             64 bit unsigned integer
+//
+//  lstringindexa                 index of the source lstring in the lstring array
+//
+//  lstringstackoffsetbufferida   buffer id of buffer containing source string 
+//                                 start offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferida   buffer id of buffer containing source string 
+//                                 bytes
+//
+//  lstringindexb                 index of the destination lstring in the lstring 
+//                                 array
+//
+//  lstringstackoffsetbufferidb   buffer id of buffer containing destination string 
+//                                 start offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferidb   buffer id of buffer containing destination string
+//                                 bytes
+//
+// Data stack out:
+//  none                      
+//
+// Action:
+//   Pops u off the data stack.
+//   Pops the source lstring index, offset buffer id, and string buffer id off 
+//    the data stack.
+//   Pops the destination lstring index, offset buffer id, and string buffer id off 
+//    the data stack.
+//   The source lstring is unsigned extended to a multiple of 64 bits if needed.
+//   Multiplies the unsigned little endian integer value in the source lstring by 
+//    u and adds the result to the destination lstring.
+//   The destination lstring is unsigned extended to a multiple of 64 bits if 
+//    needed to hold the answer. (0s are pushed onto the end.)
+//
+// Failure cases:
+//   Not enough elements on the data stack.
+//   No lstrings in the lstring array.
+//   Error doing the multiplication.
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_forthtoslashulelstringn>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthtoslashulelstringn ( >/ULEL$[N] )
+//
+// C prototype:
+//  void dg_forthtoslashulelstringn (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead     pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array
+//                                   where the other bufferhandles are stored.
+//
+// Outputs:
+//   none
+//
+// Stack action shorthand:
+//  ( u lstringindex lstringoffsetbufferid lstringstringbufferid -- 
+//     remainder )
+//
+// Data stack in:
+//  u                             unsigned 64 bit integer divisor
+//
+//  lstringindex                  index of the source lstring in the lstring array
+//
+//  lstringstackoffsetbufferid    buffer id of buffer containing source string 
+//                                 start offsets
+//                                 (this is really an array of end offsets+1)
+//
+//  lstringstackstringbufferid    buffer id of buffer containing source string 
+//                                 bytes
+//
+// Data stack out:
+//  remainder                     remainder from the calculation
+//
+// Action:
+//   Pops the divisor u off the data stack.
+//   Pops destination lstring index, offset buffer id, and string buffer id off 
+//    the data stack.
+//   If u is 0, 
+//    the lstring remains unchanged and a remainder equal to the largest 64 bit
+//    unsigned integer is pushed onto the data stack.
+//   otherwise:
+//    divides the unsigned little endian value in the lstring by u.
+//    then puts the answer (quotient) back into the lstring.
+//    then pushes the remainder onto the data stack.
+//
+// Failure cases:
+//   Not enough elements on the data stack.
+//   No lstrings in the lstring array.
+//
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
     </div>
 
   </div></body>

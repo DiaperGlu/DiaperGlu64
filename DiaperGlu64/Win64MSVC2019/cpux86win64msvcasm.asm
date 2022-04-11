@@ -1,21 +1,21 @@
 ; ////////////////////////////////////////////////////////////////////////////////////////
 ; //
-; //    Copyright 2021 James Patrick Norris
+; //    Copyright 2022 James Patrick Norris
 ; // 
-; //    This file is part of Diaperglu v5.0.
+; //    This file is part of Diaperglu v5.2.
 ; //
-; //    Diaperglu v5.0 is free software; you can redistribute it and/or modify 
+; //    Diaperglu v5.2 is free software; you can redistribute it and/or modify 
 ; //    it under the terms of the GNU General PUBLIC License as published by
 ; //    the Free Software Foundation; either version 2 of the License, or
 ; //    (at your option) any later version.
 ; //
-; //    Diaperglu v5.0 is distributed in the hope that it will be useful,
+; //    Diaperglu v5.2 is distributed in the hope that it will be useful,
 ; //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ; //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ; //    GNU General PUBLIC License for more details.
 ; //
 ; //    You should have received a copy of the GNU General PUBLIC License
-; //    along with Diaperglu v5.0; if not, write to the Free Software
+; //    along with Diaperglu v5.2; if not, write to the Free Software
 ; //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ; //
 ; ////////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 ; ///////////////////////////////
 ; // James Patrick Norris      //
 ; // www.rainbarrel.com        //
-; // January 9, 2021           //
-; // version 5.0               //
+; // April 10, 2022            //
+; // version 5.2               //
 ; ///////////////////////////////
 
 ; MS x86-64 calling convention
@@ -193,49 +193,49 @@ dg_callcoreforthroutine ENDP
 ;    ; /*  EAX, ECX, EDX, EBX, original ESP, EBP, ESI, and EDI */
 ;    sub esp, 0Ch ;
 	
-;    push dword ptr [ebp] 
-;    push dword ptr [ebp+8]  ; /* pBHarrayhead */
+;    push qword ptr [ebp] 
+;    push qword ptr [ebp+8]  ; /* pBHarrayhead */
 ;    call dg_pushdatastack
 ;    ; /* should check error count here */
 ;    add esp, 8
 	
-;    push dword ptr [ebp-18h] 
-;    push dword ptr [ebp+8]  	
+;    push qword ptr [ebp-18h] 
+;    push qword ptr [ebp+8]  	
 ;    call dg_pushdatastack
 ;    add esp, 8
 	
- ;   push dword ptr [ebp-24h] 
- ;   push dword ptr [ebp+8]  	
+ ;   push qword ptr [ebp-24h] 
+ ;   push qword ptr [ebp+8]  	
  ;   call dg_pushdatastack
  ;   add esp, 8
 	
-;    push dword ptr [ebp-20h] 
-;    push dword ptr [ebp+8]  	
+;    push qword ptr [ebp-20h] 
+;    push qword ptr [ebp+8]  	
 ;    call dg_pushdatastack
 ;    add esp, 8
 	
-;    push dword ptr [ebp-10h] 
-;    push dword ptr [ebp+8]
+;    push qword ptr [ebp-10h] 
+;    push qword ptr [ebp+8]
 ;    call dg_pushdatastack
 ;    add esp, 8
 	
-;    push dword ptr [ebp-0Ch] 
-;    push dword ptr [ebp+8]
+;    push qword ptr [ebp-0Ch] 
+;    push qword ptr [ebp+8]
 ;    call dg_pushdatastack
 ;    add esp, 8
 	
-;    push dword ptr [ebp-14h]
-;    push dword ptr [ebp+8]  	
+;    push qword ptr [ebp-14h]
+;    push qword ptr [ebp+8]  	
 ;    call dg_pushdatastack
 ;    add esp, 8
 	
-;    push dword ptr [ebp-8] 
-;    push dword ptr [ebp+8]  	
+;    push qword ptr [ebp-8] 
+;    push qword ptr [ebp+8]  	
 ;    call dg_pushdatastack
 ;    add esp, 8
 	
-;    push dword ptr [ebp-4] 
-;    push dword ptr [ebp+8] 	
+;    push qword ptr [ebp-4] 
+;    push qword ptr [ebp+8] 	
 ;    call dg_pushdatastack
 ;    add esp, 8
 		
@@ -460,6 +460,28 @@ umslashmodthen2:
     
 dg_umslashmod ENDP
 
+
+
+;   UINT64 dg_uaddclipped (
+;    UINT64 u1,          // rcx  rdi 
+;    UINT64 u2)          // rdx  rsi
+    
+;   // this is for preventing overflow errors
+   
+
+
+
+dg_uaddclipped PROC EXPORT
+
+  mov rax, rcx    ; movq %rdi, %rax
+  add rax, rdx    ; addq %rsi, %rax
+  jnc L_dg_uaddclipped
+    xor rax, rax  ; xorq %rax, %rax
+    dec rax       ; decq %rax
+L_dg_uaddclipped:
+    ret
+
+dg_uaddclipped ENDP
 
 ; const char* dg_scanforbyte (
 ;     void* pbuf,         // rcx   rdi
@@ -1346,7 +1368,7 @@ dg_calldfpprocaddress ENDP
   
 ; dg_callprocaddressalign16begin1:
 ;    sub eax, 4
-;    push dword ptr [eax]
+;    push qword ptr [eax]
 ;    loop dg_callprocaddressalign16begin1
    
 ; dg_callprocaddressalign16then1:				  
@@ -1394,7 +1416,7 @@ dg_calldfpprocaddress ENDP
 ;    jz dg_callcppmemberwin32then1
 ;     
 ; dg_callcppmemberwin32begin1:
-;      push dword ptr [eax]
+;      push qword ptr [eax]
 ;      add eax, 4
 ;    loop dg_callcppmemberwin32begin1
 ;     
@@ -1540,7 +1562,7 @@ dg_readallbytessub PROC EXPORT FRAME
     ;  /* probably not required but doing it just in case */
 ;    and esp, 0FFFFFFF0h
 
-;    fstp dword ptr [ebp-4] 
+;    fstp qword ptr [ebp-4] 
     
 ;    push [ebp-4]      ; /* floating point value */
 ;    push [ebp+8]      ; /* pBHarrayhead */
@@ -2499,4 +2521,875 @@ dg_testasmretuint128 PROC EXPORT
   ret
 dg_testasmretuint128 ENDP
 
+
+; const char* dg_addbytes (
+;     unsigned char* psrc,    // rdi // rcx
+;     unsigned char* pdest,   // rsi // rdx
+;     UINT64 stringlength,    // rdx // r8
+;     UINT64* pcarryout);     // rcx // r9
+
+dg_addbytessub PROC EXPORT FRAME
+
+    ; push rdi
+    ; .pushreg rdi
+    ; push rsi
+    ; .pushreg rsi
+    
+    pushfq          ; /* -0x10  save direction flag, required under win32, just in case for others */
+                    ; /* for alignment */
+    .allocstack 8   ; /* mac os requires direction flag set to forward */
+    .endprolog        
+    
+    ; movq rsi, rcx   ; /* psrc->rsi */
+    ; movq rdi, rdx   ; /* pdest->rdi */
+    ; movq rcx, r8    ; /* stringlength->rcx */
+    ; movq rdx, r9    ; /* pcarryout->rdx */
+    
+    xchg r8, rcx      ; /* stringlength->rcx */
+                      ; /* psrc->r8 */
+                      ; /* pdest->rdx */
+                      ; /* pcarryout->r9 */
+    xor rax, rax
+
+    mov [r9], rax     ; mov (rdx), rax ; movq %rax, (%rdx)
+    
+    clc 
+    
+    ; /* if rcx is 0 then do nothing */
+    or rcx, rcx     ; orq %rcx, %rcx
+    jz dg_addbytesthen1
+    
+    dg_addbytesbegin1:
+    
+      mov al, [r8]   ; mov al, (rsi)  ; movb (%rsi), %al
+      adc [rdx], al  ; acd (rdi), al  ; adcb %al, (%rdi)
+      inc r8         ; inc rsi        ; incq %rsi
+      inc rdx        ; inc rdi        ; incq %rdi
+    
+    loop dg_addbytesbegin1
+    
+    jnc dg_addbytesthen1
+    
+    inc qword ptr [r9]      ; inc (rdx)        ; incq (%rdx) // set carryout to 1
+
+    dg_addbytesthen1:
+    
+    ; lea _dg_success(%rip), %rax
+    popfq
+    ; pop rsi
+    ; pop rdi
+    ret
+
+  dg_addbytessub ENDP
+  
+
+; const char* dg_adcbytes (
+;     unsigned char* psrc,    // rdi // rcx
+;     unsigned char* pdest,   // rsi // rdx
+;     UINT64 stringlength,    // rdx // r8
+;     UINT64* pcarryinout);   // rcx // r9
+
+dg_adcbytessub PROC EXPORT FRAME
+    
+    pushfq          ; /* -0x10  save direction flag, required under win32, just in case for others */
+                    ; /* for alignment */
+    .allocstack 8   ; /* mac os requires direction flag set to forward */
+    .endprolog        
+    
+    xchg r8, rcx      ; /* stringlength->rcx */
+                      ; /* psrc->r8 */
+                      ; /* pdest->rdx */
+                      ; /* pcarryinout->r9 */
+    xor rax, rax
+
+    xchg [r9], rax
+    
+    ; /* if rcx is 0 then do nothing */
+    or rcx, rcx     ; orq %rcx, %rcx
+    jz dg_adcbytesthen1
+    
+    shr al, 1  ; /* move the carryin to the carry flag */
+    
+    dg_adcbytesbegin1:
+    
+      mov al, [r8]   ; movb (%rsi), %al
+      adc [rdx], al  ; adcb %al, (%rdi)
+      inc r8         ; incq %rsi
+      inc rdx        ; incq %rdi
+    
+    loop dg_adcbytesbegin1
+    
+    jnc dg_adcbytesthen1
+    
+    inc qword ptr [r9]         ; inc (rdx)        ; incq (%rdx) // set carryout to 1
+
+    dg_adcbytesthen1:
+    
+    ; lea _dg_success(%rip), %rax
+    popfq
+    ret
+
+  dg_adcbytessub ENDP
+  
+  
+
+;    const char* dg_sbbbytes (
+;        unsigned char* psrc,    // rdi  // rcx
+;        unsigned char* pdest,   // rsi  // rdx
+;        UINT64 stringlength,    // rdx  // r8
+;        UINT64* pborrowinout);  // rcx  // r9
+
+dg_sbbbytessub PROC EXPORT FRAME
+
+    pushfq          ; /* -0x10  save direction flag, required under win32, just in case for others */
+                    ; /* for alignment */
+    .allocstack 8   ; /* mac os requires direction flag set to forward */
+    .endprolog  
+    
+    xchg r8, rcx     ; /* stringlength->rcx   */
+                     ; /* psrc->r8            */
+                     ; /* pdest->rdx          */
+                     ; /* pborrowinout->r9    */
+                     
+    xor rax, rax
+    
+    xchg [r9], rax
+    
+    ; /* if rcx is 0 then do nothing */
+    or rcx, rcx      ; /* orq clears the carry and must come before shrb */
+    
+    jz dg_sbbbytesthen1
+    
+      shr al, 1           ; /* move the borrowin to the carry flag */
+    
+    dg_sbbbytesbegin1:
+
+      mov al, [r8]    ; movb (%rsi), %al
+      sbb [rdx], al   ; sbbb %al, (%rdi)
+      inc r8
+      inc rdx
+      
+    loop dg_sbbbytesbegin1
+    
+    jnc dg_sbbbytesthen1
+    
+      inc qword ptr [r9]        ; // set borrowout to 1
+
+dg_sbbbytesthen1:
+
+    ; leaq _dg_success(%rip), %rax
+    popfq
+    ret
+    
+dg_sbbbytessub ENDP
+
+
+
+;    const char* dg_andbytes (
+;        unsigned char* psrc,    // rdi  // rcx
+;        unsigned char* pdest,   // rsi  // rdx
+;        UINT64 stringlength);   // rdx  // r8
+
+dg_andbytessub PROC EXPORT FRAME
+
+    pushfq          ; /* -0x10  save direction flag, required under win32, just in case for others */
+                    ; /* for alignment */
+    .allocstack 8   ; /* mac os requires direction flag set to forward */
+    .endprolog  
+
+    xchg r8, rcx    ; /* stringlength->rcx */
+                    ; /* psrc->r8 */
+                    ; /* pdest->rdx */ 
+    
+  dg_andbytesbegin1:
+
+    mov al, [r8]    ; movb (%rsi), %al
+    and [rdx], al   ; andb %al, (%rdi)
+    inc r8          ; incq %rdi
+    inc rdx         ; incq %rsi
+    
+  loop dg_andbytesbegin1
+    
+    ; leaq _dg_success(%rip), %rax
+    popfq
+    ret
+    
+dg_andbytessub ENDP
+
+
+;    const char* dg_orbytes (
+;        unsigned char* psrc,    // rdi  // rcx
+;        unsigned char* pdest,   // rsi  // rdx
+;        UINT64 stringlength);   // rdx  // r8
+
+dg_orbytessub PROC EXPORT FRAME
+
+    pushfq          ; /* -0x10  save direction flag, required under win32, just in case for others */
+                    ; /* for alignment */
+    .allocstack 8   ; /* mac os requires direction flag set to forward */
+    .endprolog  
+
+    xchg r8, rcx    ; /* stringlength->rcx */
+                    ; /* psrc->r8 */
+                    ; /* pdest->rdx */ 
+    
+  dg_orbytesbegin1:
+
+    mov al, [r8]    ; movb (%rsi), %al
+    or [rdx], al   ; andb %al, (%rdi)
+    inc r8          ; incq %rdi
+    inc rdx         ; incq %rsi
+    
+  loop dg_orbytesbegin1
+    
+    ; leaq _dg_success(%rip), %rax
+    popfq
+    ret
+    
+dg_orbytessub ENDP
+
+
+;    const char* dg_xorbytes (
+;        unsigned char* psrc,    // rdi  // rcx
+;        unsigned char* pdest,   // rsi  // rdx
+;        UINT64 stringlength);   // rdx  // r8
+
+dg_xorbytessub PROC EXPORT FRAME
+
+    pushfq          ; /* -0x10  save direction flag, required under win32, just in case for others */
+                    ; /* for alignment */
+    .allocstack 8   ; /* mac os requires direction flag set to forward */
+    .endprolog  
+
+    xchg r8, rcx    ; /* stringlength->rcx */
+                    ; /* psrc->r8 */
+                    ; /* pdest->rdx */ 
+    
+  dg_xorbytesbegin1:
+
+    mov al, [r8]    ; movb (%rsi), %al
+    xor [rdx], al   ; andb %al, (%rdi)
+    inc r8          ; incq %rdi
+    inc rdx         ; incq %rsi
+    
+  loop dg_xorbytesbegin1
+    
+    ; leaq _dg_success(%rip), %rax
+    popfq
+    ret
+    
+dg_xorbytessub ENDP
+
+
+;    const char* dg_nandbytes (
+;        unsigned char* psrc,    // rdi  // rcx
+;        unsigned char* pdest,   // rsi  // rdx
+;        UINT64 stringlength);   // rdx  // r8
+
+dg_nandbytessub PROC EXPORT FRAME
+
+    pushfq          ; /* -0x10  save direction flag, required under win32, just in case for others */
+                    ; /* for alignment */
+    .allocstack 8   ; /* mac os requires direction flag set to forward */
+    .endprolog  
+
+    xchg r8, rcx    ; /* stringlength->rcx */
+                    ; /* psrc->r8 */
+                    ; /* pdest->rdx */ 
+    
+  dg_nandbytesbegin1:
+
+    mov al, [r8]    ; movb (%rsi), %al
+    and al, [rdx]    
+    not al
+    mov [rdx], al
+    inc r8          ; incq %rdi
+    inc rdx         ; incq %rsi
+    
+  loop dg_nandbytesbegin1
+    
+    ; leaq _dg_success(%rip), %rax
+    popfq
+    ret
+    
+dg_nandbytessub ENDP
+
+
+;    const char* dg_norbytes (
+;        unsigned char* psrc,    // rdi  // rcx
+;        unsigned char* pdest,   // rsi  // rdx
+;        UINT64 stringlength);   // rdx  // r8
+
+dg_norbytessub PROC EXPORT FRAME
+
+    pushfq          ; /* -0x10  save direction flag, required under win32, just in case for others */
+                    ; /* for alignment */
+    .allocstack 8   ; /* mac os requires direction flag set to forward */
+    .endprolog  
+
+    xchg r8, rcx    ; /* stringlength->rcx */
+                    ; /* psrc->r8 */
+                    ; /* pdest->rdx */ 
+    
+  dg_norbytesbegin1:
+
+    mov al, [r8]    ; movb (%rsi), %al
+    or al, [rdx] 
+    not al
+    mov [rdx], al
+    inc r8          ; incq %rdi
+    inc rdx         ; incq %rsi
+    
+  loop dg_norbytesbegin1
+    
+    ; leaq _dg_success(%rip), %rax
+    popfq
+    ret
+    
+dg_norbytessub ENDP
+
+
+;    const char* dg_xnorbytes (
+;        unsigned char* psrc,    // rdi  // rcx
+;        unsigned char* pdest,   // rsi  // rdx
+;        UINT64 stringlength);   // rdx  // r8
+ 
+dg_xnorbytessub PROC EXPORT FRAME
+
+    pushfq          ; /* -0x10  save direction flag, required under win32, just in case for others */
+                    ; /* for alignment */
+    .allocstack 8   ; /* mac os requires direction flag set to forward */
+    .endprolog  
+
+    xchg r8, rcx    ; /* stringlength->rcx */
+                    ; /* psrc->r8 */
+                    ; /* pdest->rdx */ 
+    
+  dg_xnorbytesbegin1:
+
+    mov al, [r8]    ; movb (%rsi), %al
+    xor al, [rdx]
+    not al
+    mov [rdx], al
+    inc r8          ; incq %rdi
+    inc rdx         ; incq %rsi
+    
+  loop dg_xnorbytesbegin1
+    
+    ; leaq _dg_success(%rip), %rax
+    popfq
+    ret
+    
+dg_xnorbytessub ENDP
+
+
+;    const char* dg_shlbytes (
+;        unsigned char* pdest,    // rdi  // rcx
+;        UINT64 stringlength,     // rsi  // rdx
+;        UINT64* pcarryout);      // rdx  // r8
+
+dg_shlbytessub PROC EXPORT FRAME
+    
+    pushfq          ; /* -0x10  save direction flag, required under win32, just in case for others */
+                    ; /* for alignment */
+    .allocstack 8   ; /* mac os requires direction flag set to forward */
+    .endprolog
+    
+    xchg rcx, rdx    ; /* stringlength->rcx */
+                     ; /* pdest->rdx */
+                     ; /* pcarryout->r8 */
+                     
+    xor rax, rax     ; xorq %rax, %rax
+    mov [r8], rax    ; movq %rax, (%rdx)
+    
+    ; clc ; or clears the carry
+    
+    ; /* if rcx is 0 then do nothing */
+    or rcx, rcx      ; orq %rcx, %rcx
+    
+    jz dg_shlbytesthen1
+    
+    dg_shlbytesbegin1:
+      rcl byte ptr [rdx], 1  ; rclb (%rdi)
+      inc rdx             ; incq %rdi
+    loop dg_shlbytesbegin1
+    
+    jnc dg_shlbytesthen1
+    
+      inc qword ptr [r8]     ; incq (%rdx) // set carryout to 1
+
+    dg_shlbytesthen1:
+    
+    ; leaq _dg_success(%rip), %rax
+    popfq
+    ret
+
+dg_shlbytessub ENDP
+
+
+;    const char* dg_shrbytes (
+;        unsigned char* pdest,    // rdi  // rcx
+;        UINT64 stringlength,     // rsi  // rdx
+;        UINT64* pcarryout);      // rdx  // r8
+
+    
+dg_shrbytessub PROC EXPORT FRAME
+
+    pushfq          ; /* -0x10  save direction flag, required under win32, just in case for others */
+                    ; /* for alignment */
+    .allocstack 8   ; /* mac os requires direction flag set to forward */
+    .endprolog
+
+    xchg rcx, rdx  ; movq %rsi, %rcx  /* stringlength->rcx */
+                   ; /* pdest->rdx */
+                   ; /* pcarryout->r8 */
+                   
+    add rdx, rcx   ; addq %rsi, %rdi
+    
+    xor rax, rax   ; xorq %rax, %rax
+
+    mov [r8], rax  ; movq %rax, (%rdx)
+    
+    ; /* if rcx is 0 then do nothing */
+    or rcx, rcx    ; orq %rcx, %rcx         /* or clears the carry */
+    
+    jz dg_shrbytesthen1
+
+    dg_shrbytesbegin1:
+
+      dec rdx              ; decq %rdi
+      rcr byte ptr [rdx], 1   ; rcrb (%rdi)
+    
+    loop dg_shrbytesbegin1
+    
+    jnc dg_shrbytesthen1
+    
+      inc qword ptr [r8] ; incq (%rdx) // set carryout to 1
+
+dg_shrbytesthen1:
+    
+    ; leaq _dg_success(%rip), %rax
+    popfq
+    ret
+
+dg_shrbytessub ENDP
+
+
+;    const char* dg_rclbytes (
+;        unsigned char* pdest,    // rdi  // rcx
+;        UINT64 stringlength,     // rsi  // rdx
+;        UINT64* pcarryinout);    // rdx  // r8
+    
+dg_rclbytessub PROC EXPORT FRAME
+    
+    pushfq          ; /* -0x10  save direction flag, required under win32, just in case for others */
+                    ; /* for alignment */
+    .allocstack 8   ; /* mac os requires direction flag set to forward */
+    .endprolog
+    
+    xchg rdx, rcx   ; movq %rsi, %rcx  /* stringlength->rcx */
+                    ; /* pdest->rdx */
+                    ; /* pcarryinout->r8 */
+                     
+    xor rax, rax    ; xorq %rax, %rax
+
+    xchg qword ptr [r8], rax  ; xchgq %rax, (%rdx)
+    
+    ; /* if rcx is 0 then do nothing */
+    or rcx, rcx     ; orq %rcx, %rcx  /* orq clears the carry and must come before shrb */
+    jz dg_rclbytesthen1
+    
+    shr al, 1          ; shrb %al  /* move the carryin to the carry */ 
+    
+    dg_rclbytebegin1:
+      rcl byte ptr [rdx], 1  ; rclb (%rdi)
+      inc rdx             ; incq %rdi
+    loop dg_rclbytebegin1
+    
+    jnc dg_rclbytesthen1
+    
+    inc qword ptr [r8]    ; incq (%rdx) // set carryout to 1
+
+dg_rclbytesthen1:
+    
+    ; leaq _dg_success(%rip), %rax
+    popfq
+    ret
+    
+dg_rclbytessub ENDP
+
+
+;    const char* dg_rcrbytes (
+;        unsigned char* pdest,    // rdi  // rcx
+;        UINT64 stringlength,     // rsi  // rdx
+;        UINT64* pcarryinout);    // rdx  // r8
+    
+dg_rcrbytessub PROC EXPORT FRAME
+    
+    pushfq          ; /* -0x10  save direction flag, required under win32, just in case for others */
+                    ; /* for alignment */
+    .allocstack 8   ; /* mac os requires direction flag set to forward */
+    .endprolog
+    
+    xchg rcx, rdx    ; /* stringlength->rcx */
+                     ; /* pdest->rdx */
+                     ; /* pcarryinout->r8 */
+    
+    ; // move pdest to character after string
+    add rdx, rcx
+    
+    ; // clear pcarryinout                
+    xor rax, rax
+    xchg [r8], rax
+    
+    ; /* if rcx is 0 then do nothing */
+    or rcx, rcx  ; /* orq clears the carry and must come before shrb */
+    
+    jz dg_rcrbytesthen1
+    
+    shr al, 1  ; /* move the carryin to the carry */
+ 
+ dg_rcrbytesbegin1: 
+      dec rdx  ; decq %rdi
+      rcr byte ptr [rdx], 1  ; rcrb (%rdi)
+    loop dg_rcrbytesbegin1
+    
+    jnc dg_rcrbytesthen1
+    
+    inc qword ptr [r8] ; incq (%rdx) // set carryout to 1
+
+dg_rcrbytesthen1:
+    
+    ; leaq _dg_success(%rip), %rax
+    popfq
+    ret
+dg_rcrbytessub ENDP    
+
+
+;    const char* dg_sarbytes (
+;        unsigned char* pdest,    // rdi  // rcx
+;        UINT64 stringlength,     // rsi  // rdx
+;        UINT64* pcarryout);      // rdx  // r8
+    
+dg_sarbytessub PROC EXPORT FRAME
+
+    pushfq          ; /* -0x10  save direction flag, required under win32, just in case for others */
+                    ; /* for alignment */
+    .allocstack 8   ; /* mac os requires direction flag set to forward */
+    .endprolog
+    
+    xchg rdx, rcx   ; /* stringlength->rcx */
+                    ; /* pdest->rdx */
+                    ; /* pcarryout->r8 */
+
+    add rdx, rcx    ; addq %rsi, %rdi
+                     
+    xor rax, rax
+    mov [r8], rax   ; movq %rax, (%rdx)
+    
+    ; /* if rcx is 0 then do nothing */
+    or rcx, rcx         
+    jz dg_sarbytesthen1
+    
+    ; /* 1st byte is asr */
+    dec rdx ; decq %rdi
+    sar byte ptr [rdx], 1 ; sarb (%rdi)
+    dec rcx
+    
+    jz dg_sarbytesthen1
+
+    dg_sarbytesbegin1:
+      dec rdx             ; decq %rdi
+      rcr byte ptr [rdx], 1  ; rcrb (%rdi)
+    loop dg_sarbytesbegin1
+    
+    jnc dg_sarbytesthen1
+      inc qword ptr [r8] ; incq (%rdx) // set carryout to 1
+    dg_sarbytesthen1:
+    
+    ; leaq _dg_success(%rip), %rax
+    popfq
+    ret
+
+dg_sarbytessub ENDP
+
+
+;    const char* dg_notbytes (
+;        unsigned char* pdest,    // rdi  // rcx
+;        UINT64 stringlength);    // rsi  // rdx
+    
+dg_notbytessub PROC EXPORT FRAME
+    pushfq          ; /* -0x10  save direction flag, required under win32, just in case for others */
+                    ; /* for alignment */
+    .allocstack 8   ; /* mac os requires direction flag set to forward */
+    .endprolog
+    
+
+    xchg rcx, rdx   ; /* stringlength->rcx */
+                    ; /* pdest->rdx */
+
+    
+    ; /* if rcx is 0 then do nothing */
+    or rcx, rcx
+    jz dg_notbytesthen1
+    
+      dg_notbytesbegin1:
+        not byte ptr [rdx] ; notb (%rdi)
+        inc rdx            ; incq %rdi
+      loop dg_notbytesbegin1
+
+    dg_notbytesthen1:
+    
+    ; leaq _dg_success(%rip), %rax
+    popfq
+    ret
+
+dg_notbytessub ENDP
+
+
+;    const char* dg_reversebytes (
+;        unsigned char* pdest,    // rdi  // rcx
+;        UINT64 stringlength);    // rsi  // rdx
+    
+dg_reversebytessub PROC EXPORT FRAME
+
+    pushfq          ; /* -0x10  save direction flag, required under win32, just in case for others */
+                    ; /* for alignment */
+    .allocstack 8   ; /* mac os requires direction flag set to forward */
+    .endprolog
+    
+
+    xchg rcx, rdx   ; /* stringlength->rcx */
+                    ; /* pdest->rdx */
+ 
+    mov r8, rdx    ; movq %rdi, %rsi
+    add r8, rcx    ; addq %rcx, %rsi
+    shr rcx, 1
+    
+    ; /* if rcx was < 2 then do nothing */
+    or rcx, rcx
+    jz dg_reversebytesthen1
+    
+      dg_reversebytesbegin1:
+        mov al, [rdx] ; movb (%rdi), %al
+        dec r8        ; decq %rsi
+        xchg al, [r8] ; xchgb (%rsi), %al
+        mov [rdx], al ; movb %al, (%rdi)
+        inc rdx       ; incq %rdi
+      loop dg_reversebytesbegin1
+
+    dg_reversebytesthen1:
+    
+    ; leaq _dg_success(%rip), %rax
+    popfq
+    ret
+    
+dg_reversebytessub ENDP
+
+
+;    const char* dg_incbytes (
+;        unsigned char* pdest,    // rdi  // rcx
+;        UINT64 stringlength,     // rsi  // rdx
+;        UINT64* pcarryout);      // rdx  // r8
+
+dg_incbytessub PROC EXPORT FRAME
+    
+    pushfq          ; /* -0x10  save direction flag, required under win32, just in case for others */
+                    ; /* for alignment */
+    .allocstack 8   ; /* mac os requires direction flag set to forward */
+    .endprolog
+    
+    xchg rcx, rdx    ; /* stringlength->rcx */
+                     ; /* pdest->rdx */ 
+                     
+    xor rax, rax
+    mov [r8], rax
+    
+    ; /* if rcx is 0 then do nothing */
+    or rcx, rcx  ; /* this clears the carry */
+    jz dg_incbytesthen1
+    
+      stc
+    
+      dg_incbytesbegin1:
+        adc [rdx], al  ; adc %al, (%rdi)        /* al should be 0 */
+        jnc dg_incbytesthen1 ;                  /* if no carry, no need to look at the rest */
+        inc rdx
+      loop dg_incbytesbegin1
+    
+      inc qword ptr [r8]         ; incq (%rdx) // set carryout to 1
+
+    dg_incbytesthen1:
+    
+    ; leaq _dg_success(%rip), %rax
+    popfq
+    ret
+
+dg_incbytessub ENDP
+
+
+;    const char* dg_decbytes (
+;        unsigned char* pdest,    // rdi  // rcx
+;        UINT64 stringlength,     // rsi  // rdx
+;        UINT64* pborrowout);     // rdx  // r8
+
+dg_decbytessub PROC EXPORT FRAME
+    
+    pushfq          ; /* -0x10  save direction flag, required under win32, just in case for others */
+                    ; /* for alignment */
+    .allocstack 8   ; /* mac os requires direction flag set to forward */
+    .endprolog
+    
+    xchg rcx, rdx    ; /* stringlength->rcx */
+                     ; /* pdest->rdx */ 
+                     
+    xor rax, rax
+    mov [r8], rax    ; movq %rax, (%rdx)
+    
+    ; /* if rcx is 0 then do nothing */
+    or rcx, rcx      ; /* this clears the carry */
+    jz dg_decbytesthen1
+    
+    stc
+    
+    dg_decbytesbegin1:
+      sbb [rdx], al        ; sbbb %al, (%rdi)        /* al should be 0 */
+    jnc dg_decbytesthen1   ; /* if no borrow, no need to look at the rest */
+      inc rdx              ; incq %rdi
+    loop dg_decbytesbegin1
+    
+    inc qword ptr [r8]     ; incq (%rdx) // set borrowout to 1
+
+    dg_decbytesthen1:
+    
+    ; leaq _dg_success(%rip), %rax
+    popfq
+    ret
+    
+dg_decbytessub ENDP
+
+
+;    const char* dg_mulu64tou64s (
+;        UINT64* pdest,           // rdi // rcx
+;        UINT64* psrc,            // rsi // rdx
+;        UINT64  u,               // rdx // r8
+;        UINT64  srclengthinu64s, // rcx // r9
+;        UINT64* pcarryout);      // r8  // param4 (after 4 shadow)
+
+dg_mulu64tou64ssub PROC EXPORT FRAME
+
+    push rdi
+    .pushreg rdi
+    push rsi
+    .pushreg rsi
+    
+    pushfq          ; /* -0x10  save direction flag, required under win32, just in case for others */
+                    ; /* for alignment */
+    .allocstack 8   ; /* mac os requires direction flag set to forward */
+    .endprolog
+    
+    mov rdi, rcx
+    mov rsi, rdx
+    mov rdx, r8
+    mov rcx, r9
+    mov r8, [rsp + 040h]
+
+    xor r9, r9 ; // holds carry for next loop
+    
+    mov r10, rdx   ; movq %rdx, %r10   /* r10 now has u */  ; supposedly don't have to save r10
+    ; /* if rcx is 0 then do nothing */
+    or rcx, rcx
+    jz dg_mulu64tou64sthen1
+    
+      dg_mulu64tou64sbegin1:
+        mov rax, [rsi]    ; movq (%rsi), %rax    
+        add rsi, 8        ; addq $8, %rsi
+        mul r10           ; mulq %r10      // R10 * RAX -> RDX:RAX
+        add rdx, r9       ; addq %r9, %rdx // to add in carry from previous loop
+                          ; // since it's impossible for RDX to be -1 
+                          ; //  there won't be a carry from this
+        xor r9, r9        ; xorq %r9, %r9  // clear the r9 to hold the carry...
+     
+        add [rdi], rax    ; addq %rax, (%rdi)
+
+        adc 8[rdi], rdx   ; adcq %rdx, 8(%rdi)  
+        rcl r9, 1            ; rclq %r9 // to save carry for next time through loop
+        add rdi, 8        ; addq $8, %rdi
+      loop dg_mulu64tou64sbegin1
+
+    dg_mulu64tou64sthen1:
+
+    mov [r8], r9          ; movq %r9, (%r8)
+    
+    ; leaq _dg_success(%rip), %rax
+    popfq
+    pop rsi
+    pop rdi
+    ret
+
+dg_mulu64tou64ssub ENDP
+
+
+;    const char* dg_divu64sbyu64 (
+;        UINT64* pdest,            // rdi // rcx // quotient and dividend
+;        UINT64* premainder,       // rsi // rdx // premainder
+;        UINT64  u,                // rdx // r8  // divisor
+;        UINT64  destlengthinu64s) // rcx // r9  // 
+
+dg_divu64sbyu64sub PROC EXPORT FRAME
+
+    pushfq          ; /* -0x10  save direction flag, required under win32, just in case for others */
+                    ; /* for alignment */
+    .allocstack 8   ; /* mac os requires direction flag set to forward */
+    .endprolog
+    
+    xchg r9, rcx    ; destlengthinu64s->rcx
+                    ; pdest->r9
+    xchg r8, rdx    ; premainder->r8
+                    ; divisor->rdx
+    
+    ; /* checking for divide by 0 case */
+    or rdx, rdx     ; orq %rdx, %rdx
+    jnz dg_divu64sbyu64then2
+    
+      xor rdx, rdx     ; xorq %rdx, %rdx   // I think r8 is already 0
+      dec rdx          ; decq %rdx /* setting remainder to max UINT64 for div by 0 case */
+    
+      jmp dg_divu64sbyu64then1 
+    
+    dg_divu64sbyu64then2:
+    
+    mov r10, rdx       ; movq %rdx, %r10   /* r10 now has u */
+    
+    ; /* if rcx is 0 then do nothing */
+    or rcx, rcx
+    jz dg_divu64sbyu64then1
+    
+      mov rax, rcx     ; movq %rcx, %rax
+      shl rax, 3       ; shlq $3, %rax
+      add r9, rax      ; addq %rax, %rdi /* move dest pointer to the end */
+    
+      xor rdx, rdx     ; xorq %rdx, %rdx /* clear rdx for first divide */
+    
+      dg_divu64sbyu64begin1:
+
+        sub r9, 8        ; subq $8, %rdi    
+        mov rax, [r9]    ; movq (%rdi), %rax    
+        div r10          ; divq %r10      // RDX:RAX / R10 -> RAX rem RDX
+        mov [r9], rax    ; movq %rax, (%rdi)
+      
+      loop dg_divu64sbyu64begin1
+
+    dg_divu64sbyu64then1:
+
+    mov [r8], rdx        ; movq %rdx, (%rsi)  /* save the remainder */
+    
+    ; leaq _dg_success(%rip), %rax
+    popfq
+    ret   
+
+dg_divu64sbyu64sub ENDP
+
 END
+
+

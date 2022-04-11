@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,11 +23,21 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 
-
+// no frame
+//
+// frame using just rbp 
+//  ( ENTER-FRAME, EXIT-FRAME, )
+//
+// diaperglu forth frame (has to have pBHarrayhead passed in)
+//  ( ENTER-DGLU-FORTH-FRAME, EXIT-DGLU-FORTH-FRAME, )
+//
+// call sub frame (rbp with locals marker)
+//  ( ENTER-CALL-SUBS-FRAME, EXIT-CALL-SUBS-FRAME, )
+//
 #include "../diapergluforth.h"
 
 // when do you need REX?
@@ -765,10 +775,26 @@ const char* dg_isvsibname  = "[VSIB]";
 
 const char* dg_isccbufferoffsetname       = "CURRENTCOMPILEBUFFEROFFSET";
 const char* dg_isccbufferoffset2name      = "O";
+const char* dg_isoimportcodelinkname      = "OIMPORTCODELINK";
 const char* dg_ishereplusdisplacementname = "EIP+N";
 const char* dg_ishereplusdisplacement64name = "RIP+N";
 const char* dg_isbufferoffsetname     = "BUFFEROFFSET"; // can I call this 'OB'?
 const char* dg_isbracketccbufferoffsetname = "[O]";
+
+// const char* dg_islocalname = "LOCAL";
+const char* dg_isparamusingframename = "FRAME-PARAM";
+const char* dg_isparamusingnoframename = "NO-FRAME-PARAM";
+const char* dg_isdgluforthframelocalname = "DGLU-FORTH-FRAME-LOCAL";
+const char dg_iscallsubsframelocalname[] = "CALL-SUBS-FRAME-LOCAL";
+// const char* dg_istointname = ">INT";
+// const char* dg_istofloatname = ">FLOAT";
+// const char* dg_isfromintname = "INT>";
+// const char* dg_isfromfloatname = "FLOAT>";
+
+// const char dg_iretparam[] = "IRETPARAM";
+// const char dg_irethiparam[] = "IRETHIPARAM";
+// const char dg_fretparam[] = "FRETPARAM";
+// const char dg_frethiparam[] = "FRETHIPARAM";
 
 const char* dg_alname = "AL";
 const char* dg_clname = "CL";
@@ -991,7 +1017,7 @@ const char* dg_ccnevername = "NEVER";
 // 0f 8f zf=0 and sf=of  >
 
 
-const UINT64 dg_regnottrashedduringaligment = dg_rax;
+// const UINT64 dg_regnottrashedduringaligment = dg_rax;
 
 void dg_compilemovntorax (
     Bufferhandle* pBHarrayhead,
@@ -1090,6 +1116,56 @@ void dg_compilemovregtoreg (
     UINT64 destreg)
 {
     unsigned char pbuf[4] = "\x48\x89\xC0"; // modr/m = 3.DEST.SRC 
+                                            // 89 opcode is r to r/m so r is src, r/m is dest
+                                            // r/m = rex.b = 1  r = rex.r = 4
+    
+    if (srcreg < dg_rax)
+    {
+        pbuf[0] = pbuf[0] | 4;
+    }
+    
+    if (destreg < dg_rax)
+    {
+        pbuf[0] = pbuf[0] | 1;
+    }
+    
+    pbuf[2] = pbuf[2] | (destreg & 7) | ((srcreg & 7) << 3);
+    
+    dg_compilesegment(pBHarrayhead, (const char*)pbuf, 3);
+}
+
+
+void dg_compilemovbracketregtoreg (
+    Bufferhandle* pBHarrayhead,
+    UINT64 srcreg,
+    UINT64 destreg)
+{
+    unsigned char pbuf[4] = "\x48\x8B\x00"; // modr/m = 0.DEST.SRC 
+                                            // 8B opcode is r/m to r so r/m is src, r is dest
+                                            // r/m = rex.b = 1  r = rex.r = 4
+    
+    if (srcreg < dg_rax)
+    {
+        pbuf[0] = pbuf[0] | 1;
+    }
+    
+    if (destreg < dg_rax)
+    {
+        pbuf[0] = pbuf[0] | 4;
+    }
+    
+    pbuf[2] = pbuf[2] | (destreg & 7) | ((srcreg & 7) << 3);
+    
+    dg_compilesegment(pBHarrayhead, (const char*)pbuf, 3);
+}
+
+
+void dg_compilemovregtobracketreg (
+    Bufferhandle* pBHarrayhead,
+    UINT64 srcreg,
+    UINT64 destreg)
+{
+    unsigned char pbuf[4] = "\x48\x89\x00"; // modr/m = 0.DEST.SRC 
                                             // 89 opcode is r to r/m so r is src, r/m is dest
                                             // r/m = rex.b = 1  r = rex.r = 4
     
@@ -1477,6 +1553,47 @@ void dg_compilejmpoffset (
         return;
     }
 }
+
+
+const char* dg_compilejmpbracketoffsetname = "dg_compilejmpbracketoffset";
+
+void dg_compilejmpbracketoffset (
+    Bufferhandle* pBHarrayhead,
+    INT64 offset)
+{
+    unsigned char pbuf[7] = "\xFF\x25\x00\x00\x00\x00";
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    // make sure offset isn't too big
+    if ((offset + 0x80000000) >= 0x100000000)
+    {
+        // push error that offset is too big
+        dg_pusherror(pBHarrayhead, dg_branchtoobigerror);
+        dg_pusherror(pBHarrayhead, dg_compilejmpbracketoffsetname);
+        return;
+    }
+    
+    *(INT32*)(&(pbuf[2])) = offset;
+    
+    dg_compilesegment (
+        pBHarrayhead,
+        (const char*)pbuf,
+        6);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilejmpbracketoffsetname);
+        return;
+    }
+}
+
+
 
 const char dg_compileacopyofsscopytoname[] = "dg_compileacopyofsscopyto";
 
@@ -2304,6 +2421,144 @@ unsigned char dg_packrex (
 }
 */
 
+const char* dg_compilesubnfromrspname = "dg_compilesubnfromrsp";
+
+void dg_compilesubnfromrsp(
+    Bufferhandle* pBHarrayhead,
+    UINT64 n)
+{
+    // subq  rsp - 0x0n -> rsp                0x48 0x83 0xEC 0x00
+    unsigned char mycode[5] =  "\x48\x83\xEC\x00";
+    unsigned char mycode2[8] = "\x48\x81\xEC\x00\x00\x00\x00";
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    // offset is guaranteed to be -...
+    if (n <= 0x7F)
+    {
+        mycode[3] = (unsigned char)n; // assumes n is in range...
+        
+        dg_compilesegment(
+            pBHarrayhead,
+            (const char*)mycode,
+            4);
+            
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_compilesubnfromrspname);
+        }
+            
+        return;
+    }
+    
+    if (n <= 0x7FFFFFFF)
+    {
+       
+        // if n is in range of n32
+        *( (UINT32*)(&(mycode2[3])) ) = (UINT32)n;
+        
+        dg_compilesegment(
+            pBHarrayhead,
+            (const char*)mycode2,
+            7);
+            
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_compilesubnfromrspname);
+        }
+            
+        return;
+    }
+    
+    dg_pusherror(pBHarrayhead, dg_signedvaluetoobigerror);
+    dg_pusherror(pBHarrayhead, dg_compilesubnfromrspname);
+}
+
+const char* dg_compileaddnlocalstocallsubsframename = "dg_compileaddnlocalstocallsubsframe";
+
+void dg_compileaddnlocalstocallsubsframe (
+    Bufferhandle* pBHarrayhead,
+    UINT64 n)
+{
+    // if n in range of n8
+    // movq  [rbp-0x20] -> rsp                0x48 0x8B 0x65 0xE0  // seems rex is needed
+    // subq  rsp - 0x0n -> rsp                0x48 0x83 0xEC 0x00
+    // movq  rsp -> [rbp-0x20]                0x48 0x89 0x65 0xE0  // seems rex is needed
+    
+    // if n in range of n32
+    // movq  [rbp-0x20] -> rsp                0x48 0x8B 0x65 0xE0  // seems rex is needed
+    // subq  rsp - 0x0n -> rsp                0x48 0x81 0xEC 0x00 0x00 0x00 0x00
+    // movq  rsp -> [rbp-0x20]                0x48 0x89 0x65 0xE0  // seems rex is needed
+    
+    INT64 offset;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+	
+	if (baderrorcount == olderrorcount)
+	{
+		return;
+	}
+    
+    unsigned char n8string[13]  = "\x48\x8B\x65\xE0\x48\x83\xEC\x00\x48\x89\x65\xE0";
+    unsigned char n32string[16] = "\x48\x8B\x65\xE0\x48\x81\xEC\x00\x00\x00\x00\x48\x89\x65\xE0";
+    
+    // check for overflow ...
+    if (n > (largestsignedint / sizeof(UINT64)))
+    {
+        dg_pusherror(pBHarrayhead, dg_invalidparametererror);
+        dg_pusherror(pBHarrayhead, dg_compileaddnlocalstocallsubsframename);
+        return;
+    }
+    
+    offset = (((INT64)n) * sizeof(UINT64));
+    
+    // offset is guaranteed to be -...
+    if ((offset >= -0x80) && (offset <= 0x7F))
+    {
+        // if n is in range of n8
+        n8string[7] = (UINT8)(((UINT64)offset) & 0xFF);
+        
+        dg_compilesegment(
+            pBHarrayhead,
+            (const char*)n8string,
+            12);
+            
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_compileaddnlocalstocallsubsframename);
+        }
+            
+        return;
+    }
+    
+    // mac os x c compiler does the wrong thing if you give it -0x80000000 - 3/30/2022 J.N.
+    if ((offset >= (INT64)0xFFFFFFFF80000000) && (offset <= 0x7FFFFFFF))
+    {
+        // if n is in range of n32
+        *( (UINT32*)(&(n32string[7])) ) = (UINT32)(((UINT64)offset) & 0xFFFFFFFF);
+        
+        dg_compilesegment(
+            pBHarrayhead,
+            (const char*)n32string,
+            15);
+            
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_compileaddnlocalstocallsubsframename);
+        }
+            
+        return;
+    }
+    
+    dg_pusherror(pBHarrayhead, dg_signedvaluetoobigerror);
+    dg_pusherror(pBHarrayhead, dg_compileaddnlocalstocallsubsframename);
+}
+
 // on mac os x for x86 you need to align the stack to a 16 byte boundary before calling any gcc compiled code or
 //   any operating system or 3rd party library function due to the strong possibility the called routine will
 //   use the new x86 instructions requiring 16 byte alignment
@@ -2344,7 +2599,7 @@ void dg_compilealignretstack(
     // movq  [rbp-0x20] -> rsp                0x48 0x8B 0x65 0xE0  // seems rex is needed
     // andq  rsp & 0xfffffffffffffff0 -> rsp  0x48 0x83 0xE4 0xF0
     // subq  rsp - 0x0n -> rsp                0x48 0x83 0xEC 0x00
-	unsigned char mycode[13] = "\x48\x8B\x65\xE0\x48\x83\xE4\xF0\x48\x83\xEC\x08";
+	unsigned char mycode[13]  = "\x48\x8B\x65\xE0\x48\x83\xE4\xF0\x48\x83\xEC\x08";
 	
     UINT64 length = 8;
     
@@ -2374,6 +2629,80 @@ void dg_compilealignretstack(
 	}
 }
 
+
+// on mac os x for x86 you need to align the stack to a 16 byte boundary before calling any gcc compiled code or
+//   any operating system or 3rd party library function due to the strong possibility the called routine will
+//   use the new x86 instructions requiring 16 byte alignment
+
+// stack pointer from before aligment already saved in subroutine frame
+// so to call a subroutine requiring aligment you do:
+//   align stack for number of parameters you are going to push
+//   push parameters for subroutine
+//     stack should now be 16 byte aligned
+//   call subroutine
+//   (drop parameters from subroutine not needed because undoing alignment will drop them)
+//   undo aligment using saved stack pointer in subroutine frame
+//
+// (esp - (n*4) - x)&0x0f = 0 // n = number of parameters, x = alignment in bytes
+// (esp - (n*4))&0x0f = x     // assuming & is distributive, which it is, just choosing which bits
+
+// movl esp -> eax
+// subl eax - (4*n)&(0x0f) -> eax   // use signed or unsigned 8 bit because 0 < (4*(n+1))&(0x0f) < 0x10
+// andl eax & 0x0f -> eax               // use signed or unsigned 8 bit because 0 < x < 0x10
+// subl esp - eax -> esp                // 
+
+// this alignment code does not affect any registers except the return stack pointer of course
+//  it affects flags at this time
+// this aligment code allows for local variable space to be added to the return stack at run time
+//  just push to return stack or subtract from esp and then and movl esp -> [ebp -0x30]
+
+const char* dg_compilealignretstackbname = "dg_compilealignretstackb";
+
+void dg_compilealignretstackb(
+    Bufferhandle* pBHarrayhead,
+    UINT64 numberofintparameters,
+    UINT64 numberoffloatparameters)
+{
+    // movq  [rbp-0x20] -> rsp                0x48 0x8B 0x65 0xE0  // seems rex is needed
+    // andq  rsp & 0xfffffffffffffff0 -> rsp  0x48 0x83 0xE4 0xF0
+    // subq  rsp - 0x0n -> rsp                0x48 0x83 0xEC 0x00
+	unsigned char mycode[13] = "\x48\x8B\x65\xE0\x48\x83\xE4\xF0\x48\x83\xEC\x08";
+	
+    UINT64 length = 8;
+    UINT64 numberofparametersonstack = 0;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+	
+	if (baderrorcount == olderrorcount)
+	{
+		return;
+	}
+    
+    if (numberofintparameters > 6)
+    {
+        numberofparametersonstack = numberofintparameters - 6;
+    }
+    
+    if (numberoffloatparameters > 8)
+    {
+        numberofparametersonstack += (numberoffloatparameters - 8);
+    }
+    
+    if ((numberofparametersonstack & 1) == 1)
+    {
+        length = 12;
+    }
+	
+	dg_compilesegment (
+        pBHarrayhead,
+        (const char*)mycode,
+        length);
+	
+	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_compilealignretstackbname);
+	}
+}
 
 // compiled code does not trash registers
 //   and does not make assumptions about alignment of locals pointer
@@ -2462,48 +2791,6 @@ void dg_compilecallcore (
 		return;
 	}
 }
-
-/*
-const char* dg_compilecallcorepreserveregsname = "dg_compilecallcorepreserveregs";
-
-void dg_compilecallcorepreserveregs (
-    Bufferhandle* pBHarrayhead, 
-    UINT64 addr)
-{	
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-    
-    if (baderrorcount == olderrorcount)
-    {
-        return;
-    }
-	
-	dg_compilealignretstackpreserveregs(pBHarrayhead, 1);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_compilecallcorename);
-		return;
-	}
-	
-    // this doesn't trash the regs for x86
-	dg_compilepushparametertoret (pBHarrayhead, 0); // compile push pBHarrayhead to ret stack
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_compilecallcorename);
-		return;
-	}
-	
-	dg_compilecalladdresspreserveregs (pBHarrayhead, addr);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_compilecallcorename);
-		return;
-	}
-}
-*/
-
 
 
 const char* dg_compilecallftcolonname = "dg_compilecallftcolon";
@@ -3037,6 +3324,49 @@ void dg_compileentersubroutineframe (Bufferhandle* pBHarrayhead)
 }
 
 
+// +00 saved rbp
+// -08 saved flags
+// -10 param 0 (RDI)
+// -18 param 1 (RSI)
+// -20 end of locals (change this to mark where subroutine's return stack stuff is)
+const char dg_forthentercallsubsframecommaname[] = "ENTER-CALL-SUBS-FRAME,";
+
+void dg_forthentercallsubsframecomma (Bufferhandle* pBHarrayhead)
+{
+    unsigned char pbuf[13] = "\x55\x48\x8B\xEC\x9C\x57\x56\x57\x48\x89\x65\xE0";
+
+	// pushq rbp;            0x55             (0x50+rd)
+	// movq rbp<-rsp;        0x48 0x8B 0xEC   (0x8B /r)  r/m32 -> r32 = 11 101 100
+    // pushfq                0x9C
+    // pushq rdi             0x57             (0x50+rd)  // param 0
+    // pushq rsi             0x56             (0x50+rd)  // param 1
+	// pushq rdi             0x57             // for end of locals variable
+    
+    // rsp holds end of locals, this is used during alignment code calculations for subroutine calls
+	// movq rsp->[rbp-0x20]  0x48 0x89 0x65 0xE0
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+	
+	if (baderrorcount == olderrorcount)
+	{
+		return;
+	}
+    
+	dg_compilesegment (
+		pBHarrayhead,
+		(const char*)pbuf,
+        12);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthentercallsubsframecommaname);
+    }
+}
+
+const char dg_forthexitcallsubsframecommaname[]  = "EXIT-CALL-SUBS-FRAME,";
+// same as dg_compileexitlocals
+
+
 const char* dg_compilepusholderrcnttoretname = "COMPILE-OLDERRORCOUNT>RET";
 
 void dg_compilepusholderrorcounttoret (Bufferhandle* pBHarrayhead)
@@ -3117,10 +3447,6 @@ void dg_compilesavelocalframestackpointer (Bufferhandle* pBHarrayhead)
         4);
 }
 */
-
-
-
-
 
 // compiled code no longer trashes the eax register
 //   and does not make assumptions about alignment of locals pointer
@@ -4811,7 +5137,148 @@ void dg_pullmemusingrslashm (
     }
     
     psf->memmode = dg_memmodemodrslashm;
-}    
+}
+
+UINT64 intparameterslookuptable[6] = 
+{
+    dg_rdi,
+    dg_rsi,
+    dg_rdx,
+    dg_rcx,
+    dg_r8,
+    dg_r9
+};
+
+UINT64 floatparameterslookuptable[8] = 
+{
+    dg_xmm0,
+    dg_xmm1,
+    dg_xmm2,
+    dg_xmm3,
+    dg_xmm4,
+    dg_xmm5,
+    dg_xmm6,
+    dg_xmm7
+};
+
+UINT64 intreturnparameterstable[2] =
+{
+    dg_rax,
+    dg_rdx
+};
+
+UINT64 floatreturnparameterstable[2] = 
+{
+    dg_xmm0,
+    dg_xmm1
+};
+
+const char* dg_determineparameterregistername = "dg_determineparameterregister";
+
+UINT64 dg_determineparameterregister (
+    Bufferhandle* pBHarrayhead,
+    UINT64 parameterindex)
+{
+    UINT64 parameterregister;
+    UINT64 numberofintparameters;
+    UINT64 numberoffloatparameters;
+    UINT64 extraparametersarefloatsflag = FORTH_FALSE;
+    UINT64 x;
+    UINT64 floatparameterindex;
+    UINT64 numberofintparametersonstack = 0;
+    // UINT64 numberoffloatparametersonstack = 0;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return((UINT64)-1);
+    }
+    
+    numberofintparameters = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_numberofcparameters);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_determineparameterregistername);
+        return((UINT64)-1);
+    }
+    
+    numberoffloatparameters = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_numberofcfparameters);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_determineparameterregistername);
+        return((UINT64)-1);
+    }
+    
+    extraparametersarefloatsflag = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_extraparametersfloatsflag);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+         dg_pusherror(pBHarrayhead, dg_determineparameterregistername);
+         return((UINT64)-1);
+    }
+    
+    if ( 
+         (parameterindex < numberofintparameters) ||
+         ( 
+           (parameterindex >= (numberofintparameters + numberoffloatparameters)) && 
+           (extraparametersarefloatsflag == FORTH_FALSE)
+         )
+       )
+    {
+        // it's an integer parameter
+        if (parameterindex < (sizeof(intparameterslookuptable)/sizeof(UINT64)))
+        {
+            // it's in a register
+            return(intparameterslookuptable[parameterindex]);
+        }
+        
+        // it's on the stack
+        x = parameterindex - (sizeof(intparameterslookuptable)/sizeof(UINT64));
+        
+        // I doubt this is possible but... you never know... someone inputs a ton of parameters...
+        if (x > dg_cparameteronstackflag)
+        {
+            dg_pusherror(pBHarrayhead, dg_parametersovermaxsizeerror);
+            dg_pusherror(pBHarrayhead, dg_determineparameterregistername);
+            return((UINT64)-1);
+        }
+        
+        return(x | dg_cparameteronstackflag);
+    }
+    
+    // what's the rule when you have a variable parameter list?
+    //  the way it is now, extra parameters are the parsing mode at the end
+    
+    // it's a float parameter
+     
+    floatparameterindex = parameterindex - numberofintparameters; 
+    
+    if (  floatparameterindex < (sizeof(floatparameterslookuptable)/sizeof(UINT64)) )
+    {
+        // it's in a register
+        return(floatparameterslookuptable[floatparameterindex]);
+    }
+    
+    // it's on the stack, if there are any int parameters on the stack, it goes after that...
+    if (numberofintparameters > (sizeof(intparameterslookuptable)/sizeof(UINT64)))
+    {
+        numberofintparametersonstack = numberofintparameters - (sizeof(intparameterslookuptable)/sizeof(UINT64));
+    }
+
+    return(((floatparameterindex - (sizeof(floatparameterslookuptable)/sizeof(UINT64))) + numberofintparametersonstack) | dg_cparameteronstackflag);
+    
+}
 
 
 const char* dg_pulloneaddressingmodename = "dg_pulloneaddressingmode";
@@ -4823,6 +5290,13 @@ void dg_pulloneaddressingmode(
     UINT64 addresssize;
     UINT64 parametertype;
     UINT64 notdoneflag = FORTH_TRUE;
+    
+    // UINT64 numberofintparameters;
+    // UINT64 numberoffloatparameters;
+    // UINT64 whichintparameter;
+    // UINT64 whichfloatparameter;
+    
+    UINT64 rstackdepth;
     
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
     
@@ -5228,7 +5702,228 @@ void dg_pulloneaddressingmode(
                 psf->usesthreebytevex = (UINT64)-1;
                 break;
                 
+            case dg_isdgluforthframelocal:
+                // it's on the stack relative to the frame register
+                //  going to make 0 be local variable 0
+                //  1 local variable 1, etc...
+                //  [rbp - 0x28] = local 0  (there are 4 things...)
+                //  [rbp - 0x30] = local 1 etc
+                parametertype = dg_popdatastack(pBHarrayhead);
+                
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {
+                    dg_pusherror(pBHarrayhead, dg_pulloneaddressingmodename);
+                    return;
+                }
+                
+                psf->displacementsize = 0; // use at least 0  bytes to encode the displacement
+                psf->displacement = -1 * (parametertype + dg_dgluframelocaloffset) * sizeof(UINT64); // not checking for overflow...
+                psf->basereg = dg_rbp;       
+                psf->memmode = dg_memmodemodrslashm;
+                    
+                notdoneflag = FORTH_FALSE;
+                
+                break;
+ 
+ 
+            case dg_isparamusingnoframe:
+                // determine parameter type, reg or stack
+                // do parameter type
+                parametertype = dg_popdatastack(pBHarrayhead);
+                
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {
+                    dg_pusherror(pBHarrayhead, dg_pulloneaddressingmodename);
+                    return;
+                }
+                
+                parametertype = dg_determineparameterregister (
+                    pBHarrayhead,
+                    parametertype);
+                    
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {
+                    dg_pusherror(pBHarrayhead, dg_pulloneaddressingmodename);
+                    return;
+                }
+                
+                if (dg_cparameteronstackflag == (parametertype & dg_cparameteronstackmask) )
+                {
+                    // it's on the stack...
+                    // need rstack depth
+                    rstackdepth = dg_getbufferuint64(
+                        pBHarrayhead,
+                        DG_DATASPACE_BUFFERID,
+                        dg_noframereturnstackdepth);
+                        
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_pulloneaddressingmodename);
+                        return;
+                    }   
+                     
+                    psf->displacementsize = 0; // use at least 0  bytes to encode the displacement
+                    psf->displacement = ((parametertype & (~dg_cparameteronstackmask)) + rstackdepth) * sizeof(UINT64); 
+                        // can't overflow because of mask
+                        // + 1 because function return is at 0... assumes stack pointer
+                        // going to need to track stack pointer offset and adjust...
+                    psf->basereg = dg_rsp;       
+                    psf->memmode = dg_memmodemodrslashm;
+                    
+                    notdoneflag = FORTH_FALSE;
+                
+                    break;
+                }
+                
+                psf->basereg = parametertype;
+                
+                if ((parametertype >= dg_xmm0) &&
+                    (parametertype <= dg_xmm15))
+                {
+                    if (psf->memmode == dg_memmodeunknown)
+                    {
+                        psf->memmode = dg_memmodexmmreg;
+                    }
+                    
+                    psf->size = 16;
+                    
+                    notdoneflag = FORTH_FALSE;
+                    
+                    break;
+                }
+                
+                // promote memmode to defaultreg if not already higher
+                if (psf->memmode == dg_memmodeunknown)
+                {
+                    psf->memmode = dg_memmodedefaultreg;
+                }
+                
+                psf->size = dg_getsizefromreg (psf->basereg);
+                
+                notdoneflag = FORTH_FALSE;
+            
+                break;
+                
+                
+                
+            case dg_isparamusingframe:
+                // determine parameter type, reg or stack
+                // do parameter type
+                parametertype = dg_popdatastack(pBHarrayhead);
+                
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {
+                    dg_pusherror(pBHarrayhead, dg_pulloneaddressingmodename);
+                    return;
+                }
+                
+                parametertype = dg_determineparameterregister (
+                    pBHarrayhead,
+                    parametertype);
+                    
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {
+                    dg_pusherror(pBHarrayhead, dg_pulloneaddressingmodename);
+                    return;
+                }
+                
+                if (dg_cparameteronstackflag == (parametertype & dg_cparameteronstackmask) )
+                {
+                    // it's on the stack...
+                    // need to determine if using rbp as base reg or not and adjust
+                    psf->displacementsize = 0; // use at least 0  bytes to encode the displacement
+                    psf->displacement = ((parametertype & (~dg_cparameteronstackmask)) + dg_paramusingframeoffset) * sizeof(UINT64); 
+                        // can't overflow because of mask
+                        // + 1 because function return is at 0... assumes stack pointer
+                        // going to need to track stack pointer offset and adjust...
+                    psf->basereg = dg_rbp;       
+                    psf->memmode = dg_memmodemodrslashm;
+                    // psf->size = addresssize; // leaving it on default size so xmm registers work
+                    
+                    notdoneflag = FORTH_FALSE;
+                
+                    break;
+                }
+                
+                psf->basereg = parametertype;
+                
+                if ((parametertype >= dg_xmm0) &&
+                    (parametertype <= dg_xmm15))
+                {
+                    if (psf->memmode == dg_memmodeunknown)
+                    {
+                        psf->memmode = dg_memmodexmmreg;
+                    }
+                    
+                    psf->size = 16;
+                    
+                    notdoneflag = FORTH_FALSE;
+                    
+                    break;
+                }
+                
+                // promote memmode to defaultreg if not already higher
+                if (psf->memmode == dg_memmodeunknown)
+                {
+                    psf->memmode = dg_memmodedefaultreg;
+                }
+                
+                psf->size = dg_getsizefromreg (psf->basereg);
+                
+                notdoneflag = FORTH_FALSE;
+            
+                break;
+                
             default:
+                
+                if (dg_cparameteronstacknoframeflag == (parametertype & dg_cparameteronstackmask) )
+                {
+                    // it's on the stack...
+                    // need rstack depth
+                    rstackdepth = dg_getbufferuint64(
+                        pBHarrayhead,
+                        DG_DATASPACE_BUFFERID,
+                        dg_noframereturnstackdepth);
+                        
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_pulloneaddressingmodename);
+                        return;
+                    }   
+                     
+                    // need to determine if using rbp as base reg or not and adjust
+                    psf->displacementsize = 0; // use at least 0  bytes to encode the displacement
+                    psf->displacement = ((parametertype & (~dg_cparameteronstackmask)) + rstackdepth) * sizeof(UINT64); 
+                        // can't overflow because of mask
+                        // + 1 because function return is at 0... assumes stack pointer
+                        // going to need to track stack pointer offset and adjust...
+                    psf->basereg = dg_rsp;       
+                    psf->memmode = dg_memmodemodrslashm;
+                    // psf->size = addresssize;  // leaving it on default size so xmm registers work
+                    
+                    notdoneflag = FORTH_FALSE;
+                
+                    break;
+                }
+                
+                if (dg_cparameteronstackflag == (parametertype & dg_cparameteronstackmask) )
+                {
+                    // it's on the stack...
+                    // need to determine if using rbp as base reg or not and adjust
+                    psf->displacementsize = 0; // use at least 0  bytes to encode the displacement
+                    psf->displacement = ((parametertype & (~dg_cparameteronstackmask)) + dg_paramusingframeoffset) * sizeof(UINT64); 
+                        // can't overflow because of mask
+                        // + 1 because function return is at 0... assumes stack pointer
+                        // going to need to track stack pointer offset and adjust...
+                    psf->basereg = dg_rbp;       
+                    psf->memmode = dg_memmodemodrslashm;
+                    // psf->size = addresssize; // leaving it on default size so xmm registers work
+                    
+                    notdoneflag = FORTH_FALSE;
+                
+                    break;
+                }
+                
                 // assuming it is a reg of some type
                 psf->basereg = parametertype;
                 
@@ -12639,6 +13334,110 @@ void dg_compilentoxmmr(
     }
 }
 
+const char* dg_fill2targetemptyoptblname = "dg_fill2targetemptyoptbl";
+
+void dg_fill2targetemptyoptbl (
+    Bufferhandle* pBHarrayhead,
+    struct Twotargetopcodestrings* popcodes) // 0-7
+{
+    popcodes->n8toa8.opcodestringlength = 0;
+    popcodes->n8toa8.prefixstringlength = 0;
+    
+    popcodes->n8tor8.opcodestringlength = 0;
+    popcodes->n8tor8.prefixstringlength = 0;
+    
+    popcodes->n8tom8.opcodestringlength = 0;
+    popcodes->n8tom8.prefixstringlength = 0;
+    
+    popcodes->n32toa32.opcodestringlength = 0;
+    popcodes->n32toa32.prefixstringlength = 0;
+    
+    popcodes->n32tor32.opcodestringlength = 0;
+    popcodes->n32tor32.prefixstringlength = 0;
+    
+    popcodes->n32tom32.opcodestringlength = 0;
+    popcodes->n32tom32.prefixstringlength = 0;
+    
+    popcodes->n8tom32signextended.opcodestringlength = 0;
+    popcodes->n8tom32signextended.prefixstringlength = 0;
+    
+    popcodes->n8tofpr.opcodestringlength = 0;
+    popcodes->n8tofpr.prefixstringlength = 0;
+    
+    popcodes->n8toxmm.opcodestringlength = 0;
+    popcodes->n8toxmm.prefixstringlength = 0;
+    
+    popcodes->m8tor8.opcodestringlength = 0;
+    popcodes->m8tor8.prefixstringlength = 0;
+    
+    popcodes->m32tor32.opcodestringlength = 0;
+    popcodes->m32tor32.prefixstringlength = 0;
+    
+    popcodes->m64tofpr.opcodestringlength = 0;
+    popcodes->m64tofpr.prefixstringlength = 0;
+    
+    popcodes->m64toxmm.opcodestringlength = 0;
+    popcodes->m64toxmm.prefixstringlength = 0;
+    
+    popcodes->r8tom8.opcodestringlength = 0;
+    popcodes->r8tom8.prefixstringlength = 0;
+    
+    popcodes->r32tom32.opcodestringlength = 0;
+    popcodes->r32tom32.prefixstringlength = 0;
+    
+    popcodes->fprtom64.opcodestringlength = 0;
+    popcodes->fprtom64.prefixstringlength = 0;
+    
+    popcodes->xmmtom64.opcodestringlength = 0;
+    popcodes->xmmtom64.prefixstringlength = 0;
+    
+    popcodes->usesxmmandmemtargetsize = 0;
+}
+
+
+const char* dg_fill2targetmovoptblname = "dg_fill2targetmovoptbl";
+
+void dg_fill2targetmovoptbl (
+    Bufferhandle* pBHarrayhead,
+    struct Twotargetopcodestrings* popcodes)
+{
+    dg_fill2targetemptyoptbl(
+        pBHarrayhead,
+        popcodes);
+    
+    popcodes->n8tor8.popcodestring[0] = (char)0xB0;
+    popcodes->n8tor8.opcodestringlength = 1;
+    popcodes->n8tor8.opcodeextension = (UINT64)-1;
+    
+    popcodes->n8tom8.popcodestring[0] = (char)0xC6;
+    popcodes->n8tom8.opcodestringlength = 1;
+    popcodes->n8tom8.opcodeextension = 0;
+    
+    popcodes->n32tor32.popcodestring[0] = (char)0xB8;
+    popcodes->n32tor32.opcodestringlength = 1;
+    popcodes->n32tor32.opcodeextension = (UINT64)-1;
+    
+    popcodes->n32tom32.popcodestring[0] = (char)0xC7;
+    popcodes->n32tom32.opcodestringlength = 1;
+    popcodes->n32tom32.opcodeextension = 0;
+    
+    popcodes->m8tor8.popcodestring[0] = (char)0x8A;
+    popcodes->m8tor8.opcodestringlength = 1;
+    popcodes->m8tor8.opcodeextension = (UINT64)-1;
+    
+    popcodes->m32tor32.popcodestring[0] = (char)0x8B;
+    popcodes->m32tor32.opcodestringlength = 1;
+    popcodes->m32tor32.opcodeextension = (UINT64)-1;
+    
+    popcodes->r8tom8.popcodestring[0] = (char)0x88;
+    popcodes->r8tom8.opcodestringlength = 1;
+    popcodes->r8tom8.opcodeextension = (UINT64)-1;
+    
+    popcodes->r32tom32.popcodestring[0] = (char)0x89;
+    popcodes->r32tom32.opcodestringlength = 1;
+    popcodes->r32tom32.opcodeextension = (UINT64)-1;
+}
+
 // compile xmm registers to r/m ...
 //   one and only 1 target must be xmm
 //   after that it's regular compile two targets
@@ -12655,6 +13454,11 @@ void dg_compiletwotargets (
     UINT64 isreverse = FORTH_FALSE;
     
     UINT64 addresssize;
+    UINT64 mtomtransferreg;
+    
+    dg_Sibformatter mtomraxtarget;
+    
+    struct Twotargetopcodestrings mymovopcodes;
     
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
     
@@ -12708,6 +13512,7 @@ void dg_compiletwotargets (
     if ( (0 == pfirsttarget->size) &&
          (0 == psecondtarget->size) )
     {
+        // can't I just say = addresssize?
         if (4 == addresssize)
         {
             // use default size dword
@@ -12967,8 +13772,174 @@ void dg_compiletwotargets (
             break;
             
         case dg_mtom:
-            dg_pusherror(pBHarrayhead, (const char*)"memory to memory operations not supported yet");
-            dg_pusherror(pBHarrayhead, dg_compiletwotargetsname);
+            // if it's an xmm optable... would need to use xmm register for transfer...
+            if (popcodes->m64tofpr.opcodestringlength != 0)  
+            {
+                // it's a floating point instruction... only supporting MOVQ, for now
+                if ( (popcodes->m64tofpr.popcodestring[0] != (char)0x0F) ||
+                     (popcodes->m64tofpr.popcodestring[1] != (char)0x6F) )
+                {
+                    dg_pusherror(pBHarrayhead, (const char*)"only MOVQ is supported for floating point memory to memory operations at this time");
+                    dg_pusherror(pBHarrayhead, dg_compiletwotargetsname);
+                    return;
+                }
+                
+                // change the opcode table from MOVQ, to MOV,
+                dg_fill2targetmovoptbl (
+                    pBHarrayhead,
+                    popcodes);
+        
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {
+                    dg_pusherror(pBHarrayhead, dg_compiletwotargetsname);
+                    return;
+                }
+            }
+            
+            // I want to make it go mov src>rax operation rax>dest
+            //  if forward, pfirsttarget is destination, psecondtarget is source
+            //  if reverse, psecondtarget is destination, pfirsttarget is destination
+            
+            // need to check sizes, make sure both are the same...
+            //  they should be equal at this point unless they were different at the start of this routine
+            if (pfirsttarget->size != psecondtarget->size)
+            {
+                dg_pusherror(pBHarrayhead, (const char*)"size of both targets must match. automatic size conversion not supported... yet");
+                dg_pusherror(pBHarrayhead, dg_compiletwotargetsname);
+                return;
+            }
+            
+            switch(pfirsttarget->size)
+            {
+                case 8:
+                    mtomtransferreg = dg_rax;
+                    break;
+                case 4:
+                    mtomtransferreg = dg_eax;
+                    break;
+                case 2:
+                    mtomtransferreg = dg_ax;
+                    break;
+                case 1:
+                    mtomtransferreg = dg_al;
+                    break;
+                default:
+                    // this shouldn't happen... but just in case:
+                    mtomtransferreg = dg_rax;
+                    break;
+            }
+            
+            if (FORTH_FALSE == isreverse)
+            {
+                dg_fill2targetmovoptbl (
+                    pBHarrayhead,
+                    &mymovopcodes);
+        
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {
+                    dg_pusherror(pBHarrayhead, dg_compiletwotargetsname);
+                    return;
+                }
+                
+                dg_initSibformatter(&mtomraxtarget);
+                    mtomraxtarget.basereg = mtomtransferreg;
+                    mtomraxtarget.memmode = dg_memmodedefaultreg;
+                    mtomraxtarget.size = dg_getsizefromreg (mtomtransferreg);
+                    
+                // have to do something with the reverse flags....
+                mtomraxtarget.direction = 1;
+                psecondtarget->direction = 1;
+                
+                dg_compilertom (
+                    pBHarrayhead,
+                    &mymovopcodes,
+                    &mtomraxtarget, // pregpsf, - top on stack
+                    psecondtarget);  // pmempsf, - second on stack
+            
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {
+                    dg_pusherror(pBHarrayhead, dg_compiletwotargetsname);
+                    return;
+                }
+                
+                dg_initSibformatter(&mtomraxtarget);
+                    mtomraxtarget.basereg = mtomtransferreg;
+                    mtomraxtarget.memmode = dg_memmodedefaultreg;
+                    mtomraxtarget.size = dg_getsizefromreg (mtomtransferreg);
+                    
+                // mtomraxtarget.direction = 0;
+                
+                dg_compilertom (
+                    pBHarrayhead,
+                    popcodes,
+                    &mtomraxtarget, // pregpsf, - second on stack
+                    pfirsttarget);  // pmempsf, - first on stack
+            
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {
+                    dg_pusherror(pBHarrayhead, dg_compiletwotargetsname);
+                    return;
+                }
+            }
+            else
+            {
+                // simple thing to do would be not support reverse
+                // dg_pusherror(pBHarrayhead, (const char*)"reverse memory to memory operations not supported yet");
+                // dg_pusherror(pBHarrayhead, dg_compiletwotargetsname);
+                
+                dg_fill2targetmovoptbl (
+                    pBHarrayhead,
+                    &mymovopcodes);
+        
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {
+                    dg_pusherror(pBHarrayhead, dg_compiletwotargetsname);
+                    return;
+                }
+                
+                dg_initSibformatter(&mtomraxtarget);
+                    mtomraxtarget.basereg = mtomtransferreg;
+                    mtomraxtarget.memmode = dg_memmodedefaultreg;
+                    mtomraxtarget.size = dg_getsizefromreg (mtomtransferreg);
+                    
+                // have to do something with the reverse flags....
+                mtomraxtarget.direction = 1;
+                pfirsttarget->direction = 1;
+                
+                dg_compilertom (
+                    pBHarrayhead,
+                    &mymovopcodes,
+                    &mtomraxtarget, // pregpsf, - top on stack
+                    pfirsttarget);  // pmempsf, - second on stack
+            
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {
+                    dg_pusherror(pBHarrayhead, dg_compiletwotargetsname);
+                    return;
+                }
+                
+                dg_initSibformatter(&mtomraxtarget);
+                    mtomraxtarget.basereg = mtomtransferreg;
+                    mtomraxtarget.memmode = dg_memmodedefaultreg;
+                    mtomraxtarget.size = dg_getsizefromreg (mtomtransferreg);
+                    
+                // mtomraxtarget.direction = 0;
+                psecondtarget->direction = 0;
+                
+                dg_compilertom (
+                    pBHarrayhead,
+                    popcodes,
+                    &mtomraxtarget, // pregpsf, - second on stack
+                    psecondtarget);  // pmempsf, - first on stack
+            
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {
+                    dg_pusherror(pBHarrayhead, dg_compiletwotargetsname);
+                    return;
+                }
+            }
+            
+            
             break;
         
         case dg_fpsrton:
@@ -13087,65 +14058,7 @@ void dg_compiletwotargets (
     }
 }
 
-const char* dg_fill2targetemptyoptblname = "dg_fill2targetemptyoptbl";
 
-void dg_fill2targetemptyoptbl (
-    Bufferhandle* pBHarrayhead,
-    struct Twotargetopcodestrings* popcodes) // 0-7
-{
-    popcodes->n8toa8.opcodestringlength = 0;
-    popcodes->n8toa8.prefixstringlength = 0;
-    
-    popcodes->n8tor8.opcodestringlength = 0;
-    popcodes->n8tor8.prefixstringlength = 0;
-    
-    popcodes->n8tom8.opcodestringlength = 0;
-    popcodes->n8tom8.prefixstringlength = 0;
-    
-    popcodes->n32toa32.opcodestringlength = 0;
-    popcodes->n32toa32.prefixstringlength = 0;
-    
-    popcodes->n32tor32.opcodestringlength = 0;
-    popcodes->n32tor32.prefixstringlength = 0;
-    
-    popcodes->n32tom32.opcodestringlength = 0;
-    popcodes->n32tom32.prefixstringlength = 0;
-    
-    popcodes->n8tom32signextended.opcodestringlength = 0;
-    popcodes->n8tom32signextended.prefixstringlength = 0;
-    
-    popcodes->n8tofpr.opcodestringlength = 0;
-    popcodes->n8tofpr.prefixstringlength = 0;
-    
-    popcodes->n8toxmm.opcodestringlength = 0;
-    popcodes->n8toxmm.prefixstringlength = 0;
-    
-    popcodes->m8tor8.opcodestringlength = 0;
-    popcodes->m8tor8.prefixstringlength = 0;
-    
-    popcodes->m32tor32.opcodestringlength = 0;
-    popcodes->m32tor32.prefixstringlength = 0;
-    
-    popcodes->m64tofpr.opcodestringlength = 0;
-    popcodes->m64tofpr.prefixstringlength = 0;
-    
-    popcodes->m64toxmm.opcodestringlength = 0;
-    popcodes->m64toxmm.prefixstringlength = 0;
-    
-    popcodes->r8tom8.opcodestringlength = 0;
-    popcodes->r8tom8.prefixstringlength = 0;
-    
-    popcodes->r32tom32.opcodestringlength = 0;
-    popcodes->r32tom32.prefixstringlength = 0;
-    
-    popcodes->fprtom64.opcodestringlength = 0;
-    popcodes->fprtom64.prefixstringlength = 0;
-    
-    popcodes->xmmtom64.opcodestringlength = 0;
-    popcodes->xmmtom64.prefixstringlength = 0;
-    
-    popcodes->usesxmmandmemtargetsize = 0;
-}
 
 // hmm, how do I do the memory storage for the opcode strings?
 const char* dg_fill2targetmathoptblname = "dg_fill2targetmathoptbl";
@@ -13252,48 +14165,6 @@ void dg_fill2targetadoxoptbl (
 
 
   
-const char* dg_fill2targetmovoptblname = "dg_fill2targetmovoptbl";
-
-void dg_fill2targetmovoptbl (
-    Bufferhandle* pBHarrayhead,
-    struct Twotargetopcodestrings* popcodes)
-{
-    dg_fill2targetemptyoptbl(
-        pBHarrayhead,
-        popcodes);
-    
-    popcodes->n8tor8.popcodestring[0] = (char)0xB0;
-    popcodes->n8tor8.opcodestringlength = 1;
-    popcodes->n8tor8.opcodeextension = (UINT64)-1;
-    
-    popcodes->n8tom8.popcodestring[0] = (char)0xC6;
-    popcodes->n8tom8.opcodestringlength = 1;
-    popcodes->n8tom8.opcodeextension = 0;
-    
-    popcodes->n32tor32.popcodestring[0] = (char)0xB8;
-    popcodes->n32tor32.opcodestringlength = 1;
-    popcodes->n32tor32.opcodeextension = (UINT64)-1;
-    
-    popcodes->n32tom32.popcodestring[0] = (char)0xC7;
-    popcodes->n32tom32.opcodestringlength = 1;
-    popcodes->n32tom32.opcodeextension = 0;
-    
-    popcodes->m8tor8.popcodestring[0] = (char)0x8A;
-    popcodes->m8tor8.opcodestringlength = 1;
-    popcodes->m8tor8.opcodeextension = (UINT64)-1;
-    
-    popcodes->m32tor32.popcodestring[0] = (char)0x8B;
-    popcodes->m32tor32.opcodestringlength = 1;
-    popcodes->m32tor32.opcodeextension = (UINT64)-1;
-    
-    popcodes->r8tom8.popcodestring[0] = (char)0x88;
-    popcodes->r8tom8.opcodestringlength = 1;
-    popcodes->r8tom8.opcodeextension = (UINT64)-1;
-    
-    popcodes->r32tom32.popcodestring[0] = (char)0x89;
-    popcodes->r32tom32.opcodestringlength = 1;
-    popcodes->r32tom32.opcodeextension = (UINT64)-1;
-}
 
   
 const char* dg_fill2targettestoptblname = "dg_fill2targettestoptbl";
@@ -21979,7 +22850,7 @@ void dg_forthvpblendvbcomma (Bufferhandle* pBHarrayhead)
     {
         return;
     }
-    // moo
+    
     dg_pullandcompilevexn8morxmmxmmtoxmm (
         pBHarrayhead,
         1, // simdprefixcode,  // 0 = none, 1 = 0x66, 2 = 0xF3, 3 = 0xF2
@@ -22580,7 +23451,7 @@ void dg_forthvphminposuwcomma (Bufferhandle* pBHarrayhead)
         return;
     }
 }
-// moo
+
 const char* dg_forthvphsubwcommaname = "VPHSUBW,";
 
 void dg_forthvphsubwcomma (Bufferhandle* pBHarrayhead)
@@ -33608,7 +34479,7 @@ void dg_copyxmmopcodetom32 (
     }
 }
 
-
+/*
 const char* dg_pullandcompilem64orrtofromfporxmmname = "dg_pullandcompilem64orrtofromfporxmm";
 
 void dg_pullandcompilem64orrtofromfporxmm (
@@ -33718,11 +34589,237 @@ void dg_pullandcompilem64orrtofromfporxmm (
         
         secondtarget.size = firsttarget.size; // if second target was a reg, it's size is set
         
+        // xmm/mm is the source case
+        dg_compiletwotargets(
+            pBHarrayhead,
+            popcodes, 
+            &secondtarget,  
+            &firsttarget);
+        
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_pullandcompilem64orrtofromfporxmmname);
+            return;
+        }
+    }
+    else if ((secondtargettype == dg_targettyperega) ||
+        (secondtargettype == dg_targettypereg) ||
+        (secondtargettype == dg_targettypemem))
+    {
+        if ((firsttargettype != dg_targettypexmmreg) &&
+            (firsttargettype != dg_targettypefpsreg))
+        {
+            dg_pusherror(pBHarrayhead, (const char*)"if first target is r or m then second must be fp or xmm");
+            dg_pusherror(pBHarrayhead, dg_pullandcompilem64orrtofromfporxmmname);
+            return;
+        }
+        
+        if (firsttargettype == dg_targettypexmmreg)
+        {
+            // copy m64toxmm to m32tor32
+            dg_copyxmmopcodetom32 (
+                pBHarrayhead,
+                popcodes);
+            
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_pullandcompilem64orrtofromfporxmmname);
+                return;
+            }
+        }
+        else
+        {
+            // copy m64tofp to m32tor32
+            dg_copyfpropcodetom32 (
+                pBHarrayhead,
+                popcodes);
+            
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_pullandcompilem64orrtofromfporxmmname);
+                return;
+            }
+        }
+        
+        if (secondtarget.size == 0)
+        {
+            secondtarget.size = defaultsize;
+        }
+        
+        if ((secondtarget.size != 0) &&
+            (secondtarget.size != 4) &&
+            (secondtarget.size != 8))
+        {
+            dg_pusherror(pBHarrayhead, (const char*)"only 32 and 64 bit memory and register targets are supported for this instruction");
+            dg_pusherror(pBHarrayhead, dg_pullandcompilem64orrtofromfporxmmname);
+            return;
+        }
+        
+        firsttarget.memmode = dg_memmodereg; // going to use a regular morrtor instruction
+        
+        firsttarget.size = secondtarget.size; // if second target was a reg, it's size is set
+        
+        // xmm/mm is the destination case
         dg_compiletwotargets (
             pBHarrayhead,
             popcodes,
             &firsttarget,
             &secondtarget);
+        
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_pullandcompilem64orrtofromfporxmmname);
+            return;
+        }
+    }
+    else
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"one target must be r or m and the other fp or xmm");
+        dg_pusherror(pBHarrayhead, dg_pullandcompilem64orrtofromfporxmmname);
+        return;
+    }
+}
+*/
+
+const char* dg_pullandcompilem64orrtofromfporxmmname = "dg_pullandcompilem64orrtofromfporxmm";
+
+void dg_pullandcompilem64orrtofromfporxmm (
+    Bufferhandle* pBHarrayhead,
+    struct Twotargetopcodestrings* popcodes,
+    UINT64 defaultsize)
+{
+    dg_Sibformatter firsttarget;
+    dg_Sibformatter secondtarget;
+    
+    dg_initSibformatter(&firsttarget);
+    dg_initSibformatter(&secondtarget);
+    
+    UINT64 firsttargettype;
+    UINT64 secondtargettype;
+
+    UINT64 isreverse = FORTH_FALSE;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    dg_pulloneaddressingmode(
+        pBHarrayhead,
+        &firsttarget); // top on stack xmm or fp for forward, m or r for reverse
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_pullandcompilem64orrtofromfporxmmname);
+        return;
+    }
+    
+    dg_pulloneaddressingmode(
+        pBHarrayhead,
+        &secondtarget); // second on stack m or r for forward, xmm or fp for reverse
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_pullandcompilem64orrtofromfporxmmname);
+        return;
+    }
+
+    if ((firsttarget.direction != 0) ||
+        (secondtarget.direction != 0))
+    {
+        isreverse = FORTH_TRUE;
+    }
+    
+    firsttargettype = dg_gettargettype(
+        pBHarrayhead,
+        &firsttarget);
+    
+    secondtargettype = dg_gettargettype(
+        pBHarrayhead,
+        &secondtarget);
+    
+    // if first target (destination) is r/m32
+    if ((firsttargettype == dg_targettyperega) ||
+        (firsttargettype == dg_targettypereg) ||
+        (firsttargettype == dg_targettypemem))
+    {
+        if ((secondtargettype != dg_targettypexmmreg) &&
+            (secondtargettype != dg_targettypefpsreg))
+        {
+            dg_pusherror(pBHarrayhead, (const char*)"if second target is r or m then first must be fp or xmm");
+            dg_pusherror(pBHarrayhead, dg_pullandcompilem64orrtofromfporxmmname);
+            return;
+        }
+        
+        if (secondtargettype == dg_targettypexmmreg)
+        {
+            // copy m64toxmm to m32tor32
+            dg_copyxmmopcodetom32 (
+                pBHarrayhead,
+                popcodes);
+            
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_pullandcompilem64orrtofromfporxmmname);
+                return;
+            }
+        }
+        else
+        {
+            // copy m64tofp to m32tor32
+            dg_copyfpropcodetom32 (
+                pBHarrayhead,
+                popcodes);
+            
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_pullandcompilem64orrtofromfporxmmname);
+                return;
+            }
+        }
+        
+        if (firsttarget.size == 0)
+        {
+            firsttarget.size = defaultsize;
+        }
+        
+        if ((firsttarget.size != 0) &&
+            (firsttarget.size != 4) &&  // I'm going to allow users to specify 32 bit targets
+            (firsttarget.size != 8))
+        {
+            dg_pusherror(pBHarrayhead, (const char*)"only 32 and 64 bit memory and register targets are supported for this instruction");
+            dg_pusherror(pBHarrayhead, dg_pullandcompilem64orrtofromfporxmmname);
+            return;
+        }
+        
+        secondtarget.memmode = dg_memmodereg; // going to use a regular morrtor instruction
+        
+        secondtarget.size = firsttarget.size; // if second target was a reg, it's size is set
+
+        // dg_compiletwotargets can not tell what direction to use for the register to register case  (2022 April 7 J.N.)
+        //  so you have to figure it out here or else dg_compiletwotargets may use the wrong opcode.
+        //  if it's rax->xmm then you want the forward opcode
+        //  if it's rax<-xmm then you want the reverse opcode
+
+        // xmm is the second target... at this point direction is backwards so you have to switch the direction
+        //  and swap the targets
+        if (FORTH_FALSE == isreverse)
+        {
+            firsttarget.direction = 1; // just need to do one...
+        }
+        else
+        {
+            firsttarget.direction = 0;
+            secondtarget.direction = 0;
+        }
+        
+        dg_compiletwotargets (
+            pBHarrayhead,
+            popcodes,
+            &secondtarget,
+            &firsttarget);
         
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
         {
@@ -63201,77 +64298,37 @@ void dg_forthstrtopstrpushcomma (Bufferhandle* pBHarrayhead)
 	}
 }
 
-UINT64 cparameterslookuptable[6] = 
-{
-    dg_rdi,
-    dg_rsi,
-    dg_rdx,
-    dg_rcx,
-    dg_r8,
-    dg_r9
-};
+// const char dg_forthparencurlyname[] = "(<";
+const char dg_forthframeparamscurlyname[] = "FRAME-PARAMS<";
 
-const char dg_forthcparameterscurlyname[] = "CPARAMETERS<";
-
-void dg_forthcparameterscurly (Bufferhandle* pBHarrayhead)
+void dg_forthframeparamscurly (Bufferhandle* pBHarrayhead)
 {
     UINT64 localwordid;
     UINT64 localswordlistid;
-    UINT64 data;
-    UINT64 compiletype;
     
-    UINT64 numberofcparameters;
-    UINT64 numberofcfparameters;
+    UINT64 numberofintparameters = 0;
+    UINT64 numberoffloatparameters = 0;
     
     UINT64 foundendflag = FORTH_FALSE;
 
     unsigned char* pname;
     UINT64 namelength = 0;
-
+    
+    INT64 compareflag;
+    UINT64 parsingfloatsflag = FORTH_FALSE; // start out parsing ints
+    
+    UINT64 i;
+    UINT64 stringstackdepth;
+    
+    const char* pError;
+    
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
     
     if (baderrorcount == olderrorcount)
     {
         return;
     }
-    
-    numberofcparameters = dg_getbufferuint64(
-        pBHarrayhead,
-        DG_DATASPACE_BUFFERID,
-        dg_numberofcparameters);
-    
-    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-    {
-        dg_pusherror(pBHarrayhead, dg_forthcparameterscurlyname);
-        return;
-    }
-    
-    if (numberofcparameters != 0)
-    {
-        dg_pusherror(pBHarrayhead, (const char*)"Number of c floating point parameters was not 0. Did you forget to do ?CLEAR-LOCALS ?");
-        dg_pusherror(pBHarrayhead, dg_forthcparameterscurlyname);
-        return;
-    }
-    
-    numberofcfparameters = dg_getbufferuint64(
-        pBHarrayhead,
-        DG_DATASPACE_BUFFERID,
-        dg_numberofcfparameters);
-    
-    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-    {
-        dg_pusherror(pBHarrayhead, dg_forthcparameterscurlyname);
-        return;
-    }
-    
-    if (numberofcfparameters != 0)
-    {
-        dg_pusherror(pBHarrayhead, (const char*)"Number of c floating point parameters was not 0. You have to do the integer parameters first in case both use the return stack. Did you forget to do ?CLEAR-LOCALS ?");
-        dg_pusherror(pBHarrayhead, dg_forthcparameterscurlyname);
-        return;
-    }
         
-    
     localswordlistid = dg_getbufferuint64(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
@@ -63279,7 +64336,7 @@ void dg_forthcparameterscurly (Bufferhandle* pBHarrayhead)
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
-        dg_pusherror(pBHarrayhead, dg_forthcparameterscurlyname);
+        dg_pusherror(pBHarrayhead, dg_forthframeparamscurlyname);
         return;
     }
     
@@ -63292,94 +64349,236 @@ void dg_forthcparameterscurly (Bufferhandle* pBHarrayhead)
             &foundendflag,
             FORTH_FALSE);
             
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthframeparamscurlyname);
+            return;
+        }
+            
         if (namelength != 0)
         {
-            if (numberofcparameters < 6)
-            {
-                data = cparameterslookuptable[numberofcparameters];
-                compiletype = (UINT64)&dg_forthdocompiletypedpushn;
-            }
-            else
-            {
-                // this assumes you are using RBP PUSH, RSP RBP MOV, at the entry of your subroutine
-                data = ((numberofcparameters - 6) * 8) + 0x10;
-                compiletype = (UINT64)&dg_forthdocompiletypedpushbracketrbpplusn;
-            }
             
-            localwordid = dg_newwordcopyname (
-                pBHarrayhead,
-                (UINT64)DG_CORE_BUFFERID,
-                compiletype,
-                0, // databufid,
-                data, // databufoffset,
-                (UINT64)DG_CORE_BUFFERID,
-                (UINT64)pname,
-                namelength);
-            
-            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            pError = dg_comparebytes (
+                pname,                 // pstring1, 
+                namelength,            // string1length,
+                (unsigned char*)"INT", //  pstring2,
+                3,                     // string2length,
+                &compareflag);         // pflag);
+                
+            if (pError != dg_success)
             {
-                dg_pusherror(pBHarrayhead, dg_forthcparameterscurlyname);
+                dg_pusherror(pBHarrayhead, pError);
+                dg_pusherror(pBHarrayhead, dg_comparebytesname);
+                dg_pusherror(pBHarrayhead, dg_forthframeparamscurlyname);
                 return;
             }
             
+            if (0 == compareflag)
+            {
+                parsingfloatsflag = FORTH_FALSE;
+            }
+            else
+            {
+                pError = dg_comparebytes (
+                    pname,                 // pstring1, 
+                    namelength,            // string1length,
+                    (unsigned char*)"FLOAT", //  pstring2,
+                    5,                     // string2length,
+                    &compareflag);         // pflag);
+                
+                if (pError != dg_success)
+                {
+                    dg_pusherror(pBHarrayhead, pError);
+                    dg_pusherror(pBHarrayhead, dg_comparebytesname);
+                    dg_pusherror(pBHarrayhead, dg_forthframeparamscurlyname);
+                    return;
+                }
+                
+                if (0 == compareflag)
+                {
+                    parsingfloatsflag = FORTH_TRUE;
+                }
+                else
+                {
+                    // it's a parameter name
+                    //  if we are in float mode push this to the string stack for later
+                    //  because on Mac, floating point parameters come after int parameters
+                    //  on the stack, regardless of their position in the C prototype
+                    if (parsingfloatsflag != FORTH_FALSE)
+                    {
+                        // we are parsing float paramters
+                        dg_pushlstring (
+                            pBHarrayhead,
+                            DG_STRINGOFFSETSTACK_BUFFERID,
+                            DG_STRINGSTRINGSTACK_BUFFERID,
+                            namelength,
+                            pname);
+                            
+                        if (dg_geterrorcount(pBHarrayhead) != 0)
+                        {
+                            dg_pusherror(pBHarrayhead, dg_forthframeparamscurlyname);
+                            return;
+                        }
+                        
+                        numberoffloatparameters++;
+                    }
+                    else
+                    {
+                        // it's an int parameter
+                        // add the symbol name - it's a constant
+                        localwordid = dg_createdconstantdef (
+                            pBHarrayhead,
+                            numberofintparameters, // databufoffset
+                            dg_isparamusingframe, // databufid,
+                            pname,
+                            namelength);
+                
+                        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                        {
+                            dg_pusherror(pBHarrayhead, dg_forthframeparamscurlyname);
+                            return;
+                        }
+                
+                        dg_linkdefinition(
+                            pBHarrayhead,
+                            localswordlistid,
+                            localwordid);
+                    
+                        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                        {
+                            dg_pusherror(pBHarrayhead, dg_forthframeparamscurlyname);
+                            return;
+                        }
+                        
+                        numberofintparameters++;
+                    }
+                }
+            }
+        }
+    }
+
+    // time to do the floating point parameters that are on the string stack
+    
+    // for each parameter name on the string stack:
+    //  get a pointer to and length of the string staring with the deepest string
+    //  create a constant definition and link it into the locals wordlist
+    //    the parameter index is numberofintparameters plus which float this is
+    //  that's it
+    if (numberoffloatparameters != 0)
+    {
+        stringstackdepth = dg_getnumberoflstringsonstack(
+            pBHarrayhead,
+		    DG_STRINGOFFSETSTACK_BUFFERID);
+      
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthframeparamscurlyname);
+            return;
+        }
+        
+        for (i = 0; i < numberoffloatparameters; i++)
+        {
+            pname = dg_getplstring(
+                pBHarrayhead,
+                DG_STRINGOFFSETSTACK_BUFFERID,
+                DG_STRINGSTRINGSTACK_BUFFERID,
+                stringstackdepth - (numberoffloatparameters - i),  // stringid,
+                &namelength);
+                
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthframeparamscurlyname);
+                return;
+            }
+                
+            // add the symbol name - it's a dconstant, paramindex dg_isparamusingframe
+            localwordid = dg_createdconstantdef (
+                pBHarrayhead,
+                numberofintparameters + i, // databufoffset
+                dg_isparamusingframe, // databufid,
+                pname,
+                namelength);
+                
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthframeparamscurlyname);
+                return;
+            }
+                
             dg_linkdefinition(
                 pBHarrayhead,
                 localswordlistid,
                 localwordid);
-                
+                    
             if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
             {
-                dg_pusherror(pBHarrayhead, dg_forthcparameterscurlyname);
+                dg_pusherror(pBHarrayhead, dg_forthframeparamscurlyname);
                 return;
             }
-            
-            numberofcparameters++;
         }
+    }
+    
+    dg_putbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_extraparametersfloatsflag,
+        parsingfloatsflag);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthframeparamscurlyname);
+        return;
     }
     
     dg_putbufferuint64(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
         dg_numberofcparameters,
-        numberofcparameters);
+        numberofintparameters);
         
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
-        dg_pusherror(pBHarrayhead, dg_forthcparameterscurlyname);
+        dg_pusherror(pBHarrayhead, dg_forthframeparamscurlyname);
+        return;
+    }
+    
+    dg_putbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_numberofcfparameters,
+        numberoffloatparameters);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthframeparamscurlyname);
         return;
     }
 }
 
-UINT64 cfparameterslookuptable[8] = 
-{
-    dg_xmm0,
-    dg_xmm1,
-    dg_xmm2,
-    dg_xmm3,
-    dg_xmm4,
-    dg_xmm5,
-    dg_xmm6,
-    dg_xmm7
-};
 
-const char dg_forthcfparameterscurlyname[] = "CFPARAMETERS<";
+const char dg_forthnoframeparamscurlyname[] = "NO-FRAME-PARAMS<";
 
-void dg_forthcfparameterscurly (Bufferhandle* pBHarrayhead)
+void dg_forthnoframeparamscurly (Bufferhandle* pBHarrayhead)
 {
     UINT64 localwordid;
     UINT64 localswordlistid;
-    UINT64 data;
-    UINT64 compiletype;
     
-    UINT64 numberofcparameters;
-    UINT64 numberofcfparameters;
-    UINT64 numberofcparametersonstack = 0;
+    UINT64 numberofintparameters = 0;
+    UINT64 numberoffloatparameters = 0;
     
     UINT64 foundendflag = FORTH_FALSE;
 
     unsigned char* pname;
     UINT64 namelength = 0;
-
+    
+    INT64 compareflag;
+    UINT64 parsingfloatsflag = FORTH_FALSE; // start out parsing ints
+    
+    UINT64 i;
+    UINT64 stringstackdepth;
+    
+    const char* pError;
+    
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
     
     if (baderrorcount == olderrorcount)
@@ -63387,41 +64586,20 @@ void dg_forthcfparameterscurly (Bufferhandle* pBHarrayhead)
         return;
     }
     
-    numberofcparameters = dg_getbufferuint64(
+    // setting default return stack depth to 1 (the return address is on the stack)
+    //  this is used to calculate offset to parameters based on return stack pointer
+    dg_putbufferuint64(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
-        dg_numberofcparameters);
+        dg_noframereturnstackdepth,
+        dg_defaultnoframerstackdepth);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
-        dg_pusherror(pBHarrayhead, dg_forthcfparameterscurlyname);
+        dg_pusherror(pBHarrayhead, dg_forthnoframeparamscurlyname);
         return;
-    }
-    
-    if (numberofcparameters > 6)
-    {
-        numberofcparametersonstack = numberofcparameters - 6;
-    }
-    
-    numberofcfparameters = dg_getbufferuint64(
-        pBHarrayhead,
-        DG_DATASPACE_BUFFERID,
-        dg_numberofcfparameters);
-    
-    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-    {
-        dg_pusherror(pBHarrayhead, dg_forthcfparameterscurlyname);
-        return;
-    }
-    
-    if (numberofcfparameters != 0)
-    {
-        dg_pusherror(pBHarrayhead, (const char*)"Number of c floating point parameters was not 0. Did you forget to do ?CLEAR-LOCALS ?");
-        dg_pusherror(pBHarrayhead, dg_forthcparameterscurlyname);
-        return;
-    }
+    }    
         
-    
     localswordlistid = dg_getbufferuint64(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
@@ -63429,7 +64607,7 @@ void dg_forthcfparameterscurly (Bufferhandle* pBHarrayhead)
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
-        dg_pusherror(pBHarrayhead, dg_forthcfparameterscurlyname);
+        dg_pusherror(pBHarrayhead, dg_forthnoframeparamscurlyname);
         return;
     }
     
@@ -63442,64 +64620,221 @@ void dg_forthcfparameterscurly (Bufferhandle* pBHarrayhead)
             &foundendflag,
             FORTH_FALSE);
             
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthnoframeparamscurlyname);
+            return;
+        }
+            
         if (namelength != 0)
         {
-            if (numberofcparameters < 8)
-            {
-                data = cfparameterslookuptable[numberofcparameters];
-                compiletype = (UINT64)&dg_forthdocompiletypedpushn;
-            }
-            else
-            {
-                // this assumes you are using RBP PUSH, RSP RBP MOV, at the entry of your subroutine
-                data = ((numberofcfparameters - 8) * 8) + (numberofcparametersonstack * 8) + 0x10;
-                compiletype = (UINT64)&dg_forthdocompiletypedpushbracketrbpplusn;
-            }
             
-            localwordid = dg_newwordcopyname (
-                pBHarrayhead,
-                (UINT64)DG_CORE_BUFFERID,
-                compiletype,
-                0, // databufid,
-                data, // databufoffset,
-                (UINT64)DG_CORE_BUFFERID,
-                (UINT64)pname,
-                namelength);
-            
-            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            pError = dg_comparebytes (
+                pname,                 // pstring1, 
+                namelength,            // string1length,
+                (unsigned char*)"INT", //  pstring2,
+                3,                     // string2length,
+                &compareflag);         // pflag);
+                
+            if (pError != dg_success)
             {
-                dg_pusherror(pBHarrayhead, dg_forthcfparameterscurlyname);
+                dg_pusherror(pBHarrayhead, pError);
+                dg_pusherror(pBHarrayhead, dg_comparebytesname);
+                dg_pusherror(pBHarrayhead, dg_forthnoframeparamscurlyname);
                 return;
             }
             
+            if (0 == compareflag)
+            {
+                parsingfloatsflag = FORTH_FALSE;
+            }
+            else
+            {
+                pError = dg_comparebytes (
+                    pname,                 // pstring1, 
+                    namelength,            // string1length,
+                    (unsigned char*)"FLOAT", //  pstring2,
+                    5,                     // string2length,
+                    &compareflag);         // pflag);
+                
+                if (pError != dg_success)
+                {
+                    dg_pusherror(pBHarrayhead, pError);
+                    dg_pusherror(pBHarrayhead, dg_comparebytesname);
+                    dg_pusherror(pBHarrayhead, dg_forthnoframeparamscurlyname);
+                    return;
+                }
+                
+                if (0 == compareflag)
+                {
+                    parsingfloatsflag = FORTH_TRUE;
+                }
+                else
+                {
+                    // it's a parameter name
+                    //  if we are in float mode push this to the string stack for later
+                    //  because on Mac, floating point parameters come after int parameters
+                    //  on the stack, regardless of their position in the C prototype
+                    if (parsingfloatsflag != FORTH_FALSE)
+                    {
+                        // we are parsing float paramters
+                        dg_pushlstring (
+                            pBHarrayhead,
+                            DG_STRINGOFFSETSTACK_BUFFERID,
+                            DG_STRINGSTRINGSTACK_BUFFERID,
+                            namelength,
+                            pname);
+                            
+                        if (dg_geterrorcount(pBHarrayhead) != 0)
+                        {
+                            dg_pusherror(pBHarrayhead, dg_forthnoframeparamscurlyname);
+                            return;
+                        }
+                        
+                        numberoffloatparameters++;
+                    }
+                    else
+                    {
+                        // it's an int parameter
+                        // add the symbol name - it's a constant
+                        localwordid = dg_createdconstantdef (
+                            pBHarrayhead,
+                            numberofintparameters, // databufoffset
+                            dg_isparamusingnoframe, // databufid,
+                            pname,
+                            namelength);
+                
+                        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                        {
+                            dg_pusherror(pBHarrayhead, dg_forthnoframeparamscurlyname);
+                            return;
+                        }
+                
+                        dg_linkdefinition(
+                            pBHarrayhead,
+                            localswordlistid,
+                            localwordid);
+                    
+                        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                        {
+                            dg_pusherror(pBHarrayhead, dg_forthnoframeparamscurlyname);
+                            return;
+                        }
+                        
+                        numberofintparameters++;
+                    }
+                }
+            }
+        }
+    }
+
+    // time to do the floating point parameters that are on the string stack
+    
+    // for each parameter name on the string stack:
+    //  get a pointer to and length of the string staring with the deepest string
+    //  create a constant definition and link it into the locals wordlist
+    //    the parameter index is numberofintparameters plus which float this is
+    //  that's it
+    if (numberoffloatparameters != 0)
+    {
+        stringstackdepth = dg_getnumberoflstringsonstack(
+            pBHarrayhead,
+		    DG_STRINGOFFSETSTACK_BUFFERID);
+      
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthnoframeparamscurlyname);
+            return;
+        }
+        
+        for (i = 0; i < numberoffloatparameters; i++)
+        {
+            pname = dg_getplstring(
+                pBHarrayhead,
+                DG_STRINGOFFSETSTACK_BUFFERID,
+                DG_STRINGSTRINGSTACK_BUFFERID,
+                stringstackdepth - (numberoffloatparameters - i),  // stringid,
+                &namelength);
+                
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthnoframeparamscurlyname);
+                return;
+            }
+                
+            // add the symbol name - it's a dconstant, paramindex dg_isparamusingframe
+            localwordid = dg_createdconstantdef (
+                pBHarrayhead,
+                numberofintparameters + i, // databufoffset
+                dg_isparamusingnoframe, // databufid,
+                pname,
+                namelength);
+                
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthnoframeparamscurlyname);
+                return;
+            }
+                
             dg_linkdefinition(
                 pBHarrayhead,
                 localswordlistid,
                 localwordid);
-                
+                    
             if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
             {
-                dg_pusherror(pBHarrayhead, dg_forthcfparameterscurlyname);
+                dg_pusherror(pBHarrayhead, dg_forthnoframeparamscurlyname);
                 return;
             }
-            
-            numberofcfparameters++;
         }
     }
     
     dg_putbufferuint64(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
-        dg_numberofcfparameters,
-        numberofcfparameters);
+        dg_extraparametersfloatsflag,
+        parsingfloatsflag);
         
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
-        dg_pusherror(pBHarrayhead, dg_forthcparameterscurlyname);
+        dg_pusherror(pBHarrayhead, dg_forthnoframeparamscurlyname);
+        return;
+    }
+    
+    dg_putbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_numberofcparameters,
+        numberofintparameters);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthnoframeparamscurlyname);
+        return;
+    }
+    
+    dg_putbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_numberofcfparameters,
+        numberoffloatparameters);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthnoframeparamscurlyname);
         return;
     }
 }
 
+
+// framelocalscurlycomma
+// assumes using diaperglu standard frame
+//  assigns 0 1 2 to local names, doesn't care about type
+//   default size of local variable is 8 bytes for UINT64 and FLOAT64
+//   allow user to specify other size? (need to make sure alignment not compromised...)
+//  compiles code to add locals to stack
+
+// also need parametertoaddressmode
 
 const char dg_forthcreturnscurlyname[] = "CRETURNS<";
 
@@ -63987,6 +65322,8 @@ void dg_forthframecurly (Bufferhandle* pBHarrayhead)
 }
 
 
+
+const char dg_forthenterframecommaname[]         = "ENTER-FRAME,";
 const char dg_forthenterrbpframecommaname[] = "ENTER-RBP-FRAME,";
 
 void dg_forthenterrbpframecomma (Bufferhandle* pBHarrayhead)
@@ -64012,6 +65349,33 @@ void dg_forthenterrbpframecomma (Bufferhandle* pBHarrayhead)
         return;
     }
         
+}
+
+
+const char dg_forthexitframecommaname[]     = "EXIT-FRAME,";
+
+void dg_forthexitframecomma (Bufferhandle* pBHarrayhead)
+{
+    // I think the EXIT, instruction can be used for this....
+    unsigned char pbuf[5] = "\x48\x8B\xE5\x5D";
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    dg_compilesegment (
+        pBHarrayhead, 
+        (const char*)pbuf, 
+        4);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthexitframecommaname);
+        return;
+    }        
 }
 
 
@@ -64128,6 +65492,883 @@ void dg_forthframecommacurly (Bufferhandle* pBHarrayhead)
 }
 
 
+const char dg_forthdgluforthframelocalscommacurlyname[] = "DGLU-FORTH-FRAME-LOCALS,<";
+const char dg_forthcallsubsframelocalscommacurlyname[]  = "CALL-SUBS-FRAME-LOCALS,<";
+
+void dg_forthcallsubsframelocalscommacurly (Bufferhandle* pBHarrayhead)
+{
+    UINT64 n;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    dg_pushdatastack(pBHarrayhead, 1);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcallsubsframelocalscommacurlyname);
+        return;
+    }
+    
+    dg_pushdatastack(pBHarrayhead, 0);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcallsubsframelocalscommacurlyname);
+        return;
+    }
+    
+    dg_pushdatastack(pBHarrayhead, dg_isdgluforthframelocal);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcallsubsframelocalscommacurlyname);
+        return;
+    }
+    
+    dg_forthtypedlocalenumcurly(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcallsubsframelocalscommacurlyname);
+        return;
+    }
+    
+    n = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcallsubsframelocalscommacurlyname);
+        return;
+    }
+    
+    dg_compileaddnlocalstocallsubsframe (
+        pBHarrayhead,
+        n);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcallsubsframelocalscommacurlyname);
+        return;
+    }
+}
+
+void dg_forthoimportcodelink(Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    dg_pushdatastack(pBHarrayhead, DG_IMPORT_LINK_IMPORT_OFFSET);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_isoimportcodelinkname);
+        return;
+    }
+    
+    dg_forthminus(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_isoimportcodelinkname);
+        return;
+    }
+    
+    dg_pushdatastack(pBHarrayhead, dg_isccbufferoffsetnobracket);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_isoimportcodelinkname);
+        return;
+    }
+}
+
+
+const char dg_forthtoiparamname[] = ">IPARAM";
+
+void dg_forthtoiparam(Bufferhandle* pBHarrayhead)
+{
+    UINT64 numberofintparameters;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    numberofintparameters = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_callsubnumberofints);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtoiparamname);
+        return;
+    }
+    
+    numberofintparameters++;
+    
+    dg_putbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_callsubnumberofints,
+        numberofintparameters);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtoiparamname);
+        return;
+    }
+    
+    dg_pushdatastack(
+        pBHarrayhead,
+        dg_istointsubparam);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtoiparamname);
+        return;
+    }
+}
+
+
+const char dg_forthtofparamname[] = ">FPARAM";
+
+void dg_forthtofparam(Bufferhandle* pBHarrayhead)
+{
+    UINT64 numberoffloatparameters;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    numberoffloatparameters = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_callsubnumberoffloats);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtofparamname);
+        return;
+    }
+    
+    numberoffloatparameters++;
+    
+    dg_putbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_callsubnumberoffloats,
+        numberoffloatparameters);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtofparamname);
+        return;
+    }
+    
+    dg_pushdatastack(
+        pBHarrayhead,
+        dg_istofloatsubparam);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtofparamname);
+        return;
+    }
+}
+
+
+const char dg_forthiparamfromname[] = "IPARAM>";
+
+void dg_forthiparamfrom(Bufferhandle* pBHarrayhead)
+{
+    UINT64 numberofintparameters;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    numberofintparameters = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_callsubnumberofints);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthiparamfromname);
+        return;
+    }
+    
+    numberofintparameters++;
+    
+    dg_putbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_callsubnumberofints,
+        numberofintparameters);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthiparamfromname);
+        return;
+    }
+    
+    dg_pushdatastack(
+        pBHarrayhead,
+        dg_isfromintsubparam);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthiparamfromname);
+        return;
+    }
+}
+
+
+const char dg_forthfparamfromname[] = "FPARAM>";
+
+void dg_forthfparamfrom(Bufferhandle* pBHarrayhead)
+{
+    UINT64 numberoffloatparameters;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    numberoffloatparameters = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_callsubnumberoffloats);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthfparamfromname);
+        return;
+    }
+    
+    numberoffloatparameters++;
+    
+    dg_putbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_callsubnumberoffloats,
+        numberoffloatparameters);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthfparamfromname);
+        return;
+    }
+    
+    dg_pushdatastack(
+        pBHarrayhead,
+        dg_isfromfloatsubparam);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthfparamfromname);
+        return;
+    }
+}
+
+const char dg_forthbeginsubparamsname[] = "((";
+
+void dg_forthbeginsubparams(Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    dg_putbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_callsubnumberofints,
+        0);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthbeginsubparamsname);
+        return;
+    }
+    
+    dg_putbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_callsubnumberoffloats,
+        0);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthbeginsubparamsname);
+        return;
+    }
+    
+    // push marker on data stack
+    dg_pushdatastack(pBHarrayhead, dg_subparamscommamarker);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthbeginsubparamsname);
+        return;
+    }
+}
+
+
+const char* dg_subparamsnotbalanced = " - parameters not balanced. If before function call, need one >IPARAM or >FPARAM after each parameter. If after function call, need one IPARAM> or FPARAM> before each parameter.";
+
+const char dg_forthendsubparamscommaname[] = ")),";
+
+void dg_forthendsubparamscomma(Bufferhandle* pBHarrayhead)
+{
+    UINT64 numberofintparameters;
+    UINT64 numberoffloatparameters;
+    UINT64 numberofintparametersonstack;
+    UINT64 numberoffloatparametersonstack;
+    
+    UINT64 i = 0;
+    UINT64 x;
+ 
+    UINT64 whichintparameter;
+    UINT64 whichfloatparameter;   
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+	// could check for misaligned datastack here
+
+    numberofintparameters = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_callsubnumberofints);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+        return;
+    }
+    
+    whichintparameter = numberofintparameters;
+    
+    numberoffloatparameters = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_callsubnumberoffloats);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+        return;
+    }
+    
+    whichfloatparameter = numberoffloatparameters;
+    
+    dg_compilealignretstackb(
+        pBHarrayhead,
+        numberofintparameters,
+        numberoffloatparameters);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+        return;
+    }
+    
+    numberofintparametersonstack = 0;
+                
+    if 
+    (
+        numberofintparameters > ( sizeof(intparameterslookuptable) / sizeof(UINT64) ) 
+    )
+    {
+        numberofintparametersonstack = 
+            (numberofintparameters - (sizeof(intparameterslookuptable)/sizeof(UINT64)));
+    }
+    
+    numberoffloatparametersonstack = 0;
+    
+    if 
+    (
+        numberoffloatparameters > ( sizeof(floatparameterslookuptable) / sizeof(UINT64) ) 
+    )
+    {
+        numberoffloatparametersonstack = 
+            (numberoffloatparameters - (sizeof(floatparameterslookuptable)/sizeof(UINT64)));
+    }
+    
+    // compile room for parameters on stack
+    i = numberofintparametersonstack + numberoffloatparametersonstack;
+    
+    if (i != 0)
+    {
+        if (i > (largestsignedint / sizeof(UINT64)))
+        {
+            dg_pusherror(pBHarrayhead, dg_invalidparametererror);
+            dg_pusherror(pBHarrayhead, dg_compileaddnlocalstocallsubsframename);
+            return;
+        }
+    
+        dg_compilesubnfromrsp(
+            pBHarrayhead,
+            i * sizeof(UINT64));
+    
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+            return;
+        }
+    }
+    
+    i = numberofintparameters + numberoffloatparameters;
+    
+    while (i > 0)
+    {
+        // data stack doesn't move, but BHarray does... so the length pointer
+        //  might become invalid
+        x = dg_popdatastack(pBHarrayhead);
+        
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+            return;
+        }
+    
+        // the top number on the stack should be one of >IPARAM >FPARAM IPARAM> FPARAM>
+        switch(x)
+        {
+            // dg_printzerostring(pBHarrayhead, (unsigned char*)"x = ");
+            // dg_writestdoutuint64tohex(pBHarrayhead, x);
+            // dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+            
+            case dg_istointsubparam:
+            
+                if (0 == whichintparameter)
+                {
+                    dg_pusherror(pBHarrayhead, dg_invalidparametererror);
+                    dg_pusherror(pBHarrayhead, dg_pulloneaddressingmodename);
+                    return;
+                }
+                
+                // predecrement
+                whichintparameter--;
+                
+                // dg_printzerostring(pBHarrayhead, (unsigned char*)"which int = ");
+                // dg_writestdoutuint64tohex(pBHarrayhead, whichintparameter);
+                // dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+                
+                if (whichintparameter < (sizeof(intparameterslookuptable)/sizeof(UINT64)))
+                {
+                    // it's an int register
+                    dg_pushdatastack(
+                        pBHarrayhead,
+                        intparameterslookuptable[whichintparameter]);
+                        
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+                        return;
+                    }
+                    
+                    dg_forthmovcomma(pBHarrayhead);
+                    
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+                        return;
+                    }
+                }
+                else
+                {
+                    dg_pushdatastack(pBHarrayhead, dg_rsp);
+                    
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+                        return;
+                    }
+                    
+                    dg_pushdatastack(
+                        pBHarrayhead,
+                        (whichintparameter - (sizeof(intparameterslookuptable)/sizeof(UINT64))) * sizeof(UINT64));
+                        
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+                        return;
+                    }
+                    
+                    dg_forthbracketrplusd(pBHarrayhead);
+                    
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+                        return;
+                    }
+                    
+                    dg_forthmovcomma(pBHarrayhead);
+                    
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+                        return;
+                    }
+                }
+                
+                break;
+                
+            case dg_istofloatsubparam:
+                
+                if (0 == whichfloatparameter)
+                {
+                    dg_pusherror(pBHarrayhead, dg_invalidparametererror);
+                    dg_pusherror(pBHarrayhead, dg_pulloneaddressingmodename);
+                    return;
+                }
+                
+                // predecrement
+                whichfloatparameter--;
+                
+                if (whichfloatparameter < (sizeof(floatparameterslookuptable)/sizeof(UINT64)))
+                {
+                    // dg_printzerostring(pBHarrayhead, (unsigned char*)"which float = ");
+                    // dg_writestdoutuint64tohex(pBHarrayhead, whichfloatparameter);
+                    // dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+                    
+                    // dg_printzerostring(pBHarrayhead, (unsigned char*)"reg = ");
+                    // dg_writestdoutuint64tohex(pBHarrayhead, floatparameterslookuptable[whichfloatparameter]);
+                    // dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+                
+                    dg_pushdatastack(
+                        pBHarrayhead,
+                        floatparameterslookuptable[whichfloatparameter]);
+                    
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+                        return;
+                    }
+                         
+                    dg_forthmovqcomma(pBHarrayhead);
+                    
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+                        return;
+                    }
+                }
+                else
+                {
+                    dg_pushdatastack(pBHarrayhead, dg_rsp);
+                    
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+                        return;
+                    }
+                    
+                    dg_pushdatastack(
+                        pBHarrayhead,
+                        ( sizeof(UINT64) *
+                            (
+                                numberofintparametersonstack +
+                                ( whichfloatparameter  - (sizeof(floatparameterslookuptable)/sizeof(UINT64)) )
+                                // not checking for overflow
+                            ) 
+                        ) 
+                    );
+                    
+                    // dg_printzerostring(pBHarrayhead, (unsigned char*)" - displacement = ");
+                    // dg_writestdoutuint64tohex(pBHarrayhead, ( sizeof(UINT64) *
+                    //        (
+                    //            ( whichfloatparameter  - (sizeof(floatparameterslookuptable)/sizeof(UINT64)) )
+                    //            + numberofintparametersonstack // not checking for overflow
+                    //        ) 
+                    //    ));
+                    // dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+                        
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+                        return;
+                    }
+                    
+                    dg_forthbracketrplusd(pBHarrayhead);
+                    
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+                        return;
+                    }
+                    
+                    dg_forthmovqcomma(pBHarrayhead);
+                    
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+                        return;
+                    }
+                }
+                
+                break;
+                
+            case dg_isfromintsubparam:
+                
+                if (0 == whichintparameter)
+                {
+                    dg_pusherror(pBHarrayhead, dg_invalidparametererror);
+                    dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+                    return;
+                }
+                
+                // predecrement
+                whichintparameter--;
+                
+                if (whichintparameter < (sizeof(intreturnparameterstable)/sizeof(UINT64)))
+                {
+                    // it's an int register
+                    dg_pushdatastack(
+                        pBHarrayhead,
+                        intreturnparameterstable[whichintparameter]);
+                        
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+                        return;
+                    }
+                
+                    dg_pushdatastack(
+                        pBHarrayhead,
+                        dg_isreverse);
+                
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);  
+                        return;
+                    }
+                    
+                    dg_forthmovcomma(pBHarrayhead);
+                    
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+                        return;
+                    }
+                }
+                else
+                {
+                    // only two int return parameters are specified
+                    dg_pusherror(pBHarrayhead, (const char*)"too many integer return parameters (only two are allowed)");
+                    dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+                    return;
+                }
+                
+                break;
+                
+            case dg_isfromfloatsubparam:
+            
+                if (0 == whichfloatparameter)
+                {
+                    dg_pusherror(pBHarrayhead, dg_invalidparametererror);
+                    dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+                }
+                
+                // predecrement
+                whichfloatparameter--;
+                
+                if (whichfloatparameter < (sizeof(floatparameterslookuptable)/sizeof(UINT64)))
+                {
+                    dg_pushdatastack(
+                        pBHarrayhead,
+                        floatparameterslookuptable[whichfloatparameter]);
+                    
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+                        return;
+                    }
+                    
+                    dg_pushdatastack(
+                        pBHarrayhead,
+                        dg_isreverse);
+                
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);  
+                        return;
+                    }
+                         
+                    dg_forthmovqcomma(pBHarrayhead);
+                    
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+                        return;
+                    }
+                }
+                else
+                {
+                    // only two float return parameters are specified, but I'll allow 8
+                    dg_pusherror(pBHarrayhead, (const char*)"too many float return parameters (only two are allowed... but I'm allowing eight)");
+                    dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+                    return;
+                }
+                
+                break;
+                
+            default:
+            
+                dg_pusherror(pBHarrayhead, (const char*)" - expected an >IPARAM or >FPARAM or IPARAM> or FPARAM> marker on top of the data stack for each parameter. Anything else is an error.");
+                dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+                
+                break;
+        }
+        
+        i--;
+    }
+    
+    // next on the stack should be the marker
+    i = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+        return;
+    }
+    
+    if (i != dg_subparamscommamarker)
+    {
+        dg_pusherror(pBHarrayhead, dg_subparamsnotbalanced);
+        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+        return;
+    }
+}
+
+const char dg_forthimpname[] = "IMP";
+
+void dg_forthimp(Bufferhandle* pBHarrayhead)
+{
+    dg_pushdatastack(pBHarrayhead, dg_rip);
+    dg_pushdatastack(pBHarrayhead, 0);  // displacement 
+    dg_pushdatastack(pBHarrayhead, 4);  // displacement size  
+    dg_pushdatastack(pBHarrayhead, dg_isbasedisplacement); 
+}
+
+const char* dg_compileosymbolimportstuffname = "dg_compileosymbolimportstuff";
+
+// on windows you need to branch over where the import link will go
+//  the displacement of the previous instruction should already be set with the IMP command...
+// on Mac you don't need to do anything... and the displacement for IMP has to be 0
+//  since the Mac linker adds to the compiled offset instead of just setting it
+UINT64 dg_compileosymbolimportstuff(Bufferhandle* pBHarrayhead)
+{
+    UINT64 ccbufid;
+    UINT64 ccbuflength;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return ((UINT64)-1);
+    }
+
+    ccbufid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileosymbolimportstuffname);
+    }
+
+    ccbuflength = dg_getbufferlength(
+        pBHarrayhead,
+        ccbufid);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileosymbolimportstuffname);
+    }
+    
+    return(ccbuflength - sizeof(UINT32));
+}
+
+const char* dg_compilecodelinkname = "dg_compilecodelink";
+
+UINT64 dg_compilecodelink(Bufferhandle* pBHarrayhead)
+{
+    UINT64 x = 0;
+    UINT64 ccbufid;
+    UINT64 ccbuflength;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return ((UINT64)-1);
+    }
+
+    // on mac you do this:
+    dg_compilejmpbracketoffset(
+        pBHarrayhead,
+        0); // this is the link on Mac... 
+            // has to be 0 because the mac linker adds the offset to the true link
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecodelinkname);
+    }
+
+    ccbufid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecodelinkname);
+    }
+
+    ccbuflength = dg_getbufferlength(
+        pBHarrayhead,
+        ccbufid);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecodelinkname);
+    }
+
+    x = 0;
+
+    return(ccbuflength - sizeof(UINT32));  // the size of the displacement
+}
+
 struct Premadeword presortedx86words[dg_presortedx86wordlistsize + 2];
 
 
@@ -64142,6 +66383,24 @@ Premadeword* dg_getppresortedx86words ()
     presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
     presortedx86words[i].databuf               = DG_CORE_BUFFERID;
     presortedx86words[i].dataoffset            = (UINT64)&dg_forthstrtopstrpushcomma;
+
+    i++;
+    
+    presortedx86words[i].pname                 = dg_forthbeginsubparamsname;
+    presortedx86words[i].namelength            = sizeof(dg_forthbeginsubparamsname);
+    presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedx86words[i].databuf               = DG_CORE_BUFFERID;
+    presortedx86words[i].dataoffset            = (UINT64)&dg_forthbeginsubparams;
+
+    i++;
+    
+    presortedx86words[i].pname                 = dg_forthendsubparamscommaname;
+    presortedx86words[i].namelength            = sizeof(dg_forthendsubparamscommaname);
+    presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesafesubroutine;
+    presortedx86words[i].databuf               = DG_CORE_BUFFERID;
+    presortedx86words[i].dataoffset            = (UINT64)&dg_forthendsubparamscomma;
 
     i++;
     
@@ -64232,6 +66491,24 @@ Premadeword* dg_getppresortedx86words ()
     presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypedpushn;
     presortedx86words[i].databuf               = 0;
     presortedx86words[i].dataoffset            = (UINT64)dg_isreverse;
+
+    i++;
+    
+    presortedx86words[i].pname                 = dg_forthtofparamname;
+    presortedx86words[i].namelength            = sizeof(dg_forthtofparamname);
+    presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedx86words[i].databuf               = DG_CORE_BUFFERID;
+    presortedx86words[i].dataoffset            = (UINT64)dg_forthtofparam;
+
+    i++;
+    
+    presortedx86words[i].pname                 = dg_forthtoiparamname;
+    presortedx86words[i].namelength            = sizeof(dg_forthtoiparamname);
+    presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedx86words[i].databuf               = DG_CORE_BUFFERID;
+    presortedx86words[i].dataoffset            = (UINT64)dg_forthtoiparam;
 
     i++;
     
@@ -64823,6 +67100,24 @@ Premadeword* dg_getppresortedx86words ()
 
     i++;
     
+    presortedx86words[i].pname                 = dg_iscallsubsframelocalname;
+    presortedx86words[i].namelength            = sizeof(dg_iscallsubsframelocalname);
+    presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypedpushn;
+    presortedx86words[i].databuf               = 0;
+    presortedx86words[i].dataoffset            = (UINT64)dg_isdgluforthframelocal;
+
+    i++;
+    
+    presortedx86words[i].pname                 = dg_forthcallsubsframelocalscommacurlyname;
+    presortedx86words[i].namelength            = sizeof(dg_forthcallsubsframelocalscommacurlyname);
+    presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesafesubroutine;
+    presortedx86words[i].databuf               = DG_CORE_BUFFERID;
+    presortedx86words[i].dataoffset            = (UINT64)&dg_forthcallsubsframelocalscommacurly;
+
+    i++;
+    
     presortedx86words[i].pname                 = dg_forthcallbracketssplusn16commaname;
     presortedx86words[i].namelength            = sizeof(dg_forthcallbracketssplusn16commaname);
     presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
@@ -64885,7 +67180,7 @@ Premadeword* dg_getppresortedx86words ()
     presortedx86words[i].dataoffset            = (UINT64)&dg_forthcflushcomma;
 
     i++;
-    
+    /*
     presortedx86words[i].pname                 = dg_forthcfparameterscurlyname;
     presortedx86words[i].namelength            = sizeof(dg_forthcfparameterscurlyname);
     presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
@@ -64894,7 +67189,7 @@ Premadeword* dg_getppresortedx86words ()
     presortedx86words[i].dataoffset            = (UINT64)&dg_forthcfparameterscurly;
 
     i++;
-    
+    */
     presortedx86words[i].pname                 = dg_forthcfreturnscurlyname;
     presortedx86words[i].namelength            = sizeof(dg_forthcfreturnscurlyname);
     presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
@@ -65127,15 +67422,6 @@ Premadeword* dg_getppresortedx86words ()
     presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesafesubroutine;
     presortedx86words[i].databuf               = DG_CORE_BUFFERID;
     presortedx86words[i].dataoffset            = (UINT64)&dg_compilequeryerror;
-
-    i++;
-    
-    presortedx86words[i].pname                 = dg_forthcparameterscurlyname;
-    presortedx86words[i].namelength            = sizeof(dg_forthcparameterscurlyname);
-    presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
-    presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
-    presortedx86words[i].databuf               = DG_CORE_BUFFERID;
-    presortedx86words[i].dataoffset            = (UINT64)&dg_forthcparameterscurly;
 
     i++;
     
@@ -65508,6 +67794,24 @@ Premadeword* dg_getppresortedx86words ()
 
     i++;
     
+    presortedx86words[i].pname                 = dg_isdgluforthframelocalname;
+    presortedx86words[i].namelength            = sizeof(dg_isdgluforthframelocalname);
+    presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypedpushn;
+    presortedx86words[i].databuf               = 0;
+    presortedx86words[i].dataoffset            = (UINT64)dg_isdgluforthframelocal;
+
+    i++;
+    
+    presortedx86words[i].pname                 = dg_forthdgluforthframelocalscommacurlyname;
+    presortedx86words[i].namelength            = sizeof(dg_forthdgluforthframelocalscommacurlyname);
+    presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesafesubroutine;
+    presortedx86words[i].databuf               = DG_CORE_BUFFERID;
+    presortedx86words[i].dataoffset            = (UINT64)&dg_forthcallsubsframelocalscommacurly;
+
+    i++;
+    
     presortedx86words[i].pname                 = dg_dhname;
     presortedx86words[i].namelength            = sizeof(dg_dhname);
     presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
@@ -65850,10 +68154,28 @@ Premadeword* dg_getppresortedx86words ()
 
     i++;
     
+    presortedx86words[i].pname                 = dg_forthentercallsubsframecommaname;
+    presortedx86words[i].namelength            = sizeof(dg_forthentercallsubsframecommaname);
+    presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesafesubroutine;
+    presortedx86words[i].databuf               = DG_CORE_BUFFERID;
+    presortedx86words[i].dataoffset            = (UINT64)&dg_forthentercallsubsframecomma;
+
+    i++;
+    
+    presortedx86words[i].pname                 = dg_forthenterframecommaname;
+    presortedx86words[i].namelength            = sizeof(dg_forthenterframecommaname);
+    presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesafesubroutine;
+    presortedx86words[i].databuf               = DG_CORE_BUFFERID;
+    presortedx86words[i].dataoffset            = (UINT64)&dg_forthenterrbpframecomma;
+
+    i++;
+    
     presortedx86words[i].pname                 = dg_forthenterrbpframecommaname;
     presortedx86words[i].namelength            = sizeof(dg_forthenterrbpframecommaname);
     presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
-    presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesafesubroutine;
     presortedx86words[i].databuf               = DG_CORE_BUFFERID;
     presortedx86words[i].dataoffset            = (UINT64)&dg_forthenterrbpframecomma;
 
@@ -65901,6 +68223,24 @@ Premadeword* dg_getppresortedx86words ()
     presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypedpushn;
     presortedx86words[i].databuf               = 0;
     presortedx86words[i].dataoffset            = (UINT64)dg_esp;
+
+    i++;
+    
+    presortedx86words[i].pname                 = dg_forthexitcallsubsframecommaname;
+    presortedx86words[i].namelength            = sizeof(dg_forthexitcallsubsframecommaname);
+    presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesafesubroutine;
+    presortedx86words[i].databuf               = DG_CORE_BUFFERID;
+    presortedx86words[i].dataoffset            = (UINT64)&dg_compileexitlocals;
+
+    i++;
+    
+    presortedx86words[i].pname                 = dg_forthexitframecommaname;
+    presortedx86words[i].namelength            = sizeof(dg_forthexitframecommaname);
+    presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesafesubroutine;
+    presortedx86words[i].databuf               = DG_CORE_BUFFERID;
+    presortedx86words[i].dataoffset            = (UINT64)&dg_forthexitframecomma;
 
     i++;
     
@@ -66581,6 +68921,15 @@ Premadeword* dg_getppresortedx86words ()
 
     i++;
     
+    presortedx86words[i].pname                 = dg_forthfparamfromname;
+    presortedx86words[i].namelength            = sizeof(dg_forthfparamfromname);
+    presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedx86words[i].databuf               = DG_CORE_BUFFERID;
+    presortedx86words[i].dataoffset            = (UINT64)&dg_forthfparamfrom;
+
+    i++;
+    
     presortedx86words[i].pname                 = dg_forthfpatancommaname;
     presortedx86words[i].namelength            = sizeof(dg_forthfpatancommaname);
     presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
@@ -66623,6 +68972,24 @@ Premadeword* dg_getppresortedx86words ()
     presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesafesubroutine;
     presortedx86words[i].databuf               = DG_CORE_BUFFERID;
     presortedx86words[i].dataoffset            = (UINT64)&dg_forthframecommacurly;
+
+    i++;
+    
+    presortedx86words[i].pname                 = dg_isparamusingframename;
+    presortedx86words[i].namelength            = sizeof(dg_isparamusingframename);
+    presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypedpushn;
+    presortedx86words[i].databuf               = 0;
+    presortedx86words[i].dataoffset            = (UINT64)dg_isparamusingframe;
+
+    i++;
+    
+    presortedx86words[i].pname                 = dg_forthframeparamscurlyname;
+    presortedx86words[i].namelength            = sizeof(dg_forthframeparamscurlyname);
+    presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedx86words[i].databuf               = DG_CORE_BUFFERID;
+    presortedx86words[i].dataoffset            = (UINT64)&dg_forthframeparamscurly;
 
     i++;
     
@@ -67077,6 +69444,15 @@ Premadeword* dg_getppresortedx86words ()
 
     i++;
     
+    presortedx86words[i].pname                 = dg_forthimpname;
+    presortedx86words[i].namelength            = sizeof(dg_forthimpname);
+    presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedx86words[i].databuf               = DG_CORE_BUFFERID;
+    presortedx86words[i].dataoffset            = (UINT64)&dg_forthimp;
+
+    i++;
+    
     presortedx86words[i].pname                 = dg_forthimulcommaname;
     presortedx86words[i].namelength            = sizeof(dg_forthimulcommaname);
     presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
@@ -67175,6 +69551,7 @@ Premadeword* dg_getppresortedx86words ()
     presortedx86words[i].dataoffset            = (UINT64)&dg_forthint3comma;
 
     i++;
+    
     // 100
     presortedx86words[i].pname                 = dg_forthintocommaname;
     presortedx86words[i].namelength            = sizeof(dg_forthintocommaname);
@@ -67263,6 +69640,15 @@ Premadeword* dg_getppresortedx86words ()
     presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesafesubroutine;
     presortedx86words[i].databuf               = DG_CORE_BUFFERID;
     presortedx86words[i].dataoffset            = (UINT64)&dg_forthinn8toeaxcomma;
+
+    i++;
+    
+    presortedx86words[i].pname                 = dg_forthiparamfromname;
+    presortedx86words[i].namelength            = sizeof(dg_forthiparamfromname);
+    presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedx86words[i].databuf               = DG_CORE_BUFFERID;
+    presortedx86words[i].dataoffset            = (UINT64)&dg_forthiparamfrom;
 
     i++;
     
@@ -68292,6 +70678,24 @@ Premadeword* dg_getppresortedx86words ()
 
     i++;
     
+    presortedx86words[i].pname                 = dg_isparamusingnoframename;
+    presortedx86words[i].namelength            = sizeof(dg_isparamusingnoframename);
+    presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypedpushn;
+    presortedx86words[i].databuf               = 0;
+    presortedx86words[i].dataoffset            = (UINT64)dg_isparamusingnoframe;
+
+    i++;
+    
+    presortedx86words[i].pname                 = dg_forthnoframeparamscurlyname;
+    presortedx86words[i].namelength            = sizeof(dg_forthnoframeparamscurlyname);
+    presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedx86words[i].databuf               = DG_CORE_BUFFERID;
+    presortedx86words[i].dataoffset            = (UINT64)&dg_forthnoframeparamscurly;
+
+    i++;
+    
     presortedx86words[i].pname                 = dg_forthnopcommaname;
     presortedx86words[i].namelength            = sizeof(dg_forthnopcommaname);
     presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
@@ -68389,6 +70793,15 @@ Premadeword* dg_getppresortedx86words ()
     presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypedpushn;
     presortedx86words[i].databuf               = 0;
     presortedx86words[i].dataoffset            = (UINT64)dg_isccbufferoffsetnobracket;
+
+    i++;
+    
+    presortedx86words[i].pname                 = dg_isoimportcodelinkname;
+    presortedx86words[i].namelength            = sizeof(dg_isoimportcodelinkname);
+    presortedx86words[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedx86words[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesafesubroutine;
+    presortedx86words[i].databuf               = DG_CORE_BUFFERID;
+    presortedx86words[i].dataoffset            = (UINT64)&dg_forthoimportcodelink;
 
     i++;
     
@@ -75426,3 +77839,118 @@ void dg_initcpux86wordlist (Bufferhandle* pBHarrayhead)
 //  M32orR32 FF M/2 
 
 
+// dg_compilenparam ( n destreg )
+//  N destreg MOV,  ( destreg is a reg )
+//  N PUSH,         ( destreg is -1 and N fits in 32 bit signed integer )
+//  N RAX MOV, RAX PUSH, ( destreg is -1 and N fits in 64 bit signed integer )
+//   ( can I do two 32 bit pushes? I think you have to keep stack aligned...
+//      so you'd have to disable interrupts or something )
+
+// dg_compilebracketnparam ( n destreg )
+//   ( since 64 bit absolute addresses are not supported in 64 bit mode )
+//  N RAX MOV, RAX [R] destreg -> MOV, ( destreg is a reg )
+//  N RAX MOV, RAX [R] PUSH, ( destreg is -1 )
+//
+//  n -> destreg
+//  [destreg] -> destreg
+//  
+//  push rax
+//  n -> rax
+//  [rax] -> rax
+//  [rsp] <-> rax
+//  
+// dg_compileoparam
+//  O destreg LEA, ( destreg is reg )
+//  O PUSH, ( destreg is -1 )
+//   or O RAX LEA, RAX PUSH, 
+//   or CALL HERE offset RSP [R] ADD,
+//
+// dg_compilebracketoparam
+//  [O] destreg MOV, ( destreg is reg )
+//  [O] PUSH, ( destreg is -1 )
+//
+// dg_compilelparam
+//   RBP [R+N] destreg LEA, ( destreg is reg )
+//   RBP [R+N] RAX LEA, RAX PUSH, ( destreg is -1 )
+//
+// dg_compilebracketlparam
+//   RBP [R+N] destreg MOV, ( destreg is reg )
+//   RBP [R+N] PUSH, ( destreg is -1 )
+//
+// dg_compilerparam
+//  ( make sure source is a reg id )
+//  destreg MOV, ( destreg is a reg )
+//  PUSH, ( destreg is -1 )
+//
+// dg_compilebracketrparam
+//  ( make sure source is a reg id )
+//  [R] destreg MOV, ( destreg is a reg )
+//  [R] PUSH, ( destreg is -1 )
+//
+
+const char dg_forthccallcommacurlyname[] = "CCALL,<";
+
+void dg_forthccallcommacurly (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    dg_putbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_numberofcparameters,
+        0);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthccallcommacurlyname);
+        return;
+    }
+    
+    dg_putbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_numberofcfparameters,
+        0);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthccallcommacurlyname);
+        return;
+    }
+    
+    // push call,< wordlist to search order stack 
+}
+
+// CALL,<  -- not sure on name
+//  set cintparams to 0
+//  set cfparams to 0
+//  push the call< wordlist to the search order
+
+// N P F
+// [P]           same as [PU64]
+// [PU8]  [PU16] [PU32]  [PU64] [PU128]
+// [PS8]  [PS16] [PS32]  [PS64] [PS128]
+// [PF32] [PF64] [PF128]
+// [L]
+// ()
+//
+
+// end > for CALL,<
+//  state before function
+//   pop value mode pairs to return value stack
+//  state popping function
+//   pop address funtionmode to address functionmode temp variable
+//  state popping params
+//   pop value floatingpointmode pairs to float param stack
+//   pop value intmode pairs to int param stack
+//  state compiling params
+//   compile loading each float param
+//   compile loading each int param
+//   compile function call
+//   compile storing each return value
+//

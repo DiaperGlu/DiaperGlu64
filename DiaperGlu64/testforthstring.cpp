@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2020 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -9087,6 +9087,3228 @@ void testdg_forthgetargsfromnstrings()
 
     dg_freeallbuffers(&BHarrayhead);
 }
+
+
+void testdg_forthnotstring()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    const char* pError = NULL;
+    
+    unsigned char* pstring0;
+    UINT64 string0length;
+    
+    unsigned char* pstring1;
+    UINT64 string1length;
+    
+    unsigned char* pstring2;
+    UINT64 string2length;
+    
+    UINT64 x;
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthnotstring\n");
+
+    
+    // success case empty
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        3,
+        (unsigned char*)"cat");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthnotstring success case - got an error pushing first string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        4,
+        (unsigned char*)"wolf");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthnotstring success case - got an error pushing second string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        5,
+        (unsigned char*)"\x21\x32\x43\x54\x65");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthnotstring success case - got an error pushing third string\n");
+        return;
+    }
+
+    dg_forthnotstring(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthnotstring success case - got an error doing dg_forthnotstring\n");
+        return;
+    }
+    
+    pstring0 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        &string0length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthnotstring success case - got an error getting pointer to second string\n");
+        return;
+    }
+    
+    pstring1 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        &string1length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthnotstring success case - got an error getting pointer to third string\n");
+        return;
+    }
+    
+    pstring2 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2,
+        &string2length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthnotstring success case - got an error getting pointer to fourth string\n");
+        return;
+    }
+    
+    if (pstring0[0] != 'c')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthnotstring success case - byte 0 of zero string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring1[0] != 'w')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthnotstring success case - byte 0 of 1st string is incorrect.\n");
+        return;
+    }
+    
+    // \x21\x32\43\x54\x65
+    if (pstring2[0] != 0xde)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthnotstring success case - byte 0 of 2nd string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[1] != 0xcd)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthnotstring success case - byte 1 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[2] != 0xbc)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthnotstring success case - byte 2 of second string is incorrect. Expected 0xbc, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)pstring2[2]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        
+        return;
+    }
+    
+    if (pstring2[3] != 0xab)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthnotstring success case - byte 3 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[4] != 0x9a)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthnotstring success case - byte 4 of second string is incorrect.\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_forthreversestring()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    const char* pError = NULL;
+    
+    unsigned char* pstring0;
+    UINT64 string0length;
+    
+    unsigned char* pstring1;
+    UINT64 string1length;
+    
+    unsigned char* pstring2;
+    UINT64 string2length;
+    
+    UINT64 x;
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthreversestring\n");
+
+    
+    // success case empty
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        3,
+        (unsigned char*)"cat");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreversestring success case - got an error pushing first string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        4,
+        (unsigned char*)"wolf");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreversestring success case - got an error pushing second string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        5,
+        (unsigned char*)"\x21\x32\x43\x54\x65");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreversestring success case - got an error pushing third string\n");
+        return;
+    }
+
+    dg_forthreversestring(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreversestring success case - got an error doing dg_forthnotstring\n");
+        return;
+    }
+    
+    pstring0 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        &string0length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreversestring success case - got an error getting pointer to second string\n");
+        return;
+    }
+    
+    pstring1 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        &string1length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreversestring success case - got an error getting pointer to third string\n");
+        return;
+    }
+    
+    pstring2 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2,
+        &string2length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreversestring success case - got an error getting pointer to fourth string\n");
+        return;
+    }
+    
+    if (pstring0[0] != 'c')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreversestring success case - byte 0 of zero string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring1[0] != 'w')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreversestring success case - byte 0 of 1st string is incorrect.\n");
+        return;
+    }
+    
+    // \x21\x32\43\x54\x65
+    if (pstring2[0] != 0x65)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreversestring success case - byte 0 of 2nd string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[1] != 0x54)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreversestring success case - byte 1 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[2] != 0x43)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreversestring success case - byte 2 of second string is incorrect. Expected 0x43, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)pstring2[2]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        
+        return;
+    }
+    
+    if (pstring2[3] != 0x32)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreversestring success case - byte 3 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[4] != 0x21)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreversestring success case - byte 4 of second string is incorrect.\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+void testdg_forthlelshiftstring()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    const char* pError = NULL;
+    
+    unsigned char* pstring0;
+    UINT64 string0length;
+    
+    unsigned char* pstring1;
+    UINT64 string1length;
+    
+    unsigned char* pstring2;
+    UINT64 string2length;
+    
+    UINT64 x;
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthlelshiftstring\n");
+
+    
+    // success case no carry
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        3,
+        (unsigned char*)"cat");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case - got an error pushing first string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        4,
+        (unsigned char*)"wolf");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case - got an error pushing second string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        5,
+        (unsigned char*)"\x21\x32\x43\x54\x65");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case - got an error pushing third string\n");
+        return;
+    }
+    
+    /*
+    dg_pushdatastack(&BHarrayhead, 0);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case - got an error pushing carry to data stack\n");
+        return;
+    }
+    */
+
+    dg_forthlelshiftstring(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case - got an error doing dg_forthlelshiftstring\n");
+        return;
+    }
+    
+    x = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case - got an error popping the data stack\n");
+        return;
+    }
+    
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case - got wrong carry out\n");
+        return;
+    }
+    
+    pstring0 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        &string0length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case - got an error getting pointer to second string\n");
+        return;
+    }
+    
+    pstring1 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        &string1length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case - got an error getting pointer to third string\n");
+        return;
+    }
+    
+    pstring2 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2,
+        &string2length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case - got an error getting pointer to fourth string\n");
+        return;
+    }
+    
+    if (pstring0[0] != 'c')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case - byte 0 of zero string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring1[0] != 'w')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case - byte 0 of 1st string is incorrect.\n");
+        return;
+    }
+    
+    // \x20\x32\43\x54\x65
+    if (pstring2[0] != 0x42)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case - byte 0 of 2nd string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[1] != 0x64)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case - byte 1 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[2] != 0x86)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case - byte 2 of second string is incorrect. Expected 0x43, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)pstring2[2]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        
+        return;
+    }
+    
+    if (pstring2[3] != 0xa8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case - byte 3 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[4] != 0xca)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case - byte 4 of second string is incorrect.\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // success case carry
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        3,
+        (unsigned char*)"cat");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case carry - got an error pushing first string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        4,
+        (unsigned char*)"wolf");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case carry - got an error pushing second string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        5,
+        (unsigned char*)"\x21\x32\x43\x54\xe5");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case carry - got an error pushing third string\n");
+        return;
+    }
+    
+    /*
+    dg_pushdatastack(&BHarrayhead, 0);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case - got an error pushing carry to data stack\n");
+        return;
+    }
+    */
+
+    dg_forthlelshiftstring(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case carry - got an error doing dg_forthlelshiftstring\n");
+        return;
+    }
+    
+    x = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case carry - got an error popping the data stack\n");
+        return;
+    }
+    
+    if (x != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case carry - got wrong carry out\n");
+        return;
+    }
+    
+    pstring0 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        &string0length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case carry - got an error getting pointer to second string\n");
+        return;
+    }
+    
+    pstring1 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        &string1length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case carry - got an error getting pointer to third string\n");
+        return;
+    }
+    
+    pstring2 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2,
+        &string2length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case carry - got an error getting pointer to fourth string\n");
+        return;
+    }
+    
+    if (pstring0[0] != 'c')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case carry - byte 0 of zero string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring1[0] != 'w')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case carry - byte 0 of 1st string is incorrect.\n");
+        return;
+    }
+    
+    // \x21\x32\43\x54\x65
+    if (pstring2[0] != 0x42)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case carry - byte 0 of 2nd string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[1] != 0x64)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case carry - byte 1 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[2] != 0x86)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case carry - byte 2 of second string is incorrect. Expected 0x43, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)pstring2[2]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        
+        return;
+    }
+    
+    if (pstring2[3] != 0xa8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case carry - byte 3 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[4] != 0xca)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case carry - byte 4 of second string is incorrect.\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_forthulershiftstring()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    const char* pError = NULL;
+    
+    unsigned char* pstring0;
+    UINT64 string0length;
+    
+    unsigned char* pstring1;
+    UINT64 string1length;
+    
+    unsigned char* pstring2;
+    UINT64 string2length;
+    
+    UINT64 x;
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthulershiftstring\n");
+
+    
+    // success case no carry
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        3,
+        (unsigned char*)"cat");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case - got an error pushing first string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        4,
+        (unsigned char*)"wolf");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case - got an error pushing second string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        5,
+        (unsigned char*)"\x20\x33\x42\x54\xe4");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case - got an error pushing third string\n");
+        return;
+    }
+    
+    /*
+    dg_pushdatastack(&BHarrayhead, 0);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case - got an error pushing carry to data stack\n");
+        return;
+    }
+    */
+
+    dg_forthulershiftstring(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case - got an error doing dg_forthulershiftstring\n");
+        return;
+    }
+    
+    x = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case - got an error popping the data stack\n");
+        return;
+    }
+    
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case - got wrong carry out\n");
+        return;
+    }
+    
+    pstring0 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        &string0length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case - got an error getting pointer to second string\n");
+        return;
+    }
+    
+    pstring1 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        &string1length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case - got an error getting pointer to third string\n");
+        return;
+    }
+    
+    pstring2 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2,
+        &string2length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case - got an error getting pointer to fourth string\n");
+        return;
+    }
+    
+    if (pstring0[0] != 'c')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case - byte 0 of zero string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring1[0] != 'w')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case - byte 0 of 1st string is incorrect.\n");
+        return;
+    }
+    
+    // \x20\x33\x42\x54\xe4
+    if (pstring2[0] != 0x90)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case - byte 0 of 2nd string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[1] != 0x19)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case - byte 1 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[2] != 0x21)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case - byte 2 of second string is incorrect. Expected 0x43, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)pstring2[2]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        
+        return;
+    }
+    
+    if (pstring2[3] != 0x2a)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case - byte 3 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[4] != 0x72)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case - byte 4 of second string is incorrect.\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // success case carry
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        3,
+        (unsigned char*)"cat");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case carry - got an error pushing first string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        4,
+        (unsigned char*)"wolf");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case carry - got an error pushing second string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        5,
+        (unsigned char*)"\x21\x33\x42\x54\x64");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case carry - got an error pushing third string\n");
+        return;
+    }
+    
+    /*
+    dg_pushdatastack(&BHarrayhead, 0);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftstring success case - got an error pushing carry to data stack\n");
+        return;
+    }
+    */
+
+    dg_forthulershiftstring(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case carry - got an error doing dg_forthulershiftstring\n");
+        return;
+    }
+    
+    x = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case carry - got an error popping the data stack\n");
+        return;
+    }
+    
+    if (x != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case carry - got wrong carry out\n");
+        return;
+    }
+    
+    pstring0 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        &string0length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case carry - got an error getting pointer to second string\n");
+        return;
+    }
+    
+    pstring1 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        &string1length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case carry - got an error getting pointer to third string\n");
+        return;
+    }
+    
+    pstring2 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2,
+        &string2length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case carry - got an error getting pointer to fourth string\n");
+        return;
+    }
+    
+    if (pstring0[0] != 'c')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case carry - byte 0 of zero string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring1[0] != 'w')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case carry - byte 0 of 1st string is incorrect.\n");
+        return;
+    }
+    
+    // \x21\x32\43\x54\x65
+    if (pstring2[0] != 0x90)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case carry - byte 0 of 2nd string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[1] != 0x19)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case carry - byte 1 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[2] != 0x21)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case carry - byte 2 of second string is incorrect. Expected 0x43, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)pstring2[2]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        
+        return;
+    }
+    
+    if (pstring2[3] != 0x2a)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case carry - byte 3 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[4] != 0x32)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulershiftstring success case carry - byte 4 of second string is incorrect.\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_forthslershiftstring()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    const char* pError = NULL;
+    
+    unsigned char* pstring0;
+    UINT64 string0length;
+    
+    unsigned char* pstring1;
+    UINT64 string1length;
+    
+    unsigned char* pstring2;
+    UINT64 string2length;
+    
+    UINT64 x;
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthslershiftstring\n");
+
+    
+    // success case no carry
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        3,
+        (unsigned char*)"cat");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case - got an error pushing first string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        4,
+        (unsigned char*)"wolf");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case - got an error pushing second string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        5,
+        (unsigned char*)"\x20\x33\x42\x54\xe4");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case - got an error pushing third string\n");
+        return;
+    }
+    
+    /*
+    dg_pushdatastack(&BHarrayhead, 0);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case - got an error pushing carry to data stack\n");
+        return;
+    }
+    */
+
+    dg_forthslershiftstring(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case - got an error doing dg_forthslershiftstring\n");
+        return;
+    }
+    
+    x = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case - got an error popping the data stack\n");
+        return;
+    }
+    
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case - got wrong carry out\n");
+        return;
+    }
+    
+    pstring0 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        &string0length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case - got an error getting pointer to second string\n");
+        return;
+    }
+    
+    pstring1 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        &string1length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case - got an error getting pointer to third string\n");
+        return;
+    }
+    
+    pstring2 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2,
+        &string2length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case - got an error getting pointer to fourth string\n");
+        return;
+    }
+    
+    if (pstring0[0] != 'c')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case - byte 0 of zero string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring1[0] != 'w')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case - byte 0 of 1st string is incorrect.\n");
+        return;
+    }
+    
+    // \x20\x33\x42\x54\xe4
+    if (pstring2[0] != 0x90)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case - byte 0 of 2nd string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[1] != 0x19)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case - byte 1 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[2] != 0x21)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case - byte 2 of second string is incorrect. Expected 0x43, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)pstring2[2]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        
+        return;
+    }
+    
+    if (pstring2[3] != 0x2a)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case - byte 3 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[4] != 0xf2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case - byte 4 of second string is incorrect.\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // success case carry
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        3,
+        (unsigned char*)"cat");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case carry - got an error pushing first string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        4,
+        (unsigned char*)"wolf");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case carry - got an error pushing second string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        5,
+        (unsigned char*)"\x21\x33\x42\x54\x64");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case carry - got an error pushing third string\n");
+        return;
+    }
+    
+    /*
+    dg_pushdatastack(&BHarrayhead, 0);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case - got an error pushing carry to data stack\n");
+        return;
+    }
+    */
+
+    dg_forthslershiftstring(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case carry - got an error doing dg_forthslershiftstring\n");
+        return;
+    }
+    
+    x = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case carry - got an error popping the data stack\n");
+        return;
+    }
+    
+    if (x != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case carry - got wrong carry out\n");
+        return;
+    }
+    
+    pstring0 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        &string0length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case carry - got an error getting pointer to second string\n");
+        return;
+    }
+    
+    pstring1 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        &string1length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case carry - got an error getting pointer to third string\n");
+        return;
+    }
+    
+    pstring2 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2,
+        &string2length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case carry - got an error getting pointer to fourth string\n");
+        return;
+    }
+    
+    if (pstring0[0] != 'c')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case carry - byte 0 of zero string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring1[0] != 'w')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case carry - byte 0 of 1st string is incorrect.\n");
+        return;
+    }
+    
+    // \x21\x32\43\x54\x65
+    if (pstring2[0] != 0x90)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case carry - byte 0 of 2nd string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[1] != 0x19)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case carry - byte 1 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[2] != 0x21)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case carry - byte 2 of second string is incorrect. Expected 0x43, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)pstring2[2]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        
+        return;
+    }
+    
+    if (pstring2[3] != 0x2a)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case carry - byte 3 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[4] != 0x32)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthslershiftstring success case carry - byte 4 of second string is incorrect.\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_forthlelshiftcstring()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    const char* pError = NULL;
+    
+    unsigned char* pstring0;
+    UINT64 string0length;
+    
+    unsigned char* pstring1;
+    UINT64 string1length;
+    
+    unsigned char* pstring2;
+    UINT64 string2length;
+    
+    UINT64 x;
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthlelshiftcstring\n");
+
+    
+    // success case no carry
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        3,
+        (unsigned char*)"cat");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case - got an error pushing first string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        4,
+        (unsigned char*)"wolf");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case - got an error pushing second string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        5,
+        (unsigned char*)"\x21\x32\x43\x54\x65");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case - got an error pushing third string\n");
+        return;
+    }
+    
+    
+    dg_pushdatastack(&BHarrayhead, 0);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case - got an error pushing carry to data stack\n");
+        return;
+    }
+
+    dg_forthlelshiftcstring(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case - got an error doing dg_forthlelshiftstring\n");
+        return;
+    }
+    
+    x = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case - got an error popping the data stack\n");
+        return;
+    }
+    
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case - got wrong carry out\n");
+        return;
+    }
+    
+    pstring0 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        &string0length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case - got an error getting pointer to second string\n");
+        return;
+    }
+    
+    pstring1 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        &string1length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case - got an error getting pointer to third string\n");
+        return;
+    }
+    
+    pstring2 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2,
+        &string2length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case - got an error getting pointer to fourth string\n");
+        return;
+    }
+    
+    if (pstring0[0] != 'c')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case - byte 0 of zero string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring1[0] != 'w')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case - byte 0 of 1st string is incorrect.\n");
+        return;
+    }
+    
+    // \x20\x32\43\x54\x65
+    if (pstring2[0] != 0x42)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case - byte 0 of 2nd string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[1] != 0x64)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case - byte 1 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[2] != 0x86)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case - byte 2 of second string is incorrect. Expected 0x43, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)pstring2[2]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        
+        return;
+    }
+    
+    if (pstring2[3] != 0xa8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case - byte 3 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[4] != 0xca)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case - byte 4 of second string is incorrect.\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // success case carry
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        3,
+        (unsigned char*)"cat");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case carry - got an error pushing first string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        4,
+        (unsigned char*)"wolf");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case carry - got an error pushing second string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        5,
+        (unsigned char*)"\x21\x32\x43\x54\xe5");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case carry - got an error pushing third string\n");
+        return;
+    }
+    
+    dg_pushdatastack(&BHarrayhead, 1);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case - got an error pushing carry to data stack\n");
+        return;
+    }
+
+    dg_forthlelshiftcstring(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case carry - got an error doing dg_forthlelshiftstring\n");
+        return;
+    }
+    
+    x = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case carry - got an error popping the data stack\n");
+        return;
+    }
+    
+    if (x != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case carry - got wrong carry out\n");
+        return;
+    }
+    
+    pstring0 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        &string0length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case carry - got an error getting pointer to second string\n");
+        return;
+    }
+    
+    pstring1 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        &string1length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case carry - got an error getting pointer to third string\n");
+        return;
+    }
+    
+    pstring2 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2,
+        &string2length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case carry - got an error getting pointer to fourth string\n");
+        return;
+    }
+    
+    if (pstring0[0] != 'c')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case carry - byte 0 of zero string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring1[0] != 'w')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case carry - byte 0 of 1st string is incorrect.\n");
+        return;
+    }
+    
+    // \x21\x32\43\x54\x65
+    if (pstring2[0] != 0x43)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case carry - byte 0 of 2nd string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[1] != 0x64)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case carry - byte 1 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[2] != 0x86)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case carry - byte 2 of second string is incorrect. Expected 0x43, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)pstring2[2]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        
+        return;
+    }
+    
+    if (pstring2[3] != 0xa8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case carry - byte 3 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[4] != 0xca)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlelshiftcstring success case carry - byte 4 of second string is incorrect.\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_forthlershiftcstring()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    const char* pError = NULL;
+    
+    unsigned char* pstring0;
+    UINT64 string0length;
+    
+    unsigned char* pstring1;
+    UINT64 string1length;
+    
+    unsigned char* pstring2;
+    UINT64 string2length;
+    
+    UINT64 x;
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthlershiftcstring\n");
+
+    
+    // success case no carry
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        3,
+        (unsigned char*)"cat");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case - got an error pushing first string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        4,
+        (unsigned char*)"wolf");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case - got an error pushing second string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        5,
+        (unsigned char*)"\x20\x33\x42\x54\xe4");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case - got an error pushing third string\n");
+        return;
+    }
+    
+    dg_pushdatastack(&BHarrayhead, 0);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case - got an error pushing carry to data stack\n");
+        return;
+    }
+
+
+    dg_forthlershiftcstring(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case - got an error doing dg_forthlershiftcstring\n");
+        return;
+    }
+    
+    x = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case - got an error popping the data stack\n");
+        return;
+    }
+    
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case - got wrong carry out\n");
+        return;
+    }
+    
+    pstring0 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        &string0length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case - got an error getting pointer to second string\n");
+        return;
+    }
+    
+    pstring1 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        &string1length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case - got an error getting pointer to third string\n");
+        return;
+    }
+    
+    pstring2 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2,
+        &string2length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case - got an error getting pointer to fourth string\n");
+        return;
+    }
+    
+    if (pstring0[0] != 'c')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case - byte 0 of zero string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring1[0] != 'w')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case - byte 0 of 1st string is incorrect.\n");
+        return;
+    }
+    
+    // \x20\x33\x42\x54\xe4
+    if (pstring2[0] != 0x90)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case - byte 0 of 2nd string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[1] != 0x19)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case - byte 1 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[2] != 0x21)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case - byte 2 of second string is incorrect. Expected 0x43, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)pstring2[2]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        
+        return;
+    }
+    
+    if (pstring2[3] != 0x2a)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case - byte 3 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[4] != 0x72)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case - byte 4 of second string is incorrect.\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // success case carry
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        3,
+        (unsigned char*)"cat");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case carry - got an error pushing first string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        4,
+        (unsigned char*)"wolf");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case carry - got an error pushing second string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        5,
+        (unsigned char*)"\x21\x33\x42\x54\x64");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case carry - got an error pushing third string\n");
+        return;
+    }
+    
+    dg_pushdatastack(&BHarrayhead, 1);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case - got an error pushing carry to data stack\n");
+        return;
+    }
+
+    dg_forthlershiftcstring(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case carry - got an error doing dg_forthulershiftstring\n");
+        return;
+    }
+    
+    x = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case carry - got an error popping the data stack\n");
+        return;
+    }
+    
+    if (x != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case carry - got wrong carry out\n");
+        return;
+    }
+    
+    pstring0 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        &string0length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case carry - got an error getting pointer to second string\n");
+        return;
+    }
+    
+    pstring1 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        &string1length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case carry - got an error getting pointer to third string\n");
+        return;
+    }
+    
+    pstring2 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2,
+        &string2length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case carry - got an error getting pointer to fourth string\n");
+        return;
+    }
+    
+    if (pstring0[0] != 'c')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case carry - byte 0 of zero string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring1[0] != 'w')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case carry - byte 0 of 1st string is incorrect.\n");
+        return;
+    }
+    
+    // \x21\x32\43\x54\x65
+    if (pstring2[0] != 0x90)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case carry - byte 0 of 2nd string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[1] != 0x19)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case carry - byte 1 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[2] != 0x21)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case carry - byte 2 of second string is incorrect. Expected 0x43, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)pstring2[2]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        
+        return;
+    }
+    
+    if (pstring2[3] != 0x2a)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case carry - byte 3 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[4] != 0xb2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlershiftcstring success case carry - byte 4 of second string is incorrect.\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_forthuleandstring()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    const char* pError = NULL;
+    
+    unsigned char* pstring0;
+    UINT64 string0length;
+    
+    unsigned char* pstring1;
+    UINT64 string1length;
+    
+    unsigned char* pstring2;
+    UINT64 string2length;
+    
+    UINT64 x;
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthuleandstring\n");
+
+    
+    // success case no carry
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        3,
+        (unsigned char*)"cat");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleandstring success case - got an error pushing first string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        4,
+        (unsigned char*)"wolf");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleandstring success case - got an error pushing second string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        5,
+        (unsigned char*)"\x20\x33\x42\x54\xe4");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleandstring success case - got an error pushing third string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        3,
+        (unsigned char*)"\xFF\x0F\xF0");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleandstring success case - got an error pushing third string\n");
+        return;
+    }
+
+    dg_forthuleandstring(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleandstring success case - got an error doing dg_forthlershiftcstring\n");
+        return;
+    }
+    
+    pstring0 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        &string0length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleandstring success case - got an error getting pointer to second string\n");
+        return;
+    }
+    
+    pstring1 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        &string1length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleandstring success case - got an error getting pointer to third string\n");
+        return;
+    }
+    
+    pstring2 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2,
+        &string2length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleandstring success case - got an error getting pointer to fourth string\n");
+        return;
+    }
+    
+    if (pstring0[0] != 'c')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleandstring success case - byte 0 of zero string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring1[0] != 'w')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleandstring success case - byte 0 of 1st string is incorrect.\n");
+        return;
+    }
+    
+    // \x20\x03\x40\x00\x00
+    if (pstring2[0] != 0x20)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleandstring success case - byte 0 of 2nd string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[1] != 0x03)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleandstring success case - byte 1 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[2] != 0x40)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleandstring success case - byte 2 of second string is incorrect. Expected 0x40, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)pstring2[2]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        
+        return;
+    }
+    
+    if (pstring2[3] != 0x00)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleandstring success case - byte 3 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[4] != 0x00)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleandstring success case - byte 4 of second string is incorrect.\n");
+        return;
+    }
+    
+    x = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleandstring success case - got an error getting depth of string stack\n");
+        return;
+    }
+    
+    if (x != 3)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleandstring success case - depth of string stack incorrect.\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_forthuleorstring()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    const char* pError = NULL;
+    
+    unsigned char* pstring0;
+    UINT64 string0length;
+    
+    unsigned char* pstring1;
+    UINT64 string1length;
+    
+    unsigned char* pstring2;
+    UINT64 string2length;
+    
+    UINT64 x;
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthuleorstring\n");
+
+    
+    // success case no carry
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        3,
+        (unsigned char*)"cat");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleorstring success case - got an error pushing first string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        4,
+        (unsigned char*)"wolf");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleorstring success case - got an error pushing second string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        5,
+        (unsigned char*)"\x20\x33\x42\x54\xe4");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleorstring success case - got an error pushing third string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        3,
+        (unsigned char*)"\xFF\x0F\xF0");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleorstring success case - got an error pushing third string\n");
+        return;
+    }
+
+    dg_forthuleorstring(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleorstring success case - got an error doing dg_forthuleorstring\n");
+        return;
+    }
+    
+    pstring0 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        &string0length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleorstring success case - got an error getting pointer to second string\n");
+        return;
+    }
+    
+    pstring1 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        &string1length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleorstring success case - got an error getting pointer to third string\n");
+        return;
+    }
+    
+    pstring2 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2,
+        &string2length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleorstring success case - got an error getting pointer to fourth string\n");
+        return;
+    }
+    
+    if (pstring0[0] != 'c')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleorstring success case - byte 0 of zero string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring1[0] != 'w')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleorstring success case - byte 0 of 1st string is incorrect.\n");
+        return;
+    }
+    
+    // \xff\x3f\xf2\x54\xe4
+    if (pstring2[0] != 0xff)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleorstring success case - byte 0 of 2nd string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[1] != 0x3f)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleorstring success case - byte 1 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[2] != 0xf2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleorstring success case - byte 2 of second string is incorrect. Expected 0x40, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)pstring2[2]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        
+        return;
+    }
+    
+    if (pstring2[3] != 0x54)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleorstring success case - byte 3 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[4] != 0xe4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleorstring success case - byte 4 of second string is incorrect.\n");
+        return;
+    }
+    
+    x = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleorstring success case - got an error getting depth of string stack\n");
+        return;
+    }
+    
+    if (x != 3)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthuleorstring success case - depth of string stack incorrect.\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_forthulexorstring()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    const char* pError = NULL;
+    
+    unsigned char* pstring0;
+    UINT64 string0length;
+    
+    unsigned char* pstring1;
+    UINT64 string1length;
+    
+    unsigned char* pstring2;
+    UINT64 string2length;
+    
+    UINT64 x;
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthulexorstring\n");
+
+    
+    // success case no carry
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        3,
+        (unsigned char*)"cat");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexorstring success case - got an error pushing first string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        4,
+        (unsigned char*)"wolf");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexorstring success case - got an error pushing second string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        5,
+        (unsigned char*)"\x20\x33\x42\x54\xe4");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexorstring success case - got an error pushing third string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        3,
+        (unsigned char*)"\xFF\x0F\xF0");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexorstring success case - got an error pushing third string\n");
+        return;
+    }
+
+    dg_forthulexorstring(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexorstring success case - got an error doing dg_forthulexorstring\n");
+        return;
+    }
+    
+    pstring0 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        &string0length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexorstring success case - got an error getting pointer to second string\n");
+        return;
+    }
+    
+    pstring1 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        &string1length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexorstring success case - got an error getting pointer to third string\n");
+        return;
+    }
+    
+    pstring2 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2,
+        &string2length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexorstring success case - got an error getting pointer to fourth string\n");
+        return;
+    }
+    
+    if (pstring0[0] != 'c')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexorstring success case - byte 0 of zero string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring1[0] != 'w')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexorstring success case - byte 0 of 1st string is incorrect.\n");
+        return;
+    }
+    
+    // \xdf\x3c\xb2\x54\xe4
+    if (pstring2[0] != 0xdf)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexorstring success case - byte 0 of 2nd string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[1] != 0x3c)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexorstring success case - byte 1 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[2] != 0xb2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexorstring success case - byte 2 of second string is incorrect. Expected 0x40, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)pstring2[2]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        
+        return;
+    }
+    
+    if (pstring2[3] != 0x54)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexorstring success case - byte 3 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[4] != 0xe4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexorstring success case - byte 4 of second string is incorrect.\n");
+        return;
+    }
+    
+    x = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexorstring success case - got an error getting depth of string stack\n");
+        return;
+    }
+    
+    if (x != 3)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexorstring success case - depth of string stack incorrect.\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_forthulenandstring()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    const char* pError = NULL;
+    
+    unsigned char* pstring0;
+    UINT64 string0length;
+    
+    unsigned char* pstring1;
+    UINT64 string1length;
+    
+    unsigned char* pstring2;
+    UINT64 string2length;
+    
+    UINT64 x;
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthulenandstring\n");
+
+    
+    // success case no carry
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        3,
+        (unsigned char*)"cat");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenandstring success case - got an error pushing first string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        4,
+        (unsigned char*)"wolf");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenandstring success case - got an error pushing second string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        5,
+        (unsigned char*)"\x20\x33\x42\x54\xe4");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenandstring success case - got an error pushing third string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        3,
+        (unsigned char*)"\xFF\x0F\xF0");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenandstring success case - got an error pushing third string\n");
+        return;
+    }
+
+    dg_forthulenandstring(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenandstring success case - got an error doing dg_forthulenandstring\n");
+        return;
+    }
+    
+    pstring0 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        &string0length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenandstring success case - got an error getting pointer to second string\n");
+        return;
+    }
+    
+    pstring1 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        &string1length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenandstring success case - got an error getting pointer to third string\n");
+        return;
+    }
+    
+    pstring2 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2,
+        &string2length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenandstring success case - got an error getting pointer to fourth string\n");
+        return;
+    }
+    
+    if (pstring0[0] != 'c')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenandstring success case - byte 0 of zero string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring1[0] != 'w')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenandstring success case - byte 0 of 1st string is incorrect.\n");
+        return;
+    }
+    
+    // \x20\x03\x40\x00\x00
+    if (pstring2[0] != 0xdf)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenandstring success case - byte 0 of 2nd string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[1] != 0xfc)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenandstring success case - byte 1 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[2] != 0xbf)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenandstring success case - byte 2 of second string is incorrect. Expected 0x40, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)pstring2[2]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        
+        return;
+    }
+    
+    if (pstring2[3] != 0xff)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenandstring success case - byte 3 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[4] != 0xff)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenandstring success case - byte 4 of second string is incorrect.\n");
+        return;
+    }
+    
+    x = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenandstring success case - got an error getting depth of string stack\n");
+        return;
+    }
+    
+    if (x != 3)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenandstring success case - depth of string stack incorrect.\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_forthulenorstring()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    const char* pError = NULL;
+    
+    unsigned char* pstring0;
+    UINT64 string0length;
+    
+    unsigned char* pstring1;
+    UINT64 string1length;
+    
+    unsigned char* pstring2;
+    UINT64 string2length;
+    
+    UINT64 x;
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthulenorstring\n");
+
+    
+    // success case no carry
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        3,
+        (unsigned char*)"cat");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenorstring success case - got an error pushing first string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        4,
+        (unsigned char*)"wolf");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenorstring success case - got an error pushing second string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        5,
+        (unsigned char*)"\x20\x33\x42\x54\xe4");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenorstring success case - got an error pushing third string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        3,
+        (unsigned char*)"\xFF\x0F\xF0");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenorstring success case - got an error pushing third string\n");
+        return;
+    }
+
+    dg_forthulenorstring(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenorstring success case - got an error doing dg_forthulenorstring\n");
+        return;
+    }
+    
+    pstring0 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        &string0length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenorstring success case - got an error getting pointer to second string\n");
+        return;
+    }
+    
+    pstring1 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        &string1length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenorstring success case - got an error getting pointer to third string\n");
+        return;
+    }
+    
+    pstring2 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2,
+        &string2length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenorstring success case - got an error getting pointer to fourth string\n");
+        return;
+    }
+    
+    if (pstring0[0] != 'c')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenorstring success case - byte 0 of zero string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring1[0] != 'w')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenorstring success case - byte 0 of 1st string is incorrect.\n");
+        return;
+    }
+    
+    // \xff\x3f\xf2\x54\xe4
+    if (pstring2[0] != 0x00)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenorstring success case - byte 0 of 2nd string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[1] != 0xC0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenorstring success case - byte 1 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[2] != 0x0d)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenorstring success case - byte 2 of second string is incorrect. Expected 0x40, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)pstring2[2]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        
+        return;
+    }
+    
+    if (pstring2[3] != 0xab)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenorstring success case - byte 3 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[4] != 0x1b)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenorstring success case - byte 4 of second string is incorrect.\n");
+        return;
+    }
+    
+    x = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenorstring success case - got an error getting depth of string stack\n");
+        return;
+    }
+    
+    if (x != 3)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulenorstring success case - depth of string stack incorrect.\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_forthulexnorstring()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    const char* pError = NULL;
+    
+    unsigned char* pstring0;
+    UINT64 string0length;
+    
+    unsigned char* pstring1;
+    UINT64 string1length;
+    
+    unsigned char* pstring2;
+    UINT64 string2length;
+    
+    UINT64 x;
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthulexnorstring\n");
+
+    
+    // success case no carry
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        3,
+        (unsigned char*)"cat");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexnorstring success case - got an error pushing first string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        4,
+        (unsigned char*)"wolf");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexnorstring success case - got an error pushing second string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        5,
+        (unsigned char*)"\x20\x33\x42\x54\xe4");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexnorstring success case - got an error pushing third string\n");
+        return;
+    }
+    
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        3,
+        (unsigned char*)"\xFF\x0F\xF0");
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexnorstring success case - got an error pushing third string\n");
+        return;
+    }
+
+    dg_forthulexnorstring(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexnorstring success case - got an error doing dg_forthulexnorstring\n");
+        return;
+    }
+    
+    pstring0 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0,
+        &string0length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexnorstring success case - got an error getting pointer to second string\n");
+        return;
+    }
+    
+    pstring1 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1,
+        &string1length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexnorstring success case - got an error getting pointer to third string\n");
+        return;
+    }
+    
+    pstring2 = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2,
+        &string2length);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexnorstring success case - got an error getting pointer to fourth string\n");
+        return;
+    }
+    
+    if (pstring0[0] != 'c')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexnorstring success case - byte 0 of zero string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring1[0] != 'w')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexnorstring success case - byte 0 of 1st string is incorrect.\n");
+        return;
+    }
+    
+    // \xdf\x3c\xb2\x54\xe4
+    if (pstring2[0] != 0x20)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexnorstring success case - byte 0 of 2nd string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[1] != 0xc3)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexnorstring success case - byte 1 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[2] != 0x4d)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexnorstring success case - byte 2 of second string is incorrect. Expected 0x40, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)pstring2[2]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        
+        return;
+    }
+    
+    if (pstring2[3] != 0xab)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexnorstring success case - byte 3 of second string is incorrect.\n");
+        return;
+    }
+    
+    if (pstring2[4] != 0x1b)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexnorstring success case - byte 4 of second string is incorrect.\n");
+        return;
+    }
+    
+    x = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexnorstring success case - got an error getting depth of string stack\n");
+        return;
+    }
+    
+    if (x != 3)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulexnorstring success case - depth of string stack incorrect.\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
 
 /*
 void testdg_forthfreelibrary()

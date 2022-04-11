@@ -1,22 +1,22 @@
 <!--
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 -->
 
@@ -91,7 +91,7 @@
       <a href=forthmiscellaneous.htm#dg_forthroundup             >dg_forthroundup</a>
       <a href=forthmiscellaneous.htm#dg_forthcallprocaddress     >dg_forthcallprocaddress</a>
       <a href=forthmiscellaneous.htm#dg_forthcalldfpprocaddress  >dg_forthcalldfpprocaddress</a>
-      <a href=forthmiscellaneous.htm#dg_forthcallprocaddressretuint64 >dg_forthcallprocaddressretuint128</a>
+      <a href=forthmiscellaneous.htm#dg_forthcallprocaddressretuint128 >dg_forthcallprocaddressretuint128</a>
       <a href=forthmiscellaneous.htm#dg_forthcallcppmemberfunction >dg_forthcallcppmemberfunction</a>
       <a href=forthmiscellaneous.htm#dg_forthudmslashmod         >dg_forthudmslashmod</a>
       <a href=forthmiscellaneous.htm#dg_forthodoes               >dg_forthodoes</a>
@@ -131,14 +131,22 @@
       <a href=forthmiscellaneous.htm#dg_forthcompileu8scurly     >dg_forthcompileu8scurly</a>
       <a href=forthmiscellaneous.htm#dg_forthconstants           >dg_forthconstants</a>
       <a href=forthmiscellaneous.htm#dg_forthconstantscurly      >dg_forthconstantscurly</a>
-      <a href=forthmiscellaneous.htm#dg_forthlocalconstants      >dg_forthlocalconstants</a>
-      <a href=forthmiscellaneous.htm#dg_forthlocalconstantscurly >dg_forthlocalconstantscurly</a>
+      <a href=forthmiscellaneous.htm#dg_forthlocalconstants      >LOCAL-CONSTANTS</a>
+      <a href=forthmiscellaneous.htm#dg_forthlocalconstantscurly >LOCAL-CONSTANTS&gt;</a>
+      <a href=forthmiscellaneous.htm#dg_forthbracketlocalconstants      >[LOCAL-CONSTANTS]</a>
+      <a href=forthmiscellaneous.htm#dg_forthbracketlocalconstantscurly >[LOCAL-CONSTANTS]&gt;</a>
       <a href=forthmiscellaneous.htm#dg_forthfconstants          >dg_forthfconstants</a>
       <a href=forthmiscellaneous.htm#dg_forthfconstantscurly     >dg_forthfconstantscurly</a>
       <a href=forthmiscellaneous.htm#dg_forthvariables           >dg_forthvariables</a>
       <a href=forthmiscellaneous.htm#dg_forthvariablescurly      >dg_forthvariablescurly</a>
       <a href=forthmiscellaneous.htm#dg_forthmicrosecondssince1970jan01>dg_forthmicrosecondssince1970jan01</a>
-      <a href=forthmiscellaneous.htm#dg_forthsizedconstantscurly >dg_forthsizedconstantscurly</a>
+      <a href=forthmiscellaneous.htm#dg_forthbrackettoorderconstant    >dg_forthbrackettoorderconstant</a>
+      <a href=forthmiscellaneous.htm#dg_forthsizedconstantscurly       >dg_forthsizedconstantscurly</a>
+      <a href=forthmiscellaneous.htm#dg_forthenumcurly           >ENUM&gt;</a>
+      <a href=forthmiscellaneous.htm#dg_forthlocalenumcurly      >LOCAL-ENUM&gt;</a>
+      <a href=forthmiscellaneous.htm#dg_forthbracketlocalenumcurly>[LOCAL-ENUM]&gt;</a>
+      <a href=forthmiscellaneous.htm#dg_forthtypedenumcurly      >dg_forthtypedenumcurly</a>
+      <a href=forthmiscellaneous.htm#dg_forthtypedlocalenumcurly >dg_forthtypedlocalenumcurly</a>
       
       
     </div>
@@ -1260,7 +1268,7 @@
       </div>
 
 
-      <div class=word id=dg_forthcallprocaddressretuint64>
+      <div class=word id=dg_forthcallprocaddressretuint128>
 <pre>
 ////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -2861,13 +2869,64 @@
 //     In execute mode pushes the number onto the data stack
 //     In compile mode compiles code that pushes the number onto the data stack
 //
+// Examples:
+//   LOCAL-CONSTANTS 0 x  1 y  2 z  
+//   LOCAL-CONSTANTS 0 x2  1 y2  2 z2  ;
+//    
+//   x y z
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthbracketlocalconstants>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthbracketlocalconstants ( [LOCAL-CONSTANTS] )
+//
+// C prototype:
+//  void dg_forthbracketlocalconstants (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot; -currentinputbuffer- 
+//     &quot;morestuff&quot; )
+//  
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot;
+//
+// Current input buffer's current offset out:
+//  &quot;morestuff&quot;          
+//
+// Forth standard:
+//  none
+//                                                          
+// Action:
+//  Moves the current offset pointer for the current input buffer to the character 
+//   after the next ; or to the end of the line if ; is not found.
+//  For each word found before the ; or end of the line, whichever come first:
+//   Tries to convert the word to a number using the current BASE. 
+//   If the word can be converted to a number, it is pushed to the data stack.
+/    If the word can not be converted to a number, then this function pops a number
+//    from the data stack and then creates a new definition in the local wordlist that:
+//     In execute mode pushes the number onto the data stack
+//     In compile mode compiles code that pushes the number onto the data stack
+//
 //  This is an immediate word. In both execute and compile mode, the action for this
 //   word is done. Also, the local word list is emptied at the end of a : definition.
 //
 // Examples:
 //  : myword
-//    LOCAL-CONSTANTS 0 x  1 y  2 z  
-//    LOCAL-CONSTANTS 0 x2  1 y2  2 z2  ;
+//    [LOCAL-CONSTANTS] 0 x  1 y  2 z  
+//    [LOCAL-CONSTANTS] 0 x2  1 y2  2 z2  ;
 //    
 //    x y z ;
 //  
@@ -2916,13 +2975,65 @@
 //     In execute mode pushes the number onto the data stack
 //     In compile mode compiles code that pushes the number onto the data stack
 //
+// Example:
+//    LOCAL-CONSTANTS&lt; 
+//     0 x  
+//     1 y  2 z &gt; 
+//
+//    x y z
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthbracketlocalconstantscurly>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthbracketlocalconstantscurly ( [LOCAL-CONSTANTS]&lt; )
+//
+// C prototype:
+//  void dg_forthbracketlocalconstantscurly (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot; -currentinputbuffer- 
+//     &quot;morestuff&quot; )
+//  
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot;
+//
+// Current input buffer's current offset out:
+//  &quot;morestuff&quot;          
+//
+// Forth standard:
+//  none
+//                                                          
+// Action:
+//  Moves the current offset pointer for the current input buffer to the character 
+//   after the next &gt; or to the end of the buffer if &gt; is not found.
+//  For each word found before the &gt; or end of buffer, whichever come first:
+//   Tries to convert the word to a number using the current BASE. 
+//   If the word can be converted to a number, it is pushed to the data stack.
+/    If the word can not be converted to a number, then this function pops a number
+//    from the data stack and then creates a new definition in the local wordlist that:
+//     In execute mode pushes the number onto the data stack
+//     In compile mode compiles code that pushes the number onto the data stack
+//
 // Note:
 //  This is an immediate word. In both execute and compile mode, the action for this
 //   word is done. Also, the local word list is emptied at the end of a : definition.
 //
 // Example:
 //  : myword
-//    LOCAL-CONSTANTS&lt; 
+//    [LOCAL-CONSTANTS]&lt; 
 //     0 x  
 //     1 y  2 z &gt; 
 //
@@ -2931,6 +3042,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
+
 
 
       <div class=word id=dg_forthfconstants>
@@ -3351,7 +3463,7 @@
 //
 // Example making a structure:
 //  WORDLIST DUP [>ORDER]CONSTANT [rectangle] >CURRENT 
-//   SIZED-CONSTANTS&lt;8 x y w h size&gt;
+//   SIZED-CONSTANTS&lt; 8 x y w h size&gt;
 //  CURRENT> DROP
 //
 // Example making a function to access a member of the structure:
@@ -3360,6 +3472,385 @@
 //     DROP ( drop the size of w )
 //     + @ ;
 //  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthenumcurly>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthenumcurly ( ENUM&lt; )
+//
+// C prototype:
+//  void dg_forthenumcurly (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( stepsize startvalue -- valueafterend )
+//  ( &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot; -currentinputbuffer- 
+//     &quot;morestuff&quot; )
+//  
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot;
+//
+// Current input buffer's current offset out:
+//  &quot;morestuff&quot;          
+//
+// Forth standard:
+//  none
+//                                                          
+// Action:
+//  Pops the start value off the data stack. 
+//  Pops the step size off the data stack.
+//  Moves the current offset pointer for the current input buffer to the character 
+//   after the next &gt; or to the end of the buffer if &gt; is not found.
+//  For each word found before the &gt; or end of buffer, whichever come first:
+//   Tries to convert the word to a number using the current BASE. 
+//   For the first word of each group words that can be converted to a number, the
+//    step size is set to this number.
+//   For the second and all following words of the group that can be converted to
+//    a number, the value is set to this number. 
+//   If the word can not be converted to a number, then 
+//    if it's not the first value or if the value wasn't just set,
+//     the step size is added to the value. Then, this function 
+//     creates a new definition in the current new word wordlist that:
+//      In execute mode pushes the current value onto the data stack
+//      In compile mode compiles code that pushes the default value 
+//       onto the data stack
+//   Then a new group of words is started. 
+//
+// Example:
+//  1 6 ENUM&lt; 
+//   x  
+//   y  z 
+//   2 w
+//   3 1
+//   v u&gt;
+//
+//  7 is on the data stack after
+//
+//  x will push 6 onto the data stack
+//  y will push 7 onto the data stack
+//  z will push 8 onto the data stack
+//  w will push 10 onto the data stack
+//  v will push 1 onto the data stack
+//  u will push 4 onto the data stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthlocalenumcurly>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthlocalenumcurly ( LOCAL-ENUM&lt; )
+//
+// C prototype:
+//  void dg_forthlocalenumcurly (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( stepsize startvalue -- valueafterend )
+//  ( &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot; -currentinputbuffer- 
+//     &quot;morestuff&quot; )
+//  
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot;
+//
+// Current input buffer's current offset out:
+//  &quot;morestuff&quot;          
+//
+// Forth standard:
+//  none
+//                                                          
+// Action:
+//  Pops the start value off the data stack. 
+//  Pops the step size off the data stack.
+//  Moves the current offset pointer for the current input buffer to the character 
+//   after the next &gt; or to the end of the buffer if &gt; is not found.
+//  For each word found before the &gt; or end of buffer, whichever come first:
+//   Tries to convert the word to a number using the current BASE. 
+//   For the first word of each group words that can be converted to a number, the
+//    step size is set to this number.
+//   For the second and all following words of the group that can be converted to
+//    a number, the value is set to this number. 
+//   If the word can not be converted to a number, then 
+//    if it's not the first value or if the value wasn't just set,
+//     the step size is added to the value. Then, this function 
+//     creates a new definition in the locals wordlist that:
+//      In execute mode pushes the current value onto the data stack
+//      In compile mode compiles code that pushes the default value 
+//       onto the data stack
+//   Then a new group of words is started.
+//   At the end, the value that would be next is pushed onto the data stack.
+//
+// Example:
+//  1 6 ENUM&lt; 
+//   x  
+//   y  z 
+//   2 w
+//   3 1
+//   v u&gt;
+//
+//  7 is on the data stack after
+//
+//  x will push 6 onto the data stack
+//  y will push 7 onto the data stack
+//  z will push 8 onto the data stack
+//  w will push 10 onto the data stack
+//  v will push 1 onto the data stack
+//  u will push 4 onto the data stack
+//
+// Note:
+//  Use ?CLEAR-LOCALS to clear the local words from the local word list.
+//  This happens automatically at certain times, like when ; is compiled in a
+//   : definition.
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthbracketlocalenumcurly>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthbracketlocalenumcurly ( [LOCAL-ENUM]&lt; )
+//
+// C prototype:
+//  void dg_forthbracketlocalenumcurly (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( stepsize startvalue -- valueafterend )
+//  ( &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot; -currentinputbuffer- 
+//     &quot;morestuff&quot; )
+//  
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot;
+//
+// Current input buffer's current offset out:
+//  &quot;morestuff&quot;          
+//
+// Forth standard:
+//  none
+//                                                          
+// Action:
+//  Sets the start value to 0. 
+//  Sets the step size to 1.
+//  Moves the current offset pointer for the current input buffer to the character 
+//   after the next &gt; or to the end of the buffer if &gt; is not found.
+//  For each word found before the &gt; or end of buffer, whichever come first:
+//   Tries to convert the word to a number using the current BASE. 
+//   For the first word of each group words that can be converted to a number, the
+//    step size is set to this number.
+//   For the second and all following words of the group that can be converted to
+//    a number, the value is set to this number. 
+//   If the word can not be converted to a number, then 
+//    if it's not the first value or if the value wasn't just set,
+//     the step size is added to the value. Then, this function 
+//     creates a new definition in the locals wordlist that:
+//      In execute mode pushes the current value onto the data stack
+//      In compile mode compiles code that pushes the default value 
+//       onto the data stack
+//   Then a new group of words is started.
+//
+// Example:
+//  1 6 ENUM&lt; 
+//   x  
+//   y  z 
+//   2 w
+//   3 1
+//   v u&gt;
+//
+//  x will push 6 onto the data stack
+//  y will push 7 onto the data stack
+//  z will push 8 onto the data stack
+//  w will push 10 onto the data stack
+//  v will push 1 onto the data stack
+//  u will push 4 onto the data stack
+//
+// Note:
+//  Use ?CLEAR-LOCALS to clear the local words from the local word list.
+//  This happens automatically at certain times, like when ; is compiled in a
+//   : definition.
+//
+//  This function does not take parameters on the stack before, or put a value onto
+//   the stack after like LOCAL-ENUM&gt;
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthtypedenumcurly>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthtypedenumcurly ( TYPED-ENUM&lt; )
+//
+// C prototype:
+//  void dg_forthtypedenumcurly (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( stepsize startvalue type -- valueafterend )
+//  ( &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot; -currentinputbuffer- 
+//     &quot;morestuff&quot; )
+//  
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot;
+//
+// Current input buffer's current offset out:
+//  &quot;morestuff&quot;          
+//
+// Forth standard:
+//  none
+//                                                          
+// Action:
+//  Pops the type off the data stack.
+//  Pops the start value off the data stack. 
+//  Pops the step size off the data stack.
+//  Moves the current offset pointer for the current input buffer to the character 
+//   after the next &gt; or to the end of the buffer if &gt; is not found.
+//  For each word found before the &gt; or end of buffer, whichever come first:
+//   Tries to convert the word to a number using the current BASE. 
+//   For the first word of each group words that can be converted to a number, the
+//    step size is set to this number.
+//   For the second and all following words of the group that can be converted to
+//    a number, the value is set to this number. 
+//   If the word can not be converted to a number, then 
+//    if it's not the first value or if the value wasn't just set,
+//     the step size is added to the value. Then, this function 
+//     creates a new definition in the current new word wordlist that:
+//      In execute mode pushes the current value onto the data stack
+//      In compile mode compiles code that pushes the default value 
+//       onto the data stack
+//   Then a new group of words is started.
+//
+// Example:
+//  1 6 33 ENUM&lt; 
+//   x  
+//   y  z 
+//   2 w
+//   3 1 66
+//   v u&gt;
+//
+//  7 is on the data stack after
+//
+//  x will push 6 then 33 onto the data stack
+//  y will push 7 then 33 onto the data stack
+//  z will push 8 then 33 onto the data stack
+//  w will push 10 then 33 onto the data stack
+//  v will push 1 then 66 onto the data stack
+//  u will push 4 then 66 onto the data stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthtypedlocalenumcurly>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthtypedlocalenumcurly ( TYPED-LOCAL-ENUM&lt; )
+//
+// C prototype:
+//  void dg_forthtypedlocalenumcurly (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( stepsize startvalue -- valueafterend )
+//  ( &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot; -currentinputbuffer- 
+//     &quot;morestuff&quot; )
+//  
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word1&lt;delimiters&gt;word2&quot;...
+//    &lt;delimiters&gt;wordu&lt;delimiters&gt;}morestuff&quot;
+//
+// Current input buffer's current offset out:
+//  &quot;morestuff&quot;          
+//
+// Forth standard:
+//  none
+//                                                          
+// Action:
+//  Pops the type off the data stack.
+//  Pops the start value off the data stack. 
+//  Pops the step size off the data stack.
+//  Moves the current offset pointer for the current input buffer to the character 
+//   after the next &gt; or to the end of the buffer if &gt; is not found.
+//  For each word found before the &gt; or end of buffer, whichever come first:
+//   Tries to convert the word to a number using the current BASE. 
+//   For the first word of each group words that can be converted to a number, the
+//    step size is set to this number.
+//   For the second and all following words of the group that can be converted to
+//    a number, the value is set to this number. 
+//   If the word can not be converted to a number, then 
+//    if it's not the first value or if the value wasn't just set,
+//     the step size is added to the value. Then, this function 
+//     creates a new definition in the locals wordlist that:
+//      In execute mode pushes the current value onto the data stack
+//      In compile mode compiles code that pushes the default value 
+//       onto the data stack
+//   Then a new group of words is started.
+//
+// Example:
+//  1 6 33 ENUM&lt; 
+//   x  
+//   y  z 
+//   2 w
+//   3 1 66
+//   v u&gt;
+//
+//  7 is on the data stack after
+//
+//  x will push 6 then 33 onto the data stack
+//  y will push 7 then 33 onto the data stack
+//  z will push 8 then 33 onto the data stack
+//  w will push 10 then 33 onto the data stack
+//  v will push 1 then 66 onto the data stack
+//  u will push 4 then 66 onto the data stack
+//
+// Note:
+//  Use ?CLEAR-LOCALS to clear the local words from the local word list.
+//  This happens automatically at certain times, like when ; is compiled in a
+//   : definition.
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>

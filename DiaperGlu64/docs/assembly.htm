@@ -1,22 +1,22 @@
 <!--
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 -->
 
@@ -147,6 +147,10 @@
       <a href=assembly.htm#dg_dreturntestuint128                    >dg_dreturntestuint128</a>
       <a href=assembly.htm#dg_testasmretuint128                     >dg_testasmretuint128</a>
       <a href=assembly.htm#dg_random                                >dg_random</a>
+      <a href=assembly.htm#dg_addbytes                              >dg_addbytes</a>
+      <a href=assembly.htm#dg_lslbytes                              >dg_lslbytes</a>
+      <a href=assembly.htm#dg_mulu64tou64s                          >dg_mulu64tou64s</a>
+      <a href=assembly.htm#dg_divu64sbyu64                          >dg_divu64sbyu64</a>
     </div>
     
     <div id=pagestuff>
@@ -1257,9 +1261,9 @@
 //    
 //
 // Inputs:
-//  unsigned char*   psrc            pointer to source string
-//  unsigned char*   plength         pointer to destination string
-//  UINT64           stringlength    length of each string in bytes
+//  unsigned char*   psrc           pointer to source string
+//  unsigned char*   pdest          pointer to destination string
+//  UINT64           stringlength   length of each string in bytes
 //
 // Outputs:
 //  const char*     return          pointer to null terminated c string error status 
@@ -1625,7 +1629,7 @@
 //           
 //    
 // Inputs:
-//  UINT64*     pints          pointer to the cdecl subroutine's UINT32 parameter list 
+//  UINT64*     pints          pointer to the cdecl subroutine's UINT64 parameter list 
 //                              on the data stack. the last parameter on the data stack 
 //                              is the first parameter in the c function prototype 
 //                              parameter list
@@ -3088,6 +3092,172 @@
 //
 // Action:
 //  Returns a randome 64 bit integer. 
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+      <div class=word id=dg_addbytes>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_addbytes
+//
+// C prototype: 
+//   const char* dg_addbytes (
+//    unsigned char* psrc,    
+//    unsigned char* pdest,   
+//    UINT64 stringlength,
+//    UINT64* pcarryout);
+//    
+//
+// Inputs:
+//  unsigned char*   psrc           pointer to source string
+//  unsigned char*   pdest          pointer to destination string
+//  UINT64           stringlength   length of each string in bytes
+//  UINT64*          pcarryout      pointer to UINT64 that will hold the carryout
+//
+// Outputs:
+//  UINT64           carryout       0 = no carry after add, 1 = carry after add
+//  const char*      return         pointer to null terminated c string error status 
+//                                   message
+//                                    dg_success if successful
+//                                    dg_badmemory if process does not own memory at 
+//                                     psrc or pdest            
+//                               
+// Action:
+//  Adds the bytes at psrc to bytes at pdest for length bytes.
+//  This add treats the byte arrays at psrc and pdest as little endian intergers.
+//
+// Failure cases:
+//  process may not own all memory in the string at psrc or pdest or pcarryout
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      <div class=word id=dg_lslbytes>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_lslbytes
+//
+// C prototype: 
+//   const char* dg_lslbytes ( 
+//    unsigned char* pdest,   
+//    UINT64 stringlength,
+//    UINT64* pcarryout);
+//    
+//
+// Inputs:
+//  unsigned char*   pdest          pointer to destination string
+//  UINT64           stringlength   length of string in bytes
+//  UINT64*          pcarryout      pointer to UINT64 that will hold the carryout
+//
+// Outputs:
+//  UINT64           carryout       1 = highest bit before shift was set, otherwise 0
+//  const char*      return         pointer to null terminated c string error status 
+//                                   message
+//                                    dg_success if successful
+//                                    dg_badmemory if process does not own memory at 
+//                                     pdest            
+//                               
+// Action:
+//  Logicially shifts the bytes at pdest left one bit for length bytes.
+//  This shift treats the byte arrays at pdest as little endian intergers.
+//  A 0 is shifted into the right of the lowest byte.
+//  The highest bit of the highest byte shifted into carryout.
+//
+// Failure cases:
+//  process may not own all memory in the string at pdest or pcarryout
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_mulu64tou64s>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_mulu64tou64s
+//
+// C prototype: 
+//   const char* dg_mulu64tou64s ( 
+//    UINT64* pdest,
+//    UINT64* psrc,
+/     UINT64  u,   
+//    UINT64  srcstringlength,
+//    UINT64* pcarryout);
+//    
+//
+// Inputs:
+//  UINT64*   pdest                 pointer to destination string
+//  UINT64*   psrc                  pointer to source string
+//  UINT64    u                     number to multiply each u64 in psrc by
+//  UINT64    srcstringlength       source length of string in UINT64s
+//                                  deststringlength is srcstringlength+1
+//  UINT64*   pcarryout             pointer to u64 that will hold the carry out
+//
+// Outputs:
+//  UINT64           carryout       0 = no carry out, 1 = carry out
+//  const char*      return         pointer to null terminated c string error status 
+//                                   message
+//                                    dg_success if successful
+//                                    dg_badmemory if process does not own memory at 
+//                                     psrc or pdest            
+//                               
+// Action:
+//  Treats psrc and pdest as little endian integers.
+//  Multiplies the value in psrc by u and adds the result to the value in pdest
+//
+// Failure cases:
+//  process may not own all memory in the string at pdest or psrc
+// 
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+  
+      
+      <div class=word id=dg_divu64sbyu64>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_divu64sbyu64
+//
+// C prototype: 
+//   const char* dg_divu64sbyu64 ( 
+//    UINT64* pdest,            
+//    UINT64* premainder,       
+//    UINT64 u,                 
+//    UINT64 srclengthinu64s); 
+//    
+//
+// Inputs:
+//  UINT64*   pdest                 pointer to source and destination string
+//  UINT64*   premainder            pointer to where the remainder will go
+//  UINT64    u                     number to divide each u64 in pdest by
+//  UINT64    srclengthinu64s       destination length of string in UINT64s
+//
+// Outputs:
+//  UINT64           remainder      the remainder of the calculation if u was 0
+//                                  if u was 0, then this is set to the largest UINT64
+//                                   which is 0xFFFFFFFFFFFFFFFF
+//  const char*      return         pointer to null terminated c string error status 
+//                                   message
+//                                    dg_success if successful
+//                                    dg_badmemory if process does not own memory at 
+//                                     psrc or pdest            
+//                               
+// Action:
+//  Treats string at pdest as a little endian integers.
+//  If u is not 0 then this divides the value in pdest by u and puts the quotient into 
+//   back into pdest and the remainder into the remainder.
+//  If u is 0 then the value in pdest is left unchanged and the remainder is set to
+//   0xFFFFFFFFFFFFFFFF which is the largest unsigned int.
+//
+// Failure cases:
+//  process may not own all memory in the string at pdest or psrc
 // 
 ////////////////////////////////////////////////////////////////////////////////////////
 </pre>

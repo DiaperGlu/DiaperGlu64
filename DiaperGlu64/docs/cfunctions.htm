@@ -1,22 +1,22 @@
 <!--
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 -->
 
@@ -1474,7 +1474,7 @@
             </div>
             
             <div class=cfunctionprototype id=dg_unpacklstring>
-                UINT64 <a href=clstring.htm#dg_unpacklstring>dg_unpacklstring</a> (
+                void <a href=clstring.htm#dg_unpacklstring>dg_unpacklstring</a> (
                     Bufferhandle* pBHarrayhead, 
                     UINT64 lstringstringbufferid)
             </div>
@@ -1486,9 +1486,203 @@
             </div>
             
             <div class=cfunctionprototype id=dg_urldecodelstring>
-                UINT64 <a href=clstring.htm#dg_urldecodelstring>dg_urldecodelstring</a> (
+                void <a href=clstring.htm#dg_urldecodelstring>dg_urldecodelstring</a> (
                     UINT64 lstringoffsetbufferid,
                     UINT64 lstringstringbufferid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_uleextendlstringntol>
+                void <a href=clstring.htm#dg_uleextendlstringntol>dg_uleextendlstringntol</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferid,
+                    UINT64 stringbufferid,
+                    UINT64 stringid,
+                    UINT64 newlength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_uleaddlstringntolstringn>
+                void <a href=clstring.htm#dg_uleaddlstringntolstringn>dg_uaddlelstringntolstringn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferida,
+                    UINT64 stringbufferida,
+                    UINT64 stringida,
+                    UINT64 offsetbufferidb,
+                    UINT64 stringbufferidb,
+                    UINT64 stringidb,
+                    UINT64* pcarryout)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_uleadclstringntolstringn>
+                void <a href=clstring.htm#dg_uleadclstringntolstringn>dg_uadclelstringntolstringn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferida,
+                    UINT64 stringbufferida,
+                    UINT64 stringida,
+                    UINT64 offsetbufferidb,
+                    UINT64 stringbufferidb,
+                    UINT64 stringidb,
+                    UINT64* pcarryinout)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_ulesbblstringntolstringn>
+                void <a href=clstring.htm#dg_ulesbblstringntolstringn>dg_ulesbblstringntolstringn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferida,
+                    UINT64 stringbufferida,
+                    UINT64 stringida,
+                    UINT64 offsetbufferidb,
+                    UINT64 stringbufferidb,
+                    UINT64 stringidb,
+                    UINT64* pborrowinout)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_lelshiftlstringn>
+                void <a href=clstring.htm#dg_lelshiftlstringn>dg_lelshiftlstringn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferid,
+                    UINT64 stringbufferid,
+                    UINT64 stringid,
+                    UINT64* pcarryout)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_ulershiftlstringn>
+                void <a href=clstring.htm#dg_ulershiftlstringn>dg_ulershiftlstringn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferid,
+                    UINT64 stringbufferid,
+                    UINT64 stringid,
+                    UINT64* pcarryout)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_slershiftlstringn>
+                void <a href=clstring.htm#dg_slershiftlstringn>dg_slershiftlstringn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferid,
+                    UINT64 stringbufferid,
+                    UINT64 stringid,
+                    UINT64* pcarryout)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_lelshiftclstringn>
+                void <a href=clstring.htm#dg_lelshiftclstringn>dg_lelshiftclstringn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferid,
+                    UINT64 stringbufferid,
+                    UINT64 stringid,
+                    UINT64* pcarryinout)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_lershiftclstringn>
+                void <a href=clstring.htm#dg_lershiftclstringn>dg_lershiftclstringn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferid,
+                    UINT64 stringbufferid,
+                    UINT64 stringid,
+                    UINT64* pcarryinout)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_notlstringn>
+                void <a href=clstring.htm#dg_notlstringn>dg_notlstringn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferid,
+                    UINT64 stringbufferid,
+                    UINT64 stringid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_reverselstringn>
+                void <a href=clstring.htm#dg_reverselstringn>dg_reverselstringn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferid,
+                    UINT64 stringbufferid,
+                    UINT64 stringid)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_uleandlstringntolstringn>
+                void <a href=clstring.htm#dg_uleandlstringntolstringn>dg_uleandlstringntolstringn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferida,
+                    UINT64 stringbufferida,
+                    UINT64 stringida,
+                    UINT64 offsetbufferidb,
+                    UINT64 stringbufferidb,
+                    UINT64 stringidb)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_uleorlstringntolstringn>
+                void <a href=clstring.htm#dg_uleorlstringntolstringn>dg_uleorlstringntolstringn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferida,
+                    UINT64 stringbufferida,
+                    UINT64 stringida,
+                    UINT64 offsetbufferidb,
+                    UINT64 stringbufferidb,
+                    UINT64 stringidb)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_ulexorlstringntolstringn>
+                void <a href=clstring.htm#dg_ulexorlstringntolstringn>dg_ulexorlstringntolstringn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferida,
+                    UINT64 stringbufferida,
+                    UINT64 stringida,
+                    UINT64 offsetbufferidb,
+                    UINT64 stringbufferidb,
+                    UINT64 stringidb)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_ulenandlstringntolstringn>
+                void <a href=clstring.htm#dg_ulenandlstringntolstringn>dg_ulenandlstringntolstringn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferida,
+                    UINT64 stringbufferida,
+                    UINT64 stringida,
+                    UINT64 offsetbufferidb,
+                    UINT64 stringbufferidb,
+                    UINT64 stringidb)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_ulenorlstringntolstringn>
+                void <a href=clstring.htm#dg_ulenorlstringntolstringn>dg_ulenorlstringntolstringn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferida,
+                    UINT64 stringbufferida,
+                    UINT64 stringida,
+                    UINT64 offsetbufferidb,
+                    UINT64 stringbufferidb,
+                    UINT64 stringidb)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_ulexnorlstringntolstringn>
+                void <a href=clstring.htm#dg_ulexnorlstringntolstringn>dg_ulexnorlstringntolstringn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferida,
+                    UINT64 stringbufferida,
+                    UINT64 stringida,
+                    UINT64 offsetbufferidb,
+                    UINT64 stringbufferidb,
+                    UINT64 stringidb)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_mulu64bylstringnaddtolstringn>
+                void <a href=clstring.htm#dg_mulu64bylstringnaddtolstringn>dg_mulu64bylstringnaddtolstringn</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferida,
+                    UINT64 stringbufferida,
+                    UINT64 stringida,
+                    UINT64 offsetbufferidb,
+                    UINT64 stringbufferidb,
+                    UINT64 stringidb,
+                    UINT64 u)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_divlstringnbyu64>
+                void <a href=clstring.htm#dg_divlstringnbyu64>dg_divlstringnbyu64</a> (
+                    Bufferhandle* pBHarrayhead,
+                    UINT64 offsetbufferida,
+                    UINT64 stringbufferida,
+                    UINT64 stringida,
+                    UINT64 u,
+                    UINT64* premainder)
             </div>
             
             <div class=cfunctionprototype id=dg_stonewstring>
@@ -3558,6 +3752,148 @@
             
             <div class=cfunctionprototype id=dg_random>
                 UINT64 <a href=assembly.htm#dg_random>dg_random</a> ()
+            </div>
+            
+            <div class=cfunctionprototype id=dg_addbytes>
+                const char* <a href=assembly.htm#dg_addbytes>dg_addbytes</a> (
+                    unsigned char* psrc, 
+                    unsigned char* pdest,
+                    UINT64 stringlength,
+                    UINT64* pcarryout)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_adcbytes>
+                const char* <a href=assembly.htm#dg_adcbytes>dg_adcbytes</a> (
+                    unsigned char* psrc, 
+                    unsigned char* pdest,
+                    UINT64 stringlength,
+                    UINT64* pcarryinout)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_sbbbytes>
+                const char* <a href=assembly.htm#dg_sbbbytes>dg_sbbbytes</a> (
+                    unsigned char* psrc, 
+                    unsigned char* pdest,
+                    UINT64 stringlength,
+                    UINT64* pborrowinout)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_shlbytes>
+                const char* <a href=assembly.htm#dg_shlbytes>dg_shlbytes</a> (
+                    unsigned char* pdest,
+                    UINT64 stringlength,
+                    UINT64* pcarryout)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_shrbytes>
+                const char* <a href=assembly.htm#dg_shrbytes>dg_shrbytes</a> (
+                    unsigned char* pdest,
+                    UINT64 stringlength,
+                    UINT64* pcarryout)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_sarbytes>
+                const char* <a href=assembly.htm#dg_sarbytes>dg_sarbytes</a> (
+                    unsigned char* pdest,
+                    UINT64 stringlength,
+                    UINT64* pcarryout)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_rclbytes>
+                const char* <a href=assembly.htm#dg_rclbytes>dg_rclbytes</a> (
+                    unsigned char* pdest,
+                    UINT64 stringlength,
+                    UINT64* pcarryinout)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_rcrbytes>
+                const char* <a href=assembly.htm#dg_rcrbytes>dg_rcrbytes</a> (
+                    unsigned char* pdest,
+                    UINT64 stringlength,
+                    UINT64* pcarryinout)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_notbytesname>
+                const char* <a href=assembly.htm#dg_notbytesname>dg_notbytesname</a> (
+                    unsigned char* pdest,
+                    UINT64 stringlength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_reversebytesname>
+                const char* <a href=assembly.htm#dg_reversebytesname>dg_reversebytesname</a> (
+                    unsigned char* pdest,
+                    UINT64 stringlength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_incbytesname>
+                const char* <a href=assembly.htm#dg_incbytesname>dg_incbytesname</a> (
+                    unsigned char* pdest,
+                    UINT64 stringlength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_decbytesname>
+                const char* <a href=assembly.htm#dg_decbytesname>dg_decbytesname</a> (
+                    unsigned char* pdest,
+                    UINT64 stringlength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_andbytesname>
+                const char* <a href=assembly.htm#dg_andbytesname>dg_andbytesname</a> (
+                    unsigned char* psrc,
+                    unsigned char* pdest,
+                    UINT64 stringlength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_orbytesname>
+                const char* <a href=assembly.htm#dg_orbytesname>dg_orbytesname</a> (
+                    unsigned char* psrc,
+                    unsigned char* pdest,
+                    UINT64 stringlength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_xorbytesname>
+                const char* <a href=assembly.htm#dg_xorbytesname>dg_xorbytesname</a> (
+                    unsigned char* psrc,
+                    unsigned char* pdest,
+                    UINT64 stringlength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_nandbytesname>
+                const char* <a href=assembly.htm#dg_nandbytesname>dg_nandbytesname</a> (
+                    unsigned char* psrc,
+                    unsigned char* pdest,
+                    UINT64 stringlength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_norbytesname>
+                const char* <a href=assembly.htm#dg_norbytesname>dg_norbytesname</a> (
+                    unsigned char* psrc,
+                    unsigned char* pdest,
+                    UINT64 stringlength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_xnorbytesname>
+                const char* <a href=assembly.htm#dg_xnorbytesname>dg_xnorbytesname</a> (
+                    unsigned char* psrc,
+                    unsigned char* pdest,
+                    UINT64 stringlength)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_mulu64tou64s>
+                const char* <a href=assembly.htm#dg_mulu64tou64s>dg_mulu64tou64s</a> (
+                    UINT64* pdest,
+                    UINT64* psrc,
+                    UINT64  u,
+                    UINT64  srcstringlength,
+                    UINT64* pcarryout)
+            </div>
+            
+            <div class=cfunctionprototype id=dg_divu64sbyu64>
+                const char* <a href=assembly.htm#dg_divu64sbyu64>dg_divu64sbyu64</a> (
+                    UINT64* pdest,
+                    UINT64* premainder,
+                    UINT64  u,
+                    UINT64  destlengthinu64s);
             </div>
 
         </div>

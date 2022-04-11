@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 
 
@@ -960,90 +960,6 @@ void dg_forthwtodatalinkcomma(Bufferhandle* pBHarrayhead)
 }
 
 
-void dg_forthsymbol(Bufferhandle* pBHarrayhead)
-{
-    // ( N -- )
-    // ( "<spaces>symbolname<spaces>morestuff" -currentinputbuffer- "<spaces>morestuff" )
-
-    unsigned char* pname;
-	UINT64 namelength = 0;
-
-	// Bufferhandle* pBH = NULL;
-    
-    UINT64 myhlistid;
-    UINT64 mysymbollistelementid;
-    UINT64 x;
-    
-    unsigned char* phstack;
-    UINT64* phstacklength;
-    
-    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-    
-    if (baderrorcount == olderrorcount)
-    {
-        return;
-    }
-    
-    pname = dg_parseword(
-        pBHarrayhead,
-        &namelength);
-    
-	if (namelength == 0)
-	{
-        dg_pusherror(pBHarrayhead, dg_wordlength0error);
-		dg_pusherror(pBHarrayhead, dg_forthsymbolname);
-		return;
-	}
-    
-    phstack = dg_getpbuffer(
-        pBHarrayhead,
-        DG_EHSTACK_BUFFERID,
-        &phstacklength);
-
-	if (phstack == (unsigned char*)badbufferhandle)
-	{
-        dg_pusherror(pBHarrayhead, dg_forthhstackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthsymbolname);
-		return;
-	}
-
-    if (*phstacklength < (2 * sizeof(UINT64)))
-	{
-		dg_pusherror(pBHarrayhead, dg_underflowerror);
-		dg_pusherror(pBHarrayhead, dg_forthsymbolname);
-		return;
-	}
-    
-    myhlistid = *((UINT64*)(phstack + ((*phstacklength) - sizeof(UINT64))));
-    
-    mysymbollistelementid = *((UINT64*)(phstack + ((*phstacklength) - (2 * sizeof(UINT64)))));
-  
-    x = dg_popbufferuint64(
-        pBHarrayhead,
-        DG_DATASTACK_BUFFERID);
-    
-    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-    {
-        dg_pusherror(pBHarrayhead, dg_forthsymbolname);
-        return;
-    }
-    
-    dg_newhlistelement (
-        pBHarrayhead,
-        myhlistid,
-        mysymbollistelementid, // parentelementid, // if parentelementid == DG_ENDOFLIST it means you are adding a root element
-        pname, // pcib + ciboldoffset,   // unsigned char* pname,
-        namelength,             // UINT64 namelength,
-        (unsigned char*)&x, // unsigned char* pvalue,
-        sizeof(UINT64)); // UINT64 valuelength);
-    
-    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-    {
-        dg_pusherror(pBHarrayhead, dg_forthsymbolname);
-        return;
-    }
-}
-
 
 /*
 const char dg_forthnewnglubufnamedstrname[] = "NEW-NGLU-BUFFER-NAMED$";
@@ -1880,6 +1796,9 @@ void dg_forthhsymbolstrto (Bufferhandle* pBHarrayhead)
     
     dg_forthdropstring(pBHarrayhead);
 }
+
+
+
 
 
 

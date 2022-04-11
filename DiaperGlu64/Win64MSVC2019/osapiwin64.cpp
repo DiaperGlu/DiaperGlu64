@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 
 // #include "../stdafx.h"
@@ -69,9 +69,13 @@ const char dg_toomanysymboliclinkserror[] = " - path to file has too many symbol
 const char dg_pathorfilenametoolongerror[] = " - path or file name too long error";
 const char dg_partofpathnotdirectoryerror[] = " - part of the path does not point to a directory error";
 const char dg_fileopenforwriteerror[] = " - file open for write error";
+const char dg_filelengthtoobigerror[] = " - file length is over size because it must fit into 32 bits";
 const char dg_badprocessiderror[] = " - process does not exist or is not a child of the calling process";
 const char dg_interruptedbysignalerror[] = " - call was interrupted and not restarted error";
 const char dg_toomanyprocesseserror[] = " - too many processes error";
+const char dg_freemutexwhilelockederror[] = " - can't free a mutex while it is locked error";
+const char dg_woulddeadlockerror[] = " - waiting for mutex will cause a deadlock error";
+const char dg_mutexisnotlockederror[] = " - mutex is not locked error";
 
 const char dg_writeprotectederror[]        = " - write protected error";
 const char dg_diskisfullerror[] = " - disk is full error";
@@ -84,6 +88,7 @@ const char dg_segmentgoespastenderror[] = "- offset + length goes past end of bu
 const char dg_badmagicerror[] = " - file or structure's magic number not what was expected error";
 const char dg_missingexporttableerror[] = " - library file's export table is missing error";
 const char dg_exporttablebounderror[] = " - library file export table's declared size goes into something else's memory error";
+const char dg_waitabandonederror[] = " - the wait was abandoned";
 
 
 const char dg_scanforbytename[] = "dg_scanforbyte";
@@ -992,6 +997,407 @@ const char* dg_search(
 }
 
 
+const char* dg_addbytes(
+    unsigned char* psrc,    // rdi // rcx
+    unsigned char* pdest,   // rsi // rdx
+	UINT64 stringlength,    // rdx // r8
+	UINT64* pcarryout)      // rcx // r9
+{
+	const char* pError = dg_success;
+
+	__try
+	{
+		dg_addbytessub(psrc, pdest, stringlength, pcarryout);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		pError = dg_badmemoryerror;
+	}
+
+	return (pError);
+}
+
+
+const char* dg_adcbytes(
+	unsigned char* psrc,    // rdi // rcx
+	unsigned char* pdest,   // rsi // rdx
+	UINT64 stringlength,    // rdx // r8
+	UINT64* pcarryinout)    // rcx // r9
+{
+	const char* pError = dg_success;
+
+	__try
+	{
+		dg_adcbytessub(psrc, pdest, stringlength, pcarryinout);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		pError = dg_badmemoryerror;
+	}
+
+	return (pError);
+}
+
+
+const char* dg_sbbbytes(
+	unsigned char* psrc,    // rdi // rcx
+	unsigned char* pdest,   // rsi // rdx
+	UINT64 stringlength,    // rdx // r8
+	UINT64* pborrowinout)    // rcx // r9
+{
+	const char* pError = dg_success;
+
+	__try
+	{
+		dg_sbbbytessub(psrc, pdest, stringlength, pborrowinout);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		pError = dg_badmemoryerror;
+	}
+
+	return (pError);
+}
+
+
+const char* dg_andbytes(
+	unsigned char* psrc,    // rdi  // rcx
+	unsigned char* pdest,   // rsi  // rdx
+	UINT64 stringlength)    // rdx  // r8
+{
+	const char* pError = dg_success;
+
+	__try
+	{
+		dg_andbytessub(psrc, pdest, stringlength);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		pError = dg_badmemoryerror;
+	}
+
+	return (pError);
+}
+
+
+const char* dg_orbytes(
+	unsigned char* psrc,    // rdi  // rcx
+	unsigned char* pdest,   // rsi  // rdx
+	UINT64 stringlength)    // rdx  // r8
+{
+	const char* pError = dg_success;
+
+	__try
+	{
+		dg_orbytessub(psrc, pdest, stringlength);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		pError = dg_badmemoryerror;
+	}
+
+	return (pError);
+}
+
+
+const char* dg_xorbytes(
+	unsigned char* psrc,    // rdi  // rcx
+	unsigned char* pdest,   // rsi  // rdx
+	UINT64 stringlength)    // rdx  // r8
+{
+	const char* pError = dg_success;
+
+	__try
+	{
+		dg_xorbytessub(psrc, pdest, stringlength);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		pError = dg_badmemoryerror;
+	}
+
+	return (pError);
+}
+
+const char* dg_nandbytes(
+	unsigned char* psrc,    // rdi  // rcx
+	unsigned char* pdest,   // rsi  // rdx
+	UINT64 stringlength)    // rdx  // r8
+{
+	const char* pError = dg_success;
+
+	__try
+	{
+		dg_nandbytessub(psrc, pdest, stringlength);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		pError = dg_badmemoryerror;
+	}
+
+	return (pError);
+}
+
+
+const char* dg_norbytes(
+    unsigned char* psrc,    // rdi  // rcx
+    unsigned char* pdest,   // rsi  // rdx
+    UINT64 stringlength)    // rdx  // r8
+{
+	const char* pError = dg_success;
+
+	__try
+	{
+		dg_norbytessub(psrc, pdest, stringlength);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		pError = dg_badmemoryerror;
+	}
+
+	return (pError);
+}
+
+
+const char* dg_xnorbytes(
+	unsigned char* psrc,    // rdi  // rcx
+	unsigned char* pdest,   // rsi  // rdx
+	UINT64 stringlength)    // rdx  // r8
+{
+	const char* pError = dg_success;
+
+	__try
+	{
+		dg_xnorbytessub(psrc, pdest, stringlength);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		pError = dg_badmemoryerror;
+	}
+
+	return (pError);
+}
+
+
+const char* dg_shlbytes(
+	unsigned char* pdest,    // rdi  // rcx
+	UINT64 stringlength,     // rsi  // rdx
+	UINT64* pcarryout)       // rdx  // r8
+{
+	const char* pError = dg_success;
+
+	__try
+	{
+		dg_shlbytessub(pdest, stringlength, pcarryout);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		pError = dg_badmemoryerror;
+	}
+
+	return (pError);
+}
+
+
+const char* dg_shrbytes(
+	unsigned char* pdest,    // rdi  // rcx
+	UINT64 stringlength,     // rsi  // rdx
+	UINT64* pcarryout)       // rdx  // r8
+{
+	const char* pError = dg_success;
+
+	__try
+	{
+		dg_shrbytessub(pdest, stringlength, pcarryout);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		pError = dg_badmemoryerror;
+	}
+
+	return (pError);
+}
+
+
+const char* dg_rclbytes(
+	unsigned char* pdest,    // rdi  // rcx
+	UINT64 stringlength,     // rsi  // rdx
+	UINT64* pcarryinout)     // rdx  // r8
+{
+	const char* pError = dg_success;
+
+	__try
+	{
+		dg_rclbytessub(pdest, stringlength, pcarryinout);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		pError = dg_badmemoryerror;
+	}
+
+	return (pError);
+}
+
+
+const char* dg_rcrbytes(
+	unsigned char* pdest,    // rdi  // rcx
+	UINT64 stringlength,     // rsi  // rdx
+	UINT64* pcarryinout)     // rdx  // r8
+{
+	const char* pError = dg_success;
+
+	__try
+	{
+		dg_rcrbytessub(pdest, stringlength, pcarryinout);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		pError = dg_badmemoryerror;
+	}
+
+	return (pError);
+}
+
+
+const char* dg_sarbytes(
+	unsigned char* pdest,    // rdi  // rcx
+	UINT64 stringlength,     // rsi  // rdx
+	UINT64* pcarryout)       // rdx  // r8
+{
+	const char* pError = dg_success;
+
+	__try
+	{
+		dg_sarbytessub(pdest, stringlength, pcarryout);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		pError = dg_badmemoryerror;
+	}
+
+	return (pError);
+}
+
+
+const char* dg_notbytes(
+	unsigned char* pdest,
+	UINT64 stringlength) 
+{
+	const char* pError = dg_success;
+
+	__try
+	{
+		dg_notbytessub(pdest, stringlength);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		pError = dg_badmemoryerror;
+	}
+
+	return (pError);
+}
+
+
+const char* dg_reversebytes(
+	unsigned char* pdest,
+	UINT64 stringlength) 
+{
+	const char* pError = dg_success;
+
+	__try
+	{
+		dg_reversebytessub(pdest, stringlength);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		pError = dg_badmemoryerror;
+	}
+
+	return (pError);
+}
+
+
+const char* dg_incbytes(
+	unsigned char* pdest,    // rdi  // rcx
+	UINT64 stringlength,     // rsi  // rdx
+	UINT64* pcarryout)      // rdx  // r8
+{
+	const char* pError = dg_success;
+
+	__try
+	{
+		dg_incbytessub(pdest, stringlength, pcarryout);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		pError = dg_badmemoryerror;
+	}
+
+	return (pError);
+}
+
+
+const char* dg_decbytes(
+	unsigned char* pdest,    // rdi  // rcx
+	UINT64 stringlength,     // rsi  // rdx
+	UINT64* pborrowout)      // rdx  // r8
+{
+	const char* pError = dg_success;
+
+	__try
+	{
+		dg_decbytessub(pdest, stringlength, pborrowout);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		pError = dg_badmemoryerror;
+	}
+
+	return (pError);
+}
+
+
+const char* dg_mulu64tou64s(
+    UINT64* pdest,           // rdi // rcx
+    UINT64* psrc,            // rsi // rdx
+    UINT64  u,               // rdx // r8
+    UINT64  srclengthinu64s, // rcx // r9
+    UINT64* pcarryout)       // r8  // param4 (after 4 shadow)
+{
+	const char* pError = dg_success;
+
+	__try
+	{
+		dg_mulu64tou64ssub(pdest, psrc, u, srclengthinu64s, pcarryout);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		pError = dg_badmemoryerror;
+	}
+
+	return (pError);
+}
+
+
+const char* dg_divu64sbyu64(
+    UINT64* pdest,            // rdi // rcx // quotient and dividend
+    UINT64* premainder,       // rsi // rdx // premainder
+    UINT64  u,                // rdx // r8  // divisor
+    UINT64  destlengthinu64s) // rcx // r9  // 
+{
+	const char* pError = dg_success;
+
+	__try
+	{
+		dg_divu64sbyu64sub(pdest, premainder, u, destlengthinu64s);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		pError = dg_badmemoryerror;
+	}
+
+	return (pError);
+}
 
 
 /*
@@ -1428,6 +1834,16 @@ const char* dg_readisapi(
 	HCONN myconnid;
 
 	UINT64 bflag;
+	
+	if (length == 0)
+	{
+		return(dg_success);
+	}
+
+	if (length > 0xFFFFFFFF)
+	{
+		return(dg_filelengthtoobigerror);
+	}
 
 	__try
 	{
@@ -1490,10 +1906,17 @@ const char* dg_readfile(
         return (forceerrorflag);
     }
 
+	*pnumread = 0; // to clear out the high 32 bits
+
 	// code assumes length is not 0 later on in this routine
 	if (length == 0)
 	{
 		return(dg_success);
+	}
+
+	if (length > 0xFFFFFFFF)
+	{
+		return(dg_filelengthtoobigerror);
 	}
 
 	__try
@@ -1502,7 +1925,7 @@ const char* dg_readfile(
            (HANDLE)fileid, 
            pbuf, 
            length, 
-           (unsigned long*)pnumread, 
+           (LPDWORD)pnumread, 
            NULL);
             
         // 64bit code IS getting called somehow and diaperglu compiled code confuses alignment. This
@@ -1588,13 +2011,17 @@ const char* dg_writefilesub(
 	 const char* forceerrorflag)
 {
 	DWORD numwritten = 0;
-	UINT64 totalwritten = 0;
+	DWORD totalwritten = 0;
 	INT64 flag = 1;
     UINT64 badpisapi = FORTH_FALSE;
     UINT64 lastError;
 
     EXTENSION_CONTROL_BLOCK* lpECB;
 
+	if (length > 0xFFFFFFFF)
+	{
+		return(dg_filelengthtoobigerror);
+	}
     
 	__try
 	{
@@ -2262,14 +2689,19 @@ const char* dg_getfilelength(
 	const char* result = dg_success;
 	const char* filetype = NULL;
 
-	DWORD filelengthlo = 0;
-	DWORD filelengthhi = 0;
+	// DWORD filelengthlo = 0;
+	// DWORD filelengthhi = 0;
 
 	long bflag = 0;
 
 	MSG mymsg;
 	INPUT_RECORD myinputrecord;
 	unsigned long mynumread = 0;
+
+	BOOL retflag;
+	UINT32 lasterror;
+
+	struct _FILE_STANDARD_INFO mystandardinfo;
 
     EXTENSION_CONTROL_BLOCK* lpECB;
 
@@ -2341,7 +2773,7 @@ const char* dg_getfilelength(
 	{
 		// windows doesn't have a way to return the current file pointer position.
 		// application has to keep track of it, so returning the length of the file
-		filelengthlo = ::GetFileSize((HANDLE)fileid, &filelengthhi);
+		// filelengthlo = ::GetFileSize((HANDLE)fileid, &filelengthhi);
 
         // 64bit code IS getting called somehow and diaperglu compiled code confuses alignment. This
             //   realigns the stack for 64bit code.
@@ -2356,12 +2788,77 @@ const char* dg_getfilelength(
 		//	return(dg_filetoobigerror);
 		//}
 
-		if (filelengthlo == INVALID_FILE_SIZE)  // what happens if a large file is exactly the size of INVALID_FILE_SIZE?
-		{
-			return(dg_oserror);
-		}
+		// if (filelengthlo == INVALID_FILE_SIZE)  // what happens if a large file is exactly the size of INVALID_FILE_SIZE?
+		// {
+		//	return(dg_oserror);
+		// }
 		
-		*pfilelength = filelengthlo;
+		// *pfilelength = filelengthlo;
+
+		// PLARGE_INTEGER is a signed 64 bit integer
+		retflag = GetFileInformationByHandleEx(
+			(HANDLE)fileid,
+			FileStandardInfo, 
+			(LPVOID)&mystandardinfo,
+			sizeof(_FILE_STANDARD_INFO));
+
+		if (0 != retflag)
+		{
+			*((PLARGE_INTEGER)pfilelength) = mystandardinfo.EndOfFile;
+			return(dg_success);
+		}
+
+		lasterror = ::GetLastError();
+		
+		// I guessed on what the errors might be
+		switch (lasterror)
+		{
+		case ERROR_ACCESS_DENIED:
+			result = dg_accessdeniederror;
+			break;
+		case ERROR_ARENA_TRASHED:
+			result = dg_filesystemcorrupterror;
+			break;
+		case ERROR_NOT_ENOUGH_MEMORY:
+			result = dg_outofmemoryerror;
+			break;
+		case ERROR_INVALID_BLOCK:
+			result = dg_filesystemcorrupterror;
+			break;
+		case ERROR_OUTOFMEMORY:
+			result = dg_outofmemoryerror;
+			break;
+		case ERROR_INVALID_DRIVE:
+			result = dg_drivenotfounderror;
+			break;
+		case ERROR_BAD_UNIT:
+			result = dg_devicenotfounderror;
+			break;
+		case ERROR_NOT_READY:
+			result = dg_devicenotreadyerror;
+			break;
+		case ERROR_NOT_DOS_DISK:
+			result = dg_filesystemunknownerror;
+			break;
+		case ERROR_GEN_FAILURE:
+			result = dg_devicebrokenerror;
+			break;
+		case ERROR_SHARING_VIOLATION:
+			result = dg_fileinuseerror;
+			break;
+		case ERROR_LOCK_VIOLATION:
+			result = dg_fileislockederror;
+			break;
+		case ERROR_SHARING_BUFFER_EXCEEDED:
+			result = dg_toomanyopenfileserror;
+			break;
+
+		default:
+			result = dg_oserror;
+			break;
+		}
+
+		return(dg_oserror);
 	}
 	else if (filetype == dg_filetypeconsole)
 	{
@@ -3207,6 +3704,182 @@ void dg_writestdoutuint8tohex(
 	// need blocking writestdout, or writestdout does copy
 	dg_writestdout(pBHarrayhead, &buf[0], 4);
 }
+
+
+const char* dg_newmutexname = "dg_newmutex";
+
+const char* dg_newmutex(
+	struct DG_Mutex_Holder *pmutexholder,
+	const char* forceerrorflag)
+{
+	UINT64 lasterror;
+	const char* perror;
+
+	perror = dg_fillwithbyte(
+		(unsigned char*)pmutexholder,
+		sizeof(DG_Mutex_Holder),
+		0);
+
+	if (perror != dg_success)
+	{
+		return (perror);
+	}
+
+	if (forceerrorflag != dg_success)
+	{
+		return (forceerrorflag);
+	}
+
+	pmutexholder->magic = DG_MUTEX_HOLDER_MAGIC;
+
+	// pmutexholder->ismutexlockedflag = FORTH_FALSE; // fillwithbyte already did this
+
+	pmutexholder->mutexhandle = (UINT64)CreateMutexA(
+		NULL,
+		FALSE,
+		NULL);
+
+	if (NULL != pmutexholder->mutexhandle)
+	{
+		return(dg_success);
+	}
+
+	lasterror = GetLastError();
+
+	if ((lasterror == ERROR_OUTOFMEMORY) || (lasterror == ERROR_NOT_ENOUGH_MEMORY))
+	{
+		return(dg_outofmemoryerror);
+	}
+
+	// unknown error
+	return (dg_oserror);
+}
+
+const char* dg_freemutexname = "dg_freemutex";
+
+const char* dg_freemutex(
+	struct DG_Mutex_Holder* pmutexholder,
+	const char* forceerrorflag)
+{
+	UINT64 lasterror;
+	const char* perror;
+
+	if (forceerrorflag != dg_success)
+	{
+		return (forceerrorflag);
+	}
+
+	// I want to return an error if the mutex is already locked...
+	//  this is for portability, and to force programmers to be careful
+	if (pmutexholder->ismutexlockedflag != FORTH_FALSE)
+	{
+		return(dg_freemutexwhilelockederror);
+	}
+
+	if (pmutexholder->mutexhandle == (UINT64)-1)
+	{
+		return(dg_invalidhandleerror);
+	}
+
+	lasterror = CloseHandle((HANDLE)(pmutexholder->mutexhandle));
+
+	if (lasterror != 0)
+	{
+		pmutexholder->mutexhandle = (UINT64)-1;
+		return(dg_success);
+	}
+
+	lasterror = GetLastError();
+
+	if (ERROR_INVALID_HANDLE == lasterror)
+	{
+		return(dg_invalidhandleerror);
+	}
+
+	// unknown error
+	return (dg_oserror);
+}
+
+
+const char* dg_lockmutexname = "dg_lockmutex";
+
+const char* dg_lockmutex(
+	struct DG_Mutex_Holder* pmutexholder,
+	const char* forceerrorflag)
+{
+	UINT64 lasterror;
+	const char* perror;
+
+	if (forceerrorflag != dg_success)
+	{
+		return (forceerrorflag);
+	}
+
+	if (pmutexholder->ismutexlockedflag != FORTH_FALSE)
+	{
+		return(dg_woulddeadlockerror);
+	}
+
+	lasterror = WaitForSingleObject(
+		(HANDLE)(pmutexholder->mutexhandle),
+		INFINITE);
+
+	if (WAIT_OBJECT_0 == lasterror)
+	{
+		pmutexholder->ismutexlockedflag = FORTH_TRUE;
+		return(dg_success);
+	}
+
+	if (WAIT_ABANDONED == lasterror)
+	{
+		return(dg_waitabandonederror);
+	}
+
+	// unknown error
+	return (dg_oserror);
+}
+
+
+const char* dg_unlockmutexname = "dg_unlockmutex";
+
+const char* dg_unlockmutex(
+	struct DG_Mutex_Holder* pmutexholder,
+	const char* forceerrorflag)
+{
+	UINT64 lasterror;
+	const char* perror;
+
+	if (forceerrorflag != dg_success)
+	{
+		return (forceerrorflag);
+	}
+
+	if (pmutexholder->ismutexlockedflag == FORTH_FALSE)
+	{
+		return(dg_mutexisnotlockederror);
+	}
+
+	// probably a good idea to change the flag while it is still protected by the mutex
+	pmutexholder->ismutexlockedflag = FORTH_FALSE; 
+
+	lasterror = ReleaseMutex((HANDLE)(pmutexholder->mutexhandle));
+
+	if (0 != lasterror)
+	{
+		return (dg_success);
+	}
+
+	lasterror = GetLastError();
+
+	if (lasterror == ERROR_INVALID_HANDLE)
+	{
+		return(dg_invalidhandleerror);
+	}
+
+	// unknown error
+	return (dg_oserror);
+}
+
 
 void dg_hexdumpsegment(
 	Bufferhandle* pBHarrayhead,
@@ -5342,5 +6015,48 @@ const char* dg_runfileandwait(
 void dg_forthgothere(Bufferhandle* pBHarrayhead)
 {
 	dg_printzerostring(pBHarrayhead, (unsigned char*)"got here\n");
+}
+
+
+const char* dg_callfunctionasyncname = "dg_callfunctionasync";
+
+const char* dg_callfunctionasync(
+	UINT64* pthreadhandle,
+	void* (*pfunction)(void*),
+	void* parguments)
+{
+	const char* pError;
+	UINT64 lasterror;
+
+	// check memory at pthreadhandle
+	pError = dg_putuint64(
+		pthreadhandle,
+		0);
+
+	if (pError != dg_success)
+	{
+		return(pError);
+	}
+
+	*pthreadhandle = (UINT64)CreateThread(
+		NULL,
+		0, // stack size.. 0 = default for process
+		(LPTHREAD_START_ROUTINE)pfunction,
+		(LPVOID)parguments,
+		0,
+		NULL);
+
+	if (NULL != *pthreadhandle)
+	{
+		return(dg_success);
+	}
+
+	lasterror = GetLastError();
+
+	switch (lasterror)
+	{
+	default:
+		return(dg_oserror);
+	}
 }
 

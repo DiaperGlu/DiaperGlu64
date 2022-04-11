@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 
 
@@ -2456,4 +2456,961 @@ void dg_forthehoherewtonewelement(Bufferhandle* pBHarrayhead)
     }
 }
 
+
+void dg_forthehdot(Bufferhandle* pBHarrayhead)
+{
+    unsigned char* pname;
+	UINT64 namelength = 0;
+    
+    UINT64 hlistid;
+    UINT64 elementid;
+    
+    unsigned char* pvaluestring;
+    UINT64 valuelength;
+    
+    unsigned char* phstack;
+    UINT64* phstacklength;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    pname = dg_parseword(
+        pBHarrayhead,
+        &namelength);
+    
+	if (namelength == 0)
+	{
+        dg_pusherror(pBHarrayhead, dg_wordlength0error);
+		dg_pusherror(pBHarrayhead, dg_forthehdotname);
+		return;
+	}
+    
+    phstack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_EHSTACK_BUFFERID,
+        &phstacklength);
+
+	if (phstack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthhstackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthehdotname);
+		return;
+	}
+
+    if (*phstacklength < 2 * sizeof (UINT64))
+	{
+		dg_pusherror(pBHarrayhead, dg_underflowerror);
+		dg_pusherror(pBHarrayhead, dg_forthehdotname);
+		return;
+	}
+    
+    hlistid = *((UINT64*)(phstack + ((*phstacklength) - sizeof(UINT64))));
+    
+    elementid = *((UINT64*)(phstack + ((*phstacklength) - (2 * sizeof(UINT64)))));
+ 
+    pvaluestring = dg_namestringtovaluestring(
+        pBHarrayhead,
+        hlistid,
+        elementid,
+        pname,
+        namelength,
+        &valuelength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthehdotname);
+        return;
+    }
+    
+    if (valuelength < sizeof(UINT64))
+    {
+        dg_pusherror(pBHarrayhead, dg_structuretoosmallerror);
+        dg_pusherror(pBHarrayhead, dg_forthehdotname);
+    }
+    
+    dg_pushdatastack(pBHarrayhead, *((UINT64*)pvaluestring));
+}
+
+
+void dg_forthehbracketnddot(Bufferhandle* pBHarrayhead)
+{
+    unsigned char* pname;
+	UINT64 namelength = 0;
+    
+    UINT64 hlistid;
+    UINT64 elementid;
+    
+    unsigned char* pvaluestring;
+    UINT64 valuelength;
+    
+    unsigned char* phstack;
+    UINT64* phstacklength;
+    
+    UINT64* pints;
+    
+    UINT64 nd;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    nd = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthehbracketnddotname);
+        return;
+    }
+    
+    pname = dg_parseword(
+        pBHarrayhead,
+        &namelength);
+    
+	if (namelength == 0)
+	{
+        dg_pusherror(pBHarrayhead, dg_wordlength0error);
+		dg_pusherror(pBHarrayhead, dg_forthehbracketnddotname);
+		return;
+	}
+    
+    phstack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_EHSTACK_BUFFERID,
+        &phstacklength);
+
+	if (phstack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthhstackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthehbracketnddotname);
+		return;
+	}
+ 
+    if ( (UINT64)-1 == nd )
+    {
+        // calculation will overflow
+        dg_pusherror(pBHarrayhead, dg_indexnotinarrayerror);
+        dg_pusherror(pBHarrayhead, dg_forthehbracketnddotname);
+        return;
+    }   
+ 
+    if ( (nd + 1) > (largestunsignedint / (2 * sizeof(UINT64)) ) )
+    {
+        // calculation will overflow
+        dg_pusherror(pBHarrayhead, dg_indexnotinarrayerror);
+        dg_pusherror(pBHarrayhead, dg_forthehbracketnddotname);
+        return;
+    }   
+
+    if ( *phstacklength < ((nd + 1) * (2 * sizeof(UINT64))) )
+	{
+		dg_pusherror(pBHarrayhead, dg_underflowerror);
+		dg_pusherror(pBHarrayhead, dg_forthehbracketnddotname);
+		return;
+	}
+ 
+    pints = (UINT64*)( (phstack + (*phstacklength)) - ((nd + 1) * (2 * sizeof(UINT64))) );
+    
+    hlistid = pints[1];
+    elementid = pints[0];
+ 
+    pvaluestring = dg_namestringtovaluestring(
+        pBHarrayhead,
+        hlistid,
+        elementid,
+        pname,
+        namelength,
+        &valuelength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthehbracketnddotname);
+        return;
+    }
+    
+    if (valuelength < sizeof(UINT64))
+    {
+        dg_pusherror(pBHarrayhead, dg_structuretoosmallerror);
+        dg_pusherror(pBHarrayhead, dg_forthehbracketnddotname);
+    }
+    
+    dg_pushdatastack(pBHarrayhead, *((UINT64*)pvaluestring));
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthehbracketnddotname);
+        return;
+    }
+}
+
+
+void dg_forthehbracket1ddot(Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    dg_pushdatastack(pBHarrayhead, 1);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthehbracket1ddotname);
+        return;
+    }
+    
+    dg_forthehbracketnddot(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthehbracket1ddotname);
+        return;
+    }
+}
+
+
+void dg_forthsymbolenumcurly (Bufferhandle* pBHarrayhead)
+{
+    UINT64 valuejustsetflag = FORTH_TRUE;
+    UINT64 value;        
+    UINT64 stepsize; 
+    
+    UINT64 data;
+    UINT64 base;
+    UINT64 foundendflag = FORTH_FALSE;
+    UINT64 flag;
+    UINT64 numbersinarow = 0;
+    
+    UINT64 parentelementid;
+    UINT64 parenthlistid;
+
+    unsigned char* pname;
+    UINT64 namelength = 0;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    parenthlistid = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthsymbolenumcurlyname);
+        return;
+    }
+    
+    parentelementid = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthsymbolenumcurlyname);
+        return;
+    }
+    
+    value = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthsymbolenumcurlyname);
+        return;
+    }
+    
+    stepsize = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthsymbolenumcurlyname);
+        return;
+    }
+    
+    base = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        basevariable);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthbasename);
+        dg_pusherror(pBHarrayhead, dg_forthsymbolenumcurlyname);
+        return;
+    }
+    
+    while(foundendflag == FORTH_FALSE)
+    {
+        pname = dg_parsewords(
+            pBHarrayhead,
+            &namelength,
+            (unsigned char)'>',
+            &foundendflag,
+            FORTH_FALSE);
+            
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthsymbolenumcurlyname);
+            return;
+        }
+
+        if (namelength != 0)
+        {
+            // this is a signed conversion, a - sign in front of the number is acceptable
+            data = dg_pchartonumber(
+                pname,
+                namelength,
+                base,
+                &flag); // this routine doesn't return errors
+
+            if (flag != FORTH_FALSE)
+            {
+                switch (numbersinarow)
+                {
+                    case 0:
+                        stepsize = data;
+                        break;
+                    case 1:
+                        value = data;
+                        valuejustsetflag = FORTH_TRUE;
+                        break;
+                    default:
+                        dg_pusherror(pBHarrayhead, dg_toomanyparameterserror);
+                        dg_pusherror(pBHarrayhead, dg_forthsymbolenumcurlyname);
+                        return;
+                }
+                
+                numbersinarow++;
+            }
+            else
+            {
+                numbersinarow = 0;
+                
+                if (valuejustsetflag == FORTH_FALSE)
+                {
+                    value += stepsize;
+                }
+                else
+                {
+                    valuejustsetflag = FORTH_FALSE;
+                }
+                
+                dg_newhlistelement (
+                    pBHarrayhead,
+                    parenthlistid,
+                    parentelementid, 
+                    pname,   
+                    namelength,             
+                    (unsigned char*)&value, 
+                    sizeof(UINT64)); 
+
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {
+                    dg_pusherror(pBHarrayhead, dg_forthsymbolenumcurlyname);
+                    return;
+                }
+            }
+        }
+    }
+    
+    if (valuejustsetflag == FORTH_FALSE)
+    {
+        value += stepsize;
+    }
+    else
+    {
+        valuejustsetflag = FORTH_FALSE;
+    }
+    
+    dg_pushdatastack(pBHarrayhead, value);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthsymbolenumcurlyname);
+        return;
+    }
+}
+
+
+void dg_forthosymbolcodeimportscommacurly(Bufferhandle* pBHarrayhead)
+{
+    UINT64 value;         
+    
+    UINT64 foundendflag = FORTH_FALSE;
+    
+    unsigned char* phstack;
+    UINT64* phstacklength;
+    
+    UINT64 parentelementid;
+    UINT64 parenthlistid;
+    
+    UINT64 myccbufid;
+
+    unsigned char* pname;
+    UINT64 namelength = 0;
+    
+    UINT64* pints;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    phstack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_EHSTACK_BUFFERID,
+        &phstacklength);
+
+	if (phstack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthhstackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthosymbolcodeimportscommacurlyname);
+		return;
+	}
+
+    if ( *phstacklength < (2 * (2 * sizeof(UINT64))) )
+	{
+		dg_pusherror(pBHarrayhead, dg_underflowerror);
+		dg_pusherror(pBHarrayhead, dg_forthosymbolcodeimportscommacurlyname);
+		return;
+	}
+ 
+    pints = (UINT64*)( (phstack + (*phstacklength)) - (2 * (2 * sizeof(UINT64))) );
+    
+    parenthlistid = pints[1];
+    parentelementid = pints[0];
+    
+    while(foundendflag == FORTH_FALSE)
+    {
+        pname = dg_parsewords(
+            pBHarrayhead,
+            &namelength,
+            (unsigned char)'>',
+            &foundendflag,
+            FORTH_FALSE);
+            
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthosymbolcodeimportscommacurlyname);
+            return;
+        }
+
+        if (namelength != 0)
+        {
+            // compile the link
+            value = dg_compilecodelink(pBHarrayhead);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthosymbolcodeimportscommacurlyname);
+                return;
+            }
+               
+            dg_newhlistelement (
+                pBHarrayhead,
+                parenthlistid,
+                parentelementid, 
+                pname,   
+                namelength,             
+                (unsigned char*)&value, 
+                sizeof(UINT64)); 
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthosymbolcodeimportscommacurlyname);
+                return;
+            }
+        }
+    }
+}
+
+
+void dg_forthnewflatosymbolbuf(Bufferhandle* pBHarrayhead)
+{
+    UINT64 oldcompilebuf;
+    UINT64 bufid;
+    UINT64 hlistid;
+    UINT64 importparentelementid;
+    UINT64 exportparentelementid;
+    // UINT64 x86wordlistid;
+    
+    const char* pError;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    oldcompilebuf = dg_getbufferuint64 (
+		pBHarrayhead,
+		DG_DATASPACE_BUFFERID,
+		currentcompilebuffer);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthnewflatosymbolbufname);
+        return;
+    }
+        
+    // new current compile buffer
+    bufid = dg_newbuffer (
+		pBHarrayhead,
+		0x10000,      // growby,
+		(UINT64)-1,   // maxsize,
+		&pError,
+		FORTH_FALSE);  // force error
+  
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthnewflatosymbolbufname);
+        return;
+    }
+    
+    dg_putbufferuint64 (
+        pBHarrayhead,
+		DG_DATASPACE_BUFFERID,
+		currentcompilebuffer,   // offset
+		bufid);                 // data);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthnewflatosymbolbufname);
+        return;
+    }
+          
+    // new hlist
+    hlistid = dg_newhlist (pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthnewflatosymbolbufname);
+        return;
+    }
+    
+    // make 2 top hlist elements for import and export symbol lists
+    importparentelementid = dg_newhlistelement (
+        pBHarrayhead,
+        hlistid,
+        DG_ENDOFLIST, // parentelementid,
+        (unsigned char*)"imports",   // pname,  // name doesn't matter
+        7,                           // namelength,
+        (unsigned char*)"",          // pvalue, // value doesn't matter
+        0);                          // valuelength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthnewflatosymbolbufname);
+        return;
+    }
+        
+    exportparentelementid = dg_newhlistelement (
+        pBHarrayhead,
+        hlistid,
+        DG_ENDOFLIST, // parentelementid,
+        (unsigned char*)"exports",   // pname,  // name doesn't matter
+        7,                           // namelength,
+        (unsigned char*)"",          // pvalue, // value doesn't matter
+        0);                          // valuelength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthnewflatosymbolbufname);
+        return;
+    }
+    
+    // push import and export symbol ehs to eh stack
+    dg_pushbufferuint64 (
+        pBHarrayhead,
+		DG_EHSTACK_BUFFERID,
+		importparentelementid);
+  
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthnewflatosymbolbufname);
+        return;
+    }
+    
+    dg_pushbufferuint64 (
+        pBHarrayhead,
+		DG_EHSTACK_BUFFERID,
+		hlistid);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthnewflatosymbolbufname);
+        return;
+    }
+    
+    dg_pushbufferuint64 (
+        pBHarrayhead,
+		DG_EHSTACK_BUFFERID,
+		exportparentelementid);
+  
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthnewflatosymbolbufname);
+        return;
+    }
+    
+    dg_pushbufferuint64 (
+        pBHarrayhead,
+		DG_EHSTACK_BUFFERID,
+		hlistid);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthnewflatosymbolbufname);
+        return;
+    }
+    
+    // save old compile buffer on rstack
+    dg_pushbufferuint64 (
+        pBHarrayhead,
+		DG_RSTACK_BUFFERID,
+		oldcompilebuf);
+  
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthnewflatosymbolbufname);
+        return;
+    }
+    
+    // x86wordlistid = dg_getbufferuint64(
+    //    pBHarrayhead,
+    //    DG_DATASPACE_BUFFERID,
+    //    dg_cpux86vocabid);
+        
+    // if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    // {       
+    //    dg_pusherror(pBHarrayhead, dg_forthnewflatosymbolbufname);
+    //    return;
+    // }
+    
+    // dg_pushbufferuint64 (
+    //    pBHarrayhead,
+    //    DG_SEARCHORDERSTACK_BUFFERID,
+    //    x886wordlistid);
+        
+    // if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    // {       
+    //    dg_pusherror(pBHarrayhead, dg_forthnewflatosymbolbufname);
+    //    return;
+    // }
+}
+
+
+void dg_forthfreeflatosymbolbuf(Bufferhandle* pBHarrayhead)
+{
+    UINT64 bufid;
+    UINT64 hlistid;
+    UINT64 oldcompilebufid;
+    // UINT64 x86wordlistid;
+    // UINT64 x;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    bufid = dg_getbufferuint64 (
+		pBHarrayhead,
+		DG_DATASPACE_BUFFERID,
+		currentcompilebuffer);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthfreeflatosymbolbufname);
+        return;
+    }
+    
+    oldcompilebufid = dg_popbufferuint64(
+        pBHarrayhead,
+        DG_RSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthfreeflatosymbolbufname);
+        return;
+    }
+    
+    dg_putbufferuint64 (
+        pBHarrayhead,
+		DG_DATASPACE_BUFFERID,
+		currentcompilebuffer,   // offset
+		oldcompilebufid);                 // data);
+  
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthfreeflatosymbolbufname);
+        return;
+    }
+    
+    hlistid = dg_popbufferuint64(
+        pBHarrayhead,
+        DG_EHSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthfreeflatosymbolbufname);
+        return;
+    }
+    
+    dg_popbufferuint64(
+        pBHarrayhead,
+        DG_EHSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthfreeflatosymbolbufname);
+        return;
+    }
+    
+    dg_popbufferuint64(
+        pBHarrayhead,
+        DG_EHSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthfreeflatosymbolbufname);
+        return;
+    }
+    
+    dg_popbufferuint64(
+        pBHarrayhead,
+        DG_EHSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthfreeflatosymbolbufname);
+        return;
+    }
+    
+    dg_freebuffer (
+		pBHarrayhead,
+		bufid);
+    
+    // no error from this function
+    
+    dg_freehlist (
+        pBHarrayhead,
+        hlistid);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthfreeflatosymbolbufname);
+        return;
+    }
+    
+    // x86wordlistid = dg_getbufferuint64(
+    //     pBHarrayhead,
+    //     DG_DATASPACE_BUFFERID,
+    //     dg_cpux86vocabid);
+        
+    // if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    // {       
+    //    dg_pusherror(pBHarrayhead, dg_forthnewflatosymbolbufname);
+    //    return;
+    // }
+    
+    // x = dg_popbufferuint64(
+    //    pBHarrayhead,
+    //    DG_SEARCH_ORDER_STACK_BUFFERID);
+        
+    // if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    // {       
+    //    dg_pusherror(pBHarrayhead, dg_forthfreeflatosymbolbufname);
+    //    return;
+    // }
+    
+    // if (x != x86wordlistid)
+    // {
+    //    dg_pushbufferuint64(pBHarrayhead, DG_SEARCH_ORDER_STACK_BUFFERID, x);
+    //    dg_pusherror(pBHarrayhead, (const char*)" error dropping x86wordlist from search order. It wasn't the x86 wordlist on top of the search order.");
+    //    dg_pusherror(pBHarrayhead, dg_forthfreeflatosymbolbufname);
+    //    return;
+    // }
+}
+
+
+void dg_forthsymbol(Bufferhandle* pBHarrayhead)
+{
+    // ( N -- )
+    // ( "<spaces>symbolname<spaces>morestuff" -currentinputbuffer- "<spaces>morestuff" )
+
+    unsigned char* pname;
+	UINT64 namelength = 0;
+
+	// Bufferhandle* pBH = NULL;
+    
+    UINT64 myhlistid;
+    UINT64 mysymbollistelementid;
+    UINT64 x;
+    
+    unsigned char* phstack;
+    UINT64* phstacklength;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    pname = dg_parseword(
+        pBHarrayhead,
+        &namelength);
+    
+	if (namelength == 0)
+	{
+        dg_pusherror(pBHarrayhead, dg_wordlength0error);
+		dg_pusherror(pBHarrayhead, dg_forthsymbolname);
+		return;
+	}
+    
+    phstack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_EHSTACK_BUFFERID,
+        &phstacklength);
+
+	if (phstack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthhstackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthsymbolname);
+		return;
+	}
+
+    if (*phstacklength < (2 * sizeof(UINT64)))
+	{
+		dg_pusherror(pBHarrayhead, dg_underflowerror);
+		dg_pusherror(pBHarrayhead, dg_forthsymbolname);
+		return;
+	}
+    
+    myhlistid = *((UINT64*)(phstack + ((*phstacklength) - sizeof(UINT64))));
+    
+    mysymbollistelementid = *((UINT64*)(phstack + ((*phstacklength) - (2 * sizeof(UINT64)))));
+  
+    x = dg_popbufferuint64(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthsymbolname);
+        return;
+    }
+    
+    dg_newhlistelement (
+        pBHarrayhead,
+        myhlistid,
+        mysymbollistelementid, // parentelementid, // if parentelementid == DG_ENDOFLIST it means you are adding a root element
+        pname, // pcib + ciboldoffset,   // unsigned char* pname,
+        namelength,             // UINT64 namelength,
+        (unsigned char*)&x, // unsigned char* pvalue,
+        sizeof(UINT64)); // UINT64 valuelength);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthsymbolname);
+        return;
+    }
+}
+
+
+// on windows, you need to compile some stuff first...
+//  and put the offset in...
+void dg_forthosymbolimport(Bufferhandle* pBHarrayhead)
+{
+    unsigned char* pname;
+    UINT64 namelength;
+    
+    unsigned char* phstack;
+    UINT64* phstacklength;
+    
+    UINT64* pints;
+    
+    UINT64 mycurrentcompilebufferid;
+    UINT64 x;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    pname = dg_parseword(
+        pBHarrayhead,
+        &namelength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthosymbolimportname);
+        return;
+    }
+
+	if (namelength == 0)
+	{
+        dg_pusherror(pBHarrayhead, dg_wordlength0error);
+		dg_pusherror(pBHarrayhead, dg_forthosymbolimportname);
+		return;
+	}
+ 
+    x = dg_compileosymbolimportstuff(pBHarrayhead); // returns the offset of the link
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthosymbolimportname);
+        return;
+    }
+ 
+    phstack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_EHSTACK_BUFFERID,
+        &phstacklength);
+
+	if (phstack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthhstackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthosymbolimportname);
+		return;
+	}
+
+    if ( *phstacklength < (2 * (2 * sizeof(UINT64))) )
+	{
+		dg_pusherror(pBHarrayhead, dg_underflowerror);
+		dg_pusherror(pBHarrayhead, dg_forthosymbolimportname);
+		return;
+	}
+ 
+    pints = (UINT64*)( (phstack + (*phstacklength)) - (2 * (2 * sizeof(UINT64))) );
+ 
+    dg_newhlistelement (
+        pBHarrayhead,
+        pints[1], // parenthlistid,
+        pints[0], // parentelementid, 
+        pname,
+        namelength,
+        (unsigned char*)&x, // pvalue,
+        sizeof(UINT64)); // valuelength);   
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthosymbolimportname);
+        return;
+    }
+}
 

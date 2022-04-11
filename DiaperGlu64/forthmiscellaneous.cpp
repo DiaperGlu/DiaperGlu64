@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 
 
@@ -767,7 +767,7 @@ void dg_forthdoprompt (Bufferhandle* pBHarrayhead)
 {
 	unsigned char* pok = (unsigned char*)"\nOK>"; 
 
-	unsigned char* perrorsok = (unsigned char*)"items on error stack, error(s) with trace.\n use SHOW-ERRORS or .ES to see\n use EMPTY-ERRORS or EES to clear\n\nOK>"; 
+	unsigned char* perrorsok = (unsigned char*)"items on error stack, error(s) with trace.\n use SHOW-ERRORS or .ES to see\n use EMPTY-ERRORS or EES to clear\n use .ERRORLINE or .EL to see the line that caused the error\n\nOK>"; 
 
 	const char* pstate;
 	
@@ -2287,6 +2287,7 @@ void dg_forthdtodf (Bufferhandle* pBHarrayhead)
 }
 */
 
+
 void dg_forthdoterrorline(Bufferhandle* pBHarrayhead)
 {
     unsigned char* pbuffer;
@@ -2306,7 +2307,8 @@ void dg_forthdoterrorline(Bufferhandle* pBHarrayhead)
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
-        dg_pusherror(pBHarrayhead, dg_forthdoterrorlinename);
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"Something is really wrong. Couldn't get the pointer to the buffer holding the error line. Did something free all the buffers?\n");
+        return;
     }
     
     dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
@@ -4257,6 +4259,7 @@ void dg_forthvariables (Bufferhandle* pBHarrayhead)
     return;
 }
 
+
 const char* dg_forthloadlibrarystringsubname = "dg_forthloadlibrarystringsub";
 
 void dg_forthloadlibrarystringsub(Bufferhandle* pBHarrayhead)
@@ -4501,4 +4504,799 @@ void dg_forthsizedconstantscurly (Bufferhandle* pBHarrayhead)
         }
     }
 }
+
+
+void dg_forthenumcurly (Bufferhandle* pBHarrayhead)
+{
+    UINT64 valuejustsetflag = FORTH_TRUE;
+    UINT64 value;        
+    UINT64 stepsize; 
+    
+    UINT64 data;
+    UINT64 base;
+    UINT64 foundendflag = FORTH_FALSE;
+    UINT64 flag;
+    UINT64 numbersinarow = 0;
+
+    unsigned char* pname;
+    UINT64 namelength = 0;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    value = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthenumcurlyname);
+        return;
+    }
+    
+    stepsize = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthenumcurlyname);
+        return;
+    }
+    
+    base = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        basevariable);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthbasename);
+        dg_pusherror(pBHarrayhead, dg_forthenumcurlyname);
+        return;
+    }
+    
+    while(foundendflag == FORTH_FALSE)
+    {
+        pname = dg_parsewords(
+            pBHarrayhead,
+            &namelength,
+            (unsigned char)'>',
+            &foundendflag,
+            FORTH_FALSE);
+            
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthenumcurlyname);
+            return;
+        }
+
+        if (namelength != 0)
+        {
+            // this is a signed conversion, a - sign in front of the number is acceptable
+            data = dg_pchartonumber(
+                pname,
+                namelength,
+                base,
+                &flag); // this routine doesn't return errors
+
+            if (flag != FORTH_FALSE)
+            {
+                switch (numbersinarow)
+                {
+                    case 0:
+                        stepsize = data;
+                        break;
+                    case 1:
+                        value = data;
+                        valuejustsetflag = FORTH_TRUE;
+                        break;
+                    default:
+                        dg_pusherror(pBHarrayhead, dg_toomanyparameterserror);
+                        dg_pusherror(pBHarrayhead, dg_forthenumcurlyname);
+                        return;
+                }
+                
+                numbersinarow++;
+            }
+            else
+            {
+                numbersinarow = 0;
+                
+                if (valuejustsetflag == FORTH_FALSE)
+                {
+                    value += stepsize;
+                }
+                else
+                {
+                    valuejustsetflag = FORTH_FALSE;
+                }
+                
+                dg_createconstantdef(
+                    pBHarrayhead,
+                    value,
+                    pname,
+                    namelength);
+
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {
+                    dg_pusherror(pBHarrayhead, dg_forthenumcurlyname);
+                    return;
+                }
+            }
+        }
+    }
+    
+    if (valuejustsetflag == FORTH_FALSE)
+    {
+        value += stepsize;
+    }
+    else
+    {
+        valuejustsetflag = FORTH_FALSE;
+    }
+    
+    dg_pushdatastack(pBHarrayhead, value);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthenumcurlyname);
+        return;
+    }
+}
+
+
+void dg_forthlocalenumcurly (Bufferhandle* pBHarrayhead)
+{
+    UINT64 valuejustsetflag = FORTH_TRUE;
+    UINT64 value;
+    UINT64 stepsize; 
+    
+    UINT64 data;
+    UINT64 base;
+    UINT64 foundendflag = FORTH_FALSE;
+    UINT64 flag;
+    UINT64 numbersinarow = 0;
+    
+    UINT64 localwordid;
+    UINT64 localswordlistid;
+
+    unsigned char* pname;
+    UINT64 namelength = 0;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    value = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthlocalenumcurlyname);
+        return;
+    }
+    
+    stepsize = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthlocalenumcurlyname);
+        return;
+    }
+    
+    base = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        basevariable);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthbasename);
+        dg_pusherror(pBHarrayhead, dg_forthlocalenumcurlyname);
+        return;
+    }
+    
+    localswordlistid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_localswordlistid);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthlocalenumcurlyname);
+        return;
+    }
+    
+    while(foundendflag == FORTH_FALSE)
+    {
+        pname = dg_parsewords(
+            pBHarrayhead,
+            &namelength,
+            (unsigned char)'>',
+            &foundendflag,
+            FORTH_FALSE);
+            
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthlocalenumcurlyname);
+            return;
+        }
+
+        if (namelength != 0)
+        {
+            // this is a signed conversion, a - sign in front of the number is acceptable
+            data = dg_pchartonumber(
+                pname,
+                namelength,
+                base,
+                &flag); // this routine doesn't return errors
+
+            if (flag != FORTH_FALSE)
+            {
+                switch (numbersinarow)
+                {
+                    case 0:
+                        stepsize = data;
+                        break;
+                    case 1:
+                        value = data;
+                        valuejustsetflag = FORTH_TRUE;
+                        break;
+                    default:
+                        dg_pusherror(pBHarrayhead, dg_toomanyparameterserror);
+                        dg_pusherror(pBHarrayhead, dg_forthlocalenumcurlyname);
+                        return;
+                }
+                
+                numbersinarow++; 
+            }
+            else
+            {
+                numbersinarow = 0;
+                
+                if (valuejustsetflag == FORTH_FALSE)
+                {
+                    value += stepsize;
+                }
+                else
+                {
+                    valuejustsetflag = FORTH_FALSE;
+                }
+                
+                localwordid = dg_newwordcopyname (
+                    pBHarrayhead,
+                    (UINT64)DG_CORE_BUFFERID,
+                    (UINT64)&dg_forthdocompiletypedpushn,
+                    0, // databufid,
+                    value, // databufoffset,
+                    (UINT64)DG_CORE_BUFFERID,
+                    (UINT64)pname,
+                    namelength);
+
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {
+                    dg_pusherror(pBHarrayhead, dg_forthlocalenumcurlyname);
+                    return;
+                }
+                
+                dg_linkdefinition(
+                    pBHarrayhead,
+                    localswordlistid,
+                    localwordid);
+                    
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {       
+                    dg_pusherror(pBHarrayhead, dg_forthlocalenumcurlyname);
+                    return;
+                }
+            }
+        }
+    }
+    
+    if (valuejustsetflag == FORTH_FALSE)
+    {
+        value += stepsize;
+    }
+    else
+    {
+        valuejustsetflag = FORTH_FALSE;
+    }
+    
+    dg_pushdatastack(pBHarrayhead, value);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthlocalenumcurlyname);
+        return;
+    }
+}
+
+
+void dg_forthbracketlocalenumcurly (Bufferhandle* pBHarrayhead)
+{
+    UINT64 valuejustsetflag = FORTH_TRUE;
+    UINT64 value;
+    UINT64 stepsize; 
+    
+    UINT64 data;
+    UINT64 base;
+    UINT64 foundendflag = FORTH_FALSE;
+    UINT64 flag;
+    UINT64 numbersinarow = 0;
+    
+    UINT64 localwordid;
+    UINT64 localswordlistid;
+
+    unsigned char* pname;
+    UINT64 namelength = 0;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    value = 0;
+    stepsize = 1;
+    
+    base = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        basevariable);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthbasename);
+        dg_pusherror(pBHarrayhead, dg_forthbracketlocalenumcurlyname);
+        return;
+    }
+    
+    localswordlistid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_localswordlistid);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthbracketlocalenumcurlyname);
+        return;
+    }
+    
+    while(foundendflag == FORTH_FALSE)
+    {
+        pname = dg_parsewords(
+            pBHarrayhead,
+            &namelength,
+            (unsigned char)'>',
+            &foundendflag,
+            FORTH_FALSE);
+            
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthbracketlocalenumcurlyname);
+            return;
+        }
+
+        if (namelength != 0)
+        {
+            // this is a signed conversion, a - sign in front of the number is acceptable
+            data = dg_pchartonumber(
+                pname,
+                namelength,
+                base,
+                &flag); // this routine doesn't return errors
+
+            if (flag != FORTH_FALSE)
+            {
+                switch (numbersinarow)
+                {
+                    case 0:
+                        stepsize = data;
+                        break;
+                    case 1:
+                        value = data;
+                        valuejustsetflag = FORTH_TRUE;
+                        break;
+                    default:
+                        dg_pusherror(pBHarrayhead, dg_toomanyparameterserror);
+                        dg_pusherror(pBHarrayhead, dg_forthbracketlocalenumcurlyname);
+                        return;
+                }
+                
+                numbersinarow++; 
+            }
+            else
+            {
+                numbersinarow = 0;
+                
+                if (valuejustsetflag == FORTH_FALSE)
+                {
+                    value += stepsize;
+                }
+                else
+                {
+                    valuejustsetflag = FORTH_FALSE;
+                }
+                
+                localwordid = dg_newwordcopyname (
+                    pBHarrayhead,
+                    (UINT64)DG_CORE_BUFFERID,
+                    (UINT64)&dg_forthdocompiletypedpushn,
+                    0, // databufid,
+                    value, // databufoffset,
+                    (UINT64)DG_CORE_BUFFERID,
+                    (UINT64)pname,
+                    namelength);
+
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {
+                    dg_pusherror(pBHarrayhead, dg_forthbracketlocalenumcurlyname);
+                    return;
+                }
+                
+                dg_linkdefinition(
+                    pBHarrayhead,
+                    localswordlistid,
+                    localwordid);
+                    
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {       
+                    dg_pusherror(pBHarrayhead, dg_forthbracketlocalenumcurlyname);
+                    return;
+                }
+            }
+        }
+    }
+    
+    if (valuejustsetflag == FORTH_FALSE)
+    {
+        value += stepsize;
+    }
+    else
+    {
+        valuejustsetflag = FORTH_FALSE;
+    }
+}
+
+
+void dg_forthtypedenumcurly (Bufferhandle* pBHarrayhead)
+{
+    UINT64 valuejustsetflag = FORTH_TRUE;
+    UINT64 value;        
+    UINT64 stepsize;
+    
+    UINT64 type; 
+    
+    UINT64 data;
+    UINT64 base;
+    UINT64 foundendflag = FORTH_FALSE;
+    UINT64 flag;
+    UINT64 numbersinarow = 0;
+
+    unsigned char* pname;
+    UINT64 namelength = 0;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    type = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtypedenumcurlyname);
+        return;
+    }
+    
+    value = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtypedenumcurlyname);
+        return;
+    }
+    
+    stepsize = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtypedenumcurlyname);
+        return;
+    }
+    
+    base = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        basevariable);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthbasename);
+        dg_pusherror(pBHarrayhead, dg_forthtypedenumcurlyname);
+        return;
+    }
+    
+    while(foundendflag == FORTH_FALSE)
+    {
+        pname = dg_parsewords(
+            pBHarrayhead,
+            &namelength,
+            (unsigned char)'>',
+            &foundendflag,
+            FORTH_FALSE);
+            
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthtypedenumcurlyname);
+            return;
+        }
+
+        if (namelength != 0)
+        {
+            // this is a signed conversion, a - sign in front of the number is acceptable
+            data = dg_pchartonumber(
+                pname,
+                namelength,
+                base,
+                &flag); // this routine doesn't return errors
+
+            if (flag != FORTH_FALSE)
+            {
+                switch (numbersinarow)
+                {
+                    case 0:
+                        stepsize = data;
+                        break;
+                    case 1:
+                        value = data;
+                        valuejustsetflag = FORTH_TRUE;
+                        break;
+                    case 2:
+                        type = data;
+                        break;
+                        
+                    default:
+                        dg_pusherror(pBHarrayhead, dg_toomanyparameterserror);
+                        dg_pusherror(pBHarrayhead, dg_forthtypedenumcurlyname);
+                        return;
+                }
+                
+                numbersinarow++;
+            }
+            else
+            {
+                numbersinarow = 0;
+                
+                if (valuejustsetflag == FORTH_FALSE)
+                {
+                    value += stepsize;
+                }
+                else
+                {
+                    valuejustsetflag = FORTH_FALSE;
+                }
+                
+                dg_createdconstantdef(
+                    pBHarrayhead,
+                    value, // nlo
+                    type,  // nhi
+                    pname,
+                    namelength);
+
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {
+                    dg_pusherror(pBHarrayhead, dg_forthtypedenumcurlyname);
+                    return;
+                }
+            }
+        }
+    }
+    
+    if (valuejustsetflag == FORTH_FALSE)
+    {
+        value += stepsize;
+    }
+    else
+    {
+        valuejustsetflag = FORTH_FALSE;
+    }
+    
+    dg_pushdatastack(pBHarrayhead, value);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthtypedenumcurlyname);
+        return;
+    }
+}
+
+void dg_forthtypedlocalenumcurly (Bufferhandle* pBHarrayhead)
+{
+    UINT64 valuejustsetflag = FORTH_TRUE;
+    UINT64 value;
+    UINT64 stepsize; 
+    
+    UINT64 type;
+    
+    UINT64 data;
+    UINT64 base;
+    UINT64 foundendflag = FORTH_FALSE;
+    UINT64 flag;
+    UINT64 numbersinarow = 0;
+    
+    UINT64 localwordid;
+    UINT64 localswordlistid;
+
+    unsigned char* pname;
+    UINT64 namelength = 0;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    type = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtypedlocalenumcurlyname);
+        return;
+    }
+    
+    value = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtypedlocalenumcurlyname);
+        return;
+    }
+    
+    stepsize = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtypedlocalenumcurlyname);
+        return;
+    }
+    
+    base = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        basevariable);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthbasename);
+        dg_pusherror(pBHarrayhead, dg_forthtypedlocalenumcurlyname);
+        return;
+    }
+    
+    localswordlistid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_localswordlistid);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtypedlocalenumcurlyname);
+        return;
+    }
+    
+    while(foundendflag == FORTH_FALSE)
+    {
+        pname = dg_parsewords(
+            pBHarrayhead,
+            &namelength,
+            (unsigned char)'>',
+            &foundendflag,
+            FORTH_FALSE);
+            
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthtypedlocalenumcurlyname);
+            return;
+        }
+
+        if (namelength != 0)
+        {
+            // this is a signed conversion, a - sign in front of the number is acceptable
+            data = dg_pchartonumber(
+                pname,
+                namelength,
+                base,
+                &flag); // this routine doesn't return errors
+
+            if (flag != FORTH_FALSE)
+            {
+                switch (numbersinarow)
+                {
+                    case 0:
+                        stepsize = data;
+                        break;
+                    case 1:
+                        value = data;
+                        valuejustsetflag = FORTH_TRUE;
+                        break;
+                    case 2:
+                        type = data;
+                        break;
+                    default:
+                        dg_pusherror(pBHarrayhead, dg_toomanyparameterserror);
+                        dg_pusherror(pBHarrayhead, dg_forthtypedlocalenumcurlyname);
+                        return;
+                }
+                
+                numbersinarow++; 
+            }
+            else
+            {
+                numbersinarow = 0;
+                
+                if (valuejustsetflag == FORTH_FALSE)
+                {
+                    value += stepsize;
+                }
+                else
+                {
+                    valuejustsetflag = FORTH_FALSE;
+                }
+                
+                localwordid = dg_newwordcopyname (
+                    pBHarrayhead,
+                    (UINT64)DG_CORE_BUFFERID,
+                    (UINT64)&dg_forthdocompiletypedpushdn,
+                    type, // databufid,
+                    value, // databufoffset,
+                    (UINT64)DG_CORE_BUFFERID,
+                    (UINT64)pname,
+                    namelength);
+
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {
+                    dg_pusherror(pBHarrayhead, dg_forthtypedlocalenumcurlyname);
+                    return;
+                }
+                
+                dg_linkdefinition(
+                    pBHarrayhead,
+                    localswordlistid,
+                    localwordid);
+                    
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {       
+                    dg_pusherror(pBHarrayhead, dg_forthtypedlocalenumcurlyname);
+                    return;
+                }
+            }
+        }
+    }
+    
+    if (valuejustsetflag == FORTH_FALSE)
+    {
+        value += stepsize;
+    }
+    else
+    {
+        valuejustsetflag = FORTH_FALSE;
+    }
+    
+    dg_pushdatastack(pBHarrayhead, value);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthtypedlocalenumcurlyname);
+        return;
+    }
+}
+
+
 

@@ -1,5 +1,168 @@
 Changelog for Diaperglu
-  10 January 2020
+   11 April 2022
+     Released v5.2
+
+   7 April 2022
+
+    Fixed MOVD and MOVQ2, for the forward reg->xmmm case and the reverse reg<-xmmm case, 
+     (bug was that it was using the opposite opcode in these cases)
+
+    Fixed dg_readfile for Windows to clear the high 32 bits of the number of bytes read
+     since os function only uses the low 32 bits.
+     (bug was that the state of the high 32 bits of numread was dependent on what was left
+      on the return stack from previous function calls, and if it was not 0, it would cause
+      the function calling dg_readbytes falsely detect an error.)
+
+    Added check to dg_readfile, dg_writefile, dg_readisapi to give error if a length over 32 bits
+     is passed since the OS is only using a 32 bit variable for the length. (I could make
+     DiaperGlu do repeated reads or writes to support larger lengths... maybe in a later
+     version...)
+
+    Changed dg_getfilelength to use GetFileInformationByHandleEx instead of GetFileSize since
+     Windows docs says GetFileInformationByHandleEx is more reliable. Also dg_getfilelength was
+     not returning the high 32 bits of the file length, so now you can get the length of files
+     whose length does not fit into 32 bits. But dg_readfile and dg_writefile on Windows are
+     still limited to 32 bit lengths.
+
+  25 March 2022
+    
+    Changed LOCAL-CONSTANTS from always execute to subroutine (no longer IMMEDIATE)
+    Changed LOCAL-CONSTANTS< from always execute to subroutine (no longer IMMEDIATE)
+    Added [LOCAL-CONSTANTS] as immediate form of LOCAL-CONSTANTS
+    Added [LOCAL-CONSTANTS]< as immediate form of LOCAL-CONSTANTS
+    Added EH.
+    Added EH[ND].
+    Added EH[1D].
+    Added ENUM<
+    Added LOCAL-ENUM<
+    Added [LOCAL-ENUM]<
+    Added TYPED-ENUM<
+    Added TYPED-LOCAL-ENUM<
+    Added SYMBOL-ENUM<
+    Added FRAME-PARAMS<    ( makes local names for subroutine parameters using a frame )
+    Added FRAME-PARAM      ( is frame parameter addressing mode )
+    Added NO-FRAME-PARAMS< ( makes local names for subroutine parameters not using a frame )
+    Added NO_FRAME_PARAM   ( is no frame parameter addressing mode )
+    Added OCR[WORDLIST.]
+    Added WORDLIST.
+    Added CREATE-[WORDLIST.]
+    Added OSYMBOL-IMPORT
+    Added ENTER-FRAME, as alias for ENTER-RBP-FRAME,
+    Added EXIT-FRAME,
+    Added ENTER-CALL-SUBS-FRAME, // added a new subroutine frame that doesn't require pBHarrayhead
+    Added EXIT-CALL-SUBS-FRAME,
+    Added CALL-SUBS-FRAME-LOCALS,<
+    Added NEW-FLAT-OSYMBOL-BUF
+    Added FREE-FLAT-OSYMBOL-BUF
+    Added IMP              ( is import addressing mode )
+    Added OIMPORTCODELINK
+    Added OSYMBOL-CODE-IMPORTS,<
+    Added ((               ( begins setting up subroutine parameters for call subs frame)
+    Added )),              ( compiles setting up parameters for a call subs frame subroutine call )
+    Added support for memory to/from memory addressing modes. (Using it trashes RAX).
+    
+    Added DGLU-FORTH-FRAME-LOCALS,< // this frame requires a pBHarrayhead, 
+    
+    Added IPARAM>
+    Added FPARAM>
+    Added >IPARAM
+    Added >FPARAM    
+
+  23 January 2022
+    Added dg_adcbytes
+    Added dg_sbbbytes
+    Added dg_andbytes
+    Added dg_orbytes
+    Added dg_xorbytes
+    Added dg_nandbytes
+    Added dg_norbytes
+    Added dg_xnorbytes
+    Added dg_shlbytes
+    Added dg_shrbytes
+    Added dg_rclbytes
+    Added dg_rcrbytes
+    Added dg_sarbytes
+    Added dg_notbytes
+    Added dg_reversebytes
+    Added dg_incbytes
+    Added dg_decbytes
+    Added dg_mulu64tou64s
+    Added dg_divu64sbyu64
+
+    Added dg_uleaddlstringntolstringn
+    Added dg_uleadclstringntolstringn
+    Added dg_ulesbblstringntolstringn
+    Added dg_lelshiftlstringn
+    Added dg_ulershiftlstringn
+    Added dg_slershiftlstringn
+    Added dg_lelshiftclstringn
+    Added dg_lershiftclstringn
+    Added dg_partialulemulu64tolstringn
+    Added dg_ulemulu64tolstringn
+    Added dg_notlstringn
+    Added dg_reverselstringn
+    Added dg_uleandlstringntolstringn
+    Added dg_uleorlstringntolstringn
+    Added dg_ulexorlstringntolstringn
+    Added dg_ulenandlstringntolstringn
+    Added dg_ulenorlstringntolstringn
+    Added dg_ulexnorlstringntolstringn
+    Added dg_mulu64bylstringnaddtolstringn
+    Added dg_divlstringnbyu64
+
+    Added dg_initlstringqueue
+    Added dg_pushlstringqueuehead
+    Added dg_poplstringqueuetail
+
+    Added dg_forthnotlstringn as NOTL$[N]
+    Added dg_forthu8reverselstringn as U8REVERSEL$[N]
+    Added dg_forthuleextendlstringntol as ULEEXTENDL$[N]TOL
+    Added dg_forthuleandlstringntolstringn as ULEANDL$[N]>L$[N]
+    Added dg_forthuleorlstringntolstringn as ULEORL$[N]>L$[N]
+    Added dg_forthulexorlstringntolstringn as ULEXORL$[N]>L$[N]
+    Added dg_forthulenandlstringntolstringn as ULENANDL$[N]>L$[N]
+    Added dg_forthulenorlstringntolstringn as ULENORL$[N]>L$[N]
+    Added dg_forthulexnorlstringntolstringn as ULEXNORL$[N]>L$[N]
+    Added dg_forthuleaddlstringntolstringn as ULEADDL$[N]>L$[N]
+    Added dg_forthuleadclstringntolstringn as ULEADCL$[N]>L$[N]
+    Added dg_forthulesbblstringntolstringn as ULESBBL$[N]>L$[N]
+    Added dg_forthlelshiftlstringn as LELSHIFTL$[N]
+    Added dg_forthulershiftlstringn as ULERSHIFTL$[N]
+    Added dg_forthslershiftlstringn as SLERSHIFTL$[N]
+    Added dg_forthlelshiftclstringn as LELSHIFTCL$[N]
+    Added dg_forthlershiftclstringn as LERSHIFTCL$[N]
+    Added dg_forthu64starlstringnplustolstringn as U64*L$[N]+>L$[N]
+    Added dg_forthtoslashulelstringn as >/ULEL$[N]
+
+    Added dg_forthumulleutostring as UMULLEU>$
+    Added dg_forthtostarulestring as >*ULE$
+    Added dg_forthtoslashulestring as >/ULE$
+    Added dg_forthlelshiftstring as LELSHIFT$
+    Added dg_forthulershiftstring as ULERSHIFT$
+    Added dg_forthslershiftstring as SLERSHIFT$
+    Added dg_forthlelshiftcstring as LELSHIFTC$
+    Added dg_forthlershiftcstring as LERSHIFTC$
+    Added dg_forthulestringtonumberstring as ULE$>NUMBER$
+    Added dg_forthreversestring as REVERSE$
+    Added dg_forthnotstring as NOT$
+    Added dg_forthuleandstring as ULEAND$
+    Added dg_forthuleorstring as ULEOR$
+    Added dg_forthulexorstring as ULEXOR$
+    Added dg_forthulenandstring as ULENAND$
+    Added dg_forthulenorstring as ULENOR$
+    Added dg_forthulexnorstring as ULEXNOR$
+    Added dg_forthtofactorialulestring as >FACTORIALULE$
+
+  30 December 2021
+    Fixed dg_scanfornotbytereverse for nodiaperglu case. It wasn't copying a register.
+
+  16 December 2021
+    Added dg_addbytes
+    Added dg_lslbytes
+    Added dg_uextendlelstringntol
+    Added dg_uaddlelstringntolstringn
+
+  10 January 2021
     Release v5.0
 
   9 January 2021

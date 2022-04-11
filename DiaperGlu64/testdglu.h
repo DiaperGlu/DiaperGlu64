@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 
 #if !defined(_INC_testdglu)
@@ -34,9 +34,9 @@
 extern "C" {
 #endif
 
-///////////////////
-// Windows stuff //
-///////////////////
+// /////////////////
+//  Windows stuff //
+// /////////////////
 #if _MSC_VER >= 1000
 #pragma once
 #endif // _MSC_VER >= 1000
@@ -60,6 +60,7 @@ void testdg_search ();
 void testdg_movebytesskipdestination();
 	
 // compiling and processor dependent routines
+void testdg_bumpdisplacementsizeifneeded();
 void testdg_compilemovregtoreg();
 void testdg_compilenegatereg();
 void testdg_compileaddregtoreg();
@@ -99,6 +100,7 @@ void testdg_fortho0quotes();
 void testdg_packtwobytevex();
 void testdg_packthreebytevex();
 void testdg_compilevex();
+void testdg_compileaddnlocalstocallsubsframe();
 
 // c buffer routines
 void testdg_newbuffer ();
@@ -169,6 +171,7 @@ void testdg_parseword();
 void testdg_parse();
 void testdg_parsemultiline();
 void testdg_parsewords();
+void testdg_noparseentirecurrentline();
 void testdg_tocurrent();
 void testdg_currentfrom();
 void testdg_createbrackettoorderconstantdef();
@@ -190,6 +193,7 @@ void testdg_deleteinlstring();
 void testdg_insertinlstring();
 void testdg_catlstringn();
 void testdg_copystolstringn();
+void testdg_pushstolstringn();
 void testdg_copysfromlstringn();
 void testdg_setlengthlstringn();
 void testdg_replacelstringn();
@@ -217,6 +221,33 @@ void testdg_unpacklstring();
 void testdg_stonewstring();
 void testdg_stonew0string();
 void testdg_dropnlstrings();
+void testdg_uleextendlstringntol();
+void testdg_uleaddlstringntolstringn();
+void testdg_uleadclstringntolstringn();
+void testdg_ulesbblstringntolstringn();
+void testdg_uleandlstringntolstringn();
+void testdg_uleorlstringntolstringn();
+void testdg_ulexorlstringntolstringn();
+void testdg_ulenandlstringntolstringn();
+void testdg_ulenorlstringntolstringn();
+void testdg_ulexnorlstringntolstringn();
+void testdg_notlstringn();
+void testdg_reverselstringn();
+void testdg_lelshiftlstringn();
+void testdg_ulershiftlstringn();
+void testdg_slershiftlstringn();
+void testdg_lelshiftclstringn();
+void testdg_lershiftclstringn();
+void testdg_mulu64bylstringnaddtolstringn();
+void testdg_divlstringnbyu64();
+
+void testdg_initlstringqueue();
+void testdg_pushlstringqueuehead();
+void testdg_poplstringqueuetail();
+void testdg_getslstringqueuetail();
+void testdg_dropslstringqueuetail();
+
+void testdg_newfreesharedlstringqueue();
 
 void testnewvocabularyword();
 void testgetword();
@@ -563,6 +594,24 @@ void testdg_forthpicklstring();
 void testdg_forthdroplstring();
 void testdg_forthdeletelstring();
 void testdg_forthinsertlstring();
+void testdg_forthnotlstringn();
+void testdg_forthu8reverselstringn();
+void testdg_forthuleaddlstringntolstringn();
+void testdg_forthuleadclstringntolstringn();
+void testdg_forthulesbblstringntolstringn();
+void testdg_forthuleandlstringntolstringn();
+void testdg_forthuleorlstringntolstringn();
+void testdg_forthulexorlstringntolstringn();
+void testdg_forthulenandlstringntolstringn();
+void testdg_forthulenorlstringntolstringn();
+void testdg_forthulexnorlstringntolstringn();
+void testdg_forthlelshiftlstringn();
+void testdg_forthulershiftlstringn();
+void testdg_forthslershiftlstringn();
+void testdg_forthlelshiftclstringn();
+void testdg_forthlershiftclstringn();
+void testdg_forthu64starlstringnplustolstringn();
+void testdg_forthtoslashulelstringn();
 
 void testdg_forthudmslashmod();
 
@@ -603,6 +652,19 @@ void testdg_forthfreelibrary();
 void testdg_forthwordsstringquotes();
 void testdg_forthwords0stringquotes();
 void testdg_forthgetargsfromnstrings();
+void testdg_forthnotstring();
+void testdg_forthreversestring();
+void testdg_forthlelshiftstring();
+void testdg_forthulershiftstring();
+void testdg_forthslershiftstring();
+void testdg_forthlelshiftcstring();
+void testdg_forthlershiftcstring();
+void testdg_forthuleandstring();
+void testdg_forthuleorstring();
+void testdg_forthulexorstring();
+void testdg_forthulenandstring();
+void testdg_forthulenorstring();
+void testdg_forthulexnorstring();
 
 void testdg_forthgetcurrent();
 void testdg_forthsetcurrent();
@@ -615,6 +677,9 @@ void testdg_forthsearchwordlist();
 void testdg_forthnewhlist();
 void testdg_forthfreehlist();
 void testdg_forthnewhlistelement();
+void testdg_forthehdot();
+void testdg_forthehbracketnddot();
+void testdg_forthehbracket1ddot();
     
 void testdg_pulloneaddressingmode();
 void testdg_formatsib();
@@ -626,6 +691,7 @@ void testdg_compilentom ();
 void testdg_compilentor ();
 void testdg_compilertom ();
 void testdg_compiletwotargets ();
+void testdg_determineparameterregister();
     
 void testdg_getsenvnamevalue ();
 void testdg_timeslog2 ();

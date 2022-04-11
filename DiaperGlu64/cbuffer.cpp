@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2021 James Patrick Norris
+//    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.0.
+//    This file is part of DiaperGlu v5.2.
 //
-//    DiaperGlu v5.0 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.0 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.0; if not, write to the Free Software
+//    along with DiaperGlu v5.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// January 9, 2021            //
-// version 5.0                //
+// April 10, 2022             //
+// version 5.2                //
 // /////////////////////////////
 
 
@@ -88,6 +88,24 @@ const char dg_putuint32name[]              = "dg_putuint32";
 const char dg_hctwostorename[]             = "dg_hctwostore";
 const char dg_tentothexname[]              = "dg_tentothex";
 const char dg_randomname[]                 = "dg_random";
+const char dg_addbytesname[]               = "dg_addbytes";
+const char dg_adcbytesname[]               = "dg_adcbytes";
+const char dg_sbbbytesname[]               = "dg_sbbbytes";
+const char dg_shlbytesname[]               = "dg_shlbytes";
+const char dg_rclbytesname[]               = "dg_rclbytes";
+const char dg_shrbytesname[]               = "dg_shrbytes";
+const char dg_sarbytesname[]               = "dg_sarbytes";
+const char dg_rcrbytesname[]               = "dg_rcrbytes";
+const char dg_notbytesname[]               = "dg_notbytes";
+const char dg_andbytesname[]               = "dg_andbytes";
+const char dg_orbytesname[]                = "dg_orbytes";
+const char dg_xorbytesname[]               = "dg_xorbytes";
+const char dg_nandbytesname[]              = "dg_nandbytes";
+const char dg_norbytesname[]               = "dg_norbytes";
+const char dg_xnorbytesname[]              = "dg_xnorbytes";
+const char dg_reversebytesname[]           = "dg_reversebytes";
+const char dg_mulu64tou64sname[]           = "dg_mulu64tou64s";
+const char dg_divu64sbyu64name[]           = "dg_divu64sbyu64";
 
 
 UINT64 dg_getbharrayheadsize()
@@ -3222,7 +3240,7 @@ const char* dg_initbuffers( Bufferhandle* pBHarrayhead )
         return (pError);
     }
     
-    // DG_NOTFOUNDLINE_BUFFERID 36
+    // DG_EHSTACK_BUFFERID 36
     dg_newbuffer(pBHarrayhead, 0x400, largestsignedint, &pError, FORTH_FALSE);
     
     if (pError != dg_success)
@@ -3230,15 +3248,7 @@ const char* dg_initbuffers( Bufferhandle* pBHarrayhead )
         return (pError);
     }
     
-    // DG_EHSTACK_BUFFERID 37
-    dg_newbuffer(pBHarrayhead, 0x400, largestsignedint, &pError, FORTH_FALSE);
-    
-    if (pError != dg_success)
-    {
-        return (pError);
-    }
-    
-    // DG_F64STACK_BUFFERID 38
+    // DG_F64STACK_BUFFERID 37
     //  since it's a forth buffer and other forth buffers aren't supposed to move
     //  I made this one not move too
     dg_newbuffer(pBHarrayhead, maxf64stackbufferlength, maxf64stackbufferlength, &pError, FORTH_FALSE);
@@ -3248,7 +3258,7 @@ const char* dg_initbuffers( Bufferhandle* pBHarrayhead )
         return (pError);
     }
     
-    // DG_CURRENTNEWWORDWORDLISTSTACK_BUFFERID 39
+    // DG_CURRENTNEWWORDWORDLISTSTACK_BUFFERID 38
     dg_newbuffer(pBHarrayhead, 0x400, largestsignedint, &pError, FORTH_FALSE);
     
     if (pError != dg_success)
@@ -3256,7 +3266,7 @@ const char* dg_initbuffers( Bufferhandle* pBHarrayhead )
         return (pError);
     }
     
-    // DG_CURRENTCOMPILEBUFFERSTACK_BUFFERID 40
+    // DG_CURRENTCOMPILEBUFFERSTACK_BUFFERID 39
     //  since it's a forth buffer and other forth buffers aren't supposed to move
     //  I made this one not move too
     dg_newbuffer(pBHarrayhead, 0x400, largestsignedint, &pError, FORTH_FALSE);
@@ -3266,10 +3276,18 @@ const char* dg_initbuffers( Bufferhandle* pBHarrayhead )
         return (pError);
     }
     
-    // DG_CURRENTVARIABLEBUFFERSTACK_BUFFERID 41
+    // DG_CURRENTVARIABLEBUFFERSTACK_BUFFERID 40
     //  since it's a forth buffer and other forth buffers aren't supposed to move
     //  I made this one not move too
     dg_newbuffer(pBHarrayhead, 0x400, largestsignedint, &pError, FORTH_FALSE);
+    
+    if (pError != dg_success)
+    {
+        return (pError);
+    }
+    
+    // DG_ERRORLINE_BUFFERID 41  // fixed size buffer since it's handling errors and the data is small
+    dg_newbuffer(pBHarrayhead, 0x400, 0x400, &pError, FORTH_FALSE);
     
     if (pError != dg_success)
     {
@@ -3284,7 +3302,7 @@ const char* dg_stateexecute = NULL;      // setting the state variable to this p
 const char dg_statecompile[] = "compile"; // setting the state variable to this puts script interpreter into compile mode
 
 
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////
 //
 // dg_initvariables  
 //
@@ -3299,7 +3317,7 @@ const char dg_statecompile[] = "compile"; // setting the state variable to this 
 // Failure cases:
 //  none - hopefully the data space buffer already exists and was created large enough to hold these
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////
 
 const char* dg_initvariablesname = "dg_initvariables";
 
@@ -3522,6 +3540,14 @@ void dg_initvariables (Bufferhandle* pBHarrayhead)
         dg_pusherror(pBHarrayhead, dg_initvariablesname);
         return;
     }
+    
+    // dg_putbufferuint64(pBHarrayhead, DG_DATASPACE_BUFFERID, dg_lastnewerrorbufferid, dg_badbufferid);
+    
+    // if (dg_geterrorcount(pBHarrayhead) != 0)
+    // {
+    //    dg_pusherror(pBHarrayhead, dg_initvariablesname);
+    //    return;
+    // }
 }
 
 
@@ -5510,105 +5536,6 @@ UINT64 dg_getline(
 }
 
 
-const char dg_captureerrorlinename[] = "dg_captureerrorline";
-
-void dg_captureerrorline(
-    Bufferhandle* pBHarrayhead,
-    UINT64 bufferid)
-{
-    unsigned char* pbuffer;
-    UINT64* pbufferlength;
-    
-    unsigned char c;
-    
-    UINT64 beginoffset, endoffset, strlen;
-    
-    Bufferhandle* pBH;
-    
-    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-
-    if (baderrorcount == olderrorcount)
-    {
-        return;
-    }
-    
-    pbuffer = dg_getpbuffer(pBHarrayhead, bufferid, &pbufferlength);
-
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-        // gonna assume the current input buffer caused this error...
-		dg_pusherror(pBHarrayhead, dg_forthpcurrentinputbuffername);
-		dg_pusherror(pBHarrayhead, dg_captureerrorlinename);
-		return;
-	}
-
-	// buffer is there because dg_getpbuffer worked so I can do this without checking
-	pBH = &( ((Bufferhandle*)(pBHarrayhead->pbuf))[bufferid] );
-    
-    beginoffset = pBH->currentoffset;
-    endoffset = beginoffset;
-    
-    // buffer is going to be freed so no need to update stuff
-    while(endoffset < (*pbufferlength))
-    {
-        c = pbuffer[endoffset];
-		
-        if (dg_islineterminator(c))
-        {
-            // want to show the line terminator
-            endoffset++; // to get off "
-            break;
-        }
-                        
-        if ((endoffset - beginoffset) > 0x100)
-        {
-            break;
-        }
-		
-        endoffset++;
-    }
-    
-    while(endoffset < (*pbufferlength))
-    {
-        c = pbuffer[endoffset];
-		
-        if (dg_islineterminator(c))
-        {
-            // want to show the line terminator
-            endoffset++; // to get off "
-            break;
-        }
-                        
-        if ((endoffset - beginoffset) > 0x100)
-        {
-            break;
-        }
-		
-        endoffset++;
-    }
-    
-	
-    strlen = endoffset - beginoffset;
-                    
-    dg_clearbuffer (pBHarrayhead, DG_ERRORLINE_BUFFERID);
-                    
-    // ignoring error here on purpose
-    dg_pushbuffersegment(
-        pBHarrayhead,
-        DG_ERRORLINE_BUFFERID,
-        41,
-        (unsigned char*)"Showing stuff after word causing error>>>");
-                    
-    dg_pushbuffersegment(
-        pBHarrayhead,
-        DG_ERRORLINE_BUFFERID,
-        strlen,
-        pbuffer + beginoffset);
-                    
-    // ignoring error here on purpose
-}
-
-
 void dg_compilesegment (
     Bufferhandle* pBHarrayhead, 
     const char* psrc, 
@@ -6854,3 +6781,117 @@ UINT64 dg_getbuffercurrentoffset (
 
 }
 */
+
+const char dg_noparseentercurrentlinename[] = "dg_noparseentirecurrentline";
+
+unsigned char* dg_noparseentirecurrentline(
+    Bufferhandle* pBHarrayhead,
+    UINT64* plinelength,
+    UINT64 bufferid)
+{
+    unsigned char* pcib = NULL;
+    UINT64* pciblength = NULL;
+    UINT64* pcibcurrentoffset = NULL;
+
+    UINT64 beginoffset = 0;
+    UINT64 endoffset = 0;
+
+    const char* perror;
+
+    unsigned char c = 0;
+
+
+    Bufferhandle* pBH = NULL;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        // could not get error count because BHarrayhead is not there so just exiting
+        return((unsigned char*)badbufferhandle);
+    }
+    
+    perror = dg_putuint64(plinelength, 0);
+    
+    if (perror != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, perror);
+        dg_pusherror(pBHarrayhead, dg_putuint64name);
+        dg_pusherror(pBHarrayhead, dg_noparseentercurrentlinename);
+        return((unsigned char*)badbufferhandle);
+    }
+
+    pcib = dg_getpbuffer(
+        pBHarrayhead,
+        bufferid,
+        &pciblength);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthpcurrentinputbuffername);
+        dg_pusherror(pBHarrayhead, dg_noparseentercurrentlinename);
+        return((unsigned char*)badbufferhandle);
+    }
+
+    // because dg_getpbuffer worked, I know the buf header for pcib is there
+    pBH = &( ((Bufferhandle*)(pBHarrayhead->pbuf))[bufferid] );
+    pcibcurrentoffset = &pBH->currentoffset;
+    
+    beginoffset = *pcibcurrentoffset;
+
+    // need to parse backwards off line terminators
+    //  (including if character before start character was a line terminator)
+    while (beginoffset > 0)
+    {
+        if (beginoffset <= *pciblength)
+        {
+            c = *(pcib + (beginoffset - 1));
+
+            if (!dg_islineterminator(c))
+            {
+                break;
+            }
+        }
+
+        beginoffset--;
+    }
+
+    endoffset = beginoffset;
+
+    // get endoffset at the end of the file or on a line terminator
+    while (endoffset < *pciblength)
+    {
+        c = *(pcib + endoffset);
+
+        if (dg_islineterminator(c))
+        {
+            // end offset will be on a line terminator or at the end of the buffer
+            //  so the parsed area will not include a line terminator
+            break;
+        }
+
+        endoffset++;
+    }
+
+    // at this point you are not on a line terminator
+    //  or... you are at the beginning of the buffer and it's all line terminators
+    //  or the buffer is empty
+
+    while (beginoffset > 0)
+    {
+        beginoffset--;
+
+        c = *(pcib + beginoffset);
+
+        if (dg_islineterminator(c))
+        {
+            // not including line terminator
+            beginoffset++;
+            break;
+        }
+    }
+    
+    *plinelength = endoffset - beginoffset;
+    
+    return (pcib + beginoffset);
+}
