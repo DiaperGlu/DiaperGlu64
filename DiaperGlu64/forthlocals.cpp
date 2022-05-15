@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.2.
+//    This file is part of DiaperGlu v5.3.
 //
-//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.2; if not, write to the Free Software
+//    along with DiaperGlu v5.3; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// April 10, 2022             //
-// version 5.2                //
+// May 15, 2022               //
+// version 5.3                //
 // /////////////////////////////
 
 
@@ -665,12 +665,42 @@ void dg_forthlocalsbar(Bufferhandle* pBHarrayhead)
     }
 }
 
-// need word to empty locals wordlist and clear the using locals flag
-// const char* dg_forthqueryclearlocalsname = "?CLEAR-LOCALS";
-
-void dg_forthqueryclearlocals(Bufferhandle* pBHarrayhead)
+void dg_forthclearlocalwordlist (Bufferhandle* pBHarrayhead)
 {
     UINT64 localswordlistid;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    localswordlistid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_localswordlistid);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthclearlocalwordlistname);
+		return;
+    }
+    
+    dg_prunehlistelement (
+        pBHarrayhead,
+        0, // hlistheaderid,
+        localswordlistid); // elementheaderid);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthclearlocalwordlistname);
+        return;
+    }
+}
+
+void dg_forthquerycompileunnestlocals (Bufferhandle* pBHarrayhead)
+{
     UINT64 usinglocalsflag;
     UINT64 usinglocallstringsflag;
     
@@ -681,6 +711,90 @@ void dg_forthqueryclearlocals(Bufferhandle* pBHarrayhead)
         return;
     }
     
+    usinglocalsflag = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_colonhaslocalsflag);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthquerycompileunnestlocalsname);
+		return;
+    }
+    
+    usinglocallstringsflag = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_colonhaslocalstringsflag);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthquerycompileunnestlocalsname);
+		return;
+    }
+    
+    if (FORTH_FALSE != usinglocalsflag)
+    {
+        // also need to compile call to restore local stack depth
+        dg_pushbufferuint64(
+            pBHarrayhead,
+            DG_DATASTACK_BUFFERID,
+            (UINT64)(&dg_restorelocalstackdepth));
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+            dg_pusherror(pBHarrayhead, dg_forthquerycompileunnestlocalsname);
+            return;
+        }
+        
+        dg_forthcompilecallcore(pBHarrayhead);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthquerycompileunnestlocalsname);
+            return;
+        }
+    }
+    
+    if (FORTH_FALSE != usinglocallstringsflag)
+    {
+        // also need to compile call to restore local lstring stack depth
+        dg_pushbufferuint64(
+            pBHarrayhead,
+            DG_DATASTACK_BUFFERID,
+            (UINT64)(&dg_restorelocallsstackdepth));
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+            dg_pusherror(pBHarrayhead, dg_forthquerycompileunnestlocalsname);
+            return;
+        }
+
+        dg_forthcompilecallcore(pBHarrayhead);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthquerycompileunnestlocalsname);
+            return;
+        }
+    }
+}
+
+// need word to empty locals wordlist and clear the using locals flag
+// const char* dg_forthqueryclearlocalsname = "?CLEAR-LOCALS";
+
+void dg_forthqueryclearlocals(Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    /*
     // for the x86 assembler
     dg_putbufferuint64(
         pBHarrayhead,
@@ -706,149 +820,74 @@ void dg_forthqueryclearlocals(Bufferhandle* pBHarrayhead)
         dg_pusherror(pBHarrayhead, dg_forthqueryclearlocalsname);
         return;
     }
-    
-    usinglocalsflag = dg_getbufferuint64(
-        pBHarrayhead,
-        DG_DATASPACE_BUFFERID,
-        dg_colonhaslocalsflag);
-        
-    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-    {
-        dg_pusherror(pBHarrayhead, dg_forthqueryclearlocalsname);
-		return;
-    }
-    
-    usinglocallstringsflag = dg_getbufferuint64(
-        pBHarrayhead,
-        DG_DATASPACE_BUFFERID,
-        dg_colonhaslocalstringsflag);
-        
-    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-    {
-        dg_pusherror(pBHarrayhead, dg_forthqueryclearlocalsname);
-		return;
-    }
+    */
     
     // now clearing locals wordlist every time this function is called 8/9/2020
     //  this is so I can support local constants
-    localswordlistid = dg_getbufferuint64(
-        pBHarrayhead,
-        DG_DATASPACE_BUFFERID,
-        dg_localswordlistid);
+    dg_forthclearlocalwordlist(pBHarrayhead);
     
-    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-    {
-        dg_pusherror(pBHarrayhead, dg_forthqueryclearlocalsname);
-		return;
-    }
-    
-    dg_prunehlistelement (
-        pBHarrayhead,
-        0, // hlistheaderid,
-        localswordlistid); // elementheaderid);
-        
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
         dg_pusherror(pBHarrayhead, dg_forthqueryclearlocalsname);
         return;
     }
     
-    if (FORTH_FALSE != usinglocalsflag)
+    dg_forthquerycompileunnestlocals(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
-        dg_putbufferuint64(
-            pBHarrayhead,
-            DG_DATASPACE_BUFFERID,
-            dg_numberoflocals,
-            0);
-            
-        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-        {
-            dg_pusherror(pBHarrayhead, dg_forthqueryclearlocalsname);
-            return;
-        }
-        
-        // clear using locals flag
-        dg_putbufferuint64(
-            pBHarrayhead,
-            DG_DATASPACE_BUFFERID,
-            dg_colonhaslocalsflag,
-            FORTH_FALSE);
-            
-        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-        {
-            dg_pusherror(pBHarrayhead, dg_forthqueryclearlocalsname);
-            return;
-        }
-        
-        // also need to compile call to restore local stack depth
-        dg_pushbufferuint64(
-            pBHarrayhead,
-            DG_DATASTACK_BUFFERID,
-            (UINT64)(&dg_restorelocalstackdepth));
-
-        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-        {
-            dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-            dg_pusherror(pBHarrayhead, dg_forthqueryclearlocalsname);
-            return;
-        }
-        
-        dg_forthcompilecallcore(pBHarrayhead);
-
-        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-        {
-            dg_pusherror(pBHarrayhead, dg_forthqueryclearlocalsname);
-            return;
-        }
+        dg_pusherror(pBHarrayhead, dg_forthqueryclearlocalsname);
+        return;
     }
     
-    if (FORTH_FALSE != usinglocallstringsflag)
+    dg_putbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_numberoflocals,
+        0);
+            
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
-        dg_putbufferuint64(
-            pBHarrayhead,
-            DG_DATASPACE_BUFFERID,
-            dg_numberoflocalstrings,
-            0);
-            
-        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-        {
-            dg_pusherror(pBHarrayhead, dg_forthqueryclearlocalsname);
-            return;
-        }
+        dg_pusherror(pBHarrayhead, dg_forthqueryclearlocalsname);
+        return;
+    }
         
-        // clear using local lstrings flag
-        dg_putbufferuint64(
-            pBHarrayhead,
-            DG_DATASPACE_BUFFERID,
-            dg_colonhaslocalstringsflag,
-            FORTH_FALSE);
+    // clear using locals flag
+    dg_putbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_colonhaslocalsflag,
+        FORTH_FALSE);
             
-        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-        {
-            dg_pusherror(pBHarrayhead, dg_forthqueryclearlocalsname);
-            return;
-        }
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthqueryclearlocalsname);
+        return;
+    }
+    
+    dg_putbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_numberoflocalstrings,
+        0);
+            
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthqueryclearlocalsname);
+        return;
+    }
         
-        // also need to compile call to restore local lstring stack depth
-        dg_pushbufferuint64(
-            pBHarrayhead,
-            DG_DATASTACK_BUFFERID,
-            (UINT64)(&dg_restorelocallsstackdepth));
-
-        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-        {
-            dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-            dg_pusherror(pBHarrayhead, dg_forthqueryclearlocalsname);
-            return;
-        }
-
-        dg_forthcompilecallcore(pBHarrayhead);
-
-        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-        {
-            dg_pusherror(pBHarrayhead, dg_forthqueryclearlocalsname);
-            return;
-        }
+    // clear using local lstrings flag
+    dg_putbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_colonhaslocalstringsflag,
+        FORTH_FALSE);
+            
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthqueryclearlocalsname);
+        return;
     }
 }
 

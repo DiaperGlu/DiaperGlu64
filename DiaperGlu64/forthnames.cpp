@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.2.
+//    This file is part of DiaperGlu v5.3.
 //
-//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.2; if not, write to the Free Software
+//    along with DiaperGlu v5.3; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// April 10, 2022             //
-// version 5.2                //
+// May 15, 2022               //
+// version 5.3                //
 // /////////////////////////////
 
 
@@ -218,6 +218,7 @@ const char dg_forthparsenamesname[]          = "PARSE-NAMES";
 const char dg_forthlinesparsenamesname[]     = "LINES-PARSE-NAMES";
 const char dg_forthparsewordname[]           = "PARSE-WORD";
 const char dg_forthparsewordsname[]          = "PARSE-WORDS";
+const char dg_forthparselinename[]           = "PARSE-LINE";
 
 const char dg_forthpickname[]                = "PICK";
 // QUERY
@@ -363,6 +364,8 @@ const char dg_forthlittleename[]         = "e";
 
 // Forth Locals Word Names
 const char dg_forthlocalsbarname[]            = "LOCALS|";
+const char dg_forthclearlocalwordlistname[]   = "CLEAR-LOCAL-WORDLIST";
+const char dg_forthquerycompileunnestlocalsname[] = "?COMPILE-UNNEST-LOCALS";
 const char dg_forthqueryclearlocalsname[]     = "?CLEAR-LOCALS";
 
 // Forth Programming Tools names
@@ -500,6 +503,8 @@ const char dg_forthbuftodotobufname[]          = "BUF>NEW.OBUF";
 const char dg_forthbuftodotofilestringname[]   = "BUF>.OFILE$";
 const char dg_forthbuftomachodotobufname[]     = "BUF>NEWMACH-O.OBUF";
 const char dg_forthbuftoneweximdotobufname[]   = "BUF>NEWEXPORTIMPORT.OBUF";
+const char dg_forthosymbolbuftonewdotobufname[] = "OSYMBOLBUF>NEW.OBUF";
+const char dg_forthosymbolbuftonewdotofilestringname[] = "OSYMBOLBUF>NEW.OFILE$";
 const char dg_forthtestfindnumbername[]        = "TESTFINDNUMBER";
 
 const char dg_forthfunctblofnname[]            = "FUNCTBL[N]";
@@ -778,6 +783,8 @@ const char dg_forthgetoarrayelementname[]    = "GETOARRAYELEMENT";
 const char dg_forthgetparrayelementname[]    = "GETPARRAYELEMENT";
 const char dg_forthinsertinbuffername[]      = "INSERTINBUFFER";
 const char dg_forthdeleteinbuffername[]      = "DELETEINBUFFER";
+const char dg_forthreplaceinbuffername[]     = "REPLACEINBUFFER";
+const char dg_forthinsertsintobuffername[]   = "INSERTSINTOBUFFER";
 const char dg_forthgrowbuffername[]          = "GROWBUFFER";
 const char dg_forthshrinkbuffername[]        = "SHRINKBUFFER";
 const char dg_forthemptybuffername[]         = "EMPTYBUFFER";
@@ -7133,6 +7140,15 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
         presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthinsertlstring;
 
         i++;
+        
+    presortedbufferwords[i].pname                 = dg_forthinsertsintobuffername;
+    presortedbufferwords[i].namelength            = sizeof(dg_forthinsertsintobuffername);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
+    presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthinsertsintobuffer;
+
+    i++;
 
 	presortedbufferwords[i].pname                 = dg_forthinusebuffersname;
 	presortedbufferwords[i].namelength            = sizeof(dg_forthinusebuffersname);
@@ -8493,6 +8509,15 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
 
     i++;
     
+    presortedbufferwords[i].pname                 = dg_forthparselinename;
+    presortedbufferwords[i].namelength            = sizeof(dg_forthparselinename);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
+    presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthparseline;
+
+    i++;
+    
     presortedbufferwords[i].pname                 = dg_forthparsenamenom;
     presortedbufferwords[i].namelength            = sizeof(dg_forthparsenamenom);
     presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
@@ -8823,6 +8848,15 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
     presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
     presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthrandom;
+
+    i++;
+    
+    presortedbufferwords[i].pname                 = dg_forthreplaceinbuffername;
+    presortedbufferwords[i].namelength            = sizeof(dg_forthreplaceinbuffername);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
+    presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthreplaceinbuffer;
 
     i++;
     

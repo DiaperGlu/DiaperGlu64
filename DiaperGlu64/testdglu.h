@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.2.
+//    This file is part of DiaperGlu v5.3.
 //
-//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.2; if not, write to the Free Software
+//    along with DiaperGlu v5.3; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// April 10, 2022             //
-// version 5.2                //
+// May 15, 2022               //
+// version 5.3                //
 // /////////////////////////////
 
 #if !defined(_INC_testdglu)
@@ -172,6 +172,9 @@ void testdg_parse();
 void testdg_parsemultiline();
 void testdg_parsewords();
 void testdg_noparseentirecurrentline();
+void testdg_parseline();
+void testdg_noparselineatoffset();
+void testdg_replacebuffersegment();
 void testdg_tocurrent();
 void testdg_currentfrom();
 void testdg_createbrackettoorderconstantdef();
@@ -561,6 +564,8 @@ void testdg_forthgetpbuffercurrentoffset();
 
 void testdg_forthinsertinbuffer();
 void testdg_forthdeleteinbuffer();
+void testdg_forthreplaceinbuffer();
+void testdg_forthinsertsintobuffer ();
 void testdg_forthgrowbuffer();
 void testdg_forthshrinkbuffer();
 void testdg_forthemptybuffer();
@@ -574,6 +579,7 @@ void testdg_forthparse();
 void testdg_forthparsebuffer();
 void testdg_forthparseword();
 void testdg_forthparsewords();
+void testdg_forthparseline();
 void testdg_forthmaxusedbuffers();
 void testdg_forthinusebuffers();
 void testdg_forthinusebytes();

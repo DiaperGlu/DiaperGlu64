@@ -1,0 +1,1129 @@
+( //////////////////////////////////////////////////////////////////////////////////////// )
+( //                                                                                       )
+( //    Copyright 2022 James Patrick Norris                                                )
+( //                                                                                       )
+( //    This file is part of Diaperglu 5.3.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.3 is free software; you can redistribute it and/or modify              )
+( //    it under the terms of the GNU General Public License as published by               )
+( //    the Free Software Foundation; either version 2 of the License, or                  )
+( //    {at your option} any later version.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.3 is distributed in the hope that it will be useful,                   )
+( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
+( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
+( //    GNU General Public License for more details.                                       )
+( //                                                                                       )
+( //    You should have received a copy of the GNU General Public License                  )
+( //    along with Diaperglu 5.3; if not, write to the Free Software                       )
+( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
+( //                                                                                       )
+( //////////////////////////////////////////////////////////////////////////////////////// )
+
+( /////////////////////////////// )
+( // James Patrick Norris      // )
+( // www.rainbarrel.com        // )
+( // May 15, 2022              // )
+( // version 5.3               // )
+( /////////////////////////////// )
+
+
+// this file expects a valid hlistid elementid on the top of the EH stack which represents the
+//  parent element of the export symbol list
+
+// this file also compiles to the current compile buffer
+
+
+// adding the assembler to the search order
+
+X86-WORDLIST >SEARCH-ORDER
+
+HEX
+OSYMBOL dg_shluint64s
+  ( psrcuint64s      RDI
+    pdestuint64s     RSI
+    lengthinuint64s  RDX
+    shiftcount       RCX
+    -ret- )
+
+    // RDX R11 MOV, // saving a copy of the length
+
+    // if length = 0 return
+    RDX RDX AND,
+    ZS IF,
+      RET,
+    THEN,
+
+    RDX R10 MOV,   R10 DEC,    // R10 = dest index = length - 1
+    // get start position
+    RCX R8 MOV,
+    6 N R8 SHR,      // R8 = start position = length - shift amount in uint64s
+
+    RDX R8 CMP,   // if start position - length >= 0 then clear dest and return
+    NC IF,
+      // clear dest and return
+      RAX RAX XOR,
+      RSI RDI MOV,
+      RDX RCX MOV,
+      REP, STOSQ,
+      RET,
+    THEN,
+
+    R8 NEG,
+    RDX R8 ADD,
+    R8 DEC,
+    3F N  CL  AND,   // CL = 0 - 63 shift count
+
+    RDI SCALE8* R8 0 [R+S*R+N]  RAX  MOV, // get hi
+
+    // start position is number to do...
+
+    R8 R8 OR,
+
+    // if number of regular to do > 0 then shift the sources into the destinations
+    NZ IF,
+      BEGIN,
+        RDI SCALE8* R8 -8 [R+S*R+N]  RDX  MOV,  // get lo
+        CL  RDX  RAX  SHLD,
+        RAX  RSI SCALE8* R10 0 [R+S*R+N]  MOV,
+        RDX RAX MOV,
+        R10 DEC,
+        R8 DEC,
+      ZS UNTIL,
+    THEN,
+
+    CL  RAX  SHL,
+    RAX  RSI SCALE8* R10 0 [R+S*R+N]  MOV,  
+
+    // now I need to fill the rest of the destination with 0
+    R10 R10 OR,
+    NZ IF,
+      R10 RCX MOV,
+      RSI RDI MOV,  // get address of current dest position
+      RAX RAX XOR,  
+      REP, STOSQ,   // do the clear
+    THEN,
+    RET,
+
+
+HEX
+OSYMBOL dg_shladduint64ssub
+  ( psrcuint64s         RDI
+    pdestuint64s        RSI
+    lengthinuint64s     RDX
+    shiftcountinbits    RCX
+    shiftcountinuint64s R8
+    -ret- )
+
+    RDX R11 MOV, // saving a copy of the length
+
+    // if length = 0 return
+    RDX RDX AND,
+    ZS IF,
+      RET,
+    THEN,
+
+    R8 R10 MOV,
+    R8 R8 XOR,     // R8 = src index = 0
+    // get start position
+    // RCX R10 MOV,
+    // 6 N R10 SHR,     // R10 = start position = dest index
+    3F N  CL  AND,   // CL = 0 - 63 shift count
+    
+    RDX R10 CMP,   // if start position - length >= 0 then return
+    NC IF,
+      // return
+      RET,
+    THEN,
+
+    // doing first one
+    RDI SCALE8* R8 0 [R+S*R+N]  RAX  MOV, // get low
+    CL  RAX  SHL,
+    RAX  RSI SCALE8* R10 0 [R+S*R+N]  ADD,
+
+
+    RDX R9 MOV,
+    R10 R9 SUB,
+    R9 DEC, // R9 = length - start position - 1 = number of regular to do
+
+    // if number of regular to do > 0 then shift the sources into the destinations
+    NZ IF,
+      R10 INC,
+      BEGIN,
+        RDI SCALE8* R8 0 [R+S*R+N]  RDX  MOV,  // get lo
+        RDI SCALE8* R8 8 [R+S*R+N]  RAX  MOV,  // get hi
+        1 N  CH  RCL,
+        CL  RDX  RAX  SHLD,
+        1 N  CH  RCR,
+        RAX  RSI SCALE8* R10 0 [R+S*R+N]  ADC,
+        R10 INC,
+        R8 INC,
+        R9 DEC,
+      ZS UNTIL,
+    THEN,
+
+    RET,
+
+HEX
+OSYMBOL dg_shladduint64s
+  ( psrcuint64s      RDI
+    pdestuint64s     RSI
+    lengthinuint64s  RDX
+    shiftcount       RCX
+    -ret- )
+
+    // get start position
+    RCX R8 MOV,
+    6 N R8 SHR,      // R8 = start position = dest index
+    
+    EH-NAMEW>VALUE dg_shladduint64ssub O CALL,
+
+    RET,
+
+
+OSYMBOL dg_adduint64s
+ ( pdest                      RDI
+   psrc                       RSI
+   lengthinuint64s            RDX
+   -ret- 
+   carryout                   RAX )  // 0 or 1
+   
+   RDX RDX AND,
+   ZS IF,
+     RET,
+   THEN,
+
+   LODSQ,
+   RAX  RDI [R]  ADD,
+   1 N  RAX  RCL,  // to save the carry flag... I figure this is faster than PUSHF
+   8 N  RDI  ADD,  // clears the carry flag... 
+   1 N  RAX  RCR,  // to restore the carry flag
+   RDX DEC,
+
+   ZS IF,
+     RET,
+   THEN,
+   
+   BEGIN,
+     LODSQ,            // does not affect flags I think
+     RAX  RDI [R]  ADC,
+     1 N  RAX  RCL,  // to save the carry flag... I figure this is faster than PUSHF
+     8 N  RDI  ADD,
+     1 N  RAX  RCR,  // to restore the carry flag
+     RDX DEC,          // does not affect carry flag
+   ZS UNTIL,
+
+   1 N  RAX  RCL,   // can't use XOR to clear RAX because it clears the carry flag
+   1 N  RAX  AND,
+
+   RET,
+
+OSYMBOL dg_subuint64s
+ ( pdest                      RDI
+   psrc                       RSI
+   lengthinuint64s            RDX
+   -ret- 
+   borrowout                  RAX )  // 0 or 1
+   
+   RDX RDX AND,
+   ZS IF,
+     RET,
+   THEN,
+
+   LODSQ,
+   RAX  RDI [R]  SUB,
+   1 N  RAX  RCL,  // to save the carry flag... I figure this is faster than PUSHF
+   8 N  RDI  ADD,  // clears the carry flag... 
+   1 N  RAX  RCR,  // to restore the carry flag
+   RDX DEC,
+
+   ZS IF,
+     RET,
+   THEN,
+   
+   BEGIN,
+     LODSQ,            // does not affect flags I think
+     RAX  RDI [R]  SBB,
+     1 N  RAX  RCL,  // to save the carry flag... I figure this is faster than PUSHF
+     8 N  RDI  ADD,
+     1 N  RAX  RCR,  // to restore the carry flag
+     RDX DEC,          // does not affect carry flag
+   ZS UNTIL,
+
+   1 N  RAX  RCL,   // can't use XOR to clear RAX because it clears the carry flag
+   1 N  RAX  AND,
+
+   RET,
+
+HEX
+OSYMBOL dg_shruint64s
+  ( psrcuint64s      RDI
+    pdestuint64s     RSI
+    lengthinuint64s  RDX
+    shiftcount       RCX
+    -ret- )
+
+    RDX R11 MOV, // saving a copy of the length
+
+    // if length = 0 return
+    RDX RDX AND,
+    ZS IF,
+      RET,
+    THEN,
+
+    R10 R10 XOR,     // R10 = dest index = 0
+    // get start position
+    RCX R8 MOV,
+    6 N R8 SHR,      // R8 = start position = src index
+    3F N  CL  AND,   // CL = 0 - 63 shift count
+    
+    RDX R8 CMP,   // if start position - length >= 0 then clear dest and return
+    NC IF,
+      // clear dest and return
+      RAX RAX XOR,
+      RSI RDI MOV,
+      RDX RCX MOV,
+      REP, STOSQ,
+      RET,
+    THEN,
+
+    RDI SCALE8* R8 0 [R+S*R+N]  RAX  MOV, // get low
+
+    RDX R9 MOV,
+    R8 R9 SUB,
+    R9 DEC, // R9 = length - start position - 1 = number of regular to do
+
+    // if number of regular to do > 0 then shift the sources into the destinations
+    NZ IF,
+      BEGIN,
+        RDI SCALE8* R8 8 [R+S*R+N]  RDX  MOV,  // get hi
+        CL  RDX  RAX  SHRD,
+        RAX  RSI SCALE8* R10 0 [R+S*R+N]  MOV,
+        R10 INC,
+        R8 INC,
+        RDX RAX MOV,
+        R9 DEC,
+      ZS UNTIL,
+    THEN,
+
+    CL  RAX  SHR,
+    RAX  RSI SCALE8* R10 0 [R+S*R+N]  MOV,
+
+    // now I need to fill the rest of the destination with 0
+    R10 INC,
+    R11 R10 CMP,  // if R10 is less then length then clear the rest of the destination
+    CS IF,
+      R10 R11 SUB,  // length - dest position
+      R11 RCX MOV,  // mov number to clear to RCX
+      RSI SCALE8* R10 0 [R+S*R+N]  RDI  LEA,  // get address of current dest position
+      RAX RAX XOR,  
+      REP, STOSQ,   // do the clear
+    THEN,
+    RET,
+
+
+HEX
+OSYMBOL dg_shradduint64ssub
+  ( psrcuint64s          RDI
+    pdestuint64s         RSI
+    lengthinuint64s      RDX
+    shiftcountinbits     RCX
+    shiftcountinuint64s  R8
+    -ret- )
+
+    RDX R11 MOV, // saving a copy of the length
+
+    // if length = 0 return
+    RDX RDX AND,
+    ZS IF,
+      RET,
+    THEN,
+
+    R10 R10 XOR,     // R10 = dest index = 0
+    // get start position
+    // RCX R8 MOV,
+    // 6 N R8 SHR,      // R8 = start position = src index
+    3F N  CL  AND,   // CL = 0 - 63 shift count
+    
+    RDX R8 CMP,   // if start position - length >= 0 then return
+    NC IF,
+      // return
+      RET,
+    THEN,
+
+    RDI SCALE8* R8 0 [R+S*R+N]  RAX  MOV, // get low
+
+    RDX R9 MOV,
+    R8 R9 SUB,
+    R9 DEC, // R9 = length - start position - 1 = number of regular to do
+
+    CLC,
+
+    // if number of regular to do > 0 then shift the sources into the destinations
+    NZ IF,
+      BEGIN,
+        RDI SCALE8* R8 8 [R+S*R+N]  RDX  MOV,  // get hi
+        1 N  CH  RCL,
+        CL  RDX  RAX  SHRD,
+        1 N  CH  RCR,
+        RAX  RSI SCALE8* R10 0 [R+S*R+N]  ADC,
+        R10 INC,
+        R8 INC,
+        RDX RAX MOV,
+        R9 DEC,
+      ZS UNTIL,
+    THEN,
+
+    1 N  CH  RCL,
+    CL  RAX  SHR,
+    1 N  CH  RCR,
+    RAX  RSI SCALE8* R10 0 [R+S*R+N]  ADC,
+    1 N  CH  RCL, 
+
+    // now I need to adc 0 to the rest of the destination with 0
+    R10 INC,
+    R11 R10 CMP,  // if R10 is less then length then clear the rest of the destination
+    CS IF,
+      R10 R11 SUB,  // length - dest position
+      R11 RDX MOV,  // mov number to adc to RDX
+      RSI SCALE8* R10 0 [R+S*R+N]  RDI  LEA,  // get address of current dest position
+      RAX RAX XOR,  
+      1 N  CH  RCR,
+      BEGIN,
+        RAX  RDI [R]  ADC,
+        RDI 8 [R+N]  RDI  LEA,  // a way to add 8 to rdi without changing the carry flag
+        RDX DEC,
+      ZS UNTIL,
+    THEN,
+    RET,
+
+
+HEX
+OSYMBOL dg_shradduint64s
+  ( psrcuint64s      RDI
+    pdestuint64s     RSI
+    lengthinuint64s  RDX
+    shiftcount       RCX
+    -ret- )
+
+    // get start position
+    RCX R8 MOV,
+    6 N R8 SHR,      // R8 = start position = src index
+    EH-NAMEW>VALUE dg_shradduint64ssub O CALL,
+    RET,
+
+HEX
+OSYMBOL dg_setbitinuint64ssub
+  ( pdestuint64s           RDI
+    lengthinuint64s        RSI
+    bitpositioninuint64s   RDX
+    bitpositioninbits      RCX
+    -ret- )
+
+    // if length = 0 return
+    RSI RSI AND,
+    ZS IF,
+      RET,
+    THEN,
+
+    // RDX RCX MOV,
+    3F N  RCX  AND,
+    // 6 N  RDX  SHR,   // RDX = index in uint64s
+    RSI  RDX  CMP,
+
+    // if index is off end then return
+    NC IF,
+      RET,
+    THEN,
+
+    RCX  RDI SCALE8* RDX 0 [R+S*R+N]  BTS,
+
+    RET,
+
+HEX
+OSYMBOL dg_setbitinuint64s
+  ( pdestuint64s     RDI
+    lengthinuint64s  RSI
+    bitposition      RDX
+    -ret- )
+
+    RDX RCX MOV,
+    // 3F N  RCX  AND,
+    6 N  RDX  SHR,   // RDX = index in uint64s
+
+    EH-NAMEW>VALUE dg_shradduint64ssub O CALL,
+    RET,
+
+
+HEX
+OSYMBOL dg_clearbitinuint64s
+  ( pdestuint64s     RDI
+    lengthinuint64s  RSI
+    bitposition      RDX
+    -ret- )
+
+    // if length = 0 return
+    RSI RSI AND,
+    ZS IF,
+      RET,
+    THEN,
+
+    RDX RCX MOV,
+    3F N  RCX  AND,
+    6 N  RDX  SHR,   // RDX = index in uint64s
+    RSI  RDX  CMP,
+
+    // if index is off end then return
+    NC IF,
+      RET,
+    THEN,
+
+    RCX  RDI SCALE8* RDX 0 [R+S*R+N]  BTR,
+
+    RET,
+
+
+HEX
+OSYMBOL dg_togglebitinuint64s
+  ( pdestuint64s     RDI
+    lengthinuint64s  RSI
+    bitposition      RDX
+    -ret- )
+
+    // if length = 0 return
+    RSI RSI AND,
+    ZS IF,
+      RET,
+    THEN,
+
+    RDX RCX MOV,
+    3F N  RCX  AND,
+    6 N  RDX  SHR,   // RDX = index in uint64s
+    RSI  RDX  CMP,
+
+    // if index is off end then return
+    NC IF,
+      RET,
+    THEN,
+
+    RCX  RDI SCALE8* RDX 0 [R+S*R+N]  BTC,
+
+    RET,
+
+HEX
+OSYMBOL dg_addbitinuint64ssub
+  ( pdestuint64s          RDI
+    lengthinuint64s       RSI
+    bitpositioninuint64s  RDX
+    bitpositioninbits     RCX
+    -ret- )
+
+    // if length = 0 return
+    RSI RSI AND,
+    ZS IF,
+      RET,
+    THEN,
+
+    // RDX RCX MOV,
+    // 3F N  RCX  AND,
+    // 6 N  RDX  SHR,   // RDX = index in uint64s
+    RSI  RDX  CMP,
+
+    // if index is off end then return
+    NC IF,
+      RET,
+    THEN,
+
+    RAX RAX XOR,
+    RCX RAX BTS,
+
+    RAX  RDI SCALE8* RDX 0 [R+S*R+N]  ADD,
+    RDX  INC,
+    0 N RAX MOV,
+
+    BEGIN,
+      1 N CL RCR,
+      RSI RDX CMP,
+    CS WHILE,
+      1 N CL RCL,
+      RAX  RDI SCALE8* RDX 0 [R+S*R+N]  ADC,
+      RDX  INC,
+    REPEAT,
+
+    RET,
+
+HEX
+OSYMBOL dg_addbitinuint64s
+  ( pdestuint64s     RDI
+    lengthinuint64s  RSI
+    bitposition      RDX
+    -ret- )
+
+    RDX RCX MOV,
+    3F N  RCX  AND,
+    6 N  RDX  SHR,   // RDX = index in uint64s
+    
+    EH-NAMEW>VALUE dg_addbitinuint64ssub O CALL, 
+    RET,
+
+HEX
+OSYMBOL dg_getshiftplusone
+  ( shiftinbits      RDI  0 to 63  
+    shiftinuint64s   RSI  0 to lengthinuint64s - 1
+    -ret- 
+    shiftinbits'     RAX
+    shiftinuint64s'  RDX )
+    
+    RDI RAX MOV,
+    RSI RDX MOV,
+    RAX INC,
+    40 N  RAX  CMP,
+    NC IF,
+      RAX RAX XOR,
+      RDX INC,
+    THEN,
+    RET,
+
+HEX
+OSYMBOL dg_indextopowerof2
+  ( indexinuint64s      RDI  0 to lengthinuint64s - 1
+    fractionaluint64s   RSI  0 to lengthinuint64s...or maybe even more...
+    -ret- 
+    ninuint64s          RAX )
+    
+    RDI  RAX  MOV, 
+    RSI  RAX  SUB,
+    RET,
+
+HEX
+OSYMBOL dg_powerof2toindex
+  ( nuint64s            RDI  0 to lengthinuint64s - 1
+    fractionaluint64s   RSI  0 to lengthinuint64s...or maybe even more...
+    -ret- 
+    indexinuint64s      RAX )
+        
+    RDI  RAX  MOV,
+    RSI  RAX  ADD,
+    RET,
+
+HEX
+OSYMBOL dg_getshiftdoubled
+  ( indexinbits        RDI  0 to 63  
+    indexinuint64s     RSI  0 to lengthinuint64s - 1
+    fractionaluint64s  RDX  0 to lengthinuint64s...or maybe even more...
+    -ret- 
+    shiftinbits        RAX
+    shiftinuint64s     RDX )
+
+    RDX RSI SUB,  // RSI now has ninuint64s
+    1 N RDI SHL,  
+    40 N RDI CMP, // carry is clear if RDI >= 64
+    CMC,          // carry is set if RDI was >= 40
+    1 N RSI RCL,
+    RSI RDX ADD,  // want the shift, not the index
+    RDI RAX MOV,
+    3F N RAX AND,
+    RET,
+
+HEX
+OSYMBOL dg_clearuint64s
+  ( pdest            RDI  
+    lengthinuint64s  RSI  
+    -ret- )
+    RSI RSI OR,
+    ZS IF,
+      RET,
+    THEN,
+    RSI  RCX  MOV,
+    RAX RAX XOR,
+    REP, STOSQ,
+    RET,
+
+HEX
+OSYMBOL dg_copyuint64s
+  ( pdest            RDI  
+    psrc             RSI  
+    lengthinuint64s  RDX  
+    -ret- )
+    RDX RDX OR,
+    ZS IF,
+      RET,
+    THEN,
+    RDX RCX MOV,
+    REP, MOVSQ,
+    RET,
+
+
+HEX
+OSYMBOL dg_compareuint64sreverse
+  ( pdest            RDI  
+    psrc             RSI  
+    lengthinuint64s  RDX  
+    -ret- 
+    flag             RAX )  // 0 means equal, 1 means dest > src, -1 means dest < src
+    PUSHF,
+    STD,
+    RDX RDX OR,
+    ZS IF,
+      -2 N RAX MOV,
+      POPF,
+      RET,
+    THEN,
+    RDX RAX MOV,
+    RAX DEC,
+    3 N RAX SHL,
+    RAX RDI ADD,
+    RAX RSI ADD,
+    RDX RCX MOV,
+    REPE, CMPSQ,
+    ZS IF,
+      0 N RAX MOV,
+    ELSE,
+      NC IF,
+        -1 N RAX MOV,
+      ELSE,
+        1 N RAX MOV,
+      THEN,
+    THEN,
+
+    POPF,
+    RET,  
+    
+HEX
+OSYMBOL dg_findhighestbitinuint64s
+  ( psrc                 RDI   
+    lengthinuint64s      RSI  
+    -ret- 
+    highestbitinbits     RAX 0-63 
+    highetsbitinuint64s  RDX )
+    RSI RSI OR,
+    ZS IF,
+      -1 N RAX MOV,
+      RET,
+    THEN,
+
+    RAX RAX XOR,
+    BEGIN,
+      RSI DEC,
+      RDI SCALE8* RSI 0 [R+S*R+N]  RAX  OR,
+      NZ IF,
+        // found a set bit
+        RAX RAX BSR,
+        RSI RDX MOV,
+        RET,
+      THEN,  
+      RSI RSI OR,
+    ZS UNTIL,
+
+    // source is zero case
+    -1 N RAX MOV,
+    RSI RDX MOV,
+    RET,
+
+HEX
+OSYMBOL dg_getfirstguess  
+  ( highestbitinbits     RDI   
+    highetsbitinuint64s  RSI
+    fractionaluint64s    RDX
+    -ret- 
+    firstguessninbits    RAX 0-63 
+    firstguessninuint64s RDX )
+
+    RDX RCX MOV,
+    // convert to signed shift relative to fractionaluint64s
+    RDX RSI SUB, // RSI = relative shift
+    // get (n+2)/2
+    2 N RDI ADD,
+    40 N RDI CMP,
+    NC IF,
+      3F N RDI AND,
+      RSI INC,
+    THEN,
+    
+    1 N RSI SAR,
+    1 N RDI ROR,
+    MI IF,
+      20 N RDI OR,
+    THEN,
+    3F N RDI AND,
+
+    RDX RSI ADD,
+    RSI RDX MOV,
+    RDI RAX MOV,
+
+    RET, 
+
+
+HEX
+OSYMBOL dg_add2abplusbsquaredtouint64s
+  ( pa                        RDI
+    pdestuint64s              RSI
+    lengthinuint64s           RDX               
+    positioninbits            RCX  0 to 63  
+    positioninuint64s         R8   0 to lengthinuint64s - 1
+    fractionaluint64s         R9  
+    -ret- 
+    offendflag                RAX )
+
+   RBP PUSH,
+   RSP RBP MOV,
+   RDI PUSH,      -8     // pa
+   RSI PUSH,      -10    // pdest
+   RDX PUSH,      -18    // lengthinuint64s
+   RCX PUSH,      -20    // positioninbits (0=63)
+   R8 PUSH,       -28    // positioninuint64s
+   R9 PUSH,       -30    // fractionaluint64s
+
+   // if length = 0 return
+   RDX  RDX  OR,
+   ZS IF,
+     RAX RAX XOR,
+     RAX DEC,
+     RBP RSP MOV,
+     RBP POP,
+     RET,
+   THEN,
+
+   // if positioninuint64s >= lengthinuint64s return
+   RDX R8 CMP,
+   NC IF,
+     RAX RAX XOR,
+     RAX DEC,
+     RBP RSP MOV,
+     RBP POP,
+     RET,
+   THEN,
+
+   RCX  RDI  MOV,
+   R8  RSI  MOV,
+
+   // doesn't matter if you convert index to shift before or after this call
+   EH-NAMEW>VALUE dg_getshiftplusone O CALL, 
+
+   // RAX = index in bits
+   // RDX = index in uint64s
+   R9 RDX SUB,  // RDX = shift in uint64s
+   
+
+   
+
+   RDX RDX AND,
+   PL IF,
+     RAX  RCX  MOV,
+     RDX  R8   MOV,
+     RBP -8  [R+N]  RDI   MOV,
+     RBP -10 [R+N]  RSI   MOV,
+     RBP -18 [R+N]  RDX   MOV, 
+
+     EH-NAMEW>VALUE dg_shladduint64ssub O CALL,  
+     ( psrcuint64s         RDI
+      pdestuint64s         RSI
+      lengthinuint64s      RDX
+      shiftcountinbits     RCX
+      shiftcountinuint64s  R8
+      -ret- )
+
+   ELSE,
+
+     40 N RCX MOV,
+     RAX RCX SUB,
+     RDX NOT,
+     40 N RCX CMP,
+     NC IF,
+       3F N RCX AND,
+       RDX INC,
+     THEN,
+   
+     RDX  R8   MOV,
+     RBP -8  [R+N]  RDI   MOV,
+     RBP -10 [R+N]  RSI   MOV,
+     RBP -18 [R+N]  RDX   MOV, 
+     EH-NAMEW>VALUE dg_shradduint64ssub O CALL,  
+     ( psrcuint64s          RDI
+       pdestuint64s         RSI
+       lengthinuint64s      RDX
+       shiftcountinbits     RCX
+       shiftcountinuint64s  R8
+       -ret- )
+
+   THEN,
+
+   RBP -20 [R+N]  RDI  MOV,
+   RBP -28 [R+N]  RSI  MOV,
+   RBP -30 [R+N]  RDX  MOV,
+
+   EH-NAMEW>VALUE dg_getshiftdoubled O CALL,
+   
+  ( shiftinbits        RDI  0 to 63  
+    shiftinuint64s     RSI  0 to lengthinuint64s - 1
+    fractionaluint64s  RDX  0 to lengthinuint64s...or maybe even more...
+    -ret- 
+    shiftinbits      RAX
+    shiftinuint64s   RDX )
+
+   // if index of shift doubled is off end of array then return -1 
+   RBP -18 [R+N]  RDX  CMP,
+   NC IF,
+     -1 N RAX MOV,
+     RBP RSP MOV,
+     RBP POP,
+     RET,
+   THEN,
+
+   RAX  RCX  MOV,
+   // RDX  RDX  MOV,
+   RBP -10 [R+N]  RDI  MOV,
+   RBP -18 [R+N]  RSI  MOV,
+   EH-NAMEW>VALUE dg_addbitinuint64ssub O CALL,
+   
+  ( pdestuint64s          RDI
+    lengthinuint64s       RSI
+    bitpositioninuint64s  RDX
+    bitpositioninbits     RCX
+    -ret- )
+
+   RAX RAX XOR,   // 0 = ok
+
+   RBP RSP MOV,
+   RBP POP,
+   RET,
+
+HEX
+OSYMBOL dg_sqrtuint64s
+  ( pr                RDI
+    psqrtr            RSI
+    prguess           RDX
+    prguesscopy       RCX
+    lengthinuint64s   R8 
+    fractionaluint64s R9              
+    -ret- )
+
+   RBP PUSH,
+   RSP RBP MOV,
+   RDI PUSH,   // -8   pr
+   RSI PUSH,   // -10  psqrtr
+   RDX PUSH,   // -18  prguess
+   RCX PUSH,   // -20  prguesscopy
+   R8 PUSH,    // -28  lengthinuint64s
+   R9 PUSH,    // -30  fractionaluint64s
+   RAX PUSH,   // -38  indexinbits
+   RAX PUSH,   // -40  indexinuint64s
+
+   // if length = 0 ret
+   R8  R8  OR,
+   ZS IF,
+     -2 N RAX MOV,
+     RBP RSP MOV,
+     RBP POP,
+     RET,
+   THEN,
+
+   // clear sqrtr and rguess and rguesscopy
+   RSI  RDI  MOV,
+   R8   RSI  MOV,
+   EH-NAMEW>VALUE dg_clearuint64s O CALL,
+
+   RBP -20 [R+N]  RDI  MOV,
+   R8   RSI  MOV,
+   EH-NAMEW>VALUE dg_clearuint64s O CALL,
+
+   RDX  RDI  MOV,
+   R8   RSI  MOV,
+   EH-NAMEW>VALUE dg_clearuint64s O CALL,
+
+   RBP -8  [R+N]  RDI  MOV,
+   RBP -28 [R+N]  RSI  MOV,
+   EH-NAMEW>VALUE dg_findhighestbitinuint64s O CALL,
+  
+  ( psrc                 RDI   
+    lengthinuint64s      RSI  
+    -ret- 
+    highestbitinbits     RAX 0-63 
+    highestbitinuint64s  RDX )
+
+   -1 N RAX CMP,
+   ZS IF,
+     // sqrt of 0 case, returning equal flag
+     0 N RAX MOV,
+     RBP RSP MOV,
+     RBP POP,
+     RET,
+   THEN,
+
+   RAX  RDI  MOV,
+   RDX  RSI  MOV,
+   R9   RDX  MOV,  // R9 not trashed by any of the previous routines
+   EH-NAMEW>VALUE dg_getfirstguess O CALL,  
+  ( highestbitinbits     RDI   
+    highetsbitinuint64s  RSI
+    fractionaluint64s    RDX
+    -ret- 
+    firstguessinbits     RAX 0-63 
+    firstguessinuint64s  RDX )
+
+   RAX  RBP -38 [R+N] MOV,
+   RDX  RBP -40 [R+N] MOV,
+   
+   BEGIN,
+     RBP -10 [R+N]  RDI  MOV,
+     RBP -20 [R+N]  RSI  MOV,
+     RBP -28 [R+N]  RDX  MOV,
+     RBP -38 [R+N]  RCX  MOV,
+     RBP -40 [R+N]  R8   MOV,
+     RBP -30 [R+N]  R9   MOV,
+     EH-NAMEW>VALUE dg_add2abplusbsquaredtouint64s O CALL, 
+     ( pa                        RDI
+       pdestuint64s              RSI
+       lengthinuint64s           RDX               
+       positioninbits            RCX  0 to 63  
+       positioninuint64s         R8   0 to lengthinuint64s - 1
+       fractionaluint64s         R9  
+       -ret- 
+       offendflag                RAX )
+
+     //   if done ret then
+     RAX RAX OR,
+     NZ IF,
+       // sqrtr squared should be less than r so setting rax to -1
+       -1 N RAX MOV,
+       RBP RSP MOV,
+       RBP POP,
+       RET,
+     THEN,
+
+     // do rguesscopy - r, 0 means =, 1 means rguesscopy > r, -1 means rguesscopy < r
+     RBP -20 [R+N]  RDI  MOV,  // prguesscopy destination
+     RBP -8  [R+N]  RSI  MOV,  // pr
+     RBP -28 [R+N]  RDX  MOV,  // lengthinuint64s
+     EH-NAMEW>VALUE dg_compareuint64sreverse O CALL,      
+     ( pdest            RDI  
+       psrc             RSI  
+       lengthinuint64s  RDX  
+       -ret- 
+       flag )
+
+     -1 N RAX CMP,
+     ZS IF,  // if prguesscopy < pr
+       // set bit at current indexes in uint64s and bits
+       RBP -10 [R+N]  RDI  MOV,
+       RBP -28 [R+N]  RSI  MOV,
+       RBP -40 [R+N]  RDX  MOV,
+       RBP -38 [R+N]  RCX  MOV,
+       EH-NAMEW>VALUE dg_setbitinuint64ssub O CALL,
+       ( pdestuint64s           RDI
+         lengthinuint64s        RSI
+         bitpositioninuint64s   RDX
+         bitpositioninbits      RCX
+         -ret- ) 
+       // setting the bit for this position worked, so keeping this guess      
+       // copy rguesscopy back to rguess
+       RBP -18 [R+N]  RDI  MOV,  // dest rguess 
+       RBP -20 [R+N]  RSI  MOV,  // src = rguesscopy
+       RBP -28 [R+N]  RDX  MOV,  // length
+       EH-NAMEW>VALUE dg_copyuint64s O CALL,      
+       ( pdest            RDI  
+         psrc             RSI  
+         lengthinuint64s  RDX  
+         -ret- )    
+     ELSE,
+       0 N RAX CMP,
+       ZS IF,
+         // if equal then set current bit in dest and return
+         RBP -10 [R+N]  RDI  MOV,
+         RBP -28 [R+N]  RSI  MOV,
+         RBP -40 [R+N]  RDX  MOV,
+         RBP -38 [R+N]  RCX  MOV,
+         EH-NAMEW>VALUE dg_setbitinuint64ssub O CALL,
+         ( pdestuint64s           RDI
+           lengthinuint64s        RSI
+           bitpositioninuint64s   RDX
+           bitpositioninbits      RCX
+           -ret- )
+         // setting rax to 0 for sqrtr squared equals r
+         0 N RAX MOV,
+         RBP RSP MOV,
+         RBP POP,
+         RET,
+       THEN,
+
+       1 N RAX CMP,
+       ZS IF,
+         // it didn't work, so going back to old guess
+         // copy rguess to rguesscopy
+         RBP -20 [R+N]  RDI  MOV,  // dest = rguess copy
+         RBP -18 [R+N]  RSI  MOV,  // src = rguess
+         RBP -28 [R+N]  RDX  MOV,
+         EH-NAMEW>VALUE dg_copyuint64s O CALL,
+       ELSE,
+         // error... RAX already is -2 for error, or should be...
+         RBP RSP MOV,
+         RSP POP,
+         RET,
+       THEN, 
+     THEN,
+
+     // if position is zero, we are at the end of the array, so exit (this exit probably won't happen..)
+     RBP -38 [R+N]  RAX  MOV,
+     RBP -40 [R+N]  RAX  OR,
+     ZS IF,
+       // sqrtr squared will be less than r, so returning -1
+       -1 N RAX MOV,
+       RBP RSP MOV,
+       RSP POP,
+       RET,
+     THEN
+     
+     // go to next bit position (dec position)
+     RBP -38 [R+N] RAX MOV,
+     RAX DEC,
+     MI IF,
+       3F N  RAX  AND,
+       RBP -40 [R+N] 64BIT DEC,
+     THEN,
+     RAX  RBP -38 [R+N] MOV,
+       
+
+   NEVER UNTIL,      
+   
+
+
+OSYMBOL dg_partialmultiplyuint64s
+ ( psrca                      RDI
+   psrcb                      RSI
+   pdest                      RDX
+   srclengthinuint64s         RCX  // destlength is double
+   srcaindex                  R8   // 0 <= srcaindex < srclengthuint64s
+   srcbindex                  R9   // 0 <= srcbindex < srclengthuint64s
+   -ret- )  
+   
+   RBP PUSH,
+   RDX RBP MOV,
+   RDI SCALE8* R8 0 [R+S*R+N]  RAX  MOV,
+   RSI SCALE8* R9 0 [R+S*R+N]  64BIT  MUL,
+   R9 R8 ADD,  // R8 is now the start position in dest
+   1 N  RCX  SHL,  // RCX now has the destlength
+   RAX  RBP SCALE8* R8 0 [R+S*R+N]  ADD,
+   R8 INC,
+   RDX  RBP SCALE8* R8 0 [R+S*R+N]  ADC,  // if there is no carry you can exit...
+   R8 INC,
+   BEGIN,
+     RCX  R8  CMP,
+   CS WHILE,
+     0 N  RBP SCALE8* R8 0 [R+S*R+N]  ADC,  // if there is no carry you can exit...
+     R8 INC,
+   REPEAT,
+
+   RBP POP,
+   RET,
+
+
+
+  // dg_sqrtuint64s
+
+  // dg_calculatepi
+
+  
+
+
+     
+

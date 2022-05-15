@@ -3,20 +3,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.2.
+//    This file is part of DiaperGlu v5.3.
 //
-//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.2; if not, write to the Free Software
+//    along with DiaperGlu v5.3; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// April 10, 2022             //
-// version 5.2                //
+// May 15, 2022               //
+// version 5.3                //
 // /////////////////////////////
 -->
 
@@ -220,6 +220,7 @@
         <a href=forthcore.htm#dg_forthlinesparsenames    >dg_forthlinesparsenames</a>
         <a href=forthcore.htm#dg_forthparseword          >dg_forthparseword</a>
         <a href=forthcore.htm#dg_forthparsewords         >dg_forthparsewords</a>
+        <a href=forthcore.htm#dg_forthparseline          >dg_forthparseline</a>
         <a href=forthcore.htm#dg_forthpick               >dg_forthpick</a>
         <a href=forthcore.htm#dg_forthroll               >dg_forthroll</a>
         <a href=forthcore.htm#dg_forthtib                >dg_forthtib</a>
@@ -5744,14 +5745,17 @@ UINT64 dg_checkloopdone (Bufferhandle* pBHarrayhead)
 //                                 bufferhandles are stored.
 //
 // Stack action shorthand:
-//  ( c-addr u -- )
+//  ( c-addr n -- )
 // 
 // Data stack in:
 //  c-addr                        start address of a string
-//  u                             length of the string (64 bit)
+//  n                             signed length of the string (64 bit)
 //                                                              
 // Action:
-//  if u is greater than 0, this displays the character string specified by c-addr u
+//  if n is greater than 0, this displays the character string specified by c-addr n
+//
+// Note:
+//  if n is 0 nothing happens. (Changed for v5.3 2022 May 5)
 //
 // Forth standard:
 //  6.1.2310
@@ -5761,6 +5765,7 @@ UINT64 dg_checkloopdone (Bufferhandle* pBHarrayhead)
 //  c-addr or u missing from the data stack
 //  process doesn't own all the memory in the string
 //  error sending character to the display
+//  u is less than 0
 //  
 ////////////////////////////////////////////////////////////////////////////////////////
 </pre>
@@ -7422,6 +7427,68 @@ UINT64 dg_checkloopdone (Bufferhandle* pBHarrayhead)
 //  Could not push c-addr to data stack
 //  Could not push ulength to data stack
 //  Could not push ufoundendflag to data stack
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthparseline>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthparseline ( PARSE-LINE )
+//
+// C prototype:
+//  void dg_forthparseline(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( &quot;stuff&lt;terminator&gt;morestuff&quot;
+//     -currentinputbuffer- &quot;morestuff&quot; )
+//  ( -- c-addr ulength )
+//
+// Data stack in:
+//  none
+//                                 
+// Data stack out:
+//  c-addr                        start address of line in current input buffer
+//  ulength                       length of line in characters (bytes) in the 
+//                                 current input buffer
+//
+// Action:
+//  Moves the current offset pointer in the current input buffer to after the
+//   next occurrence of a line terminator or to the end of the buffer if 
+//   that comes first, to find the end of the word.
+//  Then pushes a pointer to the address of the current offset of where this 
+//   started parsing and the length of the line in characters (bytes) onto the 
+//   data stack. The length of the line does not include the line terminator
+//   character(s).
+//  If the line is terminated with a carriage return, and the next character
+//   after the carriage return is a line feed, then the current offset pointer
+//   is moved to the character after the line feed.
+//
+//  A line terminator is one of:
+//   c shorthand      ascii code    name  
+//   '\n'             0x0a          &lt;line feed&gt;
+//   '\v'             0x0b          &lt;vertical tab&gt;
+//   '\b'             0x08          &lt;back space&gt;
+//   '\r'             0x0c          &lt;carriage return&gt;
+//   '\f'             0x0f          &lt;form feed&gt;
+//
+//  or 
+//   '\r\n'           0x0c 0x0a     &lt;carriage return&gt;&lt;line feed&gt;
+//
+// Failure cases:
+//  Bufferhandle array head is missing
+//  Could not get the current input buffer id
+//  Could not get a pointer to the current input buffer
+//  Could not push addr to data stack
+//  Could not push length to data stack
 //  
 ////////////////////////////////////////////////////////////////////////////////////////
 </pre>

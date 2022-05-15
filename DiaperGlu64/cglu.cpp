@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.2.
+//    This file is part of DiaperGlu v5.3.
 //
-//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.2; if not, write to the Free Software
+//    along with DiaperGlu v5.3; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// April 10, 2022             //
-// version 5.2                //
+// May 15, 2022               //
+// version 5.3                //
 // /////////////////////////////
 
 
@@ -2346,7 +2346,7 @@ void dg_setpatchdestbufid (
     UINT64 buffernamelength,
     Hlistheader* pmyhlistheader)
 {
-    UINT64 compareresultflag = (UINT64)-1;
+    UINT64 compareresultflag = (UINT64)largestunsignedint;
     UINT64 indexofkeyaftermatch = 0;
     UINT64 namedbufferelementid = 0;
     
@@ -2397,7 +2397,7 @@ void dg_setpatchsrcbufid (
     UINT64 buffernamelength,
     Hlistheader* pmyhlistheader)
 {
-    UINT64 compareresultflag = (UINT64)-1;
+    UINT64 compareresultflag = (UINT64)largestunsignedint;
     UINT64 indexofkeyaftermatch = 0;
     UINT64 namedbufferelementid = 0;
     
@@ -2447,7 +2447,7 @@ void dg_setpatchsrclib (
     UINT64 libnamelength,
     Hlistheader* pmyhlistheader)
 {
-    UINT64 compareresultflag = (UINT64)-1;
+    UINT64 compareresultflag = (UINT64)largestunsignedint;
     UINT64 indexofkeyaftermatch = 0;
     UINT64 namedlibraryelementid = 0;
     
@@ -2497,7 +2497,7 @@ void dg_setpatchsrcsymbollist (
     UINT64 symbollistnamelength,
     Hlistheader* pmyhlistheader)
 {
-    UINT64 compareresultflag = (UINT64)-1;
+    UINT64 compareresultflag = (UINT64)largestunsignedint;
     UINT64 indexofkeyaftermatch = 0;
     UINT64 namedsymbollistelementid = 0;
     
@@ -2546,7 +2546,7 @@ void dg_setpatchdestsymbollist (
     UINT64 symbollistnamelength,
     Hlistheader* pmyhlistheader)
 {
-    UINT64 compareresultflag = (UINT64)-1;
+    UINT64 compareresultflag = (UINT64)largestunsignedint;
     UINT64 indexofkeyaftermatch = 0;
     UINT64 namedsymbollistelementid = 0;
     
@@ -2611,7 +2611,7 @@ UINT64 dg_callpatchsrclib (
         UINT64 hlistid,
         UINT64 elementid);
     
-    UINT64 result = (UINT64)-1;
+    UINT64 result = (UINT64)largestunsignedint;
     
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
     
@@ -2777,7 +2777,7 @@ UINT64 dg_callpatchsrcbufsymbol (
         UINT64 hlistid,
         UINT64 elementid);
     
-    UINT64 result = (UINT64)-1;
+    UINT64 result = (UINT64)largestunsignedint;
     
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
     
@@ -3009,7 +3009,7 @@ UINT64 dg_callpatchdestbufoffset (
         UINT64 hlistid,
         UINT64 elementid);
     
-    UINT64 result = (UINT64)-1;
+    UINT64 result = (UINT64)largestunsignedint;
     
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
     
@@ -3693,7 +3693,7 @@ UINT64 dg_getnamedsymbollisthideid (
     UINT64 symbollistnamelength,
     UINT64* phlistid)
 {
-    UINT64 compareresultflag = (UINT64)-1;
+    UINT64 compareresultflag = (UINT64)largestunsignedint;
     UINT64 indexofkeyaftermatch = 0;
     UINT64 namedsymbollistelementid = 0;
     
@@ -3704,7 +3704,7 @@ UINT64 dg_getnamedsymbollisthideid (
     
     if (baderrorcount == olderrorcount)
     {
-        return ((UINT64)-1);
+        return ((UINT64)largestunsignedint);
     }
     
     compareresultflag = dg_findsortedhlistchild (
@@ -3719,7 +3719,7 @@ UINT64 dg_getnamedsymbollisthideid (
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
         dg_pusherror(pBHarrayhead, dg_getnamedsymbollisthideidname);
-        return ((UINT64)-1);
+        return ((UINT64)largestunsignedint);
     }
     
     pvalue = dg_getshlistelementvalue (
@@ -3731,14 +3731,14 @@ UINT64 dg_getnamedsymbollisthideid (
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
         dg_pusherror(pBHarrayhead, dg_patchpnewbuffername);
-        return ((UINT64)-1);
+        return ((UINT64)largestunsignedint);
     }
     
     if (valuelength < sizeof(HListidElementid))
     {
         dg_pusherror(pBHarrayhead, dg_structuretoosmallerror);
         dg_pusherror(pBHarrayhead, dg_getnamedsymbollisthideidname);
-        return ((UINT64)-1);
+        return ((UINT64)largestunsignedint);
     }
     
     *phlistid = ((struct HListidElementid*)(pvalue))->hlistid;
@@ -3755,7 +3755,7 @@ UINT64 dg_namedbufnametoeid (
     unsigned char* pbuffername,
     UINT64 buffernamelength)
 {
-    UINT64 compareresultflag = (UINT64)-1;
+    UINT64 compareresultflag = (UINT64)largestunsignedint;
     UINT64 indexofkeyaftermatch = 0;
     UINT64 namedbufferelementid = 0;
     
@@ -3792,7 +3792,7 @@ UINT64 dg_namedbufnametobufid (
     unsigned char* pbuffername,
     UINT64 buffernamelength)
 {
-    UINT64 compareresultflag = (UINT64)-1;
+    UINT64 compareresultflag = (UINT64)largestunsignedint;
     UINT64 indexofkeyaftermatch = 0;
     UINT64 namedbufferelementid = 0;
     
@@ -3854,7 +3854,7 @@ unsigned char* dg_namedbufnametoaddr (
     unsigned char* pbuffername,
     UINT64 buffernamelength)
 {
-    UINT64 compareresultflag = (UINT64)-1;
+    UINT64 compareresultflag = (UINT64)largestunsignedint;
     UINT64 indexofkeyaftermatch = 0;
     UINT64 namedbufferelementid = 0;
     
@@ -3930,7 +3930,7 @@ UINT64 dg_hsymbolnametovalue (
     UINT64 namedsymbollisthlistid,
     UINT64 namedsymbollistelementid)
 {
-    UINT64 compareresultflag = (UINT64)-1;
+    UINT64 compareresultflag = (UINT64)largestunsignedint;
     UINT64 indexofkeyaftermatch = 0;
     UINT64 symbolelementid = 0;
     
@@ -3941,7 +3941,7 @@ UINT64 dg_hsymbolnametovalue (
     
     if (baderrorcount == olderrorcount)
     {
-        return ((UINT64)-1);
+        return ((UINT64)largestunsignedint);
     }
     
     compareresultflag = dg_findsortedhlistchild (
@@ -3956,14 +3956,14 @@ UINT64 dg_hsymbolnametovalue (
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
         dg_pusherror(pBHarrayhead, dg_hsymbolnametovaluename);
-        return ((UINT64)-1);
+        return ((UINT64)largestunsignedint);
     }
         
     if (0 != compareresultflag)
     {
         dg_pusherror(pBHarrayhead, dg_symbolnotfounderror);
         dg_pusherror(pBHarrayhead, dg_hsymbolnametovaluename);
-        return ((UINT64)-1);
+        return ((UINT64)largestunsignedint);
     }
         
     
@@ -3976,14 +3976,14 @@ UINT64 dg_hsymbolnametovalue (
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
         dg_pusherror(pBHarrayhead, dg_hsymbolnametovaluename);
-        return ((UINT64)-1);
+        return ((UINT64)largestunsignedint);
     }
         
     if (valuelength < sizeof(UINT64))
     {
         dg_pusherror(pBHarrayhead, dg_structuretoosmallerror);
         dg_pusherror(pBHarrayhead, dg_hsymbolnametovaluename);
-        return ((UINT64)-1);
+        return ((UINT64)largestunsignedint);
     }
         
     return(*((UINT64*)(pvalue)));

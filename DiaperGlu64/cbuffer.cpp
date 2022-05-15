@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.2.
+//    This file is part of DiaperGlu v5.3.
 //
-//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.2; if not, write to the Free Software
+//    along with DiaperGlu v5.3; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// April 10, 2022             //
-// version 5.2                //
+// May 15, 2022               //
+// version 5.3                //
 // /////////////////////////////
 
 
@@ -451,7 +451,7 @@ UINT64 dg_newbuffer (Bufferhandle* pBHarrayhead,
     pBH->nextunusedbyte = 0;
     pBH->maxsize = maxsize2;
     pBH->growby = growby2;
-    // pBH->pbuf = (void*)-1;
+    // pBH->pbuf = (void*)largestunsignedint;
     pBH ->size = 0;
     pBH->currentoffset = 0;
 
@@ -655,7 +655,7 @@ UINT64 dg_growbuffer (
 #endif
     pBH = &( ((Bufferhandle*)(pBHarrayhead->pbuf))[bufferid] );
 
-    if (pBH->pbuf == (void*)-1)
+    if (pBH->pbuf == badbufferhandle)
     {
         *pError = dg_bufferidisfree;
         return (largestunsignedint);
@@ -836,7 +836,7 @@ void dg_shrinkbuffer (
 #endif
     pBH = &( ((Bufferhandle*)(pBHarrayhead->pbuf))[bufferid] );
 
-    if (pBH->pbuf == (void*)-1)
+    if (pBH->pbuf == badbufferhandle)
     {
         *pError = dg_bufferidisfree;
         return;
@@ -2621,7 +2621,7 @@ UINT64 dg_getuint64stackelement (
     }
     
     // checking to see if index calculation will overflow
-    if ((UINT64)-1 == index)
+    if ((UINT64)largestunsignedint == index)
     {
         dg_pusherror(pBHarrayhead, dg_indexnotinarrayerror);
         dg_pusherror(pBHarrayhead, dg_getuint64stackelementname);
@@ -2707,7 +2707,7 @@ void dg_putuint64stackelement (
     }
     
     // checking to see if index calculation will overflow
-    if ((UINT64)-1 == index)
+    if ((UINT64)largestunsignedint == index)
     {
         dg_pusherror(pBHarrayhead, dg_indexnotinarrayerror);
         dg_pusherror(pBHarrayhead, dg_putuint64stackelementname);
@@ -3541,13 +3541,13 @@ void dg_initvariables (Bufferhandle* pBHarrayhead)
         return;
     }
     
-    // dg_putbufferuint64(pBHarrayhead, DG_DATASPACE_BUFFERID, dg_lastnewerrorbufferid, dg_badbufferid);
+    dg_putbufferuint64(pBHarrayhead, DG_DATASPACE_BUFFERID, dg_errorlinenumber, 0); 
     
-    // if (dg_geterrorcount(pBHarrayhead) != 0)
-    // {
-    //    dg_pusherror(pBHarrayhead, dg_initvariablesname);
-    //    return;
-    // }
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_pusherror(pBHarrayhead, dg_initvariablesname);
+        return;
+    }
 }
 
 
@@ -3589,7 +3589,7 @@ void dg_pushenvtobuf (
 
 
     if ((0 == envvaluelength) ||
-        ((UINT64)-1 == envvaluelength))
+        ((UINT64)largestunsignedint == envvaluelength))
     {
         return;
     }
@@ -5295,7 +5295,7 @@ void dg_querygetpost (
     }
 
     if ((0 == envvaluelength) ||
-        ((UINT64)-1 == envvaluelength))
+        ((UINT64)largestunsignedint == envvaluelength))
     {
         // not a cgi script 
         return;
@@ -5613,7 +5613,7 @@ void dg_argstoargsbuffer (Bufferhandle* pBHarrayhead, int argc, char* argv[])
         }
 
         if ((0 == valuelength) ||
-            ((UINT64)-1 == valuelength))
+            ((UINT64)largestunsignedint == valuelength))
         {
             return;
         }
@@ -6719,7 +6719,7 @@ UINT64 dg_getbuffercurrentoffset (
         // to attempt to increment the error count
         dg_pusherror(pBHarrayhead, perror);
         dg_pusherror(pBHarrayhead, dg_getbuffercurrentoffsetname);
-        return ((UINT64)-1);
+        return ((UINT64)largestunsignedint);
     }
 
     // just checking to see if pointer can be initialized, buffer errors have priority
@@ -6727,14 +6727,14 @@ UINT64 dg_getbuffercurrentoffset (
     {
         dg_pusherror(pBHarrayhead, dg_nullpointererror);
         dg_pusherror(pBHarrayhead, dg_getbuffercurrentoffsetname);
-        return ((UINT64)-1);
+        return ((UINT64)largestunsignedint);
     }
 
     if (bufferid == DG_ERRORSTACK_BUFFERID)
     {
         dg_pusherror(pBHarrayhead, dg_bufferidisforerrorstack);
         dg_pusherror(pBHarrayhead, dg_getbuffercurrentoffsetname);
-        return ((UINT64)-1);
+        return ((UINT64)largestunsignedint);
     }
     
     // using division instead of multiplication to prevent overflow
@@ -6742,7 +6742,7 @@ UINT64 dg_getbuffercurrentoffset (
     {
         dg_pusherror (pBHarrayhead, dg_bufferidnotinbharray);
         dg_pusherror(pBHarrayhead, dg_getbuffercurrentoffsetname);
-        return ((UINT64)-1);
+        return ((UINT64)largestunsignedint);
     }
 
     pBH = &( ((Bufferhandle*)(pBHarrayhead->pbuf))[bufferid] );
@@ -6751,28 +6751,28 @@ UINT64 dg_getbuffercurrentoffset (
     {
         dg_pusherror (pBHarrayhead, dg_bufferidisfree);
         dg_pusherror(pBHarrayhead, dg_getbuffercurrentoffsetname);
-        return ((UINT64)-1);
+        return ((UINT64)largestunsignedint);
     }
 
     if (pBH->nextunusedbyte > pBH->size)
     {
         dg_pusherror (pBHarrayhead, dg_buffernubcorrupt);
         dg_pusherror(pBHarrayhead, dg_getpbuffername);
-        return ((UINT64)-1);
+        return ((UINT64)largestunsignedint);
     }
 
     if (pBH->size > pBH->maxsize)
     {
         dg_pusherror (pBHarrayhead, dg_buffermaxsizeltsize);
         dg_pusherror(pBHarrayhead, dg_getpbuffername);
-        return ((UINT64)-1);
+        return ((UINT64)largestunsignedint);
     }
     
     if (pBH->currentoffset > pBH->nextunusedbyte)
     {
         dg_pusherror (pBHarrayhead, dg_bufferoffsetgtlength);
         dg_pusherror(pBHarrayhead, dg_getpbuffername);
-        return ((UINT64)-1);
+        return ((UINT64)largestunsignedint);
     }
 
     return (pBH->currentoffset);
@@ -6895,3 +6895,281 @@ unsigned char* dg_noparseentirecurrentline(
     
     return (pcib + beginoffset);
 }
+
+
+const char dg_replacebuffersegmentname[] = "dg_replacebuffersegment";
+
+void dg_replacebuffersegment (
+    Bufferhandle* pBHarrayhead,
+    UINT64 bufferid,
+    UINT64 destoffset,
+    UINT64 destlength,
+    unsigned char* psrc,
+    UINT64 srclength)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        // could not get error count because BHarrayhead is not there so just exiting
+        return;
+    }
+    
+    // need to insert or delete difference in lengths from end of segment
+    if (srclength != destlength)
+    {
+        if (srclength < destlength)
+        {
+            // need to delete
+            dg_deleteinbuffer (
+                pBHarrayhead,
+                bufferid,
+                destoffset + srclength, 
+                destlength - srclength);
+            
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_replacebuffersegmentname);
+                return;
+            }
+        }
+        else
+        {
+            // need to insert
+            dg_insertinbuffer (
+                pBHarrayhead,
+                bufferid,
+                destoffset + destlength, // in bytes
+                srclength - destlength);
+            
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+            dg_pusherror(pBHarrayhead, dg_replacebuffersegmentname);
+                return;
+            }
+        }
+    }
+    
+    // need to do putbuffersegment....
+    dg_putbuffersegment(
+        pBHarrayhead,
+        bufferid,
+        destoffset,
+        srclength,
+        psrc);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_replacebuffersegmentname);
+    }
+}
+
+
+const char dg_parselinename[] = "dg_parseline";
+
+unsigned char* dg_parseline(
+    Bufferhandle* pBHarrayhead,
+    UINT64* plinelength) 
+{
+    unsigned char* pcib = NULL;
+    UINT64* pciblength = NULL;
+    UINT64* pcibcurrentoffset = NULL;
+    UINT64 ciboldoffset = 0;
+
+    UINT64 cibid = 0;
+
+    unsigned char c = 0;
+
+    Bufferhandle* pBH = NULL;
+    
+    const char* pError;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return((unsigned char*)dg_badbufferid);
+    }
+    
+    pError = dg_putuint64(plinelength, 0);
+    
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_parselinename);
+        return((unsigned char*)dg_badbufferid);
+    }
+    
+    cibid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentinterpretbuffer);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthpcurrentinputbuffername);
+        dg_pusherror(pBHarrayhead, dg_parselinename);
+        return((unsigned char*)dg_badbufferid);
+    }
+
+    pcib = dg_getpbuffer(
+        pBHarrayhead,
+        cibid,
+        &pciblength);
+
+    if (pcib == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthpcurrentinputbuffername);
+        dg_pusherror(pBHarrayhead, dg_parselinename);
+        return((unsigned char*)dg_badbufferid);
+    }
+
+    // because dg_getpbuffer worked, I know the buf header for pcib is there
+    pBH = &( ((Bufferhandle*)(pBHarrayhead->pbuf))[cibid] );
+    pcibcurrentoffset = &pBH->currentoffset;
+
+    // assumes at the start of a line
+    ciboldoffset = *pcibcurrentoffset;
+
+    //getting to the next terminator after the line
+    while(*pcibcurrentoffset < *pciblength)
+    {
+        c = *(pcib + *pcibcurrentoffset);
+        
+        if (dg_islineterminator(c) != FORTH_FALSE)
+        {
+            break;
+        }
+
+        (*pcibcurrentoffset)++;
+    }
+    
+    *plinelength = *pcibcurrentoffset - ciboldoffset;
+    
+    // parsing exactly one eol
+    if(*pcibcurrentoffset < *pciblength)
+    {
+        c = *(pcib + *pcibcurrentoffset);
+        
+        // consuming the one line terminator
+        (*pcibcurrentoffset)++;
+        
+        // handling the crlf case because crlf pair is one terminator
+        if ('\r' == c) // cr
+        {
+            if(*pcibcurrentoffset < *pciblength)
+            {
+                c = *(pcib + *pcibcurrentoffset);
+                
+                if ('\n' == c) // lf
+                {
+                    (*pcibcurrentoffset)++;
+                }
+            }
+        }
+    }
+    
+    return (pcib + ciboldoffset);
+}
+
+
+const char dg_noparselineatoffsetname[] = "dg_parselineatoffset";
+
+UINT64 dg_noparselineatoffset(
+    Bufferhandle* pBHarrayhead,
+    UINT64 cibid,
+    UINT64 offset) 
+{
+    unsigned char* pcib = NULL;
+    UINT64* pciblength = NULL;
+    UINT64 currentoffset = 0;
+    UINT64 ciboldoffset = 0;
+    
+    UINT64 linenumber = 0;
+
+    unsigned char c = 0;
+
+    Bufferhandle* pBH = NULL;
+    
+    const char* pError;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return(linenumber);
+    }
+
+    pcib = dg_getpbuffer(
+        pBHarrayhead,
+        cibid,
+        &pciblength);
+
+    if (pcib == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_noparselineatoffsetname);
+        return(linenumber);
+    }
+
+    // because dg_getpbuffer worked, I know the buf header for pcib is there
+    pBH = &( ((Bufferhandle*)(pBHarrayhead->pbuf))[cibid] );
+
+    // assumes at the start of a line
+    
+    
+    while (currentoffset < *pciblength)
+    {
+    
+        // parse one line
+        ciboldoffset = currentoffset;
+        
+        //getting to the next terminator after the line
+        while(currentoffset < *pciblength)
+        {
+            c = *(pcib + currentoffset);
+        
+            if (dg_islineterminator(c) != FORTH_FALSE)
+            {
+                break;
+            }
+
+            currentoffset++;
+        }
+    
+        // parsing exactly one eol
+        if(currentoffset < *pciblength)
+        {
+            c = *(pcib + currentoffset);
+        
+            // consuming the one line terminator
+            currentoffset++;
+        
+            // handling the crlf case because crlf pair is one terminator
+            if ('\r' == c) // cr
+            {
+                if(currentoffset < *pciblength)
+                {
+                    c = *(pcib + currentoffset);
+                
+                    if ('\n' == c) // lf
+                    {
+                        (currentoffset)++;
+                    }
+                }
+            }
+        }
+        
+        // if you haven't found end, increment line number and keep going
+        if ((currentoffset <= offset) && (currentoffset < *pciblength))
+        {
+            linenumber++;
+        }
+        else
+        {
+            break;
+        }
+    }
+    
+    return (linenumber);
+}
+

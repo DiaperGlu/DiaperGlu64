@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.2.
+//    This file is part of DiaperGlu v5.3.
 //
-//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.2; if not, write to the Free Software
+//    along with DiaperGlu v5.3; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// April 10, 2022             //
-// version 5.2                //
+// May 15, 2022               //
+// version 5.3                //
 // /////////////////////////////
 
 
@@ -2270,7 +2270,7 @@ UINT64 dg_dobinaryinsertsortstep (
             return ((UINT64)(-2));
         }
             
-        if (((INT64)(-1)) == compareresultflag) // if less than
+        if (((INT64)(largestunsignedint)) == compareresultflag) // if less than
         {
             endindexinsortedkeyarray--; // not necessary since start index is used, but for test simplicity
                 // break;
@@ -2319,7 +2319,7 @@ UINT64 dg_dobinaryinsertsortstep (
             return (compareresultflag);
         }
             
-        if (((INT64)(-1)) == compareresultflag)  // less than
+        if (((INT64)(largestunsignedint)) == compareresultflag)  // less than
         {
             // need to check first element - throwing away last element
             endindexinsortedkeyarray--;
@@ -2372,7 +2372,7 @@ UINT64 dg_dobinaryinsertsortstep (
             return ((UINT64)(-2));
         }
             
-        if (((INT64)(-1)) == compareresultflag) // if less than 
+        if (((INT64)(largestunsignedint)) == compareresultflag) // if less than 
         {
             *ploopdoneflag = FORTH_FALSE;
             endindexinsortedkeyarray = midrangeindexinsortedkeyarray;
@@ -2498,7 +2498,7 @@ UINT64 dg_findsortedhlistchildsub (
             return ((UINT64)(-2));
         }
 
-        if (((UINT64)(-1)) == compareresultflag) // if less than 
+        if (((UINT64)(largestunsignedint)) == compareresultflag) // if less than 
         {
             if (rangetocheck < 2)
             {
@@ -4081,7 +4081,7 @@ UINT64 dg_packhlist (
         dg_newbuffer (
             pBHarrayhead,
             0x1000,       // growby
-            (UINT64)-1,   // maxsize,
+            (UINT64)largestunsignedint,   // maxsize,
             &pError,
             FORTH_FALSE); // force out of memory error
     
@@ -4097,7 +4097,7 @@ UINT64 dg_packhlist (
         dg_newbuffer (
             pBHarrayhead,
             0x10000,       // growby
-            (UINT64)-1,   // maxsize,
+            (UINT64)largestunsignedint,   // maxsize,
             &pError,
             FORTH_FALSE); // force out of memory error
     
@@ -5035,7 +5035,7 @@ void dg_wordlisttoccode(
         return;
     }
     
-    bufferid = dg_newbuffer(pBHarrayhead, 0x1000, (UINT64)-1, pError, FORTH_FALSE);
+    bufferid = dg_newbuffer(pBHarrayhead, 0x1000, (UINT64)largestunsignedint, pError, FORTH_FALSE);
     
     if (pError != dg_success)
     {

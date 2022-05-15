@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.2.
+//    This file is part of DiaperGlu v5.3.
 //
-//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.2; if not, write to the Free Software
+//    along with DiaperGlu v5.3; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// April 10, 2022             //
-// version 5.2                //
+// May 15, 2022               //
+// version 5.3                //
 // /////////////////////////////
 
 
@@ -3062,7 +3062,7 @@ void dg_deleteuint64inlstringn (
         return;
     }
     
-    if (sortedkeyslength != ((UINT64)-1))
+    if (sortedkeyslength != ((UINT64)largestunsignedint))
     {
         dg_deleteinlstring (
             pBHarrayhead,
@@ -3763,7 +3763,7 @@ void dg_urldecodelstring (
 					t1 = dg_chartodigitlowertoo(pstring[src+1]);
 					t2 = dg_chartodigitlowertoo(pstring[src+2]);
 
-					if ((t1 == (UINT64)-1) || ( t2 == (UINT64)-1))
+					if ((t1 == (UINT64)largestunsignedint) || ( t2 == (UINT64)largestunsignedint))
 					{
 						pstring[dest] = '-';
 					}
@@ -3868,7 +3868,7 @@ void dg_pzerostringtonewstring(
     unsigned char* pzerostring)
 {
     const char* flag;
-    UINT64 u1 = (UINT64)-1;
+    UINT64 u1 = (UINT64)largestunsignedint;
     
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 

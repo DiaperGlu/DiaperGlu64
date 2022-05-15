@@ -3,20 +3,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.2.
+//    This file is part of DiaperGlu v5.3.
 //
-//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.2; if not, write to the Free Software
+//    along with DiaperGlu v5.3; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// April 10, 2022             //
-// version 5.2                //
+// May 15, 2022               //
+// version 5.3                //
 // /////////////////////////////
 -->
 
@@ -92,6 +92,8 @@
       <a href=forthbuffer.htm#dg_forthgetpbufferlength        >dg_forthgetpbufferlength</a>
       <a href=forthbuffer.htm#dg_forthgetpbuffercurrentoffset >dg_forthgetpbuffercurrentoffset</a>
       <a href=forthbuffer.htm#dg_forthinsertinbuffer          >dg_forthinsertinbuffer</a>
+      <a href=forthbuffer.htm#dg_forthreplaceinbuffer         >dg_forthreplaceinbuffer</a>
+      <a href=forthbuffer.htm#dg_forthinsertsintobuffer       >dg_forthinsertsintobuffer</a>
       <a href=forthbuffer.htm#dg_forthdeleteinbuffer          >dg_forthdeleteinbuffer</a>
       <a href=forthbuffer.htm#dg_forthgrowbuffer              >dg_forthgrowbuffer</a>
       <a href=forthbuffer.htm#dg_forthshrinkbuffer            >dg_forthshrinkbuffer</a>
@@ -697,7 +699,7 @@
 //                                                              
 // Action:
 //  pops offset bufferid length and psrc from the data stack
-//  stores the string of length at psrc to the offset in bufferid
+//  pushes length bytes at psrc onto the end of a buffer
 //
 // Failure cases:
 //  error getting pointer to the data stack
@@ -735,7 +737,7 @@
 //                                                              
 // Action:
 //  pops offset bufferid length and pdest from the data stack
-//  pops a buffersegment of length from bufferid and stores it at pdest
+//  pops length bytes from the end of a buffer and stores it at pdest
 //
 // Failure cases:
 //  error getting pointer to the data stack
@@ -1254,6 +1256,95 @@
 // Action:
 //  Inserts length bytes into the buffer on the offset specified
 //  The insert begins before this character.
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error calling insert in buffer
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthreplaceinbuffer>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthreplaceinbuffer ( REPLACEINBUFFER )
+//
+// C prototype:
+//  void dg_forthreplaceinbuffer (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( psrc srclength destoffset destbufferid destlength -- )  
+//
+// Data stack in:
+//  psrc                          address of source to copy
+//
+//  srclength                     length of source in bytes
+//
+//  destoffset                    0 based offset in buffer where replace begins,
+//                                 it is ON this character
+//
+//  bufferid                      id of the dest buffer
+//
+//  length                        number of bytes to replace in the buffer
+//                                                            
+// Action:
+//  Replaces destlength bytes in the buffer on the offset specified
+//   with srclength bytes at psrc
+//  The replace begins before this character. (The character at destoffset
+//   is the first character replaced.)
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error calling insert in buffer
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthinsertintobuffer>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthinsertintobuffer ( INSERTINTOBUFFER )
+//
+// C prototype:
+//  void dg_forthinsertintobuffer (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( psrc srclength destoffset destbufferid -- )  
+//
+// Data stack in:
+//  psrc                          address of source to copy
+//
+//  srclength                     length of source in bytes
+//
+//  destoffset                    0 based offset in buffer where insert begins,
+//                                 it is ON this character
+//
+//  bufferid                      id of the dest buffer
+//                                                            
+// Action:
+//  Inserts srclength bytes into the buffer on the offset specified
+//   with srclength bytes at psrc
+//  The insert begins before this character. (The character at destoffset
+//   before the insert will be the first character after the inserted characters
+//   after this finishes.)
 //
 // Failure cases:
 //  error getting pointer to the data stack

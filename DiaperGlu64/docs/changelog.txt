@@ -1,4 +1,39 @@
 Changelog for Diaperglu
+   15 May 2022
+     Released v5.3
+     Changed ld commands for building dylibs in Mac OS X examples, 
+      ld now requires -lSystem even though it appears it isn't used in the compiled dylib.
+
+   11 May 2022
+     Fixed documentation of S>BUF to accurately reflect what it does.
+     Updated documentation of BUF>S and pushbuffersegment to be more readable.
+     Added REPLACEINBUFFER
+     Added INSERTSINTOBUFFER
+
+   5 May 2022
+     Changed TYPE to not return an error if length is 0. Now it quietly does nothing.
+
+   1 May 2022
+     Fixed documentation for dg_islineterminator. The ascii codes for form feed and carriage
+      return were incorrect in the documentation. (The source code was ok.)
+     Added dg_parseline
+     Added dg_noparselineatoffset
+     Added dg_replacebuffersegment
+    
+   25 April 2022
+     Fixed: Current interpret buffer for >IN and SOURCE not mirrored correctly with the one used
+       for EVALUATE. Added nesting and unnesting at entry & exit of EVALUATE to make
+       >IN and SOURCE work correctly.
+
+   22 April 2022
+     Fixed: EXIT was not unnesting local variables. Added support for using EXIT with local variables
+ 
+   17 April 2022
+     Found out Windows C compiler (and Mac too) sign extends negative constants to 32 bits, then unsign
+      extends them to 64 bits. https://docs.microsoft.com/en-us/windows/console/getstdhandle
+     Changed 64 bit negative constants to 64 bit positive hex equivalents in diapergluforth.h
+     (It seems -1 was the true 64 bit -1 but I changed that too...)
+
    11 April 2022
      Released v5.2
 

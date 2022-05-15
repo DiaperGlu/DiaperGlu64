@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.2.
+//    This file is part of DiaperGlu v5.3.
 //
-//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.2; if not, write to the Free Software
+//    along with DiaperGlu v5.3; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// April 10, 2022             //
-// version 5.2                //
+// May 15, 2022               //
+// version 5.3                //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -5836,6 +5836,482 @@ void testdg_forthdeleteinbuffer ()
 }
 
 
+void testdg_forthreplaceinbuffer ()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    BHarrayhead.maxsize = BHarraymaxsize;
+    BHarrayhead.nextfreeindex = 0;
+    BHarrayhead.nextunusedbyte = 0;
+    BHarrayhead.pbuf = (void*)-1;
+    BHarrayhead.size = 0;
+    BHarrayhead.errorcount = 0;
+    BHarrayhead.id = BHarrayheadid;
+
+    const char* pError = NULL;
+    
+    unsigned char* pbuffer;
+    UINT64* pbufferlength;
+
+    UINT64 bufid = 0;
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthreplaceinbuffer\n");
+#ifndef DGLU_NO_DIAPER
+    // error getting pointer to datastack case
+    dg_initerrors(&BHarrayhead, 1000, &pError);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreplaceinbuffer error getting pointer to data stack case - unable to initialize error stack\n");
+        return;
+    }
+
+    dg_forthreplaceinbuffer(&BHarrayhead); // error because there is no data stack yet
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_forthreplaceinbuffername)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreplaceinbuffer error getting pointer to data stack case - got wrong error on top, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_getpbuffername)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreplaceinbuffer error getting pointer to data stack case - got wrong error 1 below top, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+
+    
+    // underflow case
+    dg_initbuffers(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreplaceinbuffer underflow case - unable to initialize data stack\n");
+        return;
+    }
+
+    // could check where stack is corrupt, with just under 3 elements
+    dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, 92834);
+    dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, 92834);
+
+    dg_forthreplaceinbuffer(&BHarrayhead);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_forthreplaceinbuffername)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreplaceinbuffer parameters missing case - got wrong error on top, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_datastackunderflowerror)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreplaceinbuffer parameters missing case - got wrong error 1 below top, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+    
+
+    
+    // error replacing in buffer case
+    dg_initbuffers(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreplaceinbuffer error inserting in buffer case - unable to initialize data stack\n");
+        return;
+    }
+
+    //bufid = dg_newbuffer(&BHarrayhead, 100, 100, &pError, false);
+
+    //if (pError != dg_success)
+    //{
+    //    dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetbuffersize error getting pointer to buffer case - unable to initialize test buffer\n");
+    //}
+
+    dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)"test string");
+    dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, 11);
+    dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, 0);
+    dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, 29384);
+    dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, 4);
+
+    dg_forthreplaceinbuffer(&BHarrayhead);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_forthreplaceinbuffername)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreplaceinbuffer error inserting in buffer case- got wrong error on top, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_replacebuffersegmentname)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreplaceinbuffer error inserting in buffer case- got wrong error 1 below top, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+#endif
+    
+
+
+    // success case 1
+    dg_initbuffers(&BHarrayhead);
+
+    bufid = dg_newbuffer(&BHarrayhead, 100, 200, &pError, false);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreplaceinbuffer success case 1 - unable to initialize test buffer\n");
+        return;
+    }
+
+    dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)"eb"); // 0x65 0x62
+    dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, 2);
+    dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, 4);
+    dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, bufid);
+    dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, 3);
+
+    dg_pushbufferuint64(&BHarrayhead, bufid, 0x1234567898765432);
+    dg_pushbufferuint64(&BHarrayhead, bufid, 0x9abcdef088776655);
+    
+    dg_forthreplaceinbuffer(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreplaceinbuffer success case 1 - error count not 0 \n");
+    }
+
+    pbuffer = dg_getpbuffer(
+        &BHarrayhead,
+        bufid,
+        &pbufferlength);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreplaceinbuffer success case 1 - got error getting pointer to buffer \n");
+    }
+    else
+    {
+        if (pbuffer[0] != 0x32)
+        {
+            dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreplaceinbuffer success case 1 - pbuffer[0] incorrect \n");
+        }
+        
+        if (pbuffer[1] != 0x54)
+        {
+            dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreplaceinbuffer success case 1 - pbuffer[1] incorrect \n");
+        }
+        
+        if (pbuffer[2] != 0x76)
+        {
+            dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreplaceinbuffer success case 1 - pbuffer[2] incorrect \n");
+        }
+        
+        if (pbuffer[3] != 0x98)
+        {
+            dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreplaceinbuffer success case 1 - pbuffer[3] incorrect \n");
+        }
+        
+        if (pbuffer[4] != 0x65)
+        {
+            dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreplaceinbuffer success case 1 - pbuffer[4] incorrect \n");
+        }
+        
+        if (pbuffer[5] != 0x62)
+        {
+            dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreplaceinbuffer success case 1 - pbuffer[5] incorrect \n");
+        }
+        
+        if (pbuffer[6] != 0x12)
+        {
+            dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreplaceinbuffer success case 1 - pbuffer[6] incorrect \n");
+        }
+        
+        if (pbuffer[7] != 0x55)
+        {
+            dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreplaceinbuffer success case 1 - pbuffer[7] incorrect \n");
+        }
+    }
+
+    if (dg_getbufferlength(&BHarrayhead, bufid) != 15)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreplaceinbuffer success case 1 - buffer not balanced after calculation\n");
+    }
+    
+    if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthreplaceinbuffer success case 1 - data  stack not balanced after calculation\n");
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+    
+
+    // should check case where stuff pushed into buffer isn't a multiple of element size
+}
+
+
+void testdg_forthinsertsintobuffer ()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    BHarrayhead.maxsize = BHarraymaxsize;
+    BHarrayhead.nextfreeindex = 0;
+    BHarrayhead.nextunusedbyte = 0;
+    BHarrayhead.pbuf = (void*)-1;
+    BHarrayhead.size = 0;
+    BHarrayhead.errorcount = 0;
+    BHarrayhead.id = BHarrayheadid;
+
+    const char* pError = NULL;
+    
+    unsigned char* pbuffer;
+    UINT64* pbufferlength;
+
+    UINT64 bufid = 0;
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthinsertsintobuffer\n");
+#ifndef DGLU_NO_DIAPER
+    // error getting pointer to datastack case
+    dg_initerrors(&BHarrayhead, 1000, &pError);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthinsertsintobuffer error getting pointer to data stack case - unable to initialize error stack\n");
+        return;
+    }
+
+    dg_forthinsertsintobuffer(&BHarrayhead); // error because there is no data stack yet
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_forthinsertsintobuffername)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthinsertsintobuffer error getting pointer to data stack case - got wrong error on top, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_getpbuffername)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthinsertsintobuffer error getting pointer to data stack case - got wrong error 1 below top, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+
+    
+    // underflow case
+    dg_initbuffers(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthinsertsintobuffer underflow case - unable to initialize data stack\n");
+        return;
+    }
+
+    // could check where stack is corrupt, with just under 3 elements
+    dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, 92834);
+    dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, 92834);
+
+    dg_forthinsertsintobuffer(&BHarrayhead);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_forthinsertsintobuffername)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthinsertsintobuffer parameters missing case - got wrong error on top, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_datastackunderflowerror)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthinsertsintobuffer parameters missing case - got wrong error 1 below top, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+    
+
+    
+    // error inserting s into buffer case
+    dg_initbuffers(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthinsertsintobuffer error inserting s into buffer case - unable to initialize data stack\n");
+        return;
+    }
+
+    //bufid = dg_newbuffer(&BHarrayhead, 100, 100, &pError, false);
+
+    //if (pError != dg_success)
+    //{
+    //    dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetbuffersize error getting pointer to buffer case - unable to initialize test buffer\n");
+    //}
+
+    dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)"test string");
+    dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, 11);
+    dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, 0);
+    dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, 29384);
+    
+
+    dg_forthinsertsintobuffer(&BHarrayhead);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_forthinsertsintobuffername)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthinsertsintobuffer error inserting in buffer case- got wrong error on top, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_replacebuffersegmentname)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthinsertsintobuffer error inserting in buffer case- got wrong error 1 below top, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+#endif
+    
+
+
+    // success case 1
+    dg_initbuffers(&BHarrayhead);
+
+    bufid = dg_newbuffer(&BHarrayhead, 100, 200, &pError, false);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthinsertsintobuffer success case 1 - unable to initialize test buffer\n");
+        return;
+    }
+
+    dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)"eb"); // 0x65 0x62
+    dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, 2);
+    dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, 4);
+    dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, bufid);
+    
+
+    dg_pushbufferuint64(&BHarrayhead, bufid, 0x1234567898765432);
+    dg_pushbufferuint64(&BHarrayhead, bufid, 0x9abcdef088776655);
+    
+    dg_forthinsertsintobuffer(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthinsertsintobuffer success case 1 - error count not 0 \n");
+    }
+
+    pbuffer = dg_getpbuffer(
+        &BHarrayhead,
+        bufid,
+        &pbufferlength);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthinsertsintobuffer success case 1 - got error getting pointer to buffer \n");
+    }
+    else
+    {
+        if (pbuffer[0] != 0x32)
+        {
+            dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthinsertsintobuffer success case 1 - pbuffer[0] incorrect \n");
+        }
+        
+        if (pbuffer[1] != 0x54)
+        {
+            dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthinsertsintobuffer success case 1 - pbuffer[1] incorrect \n");
+        }
+        
+        if (pbuffer[2] != 0x76)
+        {
+            dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthinsertsintobuffer success case 1 - pbuffer[2] incorrect \n");
+        }
+        
+        if (pbuffer[3] != 0x98)
+        {
+            dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthinsertsintobuffer success case 1 - pbuffer[3] incorrect \n");
+        }
+        
+        if (pbuffer[4] != 0x65)
+        {
+            dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthinsertsintobuffer success case 1 - pbuffer[4] incorrect \n");
+        }
+        
+        if (pbuffer[5] != 0x62)
+        {
+            dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthinsertsintobuffer success case 1 - pbuffer[5] incorrect \n");
+        }
+        
+        if (pbuffer[6] != 0x78)
+        {
+            dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthinsertsintobuffer success case 1 - pbuffer[6] incorrect \n");
+        }
+        
+        if (pbuffer[7] != 0x56)
+        {
+            dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthinsertsintobuffer success case 1 - pbuffer[7] incorrect \n");
+        }
+    }
+
+    if (dg_getbufferlength(&BHarrayhead, bufid) != 18)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthinsertsintobuffer success case 1 - buffer not balanced after calculation\n");
+    }
+    
+    if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthinsertsintobuffer success case 1 - data  stack not balanced after calculation\n");
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+    
+
+    // should check case where stuff pushed into buffer isn't a multiple of element size
+}
+
+
 void testdg_forthgrowbuffer ()
 {
     Bufferhandle BHarrayhead;
@@ -9320,6 +9796,373 @@ void testdg_forthparsewords ()
 
     dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
 }
+
+
+void testdg_forthparseline ()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    BHarrayhead.maxsize = BHarraymaxsize;
+    BHarrayhead.nextfreeindex = 0;
+    BHarrayhead.nextunusedbyte = 0;
+    BHarrayhead.pbuf = (void*)-1;
+    BHarrayhead.size = 0;
+    BHarrayhead.errorcount = 0;
+    BHarrayhead.id = BHarrayheadid;
+
+    Bufferhandle* pBH = NULL;
+
+    const char* pError = NULL;
+    UINT64 testint = 0;
+
+    UINT64 bufid = 0;
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthparseline\n");
+#ifndef DGLU_NO_DIAPER
+    
+    // error getting current input buffer case
+    dg_initbuffers(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline underflow case - unable to initialize data stack\n");
+        return;
+    }
+
+    // could check where stack is corrupt, with just under 1 element
+    dg_forthparseline(&BHarrayhead);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_forthparselinename)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline parameters missing case - got wrong error on top, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_parselinename)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline parameters missing case - got wrong error 1 below top, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+    
+
+    
+    // error getting pointer to current input buffer case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    dg_putbufferuint64(&BHarrayhead, DG_DATASPACE_BUFFERID, currentinterpretbuffer, 23984);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline error getting pointer to current input buffer case - unable to initialize data stack\n");
+        return;
+    }
+
+    //bufid = dg_newbuffer(&BHarrayhead, 100, 100, &pError, false);
+
+    //if (pError != dg_success)
+    //{
+    //    dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparse error getting pointer to current input buffer case - unable to initialize test buffer\n");
+    //}
+
+    dg_forthparseline(&BHarrayhead);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_forthparselinename)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline error getting pointer to current input buffer case - got wrong error on top, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_parselinename)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline error getting pointer to current input buffer case - got wrong error 1 below top, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+    
+
+
+    // empty line case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline empty line case - unable to initialize data stack\n");
+        return;
+    }
+
+    bufid = dg_newbuffer(&BHarrayhead, 100, 100, &pError, false);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline empty line case - unable to initialize test buffer\n");
+    }
+
+    dg_putbufferuint64(&BHarrayhead, DG_DATASPACE_BUFFERID, currentinterpretbuffer, bufid);
+
+    //dg_pushbuffersegment(&BHarrayhead, bufid, 14, (unsigned char*)"hi there ) you");
+
+
+    dg_forthparseline(&BHarrayhead);
+
+    if (0 != dg_geterrorcount(&BHarrayhead))
+    {
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline empty line case - got an error, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+    
+
+
+    // error pushing to data stack case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline error pushing to data stack case - unable to initialize data stack\n");
+        return;
+    }
+
+    bufid = dg_newbuffer(&BHarrayhead, 100, 100, &pError, false);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline error pushing to data stack case - unable to initialize test buffer\n");
+    }
+
+    dg_putbufferuint64(&BHarrayhead, DG_DATASPACE_BUFFERID, currentinterpretbuffer, bufid);
+
+    dg_pushbuffersegment(&BHarrayhead, bufid, 14, (unsigned char*)"hi there ) you");
+
+
+    pBH = &( ( (Bufferhandle*)(BHarrayhead.pbuf) )[DG_DATASTACK_BUFFERID] );
+
+    pBH->size = pBH->nextunusedbyte;
+    pBH->growby = pBH->nextunusedbyte;
+    pBH->maxsize = pBH->nextunusedbyte;
+
+    dg_forthparseline(&BHarrayhead);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_forthparselinename)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline error pushing to data stack case - got wrong error on top, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_pushbufferuint64name)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline error pushing to data stack case - got wrong error 1 below top, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+#endif
+    
+
+    // success case 1
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline success case - unable to initialize data stack\n");
+        return;
+    }
+
+    bufid = dg_newbuffer(&BHarrayhead, 100, 100, &pError, false);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline success case - unable to initialize test buffer\n");
+    }
+
+    dg_putbufferuint64(&BHarrayhead, DG_DATASPACE_BUFFERID, currentinterpretbuffer, bufid);
+
+    dg_pushbuffersegment(&BHarrayhead, bufid, 14, (unsigned char*)" hi\nthere ) you");
+    
+    dg_forthparseline(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline success case 1 - error count not 0 \n");
+    }
+
+    testint = dg_popbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID);
+
+    if (testint != 3 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline success case 1 - length not what was expected \n");
+    }
+
+    testint = dg_popbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID);
+
+    pBH = &( ( (Bufferhandle*)(BHarrayhead.pbuf) )[bufid] );
+
+    if (testint != ((UINT64)(pBH->pbuf)) + 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline success case 1 - address not what was expected\n");
+    }
+    
+    if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline success case 1 - data  stack not balanced after calculation\n");
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+    
+
+    // success case 2
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline success case 2 - unable to initialize data stack\n");
+        return;
+    }
+
+    bufid = dg_newbuffer(&BHarrayhead, 100, 100, &pError, false);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline success case 2 - unable to initialize test buffer\n");
+    }
+
+    dg_putbufferuint64(&BHarrayhead, DG_DATASPACE_BUFFERID, currentinterpretbuffer, bufid);
+
+    dg_pushbuffersegment(&BHarrayhead, bufid, 14, (unsigned char*)" hi there )\nyou");
+
+    pBH = &( ( (Bufferhandle*)(BHarrayhead.pbuf) )[bufid] );
+
+    pBH->currentoffset = 3;
+    
+    dg_forthparseline(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline success case 2 - error count not 0 \n");
+    }
+
+    testint = dg_popbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID);
+
+    if (testint != 8 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline success case 2 - length not what was expected \n");
+    }
+
+    testint = dg_popbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID);
+
+    pBH = &( ( (Bufferhandle*)(BHarrayhead.pbuf) )[bufid] );
+
+    if (testint != ((UINT64)(pBH->pbuf)) + 3 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline success case 2 - address not what was expected\n");
+    }
+    
+    if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline success case 2 - data  stack not balanced after calculation\n");
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+    
+
+    // success case 3
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline success case 3 - unable to initialize data stack\n");
+        return;
+    }
+
+    bufid = dg_newbuffer(&BHarrayhead, 100, 100, &pError, false);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline success case 3 - unable to initialize test buffer\n");
+    }
+
+    dg_putbufferuint64(&BHarrayhead, DG_DATASPACE_BUFFERID, currentinterpretbuffer, bufid);
+
+    dg_pushbuffersegment(&BHarrayhead, bufid, 14, (unsigned char*)" hiathereb-cyou");
+
+    pBH = &( ( (Bufferhandle*)(BHarrayhead.pbuf) )[bufid] );
+
+    pBH->currentoffset = 3;
+    
+    dg_forthparseword(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline success case 3 - error count not 0 \n");
+    }
+
+    testint = dg_popbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID);
+
+    if (testint != 11 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline success case 3 - length not what was expected, got \n");
+    }
+
+    testint = dg_popbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID);
+
+    pBH = &( ( (Bufferhandle*)(BHarrayhead.pbuf) )[bufid] );
+
+    if (testint != ((UINT64)(pBH->pbuf)) + 3 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline success case 3 - address not what was expected\n");
+    }
+    
+    if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthparseline success case 3 - data  stack not balanced after calculation\n");
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+    
+}
+
 
 void testdg_forthtocurrent ()
 {

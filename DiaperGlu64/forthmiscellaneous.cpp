@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.2.
+//    This file is part of DiaperGlu v5.3.
 //
-//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.2; if not, write to the Free Software
+//    along with DiaperGlu v5.3; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// April 10, 2022             //
-// version 5.2                //
+// May 15, 2022               //
+// version 5.3                //
 // /////////////////////////////
 
 
@@ -2293,6 +2293,8 @@ void dg_forthdoterrorline(Bufferhandle* pBHarrayhead)
     unsigned char* pbuffer;
     UINT64* pbufferlength;
     
+    UINT64 linenumber;
+    
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
     
     if (baderrorcount == olderrorcount)
@@ -2311,6 +2313,19 @@ void dg_forthdoterrorline(Bufferhandle* pBHarrayhead)
         return;
     }
     
+    olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    linenumber = dg_getbufferuint64(
+            pBHarrayhead,
+            DG_DATASPACE_BUFFERID,
+            dg_errorlinenumber);
+            
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"Something is really wrong. Couldn't get the error line number\n");
+        return;
+    }
+    
     dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
     
     dg_writestdout(
@@ -2318,6 +2333,9 @@ void dg_forthdoterrorline(Bufferhandle* pBHarrayhead)
         pbuffer,
         *pbufferlength);
     
+    dg_printzerostring(pBHarrayhead, (unsigned char*)"\n\n");
+    dg_printzerostring(pBHarrayhead, (unsigned char*)"line number = ");
+    dg_writestdoutuinttodec(pBHarrayhead, linenumber + 1); // error line number is 0 based
     dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
 }
 
@@ -2935,8 +2953,8 @@ void dg_forthbuftodotobuf (Bufferhandle* pBHarrayhead)
         *pcodebuflength,
         symbollisthlistid,
         symbollistparentelementid,
-        (UINT64)-1,
-        (UINT64)-1,
+        (UINT64)largestunsignedint,
+        (UINT64)largestunsignedint,
         destbufid);
 
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
@@ -2966,9 +2984,25 @@ void dg_forthbuftodotofilestring (Bufferhandle* pBHarrayhead)
         dg_pusherror(pBHarrayhead, dg_forthbuftodotofilestringname);
         return;
     }
+    
+    dg_forthdup(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthbuftodotofilestringname);
+        return;
+    }
 
     dg_forthsavefilestring(pBHarrayhead);
 
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthbuftodotofilestringname);
+        return;
+    }
+    
+    dg_forthfreebuffer(pBHarrayhead);
+    
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
         dg_pusherror(pBHarrayhead, dg_forthbuftodotofilestringname);
@@ -3075,6 +3109,164 @@ void dg_forthbuftomachodotobuf (Bufferhandle* pBHarrayhead)
 
     *pdatastacklength = *pdatastacklength - (4 * sizeof(UINT64));
 }
+
+
+// ( -- dotobufid )
+void dg_forthosymbolbuftonewdotobuf (Bufferhandle* pBHarrayhead)
+{
+    unsigned char* pehstack = NULL;
+    UINT64* pehstacklength = NULL;
+    
+    UINT64* pints;
+    const char* pError;
+
+    unsigned char* pcodebuf;
+    UINT64* pcodebuflength;
+
+    UINT64 destbufid, codebufid;
+    UINT64 exportsymbollisthlistid, exportsymbollistparentelementid;
+    UINT64 importsymbollisthlistid, importsymbollistparentelementid;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    codebufid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthosymbolbuftonewdotobufname);
+        return;
+    }
+
+    pehstack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_EHSTACK_BUFFERID,
+        &pehstacklength);
+
+    if (pehstack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthhstackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthosymbolbuftonewdotobufname);
+        return;
+    }
+
+    if ( *pehstacklength < (4 * sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthosymbolbuftonewdotobufname);
+        return;
+    }
+    
+    pints = (UINT64*)(pehstack + *pehstacklength - (4 * sizeof(UINT64)));
+
+    importsymbollistparentelementid = pints[0];
+    importsymbollisthlistid = pints[1];
+    exportsymbollistparentelementid = pints[2];
+    exportsymbollisthlistid = pints[3];
+    
+    destbufid = dg_newbuffer(
+        pBHarrayhead,
+        0x1000, // growby,
+        largestsignedint, // maxsize,
+        &pError, // const char** pError,
+        FORTH_FALSE); // forceoutofmemory) )
+        
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_newbuffername);
+        dg_pusherror(pBHarrayhead, dg_forthosymbolbuftonewdotobufname);
+        return;
+    }
+
+    pcodebuf = dg_getpbuffer(
+        pBHarrayhead,
+        codebufid,
+        &pcodebuflength);
+
+    if (pcodebuf == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthosymbolbuftonewdotobufname);
+        return;
+    }
+
+    dg_makedototobuf (
+        pBHarrayhead,
+        pcodebuf,
+        *pcodebuflength,
+        exportsymbollisthlistid,
+        exportsymbollistparentelementid,
+        importsymbollisthlistid,
+        importsymbollistparentelementid,
+        destbufid);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthosymbolbuftonewdotobufname);
+        return;
+    }
+
+    dg_pushdatastack(
+        pBHarrayhead,
+        destbufid);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthosymbolbuftonewdotobufname);
+        return;
+    }
+}
+
+
+void dg_forthosymbolbuftonewdotofilestring (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_forthosymbolbuftonewdotobuf(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthosymbolbuftonewdotofilestringname);
+        return;
+    }
+    
+    dg_forthdup(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthosymbolbuftonewdotofilestringname);
+        return;
+    }
+
+    dg_forthsavefilestring(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthosymbolbuftonewdotofilestringname);
+        return;
+    }
+    
+    dg_forthfreebuffer(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthosymbolbuftonewdotofilestringname);
+        return;
+    }
+}
+
 
 void dg_forthtestfindnumber (Bufferhandle* pBHarrayhead)
 {

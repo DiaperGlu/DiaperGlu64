@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.2.
+//    This file is part of DiaperGlu v5.3.
 //
-//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.2; if not, write to the Free Software
+//    along with DiaperGlu v5.3; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// April 10, 2022             //
-// version 5.2                //
+// May 15, 2022               //
+// version 5.3                //
 // /////////////////////////////
 
 #if !defined(_INC_diapergluforth)
@@ -334,15 +334,15 @@ extern "C" {
     
 
     
-#define badbufferhandle ((void*)-1)
-#define badlibraryhandle ((UINT64)-1)
-#define baderrorcount ((UINT64)-1)
+#define badbufferhandle ((void*)0xFFFFFFFFFFFFFFFF)
+#define badlibraryhandle ((UINT64)0xFFFFFFFFFFFFFFFF)
+#define baderrorcount ((UINT64)0xFFFFFFFFFFFFFFFF)
 	
-#define badfilehandle ((UINT64)-1)
+#define badfilehandle ((UINT64)0xFFFFFFFFFFFFFFFF)
 #define isapistdinfilehandle ((UINT32)-3)
 #define isapistdoutfilehandle ((UINT32)-5)
 #define isapistderrfilehandle ((UINT32)-7)
-#define dg_stdinbadfilehandle ((UINT64)-9)
+#define dg_stdinbadfilehandle ((UINT64)0xFFFFFFFFFFFFFFF7) // was -9
 
     // ////////////////////////////
     // presorted wordlist sizes  //
@@ -352,9 +352,9 @@ extern "C" {
 #define dg_presortedenvwordlistsize (21)
 // #define dg_presortedstringwordlistsize (0)
 // #define dg_presortederrorwordlistsize (0)
-#define dg_prestoredbufferwordlistsize (629)
+#define dg_prestoredbufferwordlistsize (632)
 // #define dg_presortedoswordlistsize (0)
-#define dg_presortedx86wordlistsize (1249)
+#define dg_presortedx86wordlistsize (1250)
 
 	// gcc inline assembly doesn't take 'FORTH_TRUE', so 0xFFFFFFFF was hardcoded in some places
     //  gcc inline assembly was buggy so stopped using it a long time ago JN 7/16/2013
@@ -813,12 +813,13 @@ extern "C" {
 
 #define dg_callsubnumberofints       (0x190)
 #define dg_callsubnumberoffloats     (0x198)
-#define lastnotfoundword             (0x1A0) // this is 256 characters (bytes) long.. needs to be maxwordlength long which is 255.. I added 1
+#define dg_errorlinenumber           (0x1A0)
+#define lastnotfoundword             (0x1A8) // this is 256 characters (bytes) long.. needs to be maxwordlength long which is 255.. I added 1
 
-#define dg_quitsavedstate            (0x2A0) // this is 9*4 = 36 bytes long, rounding up to 0x30  ... looks like it is only 0x18...
+#define dg_quitsavedstate            (0x2A8) // this is 9*4 = 36 bytes long, rounding up to 0x30  ... looks like it is only 0x18...
  
 // put more variables here and increase initialsizeofvariablebuffer
-#define initialsizeofvariablebuffer  (0x2D0)
+#define initialsizeofvariablebuffer  (0x2D8)
 
 #define dg_cparameterregisterslength    (0x4)   // in number of parameters, Windows needs 4
 #define dg_cparameteronstackflag        (0x0100000000000000)
@@ -919,8 +920,8 @@ extern "C" {
 	};
 
 #define dg_freeablelstringheadermagic (0x74736c66)
-#define dg_freeablelstringlastfreeid  (-1)
-#define dg_freeablelstringisnotfreeid (-3)
+#define dg_freeablelstringlastfreeid  (0xFFFFFFFFFFFFFFFF)
+#define dg_freeablelstringisnotfreeid (0xFFFFFFFFFFFFFFFD)
 
 
     struct Lstringqueueheader
@@ -1003,11 +1004,11 @@ extern "C" {
 #define dg_hlistelementmagic (0x6c656c67)
 
 	
-#define dg_badbufferid                (-1)
+#define dg_badbufferid                (0xFFFFFFFFFFFFFFFF)
 
 #define dg_defaultbuffergrowby        (0x10000)
 #define dg_defaultbuffermaxsize       (largestunsignedint)
-#define dg_badlstringid               (-1)
+#define dg_badlstringid               (0xFFFFFFFFFFFFFFFF)
 
 
 #define dg_namedbuffertypebuffer      (0)
@@ -1380,7 +1381,8 @@ extern "C" {
     DGLU_API extern const char dg_forthparsenamesname[];
 	DGLU_API extern const char dg_forthparsewordname[];
     DGLU_API extern const char dg_forthparsewordsname[]; 
-    DGLU_API extern const char dg_forthlinesparsenamesname[];  
+    DGLU_API extern const char dg_forthlinesparsenamesname[]; 
+    DGLU_API extern const char dg_forthparselinename[]; 
 	DGLU_API extern const char dg_forthcscanname[];
 	DGLU_API extern const char dg_forthcscanbufname[];
 	DGLU_API extern const char dg_forthscanname[];
@@ -1433,6 +1435,8 @@ extern "C" {
     DGLU_API extern const char dg_forthbuftodotofilestringname[];
     
     DGLU_API extern const char dg_forthbuftomachodotobufname[];
+    DGLU_API extern const char dg_forthosymbolbuftonewdotobufname[];
+    DGLU_API extern const char dg_forthosymbolbuftonewdotofilestringname[];
     
     DGLU_API extern const char dg_forthtestfindnumbername[];
     
@@ -1512,6 +1516,8 @@ extern "C" {
 	DGLU_API extern const char dg_forthgetparrayelementname[];
 	DGLU_API extern const char dg_forthinsertinbuffername[];
 	DGLU_API extern const char dg_forthdeleteinbuffername[];
+    DGLU_API extern const char dg_forthreplaceinbuffername[];  
+    DGLU_API extern const char dg_forthinsertsintobuffername[];
 	DGLU_API extern const char dg_forthgrowbuffername[];
 	DGLU_API extern const char dg_forthshrinkbuffername[];
     DGLU_API extern const char dg_forthemptybuffername[];
@@ -3351,14 +3357,14 @@ extern "C" {
     
     DGLU_API void dg_forthdoterrors (Bufferhandle* pBHarrayhead);
 	
-	/////////////////////////////
-	// End of C Error Routines //
-	/////////////////////////////
+	// ///////////////////////////
+	// End of C Error Routines  //
+	// ///////////////////////////
 	
 	
-	///////////////////////
-	// C buffer routines //
-	///////////////////////
+	// /////////////////////
+	// C buffer routines  //
+	// /////////////////////
 	
 	DGLU_API extern const char* dg_newbuffername;
 	DGLU_API UINT64 dg_newbuffer (
@@ -3533,6 +3539,15 @@ extern "C" {
 		UINT64 bufferid,
 		UINT64 offset, // in bytes
 		UINT64 length); // in bytes
+  
+    DGLU_API extern const char dg_replacebuffersegmentname[];
+    DGLU_API void dg_replacebuffersegment (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 destoffset,
+        UINT64 destlength,
+        unsigned char* psrc,
+        UINT64 srclength);     
 	
 	DGLU_API extern const char* dg_deleteinbuffername;
 	DGLU_API void dg_deleteinbuffer (
@@ -6609,7 +6624,12 @@ extern "C" {
 	DGLU_API void dg_forthdeleteinbuffer (Bufferhandle* pBHarrayhead);
 	//                   ( offset length bufferid -- )
 	
-	
+    DGLU_API void dg_forthreplaceinbuffer (Bufferhandle* pBHarrayhead);
+    //     ( psrc srclength destoffset destbufferid destlength -- )	
+    
+    DGLU_API void dg_forthinsertsintobuffer (Bufferhandle* pBHarrayhead);
+    //     ( psrc srclength destoffset destbufferid -- )	
+    
 	DGLU_API void dg_forthgrowbuffer (Bufferhandle* pBHarrayhead);
 	//               ( length bufferid -- )
 	
@@ -6665,6 +6685,9 @@ extern "C" {
     
     
     DGLU_API void dg_forthlinesparsenames (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthparseline (Bufferhandle* pBHarrayhead);
     
 
 	DGLU_API void dg_forthcscanbuf (Bufferhandle* pBHarrayhead);
@@ -7497,6 +7520,9 @@ extern "C" {
     
     DGLU_API void dg_forthbuftomachodotobuf (Bufferhandle* pBHarrayhead);
     
+    DGLU_API void dg_forthosymbolbuftonewdotobuf (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthosymbolbuftonewdotofilestring (Bufferhandle* pBHarrayhead);
+    
     DGLU_API void dg_forthtestfindnumber (Bufferhandle* pBHarrayhead);
     
     
@@ -7992,11 +8018,15 @@ extern "C" {
 
     DGLU_API void dg_forthlocalsbar(Bufferhandle* pBHarrayhead);
     
+    DGLU_API extern const char dg_forthclearlocalwordlistname[];
+    DGLU_API void dg_forthclearlocalwordlist (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API extern const char dg_forthquerycompileunnestlocalsname[];
+    DGLU_API void dg_forthquerycompileunnestlocals (Bufferhandle* pBHarrayhead);
     
     DGLU_API extern const char dg_forthqueryclearlocalsname[];
-
     DGLU_API void dg_forthqueryclearlocals(Bufferhandle* pBHarrayhead);
-
+    
     // ////////////////////////////////
     // End of Forth Locals Routines  //
     // ////////////////////////////////
@@ -8068,33 +8098,34 @@ extern "C" {
         Bufferhandle* pBHarrayhead);
 
 
-#define dg_isdatasize   ((UINT64)-1)
-#define dg_isforward    ((UINT64)-2)
-#define dg_isreverse    ((UINT64)-3)
-#define dg_isimmediate  ((UINT64)-4)
-#define dg_isreg        ((UINT64)-5)
-#define dg_isbasedisplacement            ((UINT64)-6) // technically [R+N]
-#define dg_isbasescaleindexdisplacement  ((UINT64)-7) // technically [R+R*I+N]
-#define dg_iscurrentcompilebufferoffset  ((UINT64)-8) // technically [O]
-#define dg_ishereplusdisplacement        ((UINT64)-9) // technically [RIP+N]
-#define dg_isbufferoffset                ((UINT64)-10) // technically [bufferoffset]
-#define dg_isccbufferoffsetnobracket     ((UINT64)-11) // for call rip+n
-#define dg_iscontrolreg                  ((UINT64)-12)
-#define dg_isfloatingpointstackreg       ((UINT64)-13)
-#define dg_isxmmreg                      ((UINT64)-14)
-#define dg_isdebugreg                    ((UINT64)-15)
-#define dg_issegmentreg                  ((UINT64)-16)
-#define dg_isymmreg                      ((UINT64)-17)
-#define dg_isthreebytevex                ((UINT64)-18)
-#define dg_isbasescalevindexdisplacement ((UINT64)-19) // technically [R+YMMR*I+N]
-#define dg_isparamusingframe             ((UINT64)-20)
-#define dg_isparamusingnoframe           ((UINT64)-21)
-#define dg_isdgluforthframelocal         ((UINT64)-22) // technically [RBP+8*(N+2)]
-#define dg_istointsubparam               ((UINT64)-23) // for setting up params for subroutine call
-#define dg_istofloatsubparam             ((UINT64)-24) // for setting up params for subroutine call
-#define dg_istointfloatsubparam          ((UINT64)-25) // for setting up params for subroutine call
-#define dg_isfromintsubparam             ((UINT64)-26) // for unloading return params after subroutine call
-#define dg_isfromfloatsubparam           ((UINT64)-27) // for unloading return params after subroutine call
+#define dg_isdatasize   ((UINT64)0xFFFFFFFFFFFFFFFF)
+#define dg_isforward    ((UINT64)0xFFFFFFFFFFFFFFFE)
+#define dg_isreverse    ((UINT64)0xFFFFFFFFFFFFFFFD)
+#define dg_isimmediate  ((UINT64)0xFFFFFFFFFFFFFFFC)
+#define dg_isreg        ((UINT64)0xFFFFFFFFFFFFFFFB)
+#define dg_isbasedisplacement            ((UINT64)0xFFFFFFFFFFFFFFFA) // technically [R+N]
+#define dg_isbasescaleindexdisplacement  ((UINT64)0xFFFFFFFFFFFFFFF9) // technically [R+R*I+N]
+#define dg_iscurrentcompilebufferoffset  ((UINT64)0xFFFFFFFFFFFFFFF8) // technically [O]
+#define dg_ishereplusdisplacement        ((UINT64)0xFFFFFFFFFFFFFFF7) // technically [RIP+N]
+#define dg_isbufferoffset                ((UINT64)0xFFFFFFFFFFFFFFF6) // technically [bufferoffset]
+#define dg_isccbufferoffsetnobracket     ((UINT64)0xFFFFFFFFFFFFFFF5) // for call rip+n
+#define dg_iscontrolreg                  ((UINT64)0xFFFFFFFFFFFFFFF4)
+#define dg_isfloatingpointstackreg       ((UINT64)0xFFFFFFFFFFFFFFF3)
+#define dg_isxmmreg                      ((UINT64)0xFFFFFFFFFFFFFFF2)
+#define dg_isdebugreg                    ((UINT64)0xFFFFFFFFFFFFFFF1)
+#define dg_issegmentreg                  ((UINT64)0xFFFFFFFFFFFFFFF0)
+#define dg_isymmreg                      ((UINT64)0xFFFFFFFFFFFFFFEF)
+#define dg_isthreebytevex                ((UINT64)0xFFFFFFFFFFFFFFEE)
+#define dg_isbasescalevindexdisplacement ((UINT64)0xFFFFFFFFFFFFFFED) // technically [R+YMMR*I+N]
+#define dg_isparamusingframe             ((UINT64)0xFFFFFFFFFFFFFFEC)
+#define dg_isparamusingnoframe           ((UINT64)0xFFFFFFFFFFFFFFEB)
+#define dg_isdgluforthframelocal         ((UINT64)0xFFFFFFFFFFFFFFEA) // technically [RBP+8*(N+2)]
+#define dg_istointsubparam               ((UINT64)0xFFFFFFFFFFFFFFE9) // for setting up params for subroutine call
+#define dg_istofloatsubparam             ((UINT64)0xFFFFFFFFFFFFFFE8) // for setting up params for subroutine call
+#define dg_istointfloatsubparam          ((UINT64)0xFFFFFFFFFFFFFFE7) // for setting up params for subroutine call
+#define dg_isfromintsubparam             ((UINT64)0xFFFFFFFFFFFFFFE6) // for unloading return params after subroutine call
+#define dg_isfromfloatsubparam           ((UINT64)0xFFFFFFFFFFFFFFE5) // for unloading return params after subroutine call
+#define dg_isptointsubparam              ((UINT64)0xFFFFFFFFFFFFFFE4) // for setting up params for subroutine call
 
 
 #define dg_memmodeimmediate    (0)
@@ -8717,6 +8748,17 @@ DGLU_API unsigned char* dg_noparseentirecurrentline(
     Bufferhandle* pBHarrayhead,
     UINT64* plinelength,
     UINT64 bufferid);
+    
+DGLU_API extern const char dg_parselinename[];
+DGLU_API unsigned char* dg_parseline(
+    Bufferhandle* pBHarrayhead,
+    UINT64* plinelength);
+    
+DGLU_API extern const char dg_noparselineatoffsetname[];
+DGLU_API UINT64 dg_noparselineatoffset(
+    Bufferhandle* pBHarrayhead,
+    UINT64 cibid,
+    UINT64 offset);
 
 DGLU_API extern const char* dg_addnamedbuffername;
 DGLU_API extern const char* dg_namedbuffervaluename;

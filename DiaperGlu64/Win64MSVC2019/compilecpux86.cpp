@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.2.
+//    This file is part of DiaperGlu v5.3.
 //
-//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.2; if not, write to the Free Software
+//    along with DiaperGlu v5.3; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// April 10, 2022             //
-// version 5.2                //
+// May 15, 2022               //
+// version 5.3                //
 // /////////////////////////////
 
 
@@ -65550,6 +65550,57 @@ void dg_forthtoiparam(Bufferhandle* pBHarrayhead)
 }
 
 
+const char dg_forthptoiparamname[] = "P>IPARAM";
+
+void dg_forthptoiparam(Bufferhandle* pBHarrayhead)
+{
+    UINT64 numberofintparameters;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    numberofintparameters = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_callsubnumberofints);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthptoiparamname);
+        return;
+    }
+
+    numberofintparameters++;
+
+    dg_putbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_callsubnumberofints,
+        numberofintparameters);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthptoiparamname);
+        return;
+    }
+
+    dg_pushdatastack(
+        pBHarrayhead,
+        dg_isptointsubparam);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthptoiparamname);
+        return;
+    }
+}
+
+
+
 const char dg_forthtofparamname[] = ">FPARAM";
 
 void dg_forthtofparam(Bufferhandle* pBHarrayhead)
@@ -70782,7 +70833,7 @@ Premadeword* dg_getppresortedx86words()
     presortedx86words[i].pname = dg_isoimportcodelinkname;
     presortedx86words[i].namelength = sizeof(dg_isoimportcodelinkname);
     presortedx86words[i].compileroutinebuf = DG_CORE_BUFFERID;
-    presortedx86words[i].compileroutineoffset = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedx86words[i].compileroutineoffset = (UINT64)&dg_forthdocompiletypesafesubroutine;
     presortedx86words[i].databuf = DG_CORE_BUFFERID;
     presortedx86words[i].dataoffset = (UINT64)&dg_forthoimportcodelink;
 
@@ -70857,6 +70908,15 @@ Premadeword* dg_getppresortedx86words()
     presortedx86words[i].compileroutineoffset = (UINT64)&dg_forthdocompiletypesafesubroutine;
     presortedx86words[i].databuf = DG_CORE_BUFFERID;
     presortedx86words[i].dataoffset = (UINT64)&dg_forthoutswcomma;
+
+    i++;
+
+    presortedx86words[i].pname = dg_forthptoiparamname;
+    presortedx86words[i].namelength = sizeof(dg_forthptoiparamname);
+    presortedx86words[i].compileroutinebuf = DG_CORE_BUFFERID;
+    presortedx86words[i].compileroutineoffset = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedx86words[i].databuf = DG_CORE_BUFFERID;
+    presortedx86words[i].dataoffset = (UINT64)&dg_forthptoiparam;
 
     i++;
 
@@ -77640,7 +77700,6 @@ Premadeword* dg_getppresortedx86words()
 
     return ((Premadeword*)&(presortedx86words[0]));
 }
-
 
 
 const char* dg_initcpux86wordlistname = "dg_initcpux86wordlist";

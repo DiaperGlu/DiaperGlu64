@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.2.
+//    This file is part of DiaperGlu v5.3.
 //
-//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.2; if not, write to the Free Software
+//    along with DiaperGlu v5.3; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// April 10, 2022             //
-// version 5.2                //
+// May 15, 2022               //
+// version 5.3                //
 // /////////////////////////////
 
 
@@ -51,7 +51,7 @@ void dg_initlstringqueue (
     // making sure switchlength isn't too big to make sure your queues
     //  don't eat up all your memory. This check is also to make sure
     //  the dg_addclipped overflow check works in dg_pushlstringqueuehead
-    //  (dg_uaddclipped uses -1 to indicate arithmetic overflow)
+    //  (dg_uaddclipped uses largestunsignedint to indicate arithmetic overflow)
     if (switchlength > dg_maxlstringqueueswitchlength)
     {
         dg_pusherror(pBHarrayhead, dg_queueswitchlengthtoobigerror);
@@ -280,7 +280,7 @@ void dg_pushlstringqueuehead (
     currentpushoffsetbufferlength = dg_getbufferlength(pBHarrayhead, currentpushoffsetbuffer);
     currentpushstringbufferlength = dg_getbufferlength(pBHarrayhead, currentpushstringbuffer);
     
-    // dg_uaddclipped assumes switchlength < (UINT64)-1
+    // dg_uaddclipped assumes switchlength < (UINT64)largestunsignedint
     if ((dg_uaddclipped(currentpushoffsetbufferlength, stringlength) <= pLstringqueueheader->switchlength) &&
         (dg_uaddclipped(currentpushstringbufferlength, stringlength) <= pLstringqueueheader->switchlength))
     {
@@ -1150,7 +1150,7 @@ unsigned char* dg_lockpopsharedlstringqueuetail (
 
     if (baderrorcount == olderrorcount)
     {
-        return((unsigned char*)-1);
+        return((unsigned char*)largestunsignedint);
     }
     
     // check memory at pstringlength
@@ -1163,7 +1163,7 @@ unsigned char* dg_lockpopsharedlstringqueuetail (
         dg_pusherror(pBHarrayhead, pError);
         dg_pusherror(pBHarrayhead, dg_putuint64name);
         dg_pusherror(pBHarrayhead, dg_lockpopsharedlstringqueuetailname);
-        return((unsigned char*)-1);
+        return((unsigned char*)largestunsignedint);
     }
     
     // checking memory at psharedqueuebuffer... just checking magic's memory for now
@@ -1176,7 +1176,7 @@ unsigned char* dg_lockpopsharedlstringqueuetail (
         dg_pusherror(pBHarrayhead, pError);
         dg_pusherror(pBHarrayhead, dg_readallbytesname);
         dg_pusherror(pBHarrayhead, dg_lockpopsharedlstringqueuetailname);
-        return((unsigned char*)-1);
+        return((unsigned char*)largestunsignedint);
     }
         
     if (pError != dg_success)
@@ -1184,21 +1184,21 @@ unsigned char* dg_lockpopsharedlstringqueuetail (
         dg_pusherror(pBHarrayhead, pError);
         dg_pusherror(pBHarrayhead, dg_getuint64name);
         dg_pusherror(pBHarrayhead, dg_lockpopsharedlstringqueuetailname);
-        return((unsigned char*)-1);
+        return((unsigned char*)largestunsignedint);
     }
     
     if (psharedqueuebuffer->magic != dg_sharedqueuemagic)
     {
         dg_pusherror(pBHarrayhead, dg_badmagicerror);
         dg_pusherror(pBHarrayhead, dg_lockpopsharedlstringqueuetailname);
-        return((unsigned char*)-1);
+        return((unsigned char*)largestunsignedint);
     }
     
     if (sharedquebufferlength < sizeof(SharedQueueHandleBufferStructs))
     {
         dg_pusherror(pBHarrayhead, dg_structuretoosmallerror);
         dg_pusherror(pBHarrayhead, dg_lockpopsharedlstringqueuetailname);
-        return((unsigned char*)-1);
+        return((unsigned char*)largestunsignedint);
     }
     
     // lock mutex
@@ -1211,7 +1211,7 @@ unsigned char* dg_lockpopsharedlstringqueuetail (
         dg_pusherror(pBHarrayhead, pError);
         dg_pusherror(pBHarrayhead, dg_lockmutexname);
         dg_pusherror(pBHarrayhead, dg_lockpopsharedlstringqueuetailname);
-        return((unsigned char*)-1);
+        return((unsigned char*)largestunsignedint);
     }
         
     pstring = dg_poplstringqueuetail (
@@ -1222,7 +1222,7 @@ unsigned char* dg_lockpopsharedlstringqueuetail (
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
         dg_pusherror(pBHarrayhead, dg_lockpopsharedlstringqueuetailname);
-        return((unsigned char*)-1);
+        return((unsigned char*)largestunsignedint);
     }
     
     // unlock mutex
@@ -1235,7 +1235,7 @@ unsigned char* dg_lockpopsharedlstringqueuetail (
         dg_pusherror(pBHarrayhead, pError);
         dg_pusherror(pBHarrayhead, dg_freemutexname);
         dg_pusherror(pBHarrayhead, dg_lockpopsharedlstringqueuetailname);
-        return((unsigned char*)-1);
+        return((unsigned char*)largestunsignedint);
     }
     
     return (pstring);
@@ -1259,14 +1259,14 @@ unsigned char* dg_getssharedlstringqueuetail (
 
     if (baderrorcount == olderrorcount)
     {
-        return((unsigned char*)-1);
+        return((unsigned char*)largestunsignedint);
     }
     
     if (sharedquebufferlength < sizeof(SharedQueueHandleBufferStructs))
     {
         dg_pusherror(pBHarrayhead, dg_structuretoosmallerror);
         dg_pusherror(pBHarrayhead, dg_getssharedlstringqueuetailname);
-        return((unsigned char*)-1);
+        return((unsigned char*)largestunsignedint);
     }
     
     lengthtocheck = sharedquebufferlength;
@@ -1294,7 +1294,7 @@ unsigned char* dg_getssharedlstringqueuetail (
     {
         dg_pusherror(pBHarrayhead, dg_badmagicerror);
         dg_pusherror(pBHarrayhead, dg_getssharedlstringqueuetailname);
-        return((unsigned char*)-1);
+        return((unsigned char*)largestunsignedint);
     }
     
     // check memory at pstringlength
@@ -1307,7 +1307,7 @@ unsigned char* dg_getssharedlstringqueuetail (
         dg_pusherror(pBHarrayhead, pError);
         dg_pusherror(pBHarrayhead, dg_putuint64name);
         dg_pusherror(pBHarrayhead, dg_getssharedlstringqueuetailname);
-        return((unsigned char*)-1);
+        return((unsigned char*)largestunsignedint);
     }
     
     // lock mutex
@@ -1320,7 +1320,7 @@ unsigned char* dg_getssharedlstringqueuetail (
         dg_pusherror(pBHarrayhead, pError);
         dg_pusherror(pBHarrayhead, dg_lockmutexname);
         dg_pusherror(pBHarrayhead, dg_getssharedlstringqueuetailname);
-        return((unsigned char*)-1);
+        return((unsigned char*)largestunsignedint);
     }
         
     pstring = dg_getslstringqueuetail (
@@ -1332,7 +1332,7 @@ unsigned char* dg_getssharedlstringqueuetail (
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
         dg_pusherror(pBHarrayhead, dg_getssharedlstringqueuetailname);
-        return((unsigned char*)-1);
+        return((unsigned char*)largestunsignedint);
     }
     
     // free mutex
@@ -1345,7 +1345,7 @@ unsigned char* dg_getssharedlstringqueuetail (
         dg_pusherror(pBHarrayhead, pError);
         dg_pusherror(pBHarrayhead, dg_freemutexname);
         dg_pusherror(pBHarrayhead, dg_getssharedlstringqueuetailname);
-        return((unsigned char*)-1);
+        return((unsigned char*)largestunsignedint);
     }
     
     return (pstring);

@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.2.
+//    This file is part of DiaperGlu v5.3.
 //
-//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.2; if not, write to the Free Software
+//    along with DiaperGlu v5.3; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// April 10, 2022             //
-// version 5.2                //
+// May 15, 2022               //
+// version 5.3                //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -9847,4 +9847,2571 @@ void testdg_noparseentirecurrentline()
     dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
     BHarrayhead.pbuf = (void*)-1;
     
+}
+
+
+void testdg_parseline()
+{
+    const char* pError = NULL;
+
+    Bufferhandle BHarrayhead;
+    Bufferhandle* pBH;
+    
+    unsigned char* pstring;
+    UINT64 stringlength;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_parseline\n");
+    
+    // success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" boo :) \n hoo");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_putbufferuint64 (
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentinterpretbuffer,
+        DG_TERMINALINPUT_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline success case - got an error trying to set current interpret buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    pstring = dg_parseline(
+        &BHarrayhead,
+        &stringlength);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+        
+    if ((pstring[0] != ' ') ||
+        (pstring[1] != 'b') ||
+        (pstring[2] != 'o') ||
+        (pstring[3] != 'o') ||
+        (pstring[4] != ' ') ||
+        (pstring[5] != ':') ||
+        (pstring[6] != ')') ||
+        (pstring[7] != ' '))
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline success case - expected 'boo :) ' got wrong string. Got '");
+        dg_writestdoutraw(
+            &BHarrayhead,
+            pstring,
+            stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    if (stringlength != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline success case - expected 8 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    
+    if (pBH->currentoffset != 9)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline success case - expected 9 got wrong end current offset. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, pBH->currentoffset);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // cr success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" boo :) \r hoo");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline cr success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_putbufferuint64 (
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentinterpretbuffer,
+        DG_TERMINALINPUT_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline cr success case - got an error trying to set current interpret buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    pstring = dg_parseline(
+        &BHarrayhead,
+        &stringlength);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline cr success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+        
+    if ((pstring[0] != ' ') ||
+        (pstring[1] != 'b') ||
+        (pstring[2] != 'o') ||
+        (pstring[3] != 'o') ||
+        (pstring[4] != ' ') ||
+        (pstring[5] != ':') ||
+        (pstring[6] != ')') ||
+        (pstring[7] != ' '))
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline cr success case - expected 'boo :) ' got wrong string. Got '");
+        dg_writestdoutraw(
+            &BHarrayhead,
+            pstring,
+            stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    if (stringlength != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline cr success case - expected 8 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    
+    if (pBH->currentoffset != 9)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline cr success case - expected 9 got wrong end current offset. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, pBH->currentoffset);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // crlf success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" boo :) \r\nhoo");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline crlf success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_putbufferuint64 (
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentinterpretbuffer,
+        DG_TERMINALINPUT_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline crlf success case - got an error trying to set current interpret buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    pstring = dg_parseline(
+        &BHarrayhead,
+        &stringlength);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline crlf success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+        
+    if ((pstring[0] != ' ') ||
+        (pstring[1] != 'b') ||
+        (pstring[2] != 'o') ||
+        (pstring[3] != 'o') ||
+        (pstring[4] != ' ') ||
+        (pstring[5] != ':') ||
+        (pstring[6] != ')') ||
+        (pstring[7] != ' '))
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline crlf success case - expected 'boo :) ' got wrong string. Got '");
+        dg_writestdoutraw(
+            &BHarrayhead,
+            pstring,
+            stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    if (stringlength != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline crlf success case - expected 8 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    
+    if (pBH->currentoffset != 10)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline crlf success case - expected 10 got wrong end current offset. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, pBH->currentoffset);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // lfcr success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" boo :) \n\rhoo");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline lfcr success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_putbufferuint64 (
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentinterpretbuffer,
+        DG_TERMINALINPUT_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline lfcr success case - got an error trying to set current interpret buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    pstring = dg_parseline(
+        &BHarrayhead,
+        &stringlength);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline lfcr success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+        
+    if ((pstring[0] != ' ') ||
+        (pstring[1] != 'b') ||
+        (pstring[2] != 'o') ||
+        (pstring[3] != 'o') ||
+        (pstring[4] != ' ') ||
+        (pstring[5] != ':') ||
+        (pstring[6] != ')') ||
+        (pstring[7] != ' '))
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline lfcr success case - expected 'boo :) ' got wrong string. Got '");
+        dg_writestdoutraw(
+            &BHarrayhead,
+            pstring,
+            stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    if (stringlength != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline lfcr success case - expected 8 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    
+    if (pBH->currentoffset != 9)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline lfcr success case - expected 10 got wrong end current offset. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, pBH->currentoffset);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // no end character case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+        
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" pickle");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline no end character success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_putbufferuint64 (
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentinterpretbuffer,
+        DG_TERMINALINPUT_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline no end character success case - got an error trying to set current interpret buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    pstring = dg_parseline(
+        &BHarrayhead,
+        &stringlength);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline no end character success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+        
+    if ((pstring[0] != ' ') ||
+        (pstring[1] != 'p') ||
+        (pstring[2] != 'i') ||
+        (pstring[3] != 'c') ||
+        (pstring[4] != 'k') ||
+        (pstring[5] != 'l') ||
+        (pstring[6] != 'e'))
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline no end character success case - expected ' pickle' got wrong string. Got '");
+        dg_writestdoutraw(
+            &BHarrayhead,
+            pstring,
+            stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    if (stringlength != 7)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline no end character success case - expected 7 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    
+    if (pBH->currentoffset != 7)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline success case - expected 7 got wrong end current offset. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, pBH->currentoffset);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // line terminator case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+        
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" pick\nle)");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline line terminator success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_putbufferuint64 (
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentinterpretbuffer,
+        DG_TERMINALINPUT_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline line terminator success case - got an error trying to set current interpret buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    pstring = dg_parseline(
+        &BHarrayhead,
+        &stringlength);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline line terminator success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+        
+    if ((pstring[0] != ' ') ||
+        (pstring[1] != 'p') ||
+        (pstring[2] != 'i') ||
+        (pstring[3] != 'c') ||
+        (pstring[4] != 'k'))
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline line terminator success case - expected ' pick' got wrong string. Got '");
+        dg_writestdoutraw(
+            &BHarrayhead,
+            pstring,
+            stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    if (stringlength != 5)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline line terminator success case - expected 5 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    
+    if (pBH->currentoffset != 6)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline line terminator success case - expected 6 got wrong end current offset. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, pBH->currentoffset);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // cleanup
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = (void*)-1;
+    
+    
+    // line terminator start in middle case (not supposed to do this...)
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+        
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" pick\nle)");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline line terminator start in middle success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_putbufferuint64 (
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentinterpretbuffer,
+        DG_TERMINALINPUT_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline line terminator start in middle success case - got an error trying to set current interpret buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH->currentoffset = pBH->currentoffset + 2;
+    
+    pstring = dg_parseline(
+        &BHarrayhead,
+        &stringlength);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline line terminator start in middle success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+        
+    if ((pstring[0] != 'i') ||
+        (pstring[1] != 'c') ||
+        (pstring[2] != 'k') )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline line terminator start in middle success case - expected 'ick' got wrong string. Got '");
+        dg_writestdoutraw(
+            &BHarrayhead,
+            pstring,
+            stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    if (stringlength != 3)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline line terminator start in middle success case - expected 3 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    
+    if (pBH->currentoffset != 6)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline line terminator start in middle success case - expected 6 got wrong end current offset. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, pBH->currentoffset);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // cleanup
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = (void*)-1;
+    
+    
+    // two line terminators start in middle success case (not supposed to do this)
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+        
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" \n pick\nle)");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline two line terminators start in middle success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_putbufferuint64 (
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentinterpretbuffer,
+        DG_TERMINALINPUT_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline two line terminators start in middle success case - got an error trying to set current interpret buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH->currentoffset = pBH->currentoffset + 5;
+    
+    pstring = dg_parseline(
+        &BHarrayhead,
+        &stringlength);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline two line terminators start in middle success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+        
+    if ((pstring[0] != 'c') ||
+        (pstring[1] != 'k') )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline two line terminators start in middle success case - expected 'ck' got wrong string. Got '");
+        dg_writestdoutraw(
+            &BHarrayhead,
+            pstring,
+            stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    if (stringlength != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline two line terminators start in middle success case - expected 2 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    
+    if (pBH->currentoffset != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline two line terminators start in middle success case - expected 8 got wrong end current offset. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, pBH->currentoffset);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // cleanup
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = (void*)-1;
+    
+    
+    // multiple line terminators start in middle of line terminators success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+        
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" \n pick\n\nle)");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline multiple line terminators start in middle of line terminators success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_putbufferuint64 (
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentinterpretbuffer,
+        DG_TERMINALINPUT_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline multiple line terminators start in middle of line terminators success case - got an error trying to set current interpret buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH->currentoffset = 8;
+    
+    pstring = dg_parseline(
+        &BHarrayhead,
+        &stringlength);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline multiple line terminators start in middle of line terminators success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (stringlength != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline multiple line terminators start in middle of line terminators success case - expected 0 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    
+    if (pBH->currentoffset != 9)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline multiple line terminators start in middle of line terminators success case - expected 9 got wrong end current offset. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, pBH->currentoffset);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // cleanup
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = (void*)-1; 
+    
+    
+    // line terminators at end success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+        
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" \n pick\n\n");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline line terminators at end success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_putbufferuint64 (
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentinterpretbuffer,
+        DG_TERMINALINPUT_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline line terminators at end success case - got an error trying to set current interpret buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH->currentoffset = 9;
+    
+    pstring = dg_parseline(
+        &BHarrayhead,
+        &stringlength);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline line terminators at end success case - got an error trying to parse at end, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (stringlength != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline line terminators at end success case - expected 0 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    
+    if (pBH->currentoffset != 9)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline success case - expected 9 got wrong end current offset. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, pBH->currentoffset);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // line terminators at end success b case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+        
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" \n pick\n\n");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline line terminators at end success b case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_putbufferuint64 (
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentinterpretbuffer,
+        DG_TERMINALINPUT_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline line terminators at end success b case - got an error trying to set current interpret buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH->currentoffset = 8;
+    
+    pstring = dg_parseline(
+        &BHarrayhead,
+        &stringlength);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline line terminators at end success b case - got an error trying to parse at end, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (stringlength != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline line terminators at end success b case - expected 0 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    
+    if (pBH->currentoffset != 9)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline success b case - expected 9 got wrong end current offset. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, pBH->currentoffset);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // line terminators at end success c case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+        
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" \n pick\n\n");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline line terminators at end success c case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_putbufferuint64 (
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentinterpretbuffer,
+        DG_TERMINALINPUT_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline line terminators at end success c case - got an error trying to set current interpret buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH->currentoffset = 7;
+    
+    pstring = dg_parseline(
+        &BHarrayhead,
+        &stringlength);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline line terminators at end success c case - got an error trying to parse at end, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (stringlength != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline line terminators at end success c case - expected 0 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    
+    if (pBH->currentoffset != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline success b case - expected c got wrong end current offset. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, pBH->currentoffset);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // line terminators at end success d case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+        
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" \n pick\r\n");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline line terminators at end success d case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_putbufferuint64 (
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentinterpretbuffer,
+        DG_TERMINALINPUT_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline line terminators at end success d case - got an error trying to set current interpret buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH->currentoffset = 7;
+    
+    pstring = dg_parseline(
+        &BHarrayhead,
+        &stringlength);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline line terminators at end success d case - got an error trying to parse at end, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (stringlength != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline line terminators at end success d case - expected 0 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    
+    if (pBH->currentoffset != 9)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline success d case - expected 9 got wrong end current offset. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, pBH->currentoffset);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // cleanup
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = (void*)-1; 
+
+
+    // multiple lines error in middle success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" \n pick\nshoe\ntomato");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline multiple lines error in middle success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_putbufferuint64 (
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentinterpretbuffer,
+        DG_TERMINALINPUT_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline multiple lines error in middle success case - got an error trying to set current interpret buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    pBH = &(((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID]);
+    pBH->currentoffset = 13;
+
+    pstring = dg_parseline(
+        &BHarrayhead,
+        &stringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline multiple lines error in middle success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    if ((pstring[0] != 't') ||
+        (pstring[1] != 'o') ||
+        (pstring[2] != 'm') ||
+        (pstring[3] != 'a') ||
+        (pstring[4] != 't') ||
+        (pstring[5] != 'o') )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline multiple lines error in middle success case - expected 'tomato' got wrong string. Got '");
+        dg_writestdoutraw(
+            &BHarrayhead,
+            pstring,
+            stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+
+    if (stringlength != 6)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline multiple lines error in middle success case - expected 5 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    
+    if (pBH->currentoffset != 19)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline multiple lines error in middle success case - expected 19 got wrong end current offset. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, pBH->currentoffset);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+
+    dg_freeallbuffers(&BHarrayhead);
+
+    // cleanup
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = (void*)-1;
+
+
+    // multiple lines error in middle b success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" \n pick\nshoe\ntomato");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parselines multiple lines error in middle b success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_putbufferuint64 (
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentinterpretbuffer,
+        DG_TERMINALINPUT_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline multiple lines error in middle b success case - got an error trying to set current interpret buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    pBH = &(((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID]);
+    pBH->currentoffset = 12;
+
+    pstring = dg_parseline(
+        &BHarrayhead,
+        &stringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parselines multiple lines error in middle b success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    if (stringlength != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parselines multiple lines error in middle b success case - expected 0 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    
+    if (pBH->currentoffset != 13)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline multiple lines error in middle b success case - expected 13 got wrong end current offset. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, pBH->currentoffset);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+
+    dg_freeallbuffers(&BHarrayhead);
+
+    // cleanup
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = (void*)-1;
+
+
+    // multiple lines error in middle c success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" \n pick\nshoe\ntomato");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline multiple lines error in middle c success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_putbufferuint64 (
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentinterpretbuffer,
+        DG_TERMINALINPUT_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline multiple lines error in middle c success case - got an error trying to set current interpret buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    pBH = &(((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID]);
+    pBH->currentoffset = 8;
+
+    pstring = dg_parseline(
+        &BHarrayhead,
+        &stringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline multiple lines error in middle c success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    if ((pstring[0] != 's') ||
+        (pstring[1] != 'h') ||
+        (pstring[2] != 'o') ||
+        (pstring[3] != 'e'))
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline multiple lines error in middle c success case - expected 'shoe' got wrong string. Got '");
+        dg_writestdoutraw(
+            &BHarrayhead,
+            pstring,
+            stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+
+    if (stringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline multiple lines error in middle c success case - expected 4 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    
+    if (pBH->currentoffset != 13)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline multiple lines error in middle c success case - expected 13 got wrong end current offset. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, pBH->currentoffset);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+
+    dg_freeallbuffers(&BHarrayhead);
+
+    // cleanup
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = (void*)-1;
+
+
+    // multiple lines error before middle success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" \n pick\nshoe\ntomato");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parselines multiple lines error before middle success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_putbufferuint64 (
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentinterpretbuffer,
+        DG_TERMINALINPUT_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline multiple lines error before middle success case - got an error trying to set current interpret buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    pBH = &(((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID]);
+    pBH->currentoffset = 7;
+
+    pstring = dg_parseline(
+        &BHarrayhead,
+        &stringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline multiple lines error before middle success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    if (stringlength != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline multiple lines error before middle success case - expected 0 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, stringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    
+    if (pBH->currentoffset != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_parseline multiple lines error before middle success case - expected 8 got wrong end current offset. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, pBH->currentoffset);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+
+    dg_freeallbuffers(&BHarrayhead);
+
+    // cleanup
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = (void*)-1;
+    
+}
+
+
+void testdg_noparselineatoffset()
+{
+    const char* pError = NULL;
+
+    Bufferhandle BHarrayhead;
+    Bufferhandle* pBH;
+    
+    UINT64 linenumber;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_noparselineatoffset\n");
+    
+    // success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" boo :) \n hoo");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+        
+    linenumber = dg_noparselineatoffset(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (linenumber != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset success case - expected 0 got wrong line number. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, linenumber);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // cr success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" boo :) \r hoo");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset cr success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    linenumber = dg_noparselineatoffset(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset cr success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (linenumber != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset cr success case - expected 0 got wrong line number. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, linenumber);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // crlf success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" boo :) \r\nhoo");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset crlf success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    linenumber = dg_noparselineatoffset(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset crlf success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (linenumber != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset crlf success case - expected 0 got wrong line number. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, linenumber);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // lfcr success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" boo :) \n\rhoo");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset lfcr success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    linenumber = dg_noparselineatoffset(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset lfcr success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (linenumber != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset lfcr success case - expected 0 got wrong line number. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, linenumber);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // no end character case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+        
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" pickle");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset no end character success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    linenumber = dg_noparselineatoffset(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset no end character success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (linenumber != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset no end character success case - expected 0 got wrong line number. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, linenumber);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // line terminator case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+        
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" pick\nle)");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset line terminator success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    linenumber = dg_noparselineatoffset(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset line terminator success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (linenumber != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset line terminator success case - expected 0 got wrong line number. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, linenumber);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // cleanup
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = (void*)-1;
+    
+    
+    // line terminator end in middle case 
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+        
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" pick\nle)");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset line terminator end in middle success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    linenumber = dg_noparselineatoffset(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        2);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset line terminator end in middle success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (linenumber != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset line terminator end in middle success case - expected 0 got wrong line number. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, linenumber);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // cleanup
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = (void*)-1;
+    
+    
+    // line terminator end at end case 
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+        
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" pick\nle)");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset line terminator end at end success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    linenumber = dg_noparselineatoffset(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        5);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset line terminator end at end success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (linenumber != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset line terminator end at end success case - expected 0 got wrong line number. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, linenumber);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // cleanup
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = (void*)-1;
+    
+    
+    // two line terminators end in middle success case 
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+        
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" \n pick\nle)");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset two line terminators end in middle success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    linenumber = dg_noparselineatoffset(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        5);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset two line terminators end in middle success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (linenumber != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset two line terminators end in middle success case - expected 1 got wrong line number. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, linenumber);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // cleanup
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = (void*)-1;
+    
+    
+    // multiple line terminators end in middle of line terminators success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+        
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" \n pick\n\nle)");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset multiple line terminators end in middle of line terminators success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    linenumber = dg_noparselineatoffset(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        8);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset multiple line terminators end in middle of line terminators success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (linenumber != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset multiple line terminators end in middle of line terminators success case - expected 2 got wrong line number. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, linenumber);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // cleanup
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = (void*)-1; 
+    
+    
+    // line terminators at end success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+        
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" \n pick\n\n");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset line terminators at end success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    linenumber = dg_noparselineatoffset(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        9);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset line terminators at end success case - got an error trying to parse at end, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (linenumber != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset line terminators at end success case - expected 2 got wrong line number. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, linenumber);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // line terminators at end success b case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+        
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" \n pick\n\n");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset line terminators at end success b case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    linenumber = dg_noparselineatoffset(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        8);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset line terminators at end success b case - got an error trying to parse at end, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (linenumber != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset line terminators at end success b case - expected 2 got wrong line number. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, linenumber);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // line terminators at end success c case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+        
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" \n pick\n\n");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset line terminators at end success c case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    linenumber = dg_noparselineatoffset(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        7);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset line terminators at end success c case - got an error trying to parse at end, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (linenumber != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset line terminators at end success c case - expected 1 got wrong line number. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, linenumber);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // line terminators at end success d case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+        
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" \n pick\r\n");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset line terminators at end success d case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    linenumber = dg_noparselineatoffset(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        6);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset line terminators at end success d case - got an error trying to parse at end, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (linenumber != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset line terminators at end success d case - expected 1 got wrong line number. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, linenumber);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // cleanup
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = (void*)-1; 
+
+
+    // multiple lines error in middle success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" \n pick\nshoe\ntomato");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset multiple lines error in middle success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    linenumber = dg_noparselineatoffset(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        13);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset multiple lines error in middle success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (linenumber != 3)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset multiple lines error in middle success case - expected 3 got wrong line number. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, linenumber);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+
+    dg_freeallbuffers(&BHarrayhead);
+
+    // cleanup
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = (void*)-1;
+
+
+    // multiple lines error in middle b success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" \n pick\nshoe\ntomato");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset multiple lines error in middle b success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    linenumber = dg_noparselineatoffset(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        12);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset multiple lines error in middle b success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (linenumber != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset multiple lines error in middle b success case - expected 2 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, linenumber);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+
+    dg_freeallbuffers(&BHarrayhead);
+
+    // cleanup
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = (void*)-1;
+
+
+    // multiple lines error in middle c success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" \n pick\nshoe\ntomato");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset multiple lines error in middle c success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    linenumber = dg_noparselineatoffset(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        8);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset multiple lines error in middle c success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (linenumber != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset multiple lines error in middle c success case - expected 2 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, linenumber);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+
+    dg_freeallbuffers(&BHarrayhead);
+
+    // cleanup
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = (void*)-1;
+
+
+    // multiple lines error before middle success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead); // probably not needed
+
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" \n pick\nshoe\ntomato");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset multiple lines error before middle success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    linenumber = dg_noparselineatoffset(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        7);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset multiple lines error before middle success case - got an error trying to parse first word, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (linenumber != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_noparselineatoffset multiple lines error before middle success case - expected 1 got wrong line number. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, linenumber);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+
+    // cleanup
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = (void*)-1;
+    
+}
+
+
+void testdg_replacebuffersegment()
+{
+    const char* pError = NULL;
+
+    Bufferhandle BHarrayhead;
+    Bufferhandle* pBH;
+    
+    unsigned char* pstring;
+    UINT64* pstringlength;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_replacebuffersegment\n");
+    
+    // success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" boo :) \n hoo");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_replacebuffersegment success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_replacebuffersegment (
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        3, // destoffset,
+        2, // destlength,
+        (unsigned char*)"xz", // psrc,
+        2); //  srclength)
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_replacebuffersegment success case - got an error trying to do replace, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    pstring = dg_getpbuffer(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        &pstringlength);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_replacebuffersegment success case - got an error trying to get pointer to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+        
+    if ((pstring[0] != ' ') ||
+        (pstring[1] != 'b') ||
+        (pstring[2] != 'o') ||
+        (pstring[3] != 'x') ||
+        (pstring[4] != 'z') ||
+        (pstring[5] != ':') ||
+        (pstring[6] != ')') ||
+        (pstring[7] != ' '))
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_replacebuffersegment success case - expected ' boxz:) ...' got wrong string. Got '");
+        dg_writestdoutraw(
+            &BHarrayhead,
+            pstring,
+            *pstringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    if (*pstringlength != 13)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_replacebuffersegment success case - expected 13 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, *pstringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    
+    // success need to grow case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" boo :) \n hoo");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_replacebuffersegment success need to grow case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_replacebuffersegment (
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        3, // destoffset,
+        2, // destlength,
+        (unsigned char*)"xzwt", // psrc,
+        4); //  srclength)
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_replacebuffersegment success need to grow case - got an error trying to do replace, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    pstring = dg_getpbuffer(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        &pstringlength);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_replacebuffersegment success need to grow case - got an error trying to get pointer to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+        
+    if ((pstring[0] != ' ') ||
+        (pstring[1] != 'b') ||
+        (pstring[2] != 'o') ||
+        (pstring[3] != 'x') ||
+        (pstring[4] != 'z') ||
+        (pstring[5] != 'w') ||
+        (pstring[6] != 't') ||
+        (pstring[7] != ':'))
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_replacebuffersegment success need to grow case - expected ' boxzwt:) ...' got wrong string. Got '");
+        dg_writestdoutraw(
+            &BHarrayhead,
+            pstring,
+            *pstringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    if (*pstringlength != 15)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_replacebuffersegment success need to grow case - expected 15 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, *pstringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    
+    // success need to shrink case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_push0stringtobuffersegment(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        (unsigned char*)" boo :) \n hoo");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_replacebuffersegment success need to shrink case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_replacebuffersegment (
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        3, // destoffset,
+        2, // destlength,
+        (unsigned char*)"x", // psrc,
+        1); //  srclength)
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_replacebuffersegment success need to shrink case - got an error trying to do replace, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    pstring = dg_getpbuffer(
+        &BHarrayhead,
+        DG_TERMINALINPUT_BUFFERID,
+        &pstringlength);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_replacebuffersegment success need to shrink case - got an error trying to get pointer to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+        
+    if ((pstring[0] != ' ') ||
+        (pstring[1] != 'b') ||
+        (pstring[2] != 'o') ||
+        (pstring[3] != 'x') ||
+        (pstring[4] != ':') ||
+        (pstring[5] != ')') ||
+        (pstring[6] != ' ') ||
+        (pstring[7] != '\n'))
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_replacebuffersegment success need to shrink case - expected ' box:) ...' got wrong string. Got '");
+        dg_writestdoutraw(
+            &BHarrayhead,
+            pstring,
+            *pstringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    if (*pstringlength != 12)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_replacebuffersegment success need to shrink case - expected 15 got wrong string length. Got '");
+        dg_writestdoutuinttodec(&BHarrayhead, *pstringlength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"'\n");
+        return;
+    }
+    
+    dg_freeallbuffers(&BHarrayhead);
 }

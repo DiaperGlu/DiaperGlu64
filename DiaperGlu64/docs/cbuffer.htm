@@ -3,20 +3,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.2.
+//    This file is part of DiaperGlu v5.3.
 //
-//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.2; if not, write to the Free Software
+//    along with DiaperGlu v5.3; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// April 10, 2022             //
-// version 5.2                //
+// May 15, 2022               //
+// version 5.3                //
 // /////////////////////////////
 -->
 
@@ -106,6 +106,9 @@
       <a href=cbuffer.htm#dg_parsemultiline              >dg_parsemultiline</a>
       <a href=cbuffer.htm#dg_parseword                   >dg_parseword</a>
       <a href=cbuffer.htm#dg_parsewords                  >dg_parsewords</a>
+      <a href=cbuffer.htm#dg_parseline                   >dg_parseline</a>
+      <a href=cbuffer.htm#dg_noparselineatoffset         >dg_noparselineatoffset</a>
+      <a href=cbuffer.htm#dg_pushbuffersegment           >dg_pushbuffersegment</a>
       <a href=cbuffer.htm#dg_savelocalstackdepth         >dg_savelocalstackdepth</a>
       <a href=cbuffer.htm#dg_restorelocalstackdepth      >dg_restorelocalstackdepth</a>
       <a href=cbuffer.htm#dg_savelocallstackdepth        >dg_savelocallstackdepth</a>
@@ -1047,7 +1050,7 @@
 //  none
 //                              
 // Action
-//  pushes length bytes from psrc to the buffersegment
+//  pushes length bytes from psrc onto the end of a buffer
 //
 // Warning!: Don't push stuff from inside this buffer because the buffer could
 //  move when it is grown making psrc invalid. If you need to do that,
@@ -2172,6 +2175,164 @@
 </pre>
       </div>
 
+
+     <div class=word id=dg_parseline>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_parseline
+//
+// C prototype:
+//  unsigned char* dg_parseline(
+//   Bufferhandle* pBHarrayhead,
+//   UINT64* plinelength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the 
+//                                  other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( "string&lt;terminator&gt;morestuff" 
+//     -currentinputbuffer- "morestuff" )
+//
+// Outputs:
+//  unsigned char*   return         pointer to string parsed
+//
+//  UINT64*          pwordlength    pointer to length of line parsed
+//
+// Action:
+//  The address of the current input pointer's location in the current input buffer
+//   when this routine is entered is what is returned.
+//  This routine does not check if the current input pointer's location is at the
+//   start of a line.
+//  Moves current input pointer to the first end of line delimiter
+//   or to the end of the buffer, whichever comes first.
+//  The number of characters skipped during this first move is the linelength 
+//   returned.
+//  If not at the end of the buffer, this then moves the current input pointer past 
+//   the first end of line delimeter found. This is usually one character but if
+//   the line ends with a crlf pair, this moves the current input pointer past
+//   two characters to get past the crlf pair. 
+//
+//  An end of line terminator  is one of:
+//   c shorthand      ascii code    name  
+//   '\n'             0x0a          &lt;line feed&gt;
+//   '\v'             0x0b          &lt;vertical tab&gt;
+//   '\b'             0x08          &lt;back space&gt;
+//   '\r'             0x0d          &lt;carriage return&gt;
+//   '\f'             0x0c          &lt;form feed&gt;
+//
+//   '\r\n'           0x0d 0x0a     &lt;carriage return line feed&gt;
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_noparselineatoffset>
+<pre>
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_noparselineatoffset
+//
+// C prototype:
+//  unsigned char* dg_noparselineatoffset(
+//   Bufferhandle* pBHarrayhead,
+//   UINT64* plinelength,
+//    UINT64* plinenumber)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
+//                                 used as the bufferhandle for the array where the 
+//                                  other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( "string&lt;terminator&gt;morestuff" 
+//     -currentinputbuffer- "morestuff" )
+//
+// Outputs:
+//  unsigned char*   return         pointer to string parsed
+//
+//  UINT64*          pwordlength    pointer to length of line parsed
+//
+// Action:
+//  This routine parses lines from the current input buffer until it finds
+//   the line that has the offset of the current input pointer. (The current input
+//   pointer is really just an offset... I should rename this in the documentation...)
+//  The line terminator character(s) that end the line are considered part of the
+//   line.
+//  The current input pointer is not changed.
+//  The 0 based line number of the line found is returned.
+//  The address and length of the line found is returned. The returned length does
+//   not include the line terminator character(s). 
+//
+//  An end of line terminator  is one of:
+//   c shorthand      ascii code    name  
+//   '\n'             0x0a          &lt;line feed&gt;
+//   '\v'             0x0b          &lt;vertical tab&gt;
+//   '\b'             0x08          &lt;back space&gt;
+//   '\r'             0x0d          &lt;carriage return&gt;
+//   '\f'             0x0c          &lt;form feed&gt;
+//
+//   '\r\n'           0x0d 0x0a     &lt;carriage return line feed&gt;
+//
+// Failure cases:
+//  
+////////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_pushbuffersegment>
+<pre>
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_pushbuffersegment
+//
+// C prototype:
+//  void dg_replacebuffersegment (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 destoffset,
+//   UINT64 destlength,
+//   unsigned char* psrc,
+//   UINT64 srclength)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                               used as the bufferhandle for the array where
+//                               the other bufferhandles are stored.
+//
+//  UINT64        bufferid      index of the bufferhandle in the BHarray
+//
+//  UINT64        destoffset    0 based byte offset of the segment in the buffer 
+//                               to replace
+//
+//  UINT64        destlength    length in bytes of the segment in the buffer 
+//                               to replace
+// 
+//  unsigned char* psrc         data is copied from here to the buffer segment
+//
+//  UINT64        srclength     number of bytes in the src segment
+//
+// Outputs:
+//  none
+//                              
+// Action
+//  Deletes the destination segment, then inserts the source segment.
+//
+// Warning!: Don't replace stuff from inside this buffer because the buffer could
+//  move when it is grown making psrc invalid. If you need to do that,
+//  do a dg_growbuffer or dg_shrinkbuffer first then get the pointer, then do a
+//  dg_putbuffersegment.
+//  
+/////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
 
      <div class=word id=dg_tocurrent>
 <pre>

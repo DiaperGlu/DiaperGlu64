@@ -1,0 +1,47 @@
+( //////////////////////////////////////////////////////////////////////////////////////// )
+( //                                                                                       )
+( //    Copyright 2022 James Patrick Norris                                                )
+( //                                                                                       )
+( //    This file is part of Diaperglu 5.3.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.3 is free software; you can redistribute it and/or modify              )
+( //    it under the terms of the GNU General Public License as published by               )
+( //    the Free Software Foundation; either version 2 of the License, or                  )
+( //    {at your option} any later version.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.3 is distributed in the hope that it will be useful,                   )
+( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
+( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
+( //    GNU General Public License for more details.                                       )
+( //                                                                                       )
+( //    You should have received a copy of the GNU General Public License                  )
+( //    along with Diaperglu 5.3; if not, write to the Free Software                       )
+( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
+( //                                                                                       )
+( //////////////////////////////////////////////////////////////////////////////////////// )
+
+( /////////////////////////////// )
+( // James Patrick Norris      // )
+( // www.rainbarrel.com        // )
+( // May 15, 2022              // )
+( // version 5.3               // )
+( /////////////////////////////// )
+
+// OSYMBOL dg_sqrtuint64s
+  ( px                RDI
+    psqrtx            RSI
+    pxguess           RDX
+    pxguesscopy       RCX
+    lengthinuint64s   R8 
+    fractionaluint64s R9              
+    -ret- )
+
+HEX
+1000 1000 NEWBUFFER CONSTANT rsquared
+1000 1000 NEWBUFFER CONSTANT 
+
+  
+
+
+     
+

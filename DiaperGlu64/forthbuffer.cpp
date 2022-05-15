@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.2.
+//    This file is part of DiaperGlu v5.3.
 //
-//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.2; if not, write to the Free Software
+//    along with DiaperGlu v5.3; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// April 10, 2022             //
-// version 5.2                //
+// May 15, 2022               //
+// version 5.3                //
 // /////////////////////////////
 
 
@@ -1166,7 +1166,7 @@ void dg_forthgetoarrayelement (Bufferhandle* pBHarrayhead)
 		dg_pusherror(pBHarrayhead, dg_indexnotinarrayerror);
         dg_pusherror(pBHarrayhead, dg_forthgetoarrayelementname);
 
-		pints[0] = (UINT64)-1;
+		pints[0] = (UINT64)largestunsignedint;
 
 		*pbuflength = *pbuflength - (2 * sizeof(UINT64));
 
@@ -1750,6 +1750,116 @@ void dg_forthdeleteinbuffer (Bufferhandle* pBHarrayhead)
 	*pbuflength = *pbuflength - (3 * sizeof(UINT64));
 }
 
+
+void dg_forthreplaceinbuffer (Bufferhandle* pBHarrayhead)
+//     ( psrc srclength destoffset destbufferid destlength -- )  
+{
+	UINT64* pbuflength = NULL; // why didn't I call this pdatastacklength? too long?
+	unsigned char* pdatastack = NULL;
+
+	UINT64* pints = NULL;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+	if (baderrorcount == olderrorcount)
+	{
+		// could not get error count because BHarrayhead is not there so just exiting
+		return;
+	}
+
+	pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthreplaceinbuffername);
+		return;
+	}
+
+	if (*pbuflength < (5 * sizeof(UINT64)) )
+	{
+		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthreplaceinbuffername);
+		return;
+	}
+
+	// could check for misaligned data stack pointer here
+
+	pints = (UINT64*)(pdatastack + *pbuflength - (5 * sizeof(UINT64)));
+
+    dg_replacebuffersegment (
+        pBHarrayhead,
+        pints[3],   // bufferid,
+        pints[2],   // destoffset,
+        pints[4],   // destlength,
+        (unsigned char*)(pints[0]),   // psrc,
+        pints[1]);  // srclength)
+
+	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthreplaceinbuffername);
+		return;
+	}
+
+	*pbuflength = *pbuflength - (5 * sizeof(UINT64));
+}
+
+void dg_forthinsertsintobuffer (Bufferhandle* pBHarrayhead)
+//     ( psrc srclength destoffset destbufferid -- )  
+{
+	UINT64* pbuflength = NULL; // why didn't I call this pdatastacklength? too long?
+	unsigned char* pdatastack = NULL;
+
+	UINT64* pints = NULL;
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+	if (baderrorcount == olderrorcount)
+	{
+		// could not get error count because BHarrayhead is not there so just exiting
+		return;
+	}
+
+	pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthinsertsintobuffername);
+		return;
+	}
+
+	if (*pbuflength < (4 * sizeof(UINT64)) )
+	{
+		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthinsertsintobuffername);
+		return;
+	}
+
+	// could check for misaligned data stack pointer here
+
+	pints = (UINT64*)(pdatastack + *pbuflength - (4 * sizeof(UINT64)));
+
+    dg_replacebuffersegment (
+        pBHarrayhead,
+        pints[3],   // bufferid,
+        pints[2],   // destoffset,
+        0,   // destlength,
+        (unsigned char*)(pints[0]),   // psrc,
+        pints[1]);  // srclength)
+
+	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthinsertsintobuffername);
+		return;
+	}
+
+	*pbuflength = *pbuflength - (4 * sizeof(UINT64));
+}
 
 void dg_forthgrowbuffer (Bufferhandle* pBHarrayhead)
 //     ( length bufferid -- )
@@ -2427,14 +2537,14 @@ void dg_forthcscanbuf (Bufferhandle* pBHarrayhead)
 			dg_pusherror(pBHarrayhead, dg_forthcscanbufname);
 		}
 
-		if (u1 != (UINT64)-1)
+		if (u1 != (UINT64)largestunsignedint)
 		{
 			u1 = u1 + offset;
 		}
 	}
 	else
 	{
-		u1 = (UINT64)-1;
+		u1 = (UINT64)largestunsignedint;
 	}
 
 	pints[0] = (UINT64)u1;
@@ -2522,14 +2632,14 @@ void dg_forthscanbuf (Bufferhandle* pBHarrayhead)
 			dg_pusherror(pBHarrayhead, dg_forthscanbufname);
 		}
 
-		if (u1 != (UINT64)-1)
+		if (u1 != (UINT64)largestunsignedint)
 		{
 			u1 = u1 + offset;
 		}
 	}
 	else
 	{
-		u1 = (UINT64)-1;
+		u1 = (UINT64)largestunsignedint;
 	}
 
 	pints[0] = (UINT64)u1;

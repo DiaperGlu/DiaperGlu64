@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.2.
+//    This file is part of DiaperGlu v5.3.
 //
-//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.2; if not, write to the Free Software
+//    along with DiaperGlu v5.3; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// April 10, 2022             //
-// version 5.2                //
+// May 15, 2022               //
+// version 5.3                //
 // /////////////////////////////
 
 
@@ -3026,7 +3026,7 @@ void dg_forthgetenvstring (Bufferhandle* pBHarrayhead)
 	}
 
 	if ((valuestringlength != 0) &&
-        (valuestringlength != (UINT64)-1))
+        (valuestringlength != (UINT64)largestunsignedint))
 	{
 		dg_growlstring(
             pBHarrayhead, 
@@ -3280,14 +3280,14 @@ void dg_forthcscanstring (Bufferhandle* pBHarrayhead)
 			dg_pusherror(pBHarrayhead, dg_forthcscanstringname);
 		}
 
-		if (u1 != (UINT64)-1)
+		if (u1 != (UINT64)largestunsignedint)
 		{
 			u1 = u1 + offset;
 		}
 	}
 	else
 	{
-		u1 = (UINT64)-1;
+		u1 = (UINT64)largestunsignedint;
 	}
 
 	pints[0] = (UINT64)u1;
@@ -3397,7 +3397,7 @@ void dg_forthminuscscanstring (Bufferhandle* pBHarrayhead)
 				{
 					// value was not found
 					doneflag = FORTH_TRUE;
-					offset = (UINT64)-1;
+					offset = (UINT64)largestunsignedint;
 				}
 				else
 				{
@@ -3409,7 +3409,7 @@ void dg_forthminuscscanstring (Bufferhandle* pBHarrayhead)
 	else
 	{
 		// empty string case
-		offset = (UINT64)-1;
+		offset = (UINT64)largestunsignedint;
 	}
 	
 	pints[0] = offset;
@@ -4564,7 +4564,7 @@ void dg_forthstrippathfromfilenamestring (Bufferhandle* pBHarrayhead)
 		return;
 	}	
 	
-	if (x != (UINT64)-1)
+	if (x != (UINT64)largestunsignedint)
 	{
 		// need to drop everything from position x and before from string
 		dg_pushdatastack(
@@ -4637,7 +4637,7 @@ void dg_forthstrippathfromfilenamestring (Bufferhandle* pBHarrayhead)
 		return;
 	}	
 	
-	if (x != (UINT64)-1)
+	if (x != (UINT64)largestunsignedint)
 	{
 		// need to drop everything from position x and before from string
 		dg_pushdatastack(
@@ -4799,7 +4799,7 @@ void dg_forthpzerostrtonewstr (Bufferhandle* pBHarrayhead)
 {
     unsigned char* pzerostring;
 
-    UINT64 u1 = (UINT64)-1;
+    UINT64 u1 = (UINT64)largestunsignedint;
     
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
@@ -6171,7 +6171,7 @@ void dg_forthulestringtonumberstring(Bufferhandle* pBHarrayhead)
         return;
     }
     
-    if ((UINT64)-1 == t)
+    if ((UINT64)largestunsignedint == t)
     {
         // was all 0s case
         t = '0';
@@ -6220,7 +6220,7 @@ void dg_forthulestringtonumberstring(Bufferhandle* pBHarrayhead)
             return;
         }
     
-        if ((UINT64)-1 == t)
+        if ((UINT64)largestunsignedint == t)
         {
             break;
         }

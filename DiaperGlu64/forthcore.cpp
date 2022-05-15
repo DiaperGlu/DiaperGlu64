@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.2.
+//    This file is part of DiaperGlu v5.3.
 //
-//    DiaperGlu v5.2 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.2 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.2; if not, write to the Free Software
+//    along with DiaperGlu v5.3; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// April 10, 2022             //
-// version 5.2                //
+// May 15, 2022               //
+// version 5.3                //
 // /////////////////////////////
 
 
@@ -4511,11 +4511,19 @@ void dg_forthexit (Bufferhandle* pBHarrayhead)
 {
 	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
-        if (baderrorcount == olderrorcount)
-        {
-                return;
-        }
-
+    if (baderrorcount == olderrorcount)
+    {
+            return;
+    }
+    
+    dg_forthquerycompileunnestlocals(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+		dg_pusherror(pBHarrayhead, dg_forthexitname);
+		return;
+	}
+    
 	dg_compileexitlocals(pBHarrayhead);
 
 	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
@@ -4670,7 +4678,7 @@ void dg_forthfind (Bufferhandle* pBHarrayhead)
 	}
 	else
 	{
-		dg_pushbufferuint64(pBHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)(-1));
+		dg_pushbufferuint64(pBHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)(largestunsignedint));
 	}
 
 	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
@@ -5030,7 +5038,7 @@ void dg_forthinvert (Bufferhandle* pBHarrayhead)
 	// could check for corrupt buflength here
 	pints = (UINT64*)(pdatastack + *pbuflength - (sizeof(UINT64)));
 
-	pints[0] = pints[0] ^ (UINT64)-1;
+	pints[0] = pints[0] ^ (UINT64)largestunsignedint;
 }
 
 
@@ -6370,7 +6378,7 @@ void dg_forthstod (Bufferhandle* pBHarrayhead)
 	
     if (nlo < 0)
     {
-        nhi = -1;
+        nhi = largestunsignedint;
     }
     else
     {
@@ -6793,23 +6801,26 @@ void dg_forthtype (Bufferhandle* pBHarrayhead)
 
 	u = (INT64)(pints[1]);
 
-	if (u <= 0)
+	if (u < 0)
 	{
         dg_pusherror(pBHarrayhead, dg_signedlengthlessthan0error);
         dg_pusherror(pBHarrayhead, dg_forthtypename);
 		return;
 	}
 
-	dg_writestdout(
-        pBHarrayhead,
-        caddr,
-        u);
-
-    if (olderrorcount != dg_geterrorcount(pBHarrayhead))
+    if (u != 0)
     {
-        dg_pusherror(pBHarrayhead, dg_forthtypename);
-    }
-	
+        dg_writestdout(
+            pBHarrayhead,
+            caddr,
+            u);
+
+        if (olderrorcount != dg_geterrorcount(pBHarrayhead))
+        {
+            dg_pusherror(pBHarrayhead, dg_forthtypename);
+        }
+	}
+    
 	*pbuflength -= 2*sizeof(UINT64);
 }
 
@@ -8662,6 +8673,56 @@ void dg_forthlinesparsenames (Bufferhandle* pBHarrayhead)
         dg_pusherror(pBHarrayhead, dg_forthlinesparsenamesname);
         return;
     }
+}
+
+
+void dg_forthparseline (Bufferhandle* pBHarrayhead)
+//     ( "characters<terminator>morestuff" -currentinputbuffer- "morestuff" )
+//     ( -- addr length )
+{
+	UINT64 linelength = 0;
+	unsigned char* pline = NULL;
+
+
+	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+	if (baderrorcount == olderrorcount)
+	{
+		// could not get error count because BHarrayhead is not there so just exiting
+		return;
+	}
+
+	pline = dg_parseline(
+        pBHarrayhead,
+        &linelength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthparselinename);
+        return;
+    }
+
+	dg_pushbufferuint64(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        (UINT64)pline);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthparselinename);
+        return;
+    }
+    
+	dg_pushbufferuint64(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        linelength);
+
+	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthparselinename);
+		return;
+	}
 }
 
 
