@@ -1,0 +1,32 @@
+
+// documentation for the MessageBoxA function is here:
+// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messageboxa
+// link checked June 5, 2022
+
+// this document says what the parameters are and which dll the function is in
+
+$" User32.dll" OPENLIBRARY$ CONSTANT myhlib DROP
+$" MessageBoxA" myhlib FINDLIBRARYSYMBOL CONSTANT mymessageboxafunc
+
+$" My Message Box Caption" $>0$
+$" My Message Box Message" $>0$
+
+4 CONSTANT MB_YESNO
+
+MB_YESNO          // message box type
+1 GETS$[ND] DROP  // pcaption
+0 GETS$[ND] DROP  // pmessage
+0                 // pparentwindowhandle
+4                 // number of parameters
+mymessageboxafunc // pfunction
+CALLPROC
+
+CRLF ." Message box returned: " U.
+CRLF
+
+DROP$
+DROP$
+
+// DiaperGlu closes library automatically when DiaperGlu closes.
+
+

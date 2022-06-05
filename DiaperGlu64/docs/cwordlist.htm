@@ -1,22 +1,22 @@
-<!--
+<!--
 // //////////////////////////////////////////////////////////////////////////////////////
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.3.
+//    This file is part of DiaperGlu v5.4.
 //
-//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.3; if not, write to the Free Software
+//    along with DiaperGlu v5.4; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// May 15, 2022               //
-// version 5.3                //
+// June 5, 2022               //
+// version 5.4                //
 // /////////////////////////////
 -->
 
@@ -88,7 +88,7 @@
 
       <div class=word id=dg_newwordlist>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_newwordlist
 //
@@ -97,8 +97,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored
 //
 // Outputs:
 //  UINT64  return          id of newly created word list
@@ -110,14 +110,14 @@
 //  error pushing to the word list buffer
 //  error getting the length of the word list buffer
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_newword>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_newword
 //
@@ -134,15 +134,18 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored
 //  UINT64         compilebufid      buffer the compile type routine is in
-//  UINT64         compilebufoffset  offset of compile type routine in the compile routine's buffer
+//  UINT64         compilebufoffset  offset of compile type routine in the compile 
+//                                    routine's buffer
 //  UINT64         databufid         buffer where the data or code for this routine is
-//  UINT64         dataoffset        offset where the data or code for this routine is in the data's buffer
+//  UINT64         dataoffset        offset where the data or code for this routine is 
+//                                    in the data's buffer
 //  UINT64         namebufid         buffer where name 0 string is
 //  UINT64         nameoffset        offset where name 0 string is
-//  UINT64         namelength        number of characters (bytes) in the name not counting terminating 0
+//  UINT64         namelength        number of characters (bytes) in the name not 
+//                                    counting terminating 0
 //
 // Outputs:
 //  UINT64  return          execution token of the new word
@@ -157,14 +160,14 @@
 //  error getting length of definition buffer
 //  error pushing definition to the definition array
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_newwordcopyname>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_newwordcopyname
 //
@@ -181,18 +184,21 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored
 //  UINT64         compilebufid      buffer the compile type routine is in
-//  UINT64         compilebufoffset  offset of compile type routine in the compile routine's buffer
+//  UINT64         compilebufoffset  offset of compile type routine in the compile 
+//                                    routine's buffer
 //  UINT64         databufid         buffer where the data or code for this routine is
-//  UINT64         dataoffset        offset where the data or code for this routine is in the data's buffer
+//  UINT64         dataoffset        offset where the data or code for this routine is 
+//                                    in the data's buffer
 //  UINT64         namebufid         buffer where name 0 string is
 //  UINT64         nameoffset        offset where name 0 string is
-//  UINT64         namelength        number of characters (bytes) in the name not counting terminating 0
+//  UINT64         namelength        number of characters (bytes) in the name not 
+//                                    counting terminating 0
 //
 // Outputs:
-//  UINT64  return          execution token of the new word
+//  UINT64         return            execution token of the new word
 //
 // Action:
 //  creates a new word with these parameters
@@ -203,14 +209,14 @@
 //  error getting length of definition buffer
 //  error pushing definition to the definition array
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_new0stringnamecoreword>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_new0stringnamecoreword
 //
@@ -223,11 +229,14 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored
-//  UINT64         compilebufoffset  offset (address) of the compile type routine in the core buffer
-//  UINT64         dataoffset        offset (address ) where the data or code for this routine is in the core buffer
-//  unsigned char* pname             pointer to the null terminated name in the core buffer for this routine 
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored
+//  UINT64         compilebufoffset  offset (address) of the compile type routine in 
+//                                    the core buffer
+//  UINT64         dataoffset        offset (address ) where the data or code for this 
+//                                    routine is in the core buffer
+//  unsigned char* pname             pointer to the null terminated name in the core 
+//                                    buffer for this routine 
 //
 // Outputs:
 //  UINT64         return          execution token of the new definition
@@ -241,14 +250,14 @@
 //  error getting the length of the definition buffer
 //  error pushing definition to the definition array
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_new0stringcorenameword>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_new0stringcorenameword
 //
@@ -263,16 +272,19 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored
 //  UINT64         compilebufid      buffer the compile type routine is in
-//  UINT64         compilebufoffset  offset of compile type routine in the compile routine's buffer
+//  UINT64         compilebufoffset  offset of compile type routine in the compile 
+//                                    routine's buffer
 //  UINT64         databufid         buffer where the data or code for this routine is
-//  UINT64         dataoffset        offset where the data or code for this routine is in the data's buffer
-//  unsigned char* pname             pointer to the null terminated name in the core buffer for this routine 
+//  UINT64         dataoffset        offset where the data or code for this routine is 
+//                                    in the data's buffer
+//  unsigned char* pname             pointer to the null terminated name in the core 
+//                                    buffer for this routine 
 //
 // Outputs:
-//  UINT64         return          execution token of the new definition
+//  UINT64         return            execution token of the new definition
 //
 // Action:
 //  creates a new word with these parameters
@@ -283,14 +295,14 @@
 //  error getting the length of the definition buffer
 //  error pushing definition to the definition array
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_getpdefinition>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_getpdefinition
 //
@@ -301,12 +313,13 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored
-//  UINT64   definitionid      execution token of the definition
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored
+//  UINT64         definitionid      execution token of the definition
 //
 // Outputs:
-//  Definitionheader* return         pointer to the definition header for the execution token or NULL
+//  Definitionheader* return         pointer to the definition header for the execution 
+//                                    token or NULL
 //
 // Action:
 //  returns a pointer to the defintion header structure for this execution token
@@ -315,14 +328,14 @@
 //  definition id overflows array index calculation (you passed in -1 or something)
 //  error getting pointer to the buffer segment
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_linkdefinition>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_linkdefinition
 //
@@ -334,10 +347,10 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored
-//  UINT64   vocabularyid      word list identifer
-//  UINT64   definitionid      execution token of a definition
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored
+//  UINT64         vocabularyid      word list identifer
+//  UINT64         definitionid      execution token of a definition
 //
 // Outputs:
 //  none
@@ -350,16 +363,17 @@
 //  word list (vocabularyid) does not exist 
 //  error getting pointer to the definition
 //  definition is already linked in a word list
-//  trying to make a circular word list error, this definition id isn't greater than the ones already in the word list
+//  trying to make a circular word list error, this definition id isn't greater than 
+//   the ones already in the word list
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_createovariablebufdef>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_createovariablebufdef
 //
@@ -371,8 +385,8 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored
 //  unsigned char* pname             pointer to name string
 //  UINT64   namelength        number of characters (bytes) in the name string
 //
@@ -395,14 +409,14 @@
 //  error creating the new definition
 //  error linking the definition to the current new definition word list
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_createocompilebufdef>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_createocompilebufdef
 //
@@ -414,13 +428,14 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored
 //  unsigned char* pname             pointer to name string
-//  UINT64   namelength        number of characters (bytes) in the name string
+//  UINT64         namelength        number of characters (bytes) in the name string
 //
 // Outputs:
-//  UINT64   return            execution token (or definition id) of the new definition
+//  UINT64         return            execution token (or definition id) of the new 
+//                                    definition
 //
 // Action:
 //  Creates a new definition with the name specified
@@ -438,14 +453,14 @@
 //  error creating the new definition
 //  error linking the definition to the current new definition word list
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_createsubthreaddef>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_createsubthreaddef
 //
@@ -457,8 +472,8 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored
 //  unsigned char* pname             pointer to name string
 //  UINT64   namelength        number of characters (bytes) in the name
 //
@@ -473,23 +488,24 @@
 //   current compile (compile space) buffer 
 //  
 // Note: 
-//   A subroutine definition does NOT get linked into a word list at time of creation - see the dg_forth standard
-//   This is to allow you to make a new definition with the same name that calls the old
-//    definition, among other things.
+//   A subroutine definition does NOT get linked into a word list at time of creation 
+//    - see the forth standard
+//   This is to allow you to make a new definition with the same name that calls the 
+//    old definition, among other things.
 //
 // Failure cases:
 //  error getting current compile buffer id
 //  error getting current compile buffer length
 //  error creating the new definition
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_createvariabledef>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_createvariabledef
 //
@@ -501,8 +517,8 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored
 //  unsigned char* pname             pointer to name string
 //  UINT64   namelength        number of characters (bytes) in the name
 //
@@ -511,10 +527,10 @@
 //
 // Action:
 //  Creates a new variable definition with the name specified
-//  The compile type will be calculate and push address to the data stack in execute mode or
-//   compile calculate and push address to the data stack in compile mode
-//  The data pointer for this definition will point to the next available offset in the
-//   current new variable (data space) buffer
+//  The compile type will be calculate and push address to the data stack in execute 
+//   mode or compile calculate and push address to the data stack in compile mode
+//  The data pointer for this definition will point to the next available offset in 
+//   the current new variable (data space) buffer
 //  Links the definition to the current new definition word list
 //
 // Failure cases:
@@ -524,14 +540,14 @@
 //  error creating the new definition
 //  error linking the definition to the current new definition word list
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_createdconstantdef>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_createdconstantdef
 //
@@ -545,15 +561,18 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead  pointer to a Bufferhandle structure which is
-//                                used as the bufferhandle for the array where the other
-//                                bufferhandles are stored
-//  UINT64   databufoffset       low part of UINT64 constant value for this definition
-//  UINT64   databufid           high part of UINT64 constant value for this definition
+//                                used as the bufferhandle for the array where the 
+//                                other bufferhandles are stored
+//  UINT64   databufoffset       low part of UINT64 constant value for this 
+//                                definition
+//  UINT64   databufid           high part of UINT64 constant value for this 
+//                                definition
 //  unsigned char* pname         pointer to name string
 //  UINT64   namelength          number of characters (bytes) in the name
 //
 // Outputs:
-//  UINT64   return              execution token (or definition id) of the new definition
+//  UINT64   return              execution token (or definition id) of the new 
+//                                definition
 //
 // Action:
 //  Creates a new constant definition with the name specified
@@ -568,14 +587,14 @@
 //  error creating the new definition
 //  error linking the definition to the current new definition word list
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
       
       <div class=word id=dg_createconstantdef>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_createconstantdef
 //
@@ -588,14 +607,15 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored
-//  UINT64   dataid            constant value (32 bit) for this definition
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored
+//  UINT64         dataid            constant value (32 bit) for this definition
 //  unsigned char* pname             pointer to name string
-//  UINT64   namelength        number of characters (bytes) in the name
+//  UINT64         namelength        number of characters (bytes) in the name
 //
 // Outputs:
-//  UINT64   return            execution token (or definition id) of the new definition
+//  UINT64         return            execution token (or definition id) of the new 
+//                                    definition
 //
 // Action:
 //  Creates a new constant definition with the name specified
@@ -610,14 +630,14 @@
 //  error creating the new definition
 //  error linking the definition to the current new definition word list
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_getlatestdefinition>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_getlatestdefinition
 //
@@ -628,12 +648,13 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored
-//  UINT64   wid               word list id            
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored
+//  UINT64         wid               word list id            
 //
 // Outputs:
-//  UINT64   return            execution token (or definition id) of the latest definition
+//  UINT64         return            execution token (or definition id) of the latest 
+//                                    definition
 //
 // Action:
 //  returns the newest defined definition in the word list
@@ -642,14 +663,14 @@
 //  word list id overflows array index calculation (you passed in -1 or something)
 //  error getting the definition token from the word list buffer
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_getnextdefinition>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_getnextdefinition
 //
@@ -660,13 +681,13 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored
-//  UINT64   currentdefinition execution token (or definition id) of a definition           
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored
+//  UINT64         currentdefinition execution token (or definition id) of a definition           
 //
 // Outputs:
-//  UINT64   return            the execution token (or definition id) of the next definition
-//                                    in the word list's linked list
+//  UINT64         return            the execution token (or definition id) of the next 
+//                                    definition in the word list's linked list
 //
 // Action:
 //  returns the execution token of the next definition in the word list's linked list
@@ -675,14 +696,14 @@
 //  error getting pointer to the definition
 //  circular or broken word list error
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_executedefinition>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_executedefinition
 //
@@ -693,9 +714,9 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored
-//  UINT64   definitionid      execution token of a definition           
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored
+//  UINT64         definitionid      execution token of a definition           
 //
 // Outputs:
 //  none
@@ -709,14 +730,14 @@
 //  error pushing the data offset
 //  error pushing the data buffer
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_finddefinwordlist>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_finddefinwordlist
 //
@@ -729,20 +750,20 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored
-//  UINT64   vocabularyid      word list id
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored
+//  UINT64         vocabularyid      word list id
 //  unsigned char* pname             pointer to name to look up
-//  UINT64   namelength        length of name in character (bytes)           
+//  UINT64         namelength        length of name in character (bytes)           
 //
 // Outputs:
-//  if the name matches a definition's name in the word list exactly then this routine returns
-//   the execution token for that definition
+//  if the name matches a definition's name in the word list exactly then this routine 
+//   returns the execution token for that definition
 //  otherwise this routine returns DG_ENDOFWORDLIST (ENDOFWORDLIST)
 //
 // Action:
-//  looks up the name in the word list and returns the execution token of the first occurrence 
-//   in the word list
+//  looks up the name in the word list and returns the execution token of the first
+//   occurrence in the word list
 //
 // Failure cases:
 //  name length is 0
@@ -751,14 +772,14 @@
 //  process doesn't owm all the memory at the name's address
 //  error getting  the next definition
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_finddefinsearchorder>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_finddefinsearchorder
 //
@@ -770,19 +791,19 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored
 //  unsigned char* pname             pointer to name to look up
 //  UINT64   namelength        length of name in character (bytes)           
 //
 // Outputs:
-//  if the name matches a definition's name in the search order exactly then this routine returns
-//   the execution token for that definition 
+//  if the name matches a definition's name in the search order exactly then this routine 
+//   returnsthe execution token for that definition 
 //  otherwise this routine returns DG_ENDOFWORDLIST (ENDOFWORDLIST)
 //
 // Action:
-//  looks up the name in the current search order and returns the execution token of the first
-//   occurrence of the name
+//  looks up the name in the current search order and returns the execution token of 
+//   the first occurrence of the name
 //
 // Failure cases:
 //  name length is 0
@@ -791,14 +812,14 @@
 //  process doesn't owm all the memory at the name's address
 //  error getting  the next definition
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_changelatestcompileroutine>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_changelatestcompileroutine
 //
@@ -810,29 +831,32 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored
-//  UINT64   compilebufid      buffer id of new compile type routine for latest definition
-//  UINT64   compilebufoffset  offset of new compile type routine in it's buffer for latest definition           
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored
+//  UINT64         compilebufid      buffer id of new compile type routine for latest 
+//                                    definition
+//  UINT64        compilebufoffset   offset of new compile type routine in it's buffer 
+//                                    for latest definition           
 //
 // Outputs:
 //  none
 //
 // Action:
-//  changes the compile type routine of the latest created definition to this compile type routine
+//  changes the compile type routine of the latest created definition to this compile 
+//   type routine
 //
 // Failure cases:
 //  error getting pointer to the definition header array buffer
 //  definition header array buffer does not have a definition in it
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
     
 
       <div class=word id=dg_newpresortedwordlist>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_newpresortedwordlist
 //
@@ -844,8 +868,8 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead       pointer to a Bufferhandle structure which is
-//                                     used as the bufferhandle for the array where the other
-//                                     bufferhandles are stored
+//                                     used as the bufferhandle for the array where the 
+//                                     other bufferhandles are stored
 //
 //  struct Premadeword *pmypresortedwordlist
 //                                    pointer to a presorted array of word headers
@@ -853,21 +877,22 @@
 //  UINT64 mypresortedwordlistlength  number of word headers in presorted list
 //
 // Outputs:
-//  UINT64 return                     execution token (word id) of new presorted wordlist
+//  UINT64 return                     execution token (word id) of new presorted 
+//                                     wordlist
 //
 // Action:
 //  Makes a new presorted wordlist, and fills it with the presorted words passed in.
 //
 // Failure cases:
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
 
       <div class=word id=dg_copyandrenamewordid>
 <pre>
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_copyandrenamewordid
 //
@@ -900,14 +925,14 @@
 //  error getting definition
 //  error creating a new word
 //   
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_findcopyandrenameword>
 <pre>
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_findcopyandrenameword
 //
@@ -941,14 +966,14 @@
 //  error finding old word
 //  error creating a new word
 //   
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_emptywordlist>
 <pre>
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_emptywordlist
 //
@@ -974,14 +999,14 @@
 //
 // Failure cases:
 //   
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_createbrackettoorderconstantdef>
 <pre>
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_createbrackettoorderconstantdef
 //
@@ -1015,7 +1040,7 @@
 //
 // Failure cases:
 //   
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 

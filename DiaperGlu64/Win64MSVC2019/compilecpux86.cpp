@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.3.
+//    This file is part of DiaperGlu v5.4.
 //
-//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.3; if not, write to the Free Software
+//    along with DiaperGlu v5.4; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// May 15, 2022               //
-// version 5.3                //
+// June 5, 2022               //
+// version 5.4                //
 // /////////////////////////////
 
 
@@ -13363,6 +13363,9 @@ void dg_compiletwotargets (
     dg_Sibformatter mtomraxtarget;
 
     struct Twotargetopcodestrings mymovopcodes;
+    struct Twotargetopcodestrings *pmysrcopcodes;
+    struct Twotargetopcodestrings *pmydestopcodes;
+
     
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
     
@@ -13699,7 +13702,8 @@ void dg_compiletwotargets (
                 }
             }
 
-            // I want to make it go mov src>rax operation rax>dest
+            // I want to make it go mov src>rax operation rax>dest unless it's LEA,
+            //  for LEA, it's lea src>rax mov rax>dest
             //  if forward, pfirsttarget is destination, psecondtarget is source
             //  if reverse, psecondtarget is destination, pfirsttarget is destination
 
@@ -13710,6 +13714,28 @@ void dg_compiletwotargets (
                 dg_pusherror(pBHarrayhead, (const char*)"size of both targets must match. automatic size conversion not supported... yet");
                 dg_pusherror(pBHarrayhead, dg_compiletwotargetsname);
                 return;
+            }
+
+            dg_fill2targetmovoptbl(
+                pBHarrayhead,
+                &mymovopcodes);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_compiletwotargetsname);
+                return;
+            }
+            
+            // check for LEA, case moo
+            if ( popcodes->m32tor32.popcodestring[0] != (char)0x8D ) 
+            {   
+                pmysrcopcodes = &mymovopcodes;
+                pmydestopcodes = popcodes;
+            }
+            else
+            {
+                pmysrcopcodes = popcodes;
+                pmydestopcodes = &mymovopcodes;
             }
 
             switch (pfirsttarget->size)
@@ -13734,16 +13760,6 @@ void dg_compiletwotargets (
 
             if (FORTH_FALSE == isreverse)
             {
-                dg_fill2targetmovoptbl(
-                    pBHarrayhead,
-                    &mymovopcodes);
-
-                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-                {
-                    dg_pusherror(pBHarrayhead, dg_compiletwotargetsname);
-                    return;
-                }
-
                 dg_initSibformatter(&mtomraxtarget);
                 mtomraxtarget.basereg = mtomtransferreg;
                 mtomraxtarget.memmode = dg_memmodedefaultreg;
@@ -13755,7 +13771,7 @@ void dg_compiletwotargets (
 
                 dg_compilertom(
                     pBHarrayhead,
-                    &mymovopcodes,
+                    pmysrcopcodes, // &mymovopcodes,
                     &mtomraxtarget, // pregpsf, - top on stack
                     psecondtarget);  // pmempsf, - second on stack
 
@@ -13774,7 +13790,7 @@ void dg_compiletwotargets (
 
                 dg_compilertom(
                     pBHarrayhead,
-                    popcodes,
+                    pmydestopcodes, // popcodes,
                     &mtomraxtarget, // pregpsf, - second on stack
                     pfirsttarget);  // pmempsf, - first on stack
 
@@ -13790,16 +13806,6 @@ void dg_compiletwotargets (
                 // dg_pusherror(pBHarrayhead, (const char*)"reverse memory to memory operations not supported yet");
                 // dg_pusherror(pBHarrayhead, dg_compiletwotargetsname);
 
-                dg_fill2targetmovoptbl(
-                    pBHarrayhead,
-                    &mymovopcodes);
-
-                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-                {
-                    dg_pusherror(pBHarrayhead, dg_compiletwotargetsname);
-                    return;
-                }
-
                 dg_initSibformatter(&mtomraxtarget);
                 mtomraxtarget.basereg = mtomtransferreg;
                 mtomraxtarget.memmode = dg_memmodedefaultreg;
@@ -13811,7 +13817,7 @@ void dg_compiletwotargets (
 
                 dg_compilertom(
                     pBHarrayhead,
-                    &mymovopcodes,
+                    pmysrcopcodes, // &mymovopcodes,
                     &mtomraxtarget, // pregpsf, - top on stack
                     pfirsttarget);  // pmempsf, - second on stack
 
@@ -13831,7 +13837,7 @@ void dg_compiletwotargets (
 
                 dg_compilertom(
                     pBHarrayhead,
-                    popcodes,
+                    pmydestopcodes, // popcodes,
                     &mtomraxtarget, // pregpsf, - second on stack
                     psecondtarget);  // pmempsf, - first on stack
 
@@ -65566,7 +65572,7 @@ void dg_forthptoiparam(Bufferhandle* pBHarrayhead)
     numberofintparameters = dg_getbufferuint64(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
-        dg_callsubnumberofints);
+        dg_numberofcparameters);
 
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -65579,7 +65585,7 @@ void dg_forthptoiparam(Bufferhandle* pBHarrayhead)
     dg_putbufferuint64(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
-        dg_callsubnumberofints,
+        dg_numberofcparameters,
         numberofintparameters);
 
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
@@ -65796,7 +65802,7 @@ void dg_forthbeginsubparams(Bufferhandle* pBHarrayhead)
 }
 
 
-const char* dg_subparamsnotbalanced = " - parameters not balanced. If before function call, need one >IPARAM or >FPARAM or >IFPARAM after each parameter. If after function call, need one IPARAM> or FPARAM> before each parameter.";
+const char* dg_subparamsnotbalanced = " - parameters not balanced. If before function call, need one >IPARAM or >FPARAM or >IFPARAM or P>IPARAM after each parameter. If after function call, need one IPARAM> or FPARAM> before each parameter.";
 
 const char dg_forthendsubparamscommaname[] = ")),";
 
@@ -65922,7 +65928,7 @@ void dg_forthendsubparamscomma(Bufferhandle* pBHarrayhead)
         // the top number on the stack should be one of >IPARAM >FPARAM IPARAM> FPARAM>
         switch (x)
         {
- 
+            
             case dg_istointsubparam:
 
                 if (i < (sizeof(intparameterslookuptable) / sizeof(UINT64)))
@@ -65988,6 +65994,73 @@ void dg_forthendsubparamscomma(Bufferhandle* pBHarrayhead)
                 }
 
                 break;
+
+            case dg_isptointsubparam: 
+
+                if (i < (sizeof(intparameterslookuptable) / sizeof(UINT64)))
+                {
+                    // it's in a register
+                    dg_pushdatastack(
+                        pBHarrayhead,
+                        intparameterslookuptable[i]);
+
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+                        return;
+                    }
+
+                    dg_forthleacomma(pBHarrayhead);
+
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+                        return;
+                    }
+                }
+                else
+                {
+
+                    dg_pushdatastack(pBHarrayhead, dg_rsp);
+
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+                        return;
+                    }
+
+                    dg_pushdatastack(
+                        pBHarrayhead,
+                        ((i+ 4) - (sizeof(intparameterslookuptable) / sizeof(UINT64))) * sizeof(UINT64)
+                    );
+
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+                        return;
+                    }
+
+                    dg_forthbracketrplusd(pBHarrayhead);
+
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+                        return;
+                    }
+
+                    // dg_forthdots(pBHarrayhead);
+
+                    dg_forthleacomma(pBHarrayhead);
+
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthendsubparamscommaname);
+                        return;
+                    }
+                }
+
+                break;
+
 
             case dg_istofloatsubparam:
 

@@ -1,0 +1,25 @@
+
+// documentation for the beep function is here:
+// https://docs.microsoft.com/en-us/windows/win32/api/utilapiset/nf-utilapiset-beep
+// link checked June 5, 2022
+
+// this document says what the parameters are and which dll the function is in
+
+
+$" Kernel32.dll" OPENLIBRARY$ CONSTANT myhlib DROP
+$" Beep" myhlib FINDLIBRARYSYMBOL CONSTANT mybeepfunc
+
+
+
+1000              // duration in milliseconds
+256               // frequency in Hz
+2                 // number of parameters
+mybeepfunc        // pfunction
+CALLPROC
+
+DROP
+
+
+// DiaperGlu closes library automatically when DiaperGlu closes.
+
+

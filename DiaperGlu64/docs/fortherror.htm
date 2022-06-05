@@ -1,22 +1,22 @@
-<!--
+<!--
 // //////////////////////////////////////////////////////////////////////////////////////
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.3.
+//    This file is part of DiaperGlu v5.4.
 //
-//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.3; if not, write to the Free Software
+//    along with DiaperGlu v5.4; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// May 15, 2022               //
-// version 5.3                //
+// June 5, 2022               //
+// version 5.4                //
 // /////////////////////////////
 -->
 
@@ -84,7 +84,7 @@
 
       <div class=word id=dg_forthpushoerror>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthpushoerror ( PUSHOERROR0$ &gt;ERROR &gt;E )
 //
@@ -93,8 +93,8 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored  
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored  
 //
 // Stack action shorthand:
 //  ( offset bufferid -- )
@@ -114,14 +114,14 @@
 // Failure cases:
 //  error in a subroutine - (no error is pushed from this routine)
 //   
-//////////////////////////////////////////////////////////////////////// 
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthpopoerror>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthpopoerror ( POPOERROR0$ ERROR&gt; E&gt; )
 //
@@ -130,8 +130,8 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored  
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored  
 //
 // Stack action shorthand:
 //  ( offset bufferid -error- )
@@ -151,14 +151,14 @@
 // Failure cases:
 //  error in a subroutine - (no error is pushed from this routine)
 //   
-//////////////////////////////////////////////////////////////////////// 
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthgetoerror>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthgetoerror ( GETOERROR0$ )
 //
@@ -167,14 +167,15 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other
-//                                    bufferhandles are stored
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored
 //
 // Stack action shorthand:
 //  ( errorstackindex -- pError0$ )
 //
 // Data stack in:
-//  errorstackindex                  0 indexes the bottom (first pushed) error on the error stack
+//  errorstackindex                  0 indexes the bottom (first pushed) error on the 
+//                                    error stack
 // 
 // Data stack out:
 //  error message 0$ offset          offset in buffer of C style 0$ error message
@@ -182,20 +183,20 @@
 //
 // Action:
 //  Pops the errorstackindex from the data stack
-//  Retrieves the pointer to the error 0 string from the error stack as if it were a 0 based array
-//  and pushes the pointer to the data stack.
+//  Retrieves the pointer to the error 0 string from the error stack as if it were a 0 
+//  based array and pushes the pointer to the data stack.
 //
 // Failure cases:
 //  error in a subroutine - (no error is pushed from this routine)
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthgeterrorcount>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthgeterrorcount ( GETERRORCOUNT )
 //
@@ -204,16 +205,17 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored  
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored  
 //
 // Stack action shorthand:
 //  ( -- errorcount )
 //
 // Data stack out:
-//  errorcount                       this represents the number of times dg_pusherror was called
-//                                    but if the error was full, or missing or something, then
-//                                    this number can be higher than the number of errors on the stack
+//  errorcount                       this represents the number of times dg_pusherror 
+//                                    was called but if the error was full, or missing 
+//                                    or something, then this number can be higher than 
+//                                    the number of errors on the stack
 //
 // Action:
 //  Pushes the error count to the data stack.
@@ -221,14 +223,14 @@
 // Failure cases:
 //  error in a subroutine - (no error is pushed from this routine)
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthcheckerrordepth>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthcheckerrordepth ( GETERRORDEPTH )
 //
@@ -237,33 +239,33 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored  
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored  
 //
 // Stack action shorthand:
 //  ( -- errorstackdepth )
 // 
 // Data stack out:
-//  errorstackdepth                  this is the number of pointers to 0 string error messages on
-//                                    the error stack.
+//  errorstackdepth                  this is the number of pointers to 0 string error 
+//                                    messages on the error stack.
 //
 // Action:
-//  Pushes the depth of the error stack to the data stack. If you fill up the error stack or it's 
-//   pointer gets lost or something, you can have an error count higher than the number of errors on 
-//   the stack. This routine lets you compare the two values to see if any errors occurred that were
-//   not pushed to the error stack.
+//  Pushes the depth of the error stack to the data stack. If you fill up the error 
+//   stack or it's pointer gets lost or something, you can have an error count higher 
+//   than the number of errors on the stack. This routine lets you compare the two 
+//   values to see if any errors occurred that were not pushed to the error stack.
 //
 // Failure cases:
 //  error in a subroutine - (no error is pushed from this routine)
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthcompilegetolderrorcount>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthcompilegetolderrorcount ( GETOLDERRORCOUNT )
 //
@@ -272,8 +274,8 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored  
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored  
 //
 // Stack action shorthand:
 //  ( -- )
@@ -282,24 +284,26 @@
 //  ( -- olderrorcount )
 //
 // Compiled code data stack out:
-//  olderrorcount   UINT64           error count at the time the current subroutine was entered
+//  olderrorcount   UINT64           error count at the time the current subroutine was 
+//                                    entered
 //
 // Action:
-//  This is an immediate word. This word does this action when encountered in compiling mode:
-//  Compiles code that pushes the number of errors on the error stack at the time the current subroutine
-//   was entered onto the data stack.
+//  This is an immediate word. This word does this action when encountered in compiling 
+//   mode:
+//  Compiles code that pushes the number of errors on the error stack at the time the 
+//   current subroutine was entered onto the data stack.
 //
 // Failure cases:
 //  error pushing to the data stack, data stack is full
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthdroptoerrorcount>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthdroptoerrorcount ( DROPTOERRORCOUNT )
 //
@@ -308,8 +312,8 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored  
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored  
 //
 // Stack action shorthand:
 //  ( olderrorcount -- )
@@ -323,14 +327,14 @@
 //
 // Failure cases:
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
      
      
       <div class=word id=dg_forthdoterrors>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthdoterrors ( .ERRORS SHOW-ERRORS .ES )
 //
@@ -339,8 +343,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -- )
@@ -351,14 +355,14 @@
 // Failure cases:
 //  not checked
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_clearerrors>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_clearerrors ( EMPTY-ERRORS EES )
 //
@@ -367,8 +371,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
-//                               used as the bufferhandle for the array where the other 
-//                               bufferhandles are stored.
+//                               used as the bufferhandle for the array where the 
+//                               other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -- )
@@ -377,15 +381,14 @@
 // Action
 //  Clears all errors off the error stack and sets the error count to 0
 //
-////////////////////////////////////////////////////////////////////////
-//     ( -- )
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthbracketwordnametoerror>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthbracketwordnametoerror ( [WORDNAME&gt;ERROR] )
 //
@@ -394,8 +397,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
-//                               used as the bufferhandle for the array where the other 
-//                               bufferhandles are stored.
+//                               used as the bufferhandle for the array where the 
+//                               other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -- )
@@ -404,14 +407,14 @@
 //  Compiles code to push the name of the latest defined word, which is
 //   most likely the word being compiled, to the error stack.
 //
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
 
       <div class=word id=dg_forthnametoe>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthnametoe ( NAME&gt;E NAME&gt;ERROR )
 //
@@ -420,8 +423,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
-//                               used as the bufferhandle for the array where the other 
-//                               bufferhandles are stored.
+//                               used as the bufferhandle for the array where the 
+//                               other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -- )
@@ -438,14 +441,14 @@
 //  Pushes the offset and bufferid of the latest defined word's null terminated
 //   name string to the error stack.
 //
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_fortherrorquotes>
 <pre>
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_fortherrorquotes ( ERROR&quot; E&quot; )
 //
@@ -482,14 +485,14 @@
 //  error calling dg_fortho0quotes
 //  error compiling a call to dg_forthpushoerror
 //  
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthqueryerrorif>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthqueryerrorif ( ?ERRORIF )
 //
@@ -498,18 +501,20 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -- ifoffset )
 // 
 // Data stack out:
-//  branchresolutionoffset        next unused byte in current compile buffer which is used by THEN 
+//  branchresolutionoffset        next unused byte in current compile buffer which is 
+//                                 used by THEN 
 //                     
 // Action:
-//  compiles code to check for a change in the errorcount since the start of the : definition 
-//  and compiles an unresolved branch that is taken if the errorcount has not changed
+//  compiles code to check for a change in the errorcount since the start of the 
+//  : definition and compiles an unresolved branch that is taken if the errorcount 
+//  has not changed
 //
 // Failure cases:
 //  error getting current compile buffer id
@@ -517,7 +522,7 @@
 //  error getting a pointer to the current compile buffer
 //  error pushing the branch resolution offset to the data stack
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 

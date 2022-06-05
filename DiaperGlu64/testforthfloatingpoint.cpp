@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.3.
+//    This file is part of DiaperGlu v5.4.
 //
-//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.3; if not, write to the Free Software
+//    along with DiaperGlu v5.4; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// May 15, 2022               //
-// version 5.3                //
+// June 5, 2022               //
+// version 5.4                //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -5606,7 +5606,7 @@ void testdg_forthfdepth()
     dg_freeallbuffers(&BHarrayhead);
 }
 
-void testdg_forthftod()
+void testdg_forthftos()
 {
     INT64 n;
     const char* perror;
@@ -5615,7 +5615,7 @@ void testdg_forthftod()
     dg_initpbharrayhead(&BHarrayhead);
     dg_initbuffers(&BHarrayhead);
     
-    dg_printzerostring(&BHarrayhead,  (unsigned char*)"testing dg_forthftod\n");
+    dg_printzerostring(&BHarrayhead,  (unsigned char*)"testing dg_forthftos\n");
     
     dg_pushf64tof64stack(&BHarrayhead, 2.0);
     
@@ -5628,12 +5628,12 @@ void testdg_forthftod()
         return;
     }
     
-    dg_forthftod(&BHarrayhead);
+    dg_forthftos(&BHarrayhead);
     
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
         perror = dg_poperror(&BHarrayhead);
-        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! 2.0 case, got error doing D>F got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! 2.0 case, got error doing F>S got ");
         dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
         dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
         return;
@@ -5668,12 +5668,12 @@ void testdg_forthftod()
         return;
     }
     
-    dg_forthftod(&BHarrayhead);
+    dg_forthftos(&BHarrayhead);
     
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
         perror = dg_poperror(&BHarrayhead);
-        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! -2.0 case, got error doing D>F got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! -2.0 case, got error doing F>S got ");
         dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
         dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
         return;
@@ -6451,7 +6451,7 @@ void testdg_forthfstore()
     dg_freeallbuffers(&BHarrayhead);
 }
 
-void testdg_forthdtof()
+void testdg_forthstof()
 {
     FLOAT64 r;
     const char* perror;
@@ -6460,7 +6460,7 @@ void testdg_forthdtof()
     dg_initpbharrayhead(&BHarrayhead);
     dg_initbuffers(&BHarrayhead);
     
-    dg_printzerostring(&BHarrayhead,  (unsigned char*)"testing dg_forthdtof\n");
+    dg_printzerostring(&BHarrayhead,  (unsigned char*)"testing dg_forthstof\n");
     
     dg_pushdatastack(&BHarrayhead, -123);
     
@@ -6473,12 +6473,12 @@ void testdg_forthdtof()
         return;
     }
     
-    dg_forthdtof(&BHarrayhead);
+    dg_forthstof(&BHarrayhead);
     
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
         perror = dg_poperror(&BHarrayhead);
-        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! -123 case, got error doing D>F got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! -123 case, got error doing S>F got ");
         dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
         dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
         return;
@@ -8362,6 +8362,3576 @@ void testdg_represent ()
     dg_freeallbuffers(&BHarrayhead);
 }
 
+void testdg_forthftod()
+{
+    UINT64 xlo = 0;
+    UINT64 xhi = 0;
+    
+    const char* perror;
+    
+    Bufferhandle BHarrayhead;
+    dg_initpbharrayhead(&BHarrayhead);
+    dg_initbuffers(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead,  (unsigned char*)"testing dg_forthftod\n");
+
+    // 1.0 success case
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID,
+       0x3FF0000000000000); // 1.0
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 1.0 case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthftod(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 1.0 case, got error doing dg_forthftod got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    xhi = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 1.0 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xhi != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 1.0 case, expected xhi = 0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xhi);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 1.0 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 1 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 1.0 case, expected xlo = 1, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 1.0 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 1.0 case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 1.0 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 1.0 case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
 
 
 
+    // 2.0 success case
+
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID,
+       0x4000000000000000); // 2.0
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2.0 case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthftod(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2.0 case, got error doing dg_forthftod got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    xhi = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2.0 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xhi != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2.0 case, expected xhi = 0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xhi);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2.0 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 2 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2.0 case, expected xlo = 2, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2.0 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2.0 case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2.0 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2.0 case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+
+
+    // 3.0 success case
+
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID,
+       0x4008000000000000); // 3.0
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 3.0 case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthftod(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 3.0 case, got error doing dg_forthftod got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    xhi = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 3.0 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xhi != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 3.0 case, expected xhi = 0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xhi);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 3.0 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 3 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 3.0 case, expected xlo = 3, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 3.0 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 3.0 case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 3.0 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 3.0 case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+
+
+    // 4.0 success case
+
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID,
+       0x4010000000000000); // 4.0
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 4.0 case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthftod(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 4.0 case, got error doing dg_forthftod got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    xhi = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 4.0 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xhi != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 4.0 case, expected xhi = 0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xhi);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 4.0 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 4 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 4.0 case, expected xlo = 4, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 4.0 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 4.0 case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 4.0 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 4.0 case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+
+
+    // 8.0 success case
+
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID,
+       0x4020000000000000); // 8.0
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 8.0 case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthftod(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 8.0 case, got error doing dg_forthftod got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    xhi = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 8.0 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xhi != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 8.0 case, expected xhi = 0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xhi);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 8.0 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 8 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 8.0 case, expected xlo = 8, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 8.0 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 8.0 case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 8.0 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 8.0 case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+
+
+    // -2.0 success case
+
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID,
+       0xC000000000000000); // -2.0
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -2.0 case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthftod(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -2.0 case, got error doing dg_forthftod got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    xhi = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -2.0 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xhi != 0xffffffffffffffff )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -2.0 case, expected xhi = -1, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xhi);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -2.0 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0xfffffffffffffffe)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -2.0 case, expected xlo = -2, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -2.0 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -2.0 case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -2.0 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -2.0 case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+
+
+    // +0.0 success case
+
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID,
+       0x0000000000000000); // +0.0
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod +0.0 case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthftod(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod +0.0 case, got error doing dg_forthftod got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    xhi = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod +0.0 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xhi != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod +0.0 case, expected xhi = 0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xhi);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod +0.0 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod +0.0 case, expected xlo = 0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod +0.0 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod +0.0 case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod +0.0 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod +0.0 case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+
+
+    // -0.0 success case
+
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID,
+       0x8000000000000000); // -0.0
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -0.0 case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthftod(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -0.0 case, got error doing dg_forthftod got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    xhi = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -0.0 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xhi != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -0.0 case, expected xhi = 0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xhi);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -0.0 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -0.0 case, expected xlo = 0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -0.0 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -0.0 case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -0.0 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -0.0 case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+
+
+    // +infinity success case
+
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID,
+       0x7FF0000000000000); // +infinity
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod +infinity case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthftod(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod +infinity case, got error doing dg_forthftod got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    xhi = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod +infinity case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xhi != largestsignedint )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod +infinity case, expected xhi = 0x7fffffffffffffff, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xhi);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod +infinity case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != largestunsignedint)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod +infinity case, expected xlo = 0xffffffffffffffff, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod +infinity case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod +infinity case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod +infinity case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod +infinity case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+
+
+    // -infinity success case
+
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID,
+       0xFFF0000000000000); // -infinity
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -infinity case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthftod(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -infinity case, got error doing dg_forthftod got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    xhi = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -infinity case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xhi != largestnegativeint )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -infinity case, expected xhi = 0x8000000000000000, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xhi);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -infinity case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -infinity case, expected xlo = 0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -infinity case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -infinity case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -infinity case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -infinity case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+
+
+    // 0.5 success case
+
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID,
+       0x3FE0000000000000); // 0.5
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 0.5 case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthftod(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 0.5 case, got error doing dg_forthftod got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    xhi = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 0.5 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xhi != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 0.5 case, expected xhi = 0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xhi);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 0.5 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 0.5 case, expected xlo = 0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 0.5 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 0.5 case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 0.5 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 0.5 case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+
+
+    // very small success case
+
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID,
+       0x0010000000000000); // almost 0
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod very small case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthftod(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod very small case, got error doing dg_forthftod got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    xhi = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod very small case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xhi != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod very small case, expected xhi = 0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xhi);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod very small case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod very small case, expected xlo = 0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod very small case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod very small case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod very small case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod very small case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+
+
+    // very big success case
+
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID,
+       0x7FE0000000000000); // very big
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod very big case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthftod(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod very big case, got error doing dg_forthftod got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    xhi = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod very big case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xhi != largestsignedint )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod very big case, expected xhi = 0x7fffffffffffffff, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xhi);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod very big case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != largestunsignedint )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod very big case, expected xlo = 0xffffffffffffffff, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod very big case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod very big case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod very big case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod very big case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+
+
+    // -very big success case
+
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID,
+       0xFFE0000000000000); // -very big
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -very big case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthftod(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -very big case, got error doing dg_forthftod got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    xhi = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -very big case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xhi != largestnegativeint )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -very big case, expected xhi = 0x8000000000000000, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xhi);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -very big case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -very big case, expected xlo = 0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -very big case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -very big case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -very big case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod -very big case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+
+
+    // 2^42 success case
+
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID,
+       0x4290000000000000); // 2^42
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^42 case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthftod(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^42 case, got error doing dg_forthftod got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    xhi = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^42 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xhi != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^42 case, expected xhi = 0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xhi);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^42 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0x0000040000000000 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^42 case, expected xlo = 2^42, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^42 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^42 case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^42 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^42 case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+
+
+    // 2^43 success case
+
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID,
+       0x42A0000000000000); // 2^43
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^43 case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthftod(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^43 case, got error doing dg_forthftod got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    xhi = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^43 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xhi != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^43 case, expected xhi = 0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xhi);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^43 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0x0000080000000000 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^43 case, expected xlo = 2^43, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^43 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^43 case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^43 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^43 case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+
+
+    // 2^63 success case
+
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID,
+       0x43E0000000000000); // 2^63
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^63 case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthftod(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^63 case, got error doing dg_forthftod got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    xhi = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^63 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xhi != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^63 case, expected xhi = 0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xhi);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^63 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0x8000000000000000 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^63 case, expected xlo = 2^63, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^63 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^63 case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^63 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^63 case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+
+
+    // 2^64 success case
+
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID,
+       0x43F0000000000000); // 2^64
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^64 case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthftod(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^64 case, got error doing dg_forthftod got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    xhi = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^64 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xhi != 1 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^64 case, expected xhi = 1, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xhi);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    xlo = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^64 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^64 case, expected xlo = 0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^64 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^64 case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^64 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^64 case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+
+
+    // 2^126 success case
+
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID,
+       0x47D0000000000000); // 2^126
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^126 case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthftod(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^126 case, got error doing dg_forthftod got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    xhi = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^126 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xhi != 0x4000000000000000 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^126 case, expected xhi = 0x4000000000000000, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xhi);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    xlo = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^126 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^126 case, expected xlo = 0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^126 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^126 case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^126 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^126 case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+
+
+    // 2^127 success case
+
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID,
+       0x47E0000000000000); // 2^127
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^127 case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthftod(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^127 case, got error doing dg_forthftod got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    xhi = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^127 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xhi != largestsignedint )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^127 case, expected xhi = 0x7fffffffffffffff, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xhi);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    xlo = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^127 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != largestunsignedint )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^127 case, expected xlo = 0xffffffffffffffff, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^127 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^127 case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^127 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod 2^127 case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+
+
+    // most positive signed int success case
+
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID,
+       0x47DFFFFFFFFFFFFF); // most positive signed int
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most positive signed int case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthftod(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most positive signed int case, got error doing dg_forthftod got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    xhi = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most positive signed int case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xhi != 0x7FFFFFFFFFFFFC00 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most positive signed int case, expected xhi = largestsignedint, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xhi);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    xlo = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most positive signed int case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most positive signed int - 1 case, expected xlo = 0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most positive signed int - 1 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most positive signed int - 1 case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most positive signed int - 1 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most positive signed int - 1 case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+
+
+    // most negative signed int success case
+
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID,
+       0xC7DFFFFFFFFFFFFF); // most negative signed int
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthftod(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int case, got error doing dg_forthftod got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    xhi = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xhi != 0x8000000000000400 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int case, expected xhi = 8000000000000400, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xhi);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    xlo = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int case, expected xlo = 0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    
+    // most negative signed int 2 success case
+
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID,
+       0xC7E0000000000000); // most negative signed int 2
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int 2 case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthftod(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int 2 case, got error doing dg_forthftod got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    xhi = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int 2 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xhi != 0x8000000000000000 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int 2 case, expected xhi = 8000000000000000, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xhi);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    xlo = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int 2 case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int 2 case, expected xlo = 0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int 2 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int 2 case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int 2 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int 2 case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    
+    // negative signed int too big success case
+
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID,
+       0xC7F0000000000000); // most negative signed int too big
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int too big case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthftod(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int too big  case, got error doing dg_forthftod got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    xhi = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int too big  case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xhi != 0x8000000000000000 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int too big  case, expected xhi = 8000000000000000, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xhi);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    xlo = dg_popdatastack(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int too big  case, got error popping data stack got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int too big  case, expected xlo = 0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int too big  case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int too big  case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int too big  case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthftod most negative signed int too big  case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_forthdtof()
+{
+    UINT64 xlo = 0;
+    UINT64 xhi = 0;
+    
+    UINT64 df;
+    
+    const char* perror;
+    
+    Bufferhandle BHarrayhead;
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead,  (unsigned char*)"testing dg_forthdtof\n");
+
+    // 1.0 success case
+    
+    dg_initbuffers(&BHarrayhead);
+    
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_DATASTACK_BUFFERID,
+       1);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 1.0 case, error pushing low to data stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_DATASTACK_BUFFERID,
+       0);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 1.0 case, error pushing high to data stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthdtof(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 1.0 case, got error doing dg_forthdtof got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    df = dg_popbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 1.0 case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (df != 0x3FF0000000000000) // 1.0 
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 1.0 case, expected df = 0x3FF0000000000000); // 1.0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, df);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 1.0 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 1.0 case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 1.0 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 1.0 case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    
+    // 2.0 success case
+    
+    dg_initbuffers(&BHarrayhead);
+    
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_DATASTACK_BUFFERID,
+       2);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 2.0 case, error pushing low to data stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_DATASTACK_BUFFERID,
+       0);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 2.0 case, error pushing high to data stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthdtof(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 2.0 case, got error doing dg_forthdtof got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    df = dg_popbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 2.0 case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (df != 0x4000000000000000) // 2.0 
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 2.0 case, expected df = 0x4000000000000000); // 2.0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, df);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 2.0 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 2.0 case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 2.0 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 2.0 case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    
+    // 0.0 success case
+    
+    dg_initbuffers(&BHarrayhead);
+    
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_DATASTACK_BUFFERID,
+       0);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 0.0 case, error pushing low to data stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_DATASTACK_BUFFERID,
+       0);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 0.0 case, error pushing high to data stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthdtof(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 0.0 case, got error doing dg_forthdtof got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    df = dg_popbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 0.0 case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (df != 0x0000000000000000) // 0.0 
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 0.0 case, expected df = 0x0000000000000000); // 0.0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, df);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 0.0 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 0.0 case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 0.0 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 0.0 case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    // -1.0 success case
+    
+    dg_initbuffers(&BHarrayhead);
+    
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_DATASTACK_BUFFERID,
+       0xffffffffffffffff);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof -1.0 case, error pushing low to data stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_DATASTACK_BUFFERID,
+       0xffffffffffffffff);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof -1.0 case, error pushing high to data stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthdtof(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof -1.0 case, got error doing dg_forthdtof got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    df = dg_popbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof -1.0 case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (df != 0xBFF0000000000000) // -1.0 
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof -1.0 case, expected df = 0xBFF0000000000000); // -1.0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, df);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof -1.0 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof -1.0 case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof -1.0 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof -1.0 case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    
+    // -2^126 success case
+    
+    dg_initbuffers(&BHarrayhead);
+    
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_DATASTACK_BUFFERID,
+       0);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof -2^126 case, error pushing low to data stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_DATASTACK_BUFFERID,
+       0xC000000000000000);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof -2^126 case, error pushing high to data stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthdtof(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof -2^126 case, got error doing dg_forthdtof got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    df = dg_popbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof -2^126 case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (df != 0xC7D0000000000000) // -2^126 
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof -2^126 case, expected df = 0xC7D0000000000000); // -2^126, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, df);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof -2^126 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof -2^126 case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof -2^126 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof -2^126 case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    
+    // 2^126 success case
+    
+    dg_initbuffers(&BHarrayhead);
+    
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_DATASTACK_BUFFERID,
+       0);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 2^126 case, error pushing low to data stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_DATASTACK_BUFFERID,
+       0x4000000000000000);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 2^126 case, error pushing high to data stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthdtof(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 2^126 case, got error doing dg_forthdtof got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    df = dg_popbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 2^126 case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (df != 0x47D0000000000000) // 2^126 
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 2^126 case, expected df = 0x47D0000000000000); // 2^126, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, df);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 2^126 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 2^126 case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 2^126 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof 2^126 case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+    
+    
+    // -2^127 success case
+    
+    dg_initbuffers(&BHarrayhead);
+    
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_DATASTACK_BUFFERID,
+       0);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof -2^127 case, error pushing low to data stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_pushbufferuint64(
+       &BHarrayhead,
+       DG_DATASTACK_BUFFERID,
+       0x8000000000000000);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof -2^127 case, error pushing high to data stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_forthdtof(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof -2^127 case, got error doing dg_forthdtof got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    df = dg_popbufferuint64(
+       &BHarrayhead,
+       DG_F64STACK_BUFFERID);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof -2^127 case, error pushing to floating point stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (df != 0xC7E0000000000000) // -2^127 
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof -2^127 case, expected df = 0xC7E0000000000000); // -2^127, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, df);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof -2^127 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof -2^127 case, data stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    xlo = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        perror = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof -2^127 case, got error getting buffer length got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if ( xlo != 0 )
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" FAIL! dg_forthdtof -2^127 case, f64 stack not empty after test, got depth = ");
+        dg_writestdoutuint64tohex(&BHarrayhead, xlo);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+}

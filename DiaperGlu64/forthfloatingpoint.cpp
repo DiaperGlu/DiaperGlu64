@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.3.
+//    This file is part of DiaperGlu v5.4.
 //
-//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.3; if not, write to the Free Software
+//    along with DiaperGlu v5.4; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// May 15, 2022               //
-// version 5.3                //
+// June 5, 2022               //
+// version 5.4                //
 // /////////////////////////////
 
 
@@ -1837,8 +1837,80 @@ void dg_forthfsdot(Bufferhandle* pBHarrayhead)
     }
 }
 
-
 void dg_forthdtof (Bufferhandle* pBHarrayhead)
+{
+    FLOAT64 df;
+    
+    UINT64 ud[2];
+    INT64 rsign = 0;
+    UINT64 index;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    ud[1] = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdtofname);
+        return;
+    }
+    
+    ud[0] = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdtofname);
+        return;
+    }
+    
+    if ((INT64)ud[1] < 0)
+    {
+        rsign -= 1;
+        dg_dnegate((INT64*)ud); 
+    }
+    
+    index = dg_hibitd(
+        ud[0],
+        ud[1]);
+        
+    if (index > 127)
+    {
+        df = 0.0;
+    }
+    else
+    {
+        if (index > (64 + 52))
+        {
+            dg_shrd((UINT64*)ud, index - (64 + 52));
+        }
+        
+        if (index < (64 + 52))
+        {
+            dg_shld((UINT64*)ud, (64 + 52) - index);
+        }
+        
+        df = dg_packdf(
+            ud[1] & 0xFFFFFFFFFFFFF, // mantissa,
+            index + 0x3ff, // exponent,
+            rsign);
+        
+    }
+    
+    dg_pushf64tof64stack(pBHarrayhead, df);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdtofname);
+        return;
+    }
+} 
+
+void dg_forthstof (Bufferhandle* pBHarrayhead)
 {
     FLOAT64 df;
     INT64 n;
@@ -1854,7 +1926,7 @@ void dg_forthdtof (Bufferhandle* pBHarrayhead)
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
-        dg_pusherror(pBHarrayhead, dg_forthdtofname);
+        dg_pusherror(pBHarrayhead, dg_forthstofname);
         return;
     }
     
@@ -1867,16 +1939,22 @@ void dg_forthdtof (Bufferhandle* pBHarrayhead)
         
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
-        dg_pusherror(pBHarrayhead, dg_forthdtofname);
+        dg_pusherror(pBHarrayhead, dg_forthstofname);
         return;
     }
 }
 
-
 void dg_forthftod (Bufferhandle* pBHarrayhead)
 {
+    
     FLOAT64 df;
-    INT64 n;
+    UINT64 presult[2];
+    
+    UINT64 rmantissa;
+    INT64 rexponent;
+    INT64 rsign;
+    
+    INT64 shiftamount;
     
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
     
@@ -1893,13 +1971,137 @@ void dg_forthftod (Bufferhandle* pBHarrayhead)
         return;
     }
     
+    dg_unpackdf(
+        df,
+        &rmantissa,
+        &rexponent,
+        &rsign);
+    
+    if (rexponent == 0)
+    {
+        // subnormal and 0 case... returning 0 for both
+        presult[0] = 0;
+        presult[1] = 0;
+    }
+    else 
+    {
+        if (rexponent == 0x7ff)
+        {   
+            if (rsign != 0)
+            {
+                presult[0] = 0;
+                presult[1] = largestnegativeint;    
+            }
+            else
+            {  
+                presult[0] = largestunsignedint;
+                presult[1] = largestsignedint;
+            }
+        }
+        else
+        {
+            // regular case
+            rmantissa = rmantissa | 0x0010000000000000; // adding in leading 1
+    
+            presult[0] = rmantissa;
+            presult[1] = 0;
+    
+            shiftamount = rexponent - (0x3ff + (64 - 12));
+    
+            if (shiftamount < 0)
+            {
+                shiftamount *= -1;
+        
+                if (shiftamount <= (64-12))
+                {
+                    dg_shrd((UINT64*)presult, shiftamount);
+
+                    if (rsign != 0)
+                    {
+                        dg_dnegate((INT64*)presult);
+                    }
+                }
+                else
+                {
+                    presult[0] = 0;
+                    presult[1] = 0;
+                }
+           }
+           else
+           {
+               if (shiftamount < (12 + 63))
+               {
+                   dg_shld((UINT64*)presult, shiftamount);
+
+                   if (rsign != 0)
+                   {
+                       dg_dnegate((INT64*)presult);
+                   }
+               }
+               else
+               {
+                   if (rsign != 0)
+                   {
+                       presult[0] = 0;
+                       presult[1] = largestnegativeint;    
+                   }
+                   else
+                   {  
+                       presult[0] = largestunsignedint;
+                       presult[1] = largestsignedint;
+                   }
+               }
+           }
+        }
+    }
+    
+    dg_pushdatastack(pBHarrayhead, presult[0]);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthftodname);
+        return;
+    }
+    
+    dg_pushdatastack(pBHarrayhead, presult[1]);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthftodname);
+        return;
+    }
+    
+    return;
+    
+}
+
+void dg_forthftos (Bufferhandle* pBHarrayhead)
+{
+    FLOAT64 df;
+    INT64 n;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    df = dg_popf64fromf64stack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthftosname);
+        return;
+    }
+    
     n = dg_f64toi64(df);
 
     dg_pushdatastack(pBHarrayhead, n);
         
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
-        dg_pusherror(pBHarrayhead, dg_forthftodname);
+        dg_pusherror(pBHarrayhead, dg_forthftosname);
         return;
     }
 }

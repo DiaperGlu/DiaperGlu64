@@ -2,20 +2,20 @@
 ( //                                                                                       )
 ( //    Copyright 2022 James Patrick Norris                                                )
 ( //                                                                                       )
-( //    This file is part of Diaperglu 5.3.                                                )
+( //    This file is part of Diaperglu 5.4.                                                )
 ( //                                                                                       )
-( //    Diaperglu 5.3 is free software; you can redistribute it and/or modify              )
+( //    Diaperglu 5.4 is free software; you can redistribute it and/or modify              )
 ( //    it under the terms of the GNU General Public License as published by               )
 ( //    the Free Software Foundation; either version 2 of the License, or                  )
 ( //    {at your option} any later version.                                                )
 ( //                                                                                       )
-( //    Diaperglu 5.3 is distributed in the hope that it will be useful,                   )
+( //    Diaperglu 5.4 is distributed in the hope that it will be useful,                   )
 ( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
 ( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
 ( //    GNU General Public License for more details.                                       )
 ( //                                                                                       )
 ( //    You should have received a copy of the GNU General Public License                  )
-( //    along with Diaperglu 5.3; if not, write to the Free Software                       )
+( //    along with Diaperglu 5.4; if not, write to the Free Software                       )
 ( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
 ( //                                                                                       )
 ( //////////////////////////////////////////////////////////////////////////////////////// )
@@ -23,8 +23,8 @@
 ( /////////////////////////////// )
 ( // James Patrick Norris      // )
 ( // www.rainbarrel.com        // )
-( // May 15, 2022              // )
-( // version 5.3               // )
+( // June 5, 2022              // )
+( // version 5.4               // )
 ( /////////////////////////////// )
 
 ( test include file )
@@ -2582,6 +2582,46 @@ $" Testing ]" .$ CR
 ( /////////////////////////////////// )
 
 
+( /////////////////////////////////// )
+
+$" Testing ?DO" .$ CR  
+
+( /////////////////////////////////// )
+
+DECIMAL 55
+
+: TEST+LOOP2 ( loopstep limit startindex -- ) ?DO 1 TESTVAR +! DUP +LOOP ;
+
+0 TESTVAR !
+1 10 0 TEST+LOOP2 1 = ?T TESTVAR @ 10 = ?T
+
+0 TESTVAR !
+2 10 0 TEST+LOOP2 2 = ?T TESTVAR @ 5 = ?T 
+
+0 TESTVAR !
+3 10 0 TEST+LOOP2 3 = ?T TESTVAR @ 4 = ?T 
+
+0 TESTVAR ! 
+10 10 0 TEST+LOOP2 10 = ?T TESTVAR @ 1 = ?T  ( always does it at least once no matter what )
+
+0 TESTVAR ! 
+11 10 0 TEST+LOOP2 11 = ?T TESTVAR @ 1 = ?T 
+
+( the standard says 'crosses boundary between limit and limit - 1' ,
+    I implimented 'crosses boundary between limit and limit + 1 if step is negative' )
+0 TESTVAR !
+-1 0 10 TEST+LOOP2 -1 = ?T  TESTVAR @ 10 = ?T 
+
+7 TESTVAR !
+-1 0 0 TEST+LOOP2 -1 = ?T  TESTVAR @ 7 = ?T 
+
+7 TESTVAR !
+-1 9 9 TEST+LOOP2 -1 = ?T  TESTVAR @ 7 = ?T 
+
+DEPTH 1 = ?T
+
+55 = ?T
+
 
 
 ( /////////////////////////////////// )
@@ -2804,14 +2844,14 @@ FDEPTH 1 = ?T
 
 ( /////////////////////////////////// )
 
-$" Testing D>F" .$ CR  
+$" Testing S>F" .$ CR  
 
 ( /////////////////////////////////// )
 
 DECIMAL 55E
 
-2 D>F 2E 0E F~ ?T
--4 D>F -4E 0E F~ ?T
+2 S>F 2E 0E F~ ?T
+-4 S>F -4E 0E F~ ?T
 
 FDEPTH 1 = ?T
 55E 0E F~ ?T
@@ -2926,14 +2966,14 @@ FDEPTH 1 = ?T
 
 ( /////////////////////////////////// )
 
-$" Testing F>D" .$ CR  
+$" Testing F>S" .$ CR  
 
 ( /////////////////////////////////// )
 
 DECIMAL 55E
 
-12E F>D 12 = ?T
--7.1E F>D -7 = ?T 
+12E F>S 12 = ?T
+-7.1E F>S -7 = ?T 
 
 FDEPTH 1 = ?T
 55E 0E F~ ?T

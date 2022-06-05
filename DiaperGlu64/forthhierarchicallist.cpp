@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.3.
+//    This file is part of DiaperGlu v5.4.
 //
-//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.3; if not, write to the Free Software
+//    along with DiaperGlu v5.4; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// May 15, 2022               //
-// version 5.3                //
+// June 5, 2022               //
+// version 5.4                //
 // /////////////////////////////
 
 
@@ -3410,6 +3410,116 @@ void dg_forthosymbolimport(Bufferhandle* pBHarrayhead)
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
         dg_pusherror(pBHarrayhead, dg_forthosymbolimportname);
+        return;
+    }
+}
+
+void dg_forthosymbolentry(Bufferhandle* pBHarrayhead)
+{
+    unsigned char* pname;
+	UINT64 namelength = 0;
+    
+    UINT64 myhlistid;
+    UINT64 mysymbollistelementid;
+    UINT64 x;
+    UINT64 mycurrentcompilebufferid;
+
+    UINT64 newelementid;
+    
+    unsigned char* phstack;
+    UINT64* phstacklength;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    pname = dg_parseword(
+        pBHarrayhead,
+        &namelength);
+    
+	if (namelength == 0)
+	{
+        dg_pusherror(pBHarrayhead, dg_wordlength0error);
+		dg_pusherror(pBHarrayhead, dg_forthosymbolentryname);
+		return;
+	}
+    
+    phstack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_EHSTACK_BUFFERID,
+        &phstacklength);
+
+	if (phstack == (unsigned char*)badbufferhandle)
+	{
+        dg_pusherror(pBHarrayhead, dg_forthhstackbufferidname);
+		dg_pusherror(pBHarrayhead, dg_forthosymbolentryname);
+		return;
+	}
+
+    if (*phstacklength < 2 * sizeof (UINT64))
+	{
+		dg_pusherror(pBHarrayhead, dg_underflowerror);
+		dg_pusherror(pBHarrayhead, dg_forthosymbolentryname);
+		return;
+	}
+    
+    myhlistid = *((UINT64*)(phstack + ((*phstacklength) - sizeof(UINT64))));
+    
+    mysymbollistelementid = *((UINT64*)(phstack + ((*phstacklength) - (2 * sizeof(UINT64)))));
+ 
+    
+    mycurrentcompilebufferid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthosymbolentryname);
+        return;
+    }
+    
+    x = dg_getbufferlength(
+        pBHarrayhead,
+        mycurrentcompilebufferid);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthosymbolentryname);
+        return;
+    }
+    
+    newelementid = dg_newhlistelement (
+        pBHarrayhead,
+        myhlistid,
+        mysymbollistelementid,  // parentelementid, 
+        pname,                  // pname = pcib + ciboldoffset,   
+        namelength,             // namelength,
+        (unsigned char*)&x,     // pvalue,
+        sizeof(UINT64));        // valuelength);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthosymbolentryname);
+        return;
+    }
+
+    // adding a child named ENTRY with no value
+    newelementid = dg_newhlistelement (
+        pBHarrayhead,
+        myhlistid,
+        newelementid,            // parentelementid,
+        (unsigned char*)"ENTRY", // pname,
+        5,                       //namelength,
+        (unsigned char*)&x,      // pvalue,
+        0);                      // valuelength);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthosymbolentryname);
         return;
     }
 }

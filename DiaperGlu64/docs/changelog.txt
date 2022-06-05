@@ -1,4 +1,43 @@
 Changelog for Diaperglu
+   05 June 2022
+     Released v5.4
+     Added Win64MSVC2019\samplescripts\messagebox.dglu example
+     Added Win64MSVC2019\samplescripts\beep.dglu example
+     Added Win64MSVC2019\samplescripts\testmessagebox\ assembly example
+
+   04 June 2022
+     Renamed D>F to S>F since standard says D>F uses a double cell integer.
+     Renamed F>D to F>S since standard says F>D uses a double cell integer.
+     Added F>D that converts a double float to a double cell integer.
+     Added dg_hitbitd
+     Added D>F that converts a double cell integer to a double float.
+
+   30 May 2022
+     Added ?DO
+     Changed LOOP and +LOOP to stop scanning leave stack after finding first leave that
+      isn't for the current loop. It was checking the entire stack.
+
+   22 May 2022
+     Added P>IPARAM to )),
+     Added support for LEA, memory to memory operations. RAX is used to do the transfer.
+     Added OSYMBOL-ENTRY ( declares an entry symbol in the export symbol list )
+     Added support for entry symbols in the Windows dg_makedotobuf function.
+      This allows support for making .obj files that can be turned into .exe files.
+      This allows /ENTRY in addition to /EXPORT symbols in the compiler directives section...
+      BUT... it looks like Windows no longer requires this section but it still works if it
+       is included... 
+      If the compiler directive section is no longer required, having to use OSYMBOL-ENTRY
+       to declare the start function on Windows might be removed in future releases of DiaperGlu
+     Added a Windows helloworld64exe example
+
+   15 May 2022 just after release
+     Forgot to mention that Mac version changed to Mac OS Monterey
+      The main thing is the .o file format changed requiring changes to dg_makedototobufsub
+      They replaced the version link command, changed the vmsize of the code to the codelength,
+       they now require -lSystem when using ld to make dylibs and are using additional ld commands,
+       like specifying tolib thingy but the old link command still works after you add -lSystem,
+       among others...
+
    15 May 2022
      Released v5.3
      Changed ld commands for building dylibs in Mac OS X examples, 

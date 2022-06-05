@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.3.
+//    This file is part of DiaperGlu v5.4.
 //
-//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.3; if not, write to the Free Software
+//    along with DiaperGlu v5.4; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// May 15, 2022               //
-// version 5.3                //
+// June 5, 2022               //
+// version 5.4                //
 // /////////////////////////////
 
 
@@ -40,91 +40,91 @@ void dg_evaluatebuffersub (
     Bufferhandle* pBHarrayhead,
     UINT64 bufferid)
 {
-	unsigned char* pbuffer;
-	UINT64* pbufferlength;
+    unsigned char* pbuffer;
+    UINT64* pbufferlength;
 
-	UINT64* pbufferoffset;
+    UINT64* pbufferoffset;
 
-	UINT64 beginoffset;
-	UINT64 namelength;
+    UINT64 beginoffset;
+    UINT64 namelength;
 
-	UINT64 number;
-	UINT64 flag;
+    UINT64 number;
+    UINT64 flag;
 
-	UINT64 definition;
+    UINT64 definition;
 
-	unsigned char* pname;
-	const char* pstate;
+    unsigned char* pname;
+    const char* pstate;
 
-	UINT64 base;
+    UINT64 base;
 
-	UINT64 u;
+    UINT64 u;
     FLOAT64 fnumber; 
     UINT64 x;  
 
 
-	Bufferhandle* pBH;
+    Bufferhandle* pBH;
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
     
     if (baderrorcount == olderrorcount)
     {
         return;
     }
-	
-	pbuffer = dg_getpbuffer(
+    
+    pbuffer = dg_getpbuffer(
         pBHarrayhead,
         bufferid,
         &pbufferlength);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthpcurrentinputbuffername);
-		dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
-		return;
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthpcurrentinputbuffername);
+        dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
+        return;
+    }
 
-	u = *pbufferlength;
+    u = *pbufferlength;
 
-	// buffer is there because dg_getpbuffer worked so I can do this without checking
-	pBH = &( ((Bufferhandle*)(pBHarrayhead->pbuf))[bufferid] );
+    // buffer is there because dg_getpbuffer worked so I can do this without checking
+    pBH = &( ((Bufferhandle*)(pBHarrayhead->pbuf))[bufferid] );
 
-	pbufferoffset = &(pBH->currentoffset); 
+    pbufferoffset = &(pBH->currentoffset); 
 
-	*pbufferoffset = 0;
+    *pbufferoffset = 0;
 
-	while (*pbufferoffset < u)
-	{
-		//get off delimiters
-		while(*pbufferoffset < u)
-		{
-			if (dg_isdelimiter(pbuffer[(*pbufferoffset)]))
-			{
-				(*pbufferoffset)++;
-			}
-			else
-			{
-				break;
-			}
-		}
+    while (*pbufferoffset < u)
+    {
+        //get off delimiters
+        while(*pbufferoffset < u)
+        {
+            if (dg_isdelimiter(pbuffer[(*pbufferoffset)]))
+            {
+                (*pbufferoffset)++;
+            }
+            else
+            {
+                break;
+            }
+        }
 
-		beginoffset = *pbufferoffset;
-		pname = pbuffer + *pbufferoffset;
+        beginoffset = *pbufferoffset;
+        pname = pbuffer + *pbufferoffset;
 
-		// get on delimiter
-		while(*pbufferoffset < u)
-		{
-			if (dg_isdelimiter(pbuffer[(*pbufferoffset)]))
-			{
-				break;
-			}
-			else
-			{
-				(*pbufferoffset)++;
-			}
-		}
-		
-		namelength = *pbufferoffset - beginoffset;
+        // get on delimiter
+        while(*pbufferoffset < u)
+        {
+            if (dg_isdelimiter(pbuffer[(*pbufferoffset)]))
+            {
+                break;
+            }
+            else
+            {
+                (*pbufferoffset)++;
+            }
+        }
+        
+        namelength = *pbufferoffset - beginoffset;
   
         // getting off delimiter after word. This is a forth standard requirement.
         if(*pbufferoffset < u)
@@ -132,49 +132,49 @@ void dg_evaluatebuffersub (
             (*pbufferoffset)++;
         } 
 
-		if (namelength != 0)
-		{
-			// some routines need to know what the bufferid was (read only)
-			//  need to set the current buffer every time because execute can call
-			//  includefile or some other routine that will call this routine again (nested) 
-			//  with a different buffer 
-			olderrorcount = dg_geterrorcount(pBHarrayhead);
+        if (namelength != 0)
+        {
+            // some routines need to know what the bufferid was (read only)
+            //  need to set the current buffer every time because execute can call
+            //  includefile or some other routine that will call this routine again (nested) 
+            //  with a different buffer 
+            olderrorcount = dg_geterrorcount(pBHarrayhead);
 
-			dg_putbufferuint64(pBHarrayhead,
-				DG_DATASPACE_BUFFERID,
-				currentinterpretbuffer,
-				bufferid);
+            dg_putbufferuint64(pBHarrayhead,
+                DG_DATASPACE_BUFFERID,
+                currentinterpretbuffer,
+                bufferid);
 
-			if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-			{
-				dg_pusherror(pBHarrayhead, dg_forthpcurrentinputbuffername);
-		        dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
-				return;
-			}
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthpcurrentinputbuffername);
+                dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
+                return;
+            }
 
-			// Standard says we have to try to look up definition before trying number conversion
-			//  even though this can be really slow
-			definition = dg_finddefinsearchorder(
+            // Standard says we have to try to look up definition before trying number conversion
+            //  even though this can be really slow
+            definition = dg_finddefinsearchorder(
                 pBHarrayhead,
                 pname,
                 namelength);
 
-			if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-			{
-				dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
-				return; // may remove this return so the system can still try to execute the word if a vocabulary is broken
-			}
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
+                return; // may remove this return so the system can still try to execute the word if a vocabulary is broken
+            }
 
-			if (definition != DG_ENDOFWORDLIST)
-			{
-				dg_executedefinition(
+            if (definition != DG_ENDOFWORDLIST)
+            {
+                dg_executedefinition(
                     pBHarrayhead,
                     definition);
-				
-				if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-				{
-					return;
-				}
+                
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {
+                    return;
+                }
     
                 dg_putbufferuint64(pBHarrayhead,
                     DG_DATASPACE_BUFFERID,
@@ -188,90 +188,90 @@ void dg_evaluatebuffersub (
                     return;
                 }            
 
-				// what if the executed word frees the current input buffer???
-				// then my pointer is invalid - may need to dg_getpbuffer every time through just in case, 
-				// and make sure the buffer length didn't change. Could check it right here...
-				pbuffer = dg_getpbuffer(
+                // what if the executed word frees the current input buffer???
+                // then my pointer is invalid - may need to dg_getpbuffer every time through just in case, 
+                // and make sure the buffer length didn't change. Could check it right here...
+                pbuffer = dg_getpbuffer(
                     pBHarrayhead,
                     bufferid,
                     &pbufferlength);
 
-				if (pbuffer == (unsigned char*)badbufferhandle)
-				{
-					dg_pusherror(pBHarrayhead, dg_forthpcurrentinputbuffername);
-					dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
-					return;
-				}
-				
-				if (*pbufferlength != u)
-				{
-					dg_pusherror(pBHarrayhead, dg_inputbufferlengthchangederror);
-					dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
-					return;
-				}
-			}
-			else
-			{
+                if (pbuffer == (unsigned char*)badbufferhandle)
+                {
+                    dg_pusherror(pBHarrayhead, dg_forthpcurrentinputbuffername);
+                    dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
+                    return;
+                }
+                
+                if (*pbufferlength != u)
+                {
+                    dg_pusherror(pBHarrayhead, dg_inputbufferlengthchangederror);
+                    dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
+                    return;
+                }
+            }
+            else
+            {
 
-				// this is a signed conversion, a - sign in front of the number is acceptable
-				base = dg_getbufferuint64(
+                // this is a signed conversion, a - sign in front of the number is acceptable
+                base = dg_getbufferuint64(
                     pBHarrayhead,
                     DG_DATASPACE_BUFFERID,
                     basevariable);
 
-				if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-				{
-					dg_pusherror(pBHarrayhead, dg_forthbasename);
-					dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
-					return;
-				}
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {
+                    dg_pusherror(pBHarrayhead, dg_forthbasename);
+                    dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
+                    return;
+                }
 
-				number = dg_pchartonumber(
+                number = dg_pchartonumber(
                     pname,
                     namelength,
                     base,
                     &flag); // this routine doesn't return errors
 
-				if (flag != FORTH_FALSE)
-				{
-					// we have a number, need to do the number
-					// push the number to the data stack
-					// if in compile mode, do literal
-					dg_pushbufferuint64(
+                if (flag != FORTH_FALSE)
+                {
+                    // we have a number, need to do the number
+                    // push the number to the data stack
+                    // if in compile mode, do literal
+                    dg_pushbufferuint64(
                         pBHarrayhead,
                         DG_DATASTACK_BUFFERID,
                         number);
 
-					if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-					{
-						dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-						dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
-						return;
-					}	
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+                        dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
+                        return;
+                    }    
 
-					pstate = (const char*)dg_getbufferuint64(
+                    pstate = (const char*)dg_getbufferuint64(
                         pBHarrayhead,
                         DG_DATASPACE_BUFFERID,
                         statevariable);
 
-					if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-					{	
-						dg_pusherror(pBHarrayhead, dg_forthstatename);
-						dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
-						return;
-					}
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {    
+                        dg_pusherror(pBHarrayhead, dg_forthstatename);
+                        dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
+                        return;
+                    }
 
-					if (pstate == dg_statecompile)
-					{
-						dg_forthliteral(pBHarrayhead);
+                    if (pstate == dg_statecompile)
+                    {
+                        dg_forthliteral(pBHarrayhead);
 
-						if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-						{	
-							dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
-							return;
-						}
-					}
-				}
+                        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                        {    
+                            dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
+                            return;
+                        }
+                    }
+                }
                 else 
                 {
                     if (base == 10)
@@ -409,9 +409,9 @@ void dg_evaluatebuffersub (
                         return;
                     }
                 } 
-			}
-		}
-	}
+            }
+        }
+    }
 }
 
 
@@ -745,13 +745,13 @@ void dg_evaluatefileid (
         &filetype, 
         dg_success);
 
-	if (flag != dg_success)
-	{
-		dg_pusherror(pBHarrayhead, flag);
+    if (flag != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, flag);
         dg_pusherror(pBHarrayhead, dg_getfiletypename);
-		dg_pusherror(pBHarrayhead, dg_evaluatefileidname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_evaluatefileidname);
+        return;
+    }
 
     if (filetype == dg_filetypeunknown)
     {
@@ -761,44 +761,44 @@ void dg_evaluatefileid (
     }
 
     if (filetype == dg_filetypedisk)
-	{
+    {
         if (FORTH_FALSE == *pfirsttimethrough)
         {
             // someone put a QUIT, ABORT, or ABORT" in a script file
             return;
         }
 
-		flag = dg_getfilelength(
+        flag = dg_getfilelength(
             pBHarrayhead,
             fileid, 
             &length, 
             dg_success);
 
-		if (flag != dg_success)
-		{
-			dg_pusherror(pBHarrayhead, flag);
+        if (flag != dg_success)
+        {
+            dg_pusherror(pBHarrayhead, flag);
             dg_pusherror(pBHarrayhead, dg_getfilelengthname);
-			dg_pusherror(pBHarrayhead, dg_evaluatefileidname);
-			return;
-		}
+            dg_pusherror(pBHarrayhead, dg_evaluatefileidname);
+            return;
+        }
 
-		// allocate buffer large enough to hold file data
-		bufferid = dg_newbuffer(
+        // allocate buffer large enough to hold file data
+        bufferid = dg_newbuffer(
             pBHarrayhead, 
             length, 
             length, 
             &flag, 
             FORTH_FALSE);
 
-		if (flag != dg_success)
-		{
-			dg_pusherror(pBHarrayhead, flag);
+        if (flag != dg_success)
+        {
+            dg_pusherror(pBHarrayhead, flag);
             dg_pusherror(pBHarrayhead, dg_newbuffername);
-			dg_pusherror(pBHarrayhead, dg_evaluatefileidname);
-			return;
-		}
+            dg_pusherror(pBHarrayhead, dg_evaluatefileidname);
+            return;
+        }
 
-		dg_growbuffer(
+        dg_growbuffer(
             pBHarrayhead,
             bufferid,
             length,
@@ -806,25 +806,25 @@ void dg_evaluatefileid (
             FORTH_FALSE);
 
         if (flag != dg_success)
-		{
-			dg_pusherror(pBHarrayhead, flag);
+        {
+            dg_pusherror(pBHarrayhead, flag);
             dg_pusherror(pBHarrayhead, dg_growbuffername);
-			dg_pusherror(pBHarrayhead, dg_evaluatefileidname);
-			return;
-		}
-		
-		pbuf = dg_getpbuffer(
+            dg_pusherror(pBHarrayhead, dg_evaluatefileidname);
+            return;
+        }
+        
+        pbuf = dg_getpbuffer(
             pBHarrayhead,
             bufferid,
             &pbuflength);
 
-		if (pBHarrayhead->errorcount != olderrorcount)
-		{
-			dg_pusherror(pBHarrayhead, dg_evaluatefileidname);
-			return;
-		}
+        if (pBHarrayhead->errorcount != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_evaluatefileidname);
+            return;
+        }
 
-		flag = dg_readfile(
+        flag = dg_readfile(
             pBHarrayhead,
             fileid, 
             pbuf, 
@@ -833,14 +833,14 @@ void dg_evaluatefileid (
             &numread, 
             dg_success); 
 
-		if (flag != dg_success)
-		{
-			dg_freebuffer(pBHarrayhead, bufferid);
-			dg_pusherror(pBHarrayhead, flag);
+        if (flag != dg_success)
+        {
+            dg_freebuffer(pBHarrayhead, bufferid);
+            dg_pusherror(pBHarrayhead, flag);
             dg_pusherror(pBHarrayhead, dg_readfilename);
-			dg_pusherror(pBHarrayhead, dg_evaluatefileidname);
-			return;
-		}
+            dg_pusherror(pBHarrayhead, dg_evaluatefileidname);
+            return;
+        }
 
         // This should never happen. If OS says it's availabe we should get it, but it DOES happen occassionally on win32.
         if (numread != length)
@@ -848,9 +848,9 @@ void dg_evaluatefileid (
             // os did not return entire file
             // could try a second read here...
             dg_freebuffer(pBHarrayhead, bufferid);
-			dg_pusherror(pBHarrayhead, dg_osdidlessthanavailableerror);  
+            dg_pusherror(pBHarrayhead, dg_osdidlessthanavailableerror);  
             dg_pusherror(pBHarrayhead, dg_readfilename);
-			dg_pusherror(pBHarrayhead, dg_evaluatefileidname);
+            dg_pusherror(pBHarrayhead, dg_evaluatefileidname);
             return;
         }
 
@@ -864,10 +864,10 @@ void dg_evaluatefileid (
             bufferid);
         
         if (pBHarrayhead->errorcount != olderrorcount)
-		{
-			dg_pusherror(pBHarrayhead, dg_evaluatefileidname);
-			return;
-		}
+        {
+            dg_pusherror(pBHarrayhead, dg_evaluatefileidname);
+            return;
+        }
         
         if (FORTH_FALSE != isglulistflag)
         {
@@ -895,16 +895,16 @@ void dg_evaluatefileid (
         }
 
         // otherwise assume it is a script file
-		dg_evaluatebuffer(
+        dg_evaluatebuffer(
             pBHarrayhead,
             bufferid);
         
-		dg_freebuffer(
+        dg_freebuffer(
             pBHarrayhead,
             bufferid);
 
-		return;
-	}
+        return;
+    }
 
    ////////////////////////////////////////////
    // going to treat console and pipe the same
@@ -913,27 +913,27 @@ void dg_evaluatefileid (
 
     dg_forthdoprompt(pBHarrayhead);
 
-	myexitmainflag = dg_getbufferuint64(
+    myexitmainflag = dg_getbufferuint64(
         pBHarrayhead,
-		DG_DATASPACE_BUFFERID, 
-		exitmainflag);
-		
+        DG_DATASPACE_BUFFERID, 
+        exitmainflag);
+        
 
-	while(myexitmainflag == FORTH_FALSE)
-	{
-		olderrorcount = dg_geterrorcount(pBHarrayhead);
+    while(myexitmainflag == FORTH_FALSE)
+    {
+        olderrorcount = dg_geterrorcount(pBHarrayhead);
 
-		myeof = dg_getline(
+        myeof = dg_getline(
             pBHarrayhead, 
             fileid,
             DG_TERMINALINPUT_BUFFERID, 
             dg_success);
 
-		if (pBHarrayhead->errorcount != olderrorcount)
+        if (pBHarrayhead->errorcount != olderrorcount)
         {
             dg_pusherror(pBHarrayhead, dg_evaluatefileidname);
             return;
-		}
+        }
         else
         {
             *pfirsttimethrough = FORTH_FALSE;
@@ -944,19 +944,19 @@ void dg_evaluatefileid (
 
             // dg_forthdoterrors(pBHarrayhead);
 
-		    myexitmainflag = dg_getbufferuint64(
+            myexitmainflag = dg_getbufferuint64(
                 pBHarrayhead, 
                 DG_DATASPACE_BUFFERID,
                 exitmainflag);
 
-		    dg_forthcr(pBHarrayhead); 
+            dg_forthcr(pBHarrayhead); 
 
-		    if (myexitmainflag == FORTH_FALSE)
-		    {
-		        dg_forthdoprompt(pBHarrayhead);
-		    } 
+            if (myexitmainflag == FORTH_FALSE)
+            {
+                dg_forthdoprompt(pBHarrayhead);
+            } 
         }
-	}
+    }
 }
 
 
@@ -1681,8 +1681,8 @@ void dg_doinputstuff (
     }
 
     // dg_openfileforwritenew((const char*)"c:\\dglu\\gothere2.txt", &hfile, dg_success);
-	// dg_writefile(pBHarrayhead, hfile, (unsigned char*)"got here too", 13, dg_success);
-	// dg_writefileuint64todec(pBHarrayhead, hfile, errorcode);
+    // dg_writefile(pBHarrayhead, hfile, (unsigned char*)"got here too", 13, dg_success);
+    // dg_writefileuint64todec(pBHarrayhead, hfile, errorcode);
     // dg_closefile(hfile, dg_success);
 
     fileid = dg_getevaluatefileid(pBHarrayhead);
@@ -2167,5 +2167,23 @@ UINT64 dg_checkformatchafterslash(
         i--;
         j--;
     }
+}
+
+UINT64 dg_hibitd(
+  UINT64 ulo,
+  UINT64 uhi)
+{
+    UINT64 index;
+
+    index = dg_hibit(uhi);
+
+    if (index < 64)
+    {
+        return(index + 64);
+    }
+
+    index = dg_hibit(ulo);
+
+    return (index);
 }
 

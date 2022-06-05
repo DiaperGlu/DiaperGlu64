@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.3.
+//    This file is part of DiaperGlu v5.4.
 //
-//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.3; if not, write to the Free Software
+//    along with DiaperGlu v5.4; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// May 15, 2022               //
-// version 5.3                //
+// June 5, 2022               //
+// version 5.4                //
 // /////////////////////////////
 
 #if !defined(_INC_diapergluforth)
@@ -62,11 +62,11 @@ extern "C" {
     typedef __int16 INT16;
     typedef unsigned __int16 UINT16;
     
-	typedef __int32 INT32;
-	typedef unsigned __int32 UINT32;
+    typedef __int32 INT32;
+    typedef unsigned __int32 UINT32;
     
     typedef __int64 INT64;
-	typedef unsigned __int64 UINT64;
+    typedef unsigned __int64 UINT64;
 
     LONG dg_catchbadmemoryerror(LPEXCEPTION_POINTERS pexception);
     LONG dg_catchbadmemoryerrorwithfullframe(LPEXCEPTION_POINTERS pexception);
@@ -348,11 +348,11 @@ extern "C" {
     // presorted wordlist sizes  //
     // ////////////////////////////
 
-#define dg_presortedcorewordlistsize (290)
+#define dg_presortedcorewordlistsize (293)
 #define dg_presortedenvwordlistsize (21)
 // #define dg_presortedstringwordlistsize (0)
 // #define dg_presortederrorwordlistsize (0)
-#define dg_prestoredbufferwordlistsize (632)
+#define dg_prestoredbufferwordlistsize (633)
 // #define dg_presortedoswordlistsize (0)
 #define dg_presortedx86wordlistsize (1250)
 
@@ -1164,6 +1164,7 @@ extern "C" {
     DGLU_API extern const char dg_forthfzeroequalsname[];
     DGLU_API extern const char dg_forthflessthanname[];
     DGLU_API extern const char dg_forthffetchname[];
+    DGLU_API extern const char dg_forthftosname[];
     DGLU_API extern const char dg_forthfabsname[];
     DGLU_API extern const char dg_forthfalignname[];
     DGLU_API extern const char dg_forthfalignedname[];
@@ -1209,6 +1210,7 @@ extern "C" {
     DGLU_API extern const char dg_forthfvariablesname[];
     DGLU_API extern const char dg_forthprecisionname[];
     DGLU_API extern const char dg_forthrepresentname[];
+    DGLU_API extern const char dg_forthstofname[];
     DGLU_API extern const char dg_forthsetprecisionname[];
     DGLU_API extern const char dg_forthsfstorename[];
     DGLU_API extern const char dg_forthsffetchname[];
@@ -3003,8 +3005,11 @@ extern "C" {
         UINT64 bufalength,
         unsigned char* pbufb,
         UINT64 bufblength);
+        
+    DGLU_API UINT64 dg_hibitd(
+        UINT64 ulo,
+        UINT64 uhi);
     
-	
     DGLU_API void dg_forthprintstring(Bufferhandle* pBHarrayhead);
     //              ( $1 -$- )
 	
@@ -6020,6 +6025,11 @@ extern "C" {
     DGLU_API extern const char dg_forthcquotename[];
     
     DGLU_API void dg_forthcquote (Bufferhandle* pBHarrayhead);
+
+
+    DGLU_API extern const char dg_forthquerydoname[];
+
+    DGLU_API void dg_forthquerydo (Bufferhandle* pBHarrayhead);
     
     
     DGLU_API extern const char dg_forthagainname[];
@@ -6244,6 +6254,8 @@ extern "C" {
      
      DGLU_API void dg_forthffetch (Bufferhandle* pBHarrayhead);
      
+     DGLU_API void dg_forthftos (Bufferhandle* pBHarrayhead);
+     
      DGLU_API void dg_forthfabs (Bufferhandle* pBHarrayhead);
      
      DGLU_API void dg_forthfalign (Bufferhandle* pBHarrayhead);
@@ -6325,6 +6337,8 @@ extern "C" {
      DGLU_API void dg_forthprecision (Bufferhandle* pBHarrayhead);
      
      DGLU_API void dg_forthrepresent (Bufferhandle* pBHarrayhead);
+     
+     DGLU_API void dg_forthstof (Bufferhandle* pBHarrayhead);
      
      DGLU_API void dg_forthsetprecision (Bufferhandle* pBHarrayhead);
      
@@ -9065,6 +9079,9 @@ DGLU_API void dg_forthsymbol(Bufferhandle* pBHarrayhead);
 
 DGLU_API extern const char dg_forthosymbolname[];
 DGLU_API void dg_forthosymbol(Bufferhandle* pBHarrayhead);
+
+DGLU_API extern const char dg_forthosymbolentryname[];
+DGLU_API void dg_forthosymbolentry(Bufferhandle* pBHarrayhead);
 
 
 DGLU_API extern const char dg_forthnewsymbollistdashtoname[];

@@ -1,22 +1,22 @@
-<!--
+<!--
 // //////////////////////////////////////////////////////////////////////////////////////
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.3.
+//    This file is part of DiaperGlu v5.4.
 //
-//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.3; if not, write to the Free Software
+//    along with DiaperGlu v5.4; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// May 15, 2022               //
-// version 5.3                //
+// June 5, 2022               //
+// version 5.4                //
 // /////////////////////////////
 -->
 
@@ -64,21 +64,21 @@
         <a                                                                     >&nbsp;</a>
 
         <a                                                                     >C functions</a>
-        <a href=forthcompiletype.htm#dg_forthdocompiletypealwaysexecute        >dg_forthdocompiletypealwaysexecute</a>
-        <a href=forthcompiletype.htm#dg_forthdocompiletypesubroutine           >dg_forthdocompiletypesubroutine</a>
-        <a href=forthcompiletype.htm#dg_forthdocompiletypepreserveregs         >dg_forthdocompiletypepreserveregs</a>
-        <a href=forthcompiletype.htm#dg_forthdocompiletypesafesubroutine       >dg_forthdocompiletypesafesubroutine</a>
-        <a href=forthcompiletype.htm#dg_forthdocompiletypedpushn               >dg_forthdocompiletypedpushn</a>
-        <a href=forthcompiletype.htm#dg_forthdocompiletypedpushdn              >dg_forthdocompiletypedpushdn</a>
-        <a href=forthcompiletype.htm#dg_forthdocompiletypedpushp               >dg_forthdocompiletypedpushp</a>
-        <a href=forthcompiletype.htm#dg_forthdocompiletypedpushs               >dg_forthdocompiletypedpushs</a>
-        <a href=forthcompiletype.htm#dg_forthdocompiletypewordsstringquotes    >dg_forthdocompiletypewordsstringquotes</a>
-        <a href=forthcompiletype.htm#dg_forthdocompiletypewords0stringquotes   >dg_forthdocompiletypewords0stringquotes</a>
-        <a href=forthcompiletype.htm#dg_forthdocompiletyperunfileandwaitnoenvquotes    >dg_forthdocompiletyperunfileandwaitnoenvquotes</a>
-        <a href=forthcompiletype.htm#dg_forthdocompiletypecdecl                >dg_forthdocompiletypecdecl</a>
-        <a href=forthcompiletype.htm#dg_forthdocompiletypecdeclretuint128      >dg_forthdocompiletypecdeclretuint128</a>
-        <a href=forthcompiletype.htm#dg_forthdocompiletypecppmemberfunction    >dg_forthdocompiletypecppmemberfunction</a>
-        <a href=forthcompiletype.htm#dg_forthdocompiletypecall                 >dg_forthdocompiletypecall</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypealwaysexecute        >OCRALWAYSEXECUTE</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypesubroutine           >OCREXECUTE</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypepreserveregs         >OCRPRESERVEREGS</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypesafesubroutine       >OCRSAFEEXECUTE</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypedpushn               >OCRPUSHN</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypedpushdn              >OCRPUSHDN</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypedpushp               >OCRPUSHBUFADDR</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypedpushs               >OCRPUSH$</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypewordsstringquotes    >OCRWORDS$&quot;</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypewords0stringquotes   >OCRWORDS0$&quot;</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletyperunfileandwaitnoenvquotes    >OCRRUNFILEANDWAITNOENV&quot;</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypecdecl                >OCRCALLPROC</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypecdeclretuint128      >OCRCALLPROCRETUINT128</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypecppmemberfunction    >OCRCALLCPPMEMBER</a>
+        <a href=forthcompiletype.htm#dg_forthdocompiletypecall                 >OCRCALL</a>
         <a href=forthcompiletype.htm#dg_forthdocompiletypebracketwordlistdot   >OCR[WORDLIST.]</a>
       
     </div>
@@ -87,7 +87,7 @@
 
       <div class=word id=dg_forthdocompiletypealwaysexecute>
 <pre>
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthdocompiletypealwaysexecute ( OCRALWAYSEXECUTE ) 
 //
@@ -96,15 +96,15 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( dataoffset databufid -- )
 //
 // Data stack in:
 //  bufferid                      buffer the target routine is in
-//  bufferoffset                  offset of the target routine in the buffer
+//  bufferoffset                  offset in bytes of the target routine in the buffer
 //                                                            
 // Action:
 //   calls the routine at bufferoffset in bufferid regardless of the system processing state
@@ -117,13 +117,13 @@
 //  <a href='forthwordlist.htm#dg_forthputnewestdefinitioncompiletype'>PUTNEWESTDEFINITIONCOMPILETYPE</a>
 //  <a href='forthwordlist.htm#dg_forthsetocr'>SETOCR</a>
 //
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
       <div class=word id=dg_forthdocompiletypesubroutine>
 <pre>
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthdocompiletypesubroutine ( OCREXECUTE )
 //
@@ -132,20 +132,22 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( dataoffset databufid -- )
 //
 // Data stack in:
-//  dataoffset                     offset of the target routine in the buffer
+//  dataoffset                     offset in bytes of the target routine in the buffer
 //  databufid                      buffer the target routine is in
 //                                                            
 // Action:
 //  Removes dataoffset and databufid from the data stack then:
-//   If the script processing state is execute, this calls the routine at bufferoffset in bufferid 
-//   If the script processing state is compile, this compiles a call to the routine at bufferoffset in bufferid
+//   If the script processing state is execute, this calls the routine at bufferoffset 
+//    in bufferid 
+//   If the script processing state is compile, this compiles a call to the routine at 
+//    bufferoffset in bufferid
 //   If the script processing state is anything else, this does nothing
 //
 // Failure cases:
@@ -158,14 +160,14 @@
 //  <a href='forthwordlist.htm#dg_forthputnewestdefinitioncompiletype'>PUTNEWESTDEFINITIONCOMPILETYPE</a>
 //  <a href='forthwordlist.htm#dg_forthsetocr'>SETOCR</a>
 //
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
       
       <div class=word id=dg_forthdocompiletypepreserveregs>
 <pre>
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthdocompiletypepreserveregs ( OCRPRESERVEREGS )
 //
@@ -174,23 +176,25 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 // 
 // Data stack in:
-//  dataoffset                     offset of the target routine in the buffer
+//  dataoffset                     offset in bytes of the target routine in the buffer
 //  databufid                      buffer the target routine is in
 //                                                            
 // Action:
 //  Removes dataoffset and databufid from the data stack then:
-//   If the script processing state is execute, this calls the routine at bufferoffset in bufferid 
-//   If the script processing state is compile, this compiles a call to the routine at bufferoffset in bufferid
-//    that preserves the registers
+//   If the script processing state is execute, this calls the routine at bufferoffset 
+//    in bufferid 
+//   If the script processing state is compile, this compiles a call to the routine at 
+//    bufferoffset in bufferid that preserves the registers
 //   If the script processing state is anything else, this does nothing
 //
 // Note:
-//  This compile type can only compile calls to core routines at this time, attempting to use this to
-//   compile a call to a routine at an offset in a buffer will generate an error
+//  This compile type can only compile calls to core routines at this time, attempting 
+//   to use this to compile a call to a routine at an offset in a buffer will generate 
+//   an error
 //  This is the compile type for REGS&gt; and &gt;REGS
 //
 // Failure cases:
@@ -199,13 +203,13 @@
 //  error getting the state
 //  attempting to compile a call to a non-core routine
 //  
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
       <div class=word id=dg_forthdocompiletypesafesubroutine>
 <pre>
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthdocompiletypesafesubroutine ( OCRSAFEEXECUTE )
 //
@@ -214,8 +218,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( dataoffset databufid -- )
@@ -226,9 +230,11 @@
 //                                                            
 // Action:
 //  Removes dataoffset and databufid from the data stack then:
-//   If the script processing state is execute, this calls the routine at bufferoffset in bufferid 
-//   If the script processing state is compile, this compiles a safe call to the routine 
-//     at bufferoffset in bufferid and sets the flag showing a safe call was compiled.
+//   If the script processing state is execute, this calls the routine at bufferoffset 
+//    in bufferid 
+//   If the script processing state is compile, this compiles a safe call to the 
+//    routine at bufferoffset in bufferid and sets the flag showing a safe call was 
+//    compiled.
 //   If the script processing state is anything else, this does nothing
 //
 //  Note: The default safe behavior errs on the side of caution. Only compiling words
@@ -244,14 +250,14 @@
 //  <a href='forthwordlist.htm#dg_forthputnewestdefinitioncompiletype'>PUTNEWESTDEFINITIONCOMPILETYPE</a>
 //  <a href='forthwordlist.htm#dg_forthsetocr'>SETOCR</a>
 //
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
 
       <div class=word id=dg_forthdocompiletypedpushn>
 <pre>
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthdocompiletypedpushn ( OCRPUSHN ) 
 //
@@ -260,8 +266,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( dataoffset databufid -- )
@@ -272,7 +278,8 @@
 //                                                            
 // Action:
 //  Removes dataoffset and databufid from the data stack then:
-//   If the script processing state is execute, this pushes n (the data offset) to the data stack 
+//   If the script processing state is execute, this pushes n (the data offset) to the 
+//    data stack 
 //   If the script processing state is compile, this compiles push n to the data stack
 //   If the script processing state is anything else, this does nothing
 //
@@ -284,14 +291,14 @@
 //  <a href='forthwordlist.htm#dg_forthputnewestdefinitioncompiletype'>PUTNEWESTDEFINITIONCOMPILETYPE</a>
 //  <a href='forthwordlist.htm#dg_forthsetocr'>SETOCR</a>
 //
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
 
       <div class=word id=dg_forthdocompiletypedpushdn>
 <pre>
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthdocompiletypedpushdn ( OCRPUSHDN )
 //
@@ -300,8 +307,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( dataoffset databufid -- )
@@ -313,7 +320,8 @@
 // Action:
 //  Removes dataoffset and databufid from the data stack then:
 //   If the script processing state is execute, this pushes n lo n hi to the data stack 
-//   If the script processing state is compile, this compiles push n lo n hi to the data stack
+//   If the script processing state is compile, this compiles push n lo n hi to the 
+//    data stack
 //   If the script processing state is anything else, this does nothing
 //
 // Failure cases:
@@ -324,14 +332,14 @@
 //  <a href='forthwordlist.htm#dg_forthputnewestdefinitioncompiletype'>PUTNEWESTDEFINITIONCOMPILETYPE</a>
 //  <a href='forthwordlist.htm#dg_forthsetocr'>SETOCR</a>
 //  
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthdocompiletypedpushp>
 <pre>
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthdocompiletypedpushp ( OCRPUSHBUFADDR )
 //
@@ -340,8 +348,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( dataoffset databufid -- )
@@ -352,8 +360,10 @@
 //                                                            
 // Action:
 //  Removes dataoffset and databufid from the data stack then:
-//   If the script processing state is execute, this calculates and pushes the address to the data stack 
-//   If the script processing state is compile, this compiles calculate and push address to the data stack
+//   If the script processing state is execute, this calculates and pushes the address 
+//    to the data stack 
+//   If the script processing state is compile, this compiles calculate and push address 
+//    to the data stack
 //   If the script processing state is anything else, this does nothing
 //
 // Failure cases:
@@ -364,14 +374,14 @@
 //  <a href='forthwordlist.htm#dg_forthputnewestdefinitioncompiletype'>PUTNEWESTDEFINITIONCOMPILETYPE</a>
 //  <a href='forthwordlist.htm#dg_forthsetocr'>SETOCR</a>
 //  
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthdocompiletypedpushs>
 <pre>
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthdocompiletypedpushs ( OCRPUSH$ ) 
 //
@@ -380,8 +390,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( dataoffset databufid -- )
@@ -392,7 +402,8 @@
 //                                                            
 // Action:
 //  Removes dataoffset and databufid from the data stack then:
-//   If the script processing state is execute, this parses until " and pushes the parsed string to the string stack 
+//   If the script processing state is execute, this parses until " and pushes the parsed 
+//    string to the string stack 
 //   If the script processing state is compile, this parses until " and compiles push 
 //    a copy of the parsed string to the string stack
 //   If the script processing state is anything else, this does nothing
@@ -405,14 +416,14 @@
 //  <a href='forthwordlist.htm#dg_forthputnewestdefinitioncompiletype'>PUTNEWESTDEFINITIONCOMPILETYPE</a>
 //  <a href='forthwordlist.htm#dg_forthsetocr'>SETOCR</a>
 //
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
 
       <div class=word id=dg_forthdocompiletypewordsstringquotes>
 <pre>
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthdocompiletypewordsstringquotes ( OCRWORDS$&quot; )
 //
@@ -447,14 +458,14 @@
 //  <a href='forthwordlist.htm#dg_forthputnewestdefinitioncompiletype'>PUTNEWESTDEFINITIONCOMPILETYPE</a>
 //  <a href='forthwordlist.htm#dg_forthsetocr'>SETOCR</a>
 //
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
       
       <div class=word id=dg_forthdocompiletypewords0stringquotes>
 <pre>
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthdocompiletypewords0stringquotes ( OCRWORDS0$&quot; )
 //
@@ -491,14 +502,14 @@
 //  <a href='forthwordlist.htm#dg_forthputnewestdefinitioncompiletype'>PUTNEWESTDEFINITIONCOMPILETYPE</a>
 //  <a href='forthwordlist.htm#dg_forthsetocr'>SETOCR</a>
 //
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
 
       <div class=word id=dg_forthdocompiletyperunfileandwaitnoenvquotes>
 <pre>
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthdocompiletyperunfileandwaitnoenvquotes ( OCRRUNFILEANDWAITNOENV&quot; )
 //
@@ -538,12 +549,12 @@
 //  <a href='forthwordlist.htm#dg_forthputnewestdefinitioncompiletype'>PUTNEWESTDEFINITIONCOMPILETYPE</a>
 //  <a href='forthwordlist.htm#dg_forthsetocr'>SETOCR</a>
 //
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       <div class=word id=dg_forthdocompiletypecdecl>
 <pre>
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthdocompiletypecdecl ( OCRCALLPROC )
 //
@@ -552,8 +563,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( dataoffset databufid -- )
@@ -565,7 +576,8 @@
 // Action:
 //  Removes dataoffset and databufid from the data stack then:
 //   If the script processing state is execute, calls the proc address at dataoffset 
-//   If the script processing state is compile, this compiles a call to the proc address at dataoffset
+//   If the script processing state is compile, this compiles a call to the proc address 
+//    at dataoffset
 //   If the script processing state is anything else, this does nothing
 //
 // Note:
@@ -587,14 +599,14 @@
 //  <a href='forthwordlist.htm#dg_forthputnewestdefinitioncompiletype'>PUTNEWESTDEFINITIONCOMPILETYPE</a>
 //  <a href='forthwordlist.htm#dg_forthsetocr'>SETOCR</a>
 //
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthdocompiletypecdeclretuint128>
 <pre>
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthdocompiletypecdeclretuint128 ( OCRCALLPROCRETUINT128 )
 //
@@ -603,8 +615,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( dataoffset databufid -- )
@@ -616,7 +628,8 @@
 // Action:
 //  Removes dataoffset and databufid from the data stack then:
 //   If the script processing state is execute, calls the proc address at dataoffset 
-//   If the script processing state is compile, this compiles a call to the proc address at dataoffset
+//   If the script processing state is compile, this compiles a call to the proc address 
+//    at dataoffset
 //   If the script processing state is anything else, this does nothing
 //
 // Note:
@@ -637,14 +650,14 @@
 //  <a href='forthwordlist.htm#dg_forthputnewestdefinitioncompiletype'>PUTNEWESTDEFINITIONCOMPILETYPE</a>
 //  <a href='forthwordlist.htm#dg_forthsetocr'>SETOCR</a>
 //
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthdocompiletypecppmemberfunction>
 <pre>
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthdocompiletypecppmemberfunction ( OCRCALLCPPMEMBER ) 
 //
@@ -656,8 +669,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( dataoffset databufid -- )
@@ -669,7 +682,8 @@
 // Action:
 //  Removes dataoffset and databufid from the data stack then:
 //   If the script processing state is execute, calls the proc address at dataoffset 
-//   If the script processing state is compile, this compiles a call to the proc address at dataoffset
+//   If the script processing state is compile, this compiles a call to the proc address 
+//    at dataoffset
 //   If the script processing state is anything else, this does nothing
 //
 // Note:
@@ -695,14 +709,14 @@
 //  <a href='forthwordlist.htm#dg_forthputnewestdefinitioncompiletype'>PUTNEWESTDEFINITIONCOMPILETYPE</a>
 //  <a href='forthwordlist.htm#dg_forthsetocr'>SETOCR</a>
 //
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
       
       <div class=word id=dg_forthdocompiletypecall>
 <pre>
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthdocompiletypecall ( OCRCALL )
 //
@@ -711,8 +725,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( dataoffset databufid -- )
@@ -723,25 +737,26 @@
 //                                                            
 // Action:
 //  Removes dataoffset and databufid from the data stack then:
-//   If the bufferid is the same as the calling routine, compiles a relative call to the subroutine
-//   If the bufferid is DG_CORE_BUFFERID, compiles a call to an absolute address - note that this
-//    case trashes the EAX register.
-//   If the bufferid is not the same as the calling routine or DG_CORE_BUFFERID, errors are pushed
-//    to the error stack.
+//   If the bufferid is the same as the calling routine, compiles a relative call to 
+//    the subroutine
+//   If the bufferid is DG_CORE_BUFFERID, compiles a call to an absolute address 
+//    - note that this case trashes the RAX register.
+//   If the bufferid is not the same as the calling routine or DG_CORE_BUFFERID, errors 
+//    are pushed to the error stack.
 //
 // Note:
-//  No setup or cleanup is performed. This is just a straight simple call. Nothing is pushed
-//   to the return stack before the call, and nothing is popped off the return stack after.
-//   You have to do that.
+//  No setup or cleanup is performed. This is just a straight simple call. Nothing is 
+//   pushed to the return stack before the call, and nothing is popped off the return 
+//   stack after. You have to do that.
 //
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthdocompiletypebracketwordlistdot>
 <pre>
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthdocompiletypebracketwordlistdot ( OCR[WORDLIST.] )
 //
@@ -750,8 +765,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( dataoffset databufid -- )
@@ -770,7 +785,7 @@
 //    If the wordname is found, this executes the word.
 //    If the wordname is not found, this pushes an error to the error stack.
 //
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 

@@ -1,22 +1,22 @@
-<!--
+<!--
 // //////////////////////////////////////////////////////////////////////////////////////
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.3.
+//    This file is part of DiaperGlu v5.4.
 //
-//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.3; if not, write to the Free Software
+//    along with DiaperGlu v5.4; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// May 15, 2022               //
-// version 5.3                //
+// June 5, 2022               //
+// version 5.4                //
 // /////////////////////////////
 -->
 
@@ -121,7 +121,7 @@
     
       <div class=word id=dg_howhlistswork>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // How heirarchical lists work
 //
@@ -144,13 +144,13 @@
 //  are tags in the middle with text on both sides... since this implementation
 //  only has one value string for each name.
 //
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
       <div class=word id=dg_forthnewhlist>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthnewhlist ( NEW-HLIST )
 //
@@ -159,8 +159,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //   ( -- hlistid )
@@ -174,14 +174,14 @@
 //
 // Tested cases:
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
       
       <div class=word id=dg_forthfreehlist>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthfreehlist ( FREE-HLIST )
 //
@@ -190,8 +190,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //   ( hlistid -- )
@@ -204,14 +204,14 @@
 //
 // Tested cases:
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthprunehlistelement>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthprunehlistelement ( PRUNE-ELEMENT )
 //
@@ -220,8 +220,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //   ( elementid hlistid -- )
@@ -234,14 +234,14 @@
 //
 // Tested cases:
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthfreehlistelement>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthfreehlistelement ( FREE-ELEMENT )
 //
@@ -250,8 +250,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //   ( elementid hlistid -- )
@@ -264,7 +264,7 @@
 //
 // Tested cases:
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
@@ -280,8 +280,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( parentelementid hlistid -- elementid )
@@ -321,8 +321,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( elementid hlistid -- )
@@ -352,8 +352,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( elementid hlistid -- )
@@ -383,16 +383,16 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( elementid hlistid -- )
 //  ( value$ -$- )
 //                                                            
 // Action:
-//  Pops a string from the string stack and replaces the indicated hlist element's value 
-//   string with it.  
+//  Pops a string from the string stack and replaces the indicated hlist element's 
+//   value string with it.  
 //
 // Failure cases:
 //
@@ -415,14 +415,15 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( parentelementid hlistid -- newestchildid )
 //                                                            
 // Action:
-//  Gets the childid of child element most recently added to the indicated hlist element.  
+//  Gets the childid of child element most recently added to the indicated hlist 
+//   element.  
 //
 // Failure cases:
 //
@@ -445,8 +446,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( parentelementid hlistid -- oldestchildid )
@@ -476,8 +477,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( childelementid hlistid -- nextoldersiblingid )
@@ -485,7 +486,8 @@
 // Action:
 //  If parent of the indicated element has another child that was added to the parent 
 //   before the indicated child element, this routine returns the element id of the
-//   child added just before this element. Otherwise this routine returns DG_ENDOFWORDLIST (-1)
+//   child added just before this element. Otherwise this routine returns 
+//   DG_ENDOFWORDLIST (-1)
 //
 // Failure cases:
 //
@@ -508,16 +510,17 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( childelementid hlistid -- nextoldersiblingid )
 //                                                            
 // Action:
 //  If parent of the indicated element has another child that was added to the parent 
-//   more recently than the indicated child element, this routine returns the element id of the
-//   child added just after this element. Otherwise this routine returns DG_ENDOFWORDLIST (-1)
+//   more recently than the indicated child element, this routine returns the element 
+//   id of the child added just after this element. Otherwise this routine returns 
+//   DG_ENDOFWORDLIST (-1)
 //
 // Failure cases:
 //
@@ -540,16 +543,17 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( newparentelementid childelementid hlistid -- )
 //                                                            
 // Action:
 //  Removes the indicated child element from it's current parent and adds it as a child
-//    of the indicated new parent. This child becomes the most recently added child of the
-//    new parent and is also sorted into the new parent's list of sorted children by name$.
+//   of the indicated new parent. This child becomes the most recently added child of 
+//   the new parent and is also sorted into the new parent's list of sorted children by 
+//   name$.
 //
 // Failure cases:
 //
@@ -572,8 +576,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( newparentelementid childelementid hlistid -- )
@@ -602,23 +606,24 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 // ( parentelementid hlistid -- closestchildid sortkeyindexafterlastmatch compareflag )
 // ( name$ -$- )
 //                                                            
 // Action:
-//  Searches the sorted child list of the indicated parent element for the child element have
-//   the next greater or equal name string as the indicated name string.
+//  Searches the sorted child list of the indicated parent element for the child element 
+//   have the next greater or equal name string as the indicated name string.
 //   If the found child's name string matches, the compare flag's value is 0, and the
-//   closestchildid is the element id of the most recently added child that has the same name
-//   string.
-//   If the found child's name string does not match, the compare flag is 1 (for greater than),
-//   and the closestchildid is the elemend id of the child with the name string just less than.
-//   sortkeyindexafterlastmatch is the index in the parent's sorted list of child element ids
-//   of the child element with the last matching name string or the first one greater.
+//    closestchildid is the element id of the most recently added child that has the 
+//    same name string.
+//   If the found child's name string does not match, the compare flag is 1 (for greater 
+//    than), and the closestchildid is the elemend id of the child with the name string 
+//    just less than. sortkeyindexafterlastmatch is the index in the parent's sorted 
+//    list of child element ids of the child element with the last matching name string 
+//    or the first one greater.
 //
 // Failure cases:
 //
@@ -641,17 +646,17 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 // ( parentelementid hlistid -- childid )
 // ( name$ -$- )
 //                                                            
 // Action:
-//  Searches the sorted child list of the indicated parent element for the child element
-//   most recently added that has the same name string. If found the childid of the matching
-//   element is returned. Otherwise DG_ENDOFWORDLIST (-1) is returned.
+//  Searches the sorted child list of the indicated parent element for the child 
+//   element most recently added that has the same name string. If found the childid 
+//   of the matching element is returned. Otherwise DG_ENDOFWORDLIST (-1) is returned.
 //
 // Failure cases:
 //
@@ -674,30 +679,33 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 // ( indentationstepsize rootelementid hlistid -- )
 // ( -$- dgluml$ )
 //                                                            
 // Action:
-//  Converts the indicated element and all it's children into an xml like string. The names and
-//   values are converted to an url form encoded string. In the event an element has both a value
-//   and an element, the element goes immediately after &lt;name$&gt;, then the children come, each
-//   on a separate line. Each nesting level of children is indented indentationstepsize.
+//  Converts the indicated element and all it's children into an xml like string. The 
+//   names and values are converted to an url form encoded string. In the event an 
+//   element has both a value and an element, the element goes immediately after 
+//   &lt;name$&gt;, then the children come, each on a separate line. Each nesting level
+//   of children is indented indentationstepsize.
 //  So for an indentionstepsize of 2 it looks like this:
 //   &lt;rootelementname$&gt;rootelementvalue$
 //     &lt;1stchildname$&gt;1stchildvalue$&lt;/1stchildname$&gt;
 //     &lt;2ndchildname$&gt;2ndchildvalue$&lt;/2ndchildname$&gt;
 //   &lt;/rootelementname$&gt;
 //
-//  The value strings are url encoded, which also encodes and carriage returns or line feeds in the value string.
-//  This way you can determine the true end of the value string when a parent has both a value string
-//  and children by looking for the first carriage return or line feed. &lt; and &gt; in the value strings 
-//  are also url encoded so in the event there is no children, you can just look for the next &lt; as the end
-//  of the value string. The DGLUML$&gt;ELEMENT routine when I write it will probably consider any character
-//  that should have been url encoded as a terminator for the value string. 
+//  The value strings are url encoded, which also encodes and carriage returns or line
+//   feeds in the value string.
+//  This way you can determine the true end of the value string when a parent has both 
+//   a value string and children by looking for the first carriage return or line feed. 
+//   &lt; and &gt; in the value strings are also url encoded so in the event there is
+//   no children, you can just look for the next &lt; as the end of the value string.
+//   The DGLUML$&gt;ELEMENT routine when I write it will probably consider any 
+//   character that should have been url encoded as a terminator for the value string. 
 //     
 // Failure cases:
 //
@@ -720,14 +728,15 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 // ( parentelementid hlistid -- numberofchildren )
 //                                                            
 // Action:
-//  Returns the number of children in the indicated parent element's list of sorted children.
+//  Returns the number of children in the indicated parent element's list of sorted 
+//   children.
 //
 // Failure cases:
 //
@@ -750,8 +759,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 // ( n parentelementid hlistid -- childelementid )
@@ -781,8 +790,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 // ( hlistid -- packedbufferid )
@@ -811,8 +820,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( packedbufferid -- hlistid )
@@ -841,8 +850,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( elementid hlistid -- ) ( -EH- elementid hlistid )
@@ -872,8 +881,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( elementid hlistid -EH- ) ( -- elementid hlistid )
@@ -903,8 +912,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( elementid hlistid -EH- )
@@ -933,8 +942,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( elementid hlistid -EH- elementid hlistid ) ( -- elementid hlistid )
@@ -964,8 +973,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( elementid hlistid -EH- elementid hlistid elementid hlistid )
@@ -995,8 +1004,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( newelementid -- )
@@ -1028,8 +1037,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( parentelementid hlistid -EH- parentelementid hlistid )
@@ -1061,8 +1070,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( parentelementid hlistid -EH- parentelementid hlistid childelementid hlistid )
@@ -1086,7 +1095,7 @@
 
       <div class=word id=dg_forthnamestrtovaluestr>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthnamestrtovaluestr ( NAME$&gt;VALUE$ )
 //
@@ -1095,8 +1104,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( parentelementid hlistid -- )
@@ -1113,14 +1122,14 @@
 //
 // Tested cases:
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
       
       <div class=word id=dg_forthnamestrtovalue>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthnamestrtovalue ( NAME$&gt;VALUE )
 //
@@ -1129,8 +1138,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( parentelementid hlistid -- value )
@@ -1148,14 +1157,14 @@
 //
 // Tested cases:
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
       
       <div class=word id=dg_forthehnamestrtovaluestr>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthehnamestrtovaluestr ( EH-NAME$&gt;VALUE$ )
 //
@@ -1164,8 +1173,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( parentelementid hlistid -EH- parentelementid hlistid )
@@ -1182,13 +1191,13 @@
 //
 // Tested cases:
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
       <div class=word id=dg_forthehnamestrtovalue>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthehnamestrtovalue ( EH-NAME$&gt;VALUE )
 //
@@ -1197,8 +1206,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -- value )
@@ -1217,14 +1226,14 @@
 //
 // Tested cases:
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
 
       <div class=word id=dg_forthnamewtovaluestr>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthnamewtovaluestr ( NAMEW&gt;VALUE$ )
 //
@@ -1233,14 +1242,14 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( parentelementid hlistid -- )
 //  ( -$- value$ )
-//  ( &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; -currentinputbuffer- 
-//     &quot;&lt;delimiters&gt;morestuff&quot; )
+//  ( &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//     -currentinputbuffer- &quot;&lt;delimiters&gt;morestuff&quot; )
 //                                                            
 // Action:
 //  Pops parentelementid and hlistid of the data stack.
@@ -1259,14 +1268,14 @@
 //
 // Tested cases:
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthnamewtovalue>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthnamewtovalue ( NAMEW&gt;VALUE )
 //
@@ -1275,8 +1284,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( parentelementid hlistid -- )
@@ -1302,14 +1311,14 @@
 //
 // Tested cases:
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthehnamewtovaluestr>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthehnamewtovaluestr ( EH-NAMEW&gt;VALUE$ )
 //
@@ -1318,14 +1327,14 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( parentelementid hlistid -EH- parentelementid hlistid )
 //  ( -$- value$ )
-//  ( &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; -currentinputbuffer- 
-//     &quot;&lt;delimiters&gt;morestuff&quot; )
+//  ( &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//     -currentinputbuffer- &quot;&lt;delimiters&gt;morestuff&quot; )
 //                                                            
 // Action:
 //  Gets the parentelementid and hlistid from the top of the EH stack.
@@ -1344,14 +1353,14 @@
 //
 // Tested cases:
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthehnamewtovalue>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthehnamewtovalue ( EH-NAMEW&gt;VALUE )
 //
@@ -1360,14 +1369,14 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( parentelementid hlistid -EH- parentelementid hlistid )
 //  ( -- value )
-//  ( &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; -currentinputbuffer- 
-//     &quot;&lt;delimiters&gt;morestuff&quot; )
+//  ( &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//     -currentinputbuffer- &quot;&lt;delimiters&gt;morestuff&quot; )
 //                                                            
 // Action:
 //  Gets the parentelementid and hlistid from the top of the EH stack.
@@ -1387,14 +1396,14 @@
 //
 // Tested cases:
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
 
       <div class=word id=dg_forthehoherewtonewelement>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthehoherewtonewelement ( EH-OHERE-W&gt;NEW-ELEMENT OSYMBOL )
 //
@@ -1403,13 +1412,13 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( parentelementid hlistid -EH- parentelementid hlistid )
-//  ( &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; -currentinputbuffer- 
-//     &quot;&lt;delimiters&gt;morestuff&quot; )
+//  ( &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//     -currentinputbuffer- &quot;&lt;delimiters&gt;morestuff&quot; )
 //                                                            
 // Action:
 //  Moves the current offset pointer in the current input buffer to skip 
@@ -1426,7 +1435,57 @@
 //
 // Tested cases:
 //   
-////////////////////////////////////////////////////////////////////////
+/// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthosymbolentry>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthosymbolentry ( OSYMBOL-ENTRY )
+//
+// C prototype:
+//   void dg_forthosymbolentry(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( parentelementid hlistid -EH- parentelementid hlistid )
+//  ( &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//     -currentinputbuffer- &quot;&lt;delimiters&gt;morestuff&quot; )
+//                                                            
+// Action:
+//  Moves the current offset pointer in the current input buffer to skip 
+//   any leading delimiters or to the end of the buffer if that comes first
+//   to find the start of the next word.
+//  Then moves the current offset pointer in the current input buffer to the
+//   next occurrence of a delimiter or to the end of the buffer if that comes
+//   first, to find the end of the word.
+//  Makes a new element using the parent element id and hlist id on the top of
+//   of the EH stack and a name$ equal to the word parsed and a value
+//   equal to the UINT64 current offset in the current compile buffer.
+//  Then makes a child element of this new element that has the name "ENTRY"
+//   and no value.
+//
+// Note:
+//  This adds the ENTRY attribute to an export symbol. On Mac, this is ignored and the
+//   symbol is treated like a regular export symbol. On Windows, this changes the
+//   export symbol into an entry symbol so the linker will allow you to use it as the
+//   entry point of an exe. It seems the section of a .obj file that has the /ENTRY
+//   specification in it might no longer required. If so, I may remove this section
+//   in the future which means you might be able to just use OSYMBOL instead of
+//   OSYMBOL-ENTRY on Windows in the future. J.N. 2022 May 22.
+//
+// Failure cases:
+//
+// Tested cases:
+//   
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
@@ -1442,13 +1501,13 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( parentelementid hlistid -EH- parentelementid hlistid )
-//  ( &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; -currentinputbuffer- 
-//     &quot;&lt;delimiters&gt;morestuff&quot; )
+//  ( &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//     -currentinputbuffer- &quot;&lt;delimiters&gt;morestuff&quot; )
 //                                                            
 // Action:
 //  Moves the current offset pointer in the current input buffer to skip 
@@ -1489,14 +1548,14 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( parentelementidnd-1 hlistidnd-1 ... parentelementid0 hlistid0 -EH- 
 //     parentelementidnd-1 hlistidnd-1 ... parentelementid0 hlistid0 )
-//  ( &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; -currentinputbuffer- 
-//     &quot;&lt;delimiters&gt;morestuff&quot; )
+//  ( &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//     -currentinputbuffer- &quot;&lt;delimiters&gt;morestuff&quot; )
 //                                                            
 // Action:
 //  Moves the current offset pointer in the current input buffer to skip 
@@ -1538,14 +1597,14 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( parentelementid1 hlistid1 parentelementid0 hlistid0 -EH- 
 //     parentelementid1 hlistid1 parentelementid0 hlistid0 )
-//  ( &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; -currentinputbuffer- 
-//     &quot;&lt;delimiters&gt;morestuff&quot; )
+//  ( &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//     -currentinputbuffer- &quot;&lt;delimiters&gt;morestuff&quot; )
 //                                                            
 // Action:
 //  Moves the current offset pointer in the current input buffer to skip 

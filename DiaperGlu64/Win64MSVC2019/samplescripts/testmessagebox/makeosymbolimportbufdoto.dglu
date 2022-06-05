@@ -1,0 +1,90 @@
+( //////////////////////////////////////////////////////////////////////////////////////// )
+( //                                                                                       )
+( //    Copyright 2022 James Patrick Norris                                                )
+( //                                                                                       )
+( //    This file is part of Diaperglu 5.4.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.4 is free software; you can redistribute it and/or modify              )
+( //    it under the terms of the GNU General Public License as published by               )
+( //    the Free Software Foundation; either version 2 of the License, or                  )
+( //    {at your option} any later version.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.4 is distributed in the hope that it will be useful,                   )
+( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
+( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
+( //    GNU General Public License for more details.                                       )
+( //                                                                                       )
+( //    You should have received a copy of the GNU General Public License                  )
+( //    along with Diaperglu 5.4; if not, write to the Free Software                       )
+( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
+( //                                                                                       )
+( //////////////////////////////////////////////////////////////////////////////////////// )
+
+( /////////////////////////////// )
+( // James Patrick Norris      // )
+( // www.rainbarrel.com        // )
+( // June 5, 2022              // )
+( // version 5.4               // )
+( /////////////////////////////// )
+
+// last changed: June 5, 2022
+
+// documentation for the message box function is here:
+// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messageboxa
+// link checked June 5, 2022
+
+// the document explains the parameters and says which shared library this function is in
+
+
+NEW-FLAT-OSYMBOL-BUF ( -r- oldcompilebuf )
+
+  // current compile buf is set to a new buffer
+  // new hlist created with two parent elements
+  //  one element is for the export symbol list
+  //  the other element is for the import symbol list
+
+X86-WORDLIST >SEARCH-ORDER
+
+OSYMBOL omymessageboxmessage
+$" My Message Box Message" $>0$ PCURRENTCOMPILEBUFFER @ $>BUF    // pushes the message to the buffer
+
+OSYMBOL omymessageboxcaption
+$" My Message Box Caption" $>0$ PCURRENTCOMPILEBUFFER @ $>BUF    // pushes the message to the buffer
+
+HEX
+OSYMBOL dg_mycallmessageboxa
+  ENTER-CALL-SUBS-FRAME,
+  
+  (( 
+       0 N >IPARAM   // hparentwindow  > RDI
+       EH. omymessageboxmessage [O]  P>IPARAM   //  > RSI  
+       EH. omymessageboxcaption [O]  P>IPARAM   //  > RDX
+       4 N >IPARAM   //  > RCX  MB_YESNO = 4
+  )),
+
+  IMP CALL,  OSYMBOL-IMPORT MessageBoxA
+
+  EXIT-CALL-SUBS-FRAME,
+  RET,
+  
+  SEARCH-ORDER> DROP
+  ?CLEAR-LOCALS
+
+
+// saving the compiled buffer in the mach-o .o format
+
+PCURRENTCOMPILEBUFFER @ 
+EH 
+1 EH[ND]
+BUF>NEWEXPORTIMPORT.OBUF
+
+$" osymbolimport.obj" SAVEFILE$
+
+( oldcompilebuf -r- )
+FREE-FLAT-OSYMBOL-BUF 
+
+
+
+
+     
+

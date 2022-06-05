@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.3.
+//    This file is part of DiaperGlu v5.4.
 //
-//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.3; if not, write to the Free Software
+//    along with DiaperGlu v5.4; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// May 15, 2022               //
-// version 5.3                //
+// June 5, 2022               //
+// version 5.4                //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -430,3 +430,98 @@ void testdg_evaluatebuffer()
 	dg_freeallbuffers(&BHarrayhead);
 }
 
+
+void testdg_hibit()
+{
+    UINT64 index;
+    
+	Bufferhandle BHarrayhead;
+
+	dg_initpbharrayhead(&BHarrayhead);
+
+	dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_hibitd\n");
+
+    // 0 case
+	index = dg_hibitd(
+        0,
+        0);
+
+	if (index != largestunsignedint)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_hitbitd 0 case, got wrong index, expected -1, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, index);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+	}
+
+    // 1 case
+    index = dg_hibitd(
+        1,
+        0);
+
+	if (index != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_hitbitd 1 case, got wrong index, expected 0, got ");
+        dg_writestdoutuinttodec(&BHarrayhead, index);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+	}
+ 
+    // 2 case
+    index = dg_hibitd(
+        2,
+        0);
+
+	if (index != 1)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_hitbitd 2 case, got wrong index, expected 1, got ");
+        dg_writestdoutuinttodec(&BHarrayhead, index);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+	}
+ 
+    // 3 case
+    index = dg_hibitd(
+        3,
+        0);
+
+	if (index != 1)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_hitbitd 3 case, got wrong index, expected 1, got ");
+        dg_writestdoutuinttodec(&BHarrayhead, index);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+	}
+ 
+    // 4 case
+    index = dg_hibitd(
+        4,
+        0);
+
+	if (index != 2)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_hitbitd 4 case, got wrong index, expected 2, got ");
+        dg_writestdoutuinttodec(&BHarrayhead, index);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+	}
+ 
+    // 2^64 case
+    index = dg_hibitd(
+        0,
+        1);
+
+	if (index != 64)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_hitbitd 2^64 case, got wrong index, expected 64, got ");
+        dg_writestdoutuinttodec(&BHarrayhead, index);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+	} 
+ 
+    // 2^127 case
+    index = dg_hibitd(
+        0,
+        0x8000000000000000);
+
+	if (index != 127)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_hitbitd 2^127 case, got wrong index, expected 127, got ");
+        dg_writestdoutuinttodec(&BHarrayhead, index);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+	}      
+}

@@ -2,20 +2,20 @@
 ( //                                                                                       )
 ( //    Copyright 2022 James Patrick Norris                                                )
 ( //                                                                                       )
-( //    This file is part of Diaperglu 5.3.                                                )
+( //    This file is part of Diaperglu 5.4.                                                )
 ( //                                                                                       )
-( //    Diaperglu 5.3 is free software; you can redistribute it and/or modify              )
+( //    Diaperglu 5.4 is free software; you can redistribute it and/or modify              )
 ( //    it under the terms of the GNU General Public License as published by               )
 ( //    the Free Software Foundation; either version 2 of the License, or                  )
 ( //    {at your option} any later version.                                                )
 ( //                                                                                       )
-( //    Diaperglu 5.3 is distributed in the hope that it will be useful,                   )
+( //    Diaperglu 5.4 is distributed in the hope that it will be useful,                   )
 ( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
 ( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
 ( //    GNU General Public License for more details.                                       )
 ( //                                                                                       )
 ( //    You should have received a copy of the GNU General Public License                  )
-( //    along with Diaperglu 5.3; if not, write to the Free Software                       )
+( //    along with Diaperglu 5.4; if not, write to the Free Software                       )
 ( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
 ( //                                                                                       )
 ( //////////////////////////////////////////////////////////////////////////////////////// )
@@ -23,8 +23,8 @@
 ( /////////////////////////////// )
 ( // James Patrick Norris      // )
 ( // www.rainbarrel.com        // )
-( // May 15, 2022              // )
-( // version 5.3               // )
+( // June 5, 2022              // )
+( // version 5.4               // )
 ( /////////////////////////////// )
 
 
@@ -10130,6 +10130,165 @@ END-CODE
 
 test>fparammemtomem
 
+
+HEX
+CODE TESTP>IPARAM0 ( reg=RDI )
+  ENTER-CALL-SUBS-FRAME,
+  CALL-SUBS-FRAME-LOCALS,< x >
+  212223252627 N  RSI  MOV, 
+  RSI  x  MOV,
+  (( x P>IPARAM )),  ' TESTMEMTOMEMMOV >BODY N  RAX MOV,  RAX CALL,
+  RAX [R]  RAX  MOV, 
+  EXIT-CALL-SUBS-FRAME,
+  RET,
+END-CODE
+
+
+: testp>iparam0 ( -- )
+    ." testing (( localparam P>IPARAM for param 0 )), "
+    0 ['] TESTP>IPARAM0 >BODY CALLPROC
+    
+    DUP 212223252627 = IF DROP
+      ."  SUCCESS! "
+    ELSE
+      ."  FAIL! Expected "  212223252627 U.  
+      ." , got " U.
+    THEN
+
+    CR
+; 
+
+testp>iparam0
+
+
+HEX
+CODE TESTP>IPARAM1 
+  ENTER-CALL-SUBS-FRAME,
+  CALL-SUBS-FRAME-LOCALS,< x >
+  212223252627 N  RDI  MOV, 
+  RDI  x  MOV,
+  (( RAX >IPARAM  x P>IPARAM )),  
+  RSI  RAX  MOV,
+  RAX [R]  RAX  MOV,
+  EXIT-CALL-SUBS-FRAME,
+  RET,
+END-CODE
+
+
+: testp>iparam1 ( -- )
+    ." testing (( localparam P>IPARAM for param 1 )), "
+    0 ['] TESTP>IPARAM1 >BODY CALLPROC
+    
+    DUP 212223252627 = IF DROP
+      ."  SUCCESS! "
+    ELSE
+      ."  FAIL! Expected "  212223252627 U.  
+      ." , got " U.
+    THEN
+
+    CR
+; 
+
+testp>iparam1
+
+
+HEX
+CODE TESTP>IPARAM2 
+  ENTER-CALL-SUBS-FRAME,
+  CALL-SUBS-FRAME-LOCALS,< x >
+  212223252627 N  RDI  MOV, 
+  RDI  x  MOV,
+  (( RAX >IPARAM  RAX >IPARAM x P>IPARAM )),  
+  RDX  RAX  MOV,
+  RAX [R]  RAX  MOV,
+  EXIT-CALL-SUBS-FRAME,
+  RET,
+END-CODE
+
+
+: testp>iparam2 ( -- )
+    ." testing (( localparam P>IPARAM for param 2 )), "
+    0 ['] TESTP>IPARAM2 >BODY CALLPROC
+    
+    DUP 212223252627 = IF DROP
+      ."  SUCCESS! "
+    ELSE
+      ."  FAIL! Expected "  212223252627 U.  
+      ." , got " U.
+    THEN
+
+    CR
+; 
+
+testp>iparam2
+
+
+HEX
+CODE TESTP>IPARAM6 
+  ENTER-CALL-SUBS-FRAME,
+  CALL-SUBS-FRAME-LOCALS,< x >
+  212223252627 N  RDI  MOV, 
+  RDI  x  MOV,
+  (( RAX >IPARAM  RAX >IPARAM  
+     RAX >IPARAM  RAX >IPARAM
+     RAX >IPARAM  RAX >IPARAM
+     x P>IPARAM )),  
+  RSP [R]  RAX  MOV,
+  RAX [R]  RAX  MOV,
+  EXIT-CALL-SUBS-FRAME,
+  RET,
+END-CODE
+
+
+: testp>iparam6 ( -- )
+    ." testing (( localparam P>IPARAM for param 6 )), "
+    0 ['] TESTP>IPARAM6 >BODY CALLPROC
+    
+    DUP 212223252627 = IF DROP
+      ."  SUCCESS! "
+    ELSE
+      ."  FAIL! Expected "  212223252627 U.  
+      ." , got " U.
+    THEN
+
+    CR
+; 
+
+testp>iparam6
+
+
+HEX
+CODE TESTP>IPARAM7
+  ENTER-CALL-SUBS-FRAME,
+  CALL-SUBS-FRAME-LOCALS,< x >
+  212223252627 N  RDI  MOV, 
+  RDI  x  MOV,
+  (( RAX >IPARAM  RAX >IPARAM  
+     RAX >IPARAM  RAX >IPARAM
+     RAX >IPARAM  RAX >IPARAM
+     RAX >IPARAM  x P>IPARAM )),  
+  RSP 8 [R+N]  RAX  MOV,
+  RAX [R]  RAX  MOV,
+  EXIT-CALL-SUBS-FRAME,
+  RET,
+END-CODE
+
+
+: testp>iparam7 ( -- )
+    ." testing (( localparam P>IPARAM for param 7 )), "
+    0 ['] TESTP>IPARAM7 >BODY CALLPROC
+    
+    DUP 212223252627 = IF DROP
+      ."  SUCCESS! "
+    ELSE
+      ."  FAIL! Expected "  212223252627 U.  
+      ." , got " U.
+    THEN
+
+    CR
+; 
+
+testp>iparam7
 
 
 CR ." ***********"

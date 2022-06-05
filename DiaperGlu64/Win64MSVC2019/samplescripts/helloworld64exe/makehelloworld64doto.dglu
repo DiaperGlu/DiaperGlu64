@@ -1,0 +1,191 @@
+( //////////////////////////////////////////////////////////////////////////////////////// )
+( //                                                                                       )
+( //    Copyright 2022 James Patrick Norris                                                )
+( //                                                                                       )
+( //    This file is part of Diaperglu 5.4.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.4 is free software; you can redistribute it and/or modify              )
+( //    it under the terms of the GNU General Public License as published by               )
+( //    the Free Software Foundation; either version 2 of the License, or                  )
+( //    {at your option} any later version.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.4 is distributed in the hope that it will be useful,                   )
+( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
+( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
+( //    GNU General Public License for more details.                                       )
+( //                                                                                       )
+( //    You should have received a copy of the GNU General Public License                  )
+( //    along with Diaperglu 5.4; if not, write to the Free Software                       )
+( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
+( //                                                                                       )
+( //////////////////////////////////////////////////////////////////////////////////////// )
+
+( /////////////////////////////// )
+( // James Patrick Norris      // )
+( // www.rainbarrel.com        // )
+( // June 5, 2022              // )
+( // version 5.4               // )
+( /////////////////////////////// )
+
+
+// last changed April 12, 2022
+
+// This makes a hello world .obj file
+
+
+NEW-FLAT-OSYMBOL-BUF
+( -R- oldcurrentcompilebufid )
+( -EH- importelementid_importhlistid exportelementid_exporthlistid )
+( // current compile buffer set to new buffer ) 
+
+X86-WORDLIST >SEARCH-ORDER
+
+DECIMAL
+
+OSYMBOL omyhelloworldmessage
+13 CODE-U8,  10 CODE-U8,                          // pushes crlf to the buffer
+$" Hello World!" PCURRENTCOMPILEBUFFER @ $>BUF    // pushes the message to the buffer
+13 CODE-U8,  10 CODE-U8,                          // appends another crlf
+13 CODE-U8,  10 CODE-U8,                          // and another crlf
+
+OHERE EH. omyhelloworldmessage - CONSTANT omyhelloworldmessagelength
+
+// Windows low level write function is complicated. It's not a necessarily a blocking write.
+//  It's a 'please write some stuff' function where Windows replies with how much it 
+//  felt like doing. It may even reply with a fake error that means 'I'm still working on it.'
+//  (This I'm still working on it information is new I think... April 12, 2022 which means
+//  I'm going to have to modify my script engine operating system API again...)
+//  So that's why this writefile function is so complicated.
+//  The nice part is, if Windows is too busy to do your write... you can decide to do
+//   something else instead of finishing it....
+
+HEX
+OSYMBOL my_writefilesub
+  ENTER-CALL-SUBS-FRAME,
+  
+  FRAME-PARAMS< 
+    INT fileid 
+    INT pmessage
+    INT length >
+    
+  CALL-SUBS-FRAME-LOCALS,< 
+    localfileid
+    localpmessage
+    locallength
+    numwritten
+  >
+
+  // if the length is 0, you don't need to do anything  
+  length  0 N  CMP,  
+  ZS  IF,
+    EXIT-CALL-SUBS-FRAME,
+    RET,
+  THEN,
+
+  // moving stuff to local storage so you don't have to
+  //  worry about registers getting trashed
+  fileid    localfileid    MOV,
+  pmessage  localpmessage  MOV,
+  length    locallength    MOV,
+
+  // initializing numwritten variable because the automated function
+  //  caller passes 64 bits to the function, but windows uses only
+  //  32 bits... there will be issues with the 64 bit compare if you don't do this
+  //  and if you make this mistake, it's kind of hard to find... (I found this out the hard way)
+  RAX  RAX  XOR,
+  RAX  numwritten  MOV,
+
+  // Windows only uses 32 bits of the length, but I'm going to assume the
+  //  helloworld message fits in 32 bits and not worry about the length passed in
+  
+  BEGIN,
+
+    (( 
+      localfileid     >IPARAM
+      localpmessage   >IPARAM
+      locallength     >IPARAM
+      numwritten      P>IPARAM  // does LEA, for numwritten instead of MOV,
+      0 N             >IPARAM
+    )),
+    
+    IMP CALL, OSYMBOL-IMPORT WriteFile
+
+    // can't really do anything if there is an error so just exiting
+    // (write failed so... there's no way to notify the user...)
+    //  for a more generic write function, you'd want to pass out error information
+    //  for example, DiaperGlu uses a pointer to an error message to do this     
+    0 N  RAX  CMP,
+    ZS  IF,
+      EXIT-CALL-SUBS-FRAME,
+      RET,
+    THEN,
+
+  // memory to memory now supported... trashes RAX though
+  locallength numwritten  CMP,  //  this does numwritten - locallength -> flags
+  CS WHILE, 
+
+    // windows didn't write everything so... have to try again with the rest
+    numwritten  localpmessage  ADD,
+    numwritten  locallength    SUB,
+
+    // if write didn't work, it might be because other things were using shared resources
+    //  Sleep lets other things have time to do stuff
+    //  using (( )), so I don't have to worry about alignment stuff
+    (( 1 N  >IPARAM )),   IMP CALL, OSYMBOL-IMPORT Sleep
+    
+  REPEAT,
+
+  EXIT-CALL-SUBS-FRAME,
+  RET,
+  
+HEX FFFFFFF5 CONSTANT STD_OUTPUT_HANDLE
+DECIMAL 997 CONSTANT ERROR_IO_PENDING
+
+DECIMAL
+OSYMBOL-ENTRY myhelloworldstart
+  ENTER-CALL-SUBS-FRAME,
+
+  CALL-SUBS-FRAME-LOCALS,<
+    fileid
+  >
+
+   (( STD_OUTPUT_HANDLE N  >IPARAM )),  IMP CALL, OSYMBOL-IMPORT GetStdHandle
+   (( fileid IPARAM> )), 
+   
+   ((
+       fileid                        >IPARAM
+       EH. omyhelloworldmessage [O]  P>IPARAM
+       omyhelloworldmessagelength N  >IPARAM
+   )),
+
+   IMP CALL, OSYMBOL-IMPORT my_writefilesub
+
+   // return of 0 is bad... 
+   RCX  RCX  XOR,  // getting ready to exit with 0 which means ok
+   0 N  RAX  CMP,
+   ZS IF,
+     RCX INC, // exiting with 1
+   THEN,
+
+   ((  )),  // for aligment       
+   IMP CALL, OSYMBOL-IMPORT ExitProcess
+     
+
+
+PCURRENTCOMPILEBUFFER @ 
+EH 
+1 EH[ND]
+BUF>NEWEXPORTIMPORT.OBUF
+
+DUP $" helloworld64.obj" SAVEFILE$
+FREEBUFFER
+
+SEARCH-ORDER> DROP
+
+FREE-FLAT-OSYMBOL-BUF
+( // current compile buf is freed )
+( //  and current compile buf is set to the oldcurrentcompilebbuf )
+( oldcurrentcompilebufid -R- )
+( importelementid_importhlistid exportelementid_exporthlistid -EH- )
+
+

@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.3.
+//    This file is part of DiaperGlu v5.4.
 //
-//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.3; if not, write to the Free Software
+//    along with DiaperGlu v5.4; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// May 15, 2022               //
-// version 5.3                //
+// June 5, 2022               //
+// version 5.4                //
 // /////////////////////////////
 
   
@@ -1181,6 +1181,7 @@ void dg_pushexportsymbolstowin64coffbuffers(
 	unsigned char* pvalue;
 	UINT64 valuelength;
 	UINT64 value;
+	UINT64 storageclass;
 
 	Hlistheader myexportsymbolhlistheader;
 	UINT64 exportsymbolsortedkeyslstringlength = 0;
@@ -1188,6 +1189,9 @@ void dg_pushexportsymbolstowin64coffbuffers(
 	UINT64 numberofexportsymbols = 0;
 
 	UINT64 srcchildelementid;
+        UINT64 foundflag;
+        UINT64 indexofkeyaftermatch;
+        UINT64 sortkey;
 
 	UINT64 i;
 
@@ -1255,20 +1259,52 @@ void dg_pushexportsymbolstowin64coffbuffers(
 	// this goes through children alphabetically
 	for (i = 0; i < numberofexportsymbols; i++)
 	{
-		// push string onto end of export directives
-		dg_pushbuffersegment(
-			pBHarrayhead,
-			dotdrectvebufferid,
-			8,
-			(unsigned char*)"/EXPORT:");
+		srcchildelementid = ((UINT64*)pexportsymbolsortedkeyslstring)[i];
 
-		if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                // need to see if element has a child named 'ENTRY'
+                foundflag = dg_findsortedhlistchild (
+                    pBHarrayhead,
+                    (unsigned char*)"ENTRY", // pname
+                    5, // namelength,  
+                    exportsymbollisthlistid, 
+                    srcchildelementid, // parentelementid,      
+                    &indexofkeyaftermatch, // index in sort key lstring after match
+                    &sortkey); 
+
+		if (foundflag != 0)
 		{
+		    storageclass = 0x02; // is an export symbol
+
+                    // push string onto end of export directives
+                    dg_pushbuffersegment(
+                        pBHarrayhead,
+                        dotdrectvebufferid,
+                        8,
+                        (unsigned char*)"/EXPORT:");
+
+		    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_pushexportsymbolstowin64coffbuffersname);
+                        return;
+                    }
+		}
+		else
+		{
+		    storageclass = 0x02; // is the entry symbol e.g. main
+
+                    // push string onto end of export directives
+                    dg_pushbuffersegment(
+                        pBHarrayhead,
+                        dotdrectvebufferid,
+                        7,
+                        (unsigned char*)"/ENTRY:");
+
+		    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+		    {
 			dg_pusherror(pBHarrayhead, dg_pushexportsymbolstowin64coffbuffersname);
 			return;
+		    }
 		}
-
-		srcchildelementid = ((UINT64*)pexportsymbolsortedkeyslstring)[i];
 
 		// find the child's name in the source hlist
 		pname = dg_getshlistelementnom(
@@ -1348,7 +1384,7 @@ void dg_pushexportsymbolstowin64coffbuffers(
 			(DWORD)value,
 			dottextsectionnumber,
 			0x20, // WORD type,
-			0x02, // BYTE storageclass,
+			storageclass, // BYTE storageclass,
 			0);   //  BYTE numberofauxsymbols);
 
 		if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
@@ -1662,7 +1698,7 @@ void dg_makedototobufsub(
 
 	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
 	{
-		dg_pusherror(pBHarrayhead, dg_pushexportsymbolstowin64coffbuffersname);
+		dg_pusherror(pBHarrayhead, dg_makedototobufsubname);
 		return;
 	}
 
@@ -1674,7 +1710,7 @@ void dg_makedototobufsub(
 
 	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
 	{
-		dg_pusherror(pBHarrayhead, dg_pushexportsymbolstowin64coffbuffersname);
+		dg_pusherror(pBHarrayhead, dg_makedototobufsubname);
 		return;
 	}
 
@@ -1694,7 +1730,7 @@ void dg_makedototobufsub(
 
 	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
 	{
-		dg_pusherror(pBHarrayhead, dg_pushexportsymbolstowin64coffbuffersname);
+		dg_pusherror(pBHarrayhead, dg_makedototobufsubname);
 		return;
 	}
 
@@ -1705,7 +1741,7 @@ void dg_makedototobufsub(
 
 	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
 	{
-		dg_pusherror(pBHarrayhead, dg_pushexportsymbolstowin64coffbuffersname);
+		dg_pusherror(pBHarrayhead, dg_makedototobufsubname);
 		return;
 	}
 
@@ -1760,7 +1796,7 @@ void dg_makedototobufsub(
 
 	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
 	{
-		dg_pusherror(pBHarrayhead, dg_pushexportsymbolstowin64coffbuffersname);
+		dg_pusherror(pBHarrayhead, dg_makedototobufsubname);
 		return;
 	}
 
@@ -1771,7 +1807,7 @@ void dg_makedototobufsub(
 
 	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
 	{
-		dg_pusherror(pBHarrayhead, dg_pushexportsymbolstowin64coffbuffersname);
+		dg_pusherror(pBHarrayhead, dg_makedototobufsubname);
 		return;
 	}
 
@@ -2102,6 +2138,9 @@ void dg_makedototobufsub(
 	}
 }
 
+
+// looks like Windows no longer requires the .drectve buffer, but it still works if you leave it in
+//  J.N. 2022 May 22
 const char dg_makedototobufname[] = "dg_makedototobuf";
 
 void dg_makedototobuf(
@@ -2110,7 +2149,7 @@ void dg_makedototobuf(
 	UINT64 codelength,
 	UINT64 exportsymbollisthlistid,
 	UINT64 exportsymbollistparentelementid,
-	UINT64 importsymbollisthlistid,          // (UINT64)-1 means not using imports
+	UINT64 importsymbollisthlistid,          // largestunsignedint means not using imports
 	UINT64 importsymbollistparentelementid,
 	UINT64 destbufid)
 {

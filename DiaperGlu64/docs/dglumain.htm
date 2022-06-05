@@ -1,22 +1,22 @@
-<!--
+<!--
 // //////////////////////////////////////////////////////////////////////////////////////
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.3.
+//    This file is part of DiaperGlu v5.4.
 //
-//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.3; if not, write to the Free Software
+//    along with DiaperGlu v5.4; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// May 15, 2022               //
-// version 5.3                //
+// June 5, 2022               //
+// version 5.4                //
 // /////////////////////////////
 -->
 
@@ -73,7 +73,7 @@
 
       <div class=word id=dg_initbuffers>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_initbuffers 
 //
@@ -82,11 +82,12 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Outputs:
-//  const char*   return          dg_success if function succeeded, otherwise function failed
+//  const char*   return          dg_success if function succeeded, otherwise function 
+//                                 failed
 //                                                             
 // Action:
 //  initializes the Diaperglu process buffers
@@ -94,14 +95,14 @@
 // Failure cases:
 //  computer could be out of memory
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_inithlists>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_inithlists
 //
@@ -110,8 +111,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Outputs:
 //  none
@@ -122,14 +123,14 @@
 // Failure cases:
 //  computer could be out of memory
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_initvariables>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_initvariables  
 //
@@ -138,8 +139,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Outputs:
 //  none
@@ -148,18 +149,18 @@
 //  Initializes the Diaperglu process variables
 //
 // Failure cases:
-//  There should not be any, since we are just writing to Diaperglu managed memory which should
-//   already be allocated.
+//  There should not be any, since we are just writing to Diaperglu managed memory 
+//   which should already be allocated.
 //  But if there are any failures, an error message will be pushed to the error stack.
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
       
       <div class=word id=dg_cleanup>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_cleanup  
 //
@@ -168,14 +169,15 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Outputs:
 //  none
 //
 // Action:
-//  Calls any functions pushed to the cleanup stack, last pushed functions are called first
+//  Calls any functions pushed to the cleanup stack, last pushed functions are called 
+//   first
 //  Closes all open libraries in the library handle stack
 //  Frees all buffers held in the in the buffer handle array
 //  Frees the buffer handle array
@@ -187,14 +189,14 @@
 // Failure cases:
 //  failures are ignored during this call
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_gettruesize>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_gettruesize
 //
@@ -212,14 +214,14 @@
 //   in units of the system page size, the true size is probably larger than
 //   just the size of a buffer handle and jump buffer added together.
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_initwithoutwordlists>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_initwithoutwordlists
 //
@@ -231,16 +233,17 @@
 //  char*       argv[]      array of pointers to argument strings from stdin command line
 //
 // Outputs:
-//  Bufferhandle* pBHarrayhead    On success contains a pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
-//                                 This one pointer points to all the data for this process, which
-//                                  is what allows Diaperglu to be reentrant.
+//  Bufferhandle* pBHarrayhead    On success contains a pointer to a Bufferhandle 
+//                                 structure which is used as the bufferhandle for the 
+//                                 array where the other bufferhandles are stored.
+//                                 This one pointer points to all the data for this 
+//                                  process, which is what allows Diaperglu to be 
+//                                  reentrant.
 //                                On failure contains badbufferhandle (-1)
 //
 // Action:
-//  Takes the command line arguments from stdin and allocates the minimum memory for a Diaperglu
-//   process instance. Then initializes the allocated memory.
+//  Takes the command line arguments from stdin and allocates the minimum memory for 
+//   a Diaperglu process instance. Then initializes the allocated memory.
 //   This includes: 
 //    allocating memory for the Bufferhandle array head
 //    allocating memory for the bufferhandle array
@@ -252,17 +255,18 @@
 // Failure cases:
 //  system could be out of memory
 //  the argv[] pointer array could point to invalid memory
-//  the operating system may not allow allocating the write execute memory Diaperglu needs
-//   to do just in time compiling (: definitions for Forth people) and the safe function call returns
+//  the operating system may not allow allocating the write execute memory Diaperglu 
+//   needs to do just in time compiling (: definitions for Forth people) and the safe 
+//   function call returns
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
       
       <div class=word id=dg_init>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_init  
 //
@@ -274,16 +278,17 @@
 //  char*       argv[]      array of pointers to argument strings from stdin command line
 //
 // Outputs:
-//  Bufferhandle* pBHarrayhead    On success contains a pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
-//                                 This one pointer points to all the data for this process, which
-//                                  is what allows Diaperglu to be reentrant.
+//  Bufferhandle* pBHarrayhead    On success contains a pointer to a Bufferhandle 
+//                                 structure which is used as the bufferhandle for the 
+//                                 array where the other bufferhandles are stored.
+//                                 This one pointer points to all the data for this 
+//                                  process, which is what allows Diaperglu to be 
+//                                  reentrant.
 //                                On failure contains badbufferhandle (-1)
 //
 // Action:
-//  Takes the command line arguments from stdin and allocates the minimum memory for a Diaperglu
-//   process instance. Then initializes the allocated memory.
+//  Takes the command line arguments from stdin and allocates the minimum memory for 
+//   a Diaperglu process instance. Then initializes the allocated memory.
 //   This includes: 
 //    allocating memory for the Bufferhandle array head
 //    allocating memory for the bufferhandle array
@@ -296,17 +301,18 @@
 // Failure cases:
 //  system could be out of memory
 //  the argv[] pointer array could point to invalid memory
-//  the operating system may not allow allocating the write execute memory Diaperglu needs
-//   to do just in time compiling (: definitions for Forth people) and the safe function call returns
+//  the operating system may not allow allocating the write execute memory Diaperglu 
+//   needs to do just in time compiling (: definitions for Forth people) and the safe 
+//   function call returns
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_main>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_main  
 //
@@ -331,17 +337,17 @@
 //
 // Failure cases:
 //  If an error occurs during initialization, the program exits
-//  If an error occurs during the dg_forthquit processing, hopefully it trapped and dealt with.
-//   This is after all the point of Diaperglu.
+//  If an error occurs during the dg_forthquit processing, hopefully it trapped and 
+//   dealt with. This is after all the point of Diaperglu.
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
       
       <div class=word id=main>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // main  
 //
@@ -361,7 +367,7 @@
 //
 // Failure cases:
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 

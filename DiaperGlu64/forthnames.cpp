@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.3.
+//    This file is part of DiaperGlu v5.4.
 //
-//    DiaperGlu v5.3 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.3 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.3; if not, write to the Free Software
+//    along with DiaperGlu v5.4; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// May 15, 2022               //
-// version 5.3                //
+// June 5, 2022               //
+// version 5.4                //
 // /////////////////////////////
 
 
@@ -194,7 +194,7 @@ const char dg_forthtworfromname[]            = "2R>";
 const char dg_forthtworfetchname[]           = "2R@";
 const char dg_forthcolonnonamename[]         = ":NONAME";
 const char dg_forthnotequalsname[]           = "<>";
-// ?DO
+const char dg_forthquerydoname[]             = "?DO";
 const char dg_forthagainname[]               = "AGAIN";
 const char dg_forthcquotename[]              = "C\"";
 // CASE
@@ -302,6 +302,7 @@ const char dg_forthfzeroequalsname[]     = "F0=";
 const char dg_forthflessthanname[]       = "F<";
 const char dg_forthffetchname[]          = "F@";
 const char dg_forthftodname[]            = "F>D";
+const char dg_forthftosname[]            = "F>S";
 const char dg_forthfabsname[]            = "FABS";
 const char dg_forthfacosname[]           = "FACOS";
 const char dg_forthfacoshname[]          = "FACOSH";
@@ -354,6 +355,7 @@ const char dg_forthpiname[]              = "PI";
 const char dg_forthprecisionname[]       = "PRECISION";
 const char dg_forthrepresentname[]       = "REPRESENT";
 const char dg_forthsetprecisionname[]    = "SET-PRECISION";
+const char dg_forthstofname[]            = "S>F";
 const char dg_forthsfstorename[]         = "SF!";
 const char dg_forthsffetchname[]         = "SF@";
 const char dg_forthsfalignname[]         = "SFALIGN";
@@ -1177,6 +1179,7 @@ const char dg_forthwtocodelinkcommaname[]        = "W>CODE-LINK,";
 const char dg_forthwtodatalinkcommaname[]        = "W>DATA-LINK,";
 const char dg_forthsymbolname[]                  = "SYMBOL";
 const char dg_forthosymbolname[]                 = "OSYMBOL";
+const char dg_forthosymbolentryname[]            = "OSYMBOL-ENTRY";
 const char dg_forthstrtoimportcommaname[]        = "$>IMPORT,";
 const char dg_forthstrtolinkcommaname[]          = "$>LINK,";
 const char dg_forthstrtocodelinkcommaname[]      = "$>CODE-LINK,";
@@ -1977,23 +1980,32 @@ Premadeword* dg_getppresortedcorewords (Bufferhandle* pBHarrayhead)
 
     i++;
 
+    presortedcorewords[i].pname                 = dg_forthquerydoname;
+    presortedcorewords[i].namelength            = sizeof(dg_forthquerydoname);
+    presortedcorewords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedcorewords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypealwaysexecute;
+    presortedcorewords[i].databuf               = DG_CORE_BUFFERID;
+    presortedcorewords[i].dataoffset            = (UINT64)&dg_forthquerydo;
+
+    i++;
+
     presortedcorewords[i].pname                 = dg_forthquestiondupname;
-	presortedcorewords[i].namelength            = sizeof(dg_forthquestiondupname);
-	presortedcorewords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedcorewords[i].namelength            = sizeof(dg_forthquestiondupname);
+    presortedcorewords[i].compileroutinebuf     = DG_CORE_BUFFERID;
     presortedcorewords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
     presortedcorewords[i].databuf               = DG_CORE_BUFFERID;
     presortedcorewords[i].dataoffset            = (UINT64)&dg_forthquestiondup;
 
-	i++;
+    i++;
 
     presortedcorewords[i].pname                 = dg_forthfetchname;
-	presortedcorewords[i].namelength            = sizeof(dg_forthfetchname);
-	presortedcorewords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedcorewords[i].namelength            = sizeof(dg_forthfetchname);
+    presortedcorewords[i].compileroutinebuf     = DG_CORE_BUFFERID;
     presortedcorewords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
     presortedcorewords[i].databuf               = DG_CORE_BUFFERID;
     presortedcorewords[i].dataoffset            = (UINT64)dg_forthfetch;
 
-	i++;
+    i++;
 
     presortedcorewords[i].pname                 = dg_forthabortname;
 	presortedcorewords[i].namelength            = sizeof(dg_forthabortname);
@@ -2520,13 +2532,13 @@ Premadeword* dg_getppresortedcorewords (Bufferhandle* pBHarrayhead)
     i++;
 
     presortedcorewords[i].pname                 = dg_forthdoname;
-	presortedcorewords[i].namelength            = sizeof(dg_forthdoname);
-	presortedcorewords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedcorewords[i].namelength            = sizeof(dg_forthdoname);
+    presortedcorewords[i].compileroutinebuf     = DG_CORE_BUFFERID;
     presortedcorewords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypealwaysexecute;
     presortedcorewords[i].databuf               = DG_CORE_BUFFERID;
     presortedcorewords[i].dataoffset            = (UINT64)&dg_forthdo;
 
-	i++;
+    i++;
 
     presortedcorewords[i].pname                 = dg_forthdoesname;
 	presortedcorewords[i].namelength            = sizeof(dg_forthdoesname);
@@ -2750,6 +2762,15 @@ Premadeword* dg_getppresortedcorewords (Bufferhandle* pBHarrayhead)
     presortedcorewords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
     presortedcorewords[i].databuf               = DG_CORE_BUFFERID;
     presortedcorewords[i].dataoffset            = (UINT64)&dg_forthftod;
+
+    i++;
+    
+    presortedcorewords[i].pname                 = dg_forthftosname;
+    presortedcorewords[i].namelength            = sizeof(dg_forthftosname);
+    presortedcorewords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedcorewords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedcorewords[i].databuf               = DG_CORE_BUFFERID;
+    presortedcorewords[i].dataoffset            = (UINT64)&dg_forthftos;
 
     i++;
     
@@ -3648,6 +3669,15 @@ Premadeword* dg_getppresortedcorewords (Bufferhandle* pBHarrayhead)
     presortedcorewords[i].dataoffset            = (UINT64)&dg_forthstod;
 
 	i++;
+ 
+    presortedcorewords[i].pname                 = dg_forthstofname;
+	presortedcorewords[i].namelength            = sizeof(dg_forthstofname);
+	presortedcorewords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedcorewords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedcorewords[i].databuf               = DG_CORE_BUFFERID;
+    presortedcorewords[i].dataoffset            = (UINT64)&dg_forthstof;
+
+	i++;   
 
     presortedcorewords[i].pname                 = dg_forthsearchwordlistname;
 	presortedcorewords[i].namelength            = sizeof(dg_forthsearchwordlistname);
@@ -8384,20 +8414,29 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     i++;
     
     presortedbufferwords[i].pname                 = dg_forthosymbolname;
-	presortedbufferwords[i].namelength            = sizeof(dg_forthosymbolname);
-	presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].namelength            = sizeof(dg_forthosymbolname);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
     presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
     presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
     presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthehoherewtonewelement;
 
     i++;
     
-    presortedbufferwords[i].pname                 = dg_forthosymbolcodeimportscommacurlyname;
-	presortedbufferwords[i].namelength            = sizeof(dg_forthosymbolcodeimportscommacurlyname);
-	presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].pname                 = dg_forthosymbolcodeimportscommacurlyname; 
+    presortedbufferwords[i].namelength            = sizeof(dg_forthosymbolcodeimportscommacurlyname);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
     presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesafesubroutine;
     presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
     presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthosymbolcodeimportscommacurly;
+
+    i++;
+
+    presortedbufferwords[i].pname                 = dg_forthosymbolentryname;
+    presortedbufferwords[i].namelength            = sizeof(dg_forthosymbolentryname);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
+    presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthosymbolentry;
 
     i++;
     
