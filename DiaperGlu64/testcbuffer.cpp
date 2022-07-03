@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.4.
+//    This file is part of DiaperGlu v5.5.
 //
-//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.4; if not, write to the Free Software
+//    along with DiaperGlu v5.5; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 5, 2022               //
-// version 5.4                //
+// July 2, 2022               //
+// version 5.5                //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -12415,3 +12415,699 @@ void testdg_replacebuffersegment()
     
     dg_freeallbuffers(&BHarrayhead);
 }
+
+void testdg_pushbracketobtodatastack()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 i, x;
+    const char* pError;
+    unsigned char* pbuffer;
+    UINT64* pbufferlength;
+    
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_pushbracketobtodatastack\n");
+    
+    // success case
+    dg_initbuffers(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_pushbracketobtodatastack success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    i = dg_newbuffer(&BHarrayhead, 0x1000, 0x1000, &pError, FORTH_FALSE);
+   
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_pushbracketobtodatastack success case - got an error trying to make a new buffer, got:\n ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    dg_growbuffer(&BHarrayhead, i, 0x1000, &pError, FORTH_FALSE);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_pushbracketobtodatastack success case - got an error trying to grow buffer, got:\n ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    pbuffer = dg_getpbuffer(
+        &BHarrayhead,
+        i,
+        &pbufferlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_pushbracketobtodatastack success case - got an error trying to get pointer to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    ((UINT64*)pbuffer)[2] = 0x372763;
+
+    dg_pushbracketobtodatastack (
+        &BHarrayhead,
+        i, // bufferid
+        0x10); // offset);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_pushbracketobtodatastack success case - got an error trying to do dg_pushbracketobtodatastack, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_pushbracketobtodatastack success case - got an error trying to pop data stack, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+        
+    if (x != 0x372763)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_pushbracketobtodatastack success case - expected 0x372763, got ");
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+     
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_pushu128bracketobtodatastack()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 i, x;
+    const char* pError;
+    unsigned char* pbuffer;
+    UINT64* pbufferlength;
+    
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_pushu128bracketobtodatastack\n");
+    
+    // success case
+    dg_initbuffers(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_pushu128bracketobtodatastack success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    i = dg_newbuffer(&BHarrayhead, 0x1000, 0x1000, &pError, FORTH_FALSE);
+   
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_pushu128bracketobtodatastack success case - got an error trying to make a new buffer, got:\n ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    dg_growbuffer(&BHarrayhead, i, 0x1000, &pError, FORTH_FALSE);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_pushu128bracketobtodatastack success case - got an error trying to grow buffer, got:\n ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    pbuffer = dg_getpbuffer(
+        &BHarrayhead,
+        i,
+        &pbufferlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_pushu128bracketobtodatastack success case - got an error trying to get pointer to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    ((UINT64*)pbuffer)[2] = 0x372763;
+    ((UINT64*)pbuffer)[3] = 0x837472;
+
+    dg_pushu128bracketobtodatastack (
+        &BHarrayhead,
+        i, // bufferid
+        0x10); // offset);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_pushu128bracketobtodatastack success case - got an error trying to do dg_pushbracketobtodatastack, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_pushu128bracketobtodatastack success case - got an error trying to pop data stack, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+        
+    if (x != 0x372763)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_pushu128bracketobtodatastack success case - expected 0x372763, got ");
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_pushu128bracketobtodatastack success case - got an error trying to pop data stack, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+        
+    if (x != 0x837472)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_pushu128bracketobtodatastack success case - expected 0x837472, got ");
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+     
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_pushbracketobtof64stack()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 i, x;
+    const char* pError;
+    unsigned char* pbuffer;
+    UINT64* pbufferlength;
+    
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_pushbracketobtof64stack\n");
+    
+    // success case
+    dg_initbuffers(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_pushbracketobtof64stack success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    i = dg_newbuffer(&BHarrayhead, 0x1000, 0x1000, &pError, FORTH_FALSE);
+   
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_pushbracketobtof64stack success case - got an error trying to make a new buffer, got:\n ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    dg_growbuffer(&BHarrayhead, i, 0x1000, &pError, FORTH_FALSE);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_pushbracketobtof64stack success case - got an error trying to grow buffer, got:\n ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    pbuffer = dg_getpbuffer(
+        &BHarrayhead,
+        i,
+        &pbufferlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_pushbracketobtof64stack success case - got an error trying to get pointer to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    ((UINT64*)pbuffer)[2] = 0x372763;
+
+    dg_pushbracketobtof64stack (
+        &BHarrayhead,
+        i, // bufferid
+        0x10); // offset);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_pushbracketobtof64stack success case - got an error trying to do dg_pushbracketobtodatastack, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    x = dg_popf64stack(&BHarrayhead);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_pushbracketobtof64stack success case - got an error trying to pop data stack, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+        
+    if (x != 0x372763)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_pushbracketobtof64stack success case - expected 0x372763, got ");
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+     
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_popdatastacktobracketob()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 i, x;
+    const char* pError;
+    unsigned char* pbuffer;
+    UINT64* pbufferlength;
+    
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_popdatastacktobracketob\n");
+    
+    // success case
+    dg_initbuffers(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_popdatastacktobracketob success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    i = dg_newbuffer(&BHarrayhead, 0x1000, 0x1000, &pError, FORTH_FALSE);
+   
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_popdatastacktobracketob success case - got an error trying to make a new buffer, got:\n ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    dg_growbuffer(&BHarrayhead, i, 0x1000, &pError, FORTH_FALSE);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_popdatastacktobracketob success case - got an error trying to grow buffer, got:\n ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    pbuffer = dg_getpbuffer(
+        &BHarrayhead,
+        i,
+        &pbufferlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_popdatastacktobracketob success case - got an error trying to get pointer to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        0x372763);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_popdatastacktobracketob success case - got an error trying to pop data stack, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_popdatastacktobracketob (
+        &BHarrayhead,
+        i, // bufferid
+        0x10); // offset);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_popdatastacktobracketob success case - got an error trying to do dg_pushbracketobtodatastack, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    x = ((UINT64*)pbuffer)[2];
+        
+    if (x != 0x372763)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_popdatastacktobracketob success case - expected 0x372763, got ");
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+     
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_popf64stacktobracketob()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 i, x;
+    const char* pError;
+    unsigned char* pbuffer;
+    UINT64* pbufferlength;
+    
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_popf64stacktobracketob\n");
+    
+    // success case
+    dg_initbuffers(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_popf64stacktobracketob success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    i = dg_newbuffer(&BHarrayhead, 0x1000, 0x1000, &pError, FORTH_FALSE);
+   
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_popf64stacktobracketob success case - got an error trying to make a new buffer, got:\n ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    dg_growbuffer(&BHarrayhead, i, 0x1000, &pError, FORTH_FALSE);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_popf64stacktobracketob success case - got an error trying to grow buffer, got:\n ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    pbuffer = dg_getpbuffer(
+        &BHarrayhead,
+        i,
+        &pbufferlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_popf64stacktobracketob success case - got an error trying to get pointer to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_pushf64stack(
+        &BHarrayhead,
+        0x372763);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_popf64stacktobracketob success case - got an error trying to pop data stack, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_popf64stacktobracketob (
+        &BHarrayhead,
+        i, // bufferid
+        0x10); // offset);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_popf64stacktobracketob success case - got an error trying to do dg_pushbracketobtodatastack, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    x = ((UINT64*)pbuffer)[2];
+        
+    if (x != 0x372763)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_popf64stacktobracketob success case - expected 0x372763, got ");
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+     
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_popdatastacktou128bracketob()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 i, x;
+    const char* pError;
+    unsigned char* pbuffer;
+    UINT64* pbufferlength;
+    
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_popdatastacktou128bracketob\n");
+    
+    // success case
+    dg_initbuffers(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_popdatastacktou128bracketob success case - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    i = dg_newbuffer(&BHarrayhead, 0x1000, 0x1000, &pError, FORTH_FALSE);
+   
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_popdatastacktou128bracketob success case - got an error trying to make a new buffer, got:\n ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    dg_growbuffer(&BHarrayhead, i, 0x1000, &pError, FORTH_FALSE);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_popdatastacktou128bracketob success case - got an error trying to grow buffer, got:\n ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    pbuffer = dg_getpbuffer(
+        &BHarrayhead,
+        i,
+        &pbufferlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_popdatastacktou128bracketob success case - got an error trying to get pointer to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        0x372763);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_popdatastacktou128bracketob success case - got an error trying to pop data stack, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        0x7823918);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_popdatastacktou128bracketob success case - got an error trying to pop data stack, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_popdatastacktou128bracketob (
+        &BHarrayhead,
+        i, // bufferid
+        0x10); // offset);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_popdatastacktou128bracketob success case - got an error trying to do dg_pushbracketobtodatastack, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    x = ((UINT64*)pbuffer)[3];
+        
+    if (x != 0x372763)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_popdatastacktou128bracketob success case - expected 0x372763, got ");
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    x = ((UINT64*)pbuffer)[2];
+        
+    if (x != 0x7823918)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_popdatastacktou128bracketob success case - expected 0x7823918, got ");
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+     
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+

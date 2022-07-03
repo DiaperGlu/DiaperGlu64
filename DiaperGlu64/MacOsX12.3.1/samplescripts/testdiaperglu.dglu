@@ -2,20 +2,20 @@
 ( //                                                                                       )
 ( //    Copyright 2022 James Patrick Norris                                                )
 ( //                                                                                       )
-( //    This file is part of Diaperglu 5.4.                                                )
+( //    This file is part of Diaperglu 5.5.                                                )
 ( //                                                                                       )
-( //    Diaperglu 5.4 is free software; you can redistribute it and/or modify              )
+( //    Diaperglu 5.5 is free software; you can redistribute it and/or modify              )
 ( //    it under the terms of the GNU General Public License as published by               )
 ( //    the Free Software Foundation; either version 2 of the License, or                  )
 ( //    {at your option} any later version.                                                )
 ( //                                                                                       )
-( //    Diaperglu 5.4 is distributed in the hope that it will be useful,                   )
+( //    Diaperglu 5.5 is distributed in the hope that it will be useful,                   )
 ( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
 ( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
 ( //    GNU General Public License for more details.                                       )
 ( //                                                                                       )
 ( //    You should have received a copy of the GNU General Public License                  )
-( //    along with Diaperglu 5.4; if not, write to the Free Software                       )
+( //    along with Diaperglu 5.5; if not, write to the Free Software                       )
 ( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
 ( //                                                                                       )
 ( //////////////////////////////////////////////////////////////////////////////////////// )
@@ -23,8 +23,8 @@
 ( /////////////////////////////// )
 ( // James Patrick Norris      // )
 ( // www.rainbarrel.com        // )
-( // June 5, 2022              // )
-( // version 5.4               // )
+( // July 2, 2022              // )
+( // version 5.5               // )
 ( /////////////////////////////// )
 
 ( test include file )
@@ -4559,3 +4559,135 @@ USER-WORDLIST PCURRENTCREATEWORDLIST !
  DROPEH EH> FREE-HLIST DROP
  
  55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing TO a VARIABLE" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ VARIABLE xx
+ 7 xx !
+ 38 TO xx
+ xx @ 38 = ?T
+
+ : testTOVARIABLE 93 TO xx ;
+ testTOVARIABLE
+ xx @ 93 = ?T
+ 
+ 55 = ?T
+
+( /////////////////////////////////// )
+
+ $" Testing VALUE" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ 93 VALUE xx1
+ xx1 93 = ?T
+ 38 TO xx1
+ xx1 38 = ?T
+
+ : fromVALUE xx1 ;
+ fromVALUE 38 = ?T
+
+ : testTOVALUE 120 TO xx1 ;
+ testTOVALUE
+ xx1 120 = ?T
+ 
+ 55 = ?T
+
+( /////////////////////////////////// )
+
+ $" Testing FVALUE" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ DECIMAL
+ 2.0E1 FVALUE xx2
+ xx2 2.0E1 0E F~ ?T
+ 38.0E2 TO xx2
+ xx2 38.0E2 0E F~ ?T
+
+ : fromFVALUE xx2 ;
+ fromFVALUE 38.0E2 0E F~ ?T
+
+ : testTOFVALUE 120E3 TO xx2 ;
+ testTOFVALUE
+ xx2 120E3 0E F~ ?T
+
+ HEX
+ 55 = ?T
+
+( /////////////////////////////////// )
+
+ $" Testing 2VALUE" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ 93 43 2VALUE xx1
+ xx1 43 = ?T 93 = ?T
+ 38 76 TO xx1
+ xx1 76 = ?T 38 = ?T
+
+ : from2VALUE xx1 ;
+ from2VALUE 76 = ?T 38 = ?T
+
+ : testTO2VALUE 321 120 TO xx1 ;
+ testTO2VALUE
+ xx1 120 = ?T  321 = ?T
+ 
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing TO a LOCALS| local" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ : testTOLOCALS| 37 LOCALS| xx | 86 TO xx xx ;
+ testTOLOCALS| 86 = ?T
+ 
+ 55 = ?T
+
+( /////////////////////////////////// )
+
+ $" Testing TO a { local" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ : testTO{ { xx } 86 TO xx xx ;
+ testTO{ 86 = ?T
+
+ : testTO{b 99 { | xx } 86 TO xx xx ;
+ testTO{b 86 = ?T
+
+ : testTO{c 99 { yy | xx } 77 TO yy 86 TO xx xx yy ;
+ testTO{c 77 = ?T 86 = ?T
+
+ : testTO{d 1 2 3 { | x y z } 4 TO x 5 TO y 6 TO z x y z z y x ;
+ testTO{d 
+ 4 = ?T 5 = ?T 6 = ?T 6 = ?T 5 = ?T 4 = ?T
+
+ : testTO{e 3 { x y | z } 4 TO x 5 TO y 6 TO z
+    7 8 9 { | t u v }  
+    x y z t u v ;
+ testTO{e 
+ 9 = ?T 8 = ?T 7 = ?T 6 = ?T 5 = ?T 4 = ?T
+ 
+ 55 = ?T
+

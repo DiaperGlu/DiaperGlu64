@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.4.
+//    This file is part of DiaperGlu v5.5.
 //
-//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.4; if not, write to the Free Software
+//    along with DiaperGlu v5.5; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 5, 2022               //
-// version 5.4                //
+// July 2, 2022               //
+// version 5.5                //
 // /////////////////////////////
 
 
@@ -1309,23 +1309,23 @@ void dg_getserrormessage (
 
 void dg_forthdoterrors (Bufferhandle* pBHarrayhead)
 {
-	UINT64 errorcount;
-	unsigned char* perror;
+    UINT64 errorcount;
+    unsigned char* perror;
     UINT64 errorlength;
-	UINT64 i;
+    UINT64 i;
     UINT64 errorbufferid;
     UINT64 erroroffset;
 
-	unsigned char c = '\n';
-	unsigned char* punknownword;
+    unsigned char c = '\n';
+    unsigned char* punknownword;
  
     unsigned char* pbuffer;
     UINT64* pbufferlength;   
 
-	errorcount = dg_checkerrorsonstack(pBHarrayhead);
+    errorcount = dg_checkerrorsonstack(pBHarrayhead);
 
     if (errorcount == 0)
-	{
+    {
         if (dg_geterrorcount(pBHarrayhead) == 0)
         {
             dg_printzerostring(pBHarrayhead, (unsigned char*)"no errors\n");
@@ -1336,11 +1336,11 @@ void dg_forthdoterrors (Bufferhandle* pBHarrayhead)
         }
 
         return;
-	}
+    }
 
-	for (i = errorcount; i > 0; i--)
-	{
-		//error = dg_geterror(pBHarrayhead, i-1);
+    for (i = errorcount; i > 0; i--)
+    {
+        //error = dg_geterror(pBHarrayhead, i-1);
         
         dg_getbuffererror (
             pBHarrayhead, 
@@ -1348,22 +1348,22 @@ void dg_forthdoterrors (Bufferhandle* pBHarrayhead)
             &erroroffset, 
             &errorbufferid);
 
-		if (
+        if (
             ((dg_evaluatebufferwordnotfounderror == (const char*)erroroffset) ||
             (dg_symbolnotfounderror == (const char*)erroroffset))
              && (DG_CORE_BUFFERID == errorbufferid))
-		{
-			punknownword = ::dg_getpbufferoffset(pBHarrayhead, DG_DATASPACE_BUFFERID, lastnotfoundword);
+        {
+            punknownword = ::dg_getpbufferoffset(pBHarrayhead, DG_DATASPACE_BUFFERID, lastnotfoundword);
 
-			if (punknownword != NULL)
-			{
-				dg_printzerostring(pBHarrayhead, (unsigned char*)" - word/symbol not found error (showing last word/symbol not found) >>>");
+            if (punknownword != NULL)
+            {
+                dg_printzerostring(pBHarrayhead, (unsigned char*)" - word/symbol not found error (showing last word/symbol not found) >>>");
                 dg_printzerostring(pBHarrayhead, (unsigned char*)punknownword);
                 dg_printzerostring(pBHarrayhead, (unsigned char*)"<<<\n");
-			}
-		}
-		else
-		{
+            }
+        }
+        else
+        {
             dg_getserrormessage (
                 pBHarrayhead,
                 errorbufferid,
@@ -1371,11 +1371,11 @@ void dg_forthdoterrors (Bufferhandle* pBHarrayhead)
                 &perror,
                 &errorlength);
     
-			//dg_printzerostring(pBHarrayhead, (unsigned char*)error);
+           //dg_printzerostring(pBHarrayhead, (unsigned char*)error);
             dg_writestdout(pBHarrayhead, perror, errorlength);
 
-			dg_writestdout(pBHarrayhead, &c, 1);
-		}
+            dg_writestdout(pBHarrayhead, &c, 1);
+        }
 
         // just in case
         //if (error == dg_errornotthatmanyerrors)
@@ -1383,7 +1383,7 @@ void dg_forthdoterrors (Bufferhandle* pBHarrayhead)
         {
             break;
         }
-	}
+    }
 
     if (dg_geterrorcount(pBHarrayhead) > errorcount)
     {

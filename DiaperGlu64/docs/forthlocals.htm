@@ -1,22 +1,22 @@
-<!--
+<!--
 // //////////////////////////////////////////////////////////////////////////////////////
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.4.
+//    This file is part of DiaperGlu v5.5.
 //
-//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.4; if not, write to the Free Software
+//    along with DiaperGlu v5.5; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 5, 2022               //
-// version 5.4                //
+// July 2, 2022               //
+// version 5.5                //
 // /////////////////////////////
 -->
 
@@ -246,6 +246,81 @@
 // Action:
 //  If the flag for using locals or the flag for using string locals is set,
 //   this routine removes all the words from the locals wordlist.
+//
+// Failure cases:
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthcurlybrace>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcurlybrace ( { )
+//
+// C prototype:
+//  void dg_forthcurlybrace (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( &quot;&lt;delimiters&gt;name0&lt;delimiters&gt;name1&lt;delimiters&gt;...
+//    namen&lt;delimiters&gt;|&lt;delimiters&gt;
+//    vname0&lt;delimiters&gt;vname1&lt;delimiters&gt;...vnamen&lt;delimiters&gt;
+//    --&lt;delimiters&gt;comment}morestuff&quot; 
+//     -currentinputbuffer- 
+//     &quot;morestuff&quot; )
+//                                                              
+// Compile time action:
+//  This word starts off in the create uninitialized local state.
+//  The current input buffer is parsed for names up until the name | is encountered,
+//   the name -- is parsed, } is parsed or until the end of the current interpret 
+//   buffer is reached.
+//   For each name found, a word with that name is created in the locals wordlist 
+//   that will compile code to copy a local variable from the return stack frame
+//   of the : definition being compiled and push it to the data stack.
+//  If the name | is encounter, this word switches to the initialized local state.
+//   This state does everything the previous state does for each word found except
+//   it also compiles code to pop a value off the data stack and put it into a
+//   local variable on the return stack frame. So that you don't have to declare
+//   your initialized locals in reverse order, this state puts the top data stack
+//   value into the last initialized local, puts the second data stack value into
+//   the second last initialized local, and so on.
+//  In either state if the name -- is encountered, the rest is parsed and ignored
+//   until either a } is parsed or the end of the current interpret buffer is found.
+//   This is so you can put a comment after -- 
+//  In all states if } or the end of the current interpret buffer is found,
+//   this word ends. If } was found, } is skipped.
+//
+// Note:
+//  Locals created with { should compile code that runs faster than locals created
+//   with LOCALS|  2022 Jun 21
+//
+// For example:
+// : swap { | x y } y x ;
+// : dup { | x } x x ;
+// : rot { | x y z } y z x ;
+//
+// : commentonly { -- my comment }
+//
+// : foo { uninitlocal1 uninitlocal2 | initlocal1 initlocal2 -- my comment }
+//    5 TO uninitlocal1 
+//    7 TO uninitlocal2 
+//    CRLF
+//    initlocal1 U. SPACE 
+//    initlocal2 U. SPACE 
+//    uninitlocal1 U. SPACE 
+//    uninitlocal2 U. ;
+// If you do 3 4 foo you should get 3 4 5 7 displayed on a new line
+//     
+// Forth Standard:
+//  based on 13.6.2.2550 but the name, end character, and end parse delimiter rules
+//   are different
 //
 // Failure cases:
 //  

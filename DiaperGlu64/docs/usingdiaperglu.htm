@@ -1,22 +1,22 @@
-<!--
+<!--
 // //////////////////////////////////////////////////////////////////////////////////////
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.4.
+//    This file is part of DiaperGlu v5.5.
 //
-//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.4; if not, write to the Free Software
+//    along with DiaperGlu v5.5; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 5, 2022               //
-// version 5.4                //
+// July 2, 2022               //
+// version 5.5                //
 // /////////////////////////////
 -->
 
@@ -38,14 +38,14 @@
   <body><div id=content>
 
     <div id=pageheader>
-      Using Diaperglu
+      Using DiaperGlu
     </div>
     
     <div id=sitedirectory>
       <a href=index.htm>Home</a>
       <a href=building.htm>Building</a>
       <a href=usingcgi.htm>DHTML Scripting</a>
-      <a href=usingdiaperglu.htm>Using Diaperglu</a>
+      <a href=usingdiaperglu.htm>Using DiaperGlu</a>
       <a href=documentationkey.htm>Documention Key</a>
       <a href=diapergluwords.htm>Script Commands Reference</a>
       <a href=cfunctions.htm>C Library API Reference</a>
@@ -80,85 +80,87 @@
     <div id=pagestuff>
     
       <div class=pagestuffsection id=runningfromconsole>
-        <h3>Running Diaperglu From the Console</h3>
-        <p>If needed, change to the directory containing the compiled diaperglu executable. Initially this is the directory where you did <span class=command>make</span>.
+        <h3>Running DiaperGlu From the Console</h3>
+        <p>If needed, change to the directory containing the compiled diaperglu executable. Initially this is the directory where you did 
+          <span class=command>sudo make</span> or <span class=command>sudo make</span>.
         <p>On Mac OS X do <span class=command>./diaperglu</span></p>
-        <p>If there are no arguments on the command line, Diaperglu will drop into the standard interactive command prompt mode.
-         You can use the <span class=command>BYE</span> command to exit Diaperglu.</p>
-        <p>If you add any arguments on the command line, Diaperglu will use the first argument as a path and filename to a Diaperglu script.
-         Diaperglu will try to open the file, load it into a buffer, and Forth <span class=command>EVALUATE</span> it.
-         (This is called interpreting in some non Forth languages.) After the script file is interpreted, Diaperglu will exit.
+        <p>On Windows do <span class=command>diaperglu</span></p>
+        <p>If there are no arguments on the command line, DiaperGlu will drop into the standard interactive command prompt mode.
+         You can use the <span class=command>BYE</span> command to exit DiaperGlu.</p>
+        <p>If you add any arguments on the command line, DiaperGlu will use the first argument as a path and filename to a DiaperGlu script.
+         DiaperGlu will try to open the file, load it into a buffer, and Forth <span class=command>EVALUATE</span> it.
+         (This is called interpreting in some non Forth languages.) After the script file is interpreted, DiaperGlu will exit.
          Any other arguments are ignored.</p>
       </div>
       
       <div class=pagestuffsection id=enteringcommands>
         <h3>Entering Script Commands</h3>
-        <p>Diaperglu treats everything separated by whitespace as a script command 'word', with a few exceptions.</p>
+        <p>DiaperGlu treats everything separated by whitespace as a script command 'word', with a few exceptions.</p>
         <p>That's it.</p>
-        <p>Need more of an explanation? O.K. Like Forth, Diaperglu is simple. It starts at the beginning and parses until it finds a bunch of characters separated by 'delimiters', also known as whitespace. Then it treats this 'word' as a command, looks the word up in the current word list search order, and does the action associated with the word.</p>
+        <p>Need more of an explanation? O.K. Like Forth, DiaperGlu is simple. It starts at the beginning and parses until it finds a bunch of characters separated by 'delimiters', also known as whitespace. Then it treats this 'word' as a command, looks the word up in the current word list search order, and does the action associated with the word.</p>
         <p>This means you have to leave whitespace between all of your script command words. No mushing them together like in other languages. For example, this is bad:</p>
         <p class=command>1 12+</p>
-        <p>The 1 is ok because there is a space after it. But Diaperglu will not know what to make of the 12+ since the 12 and + are mushed together like a can of sardines. This is how the command line should look:</p>
+        <p>The 1 is ok because there is a space after it. But DiaperGlu will not know what to make of the 12+ since the 12 and + are mushed together like a can of sardines. This is how the command line should look:</p>
         <p class=command>1 12 +</p>
         <p>Now for the exceptions. Some command words, which <strong>are</strong> separated by whitespace, will look ahead and consume a bunch of characters, including whitespace. For example, the comment command <span class=command>(</span> will skip all characters up to and including the first <span class=command>)</span> it finds.</p>
       </div>
     
       <div class=pagestuffsection id=usingdatastack>
         <h3>Using the Data Stack</h3>
-        <p>Diaperglu is Forth based and works like an HP calculator. Like Forth, most Diaperglu script commands take and return parameters on the data stack. To put a number on the data stack, simply enter the number at the command prompt. Try this from a newly run instance of Diaperglu:</p>
+        <p>DiaperGlu is Forth based and works like an HP calculator. Like Forth, most DiaperGlu script commands take and return parameters on the data stack. To put a number on the data stack, simply enter the number at the command prompt. Try this from a newly run instance of DiaperGlu:</p>
         <p class=command>5</p>
         <p>To see the contents of the data stack, do this. There is a period before the S:</p>
         <p class=command>.S</p>
-        <p>Assuming the data stack was empty when you started, Diaperglu should have printed out [ 5 ]. Lets put 2 more numbers on the stack and add them together. Try this. Remember to leave at least one space between each number and script command:</p>
+        <p>Assuming the data stack was empty when you started, DiaperGlu should have printed out [ 5 ]. Lets put 2 more numbers on the stack and add them together. Try this. Remember to leave at least one space between each number and script command:</p>
         <p class=command>2 4 +</p>
         <p>Now lets see what the stack looks like. Do this again. Don't forget the period before the S</p>
         <p class=command>.S</p>
-        <p>Diaperglu should have displayed [5 6] indicating there is a 5 on the bottom of the stack, and a 6 on the top.</p>
+        <p>DiaperGlu should have displayed [5 6] indicating there is a 5 on the bottom of the stack, and a 6 on the top.</p>
         <h3>Using Hex Values</h3>
-        <p>Unlike C and many other languages, the Forth standard does not allow using a 0x prefix or h suffix to indicate the base of a number. Instead Diaperglu, like Forth, is state based. You use script commands to set the number base. After the base is set, all numbers entered are interpreted as using that number base. Try this:</p>
+        <p>Unlike C and many other languages, the Forth standard did not allow using a 0x prefix or h suffix to indicate the base of a number at the time I wrote this part of DiaperGlu. Instead DiaperGlu, like Forth, is state based. You use script commands to set the number base. After the base is set, all numbers entered are interpreted as using that number base. Try this:</p>
         <p class=command>HEX 3C .S</p>
         <p>The stack should show [5 6 3C]. Now try this:</p>
         <p class=command>DECIMAL .S</p>
-        <p>The stack should now show [5 6 60]. Diaperglu starts off in decimal. If you use script files that change the base away from decimal I recommend adopting the habit of always setting the number base in your script files before entering any numbers. This also helps with maintenance when you add and remove code.</p>
+        <p>The stack should now show [5 6 60]. DiaperGlu starts off in decimal. If you use script files that change the base away from decimal I recommend adopting the habit of always setting the number base in your script files before entering any numbers. This also helps with maintenance when you add and remove code.</p>
         <h3>Other Number Bases</h3>
         <p>You can use other number bases with the BASE variable, even binary. Try this:</p>
         <p class=command>DECIMAL 2 BASE !</p>
-        <p>I set the radix to decimal before setting the base to make sure Diaperglu would accept the 2. Now enter this binary value:</p>
+        <p>I set the radix to decimal before setting the base to make sure DiaperGlu would accept the 2. Now enter this binary value:</p>
         <p class=command>101001</p>
         <p>Now set the base back to decimal and see what we have.</p>
         <p class=command>DECIMAL .S</p>
-        <p>Diaperglu should now show [5 6 60 41]</p>
+        <p>DiaperGlu should now show [5 6 60 41]</p>
         <h3>Dropping values from the data stack</h3>
         <p>Now try this:</p>
         <p class=command>DROP .S</p>
         <p>The stack should now show [5 6 60]. If you just want to see the top number on the stack use a period. This drops the top number on the stack and displays it as a signed number. Try this:</p>
         <p class=command>-1 .</p>
-        <p>Diaperglu should have displayed -1. If you want to drop the top number and display it as an unsigned value, use the U. command. Try this. There is a period after the U:</p>
+        <p>DiaperGlu should have displayed -1. If you want to drop the top number and display it as an unsigned value, use the U. command. Try this. There is a period after the U:</p>
         <p class=command>HEX -1 U.</p>
-        <p>Diaperglu should have shown FFFFFFFF.</p>
+        <p>DiaperGlu should have shown FFFFFFFF.</p>
       </div>
       
       <div class=pagestuffsection id=usingstringstack>
         <h3>Using the String Stack</h3>
         
-        <p>Many Diaperglu script commands take and return parameters on the string stack. If the string does not have a &quot; in it,
+        <p>Many DiaperGlu script commands take and return parameters on the string stack. If the string does not have a &quot; in it,
 you can use the $&quot; command to put it on the string stack. Try this. You need exactly one space after the $&quot;</p>
         <p class=command>$&quot; I'm a string.&quot;</p>
         <p>Now let's see what the string stack looks like. Try this command. There is a period before the $S.:</p>
         <p class=command>.$S</p>
-        <p>Diaperglu should have shown &quot;I'm a string.&quot;. Note that the quotes are not part of the string. Let's put another one on. Try this.  Don't forget the space after the $&quot;:</p>
+        <p>DiaperGlu should have shown &quot;I'm a string.&quot;. Note that the quotes are not part of the string. Let's put another one on. Try this.  Don't forget the space after the $&quot;:</p>
         <p class=command>$&quot; I'm on top!&quot;</p>
         <p>Let's see the stack again. Try .$S again:</p>
         <p class=command>.$S</p>
-        <p>Diaperglu should now show &quot;I'm a string.&quot; on the bottom followed by &quot;I'm on top!&quot; on top.</p>
+        <p>DiaperGlu should now show &quot;I'm a string.&quot; on the bottom followed by &quot;I'm on top!&quot; on top.</p>
         <h3>Dropping Strings Off the String Stack</h3>
         <p>To drop a string off the stack use DROP$. Try this:</p>
         <p class=command>DROP$ .$S</p>
-        <p>Diaperglu should be back to one string and have just shown &quot;I'm a string.&quot;. If you want to drop a string and display it at the same time, use the .$ command. Try this. There is a period before $:</p>
+        <p>DiaperGlu should be back to one string and have just shown &quot;I'm a string.&quot;. If you want to drop a string and display it at the same time, use the .$ command. Try this. There is a period before $:</p>
         <p class=command>.$</p>
-        <p>Diaperglu should have shown &quot;I'm a string.&quot; and the string stack should now be emtpy. Let's see. Try .$S again.</p>
+        <p>DiaperGlu should have shown &quot;I'm a string.&quot; and the string stack should now be emtpy. Let's see. Try .$S again.</p>
         <p class=command>.$S</p>
-        <p>Diaperglu should have told you the string stack is empty.</p>
+        <p>DiaperGlu should have told you the string stack is empty.</p>
         
         <h3>Strings with &quot;</h3>
         
@@ -166,59 +168,59 @@ you can use the $&quot; command to put it on the string stack. Try this. You nee
         <p class=command>$&quot; Moo&quot; CHAR &quot; C&gt;$ $&quot; Moo&quot; $&gt;$</p>
         <p>Let's see what we have. Try this. There is a period before $S</p>
         <p class=command>.$S</p>
-        <p>Diaperglu should have shown &quot;Moo&quot;Moo&quot;. Note that the quotes Diaperglu shows before and after the string are not part of the string. Another method you can use relies on using the PARSE command with S&gt;NEW$. PARSE returns the address and length of a string up to a character you choose. S&gt;NEW$ takes the address and length of a string and pushes it onto the string stack. The parse end character can be any character that is not in the string. There is one thing to be careful of however, you have to use the address and length from PARSE before the end of the current input line or buffer. This is because Diaperglu throws the string away at that point. So, all on one console line, enter this. Don't forget you need at least one space between each command and exactly one space after PARSE:</p>
+        <p>DiaperGlu should have shown &quot;Moo&quot;Moo&quot;. Note that the quotes DiaperGlu shows before and after the string are not part of the string. Another method you can use relies on using the PARSE command with S&gt;NEW$. PARSE returns the address and length of a string up to a character you choose. S&gt;NEW$ takes the address and length of a string and pushes it onto the string stack. The parse end character can be any character that is not in the string. There is one thing to be careful of however, you have to use the address and length from PARSE before the end of the current input line or buffer. This is because DiaperGlu throws the string away at that point. So, all on one console line, enter this. Don't forget you need at least one space between each command and exactly one space after PARSE:</p>
         <p class=command>CHAR } PARSE string theory &quot;rules&quot; dude} S&gt;NEW$</p>
         <p>Let's see what is on the string stack. Try this:</p>
         <p class=command>.$S</p>
-        <p>Diaperglu should have shown &quot;moo&quot;moo&quot; on the bottom and &quot;string theory &quot;rules&quot; dude&quot; on top. Now, if you are compiling a subroutine using : you can't use PARSE this way. Instead, you have to drop out of compile mode using [ to do PARSE and use COMPILE-S to compile the string into the subroutine, drop back into compile mode using ], and then S&gt;NEW$ to compile code to push it onto the string stack. Try this:</p>
+        <p>DiaperGlu should have shown &quot;moo&quot;moo&quot; on the bottom and &quot;string theory &quot;rules&quot; dude&quot; on top. Now, if you are compiling a subroutine using : you can't use PARSE this way. Instead, you have to drop out of compile mode using [ to do PARSE and use COMPILE-S to compile the string into the subroutine, drop back into compile mode using ], and then S&gt;NEW$ to compile code to push it onto the string stack. Try this:</p>
         <p class=command>: MYSUB [ CHAR } PARSE one &quot;two&quot; three four} COMPILE-S ] S&gt;NEW$ ;</p>
         <p>This new string is not on the string stack yet because we haven't run the subroutine. Lets call the subroutine and then see what the string stack looks like. Try this:</p>
         <p class=command>MYSUB .$S</p>
-        <p>Diaperglu should have shown &quot;moo&quot;moo&quot; on the bottom, &quot;string theory &quot;rules&quot; dude&quot; in the middle, and &quot;one &quot;two&quot; three four&quot; on top.</p>
+        <p>DiaperGlu should have shown &quot;moo&quot;moo&quot; on the bottom, &quot;string theory &quot;rules&quot; dude&quot; in the middle, and &quot;one &quot;two&quot; three four&quot; on top.</p>
       </div>
       
       <div class=pagestuffsection id=compilingsubroutines>
         <h3>Compiling Functions</h3>
-        <p>The <span class=command>:</span> <span class=commandtarget>yourfunctionname</span> starts a function. The <span class=command>;</span> command ends the function. Diaperglu compiles this function immediately into machine code, which is one of the reasons Diaperglu is so fast. Try this:</p>
+        <p>The <span class=command>:</span> <span class=commandtarget>yourfunctionname</span> starts a function. The <span class=command>;</span> command ends the function. DiaperGlu compiles this function immediately into machine code, which is one of the reasons DiaperGlu is so fast. Try this:</p>
         <p class=command>: mytestfunction DUP 1+ .S ;</p>
         <p>Then run the function. This function needs a number on the data stack to get started so do this:</p>
         <p class=command>0 mytestfunction</p>
-        <p>Diaperglu should have shown 0 1. Run the function again:</p>
+        <p>DiaperGlu should have shown 0 1. Run the function again:</p>
         <p class=command>mytestfunction</p>
-        <p>Diaperglu should have shown 0 1 2. Now lets make a function to clear the data stack. Yes, there is a faster way. Try this:</p>
+        <p>DiaperGlu should have shown 0 1 2. Now lets make a function to clear the data stack. Yes, there is a faster way. Try this:</p>
         <p class=command>: cleardatastack BEGIN DEPTH 0= 0= WHILE DROP REPEAT ;</p>
         <p>Now run this new command. Try this:</p>
         <p class=command>cleardatastack .S</p>
-        <p>Diaperglu should have reported an empty data stack.</p>
+        <p>DiaperGlu should have reported an empty data stack.</p>
       </div>
     
       <div class=pagestuffsection id=usingbuffers>
         <h3>Using Buffers</h3>
           <p>If you're going to use memory responsibly, you need to track your memory allocations and free them when you are done. C and operating system memory allocation routines do not do this automatically. On some operating systems, memory you hold is not freed even when your program exits, causing a leak. In addition, some operating systems require you to remember the exact address and length used during the allocation when you free them. Some even only allow allocations of sizes in multiples of something called the system page size.</p>
         <p>All these things to keep track of. Shouldn't there be a standard method of dealing with all these issues, especially if you are trying to write code that is portable to multiple platforms?</p>
-        <p>Diaperglu deals with all these issues with its buffer management system. <a href=running.htm#commandline>Run diaperglu</a> and try this from the command prompt:</p>
+        <p>DiaperGlu deals with all these issues with its buffer management system. <a href=running.htm#commandline>Run diaperglu</a> and try this from the command prompt:</p>
         <p class=command>1000 1000 NEWBUFFER</p>
-        <p>This means you are requesting a buffer that grows 1000 bytes at a time up to a maximum of 1000 bytes. Since the grow by size and maximum size are the same, Diaperglu will allocate all the memory for this buffer at one time, and the address of this buffer will never change, but the amount Diaperglu allocates may be more than 1000 bytes. Assuming your computer is not out of memory, Diaperglu will round the 1000 bytes up to the nearest system page size, allocate memory from the operating system for you, then return a number identifying the new buffer. If Diaperglu successfully allocated your buffer from the operating system with no errors, try this from the command prompt. There is a period before the S:
+        <p>This means you are requesting a buffer that grows 1000 bytes at a time up to a maximum of 1000 bytes. Since the grow by size and maximum size are the same, DiaperGlu will allocate all the memory for this buffer at one time, and the address of this buffer will never change, but the amount DiaperGlu allocates may be more than 1000 bytes. Assuming your computer is not out of memory, DiaperGlu will round the 1000 bytes up to the nearest system page size, allocate memory from the operating system for you, then return a number identifying the new buffer. If DiaperGlu successfully allocated your buffer from the operating system with no errors, try this from the command prompt. There is a period before the S:
         <p class=command>.S</p>
-        <p>Diaperglu will show you the newly created buffer's identifier. This is the number you use to identify the buffer with the other buffer commands. If you would like to associate a name with this number so you do not have to remember the number, do this from the command line:</p>
+        <p>DiaperGlu will show you the newly created buffer's identifier. This is the number you use to identify the buffer with the other buffer commands. If you would like to associate a name with this number so you do not have to remember the number, do this from the command line:</p>
         <p class=command>CONSTANT MYBUFFER</p>
         <p>Now try this:</p>
         <p class=command>MYBUFFER LENGTHBUF</p>
-        <p>Diaperglu returns the length of the buffer. Now, do this to see the length. There is a period after the U:</p>
+        <p>DiaperGlu returns the length of the buffer. Now, do this to see the length. There is a period after the U:</p>
         <p class=command>U.</p>
-        <p>If all is well, Diaperglu should display '0'. Why is the length of the buffer 0 when you asked for 1000? Diaperglu keeps track of how much of the buffer you are using separately from how much is allocated from the operating system. This way if you need a buffer of only 30 bytes but the operating system allocates in sizes of 1024 bytes, your script can deal with the buffer as if it is only 30 bytes long. To allocate 30 bytes of that buffer, do this:</p>
+        <p>If all is well, DiaperGlu should display '0'. Why is the length of the buffer 0 when you asked for 1000? DiaperGlu keeps track of how much of the buffer you are using separately from how much is allocated from the operating system. This way if you need a buffer of only 30 bytes but the operating system allocates in sizes of 1024 bytes, your script can deal with the buffer as if it is only 30 bytes long. To allocate 30 bytes of that buffer, do this:</p>
         <p class=command>30 MYBUFFER GROWBY</p>
         <p>and try this again:</p>
         <p class=command>MYBUFFER LENGTHBUF U.</p>
-        <p>Diaperglu should report 30. These 30 bytes are unitialized which means they could have any value. Now let's put something into this buffer. Try this:</p>
+        <p>DiaperGlu should report 30. These 30 bytes are unitialized which means they could have any value. Now let's put something into this buffer. Try this:</p>
         <p class=command>1234 8 MYBUFFER PUTBUFFERUINT32</p>
-        <p>This puts 1234 into the buffer at an offset 8 bytes from the beginning. Diaperglu uses 4 bytes to hold 1234. Now let's get a copy of this number back out of the buffer. Try this:</p>
+        <p>This puts 1234 into the buffer at an offset 8 bytes from the beginning. DiaperGlu uses 4 bytes to hold 1234. Now let's get a copy of this number back out of the buffer. Try this:</p>
         <p class=command>8 MYBUFFER GETBUFFERUINT32 U.</p>
-        <p>Diaperglu should display 1234. Now try putting a byte off the end of the buffer. Do this:</p>
+        <p>DiaperGlu should display 1234. Now try putting a byte off the end of the buffer. Do this:</p>
         <p class=command>21 30 MYBUFFER PUTBUFFERBYTE</p>
-        <p>Diaperglu will not write off the end of the buffer and will report some errors. To see the errors, do this:</p>
+        <p>DiaperGlu will not write off the end of the buffer and will report some errors. To see the errors, do this:</p>
         <p class=command>SHOW-ERRORS</p>
-        <p>Diaperglu should show a list representing the error. To clear the error stack and move on, do this:</p>
+        <p>DiaperGlu should show a list representing the error. To clear the error stack and move on, do this:</p>
         <p class=command>EMPTY-ERRORS</p>
         <p>If you don't want to type the long commands, I have included shorter versions based on the Forth style:
         <ul>
@@ -231,16 +233,16 @@ you can use the $&quot; command to put it on the string stack. Try this. You nee
         <p class=command>56789 10 MYBUFFER O!</p>
         <p>Then this:</p>
         <p class=command>10 MYBUFFER O@ U.</p>
-        <p>Diaperglu should have shown 56789. Now we are done with the buffer. To free the buffer and release it's memory back to the operating system do this:</p>
+        <p>DiaperGlu should have shown 56789. Now we are done with the buffer. To free the buffer and release it's memory back to the operating system do this:</p>
         <p class=command>MYBUFFER FREEBUFFER</p>
-        <p>If you forget, Diaperglu will automatically free the buffer for you when exit Diaperglu normally, either at the end of the top script file, or if you use <span class=command>BYE</span> from the command line. The only time Diaperglu will not free buffers automatically is if you force Diaperglu to quit using some external means, such as CTL-C in a console.</p>
+        <p>If you forget, DiaperGlu will automatically free the buffer for you when exit DiaperGlu normally, either at the end of the top script file, or if you use <span class=command>BYE</span> from the command line. The only time DiaperGlu will not free buffers automatically is if you force DiaperGlu to quit using some external means, such as CTL-C in a console.</p>
       
         <h3>Stretchy Buffers</h3>
-        <p>What if you want a buffer that does not use a lot of memory from the operating system at first, but can get more memory from the operating system later if it is needed? Diaperglu can do that too. Just use a slightly different NEWBUFFER command. Try this:</p>
+        <p>What if you want a buffer that does not use a lot of memory from the operating system at first, but can get more memory from the operating system later if it is needed? DiaperGlu can do that too. Just use a slightly different NEWBUFFER command. Try this:</p>
         <p class=command>1000 10000 NEWBUFFER</p>
-        <p>Now Diaperglu will initially allocate memory for a buffer from the operating system using the nearest multiple of the system page size greater or equal to 1000 bytes, but will allow this buffer to later grow to the nearest multiple of the system page size greater or equal to 10000 bytes. Let's assume the nearest system page size was 1024 bytes. If you grow your buffer to a length more than 1024 bytes, Diaperglu will allocate more memory from the operating system in units of 1024 bytes up to a maximum size of  10240 bytes. If you try to go over this maximum size, Diaperglu will not do it and return errors instead. This way you can have buffers that don't use up more memory than you need, but still put a limit on how much they can take. There is one thing to be careful of if you are using buffers that can grow, when they grow their base address will likely change. If you have any pointers into the buffer when it grows, they become invalid.</p>
+        <p>Now DiaperGlu will initially allocate memory for a buffer from the operating system using the nearest multiple of the system page size greater or equal to 1000 bytes, but will allow this buffer to later grow to the nearest multiple of the system page size greater or equal to 10000 bytes. Let's assume the nearest system page size was 1024 bytes. If you grow your buffer to a length more than 1024 bytes, DiaperGlu will allocate more memory from the operating system in units of 1024 bytes up to a maximum size of  10240 bytes. If you try to go over this maximum size, DiaperGlu will not do it and return errors instead. This way you can have buffers that don't use up more memory than you need, but still put a limit on how much they can take. There is one thing to be careful of if you are using buffers that can grow, when they grow their base address will likely change. If you have any pointers into the buffer when it grows, they become invalid.</p>
         <h3>Only limited by available memory buffers</h3>
-        <p>Just do this. Diaperglu will use the largest multiple of the system page size possible as the maximum length of the buffer.</p>
+        <p>Just do this. DiaperGlu will use the largest multiple of the system page size possible as the maximum length of the buffer.</p>
         <p class=command>HEX 1000 FFFFFFFF NEWBUFFER</p>
         <h3>Notes on Buffers</h3>
         <p>At this time there is no way to make a buffer release unused memory back to the operating system other than freeing it with <span class=command>FREEBUFFER</span>. Also, when a buffer gets more memory from the operating system to grow, it will likely be relocated to a different address in memory. This makes any pointers you have into the buffer invalid. In other words, if you get a pointer into the buffer, use it immediately. If you use <span class=command>GROWBUFFER</span> or any of the words that push to the buffer, you should assume the pointer is no longer valid.</p>
@@ -251,13 +253,13 @@ you can use the $&quot; command to put it on the string stack. Try this. You nee
         <p class=command>12345 mybuf &gt;BUF 6789 &gt;BUF</p>
         <p>Now the two numbers have been pushed onto the end of the buffer as UINT32s, taking up 4 bytes each. Now check out how long the buffer is in bytes:</p>
         <p class=command>mybuf LENGTHBUF U.</p>
-        <p>Diaperglu should report 8. Ok, lets pop the first one off:</p>
+        <p>DiaperGlu should report 8. Ok, lets pop the first one off:</p>
         <p class=command>mybuf BUF&gt; U.</p>
-        <p>Diaperglu should have displayed 6789. Now lets get the last one off:</p>
+        <p>DiaperGlu should have displayed 6789. Now lets get the last one off:</p>
         <p class=command>mybuf BUF&gt; U.</p>
-        <p>Diaperglu should have displayed 12345</p>
+        <p>DiaperGlu should have displayed 12345</p>
         <h3>x86 page handles</h3>
-        <p>On Mac Os, Diaperglu uses mmap to allocate memory for buffers. I have found out that mmap allocates pages which use handles that are stored on the
+        <p>On Mac Os, DiaperGlu uses mmap to allocate memory for buffers. I have found out that mmap allocates pages which use handles that are stored on the
         x86 processor. There are a finite number of these page handles. So you could still have lots of memory, but if you run out of page handles, the Mac
         operating system will start swapping out pages to the file system, which really slows things down. After I found this out I also did some research
         into how the C malloc functions works, and if you allocate things of a size equal to or larger than one page (4k), it will also allocate a page using
@@ -279,7 +281,7 @@ bound errors, buffer bound errors, stack underflows, memory
 access violations, and out of memory
 conditions.</p>
 
-<p>Many times when an error occurs in one of Diaperglu's routines, the
+<p>Many times when an error occurs in one of DiaperGlu's routines, the
 subroutine pushes error strings to the error stack and immediately exits. 
 Each error is pushed as the bufferid and offset of a C
 style null terminated string describing the error. After this, the parent routine 
@@ -291,12 +293,12 @@ interpreter loop, the user prompt indicates the number of messages
 on the error stack along with instructions on how to see them. 
 This lets you easily see what the initial problem was, and gives you a trace of the subroutines involved as well.</p>
 
-<p>Let's see the error stack in action. From a Diaperglu command prompt, try this:</p>
+<p>Let's see the error stack in action. From a DiaperGlu command prompt, try this:</p>
 <p class=command>-1 @</p>
 <p>Since -1 is an invalid address on most computers, you should get some errors.
 Do this to see them:</p>
 <p class=command>SHOW-ERRORS</p>
-<p>Diaperglu should have shown a bad memory error first, representing the bottom; with the trace of the 
+<p>DiaperGlu should have shown a bad memory error first, representing the bottom; with the trace of the 
 routines involved after. The message displayed last, representing the top of the error stack,
 should be the <span class=commmand>@</span>.
 
@@ -306,7 +308,7 @@ stack's memory except through the error access functions. If you
 try to use the buffer routines to access it, most of them will
 give you an error.</p>
 
-<p>If you would like your subroutines to use the same error handling scheme as Diaperglu, you can use these functions in your code: 
+<p>If you would like your subroutines to use the same error handling scheme as DiaperGlu, you can use these functions in your code: 
 <ul>
   <li><span class=command>NAME&gt;E</span></li>
   <li><span class=command>?ERRORIF</span></li>
@@ -320,22 +322,22 @@ Note, <span class=command>:</span> starts a subroutine, and
 If you call <span class=command>myfunctionname</span> when the data stack is empty, myfunctionname shows up on top of the error
 stack as an error message, along with the other error messages. Let's try it. First, use <span class=command>.S</span> and <span class=command>DROP</span> to empty the error stack. Then do this:</p>
 <p class=command>myfunctionname</p>
-<p>If your data stack was empty, Diaperglu should have reported the errors. Do this to see them:</p>
+<p>If your data stack was empty, DiaperGlu should have reported the errors. Do this to see them:</p>
 <p class=command>SHOW-ERRORS</p>
 <p>Now let's empty the error stack and try again. Only this time, let's put something on the data stack so we don't get an error. Try this:</p>
 <p class=command>EMPTY-ERRORS 5 myfunctionname</p>
-<p>Diaperglu should not have given an error. One last thing, if you use this system, your functions should still work correctly even if there are errors on the error stack since this system only checks for new errors. However, once Diaperglu gets back out to the command line or the main script, Diaperglu will stop interpretting the line or script.</p>
+<p>DiaperGlu should not have given an error. One last thing, if you use this system, your functions should still work correctly even if there are errors on the error stack since this system only checks for new errors. However, once DiaperGlu gets back out to the command line or the main script, DiaperGlu will stop interpretting the line or script.</p>
       </div>
       
       <div class=pagestuffsection id=usingscriptfiles>
-        <h3>Running a Diaperglu Script File</h3>
+        <h3>Running a DiaperGlu Script File</h3>
         <p>From a terminal or console command prompt do:</p>
         <p><span class=command>diaperglu</span> <span class=commandtarget>scriptfilename</span></p>
       
-        <h3>Including One Diaperglu Script File in Another Diaperglu Script File</h3>
+        <h3>Including One DiaperGlu Script File in Another DiaperGlu Script File</h3>
         <p>In your script file, do this:</p>
         <p><span class=command>$&quot; </span><span class=commandtarget>targetscriptfilename</span><span class=command>&quot; INCLUDEFILE$</span></p>
-        <p>Sometimes you may want to include the same target script file in many other script files, which could cause it to be included more than once. One way to prevent this is to use <span class=command>'</span> to check to see if a word in is defined and exit compiling the target script if it isn't. <span class=command>'</span> returns <span class=command>ENDOFWORDLIST</span> if the word is not defined. There is one thing that will foil this scheme. The wordlist containing the key word needs to be in the search order when your script checks. An easy way to make sure this happens is to always have the search order set to the default search order when including scripts, and use a new word wordlist that is in the default search order to hold the key word. When Diaperglu starts, this is true. So assuming you haven't changed the search order or current new word wordlist, this will work:</p>
+        <p>Sometimes you may want to include the same target script file in many other script files, which could cause it to be included more than once. One way to prevent this is to use <span class=command>'</span> to check to see if a word in is defined and exit compiling the target script if it isn't. <span class=command>'</span> returns <span class=command>ENDOFWORDLIST</span> if the word is not defined. There is one thing that will foil this scheme. The wordlist containing the key word needs to be in the search order when your script checks. An easy way to make sure this happens is to always have the search order set to the default search order when including scripts, and use a new word wordlist that is in the default search order to hold the key word. When DiaperGlu starts, this is true. So assuming you haven't changed the search order or current new word wordlist, this will work:</p>
         <p>
           <span class=command>'</span> 
           <span class=commandtarget>myscriptfilename.alreadyincluded</span> 
@@ -349,18 +351,18 @@ stack as an error message, along with the other error messages. Let's try it. Fi
 
       <div class=pagestuffsection id=usingfiles>
         <h3>Using Files</h3>
-        <p>I wanted file I/O to be simple and fast so I made Diaperglu work directly from buffers, not files. To use a file you first have to load it into a buffer. Diaperglu will load the entire file at once into a buffer. Diaperglu will not leave the file open. So to load a file do this:</p>
+        <p>I wanted file I/O to be simple and fast so I made DiaperGlu work directly from buffers, not files. To use a file you first have to load it into a buffer. DiaperGlu will load the entire file at once into a buffer. DiaperGlu will not leave the file open. So to load a file do this:</p>
         <p><span class=command>$&quot;</span> <span class=commandtarget>targetfilename</span> <span class=command>$&quot; LOADFILE$</span></p>
-        <p>If everything goes ok, Diaperglu will load the file into a buffer then return the buffer's identifier on the data stack. If something does not go ok, like the operating system could not find the file, or you do not have permission, Diaperglu will return errors on the error stack.</p>
-        <p>Saving a file works the same way. You have to save an entire buffer to a file. If the file already exists, it is overwritten. Again Diaperglu will not leave the file open. So to save a file do this:</p>
+        <p>If everything goes ok, DiaperGlu will load the file into a buffer then return the buffer's identifier on the data stack. If something does not go ok, like the operating system could not find the file, or you do not have permission, DiaperGlu will return errors on the error stack.</p>
+        <p>Saving a file works the same way. You have to save an entire buffer to a file. If the file already exists, it is overwritten. Again DiaperGlu will not leave the file open. So to save a file do this:</p>
         <p><span class=commandtarget>bufferid</span> <span class=command>$&quot;</span> <span class=commandtarget>targetfilename</span> <span class=command>$&quot; SAVEFILE$</span></p>
-        <p>If everything went ok, there is now a file saved whose contents exactly match the contents of buffer bufferid. The downside of this scheme is that Diaperglu is not designed to directly work on really large files. But if you really need to work on a large file, you can probably find a way to do it through an external shared library, such as your operating system's kernel.</p>
+        <p>If everything went ok, there is now a file saved whose contents exactly match the contents of buffer bufferid. The downside of this scheme is that DiaperGlu is not designed to directly work on really large files. But if you really need to work on a large file, you can probably find a way to do it through an external shared library, such as your operating system's kernel.</p>
       </div>
       
       <div class=pagestuffsection id=usinglstringarrays>
         <h3>Using L$ Arrays</h3>
         <p>What if you want a stack or an array of variable length strings or structures but don't want to allocate a separate buffer for each string or structure? What if you know the system page size on some operating systems is rather large (Mac OS X = 4096 bytes) and realize that using a large block of bytes of operating system memory for each small structure or string is really wasteful? What if you know allocating memory from the operating system for each invidual structure or string is a lot slower than doing one allocation for a block of them? What if you want to be fast AND efficient?</p>
-        <p>Not a problem in Diaperglu. Just use an L$ array. Diaperglu L$ arrays pack all the string characters into one large buffer, and keeps track of the offsets in another. Yes this can be a problem if you want keep track of very large strings. Or if you want to keep track of a huge number of strings which you will constantly resize. But if you have a bunch of little strings, especially if you are building a string stack where you will often only resize the string on the top of the stack, an L$ array is really a fast and efficient way to go.</p>
+        <p>Not a problem in DiaperGlu. Just use an L$ array. DiaperGlu L$ arrays pack all the string characters into one large buffer, and keeps track of the offsets in another. Yes this can be a problem if you want keep track of very large strings. Or if you want to keep track of a huge number of strings which you will constantly resize. But if you have a bunch of little strings, especially if you are building a string stack where you will often only resize the string on the top of the stack, an L$ array is really a fast and efficient way to go.</p>
         <p>To get started, first you need to make two empty buffers to hold the L$ array, so do this:</p>
         <p class=command>1000 -1 NEWBUFFER CONSTANT myL$offsetbuf</p>
         <p class=command>1000 -1 NEWBUFFER CONSTANT myL$stringbuf</p>
@@ -370,14 +372,14 @@ stack as an error message, along with the other error messages. Let's try it. Fi
         <p class=command>$&quot; Hello &quot; 0 GETS$[ND] myL$offsetbuf myL$stringbuf S&gt;NEWL$</p>
         <p>Let's see how long the top L$ is. The LENGTHL$[N] function only needs the L$ offset buffer id. Try this:</p>
         <p class=command>1 myL$offsetbuf LENGTHL$[N] U.</p>
-        <p>Diaperglu should report 6, or 5 if you didn't put the space after the o. Now lets get a temporary pointer to and length of the last L$ and display it. Note, this pointer is only valid until the next time you do something that modifies the lengths of any of the L$s in the array, or you add or delete L$s from the array.</p>
+        <p>DiaperGlu should report 6, or 5 if you didn't put the space after the o. Now lets get a temporary pointer to and length of the last L$ and display it. Note, this pointer is only valid until the next time you do something that modifies the lengths of any of the L$s in the array, or you add or delete L$s from the array.</p>
         <p class=command>1 myL$offsetbuf myL$stringbuf GETSL$[N] TYPE</p>
         <p>Tada!</p>
       </div>
       
       <div class=pagestuffsection id=usinghierarchicallists>
         <h3>Using Hierarchical Lists</h3>
-        <p>Hierarchical lists in Diaperglu are name value pairs where the names are organized into a parent child tree.</p>
+        <p>Hierarchical lists in DiaperGlu are name value pairs where the names are organized into a parent child tree.</p>
         <ul>
           <li>names and values are lstrings</li>
           <li>children of a parent element are sorted by name, treating the name string as an unsigned byte array</li>
@@ -391,7 +393,7 @@ stack as an error message, along with the other error messages. Let's try it. Fi
         <p class=command>$&quot; mychildvalue$&quot; $&quot; mychildname$&quot; myrootelement myhlist NEW-ELEMENT CONSTANT mychildelement</p>
         <p>Now you can add more children. When you are all done all you have to do is free the whole hlist to release all the memory:</p>
         <p class=command>myhlist FREE-HLIST</p>
-        <p>Or, if you are feeling lazy, you can leave it, and Diaperglu will release the memory when you do <span class=command>BYE</span>.
+        <p>Or, if you are feeling lazy, you can leave it, and DiaperGlu will release the memory when you do <span class=command>BYE</span>.
       </div>
       
       <div class=pagestuffsection id=usingsharedlibraries>
@@ -426,7 +428,7 @@ To add this word list to the search order do this:</p>
 <p><span class=commandtarget>dllname</span><span class=command>-WORDLIST &gt;SEARCH-ORDER</span></p>
 
 <p>If different shared libraries have the same symbol
-name in them, it is not a problem in Diaperglu. Just make sure the
+name in them, it is not a problem in DiaperGlu. Just make sure the
 word list with the desired target symbol is closer to the top of the
 search order. The last word list pushed onto the search order is
 on top.</p>
@@ -542,11 +544,11 @@ reverses the halves of the UINT128.</p>
       <h3>Changing the buffers where code is compiled, 
  where variables are allocated, and new word headers are stored</h3>
 
-<p>When a Diaperglu process starts, new word headers
+<p>When a DiaperGlu process starts, new word headers
 go into separate memory from new code and new variables;
 but the memory for new variables and new code is shared.</p>
 
-<p>New word headers go into an array held in a buffer so Diaperglu can 
+<p>New word headers go into an array held in a buffer so DiaperGlu can 
 meet the Forth Standard's requirement for 'one cell' execution
 tokens. The new word header's index in this array is it's the execution token. 
 You can't change this.</p>
@@ -560,11 +562,11 @@ on the code space. This program follows the Forth standard.</p>
 
 <p>PCURRENTCOMPILEBUFFER points to the current code
 space which is the buffer where new compiled code will go. When
-Diaperglu starts, this is the DATASPACEBUFFERID.</p>
+DiaperGlu starts, this is the DATASPACEBUFFERID.</p>
 
 <p>PCURRENTNEWVARIABLEBUFFER points to the
 current data space, which is the buffer where new variables will
-go. When Diaperglu starts, this is the DATASPACEBUFFERID.</p>
+go. When DiaperGlu starts, this is the DATASPACEBUFFERID.</p>
 
 <p>So, this means if you want to cross compile
 code for another target or make an assembler for this target that
@@ -679,7 +681,7 @@ awhile it won't.</p>
 
 <p><a href=cpux86.htm#howtouse                                 >How to use the assembler</a></p>
 
-<p><a href=cpux86.htm#diapergluscriptwordsfromasm              >How to make Diaperglu script words from the assembler</a></p>
+<p><a href=cpux86.htm#diapergluscriptwordsfromasm              >How to make DiaperGlu script words from the assembler</a></p>
 
 <p><a href=cpux86.htm#makedotoexample                          >Making .o file example</a></p>
 
@@ -687,9 +689,9 @@ awhile it won't.</p>
 
 <p><a href=cpux86.htm#helloworld64exe                          >Example of using a .o file to make a hello world exe</a></p>
 
-<p><a href=cpux86.htm#diaperglulinkerexample                   >Example of using Diaperglu using the Diaperglu linker to link to a raw code file</a></p>
+<p><a href=cpux86.htm#diaperglulinkerexample                   >Example of using DiaperGlu using the DiaperGlu linker to link to a raw code file</a></p>
 
-<p><a href=cpux86.htm#diaperglulifeexample                     >Example of an xcode C++ project using the Diaperglu linker to link to a raw code file</a></p>
+<p><a href=cpux86.htm#diaperglulifeexample                     >Example of an xcode C++ project using the DiaperGlu linker to link to a raw code file</a></p>
 
 <p>The assembler words are documented in <a href=cpux86.htm#dg_forthcode>cpux86.htm</a></p>
 

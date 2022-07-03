@@ -8,7 +8,7 @@ helloworld64.exe : helloworld64.obj
 
 .PHONY : clean
 clean :
-	del helloworld64.obj
+	del helloworld64.obj helloworld64.exp helloworld64.lib
 
 .PHONY : test
 test :

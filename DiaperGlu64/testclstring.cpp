@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.4.
+//    This file is part of DiaperGlu v5.5.
 //
-//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.4; if not, write to the Free Software
+//    along with DiaperGlu v5.5; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 5, 2022               //
-// version 5.4                //
+// July 2, 2022               //
+// version 5.5                //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -5998,7 +5998,8 @@ void testdg_isfreeablelstringfree()
     dg_initpbharrayhead(&BHarrayhead);
 
     dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_isfreeablelstringfree\n");
-    
+
+#ifndef DGLU_NO_DIAPER    
     // index off end case - should return is free and no error
     // dg_initbuffers(&BHarrayhead);
     dg_initerrors(&BHarrayhead, 100, &pError);
@@ -6036,6 +6037,7 @@ void testdg_isfreeablelstringfree()
     }
     
     dg_freeallbuffers(&BHarrayhead);
+#endif
 
     // success case not free
     // dg_initbuffers(&BHarrayhead);
@@ -6218,7 +6220,8 @@ void testdg_getsflstrheader()
     dg_initpbharrayhead(&BHarrayhead);
 
     dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_getsflstrheader\n");
-    
+
+#ifndef DGLU_NO_DIAPER    
     // bad pflstrheaderlength case
     //dg_initbuffers(&BHarrayhead);
     dg_initerrors(&BHarrayhead, 100, &pError);
@@ -6288,7 +6291,7 @@ void testdg_getsflstrheader()
     }
         
     dg_freeallbuffers(&BHarrayhead);
-    
+#endif    
     
     // success case
     // dg_initbuffers(&BHarrayhead);
@@ -6343,7 +6346,8 @@ void testdg_copyflstrheadertos()
     dg_initpbharrayhead(&BHarrayhead);
 
     dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_copyflstrheadertos\n");
-    
+
+#ifndef DGLU_NO_DIAPER    
     // bad free index buffer case
     // dg_initbuffers(&BHarrayhead);
     dg_initerrors(&BHarrayhead, 100, &pError);
@@ -6366,7 +6370,7 @@ void testdg_copyflstrheadertos()
     }
     
     dg_freeallbuffers(&BHarrayhead);
-    
+#endif    
 
     // bad magic case
     // dg_initbuffers(&BHarrayhead);
@@ -6473,7 +6477,8 @@ void testdg_insertsintoflstrn()
     dg_initpbharrayhead(&BHarrayhead);
 
     dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_insertsintoflstrn\n");
-    
+
+#ifndef DGLU_NO_DIAPER    
     // bad free index buffer case
     // dg_initbuffers(&BHarrayhead);
     dg_initerrors(&BHarrayhead, 100, &pError);
@@ -6507,6 +6512,7 @@ void testdg_insertsintoflstrn()
     }
     
     dg_freeallbuffers(&BHarrayhead);
+#endif
     
     // bad magic case already tested in dg_copyflstrheadertos
     
@@ -6732,7 +6738,8 @@ void testdg_copysfromflstrn()
     dg_initpbharrayhead(&BHarrayhead);
 
     dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_copysfromflstrn\n");
-    
+
+#ifndef DGLU_NO_DIAPER    
     // bad free index buffer case
     // dg_initbuffers(&BHarrayhead);
     dg_initerrors(&BHarrayhead, 100, &pError);
@@ -6811,7 +6818,7 @@ void testdg_copysfromflstrn()
 
 
     dg_freeallbuffers(&BHarrayhead);
-    
+#endif    
     
     // success case
     // dg_initbuffers(&BHarrayhead);
@@ -6957,7 +6964,8 @@ void testdg_copytoinsertflstrntom()
     dg_initpbharrayhead(&BHarrayhead);
 
     dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_copytoinsertflstrntom\n");
-    
+
+#ifndef DGLU_NO_DIAPER    
     // bad source free index buffer case
     // dg_initbuffers(&BHarrayhead);
     dg_initerrors(&BHarrayhead, 100, &pError);
@@ -7163,7 +7171,7 @@ void testdg_copytoinsertflstrntom()
     }
 
     dg_freeallbuffers(&BHarrayhead);
-
+#endif
 
     // success case
     // dg_initbuffers(&BHarrayhead);
@@ -7287,7 +7295,8 @@ void testdg_deleteinflstringn()
     dg_initpbharrayhead(&BHarrayhead);
 
     dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_deleteinflstringn\n");
-    
+
+#ifndef DGLU_NO_DIAPER    
     // bad free index buffer case
     // dg_initbuffers(&BHarrayhead);
     dg_initerrors(&BHarrayhead, 100, &pError);
@@ -7368,6 +7377,7 @@ void testdg_deleteinflstringn()
     }
     
     dg_freeallbuffers(&BHarrayhead);
+#endif
     
     // success case
     // dg_initbuffers(&BHarrayhead);
@@ -7469,7 +7479,8 @@ void testdg_getlengthflstringn()
     dg_initpbharrayhead(&BHarrayhead);
 
     dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_getlengthflstringn\n");
-    
+
+#ifndef DGLU_NO_DIAPER    
     // bad free index buffer case
     // dg_initbuffers(&BHarrayhead);
     dg_initerrors(&BHarrayhead, 100, &pError);
@@ -7553,6 +7564,7 @@ void testdg_getlengthflstringn()
     }
     
     dg_freeallbuffers(&BHarrayhead);
+#endif
     
     // success case
     // dg_initbuffers(&BHarrayhead);
@@ -7642,6 +7654,7 @@ void testdg_newfreeablelstringonend()
     dg_initpbharrayhead(&BHarrayhead);
 
     dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_newfreeablelstringonend\n");
+
 
     // making freeable lstring array for test
     // dg_initbuffers(&BHarrayhead);

@@ -1,0 +1,90 @@
+( //////////////////////////////////////////////////////////////////////////////////////// )
+( //                                                                                       )
+( //    Copyright 2022 James Patrick Norris                                                )
+( //                                                                                       )
+( //    This file is part of Diaperglu 5.5.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.5 is free software; you can redistribute it and/or modify              )
+( //    it under the terms of the GNU General Public License as published by               )
+( //    the Free Software Foundation; either version 2 of the License, or                  )
+( //    {at your option} any later version.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.5 is distributed in the hope that it will be useful,                   )
+( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
+( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
+( //    GNU General Public License for more details.                                       )
+( //                                                                                       )
+( //    You should have received a copy of the GNU General Public License                  )
+( //    along with Diaperglu 5.5; if not, write to the Free Software                       )
+( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
+( //                                                                                       )
+( //////////////////////////////////////////////////////////////////////////////////////// )
+
+( /////////////////////////////// )
+( // James Patrick Norris      // )
+( // www.rainbarrel.com        // )
+( // July 2, 2022              // )
+( // version 5.5               // )
+( /////////////////////////////// )
+
+( replaces tabs in a file with 4 spaces )
+
+VARIABLE SRCBUFID
+VARIABLE DESTBUFID
+
+DECIMAL
+: changelinenedingstocrlffile$ ( filename$ -$- )
+    DUP$ LOADFILE$ SRCBUFID !
+    ?ERRORIF CRLF ." Could not open file" CRLF EXIT THEN
+    10000 -1 NEWBUFFER DESTBUFID !
+ 
+    SRCBUFID @ LENGTHBUF 0= IF EXIT THEN
+
+    // set current interpret buffer to input buffer
+    // PARSE-LINE ( -- addr length )
+    // GETBUFFERCURRENTOFFSET ( bufferid -- currentoffset )
+
+    BEGIN
+      SRCBUFID @ GETBUFFERCURRENTOFFSET
+      SRCBUFID @ LENGTHBUF U<
+    WHILE
+      PARSE-LINE
+      DESTBUFID @ S>BUF
+      13 DESTBUFID @ C>BUF
+      10 DESTBUFID @ C>BUF
+    REPEAT
+    
+    $" new" $>$ ( appending new to filename just in case )
+    DESTBUFID @ SAVEFILE$
+    SRCBUFID @ FREEBUFFER
+    DESTBUFID @ FREEBUFFER
+;
+
+: changelinenedingstolffile$ ( filename$ -$- )
+    DUP$ LOADFILE$ SRCBUFID !
+    ?ERRORIF CRLF ." Could not open file" CRLF EXIT THEN
+    10000 -1 NEWBUFFER DESTBUFID !
+ 
+    SRCBUFID @ LENGTHBUF 0= IF EXIT THEN
+
+    // set current interpret buffer to input buffer
+    // PARSE-LINE ( -- addr length )
+    // GETBUFFERCURRENTOFFSET ( bufferid -- currentoffset )
+
+    BEGIN
+      SRCBUFID @ GETBUFFERCURRENTOFFSET
+      SRCBUFID @ LENGTHBUF U<
+    WHILE
+      PARSE-LINE
+      DESTBUFID @ S>BUF
+      10 DESTBUFID @ C>BUF
+    REPEAT
+    
+    $" new" $>$ ( appending new to filename just in case )
+    DESTBUFID @ SAVEFILE$
+    SRCBUFID @ FREEBUFFER
+    DESTBUFID @ FREEBUFFER
+;
+
+ 
+         

@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.4.
+//    This file is part of DiaperGlu v5.5.
 //
-//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.4; if not, write to the Free Software
+//    along with DiaperGlu v5.5; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 5, 2022               //
-// version 5.4                //
+// July 2, 2022               //
+// version 5.5                //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -110,6 +110,12 @@ void dg_forthselftest ()
     testdg_replacebuffersegment();
     testdg_tocurrent();
     testdg_currentfrom();
+    testdg_pushbracketobtodatastack();
+    testdg_pushu128bracketobtodatastack();
+    testdg_pushbracketobtof64stack();
+    testdg_popdatastacktobracketob();
+    testdg_popf64stacktobracketob();
+    testdg_popdatastacktou128bracketob();
 
 	//need dg_clearbuffer
 	//need dg_getpbufferoffset
@@ -253,31 +259,43 @@ void dg_forthselftest ()
     
     // test c compiling routines
     testdg_bumpdisplacementsizeifneeded();
-	testdg_compilemovregtoreg();
-	testdg_compilenegatereg();
-	testdg_compileaddregtoreg();
-	testdg_compilesubn8fromrsp();
-	testdg_compileaddn8torsp();
-	testdg_compilepushntoret();
-	testdg_compilepopregfromret();
-	testdg_compilepushregtoret();
-	testdg_compilecalloffset();
-	testdg_compilejmpoffset();
-	testdg_compilecalladdress();
-	testdg_callbuffer();
+    testdg_compilemovregtoreg();
+    testdg_compilenegatereg();
+    testdg_compileaddregtoreg();
+    testdg_compilesubn8fromrsp();
+    testdg_compileaddn8torsp();
+    testdg_compilepushntoret();
+    testdg_compilepopregfromret();
+    testdg_compilepushregtoret();
+    testdg_compilecalloffset();
+    testdg_compilejmpoffset();
+    testdg_compilecalladdress();
+    testdg_callbuffer();
     testdg_callprocaddress();
     testdg_callprocaddressretuint128();
     testdg_calldfpprocaddress();
-	testcompiledemptysubroutine();
-	testcompiledstackalign();
-	testcompileinitlocalreturnpBHarrayhead();
-	testcompileinitlocalreturnframepBHarrayhead();
-	testcompilecallforthroutineincore();
-	testcompilecallforthroutineincoreatvariousaligments();
+    testcompiledemptysubroutine();
+    testcompiledstackalign();
+    testcompileinitlocalreturnpBHarrayhead();
+    testcompileinitlocalreturnframepBHarrayhead();
+    testcompilecallforthroutineincore();
+    testcompilecallforthroutineincoreatvariousaligments();
 //	testcompilecallsubroutineswithvariousnumberofparameters();
-	testcompilecalloffsetinsamebuffer();
-	testdg_compilepushtodatastack();
+    testcompilecalloffsetinsamebuffer();
+    testdg_compilepushtodatastack();
     testdg_compilepushntodatastack();
+    testdg_compileobtoptodatastack();
+    testdg_compilemovbracketrbpd8toreg();
+    testdg_compilemovbracketrbpd32toreg();
+    testdg_compilemovbracketrbpdtoreg();
+    testdg_compilemovregtobracketrbpd8();
+    testdg_compilemovregtobracketrbpd32();
+    testdg_compilemovregtobracketrbpd();
+    testdg_compilebracketrbpdtodatastack();
+    testdg_compiledatastacktobracketrbpd();
+    testdg_compilecallcoreoneuparam();
+    testdg_compilecallcoretwouparams();
+    // testdg_compilebracketobtoptodatastack();
     
 
     testdg_initjumpbuffer();
@@ -535,20 +553,20 @@ void dg_forthselftest ()
     testdg_forthreplaceinbuffer();
     testdg_forthinsertsintobuffer ();   
 	testdg_forthgrowbuffer();
-	testdg_forthshrinkbuffer();
-	testdg_forthemptybuffer();
-	testdg_forthnewbuffer();
-	testdg_forthfreebuffer();
-	testdg_forthgetpbufferoffset();
-	testdg_forthgetpbuffer();
+    testdg_forthshrinkbuffer();
+    testdg_forthemptybuffer();
+    testdg_forthnewbuffer();
+    testdg_forthfreebuffer();
+    testdg_forthgetpbufferoffset();
+    testdg_forthgetpbuffer();
     testdg_forthgetsbuffer();
-	testdg_forthgetpbuffersegment();
+    testdg_forthgetpbuffersegment();
     testdg_forthmaxusedbuffers();
     testdg_forthinusebuffers();
     testdg_forthinusebytes();
-	testdg_forthparse();
+    testdg_forthparse();
     testdg_forthparsebuffer();   
-	testdg_forthparseword();
+    testdg_forthparseword();
     testdg_forthparsewords(); 
     testdg_forthparseline();
     testdg_forthtocurrent();
@@ -556,18 +574,18 @@ void dg_forthselftest ()
     testdg_forthbrackettoorderconstant();
 
 
-	// test Forth lstring stuff
-	testdg_forthdepthlstring();
-	testdg_forthstartoffsetlstring();
-	testdg_forthlengthlstring();
-	testdg_forthgetslstringn();
-	testdg_forthgetlstring();
-	testdg_forthlstringtos();
-	testdg_forthstolstring();
-	testdg_forthgrowlstring();
-	testdg_forthpicklstring();
-	testdg_forthdroplstring();
-	testdg_forthdeletelstring();
+    // test Forth lstring stuff
+    testdg_forthdepthlstring();
+    testdg_forthstartoffsetlstring();
+    testdg_forthlengthlstring();
+    testdg_forthgetslstringn();
+    testdg_forthgetlstring();
+    testdg_forthlstringtos();
+    testdg_forthstolstring();
+    testdg_forthgrowlstring();
+    testdg_forthpicklstring();
+    testdg_forthdroplstring();
+    testdg_forthdeletelstring();
     testdg_forthinsertlstring();
     testdg_forthnotlstringn();
     testdg_forthu8reverselstringn();

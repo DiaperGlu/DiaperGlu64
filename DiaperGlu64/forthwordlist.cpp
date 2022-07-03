@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.4.
+//    This file is part of DiaperGlu v5.5.
 //
-//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.4; if not, write to the Free Software
+//    along with DiaperGlu v5.5; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 5, 2022               //
-// version 5.4                //
+// July 2, 2022               //
+// version 5.5                //
 // /////////////////////////////
 
 
@@ -2580,8 +2580,206 @@ void dg_forthcreatebracketwordlistdot(Bufferhandle* pBHarrayhead)
        
 }
 
+void dg_forthlibdot(Bufferhandle* pBHarrayhead)
+{
+    unsigned char* pname;
+    UINT64 namelength;
+    // UINT64 dylibhandle;
+    // UINT64 definitionid;
+    UINT64 symbolvalue;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    // dylibhandle = dg_popdatastack(pBHarrayhead);
+    
+    // if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    // {
+        // dg_pusherror(pBHarrayhead, dg_forthlibdotname);
+        // return;
+    // }
+    
+    pname = dg_parseword(
+        pBHarrayhead,
+        &namelength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthlibdotname);
+        return;
+    }
+    
+    if (0 == namelength)
+    {
+        dg_pusherror(pBHarrayhead, dg_nowordfounderror);
+        dg_pusherror(pBHarrayhead, dg_forthlibdotname);
+        return;
+    }
+    
+    dg_pushlstring(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        namelength,
+        pname);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthlibdotname);
+        return;
+    }
+        
+    // dg_pushbufferuint64(pBHarrayhead, DG_DATASTACK_BUFFERID, dylibhandle);
+        
+    // if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    // {
+    //    dg_pusherror(pBHarrayhead, dg_forthlibdotname);
+    //    return;
+    // }
+        
+    // do the dlsym
+    dg_forthfindlibrarysymbol(pBHarrayhead);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthlibdotname);
+        return;
+    }
+        
+    // get the symbol value from the data stack
+    symbolvalue = dg_popbufferuint64(pBHarrayhead, DG_DATASTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthlibdotname);
+        return;
+    }
+        
+    // need to handle the not found case - dlsym returns null when symbol not found
+    if (0 == symbolvalue)
+    {
+        // The symbol wasn't found. This is an error.
+        if (namelength > maxwordlength)
+        {
+            namelength = maxwordlength;
+        }
+
+        dg_putbuffersegment(pBHarrayhead, DG_DATASPACE_BUFFERID, lastnotfoundword, namelength, pname);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthlibdotname);
+            return;
+        }
+
+        dg_putbufferbyte(pBHarrayhead, DG_DATASPACE_BUFFERID, lastnotfoundword + namelength, 0);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthlibdotname);
+            return;
+        }
+            
+        dg_pusherror(pBHarrayhead, dg_symbolnotfounderror);
+            
+        dg_pusherror(pBHarrayhead, dg_forthlibdotname);
+        return;
+    }
+    
+    // could just leave symbol value on the data stack
+    //  if there was a simple way to get the top value without popping
+    dg_pushdatastack(
+        pBHarrayhead,
+        symbolvalue);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthlibdotname);
+        return;
+    }
+}
 
 
+void dg_forthcreatebracketlibdot(Bufferhandle* pBHarrayhead)
+{
+    UINT64 currentcreatewordlistid;
+    UINT64 wordlistid;
+    UINT64 wordid;
+    unsigned char* pname;
+    UINT64 namelength;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    wordlistid = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcreatebracketlibdotname);
+        return;
+    }
+    
+    pname = dg_parseword(
+        pBHarrayhead,
+        &namelength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcreatebracketlibdotname);
+        return;
+    }
+ 
+    if (namelength != 0)
+    {   
+        currentcreatewordlistid = dg_getbufferuint64(
+            pBHarrayhead,
+            DG_DATASPACE_BUFFERID,
+            currentcompilewordlist);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthpcurrentcreatewordlistname);
+            dg_pusherror(pBHarrayhead, dg_forthcreatebracketlibdotname);
+            return;
+        }
+    
+        wordid = dg_newwordcopyname (
+            pBHarrayhead,
+            DG_CORE_BUFFERID,  // compilebufid,
+            (UINT64)&dg_forthdocompiletypebracketlibdot, // compilebufoffset,
+            0,                 // databufid,
+            wordlistid,        // databufoffset,
+            DG_CORE_BUFFERID,  // namebufid,
+            (UINT64)pname,
+            namelength);
+    
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthcreatebracketlibdotname);
+            return;
+        }
+    
+        dg_linkdefinition(
+            pBHarrayhead,
+            currentcreatewordlistid,
+            wordid);
+    
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthcreatebracketlibdotname);
+            return;
+        }
+    }   
+       
+}
 
 // $>PROCWORD $>OBWORD $>OWORD $>:WORD $>COMPILECALLWORD $>IMMEDIATEWORD
 // really only need the first 2 or 3

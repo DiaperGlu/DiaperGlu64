@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.4.
+//    This file is part of DiaperGlu v5.5.
 //
-//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.4; if not, write to the Free Software
+//    along with DiaperGlu v5.5; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 5, 2022               //
-// version 5.4                //
+// July 2, 2022               //
+// version 5.5                //
 // /////////////////////////////
 
 
@@ -4393,6 +4393,77 @@ void dg_forthfsqrt (Bufferhandle* pBHarrayhead)
         dg_pusherror(pBHarrayhead, dg_forthfsqrtname);
         return;
     }
+}
+
+void dg_forthf64comma (Bufferhandle* pBHarrayhead)
+//         ( f1 -f64- )
+//         ( -currentdataspacebuffer- f1 )
+{
+    UINT64* pbuflength = NULL;
+    unsigned char* pf64stack = NULL;
+
+    UINT64* pints = NULL;
+
+    UINT64 n1 = 0;
+    UINT64 f64bufid = 0;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pf64stack = dg_getpbuffer(
+        pBHarrayhead, 
+        DG_F64STACK_BUFFERID, 
+        &pbuflength);
+
+    if (pf64stack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthf64stackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthf64commaname);
+        return;
+    }
+
+    if (*pbuflength < (1 * sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthf64commaname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+
+    pints = (UINT64*)(pf64stack + *pbuflength - sizeof(UINT64));
+
+    n1 = pints[0];
+
+    f64bufid = dg_getbufferuint64(
+        pBHarrayhead, 
+        DG_DATASPACE_BUFFERID, 
+        currentvariablebuffer);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthpcurrentnewvariablebuffername);
+        dg_pusherror(pBHarrayhead, dg_forthf64commaname);
+        return;
+    }
+
+    dg_pushbufferuint64(
+        pBHarrayhead,
+        f64bufid, 
+        n1);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        // error pushing to current new variable buffer
+        dg_pusherror(pBHarrayhead, dg_forthf64commaname);
+        return;
+    }
+
+    *pbuflength = *pbuflength - sizeof(UINT64);
 }
 
 // go through legacy floating point words and make sure the ones that

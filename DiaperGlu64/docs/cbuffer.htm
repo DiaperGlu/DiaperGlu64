@@ -1,22 +1,22 @@
-<!--
+<!--
 // //////////////////////////////////////////////////////////////////////////////////////
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.4.
+//    This file is part of DiaperGlu v5.5.
 //
-//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.4; if not, write to the Free Software
+//    along with DiaperGlu v5.5; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 5, 2022               //
-// version 5.4                //
+// July 2, 2022               //
+// version 5.5                //
 // /////////////////////////////
 -->
 
@@ -91,7 +91,13 @@
       <a href=cbuffer.htm#dg_getpbufferhandle            >dg_getpbufferhandle</a>
       <a href=cbuffer.htm#dg_push0stringtobuffersegment  >dg_push0stringtobuffersegment</a>
       <a href=cbuffer.htm#dg_pushdatastack               >dg_pushdatastack</a>
+      <a href=cbuffer.htm#dg_pushbracketobtodatastack    >dg_pushbracketobtodatastack</a>
+      <a href=cbuffer.htm#dg_pushu128bracketobtodatastack>dg_pushu128bracketobtodatastack</a>
+      <a href=cbuffer.htm#dg_pushbracketobtof64stack     >dg_pushbracketobtof64stack</a>
       <a href=cbuffer.htm#dg_popdatastack                >dg_popdatastack</a>
+      <a href=cbuffer.htm#dg_popdatastacktobracketob     >dg_popdatastacktobracketob</a>
+      <a href=cbuffer.htm#dg_popdatastacktou128bracketob >dg_popdatastacktou128bracketob</a>
+      <a href=cbuffer.htm#dg_popf64stacktobracketob      >dg_popf64stacktobracketob</a>
       <a href=cbuffer.htm#dg_newbufferset                >dg_newbufferset</a>
       <a href=cbuffer.htm#dg_freebufferset               >dg_freebufferset</a>
       <a href=cbuffer.htm#dg_getuint64arrayelement       >dg_getuint64arrayelement</a>
@@ -1554,8 +1560,6 @@
 //                                 the other bufferhandles are stored.
 //
 //  UINT64          data          number to push onto the data stack
-//
-//  unsigned char*  psrc          pointer to the zero string
 // 
 // Outputs:
 //  none
@@ -1607,6 +1611,232 @@
 //
 // Failure cases:
 //  error popping the data stack (subroutine reports the error)
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_pushbracketobtodatastack>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_pushbracketobtodatastack
+//
+// C prototype:
+//  void dg_pushbracketobtodatastack (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 offset)
+//
+// Inputs:
+//  Bufferhandle*   pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64          bufferid      index of the bufferhandle in the BHarray
+//
+//  UINT64          offset        offset in buffer in bytes
+// 
+// Outputs:
+//  none
+//
+// Stack action shorthand:
+//  ( -- data )
+//
+// Data stack out:
+//  data                          64 bit value
+//                            
+// Action
+//  gets the 64 bit value at the offset in bufferid and pushes it onto the data stack
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_pushu128bracketobtodatastack>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_pushu128bracketobtodatastack
+//
+// C prototype:
+//  void dg_pushu128bracketobtodatastack (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 offset)
+//
+// Inputs:
+//  Bufferhandle*   pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64          bufferid      index of the bufferhandle in the BHarray
+//
+//  UINT64          offset        offset in buffer in bytes
+// 
+// Outputs:
+//  none
+//
+// Stack action shorthand:
+//  ( -- datalo datahi )
+//
+// Data stack out:
+//  datalo                        low 64 bits of value
+//
+//  datahi                        high 64 bits of value
+//                         
+// Action
+//  gets the 128 bit value at the offset in bufferid and pushes it onto the data stack
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_pushbracketobtof64stack>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_pushf64stack
+//
+// C prototype:
+//  void dg_pushbracketobtof64stack (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 offset)
+//
+// Inputs:
+//  Bufferhandle*   pBHarrayhead  pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64          bufferid      index of the bufferhandle in the BHarray
+//
+//  UINT64          offset        offset in buffer in bytes
+// 
+// Outputs:
+//  none
+//
+// Stack action shorthand:
+//  ( -f64- data )
+//
+// F64 stack out:
+//  data                          64 bit value
+//                            
+// Action
+//  gets the 64 bit value at the offset in bufferid and pushes it onto the f64 stack
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_popdatastacktobracketob>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_popdatastacktobracketob  
+//
+// C prototype:
+//  UINT64 dg_popdatastacktobracketob (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 offset)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64          bufferid      index of the bufferhandle in the BHarray
+//
+//  UINT64          offset        offset in buffer in bytes
+// 
+// Stack action shorthand:
+//  ( data -- )
+//
+// Data stack in:
+//  data                          64 bit number
+//                                                            
+// Action:
+//  Pops the 64 bit value off the data stack and stores it into the memory at the 
+//   offset in bufferid
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_popdatastacktou128bracketob>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_popdatastacktou128bracketob  
+//
+// C prototype:
+//  UINT64 dg_popdatastacktou128bracketob (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 offset)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64          bufferid      index of the bufferhandle in the BHarray
+//
+//  UINT64          offset        offset in buffer in bytes
+// 
+// Stack action shorthand:
+//  ( datalo datahi -- )
+//
+// Data stack in:
+//  datalo                        low 64 bits of value
+//
+//  datahi                        high 64 bits of value
+//                                                            
+// Action:
+//  Pops the 128 bit value off the data stack and stores it into the memory at the 
+//   offset in bufferid
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_popf64stacktobracketob>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_popf64stacktobracketob  
+//
+// C prototype:
+//  UINT64 dg_popf64stacktobracketob (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 bufferid,
+//   UINT64 offset)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+//  UINT64          bufferid      index of the bufferhandle in the BHarray
+//
+//  UINT64          offset        offset in buffer in bytes
+// 
+// Stack action shorthand:
+//  ( data -f64- )
+//
+// Data stack in:
+//  data                          64 bit value
+//                                                            
+// Action:
+//  Pops the 64 bit value off the f64 stack and stores it into the memory at the 
+//   offset in bufferid
 //  
 // //////////////////////////////////////////////////////////////////////////////////////
 </pre>

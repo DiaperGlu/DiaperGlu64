@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.4.
+//    This file is part of DiaperGlu v5.5.
 //
-//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.4; if not, write to the Free Software
+//    along with DiaperGlu v5.5; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,13 +23,27 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 5, 2022               //
-// version 5.4                //
+// July 2, 2022               //
+// version 5.5                //
 // /////////////////////////////
 
 
 
 #include "diapergluforth.h"
+
+// dg_forthparenlocal ( addr u -- )
+//  if u > 0, create constant with name addr u and value = current local index, increase current local index
+//  if u = 0, compile code that allocates current local index number of locals
+//  compile type of the locals is fetchlocal... which compiles code that does push [rbp+n] to data stack
+
+// dg_forthto
+//   parse next word, if it's compile type local, compile code that pops number off data stack to [rbp+n]
+
+// {: before before -- does parenlocal for each name found ... and counts the number of locals before | 
+//     after -- just looks for :}
+//     when it's done it does parenlocal with no namelength then compiles code that does mov n things from
+//      data stack to the correct local variables... for speed do a block copy (get pointer to data stack..
+//      move n...  probably faster to compile separate moves for each one since.... MOVS has startup cost..
 
 /*
 const char* dg_savelocalstackdepthname = "dg_savelocalstackdepth";
@@ -360,7 +374,7 @@ void dg_forthdocompiletypelocal (Bufferhandle* pBHarrayhead)
         return;
     }
 
-	dg_forthdrop(pBHarrayhead);
+    dg_forthdrop(pBHarrayhead);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -427,6 +441,89 @@ void dg_forthdocompiletypelocal (Bufferhandle* pBHarrayhead)
     */
 }
 
+
+const char* dg_forthdocompiletypetofastlocalname = "dg_forthdocompiletypetofastlocal";
+
+void dg_forthdocompiletypetofastlocal (Bufferhandle* pBHarrayhead)
+//                         ( dataoffset databufid -- )
+{
+    UINT64 n;
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_forthdrop(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypetofastlocalname);
+        return;
+    }
+    
+    n = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypetofastlocalname);
+        return;
+    }
+    
+    dg_compiledatastacktobracketrbpd (
+        pBHarrayhead,
+        n); // displacement) need to covert the local index to an rbp offset
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypetofastlocalname);
+        return;
+    }
+}
+
+
+const char* dg_forthdocompiletypefastlocalfromname = "dg_forthdocompiletypefastlocalfrom";
+
+void dg_forthdocompiletypefastlocalfrom (Bufferhandle* pBHarrayhead)
+//                         ( dataoffset databufid -- )
+{
+    UINT64 n;
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    // dg_printzerostring(pBHarrayhead, (unsigned char*)"\ndoing fast local\n");
+
+    dg_forthdrop(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypefastlocalfromname);
+        return;
+    }
+    
+    n = dg_popdatastack(pBHarrayhead); // should be displacement
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypefastlocalfromname);
+        return;
+    }
+    
+    dg_compilebracketrbpdtodatastack (
+        pBHarrayhead,
+        n); // displacement) need to covert the local index to an rbp offset
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypefastlocalfromname);
+        return;
+    }
+}
 
 
 const char* dg_forthbarname = "|";
@@ -1034,3 +1131,830 @@ void dg_forthlocalssynonym (Bufferhandle* pBHarrayhead)
     }
 }
 */
+
+// 3 states:
+//  parsing uninitialized locals
+//  parsing initialized locals... initialized from data stack in forward order
+//  parsing a comment
+//  } ends the parse...
+//  | in first start switches parse to second state
+//  -- in first or second state switches parse to third state
+
+// relativeindex = 0
+// start of initialized locals = -1 (not used)
+// state = parsing uninitialized
+// begin
+//  parse word
+//  case | found  remember relative index as start of initialized locals
+//  case -- found  break  remember current relative index and -- was found
+//  case end found  break  remember current relative index and end was found
+//  case default
+//   create new local locals fetch word with relative index
+// done until
+//
+// if there are initialized locals
+//   compile code to initialize initialized locals from data stack
+//   (for each initialized local starting with highest one do pop data stack and store local)
+//
+// if -- was found parse until } is found
+// eat terminator
+// end
+
+const char* dg_forthendcurlybracename = "}";
+
+void dg_forthcurlybrace (Bufferhandle* pBHarrayhead)
+{
+    const char* pError;
+    
+    UINT64 wordlength;
+    unsigned char* pword;
+    UINT64 foundendflag = FORTH_FALSE;
+    
+    INT64 compareflag;
+    
+    UINT64 localwordid;
+    
+    UINT64 localswordlistid;
+
+    UINT64 startofinitializedlocals = largestunsignedint;
+
+    UINT64 startreturnstackdepth;
+    // UINT64 currentreturnstackdepth;
+    UINT64 numberoflocals = 0;
+    UINT64 i;
+    UINT64 state = 0;
+
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    startreturnstackdepth =
+        dg_getbufferuint64(
+            pBHarrayhead,
+            DG_DATASPACE_BUFFERID,
+            dg_colonreturnstackdepth);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcurlybracename);
+        return;
+    }
+
+    localswordlistid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_localswordlistid);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcurlybracename);
+        return;
+    }
+     
+    while(foundendflag == FORTH_FALSE)
+    {
+        pword = dg_parsewords(
+            pBHarrayhead,
+            &wordlength,
+            (unsigned char)'}', // enddelimiter,
+            &foundendflag,
+            FORTH_FALSE);
+            
+        if (wordlength != 0)
+        {
+            pError = dg_comparebytes(
+                pword,
+                wordlength,
+                (unsigned char*)"|",
+                1,
+                &compareflag);
+            
+            if (pError != dg_success)
+            {
+                dg_pusherror(pBHarrayhead, pError);
+                dg_pusherror(pBHarrayhead, dg_comparebytesname);
+                dg_pusherror(pBHarrayhead, dg_forthcurlybracename);
+                return;
+            }
+        
+            if (0 == compareflag)
+            {
+                if (0 == state)
+                {
+                    startofinitializedlocals = numberoflocals; 
+                    state = 1;
+                }
+                else
+                {
+                    // can only have one | error
+                    dg_pusherror(pBHarrayhead, (const char*)"can only have one |");
+                    dg_pusherror(pBHarrayhead, dg_forthcurlybracename);
+                    return;
+                }
+            }
+            else
+            {
+                pError = dg_comparebytes(
+                    pword,
+                    wordlength,
+                   (unsigned char*)"--",
+                    2,
+                    &compareflag);
+            
+                if (pError != dg_success)
+                {
+                    dg_pusherror(pBHarrayhead, pError);
+                    dg_pusherror(pBHarrayhead, dg_comparebytesname);
+                    dg_pusherror(pBHarrayhead, dg_forthcurlybracename);
+                    return;
+                }
+
+                if (0 == compareflag)
+                {
+                    state = 2;
+                }
+                else
+                {
+                    // otherwise create a new word 
+                    if ((0 == state) || (1 == state))
+                    {
+                        // not checking for overflow since you'd need almost 2^64 for that to happen...
+                        //  but if I did... just check for 0?
+
+                        localwordid = dg_newwordcopyname (
+                            pBHarrayhead,
+                            (UINT64)DG_CORE_BUFFERID,
+                            (UINT64)&dg_forthdocompiletypefastlocalfrom,
+                            0, // databufid,
+                            0 - ((numberoflocals + startreturnstackdepth + 1) << 3), // databufoffset,
+                            (UINT64)DG_CORE_BUFFERID,
+                            (UINT64)pword,
+                            wordlength);
+    
+                        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                        {
+                            dg_pusherror(pBHarrayhead, dg_forthcurlybracename);
+                            return;
+                        }
+        
+                        dg_linkdefinition(
+                            pBHarrayhead,
+                            localswordlistid,
+                            localwordid);
+        
+                        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                        {
+                            dg_pusherror(pBHarrayhead, dg_forthcurlybracename);
+                            return;
+                        }
+        
+                        numberoflocals++;
+                    }
+                }
+            }
+        }
+    }
+
+    // compile add n locals
+    dg_compileaddnlocalstocallsubsframe(
+        pBHarrayhead,
+        numberoflocals);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcurlybracename);
+        return;
+    }
+
+    // dg_printzerostring(pBHarrayhead, (unsigned char*)"number of locals = ");
+    // dg_writestdoutuint64tohex(pBHarrayhead, numberoflocals);
+    // dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+
+    // dg_printzerostring(pBHarrayhead, (unsigned char*)"start of initialized locals = ");
+    // dg_writestdoutuint64tohex(pBHarrayhead, startofinitializedlocals);
+    // dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+    
+    // compile init each initialized local
+    if (startofinitializedlocals != largestunsignedint)
+    {
+        i = numberoflocals;
+
+        while (i > startofinitializedlocals)
+        {
+            i--;
+
+            // dg_printzerostring(pBHarrayhead, (unsigned char*)"initializing local = ");
+            // dg_writestdoutuint64tohex(pBHarrayhead, i);
+            // dg_printzerostring(pBHarrayhead, (unsigned char*)", with offset ");
+            // dg_writestdoutuint64tohex(pBHarrayhead, 0 - (((i + startreturnstackdepth) + 1) << 3));
+            // dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+
+            dg_compiledatastacktobracketrbpd(
+                pBHarrayhead,
+                0 - (((i + startreturnstackdepth) + 1) << 3));
+
+            
+        }
+    }
+
+    dg_putbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_colonreturnstackdepth,
+        startreturnstackdepth + numberoflocals);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcurlybracename);
+        return;
+    }
+}
+
+// dg_forthto
+//  parse next word on line 
+//  find word
+//  get compile type
+//  if compile type is fast local, local, or variable.... 
+//   compile pop data stack and ! to that type
+
+void dg_forthto (Bufferhandle* pBHarrayhead) // maybe make it always execute..... it's a compiling word....
+{
+    unsigned char* pname;
+    UINT64 namelength;
+
+    UINT64 wordid;
+
+    Definitionheader* pdefinition;
+
+    const char* state;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pname = dg_parseword(
+        pBHarrayhead,
+        &namelength);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtoname);
+        return;
+    }
+
+    if (0 == namelength)
+    {
+        dg_pusherror(pBHarrayhead, dg_nowordfounderror);
+        dg_pusherror(pBHarrayhead, dg_forthtoname);
+        return;
+    }
+
+    wordid = dg_finddefinsearchorder (
+        pBHarrayhead,
+        pname,
+        namelength);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtoname);
+        return;
+    }
+
+    if (DG_ENDOFWORDLIST == wordid)
+    {
+        dg_pusherror(pBHarrayhead, dg_wordnotfoundinsearchordererror);
+        dg_pusherror(pBHarrayhead, dg_forthtoname);
+        return;
+    }
+
+    pdefinition = dg_getpdefinition (
+        pBHarrayhead,
+        wordid);
+
+    if ( (DG_CORE_BUFFERID == pdefinition->compileroutinebuf) &&
+         ((UINT64)&dg_forthdocompiletypedpushp == pdefinition->compileroutineoffset) )
+    {
+        // variable and probably any others...
+        dg_executedefinition (
+            pBHarrayhead,
+            wordid);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthtoname);
+            return;
+        }
+
+        dg_pushdatastack(
+            pBHarrayhead,
+            (UINT64)&dg_forthstore);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthtoname);
+            return;
+        }
+
+        dg_pushdatastack(
+            pBHarrayhead,
+            (UINT64)DG_CORE_BUFFERID);
+        
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthtoname);
+            return;
+        }
+
+        dg_forthdocompiletypesubroutine(pBHarrayhead);  
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthtoname);
+            return;
+        }
+
+        return;
+    }
+
+    
+    if ( (DG_CORE_BUFFERID == pdefinition->compileroutinebuf) &&
+         ((UINT64)&dg_forthdocompiletypelocal == pdefinition->compileroutineoffset) )
+    {
+        dg_compilepushntodatastack (
+            pBHarrayhead,
+            pdefinition->dataoffset);
+    
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthtoname);
+            return;
+        }
+    
+        dg_compilecallcore (
+            pBHarrayhead,
+            (UINT64)(&dg_forthlocalsstore));
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthtoname);
+            return;
+        }
+
+        return;
+    }
+
+    if ( (DG_CORE_BUFFERID == pdefinition->compileroutinebuf) &&
+         ((UINT64)&dg_forthdocompiletypefastlocalfrom == pdefinition->compileroutineoffset) )
+    {
+        // fast local
+        // throw error in execute state.... I think...
+        
+        state = (const char*)dg_getbufferuint64(
+            pBHarrayhead,
+            DG_DATASPACE_BUFFERID,
+            statevariable);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthstatename);
+            dg_pusherror(pBHarrayhead, dg_forthtoname);
+            return;
+        }
+
+        if (state == dg_statecompile)
+        {
+            dg_compiledatastacktobracketrbpd(
+                pBHarrayhead,
+                pdefinition->dataoffset);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthtoname);
+                return;
+            }
+
+            return;
+        }
+
+        if (state == dg_stateexecute)
+        {
+            dg_pusherror(pBHarrayhead, (const char*)" fast local only supported in compile state");
+            dg_pusherror(pBHarrayhead, dg_forthtoname);
+            return;
+        }
+
+        return;
+    }
+
+    if ( (DG_CORE_BUFFERID == pdefinition->compileroutinebuf) &&
+         ((UINT64)&dg_forthdocompiletypevalue == pdefinition->compileroutineoffset) )
+    {
+        // be faster if I didn't pass parameters on the data stack...
+        dg_docompiletypeostore(
+            pBHarrayhead,
+            pdefinition->databuf,
+            pdefinition->dataoffset);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthtoname);
+            return;
+        }
+
+        return;
+    }
+
+
+    if ( (DG_CORE_BUFFERID == pdefinition->compileroutinebuf) &&
+         ((UINT64)&dg_forthdocompiletypefvalue == pdefinition->compileroutineoffset) )
+    {
+        dg_docompiletypeof64store(
+            pBHarrayhead,
+            pdefinition->databuf,
+            pdefinition->dataoffset);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthtoname);
+            return;
+        }
+
+        return;
+    }
+
+    if ( (DG_CORE_BUFFERID == pdefinition->compileroutinebuf) &&
+         ((UINT64)&dg_forthdocompiletypetwovalue == pdefinition->compileroutineoffset) )
+    {
+        // be faster if I didn't pass parameters on the data stack...
+        dg_docompiletypeotwostore(
+            pBHarrayhead,
+            pdefinition->databuf,
+            pdefinition->dataoffset);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthtoname);
+            return;
+        }
+
+        return;
+    }
+
+    
+    dg_pusherror(pBHarrayhead, (const char*)" only VARIABLE VALUE FVALUE 2VALUE LOCALS| locals and { locals supported for now 2022 Jun 25");
+    dg_pusherror(pBHarrayhead, dg_forthtoname);
+    return;
+}
+
+
+
+void dg_forthvalue(Bufferhandle* pBHarrayhead)
+{
+    unsigned char* pname;
+    UINT64 namelength;
+
+    UINT64 databufid;
+    UINT64 databufoffset;
+
+    UINT64 compilebufid = DG_CORE_BUFFERID;
+    UINT64 compilebufoffset = (UINT64)&dg_forthdocompiletypevalue;
+
+    UINT64 definition = DG_ENDOFWORDLIST;
+
+    UINT64 vocabid;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        // could not get error count because BHarrayhead is not there so just exiting
+        return;
+    }
+
+    pname = dg_parseword(
+        pBHarrayhead,
+        &namelength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthvaluename);
+        return;
+    }
+
+    if (namelength == 0)
+    {
+        dg_pusherror(pBHarrayhead, dg_wordlength0error);
+        dg_pusherror(pBHarrayhead, dg_forthvaluename);
+        return;
+    }
+
+    databufid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthvaluename);
+        return;
+    }
+
+    // supposed to align here... 
+
+    databufoffset = dg_getbufferlength(
+        pBHarrayhead,
+        databufid);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthvaluename);
+        return;
+    }
+
+    vocabid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilewordlist);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthvaluename);
+        return;
+    }
+
+    definition = dg_newwordcopyname(
+        pBHarrayhead, 
+        compilebufid, 
+        compilebufoffset, 
+        databufid, 
+        databufoffset, 
+        DG_CORE_BUFFERID, 
+        (UINT64)pname, 
+        namelength);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthvaluename);
+        return;
+    }
+
+    dg_linkdefinition(
+        pBHarrayhead,
+        vocabid,
+        definition);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        // probably should drop the definition here
+        dg_pusherror(pBHarrayhead, dg_forthvaluename);
+        return;
+    }
+
+    dg_forthcomma(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthvaluename);
+        return;
+    }
+}
+
+
+void dg_forthfvalue(Bufferhandle* pBHarrayhead)
+{
+    unsigned char* pname;
+    UINT64 namelength;
+
+    UINT64 databufid;
+    UINT64 databufoffset;
+
+    UINT64 compilebufid = DG_CORE_BUFFERID;
+    UINT64 compilebufoffset = (UINT64)&dg_forthdocompiletypefvalue;
+
+    UINT64 definition = DG_ENDOFWORDLIST;
+
+    UINT64 vocabid;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        // could not get error count because BHarrayhead is not there so just exiting
+        return;
+    }
+
+    pname = dg_parseword(
+        pBHarrayhead,
+        &namelength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthfvaluename);
+        return;
+    }
+
+    if (namelength == 0)
+    {
+        dg_pusherror(pBHarrayhead, dg_wordlength0error);
+        dg_pusherror(pBHarrayhead, dg_forthfvaluename);
+        return;
+    }
+
+    databufid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthfvaluename);
+        return;
+    }
+
+    // supposed to align here... 
+
+    databufoffset = dg_getbufferlength(
+        pBHarrayhead,
+        databufid);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthfvaluename);
+        return;
+    }
+
+    vocabid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilewordlist);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthfvaluename);
+        return;
+    }
+
+    definition = dg_newwordcopyname(
+        pBHarrayhead, 
+        compilebufid, 
+        compilebufoffset, 
+        databufid, 
+        databufoffset, 
+        DG_CORE_BUFFERID, 
+        (UINT64)pname, 
+        namelength);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthfvaluename);
+        return;
+    }
+
+    dg_linkdefinition(
+        pBHarrayhead,
+        vocabid,
+        definition);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        // probably should drop the definition here
+        dg_pusherror(pBHarrayhead, dg_forthfvaluename);
+        return;
+    }
+
+    dg_forthf64comma(pBHarrayhead); 
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthfvaluename);
+        return;
+    }
+}
+
+
+void dg_forthtwovalue(Bufferhandle* pBHarrayhead)
+{
+    unsigned char* pname;
+    UINT64 namelength;
+
+    UINT64 databufid;
+    UINT64 databufoffset;
+
+    UINT64 compilebufid = DG_CORE_BUFFERID;
+    UINT64 compilebufoffset = (UINT64)&dg_forthdocompiletypetwovalue;
+
+    UINT64 definition = DG_ENDOFWORDLIST;
+
+    UINT64 vocabid;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        // could not get error count because BHarrayhead is not there so just exiting
+        return;
+    }
+
+    pname = dg_parseword(
+        pBHarrayhead,
+        &namelength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtwovaluename);
+        return;
+    }
+
+    if (namelength == 0)
+    {
+        dg_pusherror(pBHarrayhead, dg_wordlength0error);
+        dg_pusherror(pBHarrayhead, dg_forthtwovaluename);
+        return;
+    }
+
+    databufid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtwovaluename);
+        return;
+    }
+
+    // supposed to align here... 
+
+    databufoffset = dg_getbufferlength(
+        pBHarrayhead,
+        databufid);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtwovaluename);
+        return;
+    }
+
+    vocabid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilewordlist);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtwovaluename);
+        return;
+    }
+
+    definition = dg_newwordcopyname(
+        pBHarrayhead, 
+        compilebufid, 
+        compilebufoffset, 
+        databufid, 
+        databufoffset, 
+        DG_CORE_BUFFERID, 
+        (UINT64)pname, 
+        namelength);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtwovaluename);
+        return;
+    }
+
+    dg_linkdefinition(
+        pBHarrayhead,
+        vocabid,
+        definition);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        // probably should drop the definition here
+        dg_pusherror(pBHarrayhead, dg_forthtwovaluename);
+        return;
+    }
+
+    dg_forthcomma(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtwovaluename);
+        return;
+    }
+
+    dg_forthcomma(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtwovaluename);
+        return;
+    }
+}
+

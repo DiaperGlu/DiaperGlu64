@@ -2,20 +2,20 @@
 ; //
 ; //    Copyright 2022 James Patrick Norris
 ; // 
-; //    This file is part of Diaperglu v5.4.
+; //    This file is part of Diaperglu v5.5.
 ; //
-; //    Diaperglu v5.4 is free software; you can redistribute it and/or modify 
+; //    Diaperglu v5.5 is free software; you can redistribute it and/or modify 
 ; //    it under the terms of the GNU General PUBLIC License as published by
 ; //    the Free Software Foundation; either version 2 of the License, or
 ; //    (at your option) any later version.
 ; //
-; //    Diaperglu v5.4 is distributed in the hope that it will be useful,
+; //    Diaperglu v5.5 is distributed in the hope that it will be useful,
 ; //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ; //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ; //    GNU General PUBLIC License for more details.
 ; //
 ; //    You should have received a copy of the GNU General PUBLIC License
-; //    along with Diaperglu v5.4; if not, write to the Free Software
+; //    along with Diaperglu v5.5; if not, write to the Free Software
 ; //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ; //
 ; ////////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 ; ///////////////////////////////
 ; // James Patrick Norris      //
 ; // www.rainbarrel.com        //
-; // June 5, 2022              //
-; // version 5.4               //
+; // July 2, 2022              //
+; // version 5.5               //
 ; ///////////////////////////////
 
 ; MS x86-64 calling convention
@@ -92,6 +92,12 @@ dg_success ENDP
 dg_badmemoryerror PROC EXPORT 
   DB "bad memory error", 0
 dg_badmemoryerror ENDP
+
+dg_nop PROC EXPORT
+
+    ret
+    
+dg_nop ENDP
 
 dg_testasm PROC EXPORT
     
@@ -2566,7 +2572,9 @@ dg_addbytessub PROC EXPORT FRAME
       inc r8         ; inc rsi        ; incq %rsi
       inc rdx        ; inc rdi        ; incq %rdi
     
-    loop dg_addbytesbegin1
+    ; loop dg_addbytesbegin1
+      dec rcx
+    jnz dg_addbytesbegin1
     
     jnc dg_addbytesthen1
     
@@ -2617,7 +2625,9 @@ dg_adcbytessub PROC EXPORT FRAME
       inc r8         ; incq %rsi
       inc rdx        ; incq %rdi
     
-    loop dg_adcbytesbegin1
+    ; loop dg_adcbytesbegin1
+      dec rcx
+    jnz dg_adcbytesbegin1
     
     jnc dg_adcbytesthen1
     
@@ -2669,7 +2679,9 @@ dg_sbbbytessub PROC EXPORT FRAME
       inc r8
       inc rdx
       
-    loop dg_sbbbytesbegin1
+    ; loop dg_sbbbytesbegin1
+      dec rcx
+      jnz dg_sbbbytesbegin1
     
     jnc dg_sbbbytesthen1
     
@@ -2708,7 +2720,9 @@ dg_andbytessub PROC EXPORT FRAME
     inc r8          ; incq %rdi
     inc rdx         ; incq %rsi
     
-  loop dg_andbytesbegin1
+  ; loop dg_andbytesbegin1
+    dec rcx
+  jnz dg_andbytesbegin1
     
     ; leaq _dg_success(%rip), %rax
     popfq
@@ -2740,7 +2754,9 @@ dg_orbytessub PROC EXPORT FRAME
     inc r8          ; incq %rdi
     inc rdx         ; incq %rsi
     
-  loop dg_orbytesbegin1
+  ; loop dg_orbytesbegin1
+    dec rcx
+  jnz dg_orbytesbegin1
     
     ; leaq _dg_success(%rip), %rax
     popfq
@@ -2772,7 +2788,9 @@ dg_xorbytessub PROC EXPORT FRAME
     inc r8          ; incq %rdi
     inc rdx         ; incq %rsi
     
-  loop dg_xorbytesbegin1
+  ; loop dg_xorbytesbegin1
+    dec rcx
+  jnz dg_xorbytesbegin1
     
     ; leaq _dg_success(%rip), %rax
     popfq
@@ -2806,7 +2824,9 @@ dg_nandbytessub PROC EXPORT FRAME
     inc r8          ; incq %rdi
     inc rdx         ; incq %rsi
     
-  loop dg_nandbytesbegin1
+  ; loop dg_nandbytesbegin1
+    dec rcx
+  jnz dg_nandbytesbegin1
     
     ; leaq _dg_success(%rip), %rax
     popfq
@@ -2840,7 +2860,9 @@ dg_norbytessub PROC EXPORT FRAME
     inc r8          ; incq %rdi
     inc rdx         ; incq %rsi
     
-  loop dg_norbytesbegin1
+  ; loop dg_norbytesbegin1
+    dec rcx
+  jnz dg_norbytesbegin1
     
     ; leaq _dg_success(%rip), %rax
     popfq
@@ -2874,7 +2896,9 @@ dg_xnorbytessub PROC EXPORT FRAME
     inc r8          ; incq %rdi
     inc rdx         ; incq %rsi
     
-  loop dg_xnorbytesbegin1
+  ; loop dg_xnorbytesbegin1
+    dec rcx
+  jnz dg_xnorbytesbegin1
     
     ; leaq _dg_success(%rip), %rax
     popfq
@@ -2912,7 +2936,9 @@ dg_shlbytessub PROC EXPORT FRAME
     dg_shlbytesbegin1:
       rcl byte ptr [rdx], 1  ; rclb (%rdi)
       inc rdx             ; incq %rdi
-    loop dg_shlbytesbegin1
+    ; loop dg_shlbytesbegin1
+      dec rcx
+    jnz dg_shlbytesbegin1
     
     jnc dg_shlbytesthen1
     
@@ -2960,7 +2986,9 @@ dg_shrbytessub PROC EXPORT FRAME
       dec rdx              ; decq %rdi
       rcr byte ptr [rdx], 1   ; rcrb (%rdi)
     
-    loop dg_shrbytesbegin1
+    ; loop dg_shrbytesbegin1
+      dec rcx
+    jnz dg_shrbytesbegin1
     
     jnc dg_shrbytesthen1
     
@@ -3004,7 +3032,9 @@ dg_rclbytessub PROC EXPORT FRAME
     dg_rclbytebegin1:
       rcl byte ptr [rdx], 1  ; rclb (%rdi)
       inc rdx             ; incq %rdi
-    loop dg_rclbytebegin1
+    ; loop dg_rclbytebegin1
+      dec rcx
+    jnz dg_rclbytebegin1
     
     jnc dg_rclbytesthen1
     
@@ -3052,7 +3082,9 @@ dg_rcrbytessub PROC EXPORT FRAME
  dg_rcrbytesbegin1: 
       dec rdx  ; decq %rdi
       rcr byte ptr [rdx], 1  ; rcrb (%rdi)
-    loop dg_rcrbytesbegin1
+    ; loop dg_rcrbytesbegin1
+      dec rcx
+    jnz dg_rcrbytesbegin1
     
     jnc dg_rcrbytesthen1
     
@@ -3101,7 +3133,9 @@ dg_sarbytessub PROC EXPORT FRAME
     dg_sarbytesbegin1:
       dec rdx             ; decq %rdi
       rcr byte ptr [rdx], 1  ; rcrb (%rdi)
-    loop dg_sarbytesbegin1
+    ; loop dg_sarbytesbegin1
+      dec rcx
+    jnz dg_sarbytesbegin1
     
     jnc dg_sarbytesthen1
       inc qword ptr [r8] ; incq (%rdx) // set carryout to 1
@@ -3136,7 +3170,9 @@ dg_notbytessub PROC EXPORT FRAME
       dg_notbytesbegin1:
         not byte ptr [rdx] ; notb (%rdi)
         inc rdx            ; incq %rdi
-      loop dg_notbytesbegin1
+      ; loop dg_notbytesbegin1
+        dec rcx
+      jnz dg_notbytesbegin1
 
     dg_notbytesthen1:
     
@@ -3176,7 +3212,9 @@ dg_reversebytessub PROC EXPORT FRAME
         xchg al, [r8] ; xchgb (%rsi), %al
         mov [rdx], al ; movb %al, (%rdi)
         inc rdx       ; incq %rdi
-      loop dg_reversebytesbegin1
+      ; loop dg_reversebytesbegin1
+        dec rcx
+      jnz dg_reversebytesbegin1
 
     dg_reversebytesthen1:
     
@@ -3215,7 +3253,9 @@ dg_incbytessub PROC EXPORT FRAME
         adc [rdx], al  ; adc %al, (%rdi)        /* al should be 0 */
         jnc dg_incbytesthen1 ;                  /* if no carry, no need to look at the rest */
         inc rdx
-      loop dg_incbytesbegin1
+      ; loop dg_incbytesbegin1
+        dec rcx
+      jnz dg_incbytesbegin1
     
       inc qword ptr [r8]         ; incq (%rdx) // set carryout to 1
 
@@ -3256,7 +3296,9 @@ dg_decbytessub PROC EXPORT FRAME
       sbb [rdx], al        ; sbbb %al, (%rdi)        /* al should be 0 */
     jnc dg_decbytesthen1   ; /* if no borrow, no need to look at the rest */
       inc rdx              ; incq %rdi
-    loop dg_decbytesbegin1
+    ; loop dg_decbytesbegin1
+      dec rcx
+    jnz dg_decbytesbegin1
     
     inc qword ptr [r8]     ; incq (%rdx) // set borrowout to 1
 
@@ -3315,7 +3357,9 @@ dg_mulu64tou64ssub PROC EXPORT FRAME
         adc 8[rdi], rdx   ; adcq %rdx, 8(%rdi)  
         rcl r9, 1            ; rclq %r9 // to save carry for next time through loop
         add rdi, 8        ; addq $8, %rdi
-      loop dg_mulu64tou64sbegin1
+      ; loop dg_mulu64tou64sbegin1
+        dec rcx
+      jnz dg_mulu64tou64sbegin1
 
     dg_mulu64tou64sthen1:
 
@@ -3378,7 +3422,9 @@ dg_divu64sbyu64sub PROC EXPORT FRAME
         div r10          ; divq %r10      // RDX:RAX / R10 -> RAX rem RDX
         mov [r9], rax    ; movq %rax, (%rdi)
       
-      loop dg_divu64sbyu64begin1
+      ; loop dg_divu64sbyu64begin1
+      dec rcx
+    jnz dg_divu64sbyu64begin1
 
     dg_divu64sbyu64then1:
 

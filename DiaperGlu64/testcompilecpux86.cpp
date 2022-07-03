@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.4.
+//    This file is part of DiaperGlu v5.5.
 //
-//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.4; if not, write to the Free Software
+//    along with DiaperGlu v5.5; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 5, 2022               //
-// version 5.4                //
+// July 2, 2022               //
+// version 5.5                //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -10045,5 +10045,2071 @@ void testdg_compileaddnlocalstocallsubsframe()
 
     dg_freeallbuffers(&BHarrayhead);
 }
+
+
+
+
+void testdg_compileobtoptodatastack()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    UINT64 mycurrentcompilebuffer = 0;
+    UINT64 mystartoffset = 0;
+    UINT64 x;
+
+    UINT64(*pfunct)();
+    unsigned char* paddr;
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_compileobtoptodatastack\n");
+
+    // success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileobtoptodatastack success case  - could not get current compile buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileobtoptodatastack success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        (UINT64)&BHarrayhead,
+        dg_param1reg);
+    
+    dg_compileinitlocals(&BHarrayhead);
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_param2reg);
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        currentcompilebuffer,
+        dg_param3reg);
+
+    dg_compileobtoptodatastack(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID, // mycurrentcompilebuffer,
+        currentcompilebuffer); // mystartoffset);
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0x1122554477,
+        dg_rax);
+
+    dg_compileexitlocals(&BHarrayhead);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileobtoptodatastack success case  - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileobtoptodatastack success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    if (x != 0x1122554477)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileobtoptodatastack success case - return not correct, expected ");
+        dg_writestdoutuint64tohex(&BHarrayhead, 0x1122554477);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)", got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    paddr = dg_getpbufferoffset(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (x != (UINT64)paddr)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileobtoptodatastack success case - data stack not correct, expected ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)paddr);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)", got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"  ... test done\n");
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+void testdg_compilemovbracketrbpd8toreg()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    UINT64 mycurrentcompilebuffer = 0;
+    UINT64 mystartoffset = 0;
+    UINT64 x;
+
+    UINT64(*pfunct)();
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_compilemovbracketrbpd8toreg\n");
+
+    // success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpd8toreg success case  - could not get current compile buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpd8toreg success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_forthenterrbpframecomma(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpd8toreg success case  - error compiling enter frame\n");
+        return;
+    }
+        
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0x178326, // n,
+        dg_rax); // reg)
+
+    dg_compilepushregtoret( // "\x50" 2 bytes
+        &BHarrayhead,
+        (UINT64)dg_rax);
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0, // n,
+        (UINT64)dg_rax); // reg)
+
+    dg_compilemovbracketrbpd8toreg (
+    	&BHarrayhead,
+        (UINT64)dg_rax, // reg,
+        -0x08); // displacement) (32 bit so should be ok with -value)
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpd8toreg success case  - error doing dg_compilemovbracketrbpdtoreg\n");
+        return;
+    }
+
+    dg_compileaddn8torsp(        &BHarrayhead,        8);
+
+    dg_forthexitframecomma(&BHarrayhead);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpd8toreg success case  - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpd8toreg success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    if (x != 0x178326)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpd8toreg success case - return not correct, expected ");
+        dg_writestdoutuint64tohex(&BHarrayhead, 0x178326);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)", got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"  ... test done\n");
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_compilemovbracketrbpd32toreg()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    UINT64 mycurrentcompilebuffer = 0;
+    UINT64 mystartoffset = 0;
+    UINT64 x;
+
+    UINT64(*pfunct)();
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_compilemovbracketrbpd32toreg\n");
+
+    // success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpd32toreg success case  - could not get current compile buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpd32toreg success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_forthenterrbpframecomma(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpd32toreg success case  - error compiling enter frame\n");
+        return;
+    }
+
+    dg_compilesubn8fromrsp(
+        &BHarrayhead,
+    	0x70);
+
+    dg_compilesubn8fromrsp(
+        &BHarrayhead,
+    	0x20);
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0x178326, // n,
+        dg_rax); // reg)
+
+    dg_compilepushregtoret( // "\x50" 2 bytes
+        &BHarrayhead,
+        dg_rax);
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0, // n,
+        dg_rax); // reg)
+
+    dg_compilemovbracketrbpd32toreg (
+    	&BHarrayhead,
+        dg_rax, // reg,
+        -0x98); // displacement) (32 bit so should be ok with -value)
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpd32toreg success case  - error doing dg_compilemovbracketrbpdtoreg\n");
+        return;
+    }
+
+    dg_compileaddn8torsp(
+        &BHarrayhead,
+        0x28);
+
+    dg_compileaddn8torsp(
+        &BHarrayhead,
+        0x70);
+
+    dg_forthexitframecomma(&BHarrayhead);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpd32toreg success case  - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpd32toreg success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    if (x != 0x178326)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpd32toreg success case - return not correct, expected ");
+        dg_writestdoutuint64tohex(&BHarrayhead, 0x178326);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)", got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"  ... test done\n");
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_compilemovbracketrbpdtoreg()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    UINT64 mycurrentcompilebuffer = 0;
+    UINT64 mystartoffset = 0;
+    UINT64 x;
+
+    UINT64(*pfunct)();
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_compilemovbracketrbpdtoreg\n");
+
+    // success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpdtoreg success case  - could not get current compile buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpdtoreg success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_forthenterrbpframecomma(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpdtoreg success case  - error compiling enter frame\n");
+        return;
+    }
+
+    dg_compilesubn8fromrsp(
+        &BHarrayhead,
+    	0x70);
+
+    dg_compilesubn8fromrsp(
+        &BHarrayhead,
+    	0x20);
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0x178326, // n,
+        dg_rax); // reg)
+
+    dg_compilepushregtoret( // "\x50" 2 bytes
+        &BHarrayhead,
+        dg_rax);
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0, // n,
+        dg_rax); // reg)
+
+    dg_compilemovbracketrbpdtoreg (
+    	&BHarrayhead,
+        dg_rax, // reg,
+        -0x98); // displacement) (32 bit so should be ok with -value)
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpdtoreg success case  - error doing dg_compilemovbracketrbpdtoreg\n");
+        return;
+    }
+
+    dg_compileaddn8torsp(
+        &BHarrayhead,
+        0x28);
+
+    dg_compileaddn8torsp(
+        &BHarrayhead,
+        0x70);
+
+    dg_forthexitframecomma(&BHarrayhead);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpdtoreg success case  - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpdtoreg success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    if (x != 0x178326)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpdtoreg success case - return not correct, expected ");
+        dg_writestdoutuint64tohex(&BHarrayhead, 0x178326);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)", got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpdtoreg success case b - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_forthenterrbpframecomma(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpdtoreg success case b - error compiling enter frame\n");
+        return;
+    }
+
+    dg_compilesubn8fromrsp(
+        &BHarrayhead,
+    	0x20);
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0x178326, // n,
+        dg_rax); // reg)
+
+    dg_compilepushregtoret( // "\x50" 2 bytes
+        &BHarrayhead,
+        dg_rax);
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0, // n,
+        dg_rax); // reg)
+
+    dg_compilemovbracketrbpdtoreg (
+    	&BHarrayhead,
+        dg_rax, // reg,
+        -0x28); // displacement) (32 bit so should be ok with -value)
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpdtoreg success case b - error doing dg_compilemovbracketrbpdtoreg\n");
+        return;
+    }
+
+    dg_compileaddn8torsp(        &BHarrayhead,        0x28);
+
+    dg_forthexitframecomma(&BHarrayhead);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpdtoreg success case b - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpdtoreg success case b - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    if (x != 0x178326)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpdtoreg success case b - return not correct, expected ");
+        dg_writestdoutuint64tohex(&BHarrayhead, 0x178326);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)", got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpdtoreg success case c - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_forthenterrbpframecomma(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpdtoreg success case c - error compiling enter frame\n");
+        return;
+    }
+
+    dg_compilesubn8fromrsp(
+        &BHarrayhead,
+    	0x78);
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0x178326, // n,
+        dg_rax); // reg)
+
+    dg_compilepushregtoret( // "\x50" 2 bytes
+        &BHarrayhead,
+        dg_rax);
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0, // n,
+        dg_rax); // reg)
+
+    dg_compilemovbracketrbpdtoreg (
+    	&BHarrayhead,
+        dg_rax, // reg,
+        -0x80); // displacement) (32 bit so should be ok with -value)
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpdtoreg success case c - error doing dg_compilemovbracketrbpdtoreg\n");
+        return;
+    }
+
+    dg_compileaddn8torsp(
+        &BHarrayhead,
+        0x20);
+
+    dg_compileaddn8torsp(
+        &BHarrayhead,
+        0x60);
+
+    dg_forthexitframecomma(&BHarrayhead);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpdtoreg success case c - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpdtoreg success case c - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    if (x != 0x178326)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpdtoreg success case c - return not correct, expected ");
+        dg_writestdoutuint64tohex(&BHarrayhead, 0x178326);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)", got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    // could test out of range + or -....
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"  ... test done\n");
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_compilemovregtobracketrbpd8()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    UINT64 mycurrentcompilebuffer = 0;
+    UINT64 mystartoffset = 0;
+    UINT64 x;
+
+    UINT64(*pfunct)();
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_compilemovregtobracketrbpd8\n");
+
+    // success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd8 success case  - could not get current compile buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd8 success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_forthenterrbpframecomma(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd8 success case  - error compiling enter frame\n");
+        return;
+    }
+
+    dg_compilesubn8fromrsp(
+        &BHarrayhead,
+        8);
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0x178326, // n,
+        dg_rax); // reg)
+
+    dg_compilemovregtobracketrbpd8 (
+    	&BHarrayhead,
+        dg_rax, // reg,
+        -0x08); // displacement) (32 bit so should be ok with -value)
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd8 success case  - error doing dg_compilemovbracketrbpdtoreg\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0, // n,
+        dg_rax); // reg)
+
+    dg_compilepopregfromret( 
+        &BHarrayhead,
+        dg_rax);
+
+    dg_forthexitframecomma(&BHarrayhead);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd8 success case  - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd8 success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    if (x != 0x178326)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd8 success case - return not correct, expected ");
+        dg_writestdoutuint64tohex(&BHarrayhead, 0x178326);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)", got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"  ... test done\n");
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_compilemovregtobracketrbpd32()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    UINT64 mycurrentcompilebuffer = 0;
+    UINT64 mystartoffset = 0;
+    UINT64 x;
+
+    UINT64(*pfunct)();
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_compilemovregtobracketrbpd32\n");
+
+    // success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd32 success case  - could not get current compile buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd32 success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_forthenterrbpframecomma(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd32 success case  - error compiling enter frame\n");
+        return;
+    }
+
+    dg_compilesubn8fromrsp(
+        &BHarrayhead,
+        0x70);
+
+    dg_compilesubn8fromrsp(
+        &BHarrayhead,
+        0x28);
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0x178326, // n,
+        dg_rax); // reg)
+
+    dg_compilemovregtobracketrbpd32 (
+    	&BHarrayhead,
+        dg_rax, // reg,
+        -0x98); // displacement) (32 bit so should be ok with -value)
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd32 success case  - error doing dg_compilemovbracketrbpdtoreg\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0, // n,
+        dg_rax); // reg)
+
+    dg_compilepopregfromret( 
+        &BHarrayhead,
+        dg_rax);
+
+    dg_compileaddn8torsp(
+        &BHarrayhead,
+        0x70);
+
+    dg_compileaddn8torsp(
+        &BHarrayhead,
+        0x20);
+
+    dg_forthexitframecomma(&BHarrayhead);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd32 success case  - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd32 success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    if (x != 0x178326)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd32 success case - return not correct, expected ");
+        dg_writestdoutuint64tohex(&BHarrayhead, 0x178326);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)", got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"  ... test done\n");
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_compilemovregtobracketrbpd()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    UINT64 mycurrentcompilebuffer = 0;
+    UINT64 mystartoffset = 0;
+    UINT64 x;
+
+    UINT64(*pfunct)();
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_compilemovregtobracketrbpd\n");
+
+    // success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd success case  - could not get current compile buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_forthenterrbpframecomma(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd success case  - error compiling enter frame\n");
+        return;
+    }
+
+    dg_compilesubn8fromrsp(
+        &BHarrayhead,
+        0x70);
+
+    dg_compilesubn8fromrsp(
+        &BHarrayhead,
+        0x28);
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0x178326, // n,
+        dg_rax); // reg)
+
+    dg_compilemovregtobracketrbpd (
+    	&BHarrayhead,
+        dg_rax, // reg,
+        -0x98); // displacement) (32 bit so should be ok with -value)
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd success case  - error doing dg_compilemovbracketrbpdtoreg\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0, // n,
+        dg_rax); // reg)
+
+    dg_compilepopregfromret( 
+        &BHarrayhead,
+        dg_rax);
+
+    dg_compileaddn8torsp(
+        &BHarrayhead,
+        0x70);
+
+    dg_compileaddn8torsp(
+        &BHarrayhead,
+        0x20);
+
+    dg_forthexitframecomma(&BHarrayhead);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd success case  - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    if (x != 0x178326)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd success case - return not correct, expected ");
+        dg_writestdoutuint64tohex(&BHarrayhead, 0x178326);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)", got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd success case b - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_forthenterrbpframecomma(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd success case b - error compiling enter frame\n");
+        return;
+    }
+
+    dg_compilesubn8fromrsp(
+        &BHarrayhead,
+        0x40);
+
+    dg_compilesubn8fromrsp(
+        &BHarrayhead,
+        0x40);
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0x178326, // n,
+        dg_rax); // reg)
+
+    dg_compilemovregtobracketrbpd (
+    	&BHarrayhead,
+        dg_rax, // reg,
+        -0x80); // displacement) (32 bit so should be ok with -value)
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd success case b - error doing dg_compilemovbracketrbpdtoreg\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0, // n,
+        dg_rax); // reg)
+
+    dg_compilepopregfromret( 
+        &BHarrayhead,
+        dg_rax);
+
+    dg_compileaddn8torsp(
+        &BHarrayhead,
+        0x78);
+
+    dg_forthexitframecomma(&BHarrayhead);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd success case b - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd success case b - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    if (x != 0x178326)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd success case b - return not correct, expected ");
+        dg_writestdoutuint64tohex(&BHarrayhead, 0x178326);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)", got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd success case c - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_forthenterrbpframecomma(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd success case c - error compiling enter frame\n");
+        return;
+    }
+
+    dg_compilesubn8fromrsp(
+        &BHarrayhead,
+        0x8);
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0x178326, // n,
+        dg_rax); // reg)
+
+    dg_compilemovregtobracketrbpd (
+    	&BHarrayhead,
+        dg_rax, // reg,
+        -0x8); // displacement) (32 bit so should be ok with -value)
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd success case c - error doing dg_compilemovbracketrbpdtoreg\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0, // n,
+        dg_rax); // reg)
+
+    dg_compilepopregfromret( 
+        &BHarrayhead,
+        dg_rax);
+
+    dg_forthexitframecomma(&BHarrayhead);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd success case c - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd success case c - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    if (x != 0x178326)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtobracketrbpd success case c - return not correct, expected ");
+        dg_writestdoutuint64tohex(&BHarrayhead, 0x178326);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)", got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"  ... test done\n");
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_compilebracketrbpdtodatastack()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    UINT64 mycurrentcompilebuffer = 0;
+    UINT64 mystartoffset = 0;
+    UINT64 x;
+
+    UINT64(*pfunct)(Bufferhandle*);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_compilebracketrbpdtodatastack\n");
+
+    // success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilebracketrbpdtodatastack success case  - could not get current compile buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilebracketrbpdtodatastack success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_compileinitlocals(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilebracketrbpdtodatastack success case  - error compiling enter frame\n");
+        return;
+    }
+
+    dg_compileaddnlocalstocallsubsframe (
+        &BHarrayhead,
+        0x10); // adds -0x80 to the already -0x20
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0x178326, // n,
+        dg_rax); // reg)
+
+    dg_compilemovregtobracketrbpd (
+        &BHarrayhead,
+        dg_rax,
+    	-0xA0);
+
+    dg_compilebracketrbpdtodatastack (
+    	&BHarrayhead,
+        -0xA0); // displacement) (32 bit so should be ok with -value)
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilebracketrbpdtodatastack success case  - error doing dg_compilemovbracketrbpdtoreg\n");
+        return;
+    }
+
+    dg_compileexitlocals(&BHarrayhead);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilebracketrbpdtodatastack success case  - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)(Bufferhandle*))dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilebracketrbpdtodatastack success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct(&BHarrayhead);
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (x != 0x178326)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilebracketrbpdtodatastack success case - return not correct, expected ");
+        dg_writestdoutuint64tohex(&BHarrayhead, 0x178326);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)", got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilebracketrbpdtodatastack success case b - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_compileinitlocals(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilebracketrbpdtodatastack success case b - error compiling enter frame\n");
+        return;
+    }
+
+    dg_compileaddnlocalstocallsubsframe (
+        &BHarrayhead,
+        0x1); // adds -0x8 to the already -0x20
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0x178326, // n,
+        dg_rax); // reg)
+
+    dg_compilemovregtobracketrbpd (
+        &BHarrayhead,
+        dg_rax,
+    	-0x28);
+
+    dg_compilebracketrbpdtodatastack (
+    	&BHarrayhead,
+        -0x28); // displacement) (32 bit so should be ok with -value)
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilebracketrbpdtodatastack success case b - error doing dg_compilemovbracketrbpdtoreg\n");
+        return;
+    }
+
+    dg_compileexitlocals(&BHarrayhead);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilebracketrbpdtodatastack success case b - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)(Bufferhandle*))dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpdtoreg success case b - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct(&BHarrayhead);
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (x != 0x178326)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrbpdtoreg success case b - return not correct, expected ");
+        dg_writestdoutuint64tohex(&BHarrayhead, 0x178326);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)", got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilebracketrbpdtodatastack success case c - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_compileinitlocals(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilebracketrbpdtodatastack success case c - error compiling enter frame\n");
+        return;
+    }
+
+    dg_compileaddnlocalstocallsubsframe (
+        &BHarrayhead,
+        0x0C); // adds -0x60 to the already -0x20
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0x178326, // n,
+        (UINT64)dg_rax); // reg)
+
+    dg_compilemovregtobracketrbpd (
+        &BHarrayhead,
+        dg_rax,
+    	-0x80);
+
+    dg_compilebracketrbpdtodatastack (
+    	&BHarrayhead,
+        -0x80); // displacement) (32 bit so should be ok with -value)
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilebracketrbpdtodatastack success case c - error doing dg_compilemovbracketrbpdtoreg\n");
+        return;
+    }
+
+    dg_compileexitlocals(&BHarrayhead);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilebracketrbpdtodatastack success case c - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)(Bufferhandle*))dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilebracketrbpdtodatastack success case c - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct(&BHarrayhead);
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (x != 0x178326)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilebracketrbpdtodatastack success case c - return not correct, expected ");
+        dg_writestdoutuint64tohex(&BHarrayhead, 0x178326);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)", got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    // could test out of range + or -....
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"  ... test done\n");
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_compiledatastacktobracketrbpd()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    UINT64 mycurrentcompilebuffer = 0;
+    UINT64 mystartoffset = 0;
+    UINT64 x;
+
+    UINT64(*pfunct)(Bufferhandle*);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_compiledatastacktobracketrbpd\n");
+
+    // success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compiledatastacktobracketrbpd success case  - could not get current compile buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compiledatastacktobracketrbpd success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_compileinitlocals(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compiledatastacktobracketrbpd success case  - error compiling enter frame\n");
+        return;
+    }
+
+    dg_compileaddnlocalstocallsubsframe (
+        &BHarrayhead,
+        0x10); // adds -0x80 to the already -0x20
+
+    dg_compiledatastacktobracketrbpd (
+    	&BHarrayhead,
+        -0xA0); // displacement) (32 bit so should be ok with -value)
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compiledatastacktobracketrbpd success case  - error doing dg_compiledatastacktobracketrbpd\n");
+        return;
+    }
+
+    dg_compilemovbracketrbpdtoreg (
+        &BHarrayhead,
+        dg_rax,
+    	-0xA0);
+
+    dg_compileexitlocals(&BHarrayhead);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compiledatastacktobracketrbpd success case  - error compiling test routine\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0x178326);
+
+    pfunct = (UINT64(*)(Bufferhandle*))dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compiledatastacktobracketrbpd success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct(&BHarrayhead);
+
+    if (x != 0x178326)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compiledatastacktobracketrbpd success case - return not correct, expected ");
+        dg_writestdoutuint64tohex(&BHarrayhead, 0x178326);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)", got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compiledatastacktobracketrbpd success case b - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_compileinitlocals(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compiledatastacktobracketrbpd success case b - error compiling enter frame\n");
+        return;
+    }
+
+    dg_compileaddnlocalstocallsubsframe (
+        &BHarrayhead,
+        0x1); // adds -0x8 to the already -0x20
+
+    dg_compiledatastacktobracketrbpd (
+    	&BHarrayhead,
+        -0x28); // displacement) (32 bit so should be ok with -value)
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compiledatastacktobracketrbpd success case b - error doing dg_compiledatastacktobracketrbpd\n");
+        return;
+    }
+
+    dg_compilemovbracketrbpdtoreg (
+        &BHarrayhead,
+        dg_rax,
+    	-0x28);
+
+    dg_compileexitlocals(&BHarrayhead);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compiledatastacktobracketrbpd success case b - error compiling test routine\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0x178326);
+
+    pfunct = (UINT64(*)(Bufferhandle*))dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compiledatastacktobracketrbpd success case b - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct(&BHarrayhead);
+
+    if (x != 0x178326)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compiledatastacktobracketrbpd success case b - return not correct, expected ");
+        dg_writestdoutuint64tohex(&BHarrayhead, 0x178326);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)", got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compiledatastacktobracketrbpd success case c - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_compileinitlocals(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compiledatastacktobracketrbpd success case c - error compiling enter frame\n");
+        return;
+    }
+
+    dg_compileaddnlocalstocallsubsframe (
+        &BHarrayhead,
+        0x0C); // adds -0x60 to the already -0x20
+
+    dg_compiledatastacktobracketrbpd (
+    	&BHarrayhead,
+        -0x80); // displacement) (32 bit so should be ok with -value)
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compiledatastacktobracketrbpd success case c - error doing dg_compiledatastacktobracketrbpd\n");
+        return;
+    }
+
+    dg_compilemovbracketrbpdtoreg (
+        &BHarrayhead,
+        dg_rax,
+    	-0x80);
+
+    dg_compileexitlocals(&BHarrayhead);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compiledatastacktobracketrbpd success case c - error compiling test routine\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0x178326);
+
+    pfunct = (UINT64(*)(Bufferhandle*))dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compiledatastacktobracketrbpd success case c - error getting start address of test function\n");
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (x != 0x178326)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compiledatastacktobracketrbpd success case c - return not correct, expected ");
+        dg_writestdoutuint64tohex(&BHarrayhead, 0x178326);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)", got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    // could test out of range + or -....
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"  ... test done\n");
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_compilecallcoreoneuparam()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    UINT64 mycurrentcompilebuffer = 0;
+    UINT64 mystartoffset = 0;
+    UINT64 x;
+
+    UINT64(*pfunct)(Bufferhandle*);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_compilecallcoreoneuparam\n");
+
+    // success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecallcoreoneuparam success case  - could not get current compile buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecallcoreoneuparam success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_compileinitlocals(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecallcoreoneuparam success case  - error compiling enter frame\n");
+        return;
+    }
+
+    dg_compilecallcoreoneuparam (
+        &BHarrayhead, 
+        (UINT64)&dg_pushdatastack, // addr,
+        0x8347283937);     // uparam1)
+
+    dg_compileexitlocals(&BHarrayhead);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecallcoreoneuparam success case  - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)(Bufferhandle*))dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecallcoreoneuparam success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct(&BHarrayhead);
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (x != 0x8347283937)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecallcoreoneuparam success case - return not correct, expected ");
+        dg_writestdoutuint64tohex(&BHarrayhead, 0x178326);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)", got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"  ... test done\n");
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_compilecallcoretwouparams()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    UINT64 mycurrentcompilebuffer = 0;
+    UINT64 mystartoffset = 0;
+    UINT64 x;
+
+    UINT64(*pfunct)(Bufferhandle*);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_compilecallcoretwouparams\n");
+
+    // success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecallcoretwouparams success case  - could not get current compile buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecallcoretwouparams success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_compileinitlocals(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecallcoretwouparams success case  - error compiling enter frame\n");
+        return;
+    }
+
+    dg_compilecallcoretwouparams (
+        &BHarrayhead, 
+        (UINT64)&dg_pushbufferuint64, // addr,
+        DG_DATASTACK_BUFFERID,
+        0x8347283937);     // uparam2)
+
+    dg_compileexitlocals(&BHarrayhead);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecallcoretwouparams success case  - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)(Bufferhandle*))dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecallcoretwouparams success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct(&BHarrayhead);
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (x != 0x8347283937)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecallcoretwouparams success case - return not correct, expected ");
+        dg_writestdoutuint64tohex(&BHarrayhead, 0x178326);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)", got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"  ... test done\n");
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+/*
+void testdg_compilebracketobtoptodatastack()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    UINT64 mycurrentcompilebuffer = 0;
+    UINT64 mystartoffset = 0;
+    UINT64 x;
+
+    UINT64(*pfunct)();
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_compilebracketobtodatastack\n");
+
+    // success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilebracketobtodatastack success case  - could not get current compile buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilebracketobtodatastack success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        (UINT64)&BHarrayhead,
+        dg_param1reg);
+
+    dg_compileinitlocals(&BHarrayhead);
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_param2reg);
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        currentcompilebuffer,
+        dg_param3reg);
+
+    dg_compilebracketobtodatastack (
+    	&BHarrayhead,
+    	DG_DATASPACE_BUFFERID,
+    	currentcompilebuffer);
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0x1122554477,
+        dg_rax);
+
+    dg_compileexitlocals(&BHarrayhead);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilebracketobtodatastack success case  - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilebracketobtodatastack success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    if (x != 0x1122554477)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilebracketobtodatastack success case - return not correct, expected ");
+        dg_writestdoutuint64tohex(&BHarrayhead, 0x1122554477);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)", got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (x != mycurrentcompilebuffer)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilebracketobtodatastack success case - data stack not correct, expected ");
+        dg_writestdoutuint64tohex(&BHarrayhead, mycurrentcompilebuffer);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)", got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"  ... test done\n");
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+*/
 
 

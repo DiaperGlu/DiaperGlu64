@@ -1,22 +1,22 @@
-<!--
+<!--
 // //////////////////////////////////////////////////////////////////////////////////////
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.4.
+//    This file is part of DiaperGlu v5.5.
 //
-//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.4; if not, write to the Free Software
+//    along with DiaperGlu v5.5; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 5, 2022               //
-// version 5.4                //
+// July 2, 2022               //
+// version 5.5                //
 // /////////////////////////////
 -->
 
@@ -120,6 +120,7 @@
       <a href=forthfloatingpoint.htm#dg_forthftanh            >FTANH</a>
       <a href=forthfloatingpoint.htm#dg_forthfproximate       >F~</a>
       <a href=forthfloatingpoint.htm#dg_forthfvariable        >FVARIABLE</a>
+      <a href=forthfloatingpoint.htm#dg_forthfvalue           >FVALUE</a>
       <a href=forthfloatingpoint.htm#dg_forthprecision        >PRECISION</a>
       <a href=forthfloatingpoint.htm#dg_forthrepresent        >REPRESENT</a>
       <a href=forthfloatingpoint.htm#dg_forthsetprecision     >SETPRECISION</a>
@@ -132,6 +133,7 @@
       <a                                                      >&nbsp;</a>
       <a href=forthfloatingpoint.htm#dg_forthftos             >F&gt;S</a>
       <a href=forthfloatingpoint.htm#dg_forthstof             >S&gt;F</a>
+      
       
     </div>
 
@@ -2308,6 +2310,68 @@
 //  error popping values from the floating point stack
 //  error pushing the result to the floating point stack
 //  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthfvalue>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthfvalue ( FVALUE )
+//
+// C prototype:
+//  void dg_forthfvalue (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is used 
+//                                 as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//     -currentinputbuffer- &quot;&lt;delimiters&gt;morestuff&quot; )
+//  ( -currentnewvariablebuffer- +sizeofFLOAT64 )
+//  ( df -f64- )
+//  
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//
+// Current input buffer's current offset out:
+//  &quot;&lt;delimiters&gt;morestuff&quot;          
+// 
+// Current data space buffer in:
+//  previously allocated variables
+// 
+// Current data space buffer out:
+//  previously allocated variables + a new variable of one address cell size 
+//   (sizeof FLOAT64)
+//
+// Stack action of the created word
+//  ( -f64- df )
+//
+// Forth standard:
+//  12.6.2.1628
+//                                                          
+// Action:
+//  moves the current offset pointer for the current input buffer to the character 
+//   after the next word or to the end of the buffer if no word is found
+//  creates a new definition in the current vocabulary that pushes the float64 value
+//   at an offset in the current data space buffer to the data stack when the process 
+//   is in execute mode
+//  and compiles code that calculates the address from the variable's bufferid and 
+//   offset and pushes the float64 value at that address when the process is in 
+//   compile mode
+//  the offset the value uses is the offset of the next unused byte in the 
+//   current data space buffer
+//  then this routine allocates one cell size worth of memory (8 bytes) in the data 
+//   space buffer (current new variable buffer) and puts the float64 df into it.
+//
+// Example:
+//  2.0E1 FVALUE x
+//  x ( -f64- ~2.0E1 )
+//
 // //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>

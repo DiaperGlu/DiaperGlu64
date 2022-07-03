@@ -1,0 +1,79 @@
+
+DECIMAL
+CODE speedy
+  RSI RSI XOR,
+  9999 N RDI MOV,
+  RDI R8 MOV,
+
+  BEGIN,
+
+    R8 RCX MOV,
+
+    BEGIN,
+      RCX RAX MOV,
+      RDI IMULA,
+      RAX RSI ADD,
+    // LOOPDONEUNTIL,
+      RCX DEC,
+    ZS UNTIL,
+
+    // RCX is 0 so adding in the 0 case won't do anything
+
+    RDI DEC,
+
+  ZS UNTIL,
+
+  // RDI is 0 so adding in the 0 case won't do anything
+  RSI RAX MOV,
+
+  RET,
+END-CODE
+
+: test
+  CRLF ." starting speed test..."
+  MICROSECONDSSINCE1970JAN01
+  0 ['] speedy >BODY CALLPROC CRLF ." got answer = " U.
+  MICROSECONDSSINCE1970JAN01 SWAP -
+  CRLF ." microseconds elapsed during test = " U.
+;
+
+test
+
+
+DECIMAL
+CODE speedy2
+  ENTER-CALL-SUBS-FRAME,
+  CALL-SUBS-FRAME-LOCALS,< loopmax ii jj total >
+  RAX RAX XOR,
+  RAX total MOV,
+  9999 N RAX MOV,
+  RAX loopmax MOV,
+
+  loopmax RAX MOV,
+  RAX jj MOV,
+  BEGIN,
+    loopmax RAX MOV,
+    RAX ii MOV,
+    BEGIN,
+      ii RAX MOV,
+      jj 64BIT IMULA,
+      RAX total ADD,
+      ii 64BIT DEC,
+    ZS UNTIL,
+    jj 64BIT DEC,
+  ZS UNTIL,
+  total RAX MOV,
+  EXIT-CALL-SUBS-FRAME,
+  RET,
+END-CODE
+  ?CLEAR-LOCALS
+
+: test2
+  CRLF ." starting speed2 test..."
+  MICROSECONDSSINCE1970JAN01
+  0 ['] speedy2 >BODY CALLPROC CRLF ." got answer = " U.
+  MICROSECONDSSINCE1970JAN01 SWAP -
+  CRLF ." microseconds elapsed during test = " U.
+;
+
+test2

@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.4.
+//    This file is part of DiaperGlu v5.5.
 //
-//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.4; if not, write to the Free Software
+//    along with DiaperGlu v5.5; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 5, 2022               //
-// version 5.4                //
+// July 2, 2022               //
+// version 5.5                //
 // /////////////////////////////
 
 
@@ -5490,5 +5490,78 @@ void dg_forthtypedlocalenumcurly (Bufferhandle* pBHarrayhead)
     }
 }
 
+void dg_forthbenchmark(Bufferhandle* pBHarrayhead)
+// ( coreroutineaddr durationinmicroseconds -- finaldurationinmicroseconds numberdone )
+{
+    UINT64 durationinmicroseconds;
+    UINT64 numberdone = 0;
+    UINT64 starttime;
+    UINT64 endtime;
+    void (*coreroutineaddr)(Bufferhandle*);
 
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
 
+    durationinmicroseconds = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthbenchmarkname);
+        return;
+    }
+
+    coreroutineaddr = (void (*)(Bufferhandle*))dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthbenchmarkname);
+        return;
+    }
+
+    starttime = dg_getmicrosecondssince1970Jan01();
+
+    while(dg_getmicrosecondssince1970Jan01() < (starttime + durationinmicroseconds))
+    {
+        coreroutineaddr(pBHarrayhead);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {       
+            dg_pusherror(pBHarrayhead, dg_forthbenchmarkname);
+            return;
+        }
+
+        numberdone++;
+    }
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthbenchmarkname);
+        return;
+    }
+
+    endtime = dg_getmicrosecondssince1970Jan01();
+
+    dg_pushdatastack(
+        pBHarrayhead,
+        endtime - starttime);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthbenchmarkname);
+        return;
+    }
+
+    dg_pushdatastack(
+        pBHarrayhead,
+        numberdone);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthbenchmarkname);
+        return;
+    }
+}

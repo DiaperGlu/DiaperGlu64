@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.4.
+//    This file is part of DiaperGlu v5.5.
 //
-//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.4; if not, write to the Free Software
+//    along with DiaperGlu v5.5; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 5, 2022               //
-// version 5.4                //
+// July 2, 2022               //
+// version 5.5                //
 // /////////////////////////////
 
 #if !defined(_INC_diapergluforth)
@@ -43,12 +43,27 @@ extern "C" {
 
 
 #ifdef DGLU_OS_WIN64
-	
+    
 #include "windows.h" // for the types in basestd.h
 // #include "httpext.h"
 
+#ifdef DGLU_NO_DIAPER
+
+#define DG_DIAPERGLU_LIB_NAME "libnodiaperglu.dll"
+#define DG_DIAPERGLU_LIB_NAME_LENGTH (18)
+#define DG_DIAPERGLUOSAPI_LIB_NAME "nodiapergluosapi.dll"
+#define DG_DIAPERGLUOSAPI_LIB_NAME_LENGTH (20)
+
+#endif
+
+#ifndef DGLU_NO_DIAPER
+
 #define DG_DIAPERGLU_LIB_NAME "libdiaperglu.dll"
 #define DG_DIAPERGLU_LIB_NAME_LENGTH (16)
+#define DG_DIAPERGLUOSAPI_LIB_NAME "diapergluosapi.dll"
+#define DG_DIAPERGLUOSAPI_LIB_NAME_LENGTH (18)
+
+#endif
 
 #define DG_PATH_SLASH_SYMBOL ((unsigned char)'\\')
 
@@ -58,7 +73,7 @@ extern "C" {
 #define dg_param2reg dg_rdx
 #define dg_param3reg dg_r8
 #define dg_param4reg dg_r9
-	
+    
     typedef __int16 INT16;
     typedef unsigned __int16 UINT16;
     
@@ -110,7 +125,7 @@ extern "C" {
 
 #define DGLU_API __declspec(dllimport)
 //#define DGLU_API __attribute__ ((__dllimport__))
-	
+    
 #endif
     
     // declared in httpext.h
@@ -214,15 +229,15 @@ extern "C" {
     
 #endif
 
-	// ////////////////////////
-	// End of Windows stuff  //
-	// ////////////////////////
+    // ////////////////////////
+    // End of Windows stuff  //
+    // ////////////////////////
 
 
-	// //////////////////////////////
-	// FreeBSD Linux MacOsX stuff  //
-	// //////////////////////////////
-	
+    // //////////////////////////////
+    // FreeBSD Linux MacOsX stuff  //
+    // //////////////////////////////
+    
 #ifdef DGLU_OS_FREEBSD
 
 #define DG_DIAPERGLU_LIB_NAME "libdiaperglu.dylib"
@@ -230,18 +245,18 @@ extern "C" {
 #define DG_DIAPERGLU_LIB_NAME_LENGTH (18)
 
 #define DG_PATH_SLASH_SYMBOL ((unsigned char)'/')
-	
+    
 #define DGLU_API 
 
 #define dg_param1reg dg_rdi
 #define dg_param2reg dg_rsi
 #define dg_param3reg dg_rdx
 #define dg_param4reg dg_rcx
-	
+    
 #if !defined(NULL)
 #define NULL (0)
 #endif
-	
+    
 #include <sys/types.h>
 
 #define UINT8 unsigned char
@@ -249,7 +264,7 @@ extern "C" {
 
 #define UINT16 __uint16_t 
 #define INT16 __int16_t
-	
+    
 #define UINT32 __uint32_t 
 #define INT32 __int32_t
 
@@ -264,36 +279,36 @@ extern "C" {
         siginfo_t* pinfo,
         void* pcontext);
 */
-	DGLU_API void dg_trycatchbadmemoryerror ();
-	
-	DGLU_API void dg_endtrycatchbadmemoryerror ();
+    DGLU_API void dg_trycatchbadmemoryerror ();
+    
+    DGLU_API void dg_endtrycatchbadmemoryerror ();
 /*
     DGLU_API void dg_catchbadmemoryerror2 (
         int signum,
         siginfo_t* pinfo,
         void* pcontext);
 */
-	DGLU_API void dg_trycatchbadmemoryerror2 ();
+    DGLU_API void dg_trycatchbadmemoryerror2 ();
 
     DGLU_API const char* dg_catchbadmemoryexit2 ();
     DGLU_API const char* dg_catchbadmemoryexitputbyte ();
     DGLU_API const char* dg_catchbadmemoryexitmovebytes ();
 
     DGLU_API const char* dg_catchbadmemoryexit();
-	
-	DGLU_API UINT64 dg_syscall(
+    
+    DGLU_API UINT64 dg_syscall(
         UINT64 functionid, // rax
         UINT64 n1,         // rdi
         UINT64 n2,         // rsi
         UINT64 n3,         // rdx
         UINT64 n4,         // rcx
         UINT64 n5);        // r8
-	
-	DGLU_API UINT64 dg_fstat(
+    
+    DGLU_API UINT64 dg_fstat(
         UINT64 fileid,
         UINT64 pstat);
 
-	DGLU_API UINT64 dg_write(
+    DGLU_API UINT64 dg_write(
         UINT64 fileid,
         UINT64 pbuf,
         UINT64 length);
@@ -313,12 +328,14 @@ extern "C" {
 
 #define dg_paramusingframeoffset        (0x2)   // in UINT64s  savedrbp retaddress
 #define dg_defaultnoframerstackdepth    (0x1)   // in UINT64s  retaddress
-	
+    
 #endif
-	
-	// /////////////////////////////////////
-	// End of FreeBSD Linux MacOsX stuff  //
-	// /////////////////////////////////////
+    
+    // /////////////////////////////////////
+    // End of FreeBSD Linux MacOsX stuff  //
+    // /////////////////////////////////////
+
+// #define dg_localusingframestartoffset        (0xFFFFFFFFFFFFFFC0)  // in bytes  offset of no locals
 
 #define DG_MUTEX_HOLDER_MAGIC 0x6878746D
 
@@ -337,7 +354,7 @@ extern "C" {
 #define badbufferhandle ((void*)0xFFFFFFFFFFFFFFFF)
 #define badlibraryhandle ((UINT64)0xFFFFFFFFFFFFFFFF)
 #define baderrorcount ((UINT64)0xFFFFFFFFFFFFFFFF)
-	
+    
 #define badfilehandle ((UINT64)0xFFFFFFFFFFFFFFFF)
 #define isapistdinfilehandle ((UINT32)-3)
 #define isapistdoutfilehandle ((UINT32)-5)
@@ -348,23 +365,23 @@ extern "C" {
     // presorted wordlist sizes  //
     // ////////////////////////////
 
-#define dg_presortedcorewordlistsize (293)
+#define dg_presortedcorewordlistsize (297)
 #define dg_presortedenvwordlistsize (21)
 // #define dg_presortedstringwordlistsize (0)
 // #define dg_presortederrorwordlistsize (0)
-#define dg_prestoredbufferwordlistsize (633)
+#define dg_prestoredbufferwordlistsize (643)
 // #define dg_presortedoswordlistsize (0)
 #define dg_presortedx86wordlistsize (1250)
 
-	// gcc inline assembly doesn't take 'FORTH_TRUE', so 0xFFFFFFFF was hardcoded in some places
+    // gcc inline assembly doesn't take 'FORTH_TRUE', so 0xFFFFFFFF was hardcoded in some places
     //  gcc inline assembly was buggy so stopped using it a long time ago JN 7/16/2013
-	enum dg_constants
-	{
+    enum dg_constants
+    {
         FORTH_FALSE      = 0,
         FORTH_TRUE       = 0xFFFFFFFFFFFFFFFF,
         DG_ENDOFWORDLIST = 0xFFFFFFFFFFFFFFFF,
         DG_ENDOFLIST     = 0xFFFFFFFFFFFFFFFF
-	};
+    };
 
 #define largestunsignedint (0xFFFFFFFFFFFFFFFF)
 #define largestsignedint   (0x7FFFFFFFFFFFFFFF)
@@ -394,25 +411,25 @@ extern "C" {
 
 
 #define largestnegativeint (0x8000000000000000)
-	
+    
 #define largestsigneddinthi   (0x7FFFFFFFFFFFFFFF)
 #define largestsigneddintlo   (0xFFFFFFFFFFFFFFFF)
 #define largestunsigneddinthi (0xFFFFFFFFFFFFFFFF)
 #define largestunsigneddintlo (0xFFFFFFFFFFFFFFFF)
-	
+    
 #define maxrstackbufferlength       (10000)    // note the subroutine return stack is separate and handled by operating system
 #define maxdatastackbufferlength    (10000)
 #define maxf64stackbufferlength     (0x4000)
 #define hassearchorderset           (FORTH_TRUE)
 #define hassearchorderextset        (FORTH_FALSE)
 #define maxsearchorderbufferlength  (1000)
-	
+    
 #define maxwordbufferlength           (300) // max length of a word is 255
 #define maxleavebufferlength          (1000) // gives you up to 250 LEAVEs at one time 
 
 
 #define jumpbufferlength             (80)
-	
+    
 #define colonnonamemarker  (0xFFFEFFFFFFFFFFF9)
 #define colonsysmarker  (0xFFFEFFFFFFFFFFF8)
 #define dg_codesysmarker (0xFFFEFFFFFFFFFFF7)
@@ -420,10 +437,10 @@ extern "C" {
 
 
 #define dg_writebuffersize (0x10000)
-	
-	
-	enum dg_wordlistids
-	{
+    
+    
+    enum dg_wordlistids
+    {
         //DG_CORE_WORDLISTID        = 0,
         //DG_ENVIRONMENT_WORDLISTID = 1,
         //DG_BUFFER_WORDLISTID      = 2,
@@ -433,10 +450,10 @@ extern "C" {
         //DG_ERROR_WORDLISTID       = 6,
 //        DG_SYSTEM_WORDLISTID      = 0xFFFFFFF5
         DG_MAX_WORDLISTID         = 0xFFFFFFFFFFFFFFF4
-	};
-	
-	enum dg_bufferids
-	{
+    };
+    
+    enum dg_bufferids
+    {
         DG_ERRORSTACK_BUFFERID           = 0,
         DG_DATASTACK_BUFFERID,
         DG_STRINGOFFSETSTACK_BUFFERID,
@@ -482,23 +499,23 @@ extern "C" {
         DG_WORDVALUE_FAKE_BUFFERID = 0xFFFFFFFFFFFFFFFB,
         DG_WORDNAME_FAKE_BUFFERID  = 0xFFFFFFFFFFFFFFFD,
         DG_CORE_BUFFERID           = 0xFFFFFFFFFFFFFFFE
-	};
+    };
 
 // used in dg_forthfreebuffer, buffer ids less than this are protected from being freed
 #define dg_lastdiaperglubufferid     (DG_CURRENTVARIABLEBUFFERSTACK_BUFFERID)  
-	
-	// use BHarraymaxindex for an invalid bufferid
+    
+    // use BHarraymaxindex for an invalid bufferid
     
 
     enum dg_hlistids
-	{
+    {
         DG_WORDLISTS_HLISTID           = 0,
         DG_VARIABLESTRINGS_HLISTID,
         DG_NAMEDBUFFERS_HLISTID,
         DG_NAMEDSYMBOLLISTS_HLISTID,
         DG_NAMEDSHAREDLIBS_HLISTID,
         DG_NAMEDHLISTS_HLISTID
-	};
+    };
     
 #define DG_ROOT_ELEMENTID       (0)
 #define DG_IMPORTS_ELEMENTID    (1)
@@ -514,7 +531,7 @@ extern "C" {
 
 
     enum dg_parametertypes
-	{
+    {
         DG_PARAMP = 0, // this is also N U8 U16 U32 U64 BOOL
         DG_PARAMF,     // this is also F F32 F64
         DG_PARAMO,
@@ -538,10 +555,10 @@ extern "C" {
         DG_PARAMBRACKETF128,
         DG_PARAMCALLADDRESS
     };
-	
+    
 
-	// General error and success messages
-	DGLU_API extern const char dg_success[];
+    // General error and success messages
+    DGLU_API extern const char dg_success[];
     DGLU_API extern const char dg_badmemoryerror[];
     DGLU_API extern const char dg_badmemoryerrorputbyte[];
     DGLU_API extern const char dg_badmemoryerrorputuint16[];
@@ -583,106 +600,106 @@ extern "C" {
     
     DGLU_API extern const char dg_accessdeniederror[];
     DGLU_API extern const char dg_filenotfounderror[];
-	DGLU_API extern const char dg_pathnotfounderror[];
-	DGLU_API extern const char dg_toomanyopenfileserror[];
+    DGLU_API extern const char dg_pathnotfounderror[];
+    DGLU_API extern const char dg_toomanyopenfileserror[];
     DGLU_API extern const char dg_writeprotectederror[];
     
     DGLU_API extern const char dg_invalidparametererror[];
     DGLU_API extern const char dg_toomanyparameterserror[];
     
 
-	DGLU_API extern const char dg_noerrors[];
-	DGLU_API extern const char dg_errorbufnotinbharray[];
-	DGLU_API extern const char dg_errorbufisfree[];
-	DGLU_API extern const char dg_errorbufgrowbynesizenemaxsize[];
-	DGLU_API extern const char dg_errorbufnubcorrupt[];
-	DGLU_API extern const char dg_errorunderflow[];
-	DGLU_API extern const char dg_erroroverflow[];
-	DGLU_API extern const char dg_errornotthatmanyerrors[];
-	
-	DGLU_API extern const char dg_errorsbufidis0[];
-	DGLU_API extern const char dg_errorsbufidnotinbharray[];
-	DGLU_API extern const char dg_errorsbufidisfree[];
-	DGLU_API extern const char dg_errorsbufidnubcorrupt[];
-	DGLU_API extern const char dg_errorsbufidsizecorrupt[];
-	DGLU_API extern const char dg_errorsoffsetpastend[];
-	
-	DGLU_API extern const char dg_incrementingerrorcount[];
-	DGLU_API extern const char dg_errorinsubroutine[];
-	DGLU_API extern const char dg_osexception[];
-	
+    DGLU_API extern const char dg_noerrors[];
+    DGLU_API extern const char dg_errorbufnotinbharray[];
+    DGLU_API extern const char dg_errorbufisfree[];
+    DGLU_API extern const char dg_errorbufgrowbynesizenemaxsize[];
+    DGLU_API extern const char dg_errorbufnubcorrupt[];
+    DGLU_API extern const char dg_errorunderflow[];
+    DGLU_API extern const char dg_erroroverflow[];
+    DGLU_API extern const char dg_errornotthatmanyerrors[];
+    
+    DGLU_API extern const char dg_errorsbufidis0[];
+    DGLU_API extern const char dg_errorsbufidnotinbharray[];
+    DGLU_API extern const char dg_errorsbufidisfree[];
+    DGLU_API extern const char dg_errorsbufidnubcorrupt[];
+    DGLU_API extern const char dg_errorsbufidsizecorrupt[];
+    DGLU_API extern const char dg_errorsoffsetpastend[];
+    
+    DGLU_API extern const char dg_incrementingerrorcount[];
+    DGLU_API extern const char dg_errorinsubroutine[];
+    DGLU_API extern const char dg_osexception[];
+    
 
 //    DGLU_API extern const char* dg_illegalopcodeerror;
-	
+    
     DGLU_API extern const char dg_noerroryet[];
     
-	DGLU_API extern const char dg_badmagicerror[];
-	DGLU_API extern const char dg_nullpbharrayheaderror[];
-	DGLU_API extern const char dg_bharrayheadbadmemerror[];
-	DGLU_API extern const char dg_notbharrayheaderror[];
-	DGLU_API extern const char dg_nullpbharrayerror[];
-	DGLU_API extern const char dg_bharraybadmemerror[];
+    DGLU_API extern const char dg_badmagicerror[];
+    DGLU_API extern const char dg_nullpbharrayheaderror[];
+    DGLU_API extern const char dg_bharrayheadbadmemerror[];
+    DGLU_API extern const char dg_notbharrayheaderror[];
+    DGLU_API extern const char dg_nullpbharrayerror[];
+    DGLU_API extern const char dg_bharraybadmemerror[];
     
     DGLU_API extern const char dg_BHarraygrowby0error[];
-	DGLU_API extern const char dg_BHarraymaxsizeltgrowby[];
-	DGLU_API extern const char dg_BHarraymaxsizeltbhsize[];
-	DGLU_API extern const char dg_BHarraynubcorrupt[];
-	DGLU_API extern const char dg_BHarraynubgtsize[];
-	DGLU_API extern const char dg_BHarrayfull[];
-	
-	DGLU_API extern const char dg_buffernubcorrupt[];
-	DGLU_API extern const char dg_bufferidnotinbharray[];
-	DGLU_API extern const char dg_bufferidisfree[];
-	DGLU_API extern const char dg_bufferidisnotfree[];
-	DGLU_API extern const char dg_bufferunderflow[];
-	DGLU_API extern const char dg_buffergrowbycorrupt[];
-	DGLU_API extern const char dg_buffersizecorrupt[];
-	DGLU_API extern const char dg_buffermaxsizecorrupt[];
-	DGLU_API extern const char dg_buffermaxsizeltsize[];
-	DGLU_API extern const char dg_maxsizeltgrowbyerror[];
-	DGLU_API extern const char dg_bufferidisforerrorstack[];
-	DGLU_API extern const char dg_bufferidisfordglubuffer[];
-	
-	DGLU_API extern const char dg_buffergrowby0error[];
-	DGLU_API extern const char dg_bufferfullerror[];
+    DGLU_API extern const char dg_BHarraymaxsizeltgrowby[];
+    DGLU_API extern const char dg_BHarraymaxsizeltbhsize[];
+    DGLU_API extern const char dg_BHarraynubcorrupt[];
+    DGLU_API extern const char dg_BHarraynubgtsize[];
+    DGLU_API extern const char dg_BHarrayfull[];
+    
+    DGLU_API extern const char dg_buffernubcorrupt[];
+    DGLU_API extern const char dg_bufferidnotinbharray[];
+    DGLU_API extern const char dg_bufferidisfree[];
+    DGLU_API extern const char dg_bufferidisnotfree[];
+    DGLU_API extern const char dg_bufferunderflow[];
+    DGLU_API extern const char dg_buffergrowbycorrupt[];
+    DGLU_API extern const char dg_buffersizecorrupt[];
+    DGLU_API extern const char dg_buffermaxsizecorrupt[];
+    DGLU_API extern const char dg_buffermaxsizeltsize[];
+    DGLU_API extern const char dg_maxsizeltgrowbyerror[];
+    DGLU_API extern const char dg_bufferidisforerrorstack[];
+    DGLU_API extern const char dg_bufferidisfordglubuffer[];
+    
+    DGLU_API extern const char dg_buffergrowby0error[];
+    DGLU_API extern const char dg_bufferfullerror[];
     
     DGLU_API extern const char dg_nullpointererror[];
-	DGLU_API extern const char dg_offsetpastenderror[];
-	DGLU_API extern const char dg_segmentgoespastenderror[];
+    DGLU_API extern const char dg_offsetpastenderror[];
+    DGLU_API extern const char dg_segmentgoespastenderror[];
     
 
     DGLU_API extern const char dg_missingexporttableerror[];
-	DGLU_API extern const char dg_exporttablebounderror[];
+    DGLU_API extern const char dg_exporttablebounderror[];
  
-	DGLU_API extern const char dg_indexnotinarrayerror[];
-	DGLU_API extern const char dg_lstringidtoohigherror[];
-	DGLU_API extern const char dg_lstringsoffsetscorrupt[];
-	DGLU_API extern const char dg_lstringtopoffsetwasbad[];
-	DGLU_API extern const char dg_lstringstackdepthcorrupt[];
-	DGLU_API extern const char dg_toobigfordesterror[];
-	
-	DGLU_API extern const char dg_wordidtoobigerror[];
-	DGLU_API extern const char dg_wordlistidtoobigerror[];
-	DGLU_API extern const char dg_wordalreadylinkederror[];
-	DGLU_API extern const char dg_newwordoldererror[];
-	DGLU_API extern const char dg_wordnotfoundinsearchordererror[];
-	
-	DGLU_API extern const char dg_colonsysmissingerror[];
-	
-	DGLU_API extern const char dg_lstringoffsetpastenderror[];
-	DGLU_API extern const char dg_lstringsegmentgoespastenderror[];
-	
-	DGLU_API extern const char dg_drivenotfounderror[];
-	DGLU_API extern const char dg_devicenotfounderror[];
-	DGLU_API extern const char dg_devicenotreadyerror[];
-	DGLU_API extern const char dg_filesystemunknownerror[];
-	DGLU_API extern const char dg_devicebrokenerror[];
-	DGLU_API extern const char dg_fileinuseerror[];
-	DGLU_API extern const char dg_fileislockederror[];
-	DGLU_API extern const char dg_filesystemcorrupterror[];
-	DGLU_API extern const char dg_filetoobigerror[];
-	DGLU_API extern const char dg_filetypeunknownerror[];
-	DGLU_API extern const char dg_osdidlessthanavailableerror[];
+    DGLU_API extern const char dg_indexnotinarrayerror[];
+    DGLU_API extern const char dg_lstringidtoohigherror[];
+    DGLU_API extern const char dg_lstringsoffsetscorrupt[];
+    DGLU_API extern const char dg_lstringtopoffsetwasbad[];
+    DGLU_API extern const char dg_lstringstackdepthcorrupt[];
+    DGLU_API extern const char dg_toobigfordesterror[];
+    
+    DGLU_API extern const char dg_wordidtoobigerror[];
+    DGLU_API extern const char dg_wordlistidtoobigerror[];
+    DGLU_API extern const char dg_wordalreadylinkederror[];
+    DGLU_API extern const char dg_newwordoldererror[];
+    DGLU_API extern const char dg_wordnotfoundinsearchordererror[];
+    
+    DGLU_API extern const char dg_colonsysmissingerror[];
+    
+    DGLU_API extern const char dg_lstringoffsetpastenderror[];
+    DGLU_API extern const char dg_lstringsegmentgoespastenderror[];
+    
+    DGLU_API extern const char dg_drivenotfounderror[];
+    DGLU_API extern const char dg_devicenotfounderror[];
+    DGLU_API extern const char dg_devicenotreadyerror[];
+    DGLU_API extern const char dg_filesystemunknownerror[];
+    DGLU_API extern const char dg_devicebrokenerror[];
+    DGLU_API extern const char dg_fileinuseerror[];
+    DGLU_API extern const char dg_fileislockederror[];
+    DGLU_API extern const char dg_filesystemcorrupterror[];
+    DGLU_API extern const char dg_filetoobigerror[];
+    DGLU_API extern const char dg_filetypeunknownerror[];
+    DGLU_API extern const char dg_osdidlessthanavailableerror[];
     DGLU_API extern const char dg_notexecutablefileerror[];
     DGLU_API extern const char dg_parametersovermaxsizeerror[];
     DGLU_API extern const char dg_ioerror[];
@@ -699,47 +716,47 @@ extern "C" {
     DGLU_API extern const char dg_freemutexwhilelockederror[];
     DGLU_API extern const char dg_woulddeadlockerror[];
     DGLU_API extern const char dg_mutexisnotlockederror[];
-	
-	DGLU_API extern const char dg_diskisfullerror[];
+    
+    DGLU_API extern const char dg_diskisfullerror[];
     DGLU_API extern const char dg_invaliduserbuffererror[];
     DGLU_API extern const char dg_unknownwriteerror[];
     DGLU_API extern const char dg_couldnotgetpagelockerror[];
-	
-	DGLU_API extern const char dg_crcerror[];
+    
+    DGLU_API extern const char dg_crcerror[];
     DGLU_API extern const char dg_invalidhandleerror[];
-	
-	DGLU_API extern const char dg_outsideofbuffererror[];
-	
-	DGLU_API extern const char dg_inputbufferlengthchangederror[];
-	DGLU_API extern const char dg_evaluatebufferwordnotfounderror[];
-	
-	DGLU_API extern const char dg_datastackmisalignederror[];
-	DGLU_API extern const char dg_datastackunderflowerror[];
-	DGLU_API extern const char dg_stringstackunderflowerror[];
-	DGLU_API extern const char dg_lstringstackunderflowerror[];
-	DGLU_API extern const char dg_rstackunderflowerror[];
-	DGLU_API extern const char dg_underflowerror[];
-	DGLU_API extern const char dg_lstringemptyerror[];
-	DGLU_API extern const char dg_stringunderflowerror[];
-	DGLU_API extern const char dg_datastacknoraddrmissingerror[];
-	DGLU_API extern const char dg_procparamsmissingerror[];
+    
+    DGLU_API extern const char dg_outsideofbuffererror[];
+    
+    DGLU_API extern const char dg_inputbufferlengthchangederror[];
+    DGLU_API extern const char dg_evaluatebufferwordnotfounderror[];
+    
+    DGLU_API extern const char dg_datastackmisalignederror[];
+    DGLU_API extern const char dg_datastackunderflowerror[];
+    DGLU_API extern const char dg_stringstackunderflowerror[];
+    DGLU_API extern const char dg_lstringstackunderflowerror[];
+    DGLU_API extern const char dg_rstackunderflowerror[];
+    DGLU_API extern const char dg_underflowerror[];
+    DGLU_API extern const char dg_lstringemptyerror[];
+    DGLU_API extern const char dg_stringunderflowerror[];
+    DGLU_API extern const char dg_datastacknoraddrmissingerror[];
+    DGLU_API extern const char dg_procparamsmissingerror[];
     DGLU_API extern const char dg_dfpprocparamsmissingerror[];
-	DGLU_API extern const char dg_missingobjecthandleerror[];
-	DGLU_API extern const char dg_arraymisalignederror[];
-	DGLU_API extern const char dg_alreadyfreeerror[];
-	DGLU_API extern const char dg_wasnottrulyfreeerror[];
+    DGLU_API extern const char dg_missingobjecthandleerror[];
+    DGLU_API extern const char dg_arraymisalignederror[];
+    DGLU_API extern const char dg_alreadyfreeerror[];
+    DGLU_API extern const char dg_wasnottrulyfreeerror[];
     DGLU_API extern const char dg_structuretoosmallerror[];
-	
-	DGLU_API extern const char dg_emptystringerror[];
-	DGLU_API extern const char dg_wordlength0error[];
-	DGLU_API extern const char dg_maxwordlengthexceedederror[];
-	
-	DGLU_API extern const char dg_nowordfounderror[];
-	DGLU_API extern const char dg_signedlengthlessthan0error[];
-	
-	DGLU_API extern const char dg_basetoolowerror[];
-	DGLU_API extern const char dg_basetoohigherror[];
-	
+    
+    DGLU_API extern const char dg_emptystringerror[];
+    DGLU_API extern const char dg_wordlength0error[];
+    DGLU_API extern const char dg_maxwordlengthexceedederror[];
+    
+    DGLU_API extern const char dg_nowordfounderror[];
+    DGLU_API extern const char dg_signedlengthlessthan0error[];
+    
+    DGLU_API extern const char dg_basetoolowerror[];
+    DGLU_API extern const char dg_basetoohigherror[];
+    
     DGLU_API extern const char dg_datastackunbalancederror[];
     
     DGLU_API extern const char dg_hlistpreviousparentbad[];
@@ -762,8 +779,8 @@ extern "C" {
 
 
 
-	// predefined variables in the dataspace buffer
-	//                                  (0)  // not used at this time
+    // predefined variables in the dataspace buffer
+    //                                  (0)  // not used at this time
 #define statevariable                (0x08)  // current state, compiling or executing usually
 #define exitmainflag                 (0x10)  // set this to true to get out of program
 #define currentinterpretbuffer       (0x18)
@@ -813,13 +830,15 @@ extern "C" {
 
 #define dg_callsubnumberofints       (0x190)
 #define dg_callsubnumberoffloats     (0x198)
-#define dg_errorlinenumber           (0x1A0)
-#define lastnotfoundword             (0x1A8) // this is 256 characters (bytes) long.. needs to be maxwordlength long which is 255.. I added 1
+#define dg_callsubreturnstackdepth   (0x1A0)
+#define dg_colonreturnstackdepth     (0x1A8)
+#define dg_errorlinenumber           (0x1B0)
+#define lastnotfoundword             (0x1B8) // this is 256 characters (bytes) long.. needs to be maxwordlength long which is 255.. I added 1
 
-#define dg_quitsavedstate            (0x2A8) // this is 9*4 = 36 bytes long, rounding up to 0x30  ... looks like it is only 0x18...
+#define dg_quitsavedstate            (0x2B8) // this is 9*4 = 36 bytes long, rounding up to 0x30  ... looks like it is only 0x18...
  
 // put more variables here and increase initialsizeofvariablebuffer
-#define initialsizeofvariablebuffer  (0x2D8)
+#define initialsizeofvariablebuffer  (0x2E8)
 
 #define dg_cparameterregisterslength    (0x4)   // in number of parameters, Windows needs 4
 #define dg_cparameteronstackflag        (0x0100000000000000)
@@ -844,80 +863,80 @@ extern "C" {
         //DG_USER_WORDLISTID        = 5,
         //DG_ERROR_WORDLISTID       = 6,
 
-	
-	
-	// force condition flags
-	// if the corresponding bit is set in pBHarrayhead->currentoffset,
-	//  the effect should happen
-	// #define fforceoutofmemory (0x01)
-	// #define fforcerelocation  (0x01)
-	
-	
-	// FreeBSD operatingsystem.cpp dg_checkbharray and dg_checkbharrayhead 
-	//  uses hard coded constants for Bufferhandle offsets. If this changes, you need
-	//  you need to update those functions.
-	struct Bufferhandle {
-		UINT64 errorcount;       // 0 if this is the handle for the BHarray, then this
+    
+    
+    // force condition flags
+    // if the corresponding bit is set in pBHarrayhead->currentoffset,
+    //  the effect should happen
+    // #define fforceoutofmemory (0x01)
+    // #define fforcerelocation  (0x01)
+    
+    
+    // FreeBSD operatingsystem.cpp dg_checkbharray and dg_checkbharrayhead 
+    //  uses hard coded constants for Bufferhandle offsets. If this changes, you need
+    //  you need to update those functions.
+    struct Bufferhandle {
+        UINT64 errorcount;       // 0 if this is the handle for the BHarray, then this
                                  //  is the number of errors on the error stack if this
                                  //  error stack isn't corrupt or over overflowed
                                  // ?ERRORIF and save of errorcount at start of definition
                                  //  expect errorcount to be at position 0
-		void*  pbuf;             // 8 pointer to memalloc buffer or -1 if free
-		UINT64 size;             // 16 in bytes of memalloced buffer
-		UINT64 growby;           // 24 in bytes
-		UINT64 maxsize;          // 32 in bytes  (do I really need a maxsize?)
-		UINT64 nextunusedbyte;   // 40 in bytes of offset of next unused byte in the buffer
-		UINT64 nextfreeindex;    // 48 pointer to the next free buffer handle
-		UINT64 currentoffset;    // 56 for interpreting and other uses (like the seek pointer for streams)
-		void*  pisapiecb;        // 64 to hold windows isapi function pointer
-		UINT64 id;               // 72 Bufferhandle Array Head has id of "dglu".
+        void*  pbuf;             // 8 pointer to memalloc buffer or -1 if free
+        UINT64 size;             // 16 in bytes of memalloced buffer
+        UINT64 growby;           // 24 in bytes
+        UINT64 maxsize;          // 32 in bytes  (do I really need a maxsize?)
+        UINT64 nextunusedbyte;   // 40 in bytes of offset of next unused byte in the buffer
+        UINT64 nextfreeindex;    // 48 pointer to the next free buffer handle
+        UINT64 currentoffset;    // 56 for interpreting and other uses (like the seek pointer for streams)
+        void*  pisapiecb;        // 64 to hold windows isapi function pointer
+        UINT64 id;               // 72 Bufferhandle Array Head has id of "dglu".
         UINT64 argc;             // 80 argc passed in to main
         char** argv;             // 88 argv passed in to main
         UINT64* pfunctbl;        // 96 pointer to diaperglu function table
         // UINT64 diaperflags;      // 104 if 0 the diaper is on (may add more flags later)
-		//    Generic bufferhandle has id of "bufr"
-	};
+        //    Generic bufferhandle has id of "bufr"
+    };
 
-	// these #defines must match the offsets in the bufferhandle structure
-	//  for the check bufferhandle subroutines
+    // these #defines must match the offsets in the bufferhandle structure
+    //  for the check bufferhandle subroutines
 #define bufferhandleidoffset   (72)
 #define bufferhandlepbufoffset (8)
 #define bufferhandleppfunctbloffset (96)
 
 // #define errorcountoffset (24)
-	
+    
 #define BHarraygrowby   (1024   * sizeof(Bufferhandle))
 #define BHarraymaxsize  (1048576 * sizeof(Bufferhandle))
 #define BHarraymaxindex ((BHarraymaxsize - 1) / sizeof(Bufferhandle))
-	
+    
 #define BHarrayheadid (0x64676c75)
-	
+    
 #define errorstackminimumsize (2 * sizeof(const char*))
 
 
-	struct Definitionheader {
-		UINT64 compileroutinebuf;
-		UINT64 compileroutineoffset;
-		UINT64 databuf;
-		UINT64 dataoffset;
-	};
+    struct Definitionheader {
+        UINT64 compileroutinebuf;
+        UINT64 compileroutineoffset;
+        UINT64 databuf;
+        UINT64 dataoffset;
+    };
     
     struct Premadeword {
         const char *pname;
         UINT64 namelength;
         UINT64 compileroutinebuf;
-		UINT64 compileroutineoffset;
-		UINT64 databuf;
-		UINT64 dataoffset;
+        UINT64 compileroutineoffset;
+        UINT64 databuf;
+        UINT64 dataoffset;
     };
-	
-	struct Freeablelstringarrayheader
-	{
-		UINT64 magic;                  // 'flst'
-		UINT64 lstringoffsetbufferid;
-		UINT64 lstringstringbufferid;
-		UINT64 firstfreeid;
-	};
+    
+    struct Freeablelstringarrayheader
+    {
+        UINT64 magic;                  // 'flst'
+        UINT64 lstringoffsetbufferid;
+        UINT64 lstringstringbufferid;
+        UINT64 firstfreeid;
+    };
 
 #define dg_freeablelstringheadermagic (0x74736c66)
 #define dg_freeablelstringlastfreeid  (0xFFFFFFFFFFFFFFFF)
@@ -925,17 +944,17 @@ extern "C" {
 
 
     struct Lstringqueueheader
-	{
-		UINT64 magic;                  // 'lstq'
-		UINT64 lstringoffsetbufferida;
-		UINT64 lstringstringbufferida;
+    {
+        UINT64 magic;                  // 'lstq'
+        UINT64 lstringoffsetbufferida;
+        UINT64 lstringstringbufferida;
         UINT64 lstringoffsetbufferidb;
-		UINT64 lstringstringbufferidb;      
-		UINT64 pusharray;              // current push L$array (0 or 1)
+        UINT64 lstringstringbufferidb;      
+        UINT64 pusharray;              // current push L$array (0 or 1)
         UINT64 switchlength;
         UINT64 poparray;               // current pop L$array (0 or 1)
         UINT64 popindex;
-	};
+    };
  
  #define dg_lstringqueuemagic (0x7074736c) 
  #define dg_maxlstringqueueswitchlength (0x7FFFFFFF) 
@@ -1003,7 +1022,7 @@ extern "C" {
 #define dg_hlistheadermagic  (0x76736c67)
 #define dg_hlistelementmagic (0x6c656c67)
 
-	
+    
 #define dg_badbufferid                (0xFFFFFFFFFFFFFFFF)
 
 #define dg_defaultbuffergrowby        (0x10000)
@@ -1044,7 +1063,7 @@ extern "C" {
 #define dg_numberofglufunctions (24)
 
     enum dg_glulistfunctions
-	{
+    {
         DG_GLUFUNCBUFS              = 0,
         DG_GLUFUNCCALLBUF,
         DG_GLUFUNCCALLBUFTODS,
@@ -1089,22 +1108,22 @@ extern "C" {
     DGLU_API extern const char dg_diaperglulibsymbolname[];
     
     DGLU_API extern const char dg_diaperglulibname[];
-	
+    
     DGLU_API extern const char dg_compilesegmentname[];
     DGLU_API extern const char dg_compile0stringname[];
 
-	// Forth Core Extension Names
-	DGLU_API extern const char dg_forthfalsename[];
+    // Forth Core Extension Names
+    DGLU_API extern const char dg_forthfalsename[];
     
     
-	// forth show wordlist names
-	DGLU_API extern const char dg_forthforthwordsname[];
-	DGLU_API extern const char dg_fortherrorwordsname[];
-	DGLU_API extern const char dg_forthenvironmentwordsname[];
-	DGLU_API extern const char dg_forthbufferwordsname[];
-	DGLU_API extern const char dg_forthstringwordsname[];
-	DGLU_API extern const char dg_forthlibrarywordsname[];
-	DGLU_API extern const char dg_forthuserwordsname[];
+    // forth show wordlist names
+    DGLU_API extern const char dg_forthforthwordsname[];
+    DGLU_API extern const char dg_fortherrorwordsname[];
+    DGLU_API extern const char dg_forthenvironmentwordsname[];
+    DGLU_API extern const char dg_forthbufferwordsname[];
+    DGLU_API extern const char dg_forthstringwordsname[];
+    DGLU_API extern const char dg_forthlibrarywordsname[];
+    DGLU_API extern const char dg_forthuserwordsname[];
     
     // forth operating system words
     DGLU_API extern const char dg_forthgethstdinname[];
@@ -1113,25 +1132,25 @@ extern "C" {
     DGLU_API extern const char dg_forthgetfilelengthname[];
     DGLU_API extern const char dg_forthreadavailabletobuffername[];
     DGLU_API extern const char dg_forthreadwaitforntobuffername[];
-	
-	// forth search order word names
-	DGLU_API extern const char dg_forthdefinitionsname[];
-	DGLU_API extern const char dg_forthforthwordlistname[];
-	DGLU_API extern const char dg_forthgetcurrentname[];
-	DGLU_API extern const char dg_forthgetordername[];
-	DGLU_API extern const char dg_forthsearchwordlistname[];
-	DGLU_API extern const char dg_forthsetcurrentname[];
-	DGLU_API extern const char dg_forthsetordername[];
-	DGLU_API extern const char dg_forthwordlistname[];
-	
-	
-	// forth double number word names
+    
+    // forth search order word names
+    DGLU_API extern const char dg_forthdefinitionsname[];
+    DGLU_API extern const char dg_forthforthwordlistname[];
+    DGLU_API extern const char dg_forthgetcurrentname[];
+    DGLU_API extern const char dg_forthgetordername[];
+    DGLU_API extern const char dg_forthsearchwordlistname[];
+    DGLU_API extern const char dg_forthsetcurrentname[];
+    DGLU_API extern const char dg_forthsetordername[];
+    DGLU_API extern const char dg_forthwordlistname[];
+    
+    
+    // forth double number word names
     DGLU_API extern const char dg_forthtwoconstantname[];
     DGLU_API extern const char dg_forthtwoliteralname[];
     DGLU_API extern const char dg_forthtworotname[];
     DGLU_API extern const char dg_forthtwovariablename[];
     DGLU_API extern const char dg_forthdlessthanname[];
-	DGLU_API extern const char dg_forthdequalsname[];
+    DGLU_API extern const char dg_forthdequalsname[];
     DGLU_API extern const char dg_forthdtosname[];   
     DGLU_API extern const char dg_forthdplusname[];
     DGLU_API extern const char dg_forthdminusname[];
@@ -1148,7 +1167,7 @@ extern "C" {
     DGLU_API extern const char dg_forthdulessthanname[];
     DGLU_API extern const char dg_forthmplusname[];
     DGLU_API extern const char dg_forthmstarslashname[];
-	
+    
     // forth floating point word names
     DGLU_API extern const char dg_forthtofloatname[]; 
     DGLU_API extern const char dg_forthdtofname[];
@@ -1234,69 +1253,77 @@ extern "C" {
     DGLU_API extern const char* dg_forthcodename;
 
     
-	
-	// forth error word names
-	DGLU_API extern const char dg_forthpushoerrorname[];
-	DGLU_API extern const char dg_forthtoerrorname[];
-	DGLU_API extern const char dg_forthtoerrorshortname[];
-	DGLU_API extern const char dg_forthpopoerrorname[];
-	DGLU_API extern const char dg_fortherrorfromname[];
-	DGLU_API extern const char dg_fortherrorfromshortname[];
-	DGLU_API extern const char dg_forthgetoerrorname[];
-	DGLU_API extern const char dg_forthgeterrorcountname[];
-	DGLU_API extern const char dg_forthcheckerrordepthname[];
-	DGLU_API extern const char dg_forthdroptoerrorcountname[];
-	DGLU_API extern const char dg_forthdoterrorsname[];
-	DGLU_API extern const char dg_clearerrorsname[];
-	DGLU_API extern const char dg_forthdoterrorsshortname[];
-	DGLU_API extern const char dg_forthshowerrorsname[];
-	DGLU_API extern const char dg_clearerrorsshortname[];
-	DGLU_API extern const char dg_forthcplgetolderrorcountname[];
-	
-	
-	// forth get compile type routine offset bufferid word names
-	DGLU_API extern const char dg_forthodoctalwaysexecutename[];
-	DGLU_API extern const char dg_forthodoctsubroutinename[];
+    
+    // forth error word names
+    DGLU_API extern const char dg_forthpushoerrorname[];
+    DGLU_API extern const char dg_forthtoerrorname[];
+    DGLU_API extern const char dg_forthtoerrorshortname[];
+    DGLU_API extern const char dg_forthpopoerrorname[];
+    DGLU_API extern const char dg_fortherrorfromname[];
+    DGLU_API extern const char dg_fortherrorfromshortname[];
+    DGLU_API extern const char dg_forthgetoerrorname[];
+    DGLU_API extern const char dg_forthgeterrorcountname[];
+    DGLU_API extern const char dg_forthcheckerrordepthname[];
+    DGLU_API extern const char dg_forthdroptoerrorcountname[];
+    DGLU_API extern const char dg_forthdoterrorsname[];
+    DGLU_API extern const char dg_clearerrorsname[];
+    DGLU_API extern const char dg_forthdoterrorsshortname[];
+    DGLU_API extern const char dg_forthshowerrorsname[];
+    DGLU_API extern const char dg_clearerrorsshortname[];
+    DGLU_API extern const char dg_forthcplgetolderrorcountname[];
+    
+    
+    // forth get compile type routine offset bufferid word names
+    DGLU_API extern const char dg_forthodoctalwaysexecutename[];
+    DGLU_API extern const char dg_forthodoctsubroutinename[];
     DGLU_API extern const char dg_forthodoctpreserveregsname[];
-	DGLU_API extern const char dg_forthodoctsafesubroutinename[];
-	DGLU_API extern const char dg_forthodocompiletypedpushnname[];
+    DGLU_API extern const char dg_forthodoctsafesubroutinename[];
+    DGLU_API extern const char dg_forthodocompiletypedpushnname[];
     DGLU_API extern const char dg_forthodocompiletypedpushfname[];   
-	DGLU_API extern const char dg_forthodoctdpushdnname[];
-	DGLU_API extern const char dg_forthodocompiletypedpushpname[];
-	DGLU_API extern const char dg_forthodocompiletypedpushsname[];
+    DGLU_API extern const char dg_forthodoctdpushdnname[];
+    DGLU_API extern const char dg_forthodocompiletypedpushpname[];
+    DGLU_API extern const char dg_forthodocompiletypedpushsname[];
     DGLU_API extern const char dg_forthodocompiletypewordsstringquotesname[];
     DGLU_API extern const char dg_forthodocompiletypewords0stringquotesname[];
     DGLU_API extern const char dg_forthodocompiletyperunfileandwaitnoenvquotesname[];
-	DGLU_API extern const char dg_forthodocompiletypecdeclname[];
+    DGLU_API extern const char dg_forthodocompiletypecdeclname[];
     DGLU_API extern const char dg_forthodocpltypedfpcdeclname[];
-	DGLU_API extern const char dg_forthodoctcdeclretuint128name[];
-	DGLU_API extern const char dg_forthodoctcppmembername[];
+    DGLU_API extern const char dg_forthodoctcdeclretuint128name[];
+    DGLU_API extern const char dg_forthodoctcppmembername[];
     DGLU_API extern const char dg_forthodocompiletypecallname[];
     DGLU_API extern const char dg_forthdocompiletypeftcolonname[];
     DGLU_API extern const char dg_forthdocompiletypedpushbracketrbpplusnname[];
     DGLU_API extern const char dg_forthdocompiletypebrackettoordername[];
     DGLU_API extern const char dg_forthdocompiletypebracketwordlistdotname[];
-	
-	
-	// forth compiling word names
+    DGLU_API extern const char dg_forthdocompiletypebracketlibdotname[];
+    DGLU_API extern const char dg_forthdocompiletypecompilepushlocalname[];
+    DGLU_API extern const char dg_forthodocompiletypevaluename[];
+    DGLU_API extern const char dg_forthodocompiletypetwovaluename[];
+    DGLU_API extern const char dg_forthodocompiletypefvaluename[];
+    DGLU_API extern const char dg_forthodocompiletypeostorename[];
+    DGLU_API extern const char dg_forthodocompiletypeof64storename[];
+    DGLU_API extern const char dg_forthodocompiletypeotwostorename[];
+    
+    
+    // forth compiling word names
     DGLU_API extern const char dg_forthcompileentercolonname[];
     DGLU_API extern const char dg_forthcompileentername[];
     DGLU_API extern const char dg_forthcompileentersubname[];
     DGLU_API extern const char dg_forthcompileexitname[];
-	DGLU_API extern const char dg_forthcompilesname[];
-	DGLU_API extern const char dg_forthcompilebranchname[];
-	DGLU_API extern const char dg_forthresolvecompiledbranchname[];
+    DGLU_API extern const char dg_forthcompilesname[];
+    DGLU_API extern const char dg_forthcompilebranchname[];
+    DGLU_API extern const char dg_forthresolvecompiledbranchname[];
     DGLU_API extern const char dg_forthdopromptname[];
     DGLU_API extern const char dg_forthqueryerrorifname[];
-	DGLU_API extern const char dg_forthsliteralname[];
-	DGLU_API extern const char dg_forthcompilecallcorename[];
-	DGLU_API extern const char dg_forthcompilecallsamebuffername[];
-	DGLU_API extern const char dg_forthcompilecallbuffername[];
-	DGLU_API extern const char dg_forthcompilesafecallbuffername[];
-	
-	
-	// forth definition word names
-	DGLU_API extern const char dg_forthsafename[];
+    DGLU_API extern const char dg_forthsliteralname[];
+    DGLU_API extern const char dg_forthcompilecallcorename[];
+    DGLU_API extern const char dg_forthcompilecallsamebuffername[];
+    DGLU_API extern const char dg_forthcompilecallbuffername[];
+    DGLU_API extern const char dg_forthcompilesafecallbuffername[];
+    
+    
+    // forth definition word names
+    DGLU_API extern const char dg_forthsafename[];
     DGLU_API extern const char dg_forthiscolonname[];
     DGLU_API extern const char dg_forthisotoname[];
     DGLU_API extern const char dg_forthisobtoname[];
@@ -1307,34 +1334,36 @@ extern "C" {
     DGLU_API extern const char dg_forthstringtonewprocwordname[];
     DGLU_API extern const char dg_forthstringtonewobwordname[];
 
-	DGLU_API extern const char dg_forthcreateocname[];
-	DGLU_API extern const char dg_forthcreateovname[];
-	
-	DGLU_API extern const char dg_forthtoonamename[];
-	DGLU_API extern const char dg_forthlatestname[];
-	DGLU_API extern const char dg_forthbracketlatestname[];
-	DGLU_API extern const char dg_forthbracketcolononamename[];
-	DGLU_API extern const char dg_forthbracketolatestnamename[];
+    DGLU_API extern const char dg_forthcreateocname[];
+    DGLU_API extern const char dg_forthcreateovname[];
+    
+    DGLU_API extern const char dg_forthtoonamename[];
+    DGLU_API extern const char dg_forthlatestname[];
+    DGLU_API extern const char dg_forthbracketlatestname[];
+    DGLU_API extern const char dg_forthbracketcolononamename[];
+    DGLU_API extern const char dg_forthbracketolatestnamename[];
     DGLU_API extern const char dg_forthbracketwordnametoerrorname[];
-	DGLU_API extern const char dg_forthnametoename[];
-	DGLU_API extern const char dg_forthnametoerrorname[];
-	
-	DGLU_API extern const char dg_forthgetcompileroutinename[];
-	DGLU_API extern const char dg_forthsetcompileroutinename[];
+    DGLU_API extern const char dg_forthnametoename[];
+    DGLU_API extern const char dg_forthnametoerrorname[];
+    
+    DGLU_API extern const char dg_forthgetcompileroutinename[];
+    DGLU_API extern const char dg_forthsetcompileroutinename[];
     DGLU_API extern const char dg_forthgetodfname[];
-	DGLU_API extern const char dg_forthsetodfname[];
+    DGLU_API extern const char dg_forthsetodfname[];
     DGLU_API extern const char dg_forthtocurrentname[];
     DGLU_API extern const char dg_forthcurrentfromname[];
     DGLU_API extern const char dg_forthsearchorderdropname[];
     DGLU_API extern const char dg_forthbracketsearchorderdropname[];
     DGLU_API extern const char dg_forthbrackettoorderconstantname[];
     DGLU_API extern const char dg_forthwordlistdotname[];  
-    DGLU_API extern const char dg_forthcreatebracketwordlistdotname[]; 
-	
-	
-	// forth miscellaneous word names
+    DGLU_API extern const char dg_forthlibdotname[];
+    DGLU_API extern const char dg_forthcreatebracketwordlistdotname[];
+    DGLU_API extern const char dg_forthcreatebracketlibdotname[]; 
+    
+    
+    // forth miscellaneous word names
     DGLU_API extern const char dg_forthevaluatebuffername[];
-	DGLU_API extern const char dg_forthocallname[];
+    DGLU_API extern const char dg_forthocallname[];
     DGLU_API extern const char dg_forthqueryendevaluatename[];
     DGLU_API extern const char dg_forthosquotesname[];
     DGLU_API extern const char dg_fortho0quotesname[];
@@ -1348,7 +1377,7 @@ extern "C" {
     DGLU_API extern const char dg_forthshowlicensename[];
     DGLU_API extern const char dg_forthcrlfname[];
     DGLU_API extern const char dg_forthtoordername[];
-	DGLU_API extern const char dg_forthorderfromname[];
+    DGLU_API extern const char dg_forthorderfromname[];
     DGLU_API extern const char dg_forthbswapname[];
     DGLU_API extern const char dg_forthodoesname[];
     DGLU_API extern const char dg_forthpagesizename[];
@@ -1361,7 +1390,7 @@ extern "C" {
     DGLU_API extern const char dg_forthdfslashname[];
     DGLU_API extern const char dg_showframename[];
     
-	DGLU_API extern const char dg_forthhexname[];
+    DGLU_API extern const char dg_forthhexname[];
     DGLU_API extern const char dg_forthnipname[];
     DGLU_API extern const char dg_forthpadname[];
     DGLU_API extern const char dg_forthrollname[];
@@ -1370,44 +1399,44 @@ extern "C" {
     DGLU_API extern const char dg_forthtruename[];
     DGLU_API extern const char dg_forthugreaterthanname[];
     DGLU_API extern const char dg_forthbackslashname[];
-	DGLU_API extern const char dg_forthudmslashmodname[];
+    DGLU_API extern const char dg_forthudmslashmodname[];
     DGLU_API extern const char dg_forthendoflistname[];
-	DGLU_API extern const char dg_forthendofwordlistname[];
-	DGLU_API extern const char dg_forthpickname[];
+    DGLU_API extern const char dg_forthendofwordlistname[];
+    DGLU_API extern const char dg_forthpickname[];
     DGLU_API extern const char dg_forthminusrotname[];   
 
-	DGLU_API extern const char dg_forthparsename[];
+    DGLU_API extern const char dg_forthparsename[];
     DGLU_API extern const char dg_forthlinesparsename[];    
     DGLU_API extern const char dg_forthparsebuffername[]; 
     DGLU_API extern const char dg_forthparsenamenom[];
     DGLU_API extern const char dg_forthparsenamesname[];
-	DGLU_API extern const char dg_forthparsewordname[];
+    DGLU_API extern const char dg_forthparsewordname[];
     DGLU_API extern const char dg_forthparsewordsname[]; 
     DGLU_API extern const char dg_forthlinesparsenamesname[]; 
     DGLU_API extern const char dg_forthparselinename[]; 
-	DGLU_API extern const char dg_forthcscanname[];
-	DGLU_API extern const char dg_forthcscanbufname[];
-	DGLU_API extern const char dg_forthscanname[];
-	DGLU_API extern const char dg_forthscanbufname[];
+    DGLU_API extern const char dg_forthcscanname[];
+    DGLU_API extern const char dg_forthcscanbufname[];
+    DGLU_API extern const char dg_forthscanname[];
+    DGLU_API extern const char dg_forthscanbufname[];
     DGLU_API extern const char dg_forthslashstringname[];   
-	DGLU_API extern const char dg_forthsearchname[];
+    DGLU_API extern const char dg_forthsearchname[];
     DGLU_API extern const char dg_forthcomparename[];   
-	
-	DGLU_API extern const char dg_forthnewdefinitionname[];
-	DGLU_API extern const char dg_forthnewwordname[];
-	DGLU_API extern const char dg_forthgetpdefinitionname[];
-	DGLU_API extern const char dg_forthgetswordheadname[];
-	DGLU_API extern const char dg_forthtoheadname[];
-	DGLU_API extern const char dg_forthlinkdefinitionname[];
-	DGLU_API extern const char dg_forthlinkwordname[];
-	DGLU_API extern const char dg_forthnewsubroutinedefinitionname[];
-	DGLU_API extern const char dg_forthnewvariabledefinitionname[];
-	DGLU_API extern const char dg_forthnewconstantdefinitionname[];
-	DGLU_API extern const char dg_forthgetnewestdefinitioninwordlistname[];
-	DGLU_API extern const char dg_forthgetnextdefinitionname[];
-	DGLU_API extern const char dg_forthfinddefinitioninwordlistname[];
-	DGLU_API extern const char dg_forthfinddefinitioninsearchordername[];
-	DGLU_API extern const char dg_forthputnewestdefinitioncompiletypename[];
+    
+    DGLU_API extern const char dg_forthnewdefinitionname[];
+    DGLU_API extern const char dg_forthnewwordname[];
+    DGLU_API extern const char dg_forthgetpdefinitionname[];
+    DGLU_API extern const char dg_forthgetswordheadname[];
+    DGLU_API extern const char dg_forthtoheadname[];
+    DGLU_API extern const char dg_forthlinkdefinitionname[];
+    DGLU_API extern const char dg_forthlinkwordname[];
+    DGLU_API extern const char dg_forthnewsubroutinedefinitionname[];
+    DGLU_API extern const char dg_forthnewvariabledefinitionname[];
+    DGLU_API extern const char dg_forthnewconstantdefinitionname[];
+    DGLU_API extern const char dg_forthgetnewestdefinitioninwordlistname[];
+    DGLU_API extern const char dg_forthgetnextdefinitionname[];
+    DGLU_API extern const char dg_forthfinddefinitioninwordlistname[];
+    DGLU_API extern const char dg_forthfinddefinitioninsearchordername[];
+    DGLU_API extern const char dg_forthputnewestdefinitioncompiletypename[];
     
     DGLU_API extern const char dg_forthcodescommaname[];
     DGLU_API extern const char dg_forthcodeu8commaname[];
@@ -1466,6 +1495,7 @@ extern "C" {
     DGLU_API extern const char dg_forthbracketlocalenumcurlyname[];
     DGLU_API extern const char dg_forthtypedenumcurlyname[];
     DGLU_API extern const char dg_forthtypedlocalenumcurlyname[];
+    DGLU_API extern const char dg_forthbenchmarkname[];
 
     
     // floating point words
@@ -1475,150 +1505,156 @@ extern "C" {
     DGLU_API extern const char dg_forthftodname[];
     DGLU_API extern const char dg_forthdftodname[];
     DGLU_API extern const char dg_forthdtodfname[];
+
+    DGLU_API extern const char dg_forthf64commaname[];
     
-	
-	// forth buffer word names
-	DGLU_API extern const char dg_forthbufferwordlistname[];
-	
-	DGLU_API extern const char dg_forthocfetchname[];
+    
+    // forth buffer word names
+    DGLU_API extern const char dg_forthbufferwordlistname[];
+    
+    DGLU_API extern const char dg_forthocfetchname[];
     DGLU_API extern const char dg_forthgetbufferbytename[];
-	DGLU_API extern const char dg_forthofetchname[];
+    DGLU_API extern const char dg_forthofetchname[];
     DGLU_API extern const char dg_forthgetbufferuint64name[];
-	DGLU_API extern const char dg_forthostonewstringname[];
-	DGLU_API extern const char dg_forthocstorename[];
+    DGLU_API extern const char dg_forthostonewstringname[];
+    DGLU_API extern const char dg_forthocstorename[];
     DGLU_API extern const char dg_forthputbufferbytename[];
-	DGLU_API extern const char dg_forthostorename[];
+    DGLU_API extern const char dg_forthostorename[];
+    DGLU_API extern const char dg_forthotwostorename[];
     DGLU_API extern const char dg_forthputbufferuint64name[];
-	DGLU_API extern const char dg_forthctobufname[];
-	DGLU_API extern const char dg_forthtobufname[];
-	DGLU_API extern const char dg_forthstringtobufname[];
-	DGLU_API extern const char dg_forthbuftocname[];
-	DGLU_API extern const char dg_forthbuftoname[];
-	DGLU_API extern const char dg_forthbuftostringname[];
-	DGLU_API extern const char dg_forthosstorename[];
-	DGLU_API extern const char dg_forthosfetchname[];
-	DGLU_API extern const char dg_forthstobufname[];
-	DGLU_API extern const char dg_forthbuftosname[];
-	DGLU_API extern const char dg_forthlengthbufname[];
-	DGLU_API extern const char dg_forthgetpbufferhandlearrayheadname[];
+    DGLU_API extern const char dg_forthctobufname[];
+    DGLU_API extern const char dg_forthtobufname[];
+    DGLU_API extern const char dg_forthstringtobufname[];
+    DGLU_API extern const char dg_forthbuftocname[];
+    DGLU_API extern const char dg_forthbuftoname[];
+    DGLU_API extern const char dg_forthbuftostringname[];
+    DGLU_API extern const char dg_forthosstorename[];
+    DGLU_API extern const char dg_forthosfetchname[];
+    DGLU_API extern const char dg_forthstobufname[];
+    DGLU_API extern const char dg_forthbuftosname[];
+    DGLU_API extern const char dg_forthlengthbufname[];
+    DGLU_API extern const char dg_forthgetpbufferhandlearrayheadname[];
     DGLU_API extern const char dg_forthgetsbufferhandlearrayheadname[];
-	DGLU_API extern const char dg_forthgetpbufferhandlename[];
+    DGLU_API extern const char dg_forthgetpbufferhandlename[];
     DGLU_API extern const char dg_forthgetsbufferhandlename[];
-	
-	DGLU_API extern const char dg_forthgetbuffersizename[];
+    
+    DGLU_API extern const char dg_forthgetbuffersizename[];
     DGLU_API extern const char dg_forthgetbufferlengthname[];
-	DGLU_API extern const char dg_forthgetbuffermaxsizename[];
-	DGLU_API extern const char dg_forthgetbuffergrowbyname[];
-	DGLU_API extern const char dg_forthgetbuffercurrentoffsetname[];
-	DGLU_API extern const char dg_forthputbuffercurrentoffsetname[];
-	DGLU_API extern const char dg_forthgetpbufferlengthname[];
-	DGLU_API extern const char dg_forthgetpbuffercurrentoffsetname[];
+    DGLU_API extern const char dg_forthgetbuffermaxsizename[];
+    DGLU_API extern const char dg_forthgetbuffergrowbyname[];
+    DGLU_API extern const char dg_forthgetbuffercurrentoffsetname[];
+    DGLU_API extern const char dg_forthputbuffercurrentoffsetname[];
+    DGLU_API extern const char dg_forthgetpbufferlengthname[];
+    DGLU_API extern const char dg_forthgetpbuffercurrentoffsetname[];
 
     DGLU_API extern const char dg_forthgetoarrayelementname[];
-	DGLU_API extern const char dg_forthgetparrayelementname[];
-	DGLU_API extern const char dg_forthinsertinbuffername[];
-	DGLU_API extern const char dg_forthdeleteinbuffername[];
+    DGLU_API extern const char dg_forthgetparrayelementname[];
+    DGLU_API extern const char dg_forthinsertinbuffername[];
+    DGLU_API extern const char dg_forthdeleteinbuffername[];
     DGLU_API extern const char dg_forthreplaceinbuffername[];  
     DGLU_API extern const char dg_forthinsertsintobuffername[];
-	DGLU_API extern const char dg_forthgrowbuffername[];
-	DGLU_API extern const char dg_forthshrinkbuffername[];
+    DGLU_API extern const char dg_forthgrowbuffername[];
+    DGLU_API extern const char dg_forthshrinkbuffername[];
     DGLU_API extern const char dg_forthemptybuffername[];
     
-	DGLU_API extern const char dg_forthnewbuffername[];
-	DGLU_API extern const char dg_forthfreebuffername[];
-	DGLU_API extern const char dg_forthgetpbufferoffsetname[];
-	DGLU_API extern const char dg_forthotopname[];
-	DGLU_API extern const char dg_forthgetpbuffername[];
+    DGLU_API extern const char dg_forthnewbuffername[];
+    DGLU_API extern const char dg_forthfreebuffername[];
+    DGLU_API extern const char dg_forthgetpbufferoffsetname[];
+    DGLU_API extern const char dg_forthotopname[];
+    DGLU_API extern const char dg_forthgetpbuffername[];
     DGLU_API extern const char dg_forthgetpbufferpbufferlengthname[];
     DGLU_API extern const char dg_forthgetsbuffername[];
-	DGLU_API extern const char dg_forthgetpbuffersegmentname[];
-	
-	DGLU_API extern const char dg_forthmaxusedbuffersname[];
-	DGLU_API extern const char dg_forthinusebuffersname[];
-	DGLU_API extern const char dg_forthinusebytesname[];
-	DGLU_API extern const char dg_forthallocatedbytesname[];
+    DGLU_API extern const char dg_forthgetpbuffersegmentname[];
+    
+    DGLU_API extern const char dg_forthmaxusedbuffersname[];
+    DGLU_API extern const char dg_forthinusebuffersname[];
+    DGLU_API extern const char dg_forthinusebytesname[];
+    DGLU_API extern const char dg_forthallocatedbytesname[];
     DGLU_API extern const char dg_forthgetpnewbuffername[];
     
     DGLU_API extern const char dg_forthlinecommentname[];
     DGLU_API extern const char dg_forthslashslashname[];
 
-    // buffer id names
-	DGLU_API extern const char dg_fortherrorstackbufferidname[];
-	DGLU_API extern const char dg_forthdatastackbufferidname[];
-	DGLU_API extern const char dg_forthstringstackoffsetbufferidname[];
-	DGLU_API extern const char dg_forthstringstackstringbufferidname[];
-	DGLU_API extern const char dg_forthdataspacebufferidname[];
-	DGLU_API extern const char dg_forthrstackbufferidname[];
-	DGLU_API extern const char dg_forthsearchorderstackbufferidname[];
-	DGLU_API extern const char dg_forthterminalinputbufferidname[];
-    DGLU_API extern const char dg_forthholdbufferidname[];
-	DGLU_API extern const char dg_forthpadbufferidname[];
-	DGLU_API extern const char dg_forthwordlistbufferidname[];
-	DGLU_API extern const char dg_forthdefinitionbufferidname[];
-	DGLU_API extern const char dg_forthnameoffsetbufferidname[];
-	DGLU_API extern const char dg_forthnamestringbufferidname[];
-	DGLU_API extern const char dg_forthwordbufferidname[];
-	DGLU_API extern const char dg_forthleavebufferidname[];
-	DGLU_API extern const char dg_forthargsbufferidname[];
-	DGLU_API extern const char dg_forthcleanupbufferidname[];
-	DGLU_API extern const char dg_forthlibhandlebufferidname[];
-	DGLU_API extern const char dg_forthpostbufferidname[];
-	DGLU_API extern const char dg_forthscriptfilenamebufferidname[];
-	DGLU_API extern const char dg_forthlocalpathbufferidname[];
-	DGLU_API extern const char dg_forthwordnamebufferidname[];
-	DGLU_API extern const char dg_forthextendablecodespacebufferidname[];
-	DGLU_API extern const char dg_forthextendabledataspacebufferidname[];
-	DGLU_API extern const char dg_forthcorebufferidname[];
-    DGLU_API extern const char dg_forthhlistheaderarraybufferidname[];
-    DGLU_API extern const char dg_linknewbufstackbufferidname[];
-    DGLU_API extern const char dg_forthhstackbufferidname[];
-    DGLU_API extern const char dg_forthf64stackbufferidname[];
     DGLU_API extern const char dg_forthu16storename[];
     DGLU_API extern const char dg_forthu32storename[];
     DGLU_API extern const char dg_forthu16fetchname[];
     DGLU_API extern const char dg_forthu32fetchname[];
     DGLU_API extern const char dg_forthu32commaname[];
-	
 
-	// forth lstring names
-	DGLU_API extern const char dg_forthdepthlstringname[];
-	DGLU_API extern const char dg_forthstartoffsetlstringname[];
+    DGLU_API extern const char dg_forthof64storename[];
+
+    // buffer id names
+    DGLU_API extern const char dg_fortherrorstackbufferidname[];
+    DGLU_API extern const char dg_forthdatastackbufferidname[];
+    DGLU_API extern const char dg_forthstringstackoffsetbufferidname[];
+    DGLU_API extern const char dg_forthstringstackstringbufferidname[];
+    DGLU_API extern const char dg_forthdataspacebufferidname[];
+    DGLU_API extern const char dg_forthrstackbufferidname[];
+    DGLU_API extern const char dg_forthsearchorderstackbufferidname[];
+    DGLU_API extern const char dg_forthterminalinputbufferidname[];
+    DGLU_API extern const char dg_forthholdbufferidname[];
+    DGLU_API extern const char dg_forthpadbufferidname[];
+    DGLU_API extern const char dg_forthwordlistbufferidname[];
+    DGLU_API extern const char dg_forthdefinitionbufferidname[];
+    DGLU_API extern const char dg_forthnameoffsetbufferidname[];
+    DGLU_API extern const char dg_forthnamestringbufferidname[];
+    DGLU_API extern const char dg_forthwordbufferidname[];
+    DGLU_API extern const char dg_forthleavebufferidname[];
+    DGLU_API extern const char dg_forthargsbufferidname[];
+    DGLU_API extern const char dg_forthcleanupbufferidname[];
+    DGLU_API extern const char dg_forthlibhandlebufferidname[];
+    DGLU_API extern const char dg_forthpostbufferidname[];
+    DGLU_API extern const char dg_forthscriptfilenamebufferidname[];
+    DGLU_API extern const char dg_forthlocalpathbufferidname[];
+    DGLU_API extern const char dg_forthwordnamebufferidname[];
+    DGLU_API extern const char dg_forthextendablecodespacebufferidname[];
+    DGLU_API extern const char dg_forthextendabledataspacebufferidname[];
+    DGLU_API extern const char dg_forthcorebufferidname[];
+    DGLU_API extern const char dg_forthhlistheaderarraybufferidname[];
+    DGLU_API extern const char dg_linknewbufstackbufferidname[];
+    DGLU_API extern const char dg_forthhstackbufferidname[];
+    DGLU_API extern const char dg_forthf64stackbufferidname[];
+    
+
+    // forth lstring names
+    DGLU_API extern const char dg_forthdepthlstringname[];
+    DGLU_API extern const char dg_forthstartoffsetlstringname[];
     DGLU_API extern const char dg_forthgetstartoffsetlstringnname[];
-	DGLU_API extern const char dg_forthlengthlstringname[];
+    DGLU_API extern const char dg_forthlengthlstringname[];
     DGLU_API extern const char dg_forthlengthlstringnname[];
-	DGLU_API extern const char dg_forthgetplstringname[];
+    DGLU_API extern const char dg_forthgetplstringname[];
     DGLU_API extern const char dg_forthgetslstringnname[];
-	DGLU_API extern const char dg_forthgetlstringname[];
+    DGLU_API extern const char dg_forthgetlstringname[];
     DGLU_API extern const char dg_forthcopylstringntosname[];
-	DGLU_API extern const char dg_forthlstringsfetchname[];
-	DGLU_API extern const char dg_forthlstringtosname[];
-	DGLU_API extern const char dg_forthstolstringname[];
-	DGLU_API extern const char dg_forthgrowlstringname[];
-	DGLU_API extern const char dg_forthshortenlstringname[];
-	DGLU_API extern const char dg_forthpicklstringname[];
-	DGLU_API extern const char dg_forthdroplstringname[];
-	DGLU_API extern const char dg_forthdeletelstringname[];
+    DGLU_API extern const char dg_forthlstringsfetchname[];
+    DGLU_API extern const char dg_forthlstringtosname[];
+    DGLU_API extern const char dg_forthstolstringname[];
+    DGLU_API extern const char dg_forthgrowlstringname[];
+    DGLU_API extern const char dg_forthshortenlstringname[];
+    DGLU_API extern const char dg_forthpicklstringname[];
+    DGLU_API extern const char dg_forthdroplstringname[];
+    DGLU_API extern const char dg_forthdeletelstringname[];
     DGLU_API extern const char dg_forthdeletelstringnname[];
-	DGLU_API extern const char dg_forthnewlstringname[];
-	DGLU_API extern const char dg_forthinsertlstringname[];
+    DGLU_API extern const char dg_forthnewlstringname[];
+    DGLU_API extern const char dg_forthinsertlstringname[];
     DGLU_API extern const char dg_forthinsertlstringnname[];
-	DGLU_API extern const char dg_forthrolllstringname[];
-	DGLU_API extern const char dg_forthminusrolllstringname[];
-	DGLU_API extern const char dg_forthdeleteinlstringname[];
+    DGLU_API extern const char dg_forthrolllstringname[];
+    DGLU_API extern const char dg_forthminusrolllstringname[];
+    DGLU_API extern const char dg_forthdeleteinlstringname[];
     DGLU_API extern const char dg_forthdeleteinlstringnname[];
-	DGLU_API extern const char dg_forthinsertinlstringname[];
-	DGLU_API extern const char dg_forthinsertinlstringnname[];
+    DGLU_API extern const char dg_forthinsertinlstringname[];
+    DGLU_API extern const char dg_forthinsertinlstringnname[];
     DGLU_API extern const char dg_forthcscanlstringname[];
     DGLU_API extern const char dg_forthcscanlstringnname[];
     DGLU_API extern const char dg_forthscanlstringname[];
     DGLU_API extern const char dg_forthscanlstringnname[];
-	DGLU_API extern const char dg_forthcatlstringnname[];
-	DGLU_API extern const char dg_forthcopystolstringnname[];
-	DGLU_API extern const char dg_forthcopysfromlstringnname[];
-	DGLU_API extern const char dg_forthsetlengthlstringnname[];
-	DGLU_API extern const char dg_forthcopystoreplacelstringnname[];
-	DGLU_API extern const char dg_forthcopylstringntoreplacelstringnname[];
-	DGLU_API extern const char dg_forthnewfreeablelstringarrayname[];
+    DGLU_API extern const char dg_forthcatlstringnname[];
+    DGLU_API extern const char dg_forthcopystolstringnname[];
+    DGLU_API extern const char dg_forthcopysfromlstringnname[];
+    DGLU_API extern const char dg_forthsetlengthlstringnname[];
+    DGLU_API extern const char dg_forthcopystoreplacelstringnname[];
+    DGLU_API extern const char dg_forthcopylstringntoreplacelstringnname[];
+    DGLU_API extern const char dg_forthnewfreeablelstringarrayname[];
     DGLU_API extern const char dg_forthfreefreeablelstringarrayname[];
     DGLU_API extern const char dg_forthpacklstringname[];
     DGLU_API extern const char dg_forthunpacklstringname[];
@@ -1643,79 +1679,80 @@ extern "C" {
     DGLU_API extern const char dg_forthtoslashulelstringnname[];
     DGLU_API extern const char dg_forthtofactorialulestringname[];
     
-	
-	// forth string 
-	DGLU_API extern const char dg_forthstringwordlistname[];
-	
-	DGLU_API extern const char dg_forthcomparestringname[];
-	DGLU_API extern const char dg_forthequalstringname[];
-	DGLU_API extern const char dg_forthgetmidstringname[];
-	DGLU_API extern const char dg_forthcatstringname[];
-	DGLU_API extern const char dg_forthstringtostringname[];
-	DGLU_API extern const char dg_forthlengthstringname[];
-	DGLU_API extern const char dg_forthshortenstringname[];
-	DGLU_API extern const char dg_forthpickstringname[];
-	DGLU_API extern const char dg_forthdupstringname[];
-	DGLU_API extern const char dg_forthoverstringname[];
-	DGLU_API extern const char dg_forthdropstringname[];
-	DGLU_API extern const char dg_forthdeletestringname[];
-	DGLU_API extern const char dg_forthswapstringname[];
-	DGLU_API extern const char dg_forthnipstringname[];
-	DGLU_API extern const char dg_forthrotstringname[];
-	DGLU_API extern const char dg_forthdepthstringname[];
-	DGLU_API extern const char dg_forthnewstringname[];
-	DGLU_API extern const char dg_forthlessthannumbersignstringname[];
-	DGLU_API extern const char dg_forthctonewstringname[];
-	DGLU_API extern const char dg_forthtonewstringname[];
-	DGLU_API extern const char dg_forthturnstringinto0stringname[];
-	DGLU_API extern const char dg_forthinsertinstringname[];
-	DGLU_API extern const char dg_forthdeleteinstringname[];
-	DGLU_API extern const char dg_forthholdstringname[];
-	DGLU_API extern const char dg_forthnumbersignstringname[];
-	DGLU_API extern const char dg_forthnumbersignsstringname[];
-	DGLU_API extern const char dg_forthsignstringname[];
-	DGLU_API extern const char dg_forthnumbersigngreaterthanstringname[];
-	DGLU_API extern const char dg_forthstringcfetchname[];
-	DGLU_API extern const char dg_forthstringcstorename[];
-	DGLU_API extern const char dg_forthstringtocname[];
-	DGLU_API extern const char dg_forthstringtoname[];
-	DGLU_API extern const char dg_forthctostringname[];
-	DGLU_API extern const char dg_forthtostringname[];
-	DGLU_API extern const char dg_forthsplitstringname[];
-	DGLU_API extern const char dg_forthputmidstringname[];
-	DGLU_API extern const char dg_forthstostringname[];
-	DGLU_API extern const char dg_forthloadfilestringname[];
-	DGLU_API extern const char dg_forthsavefilestringname[];
-	DGLU_API extern const char dg_forthincludefilestringname[];
-	DGLU_API extern const char dg_forthqueryincludefilestringname[];
+    
+    // forth string 
+    DGLU_API extern const char dg_forthstringwordlistname[];
+    
+    DGLU_API extern const char dg_forthcomparestringname[];
+    DGLU_API extern const char dg_forthequalstringname[];
+    DGLU_API extern const char dg_forthgetmidstringname[];
+    DGLU_API extern const char dg_forthcatstringname[];
+    DGLU_API extern const char dg_forthstringtostringname[];
+    DGLU_API extern const char dg_forthlengthstringname[];
+    DGLU_API extern const char dg_forthshortenstringname[];
+    DGLU_API extern const char dg_forthpickstringname[];
+    DGLU_API extern const char dg_forthdupstringname[];
+    DGLU_API extern const char dg_forthoverstringname[];
+    DGLU_API extern const char dg_forthdropstringname[];
+    DGLU_API extern const char dg_forthdeletestringname[];
+    DGLU_API extern const char dg_forthswapstringname[];
+    DGLU_API extern const char dg_forthnipstringname[];
+    DGLU_API extern const char dg_forthrotstringname[];
+    DGLU_API extern const char dg_forthdepthstringname[];
+    DGLU_API extern const char dg_forthnewstringname[];
+    DGLU_API extern const char dg_forthlessthannumbersignstringname[];
+    DGLU_API extern const char dg_forthctonewstringname[];
+    DGLU_API extern const char dg_forthtonewstringname[];
+    DGLU_API extern const char dg_forthturnstringinto0stringname[];
+    DGLU_API extern const char dg_forthinsertinstringname[];
+    DGLU_API extern const char dg_forthdeleteinstringname[];
+    DGLU_API extern const char dg_forthholdstringname[];
+    DGLU_API extern const char dg_forthnumbersignstringname[];
+    DGLU_API extern const char dg_forthnumbersignsstringname[];
+    DGLU_API extern const char dg_forthsignstringname[];
+    DGLU_API extern const char dg_forthnumbersigngreaterthanstringname[];
+    DGLU_API extern const char dg_forthstringcfetchname[];
+    DGLU_API extern const char dg_forthstringcstorename[];
+    DGLU_API extern const char dg_forthstringtocname[];
+    DGLU_API extern const char dg_forthstringtoname[];
+    DGLU_API extern const char dg_forthctostringname[];
+    DGLU_API extern const char dg_forthtostringname[];
+    DGLU_API extern const char dg_forthsplitstringname[];
+    DGLU_API extern const char dg_forthputmidstringname[];
+    DGLU_API extern const char dg_forthstostringname[];
+    DGLU_API extern const char dg_forthloadfilestringname[];
+    DGLU_API extern const char dg_forthsavefilestringname[];
+    DGLU_API extern const char dg_forthincludefilestringname[];
+    DGLU_API extern const char dg_forthqueryincludefilestringname[];
     DGLU_API extern const char dg_forthgetenvstringname[];
     DGLU_API extern const char dg_forthprintstringname[];
     DGLU_API extern const char dg_forthstringquotesname[];
     DGLU_API extern const char dg_forthgetpstringname[];
     DGLU_API extern const char dg_forthgetsstringndname[];
     DGLU_API extern const char dg_forthasciitounicodestringname[];
-	DGLU_API extern const char dg_forthunicodetoasciistringname[];
+    DGLU_API extern const char dg_forthunicodetoasciistringname[];
     DGLU_API extern const char dg_forthgrowstringname[];
-	DGLU_API extern const char dg_forthrollstringname[];
-	DGLU_API extern const char dg_forthminusrollstringname[];
+    DGLU_API extern const char dg_forthrollstringname[];
+    DGLU_API extern const char dg_forthminusrollstringname[];
     DGLU_API extern const char dg_forthdeleteinstringndname[];
-	DGLU_API extern const char dg_forthinsertinstringndname[];
-	DGLU_API extern const char dg_forthcatstringndname[];
+    DGLU_API extern const char dg_forthinsertinstringndname[];
+    DGLU_API extern const char dg_forthcatstringndname[];
     DGLU_API extern const char dg_forthurldecodestringname[];
     DGLU_API extern const char dg_forthurlencodestringname[];
     DGLU_API extern const char dg_forthstripstringname[];
     DGLU_API extern const char dg_forthstrippathfromfilenamestringname[];
     DGLU_API extern const char dg_forthvariableflstringname[];
     DGLU_API extern const char dg_forthcscanstringname[];
-	DGLU_API extern const char dg_forthminuscscanstringname[];
+    DGLU_API extern const char dg_forthminuscscanstringname[];
     DGLU_API extern const char dg_forthdotstringsname[];
     DGLU_API extern const char dg_forthwordsstringquotesname[];
     DGLU_API extern const char dg_forthwords0stringquotesname[];
     
-	DGLU_API extern const char dg_forthgetquerystringname[];
-	DGLU_API extern const char dg_forthgetmethodstringname[];
+    DGLU_API extern const char dg_forthgetquerystringname[];
+    DGLU_API extern const char dg_forthgetmethodstringname[];
     DGLU_API extern const char dg_forthfixpathstringname[];
     
+    DGLU_API extern const char dg_forthopenlibstringname[];
     DGLU_API extern const char dg_forthopenlibrarystringname[];
     DGLU_API extern const char* dg_forthloadlibrarystringsubname;
     DGLU_API extern const char dg_forthloadlibrarystringname[];
@@ -1749,46 +1786,46 @@ extern "C" {
     DGLU_API extern const char dg_forthrunfileandwaitnoenvquotesname[];
     DGLU_API extern const char dg_forthrunfileandwaitnoenvstringname[];
     
-	
-	// forth operating system word names
-	DGLU_API extern const char dg_forthwindowswordlistname[];
-	DGLU_API extern const char dg_forthfreelibraryname[];
-	DGLU_API extern const char dg_forthcallprocaddressname[];
+    
+    // forth operating system word names
+    DGLU_API extern const char dg_forthwindowswordlistname[];
+    DGLU_API extern const char dg_forthfreelibraryname[];
+    DGLU_API extern const char dg_forthcallprocaddressname[];
     DGLU_API extern const char dg_forthcalldfpprocname[];
     DGLU_API extern const char dg_forthcallcdeclname[];
     DGLU_API extern const char dg_forthcallstdcallname[];
     DGLU_API extern const char dg_forthcallcppmembername[];
-	DGLU_API extern const char dg_forthcallprocaddressretuint128name[];
+    DGLU_API extern const char dg_forthcallprocaddressretuint128name[];
     DGLU_API extern const char dg_forthcallcdeclretuint128name[];
     DGLU_API extern const char dg_forthcallstdcallretuint128name[];
     DGLU_API extern const char dg_forthcallcppmemberretuint128name[];
-	DGLU_API extern const char dg_forthcallcppmemberfunctionname[];
-	DGLU_API extern const char dg_forthregsfromname[];
-	DGLU_API extern const char dg_forthtoregsname[];
-	DGLU_API extern const char dg_forthshowcapturedregsname[];
+    DGLU_API extern const char dg_forthcallcppmemberfunctionname[];
+    DGLU_API extern const char dg_forthregsfromname[];
+    DGLU_API extern const char dg_forthtoregsname[];
+    DGLU_API extern const char dg_forthshowcapturedregsname[];
     DGLU_API extern const char dg_forthtofp0name[];
     DGLU_API extern const char dg_forthfp0fromname[];
     DGLU_API extern const char dg_forthfsfromname[];
     DGLU_API extern const char dg_forthf32fromname[];
     DGLU_API extern const char dg_forthf64fromname[];
     DGLU_API extern const char dg_forthrunfileandwaitname[];
-	
-	
-	// forth user wordlist word names
-	DGLU_API extern const char dg_forthuserwordlistname[];
-	
-	
-	// forth variable names
-	DGLU_API extern const char dg_forthpbyeflagname[];
-	DGLU_API extern const char dg_forthpnopromptsflagname[];
-	DGLU_API extern const char dg_forthpcurrentinputbuffername[];
-	DGLU_API extern const char dg_forthpjumpbuffervariablename[];
-	DGLU_API extern const char dg_forthpcurrentcompilebuffername[];
-	DGLU_API extern const char dg_forthpcurrentcreatewordlistname[];
-	DGLU_API extern const char dg_forthpcurrentnewvariablebuffername[];
-	DGLU_API extern const char dg_forthpquitwasinitflagname[];
-	DGLU_API extern const char dg_forthpshowerrorsonexitflagname[];
-	DGLU_API extern const char dg_forthpcoloncallssafeflagname[];
+    
+    
+    // forth user wordlist word names
+    DGLU_API extern const char dg_forthuserwordlistname[];
+    
+    
+    // forth variable names
+    DGLU_API extern const char dg_forthpbyeflagname[];
+    DGLU_API extern const char dg_forthpnopromptsflagname[];
+    DGLU_API extern const char dg_forthpcurrentinputbuffername[];
+    DGLU_API extern const char dg_forthpjumpbuffervariablename[];
+    DGLU_API extern const char dg_forthpcurrentcompilebuffername[];
+    DGLU_API extern const char dg_forthpcurrentcreatewordlistname[];
+    DGLU_API extern const char dg_forthpcurrentnewvariablebuffername[];
+    DGLU_API extern const char dg_forthpquitwasinitflagname[];
+    DGLU_API extern const char dg_forthpshowerrorsonexitflagname[];
+    DGLU_API extern const char dg_forthpcoloncallssafeflagname[];
     
     DGLU_API extern const char dg_patchdestnamedbufname[];
     DGLU_API extern const char dg_patchsrcnamedbufname[];
@@ -1801,164 +1838,164 @@ extern "C" {
     DGLU_API extern const char dg_currentnewlinkelementidname[];
 
 
-	
-	
-	// forth environment word names
-	DGLU_API extern const char dg_forthenvironmentwordlistname[];
-	DGLU_API extern const char dg_forthslashcountedstringname[];
-	DGLU_API extern const char dg_forthslashholdname[];
-	DGLU_API extern const char dg_forthslashpadname[];
-	DGLU_API extern const char dg_forthaddressunitbitsname[];
-	DGLU_API extern const char dg_forthcorename[];
-	DGLU_API extern const char dg_forthcoreextname[];
-	DGLU_API extern const char dg_forthflooredname[];
-	DGLU_API extern const char dg_forthmaxcharname[];
-	DGLU_API extern const char dg_forthmaxdname[];
-	DGLU_API extern const char dg_forthmaxnname[];
-	DGLU_API extern const char dg_forthmaxuname[];
-	DGLU_API extern const char dg_forthmaxudname[];
-	DGLU_API extern const char dg_forthreturnstackcellsname[];
-	DGLU_API extern const char dg_forthstackcellsname[];
-	DGLU_API extern const char dg_forthsearchordername[];
-	DGLU_API extern const char dg_forthsearchorderextname[];
-	DGLU_API extern const char dg_forthwordlistsname[];
-	
-	
-	// forth error word names
-	DGLU_API extern const char dg_fortherrorwordlistname[];
-	
-	DGLU_API extern const char dg_successname[];
-	
-	DGLU_API extern const char dg_noerroryetname[];
-	DGLU_API extern const char dg_incrementingerrorcountname[];
-	
-	DGLU_API extern const char dg_noerrorsname[];
-	DGLU_API extern const char dg_errorbufnotinbharrayname[];
-	DGLU_API extern const char dg_errorbufisfreename[];
-	DGLU_API extern const char dg_errorbufgrowbynesizenemaxsizename[];
-	DGLU_API extern const char dg_errorbufnubcorruptname[];
-	DGLU_API extern const char dg_errorunderflowname[];
-	DGLU_API extern const char dg_erroroverflowname[];
-	DGLU_API extern const char dg_errornotthatmanyerrorsname[];
-	
-	DGLU_API extern const char dg_errorsbufidis0name[];
-	DGLU_API extern const char dg_errorsbufidnotinbharrayname[];
-	DGLU_API extern const char dg_errorsbufidisfreename[];
-	DGLU_API extern const char dg_errorsbufidnubcorruptname[];
-	DGLU_API extern const char dg_errorsbufidsizecorruptname[];
-	DGLU_API extern const char dg_errorsoffsetpastendname[];
-	
-	DGLU_API extern const char dg_errorinsubroutinename[];
-	DGLU_API extern const char dg_osexceptionname[];
-	DGLU_API extern const char dg_oserrorname[];
-	DGLU_API extern const char dg_badmemoryerrorname[];
-	DGLU_API extern const char dg_outofmemoryerrorname[];
-	DGLU_API extern const char dg_nullpbharrayheaderrorname[];
-	DGLU_API extern const char dg_bharrayheadbadmemerrorname[];
-	DGLU_API extern const char dg_notbharrayheaderrorname[];
-	DGLU_API extern const char dg_nullpbharrayerrorname[];
-	DGLU_API extern const char dg_bharraybadmemerrorname[];
-	
-	DGLU_API extern const char dg_buffernubcorruptname[];
-	DGLU_API extern const char dg_bufferidnotinbharrayname[];
-	DGLU_API extern const char dg_bufferidisfreename[];
-	DGLU_API extern const char dg_bufferidisnotfreename[];
-	DGLU_API extern const char dg_bufferunderflowname[];
-	DGLU_API extern const char dg_buffergrowbycorruptname[];
-	DGLU_API extern const char dg_buffersizecorruptname[];
-	DGLU_API extern const char dg_buffermaxsizecorruptname[];
-	DGLU_API extern const char dg_buffermaxsizeltsizename[];
-	DGLU_API extern const char dg_maxsizeltgrowbyerrorname[];
-	DGLU_API extern const char dg_bufferidisforerrorstackname[];
-	
-	DGLU_API extern const char dg_nullpointererrorname[];
-	DGLU_API extern const char dg_offsetpastenderrorname[];
-	DGLU_API extern const char dg_segmentgoespastenderrorname[];
-	DGLU_API extern const char dg_lstringoffsetpastenderrorname[];
-	DGLU_API extern const char dg_lstringsegmentgoespastenderrorname[];
-	
-	DGLU_API extern const char dg_branchsourcepastenderror[];
-	DGLU_API extern const char dg_branchsourcetoolowerror[];
-	DGLU_API extern const char dg_branchopcodemissingerror[];
-	DGLU_API extern const char dg_branchtoobigerror[];
-	DGLU_API extern const char dg_branchalreadyresolvederror[];
+    
+    
+    // forth environment word names
+    DGLU_API extern const char dg_forthenvironmentwordlistname[];
+    DGLU_API extern const char dg_forthslashcountedstringname[];
+    DGLU_API extern const char dg_forthslashholdname[];
+    DGLU_API extern const char dg_forthslashpadname[];
+    DGLU_API extern const char dg_forthaddressunitbitsname[];
+    DGLU_API extern const char dg_forthcorename[];
+    DGLU_API extern const char dg_forthcoreextname[];
+    DGLU_API extern const char dg_forthflooredname[];
+    DGLU_API extern const char dg_forthmaxcharname[];
+    DGLU_API extern const char dg_forthmaxdname[];
+    DGLU_API extern const char dg_forthmaxnname[];
+    DGLU_API extern const char dg_forthmaxuname[];
+    DGLU_API extern const char dg_forthmaxudname[];
+    DGLU_API extern const char dg_forthreturnstackcellsname[];
+    DGLU_API extern const char dg_forthstackcellsname[];
+    DGLU_API extern const char dg_forthsearchordername[];
+    DGLU_API extern const char dg_forthsearchorderextname[];
+    DGLU_API extern const char dg_forthwordlistsname[];
+    
+    
+    // forth error word names
+    DGLU_API extern const char dg_fortherrorwordlistname[];
+    
+    DGLU_API extern const char dg_successname[];
+    
+    DGLU_API extern const char dg_noerroryetname[];
+    DGLU_API extern const char dg_incrementingerrorcountname[];
+    
+    DGLU_API extern const char dg_noerrorsname[];
+    DGLU_API extern const char dg_errorbufnotinbharrayname[];
+    DGLU_API extern const char dg_errorbufisfreename[];
+    DGLU_API extern const char dg_errorbufgrowbynesizenemaxsizename[];
+    DGLU_API extern const char dg_errorbufnubcorruptname[];
+    DGLU_API extern const char dg_errorunderflowname[];
+    DGLU_API extern const char dg_erroroverflowname[];
+    DGLU_API extern const char dg_errornotthatmanyerrorsname[];
+    
+    DGLU_API extern const char dg_errorsbufidis0name[];
+    DGLU_API extern const char dg_errorsbufidnotinbharrayname[];
+    DGLU_API extern const char dg_errorsbufidisfreename[];
+    DGLU_API extern const char dg_errorsbufidnubcorruptname[];
+    DGLU_API extern const char dg_errorsbufidsizecorruptname[];
+    DGLU_API extern const char dg_errorsoffsetpastendname[];
+    
+    DGLU_API extern const char dg_errorinsubroutinename[];
+    DGLU_API extern const char dg_osexceptionname[];
+    DGLU_API extern const char dg_oserrorname[];
+    DGLU_API extern const char dg_badmemoryerrorname[];
+    DGLU_API extern const char dg_outofmemoryerrorname[];
+    DGLU_API extern const char dg_nullpbharrayheaderrorname[];
+    DGLU_API extern const char dg_bharrayheadbadmemerrorname[];
+    DGLU_API extern const char dg_notbharrayheaderrorname[];
+    DGLU_API extern const char dg_nullpbharrayerrorname[];
+    DGLU_API extern const char dg_bharraybadmemerrorname[];
+    
+    DGLU_API extern const char dg_buffernubcorruptname[];
+    DGLU_API extern const char dg_bufferidnotinbharrayname[];
+    DGLU_API extern const char dg_bufferidisfreename[];
+    DGLU_API extern const char dg_bufferidisnotfreename[];
+    DGLU_API extern const char dg_bufferunderflowname[];
+    DGLU_API extern const char dg_buffergrowbycorruptname[];
+    DGLU_API extern const char dg_buffersizecorruptname[];
+    DGLU_API extern const char dg_buffermaxsizecorruptname[];
+    DGLU_API extern const char dg_buffermaxsizeltsizename[];
+    DGLU_API extern const char dg_maxsizeltgrowbyerrorname[];
+    DGLU_API extern const char dg_bufferidisforerrorstackname[];
+    
+    DGLU_API extern const char dg_nullpointererrorname[];
+    DGLU_API extern const char dg_offsetpastenderrorname[];
+    DGLU_API extern const char dg_segmentgoespastenderrorname[];
+    DGLU_API extern const char dg_lstringoffsetpastenderrorname[];
+    DGLU_API extern const char dg_lstringsegmentgoespastenderrorname[];
+    
+    DGLU_API extern const char dg_branchsourcepastenderror[];
+    DGLU_API extern const char dg_branchsourcetoolowerror[];
+    DGLU_API extern const char dg_branchopcodemissingerror[];
+    DGLU_API extern const char dg_branchtoobigerror[];
+    DGLU_API extern const char dg_branchalreadyresolvederror[];
     
     DGLU_API extern const char dg_signedvaluetoobigerror[];
-	
-	DGLU_API extern const char dg_buffergrowby0errorname[];
-	DGLU_API extern const char dg_bufferfullerrorname[];
+    
+    DGLU_API extern const char dg_buffergrowby0errorname[];
+    DGLU_API extern const char dg_bufferfullerrorname[];
     
     DGLU_API extern const char dg_indexnotinarrayerrorname[];
-	DGLU_API extern const char dg_lstringidtoohigherrorname[];
-	DGLU_API extern const char dg_lstringsoffsetscorruptname[];
-	DGLU_API extern const char dg_lstringtopoffsetwasbadname[];
-	DGLU_API extern const char dg_lstringstackdepthcorruptname[];
-	DGLU_API extern const char dg_toobigfordesterrorname[];
-	
-	DGLU_API extern const char dg_wordidtoobigerrorname[];
-	DGLU_API extern const char dg_wordlistidtoobigerrorname[];
-	DGLU_API extern const char dg_wordalreadylinkederrorname[];
-	DGLU_API extern const char dg_newwordoldererrorname[];
-	DGLU_API extern const char dg_wordnotfoundinsearchordererrorname[];
-	
-	DGLU_API extern const char dg_BHarraygrowby0errorname[];
-	DGLU_API extern const char dg_BHarraymaxsizeltgrowbyname[];
-	DGLU_API extern const char dg_BHarraymaxsizeltbhsizename[];
-	DGLU_API extern const char dg_BHarraynubcorruptname[];
-	DGLU_API extern const char dg_BHarraynubgtsizename[];
-	DGLU_API extern const char dg_BHarrayfullname[];
-	
-	DGLU_API extern const char dg_initerrorsbuf0inusename[];
-	
-	DGLU_API extern const char dg_filenotfounderrorname[];
-	DGLU_API extern const char dg_pathnotfounderrorname[];
-	DGLU_API extern const char dg_accessdeniederrorname[];
-	DGLU_API extern const char dg_toomanyopenfileserrorname[];
-	DGLU_API extern const char dg_drivenotfounderrorname[];
-	DGLU_API extern const char dg_devicenotfounderrorname[];
-	DGLU_API extern const char dg_devicenotreadyerrorname[];
-	DGLU_API extern const char dg_filesystemunknownerrorname[];
-	DGLU_API extern const char dg_devicebrokenerrorname[];
-	DGLU_API extern const char dg_fileinuseerrorname[];
-	DGLU_API extern const char dg_fileislockederrorname[];
-	DGLU_API extern const char dg_filesystemcorrupterrorname[];
-	DGLU_API extern const char dg_filetoobigerrorname[];
-	DGLU_API extern const char dg_filetypeunknownerrorname[];
-	DGLU_API extern const char dg_osdidlessthanavailableerrorname[];
+    DGLU_API extern const char dg_lstringidtoohigherrorname[];
+    DGLU_API extern const char dg_lstringsoffsetscorruptname[];
+    DGLU_API extern const char dg_lstringtopoffsetwasbadname[];
+    DGLU_API extern const char dg_lstringstackdepthcorruptname[];
+    DGLU_API extern const char dg_toobigfordesterrorname[];
+    
+    DGLU_API extern const char dg_wordidtoobigerrorname[];
+    DGLU_API extern const char dg_wordlistidtoobigerrorname[];
+    DGLU_API extern const char dg_wordalreadylinkederrorname[];
+    DGLU_API extern const char dg_newwordoldererrorname[];
+    DGLU_API extern const char dg_wordnotfoundinsearchordererrorname[];
+    
+    DGLU_API extern const char dg_BHarraygrowby0errorname[];
+    DGLU_API extern const char dg_BHarraymaxsizeltgrowbyname[];
+    DGLU_API extern const char dg_BHarraymaxsizeltbhsizename[];
+    DGLU_API extern const char dg_BHarraynubcorruptname[];
+    DGLU_API extern const char dg_BHarraynubgtsizename[];
+    DGLU_API extern const char dg_BHarrayfullname[];
+    
+    DGLU_API extern const char dg_initerrorsbuf0inusename[];
+    
+    DGLU_API extern const char dg_filenotfounderrorname[];
+    DGLU_API extern const char dg_pathnotfounderrorname[];
+    DGLU_API extern const char dg_accessdeniederrorname[];
+    DGLU_API extern const char dg_toomanyopenfileserrorname[];
+    DGLU_API extern const char dg_drivenotfounderrorname[];
+    DGLU_API extern const char dg_devicenotfounderrorname[];
+    DGLU_API extern const char dg_devicenotreadyerrorname[];
+    DGLU_API extern const char dg_filesystemunknownerrorname[];
+    DGLU_API extern const char dg_devicebrokenerrorname[];
+    DGLU_API extern const char dg_fileinuseerrorname[];
+    DGLU_API extern const char dg_fileislockederrorname[];
+    DGLU_API extern const char dg_filesystemcorrupterrorname[];
+    DGLU_API extern const char dg_filetoobigerrorname[];
+    DGLU_API extern const char dg_filetypeunknownerrorname[];
+    DGLU_API extern const char dg_osdidlessthanavailableerrorname[];
     
     DGLU_API extern const char dg_invalidparametererrorname[];
-	
-	DGLU_API extern const char dg_writeprotectederrorname[];
-	DGLU_API extern const char dg_diskisfullerrorname[];
-	
-	DGLU_API extern const char dg_crcerrorname[];
-	DGLU_API extern const char dg_invalidhandleerrorname[];
-	DGLU_API extern const char dg_outsideofbuffererrorname[];
-	
-	DGLU_API extern const char dg_datastackmisalignederrorname[];
-	DGLU_API extern const char dg_datastackunderflowerrorname[];
-	DGLU_API extern const char dg_datastacknoraddrmissingerrorname[];
-	DGLU_API extern const char dg_rstackunderflowerrorname[];
-	DGLU_API extern const char dg_stringstackunderflowerrorname[];
-	DGLU_API extern const char dg_lstringstackunderflowerrorname[];
-	DGLU_API extern const char dg_underflowerrorname[];
-	DGLU_API extern const char dg_arraymisalignederrorname[];
-	DGLU_API extern const char dg_alreadyfreeerrorname[];
-	DGLU_API extern const char dg_wasnottrulyfreeerrorname[];
-	
-	DGLU_API extern const char dg_emptystringerrorname[];
-	DGLU_API extern const char dg_stringunderflowerrorname[];
-	
-	DGLU_API extern const char dg_wordlength0errorname[];
-	DGLU_API extern const char dg_maxwordlengthexceedederrorname[];
+    
+    DGLU_API extern const char dg_writeprotectederrorname[];
+    DGLU_API extern const char dg_diskisfullerrorname[];
+    
+    DGLU_API extern const char dg_crcerrorname[];
+    DGLU_API extern const char dg_invalidhandleerrorname[];
+    DGLU_API extern const char dg_outsideofbuffererrorname[];
+    
+    DGLU_API extern const char dg_datastackmisalignederrorname[];
+    DGLU_API extern const char dg_datastackunderflowerrorname[];
+    DGLU_API extern const char dg_datastacknoraddrmissingerrorname[];
+    DGLU_API extern const char dg_rstackunderflowerrorname[];
+    DGLU_API extern const char dg_stringstackunderflowerrorname[];
+    DGLU_API extern const char dg_lstringstackunderflowerrorname[];
+    DGLU_API extern const char dg_underflowerrorname[];
+    DGLU_API extern const char dg_arraymisalignederrorname[];
+    DGLU_API extern const char dg_alreadyfreeerrorname[];
+    DGLU_API extern const char dg_wasnottrulyfreeerrorname[];
+    
+    DGLU_API extern const char dg_emptystringerrorname[];
+    DGLU_API extern const char dg_stringunderflowerrorname[];
+    
+    DGLU_API extern const char dg_wordlength0errorname[];
+    DGLU_API extern const char dg_maxwordlengthexceedederrorname[];
  
     DGLU_API extern const char dg_countlengthexceedederror[];   
-	
-	DGLU_API extern const char dg_basetoolowerrorname[];
-	DGLU_API extern const char dg_basetoohigherrorname[];
-	DGLU_API extern const char dg_dglubufferinvaliderrorname[];
-	
-	DGLU_API extern const char dg_searchorderemptyerror[];
+    
+    DGLU_API extern const char dg_basetoolowerrorname[];
+    DGLU_API extern const char dg_basetoohigherrorname[];
+    DGLU_API extern const char dg_dglubufferinvaliderrorname[];
+    
+    DGLU_API extern const char dg_searchorderemptyerror[];
     
     // Forth Hierarchical List Names
     DGLU_API extern const char dg_forthnewhlistname[];
@@ -2033,13 +2070,13 @@ extern "C" {
     
   
 
-	//////////////////////////////////////
-	// Operating system access routines //
-	//////////////////////////////////////
+    //////////////////////////////////////
+    // Operating system access routines //
+    //////////////////////////////////////
     
     DGLU_API UINT64 dg_getbharrayheadsize();
-	
-	DGLU_API UINT64 dg_getpagesize ();
+    
+    DGLU_API UINT64 dg_getpagesize ();
  
     //  DGLU_API UINT128 dg_getsystemtime();
     
@@ -2047,33 +2084,33 @@ extern "C" {
         UINT64 n,
         UINT64 pagesize);
 
-	DGLU_API UINT64 dg_calcnearestpagesize (UINT64 n);
+    DGLU_API UINT64 dg_calcnearestpagesize (UINT64 n);
     
     DGLU_API UINT64 dg_gettruesize();
 
     DGLU_API UINT64 dg_getmicrosecondssince1970Jan01();
-	
-	DGLU_API extern const char* dg_mallocname;
-	DGLU_API const char* dg_malloc(
-		void** phandle,
-		UINT64 size,
-		const char* forceerrorflag);
-	
-	DGLU_API extern const char* dg_reallocname;
-	DGLU_API const char* dg_realloc(
+    
+    DGLU_API extern const char* dg_mallocname;
+    DGLU_API const char* dg_malloc(
+        void** phandle,
+        UINT64 size,
+        const char* forceerrorflag);
+    
+    DGLU_API extern const char* dg_reallocname;
+    DGLU_API const char* dg_realloc(
         void** phandle,
         UINT64 oldsize, // needed for Linux compatibility
         UINT64 newsize,
     const char* forceerrorflag);
-	
-	DGLU_API extern const char* dg_freename;
-	DGLU_API const char* dg_free(
+    
+    DGLU_API extern const char* dg_freename;
+    DGLU_API const char* dg_free(
         void* pbuf,
         UINT64 size, // needed for Linux compatibility
         const char* forceerrorflag);
-	
-	DGLU_API extern const char* dg_readfilename;
-	DGLU_API const char* dg_readfile(
+    
+    DGLU_API extern const char* dg_readfilename;
+    DGLU_API const char* dg_readfile(
         Bufferhandle* pBHarrayhead,
         UINT64 fileid,
         unsigned char* pbuf,
@@ -2081,70 +2118,70 @@ extern "C" {
         UINT64 timeout,
         UINT64* pnumread,
         const char* forceerrorflag);
-	
-	DGLU_API extern const char* dg_writefilename;
-	DGLU_API const char* dg_writefile(
+    
+    DGLU_API extern const char* dg_writefilename;
+    DGLU_API const char* dg_writefile(
         Bufferhandle* pBHarrayhead,
         UINT64 fileid,
         unsigned char* pbuf,
         UINT64 length,
         const char* forceerrorflag);
-	
-	DGLU_API extern const char* dg_writestdoutrawname;
-	DGLU_API const char* dg_writestdoutraw(
+    
+    DGLU_API extern const char* dg_writestdoutrawname;
+    DGLU_API const char* dg_writestdoutraw(
         Bufferhandle* pBHarrayhead,
         unsigned char* pbuf,
         UINT64 length);
-	
-	DGLU_API extern const char* dg_closefilename;
-	DGLU_API const char* dg_closefile(
+    
+    DGLU_API extern const char* dg_closefilename;
+    DGLU_API const char* dg_closefile(
         UINT64 fileid,
         const char* forceerrorflag);
-	
-	DGLU_API extern const char* dg_filetypeconsole;
-	DGLU_API extern const char* dg_filetypepipe;   
-	DGLU_API extern const char* dg_filetypedisk;
-	DGLU_API extern const char* dg_filetypeunknown;
-	
-	DGLU_API extern const char* dg_getfiletypename;
-	DGLU_API const char* dg_getfiletype(
+    
+    DGLU_API extern const char* dg_filetypeconsole;
+    DGLU_API extern const char* dg_filetypepipe;   
+    DGLU_API extern const char* dg_filetypedisk;
+    DGLU_API extern const char* dg_filetypeunknown;
+    
+    DGLU_API extern const char* dg_getfiletypename;
+    DGLU_API const char* dg_getfiletype(
         Bufferhandle* pBHarrayhead,
         UINT64 fileid,
         const char** pfiletype,
         const char* forceerrorflag);
-	
-	DGLU_API extern const char* dg_gethstdinname;
-	DGLU_API const char* dg_gethstdin(
+    
+    DGLU_API extern const char* dg_gethstdinname;
+    DGLU_API const char* dg_gethstdin(
         Bufferhandle* pBHarrayhead,
         UINT64* pfileid,
         const char* forceerrorflag);
-	
-	DGLU_API extern const char* dg_gethstdoutname;
-	DGLU_API const char* dg_gethstdout(
+    
+    DGLU_API extern const char* dg_gethstdoutname;
+    DGLU_API const char* dg_gethstdout(
         Bufferhandle* pBHarrayhead,
         UINT64* pfileid,
         const char* forceerrorflag);
-	
-	DGLU_API extern const char* dg_gethstderrorname;
-	DGLU_API const char* dg_gethstderror(
+    
+    DGLU_API extern const char* dg_gethstderrorname;
+    DGLU_API const char* dg_gethstderror(
         Bufferhandle* pBHarrayhead,
         UINT64* pfileid,
         const char* forceerrorflag);
-	
-	DGLU_API extern const char* dg_getfilelengthname;
-	DGLU_API const char* dg_getfilelength(
+    
+    DGLU_API extern const char* dg_getfilelengthname;
+    DGLU_API const char* dg_getfilelength(
         Bufferhandle* pBHarrayhead,
         UINT64 fileid,
         UINT64* pfilelength,
         const char* forceerrorflag);
     
-	DGLU_API extern const char* dg_freelibraryname;
-	DGLU_API const char* dg_freelibrary(
+    DGLU_API extern const char* dg_freelibraryname;
+    DGLU_API const char* dg_freelibrary(
         UINT64 hlibrary,
         const char* forceerrorflag);
-	
-	DGLU_API extern const char* dg_loadlibraryname;
-	DGLU_API const char* dg_loadlibrary(
+    
+    DGLU_API extern const char* dg_loadlibraryname;
+    DGLU_API const char* dg_loadlibrary(
         const char* libraryname,
         UINT64* phlibrary,
         const char* forceerrorflag);
@@ -2155,22 +2192,22 @@ extern "C" {
         const char* pnamelstring,
         void** psymboladdress,
         const char* pforcerror);
-	
-	// need dg_openfile
-	DGLU_API extern const char* dg_openfileforreadname;
-	DGLU_API const char* dg_openfileforread(
-		const char* filename, 
-		UINT64* pfileid,
-		const char* forceerrorflag);
-	
-	DGLU_API extern const char* dg_openfileforwritenewname;
-	DGLU_API const char* dg_openfileforwritenew(
+    
+    // need dg_openfile
+    DGLU_API extern const char* dg_openfileforreadname;
+    DGLU_API const char* dg_openfileforread(
         const char* filename, 
         UINT64* pfileid,
         const char* forceerrorflag);
-	
-	DGLU_API extern const char* dg_getenvironmentvariablename;
-	DGLU_API const char* dg_getenvironmentvariable(
+    
+    DGLU_API extern const char* dg_openfileforwritenewname;
+    DGLU_API const char* dg_openfileforwritenew(
+        const char* filename, 
+        UINT64* pfileid,
+        const char* forceerrorflag);
+    
+    DGLU_API extern const char* dg_getenvironmentvariablename;
+    DGLU_API const char* dg_getenvironmentvariable(
         Bufferhandle* pBHarrayhead,
         const char* pvarname,
         unsigned char* pbuf,
@@ -2244,16 +2281,16 @@ extern "C" {
     //    const char* pvarname,
     //    const char* pvarvalue,
     //    const char* forceerrorflag);
-	
-	DGLU_API INT64 dg_getch();
-	
-	DGLU_API extern const char* dg_readstdinavailabletobuffername;
-	DGLU_API void dg_readstdinavailabletobuffer(
+    
+    DGLU_API INT64 dg_getch();
+    
+    DGLU_API extern const char* dg_readstdinavailabletobuffername;
+    DGLU_API void dg_readstdinavailabletobuffer(
         Bufferhandle* pBHarrayhead,
         UINT64 bufferid);
-	
-	DGLU_API extern const char* dg_writestdoutname;
-	DGLU_API const char* dg_writestdout(
+    
+    DGLU_API extern const char* dg_writestdoutname;
+    DGLU_API const char* dg_writestdout(
         Bufferhandle* pBHarrayhead,
         unsigned char* pbuf,
         UINT64 length);
@@ -2262,16 +2299,16 @@ extern "C" {
          Bufferhandle* pBHarrayhead,
          UINT64 fileid,
          UINT64 i);
-	
-	DGLU_API void dg_writestdoutuinttodec(
+    
+    DGLU_API void dg_writestdoutuinttodec(
         Bufferhandle* pBHarrayhead,
         UINT64 i);
-	
-	DGLU_API void dg_writestdoutuint64tohex(
+    
+    DGLU_API void dg_writestdoutuint64tohex(
         Bufferhandle* pBHarrayhead,
         UINT64 i);
-	
-	DGLU_API void dg_hexdumpsegment (
+    
+    DGLU_API void dg_hexdumpsegment (
         Bufferhandle* pBHarrayhead,
         unsigned char* pstring,
         UINT64 length);
@@ -2279,14 +2316,14 @@ extern "C" {
     DGLU_API void dg_forthgothere(Bufferhandle* pBHarrayhead);
     
     DGLU_API const char* dg_checkbharrayhead (Bufferhandle* pBHarrayhead);
-	
-	DGLU_API const char* dg_checkbharray (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API const char* dg_checkbharray (Bufferhandle* pBHarrayhead);
 
-	DGLU_API void dg_forthgetquerystring (Bufferhandle* pBHarrayhead);
-	
-	DGLU_API void dg_forthgetmethodstring (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthgetquerystring (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthgetmethodstring (Bufferhandle* pBHarrayhead);
 
-	
+    
     
     DGLU_API extern const char* dg_movebytesskipdestinationname;
     DGLU_API const char* dg_movebytesskipdestination (
@@ -2308,16 +2345,18 @@ extern "C" {
     DGLU_API UINT64 dg_isdelimiter (char c);
     
     DGLU_API UINT64 dg_islineterminator (char c);
-	
+    
 /*
-	DGLU_API extern const char* dg_getlinename;
-	DGLU_API void dg_getline(
+    DGLU_API extern const char* dg_getlinename;
+    DGLU_API void dg_getline(
         Bufferhandle* pBHarrayhead, 
         UINT64 bufferid,
         UINT64 forceerror);
 */
 
     DGLU_API UINT64 dg_returntestuint128(); // really returns a UINT128 in RDX:RAX
+
+    DGLU_API UINT64 dg_nop();
 
     DGLU_API UINT64 dg_testasm(UINT64 i);
     
@@ -2337,14 +2376,14 @@ extern "C" {
         unsigned char* pnumber,
         UINT64 length,
         UINT64* pflag);
-	
+    
     const char* dg_scanforbytesub (
         void* pbuf,
         UINT64* plength,
         UINT64 value);
 
-	DGLU_API extern const char dg_scanforbytename[];
-	DGLU_API const char* dg_scanforbyte (
+    DGLU_API extern const char dg_scanforbytename[];
+    DGLU_API const char* dg_scanforbyte (
         void* pbuf,
         UINT64* plength,
         UINT64 value);
@@ -2359,17 +2398,17 @@ extern "C" {
         void* pbuf,
         UINT64* plength,
         UINT64 value);
-	
+    
     const char* dg_scanforuint64sub (
         void* pbuf,
         UINT64* plength,
         UINT64 value);
-	DGLU_API extern const char dg_scanforuint64name[];
-	DGLU_API const char* dg_scanforuint64 (
+    DGLU_API extern const char dg_scanforuint64name[];
+    DGLU_API const char* dg_scanforuint64 (
         void* pbuf,
         UINT64* plength,
         UINT64 value);
-	
+    
     const char* dg_movebytessub (
         unsigned char* psrc, 
         unsigned char* pdest,
@@ -2409,7 +2448,7 @@ extern "C" {
         UINT64* psrc, 
         UINT64* pdest,
         UINT64 stringlength);
-	
+    
     const char* dg_comparebytessub (
         unsigned char* pstring1, 
         UINT64 string1length,
@@ -2424,17 +2463,17 @@ extern "C" {
         unsigned char* pstring2,
         UINT64 string2length,
         INT64* pflag);
-	
+    
     DGLU_API void* dg_getretstackpointer ();
-	
+    
     DGLU_API void* dg_getframepointer ();
-	
+    
     DGLU_API void* dg_getplocalvariablestackspacestart ();
-	
+    
     DGLU_API void* dg_getplocalvariablestackspaceend ();
-	
+    
     DGLU_API UINT64 dg_getlocalvariablestackspacelength ();
-	
+    
     DGLU_API extern const char dg_putbytename[];
     DGLU_API const char* dg_putbyte (
         unsigned char* paddr,
@@ -2444,7 +2483,7 @@ extern "C" {
     DGLU_API const char* dg_putuint16 (
         UINT16* paddr,
         UINT16 u);
-	
+    
     DGLU_API extern const char dg_putuint32name[];
     DGLU_API const char* dg_putuint32 (
         UINT32* paddr,
@@ -2454,7 +2493,7 @@ extern "C" {
     DGLU_API const char* dg_putuint64 (
         UINT64* paddr,
         UINT64 u);
-	
+    
     DGLU_API extern const char dg_getbytename[];
     DGLU_API const char* dg_getbyte (
         unsigned char* paddr,
@@ -2464,7 +2503,7 @@ extern "C" {
     DGLU_API const char* dg_getuint16 (
         UINT16* paddr,
         UINT16* pn);
-	
+    
     DGLU_API extern const char dg_getuint32name[];
     DGLU_API const char* dg_getuint32 (
         UINT32* paddr,
@@ -2887,7 +2926,7 @@ extern "C" {
 
 //    double dg_forthfsfromsub (Bufferhandle* pBHarrayhead);
 
-//	float dg_forthf32fromsub (Bufferhandle* pBHarrayhead);
+//    float dg_forthf32fromsub (Bufferhandle* pBHarrayhead);
 
     DGLU_API UINT64 dg_getnumberofboxesatleastone (
         UINT64 total, 
@@ -2900,7 +2939,7 @@ extern "C" {
     DGLU_API extern const char dg_randomname[];
 
     DGLU_API UINT64 dg_random ();
-	
+    
     //////////////////////////
     // ASM utility routines //
     //////////////////////////
@@ -2984,8 +3023,8 @@ extern "C" {
     DGLU_API void dg_restorequitstate (void* pquitstate);
     
     DGLU_API void dg_savequitstate (void* pquitstate);
-	
-	// this routine returns no errors
+    
+    // this routine returns no errors
     DGLU_API void dg_printzerostring(
         Bufferhandle* pBHarrayhead,
         unsigned char* addr);
@@ -3012,7 +3051,7 @@ extern "C" {
     
     DGLU_API void dg_forthprintstring(Bufferhandle* pBHarrayhead);
     //              ( $1 -$- )
-	
+    
     // ////////////////////////
     //  C Compiling Routines //
     // ////////////////////////
@@ -3061,6 +3100,16 @@ extern "C" {
         Bufferhandle* pBHarrayhead,
         UINT64 reg,
         UINT64 displacement8);
+
+    DGLU_API void dg_compilemovbracketrbpd32toreg (
+        Bufferhandle* pBHarrayhead,
+        UINT64 reg,
+        UINT64 displacement32);
+
+    DGLU_API void dg_compilemovbracketrbpdtoreg (
+        Bufferhandle* pBHarrayhead,
+        UINT64 reg,
+        INT64 displacement);
     
     DGLU_API void dg_compilepushbracketrbpd8 (
         Bufferhandle* pBHarrayhead,
@@ -3073,6 +3122,29 @@ extern "C" {
     DGLU_API void dg_compilecallbracketripd32 (
         Bufferhandle* pBHarrayhead,
         UINT64 displacement32);
+
+    DGLU_API void dg_compilemovregtobracketrbpd8 (
+        Bufferhandle* pBHarrayhead,
+        UINT64 reg,
+        UINT64 displacement8);
+
+    DGLU_API void dg_compilemovregtobracketrbpd32 (
+        Bufferhandle* pBHarrayhead,
+        UINT64 reg,
+        UINT64 displacement32);
+
+    DGLU_API void dg_compilemovregtobracketrbpd (
+        Bufferhandle* pBHarrayhead,
+        UINT64 reg,
+        INT64 displacement);
+
+    DGLU_API void dg_compilebracketrbpdtodatastack (
+        Bufferhandle* pBHarrayhead,
+        INT64 displacement);
+
+    DGLU_API void dg_compiledatastacktobracketrbpd (
+        Bufferhandle* pBHarrayhead,
+        INT64 displacement);
     
     DGLU_API void dg_compiledatalink (
         Bufferhandle* pBHarrayhead,
@@ -3083,9 +3155,9 @@ extern "C" {
         UINT64 addr);
     
     DGLU_API void dg_compilereturn (Bufferhandle* pBHarrayhead);
-	
+    
     DGLU_API void dg_compileclc (Bufferhandle* pBHarrayhead);
-	
+    
     DGLU_API void dg_compilestc (Bufferhandle* pBHarrayhead);
     
 
@@ -3098,7 +3170,7 @@ extern "C" {
     Bufferhandle* pBHarrayhead,
     const char* pstring,
     UINT64 stringlength);
-	
+    
     DGLU_API void dg_compilecalloffset (
         Bufferhandle* pBHarrayhead,
         INT64 offset);
@@ -3110,11 +3182,11 @@ extern "C" {
     DGLU_API void dg_compilejmpbracketoffset (
         Bufferhandle* pBHarrayhead,
         INT64 offset);
-	
+    
     DGLU_API void dg_compilecalloffsetinsamebuffer (
         Bufferhandle* pBHarrayhead,
         INT64 targetoffset);
-	
+    
     DGLU_API void dg_compilecalladdress (
         Bufferhandle* pBHarrayhead,
         UINT64 addr);
@@ -3126,15 +3198,15 @@ extern "C" {
     DGLU_API void dg_compilecallfunctblfunction (
         Bufferhandle* pBHarrayhead,
         UINT64 functionindex);
-	
+    
     DGLU_API void dg_compilepushparametertoret (
         Bufferhandle* pBHarrayhead,
         UINT64 parameterindex);
-	
+    
     DGLU_API void dg_compilepushregtoret (
         Bufferhandle* pBHarrayhead,
         UINT64 reg);
-	
+    
     DGLU_API void dg_compilepopregfromret (
         Bufferhandle* pBHarrayhead,
         UINT64 reg);
@@ -3146,24 +3218,25 @@ extern "C" {
     DGLU_API void dg_forthentercallsubsframecomma (Bufferhandle* pBHarrayhead);
     
     DGLU_API void dg_forthexitframecomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthenterrbpframecomma (Bufferhandle* pBHarrayhead);
 
 /*
     DGLU_API unsigned char dg_packmodrslashm (
         UINT64 mode,
         UINT64 reg1orn,
         UINT64 reg2);
-	
+    
     DGLU_API unsigned char dg_packsib (
         UINT64 basereg,
         UINT64 indexscalecode,
         UINT64 indexreg);
-	
+    
     DGLU_API void dg_compilerfromr (
         Bufferhandle* pBHarrayhead,
         UINT32 opcode,
         UINT32 destreg,
         UINT32 srcreg);
-	
+    
     DGLU_API void dg_compilerfrommatrplusscaletimesrplusn (
         Bufferhandle* pBHarrayhead,
         UINT32 opcode,
@@ -3172,7 +3245,7 @@ extern "C" {
         UINT32 srcindexscalecode,
         UINT32 srcindexreg,
         INT32 srcoffset);
-	
+    
     DGLU_API void dg_compilerfrommatrplusn (
         Bufferhandle* pBHarrayhead,
         UINT32 opcode,
@@ -3180,7 +3253,7 @@ extern "C" {
         UINT32 srcreg,
         INT32 srcoffset);
 */
-		
+        
     DGLU_API void dg_compilepusholderrorcounttoret (Bufferhandle* pBHarrayhead);
 
     DGLU_API void dg_compilealignretstack(
@@ -3190,31 +3263,45 @@ extern "C" {
     DGLU_API void dg_compilealignretstackpreserveregs(
         Bufferhandle* pBHarrayhead,
         UINT32 numberofparameters);
-		
-	DGLU_API void dg_compileundoalignretstack (Bufferhandle* pBHarrayhead);
-	
-	DGLU_API void dg_compiledropparametersfromret (
+        
+    DGLU_API void dg_compileundoalignretstack (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_compiledropparametersfromret (
         Bufferhandle* pBHarrayhead,
         UINT32 n);
 */
     DGLU_API void dg_compilepushpBHarrayheadtoret (Bufferhandle* pBHarrayhead);
     
-	DGLU_API extern const char* dg_compilecallcorename;
-	DGLU_API void dg_compilecallcore (
+    DGLU_API extern const char* dg_compilecallcorename;
+    DGLU_API void dg_compilecallcore (
         Bufferhandle* pBHarrayhead,
         UINT64 addr);
+
+    DGLU_API extern const char* dg_compilecallcoreoneuparamname;
+    DGLU_API void dg_compilecallcoreoneuparam (
+        Bufferhandle* pBHarrayhead, 
+        UINT64 addr,
+        UINT64 uparam1);
+
+    DGLU_API extern const char* dg_compilecallcoretwouparamsname;
+    DGLU_API void dg_compilecallcoretwouparams (
+        Bufferhandle* pBHarrayhead, 
+        UINT64 addr,
+        UINT64 uparam1,
+        UINT64 uparam2);
+
 /*
     DGLU_API void dg_compilecallcorepreserveregs (
         Bufferhandle* pBHarrayhead,
         UINT32 addr);
-	
-	DGLU_API void dg_compilesavelocalframestackpointer (Bufferhandle* pBHarrayhead);
-	
-	DGLU_API void dg_compilepushparametertoret (
+    
+    DGLU_API void dg_compilesavelocalframestackpointer (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_compilepushparametertoret (
         Bufferhandle* pBHarrayhead,
         UINT32 parameterindex);
 */
-	DGLU_API UINT64 dg_compilepushntoret (
+    DGLU_API UINT64 dg_compilepushntoret (
         Bufferhandle* pBHarrayhead,
         UINT64 n);
     
@@ -3229,19 +3316,19 @@ extern "C" {
         Bufferhandle* pBHarrayhead,
         UINT64 n);
 
-	DGLU_API extern const char* dg_compilebranchname;
-	DGLU_API UINT64 dg_compilebranch (
+    DGLU_API extern const char* dg_compilebranchname;
+    DGLU_API UINT64 dg_compilebranch (
         Bufferhandle* pBHarrayhead,
         UINT64 branchtype);
-	
-	DGLU_API extern const char* dg_resolvecompiledbranchname;
-	DGLU_API void dg_resolvecompiledbranch (
+    
+    DGLU_API extern const char* dg_resolvecompiledbranchname;
+    DGLU_API void dg_resolvecompiledbranch (
         Bufferhandle* pBHarrayhead,
         UINT64 afterbranchoffset,
         UINT64 targetoffset);
-	
-	DGLU_API extern const char* dg_compilecomparename;
-	DGLU_API void dg_compilecompare(
+    
+    DGLU_API extern const char* dg_compilecomparename;
+    DGLU_API void dg_compilecompare(
         Bufferhandle* pBHarrayhead,
         UINT64 n);
 
@@ -3252,21 +3339,21 @@ extern "C" {
         unsigned char* psqstr,
         UINT64 sqstrlen);
 
-//	DGLU_API void dg_showframe (Bufferhandle* pBHarrayhead);
-	
-	DGLU_API void dg_compileinitlocals (Bufferhandle* pBHarrayhead);
+//    DGLU_API void dg_showframe (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_compileinitlocals (Bufferhandle* pBHarrayhead);
     
     DGLU_API void dg_compileentersubroutineframe (Bufferhandle* pBHarrayhead);
-	
-	DGLU_API extern const char* dg_compileexitlocalsname;
-	
-	DGLU_API void dg_compileexitlocals (Bufferhandle* pBHarrayhead);
-	
-	DGLU_API void dg_compilequeryerror (Bufferhandle* pBHarrayhead);
-	
-	DGLU_API extern const UINT64 dg_regnottrashedduringaligment;
-	
-	DGLU_API void dg_compilepushdatastack (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API extern const char* dg_compileexitlocalsname;
+    
+    DGLU_API void dg_compileexitlocals (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_compilequeryerror (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API extern const UINT64 dg_regnottrashedduringaligment;
+    
+    DGLU_API void dg_compilepushdatastack (Bufferhandle* pBHarrayhead);
     
     DGLU_API void dg_compilepushntodatastack (
         Bufferhandle* pBHarrayhead,
@@ -3275,20 +3362,62 @@ extern "C" {
     DGLU_API void dg_compilepushntof64stack (
         Bufferhandle* pBHarrayhead,
         UINT64 n);
+
+    DGLU_API extern const char* dg_compileobtoptodatastackname;
+    DGLU_API void dg_compileobtoptodatastack(
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 offset);
+
+    DGLU_API extern const char* dg_compilebracketobtodatastackname;
+    DGLU_API void dg_compilebracketobtodatastack (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 offset);
+
+    DGLU_API extern const char* dg_compiledatastacktobracketobname;
+    DGLU_API void dg_compiledatastacktobracketob (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 offset);
+
+    DGLU_API extern const char* dg_compilef64stacktobracketobname;
+    DGLU_API void dg_compilef64stacktobracketob (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 offset);
+
+    DGLU_API extern const char* dg_compileu128bracketobtodatastackname;
+    DGLU_API void dg_compileu128bracketobtodatastack (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 offset);
+
+    DGLU_API extern const char* dg_compiledatastacktou128bracketobname;
+    DGLU_API void dg_compiledatastacktou128bracketob (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 offset);
+
+    DGLU_API extern const char* dg_compilebracketobtof64stackname;
+    DGLU_API void dg_compilebracketobtof64stack (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 offset);
     
     DGLU_API void dg_pushf64tof64stack(
         Bufferhandle* pBHarrayhead,
         FLOAT64 r);
     
     DGLU_API FLOAT64 dg_popf64fromf64stack(Bufferhandle* pBHarrayhead);
-	
-	DGLU_API void dg_forthregsfrom (Bufferhandle* pBHarrayhead);
-	
-	DGLU_API void dg_forthtoregs (Bufferhandle* pBHarrayhead);
-	
-	DGLU_API void dg_forthshowsavedregs (Bufferhandle* pBHarrayhead);
-	
-	DGLU_API void dg_forthshowcapturedregs (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthregsfrom (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthtoregs (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthshowsavedregs (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthshowcapturedregs (Bufferhandle* pBHarrayhead);
     
     DGLU_API void dg_forthtofp0(Bufferhandle* pBHarrayhead, FLOAT64 df);
     
@@ -3297,59 +3426,59 @@ extern "C" {
     DGLU_API FLOAT64 dg_forthfsfrom (Bufferhandle* pBHarrayhead);
     
     DGLU_API FLOAT32 dg_forthf32from (Bufferhandle* pBHarrayhead);
-	
-	
-	//////////////////////
-	// C Error Routines //
-	//////////////////////
-	
-	DGLU_API extern const char dg_initerrorsbuf0inuse[];
-	
-	DGLU_API void dg_initerrors (
+    
+    
+    //////////////////////
+    // C Error Routines //
+    //////////////////////
+    
+    DGLU_API extern const char dg_initerrorsbuf0inuse[];
+    
+    DGLU_API void dg_initerrors (
         Bufferhandle* pBHarrayhead,
         UINT64 size,
         const char** pError);
-	
-	DGLU_API extern const char* dg_pusherrorname;
-	DGLU_API void dg_pusherror (
+    
+    DGLU_API extern const char* dg_pusherrorname;
+    DGLU_API void dg_pusherror (
         Bufferhandle* pBHarrayhead,
         const char* error);
-	
-	DGLU_API extern const char* dg_pushbuffererrorname;
-	DGLU_API void dg_pushbuffererror (Bufferhandle* pBHarrayhead,
+    
+    DGLU_API extern const char* dg_pushbuffererrorname;
+    DGLU_API void dg_pushbuffererror (Bufferhandle* pBHarrayhead,
         UINT64 bufferid,
-		UINT64 offset);
-		
-	DGLU_API extern const char* dg_geterrorname;
-	DGLU_API const char* dg_geterror (
+        UINT64 offset);
+        
+    DGLU_API extern const char* dg_geterrorname;
+    DGLU_API const char* dg_geterror (
         Bufferhandle* pBHarrayhead,
-		UINT64 errorindex);
-	
-	DGLU_API extern const char* dg_getbuffererrorname;
-	DGLU_API void dg_getbuffererror (
+        UINT64 errorindex);
+    
+    DGLU_API extern const char* dg_getbuffererrorname;
+    DGLU_API void dg_getbuffererror (
         Bufferhandle* pBHarrayhead, 
         UINT64 errorindex,
         UINT64* poffset,
         UINT64* pbufferid);
-	
-	DGLU_API extern const char* dg_poperrorname;
-	DGLU_API const char* dg_poperror (Bufferhandle* pBHarrayhead);
-	
-	DGLU_API extern const char* dg_popbuffererrorname;
-	DGLU_API void dg_popbuffererror (
+    
+    DGLU_API extern const char* dg_poperrorname;
+    DGLU_API const char* dg_poperror (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API extern const char* dg_popbuffererrorname;
+    DGLU_API void dg_popbuffererror (
         Bufferhandle* pBHarrayhead, 
         UINT64* perrmsgoffset,
         UINT64* perrmsgbufid);
-	
-	DGLU_API extern const char* dg_geterrorcountname;
-	DGLU_API UINT64 dg_geterrorcount (Bufferhandle* pBHarrayhead);
-	
-	DGLU_API UINT64 dg_checkerrorsonstack (Bufferhandle* pBHarrayhead);
-	
-	DGLU_API void dg_clearerrors (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API extern const char* dg_geterrorcountname;
+    DGLU_API UINT64 dg_geterrorcount (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API UINT64 dg_checkerrorsonstack (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_clearerrors (Bufferhandle* pBHarrayhead);
     DGLU_API void dg_clearerrorsanderrorline (Bufferhandle* pBHarrayhead);   
-	
-	DGLU_API void dg_droptoerrorcount (
+    
+    DGLU_API void dg_droptoerrorcount (
         Bufferhandle* pBHarrayhead,
         UINT64 newerrorcount);
     
@@ -3361,189 +3490,189 @@ extern "C" {
         UINT64 newerroroffset);
     
     DGLU_API void dg_forthdoterrors (Bufferhandle* pBHarrayhead);
-	
-	// ///////////////////////////
-	// End of C Error Routines  //
-	// ///////////////////////////
-	
-	
-	// /////////////////////
-	// C buffer routines  //
-	// /////////////////////
-	
-	DGLU_API extern const char* dg_newbuffername;
-	DGLU_API UINT64 dg_newbuffer (
-		Bufferhandle* pBHarrayhead,
-		UINT64 growby,
-		UINT64 maxsize,
-		const char** pError,
-		UINT64 forceoutofmemory);
-	
-	DGLU_API void dg_freebuffer (
-		Bufferhandle* pBHarrayhead,
-		UINT64 bufferid);
-	
-	DGLU_API UINT64 dg_freeallbuffers (Bufferhandle* pBHarrayhead);
-	
-	DGLU_API extern const char* dg_checkbuffername;
+    
+    // ///////////////////////////
+    // End of C Error Routines  //
+    // ///////////////////////////
+    
+    
+    // /////////////////////
+    // C buffer routines  //
+    // /////////////////////
+    
+    DGLU_API extern const char* dg_newbuffername;
+    DGLU_API UINT64 dg_newbuffer (
+        Bufferhandle* pBHarrayhead,
+        UINT64 growby,
+        UINT64 maxsize,
+        const char** pError,
+        UINT64 forceoutofmemory);
+    
+    DGLU_API void dg_freebuffer (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid);
+    
+    DGLU_API UINT64 dg_freeallbuffers (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API extern const char* dg_checkbuffername;
     DGLU_API const char* dg_checkbuffer (
         Bufferhandle* pBHarrayhead,
         UINT64 bufferid);
     
-	DGLU_API extern const char* dg_growbuffername;
-	DGLU_API UINT64 dg_growbuffer (
-		Bufferhandle* pBHarrayhead,
-		UINT64 bufferid,
-		UINT64 length,  // in bytes
-		const char** pError,
-		UINT64 forceoutofmemory);
-	
-	DGLU_API extern const char* dg_shrinkbuffername;
-	DGLU_API void dg_shrinkbuffer (
-		Bufferhandle* pBHarrayhead,
-		UINT64 bufferid,
-		UINT64 length,  // in bytes
-		const char** pError);
-	
-	DGLU_API extern const char* dg_getpbuffername;
-	DGLU_API unsigned char* dg_getpbuffer (
-		Bufferhandle* pBHarrayhead,
-		UINT64 bufferid,
-		UINT64** pplength);
-	
-	DGLU_API extern const char* dg_clearbuffername;
-	DGLU_API void dg_clearbuffer (
-		Bufferhandle* pBHarrayhead,
-		UINT64 bufferid);
-	
-	DGLU_API extern const char* dg_getpbuffersegmentname;
-	DGLU_API unsigned char* dg_getpbuffersegment (
-		Bufferhandle* pBHarrayhead,
-		UINT64 bufferid,
-		UINT64 offset,
-		UINT64 length);
-	
-	DGLU_API extern const char* dg_getpbufferoffsetname;
-	DGLU_API unsigned char* dg_getpbufferoffset  (
+    DGLU_API extern const char* dg_growbuffername;
+    DGLU_API UINT64 dg_growbuffer (
         Bufferhandle* pBHarrayhead,
-		UINT64 bufferid,
-		UINT64 offset);
-	
-	DGLU_API extern const char* dg_getbuffersegmentname;
-	DGLU_API void dg_getbuffersegment (
+        UINT64 bufferid,
+        UINT64 length,  // in bytes
+        const char** pError,
+        UINT64 forceoutofmemory);
+    
+    DGLU_API extern const char* dg_shrinkbuffername;
+    DGLU_API void dg_shrinkbuffer (
         Bufferhandle* pBHarrayhead,
-		UINT64 bufferid,
-		UINT64 offset,
-		UINT64 length,
-		unsigned char* pdest);
-	
-	DGLU_API extern const char* dg_putbuffersegmentname;
-	DGLU_API void dg_putbuffersegment (
+        UINT64 bufferid,
+        UINT64 length,  // in bytes
+        const char** pError);
+    
+    DGLU_API extern const char* dg_getpbuffername;
+    DGLU_API unsigned char* dg_getpbuffer (
         Bufferhandle* pBHarrayhead,
-		UINT64 bufferid,
-		UINT64 offset,
-		UINT64 length,
-		unsigned char* psrc);
+        UINT64 bufferid,
+        UINT64** pplength);
+    
+    DGLU_API extern const char* dg_clearbuffername;
+    DGLU_API void dg_clearbuffer (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid);
+    
+    DGLU_API extern const char* dg_getpbuffersegmentname;
+    DGLU_API unsigned char* dg_getpbuffersegment (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 offset,
+        UINT64 length);
+    
+    DGLU_API extern const char* dg_getpbufferoffsetname;
+    DGLU_API unsigned char* dg_getpbufferoffset  (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 offset);
+    
+    DGLU_API extern const char* dg_getbuffersegmentname;
+    DGLU_API void dg_getbuffersegment (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 offset,
+        UINT64 length,
+        unsigned char* pdest);
+    
+    DGLU_API extern const char* dg_putbuffersegmentname;
+    DGLU_API void dg_putbuffersegment (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 offset,
+        UINT64 length,
+        unsigned char* psrc);
     
     DGLU_API extern const char* dg_getbufferuint32name;
-	DGLU_API UINT32 dg_getbufferuint32 (
-		Bufferhandle* pBHarrayhead,
-		UINT64 bufferid,
-		UINT64 offset);  // in bytes, that way this can be used in mixed buffers
-	
-	DGLU_API extern const char* dg_putbufferuint32name;
-	DGLU_API void dg_putbufferuint32 (
+    DGLU_API UINT32 dg_getbufferuint32 (
         Bufferhandle* pBHarrayhead,
-		UINT64 bufferid,
-		UINT64 offset,
-		UINT64 data);
-	
-	DGLU_API extern const char* dg_pushbufferuint32name;
-	DGLU_API void dg_pushbufferuint32 (
-		Bufferhandle* pBHarrayhead,
-		UINT64 bufferid,
-		UINT64 data);
+        UINT64 bufferid,
+        UINT64 offset);  // in bytes, that way this can be used in mixed buffers
+    
+    DGLU_API extern const char* dg_putbufferuint32name;
+    DGLU_API void dg_putbufferuint32 (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 offset,
+        UINT64 data);
+    
+    DGLU_API extern const char* dg_pushbufferuint32name;
+    DGLU_API void dg_pushbufferuint32 (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 data);
     
     DGLU_API extern const char* dg_popbufferuint32name;
-	DGLU_API UINT32 dg_popbufferuint32 (
-		Bufferhandle* pBHarrayhead,
-		UINT64 bufferid);
-	
-	DGLU_API extern const char* dg_getbufferuint64name;
-	DGLU_API UINT64 dg_getbufferuint64 (
-		Bufferhandle* pBHarrayhead,
-		UINT64 bufferid,
-		UINT64 offset);  // in bytes, that way this can be used in mixed buffers
-	
-	DGLU_API extern const char* dg_putbufferuint64name;
-	DGLU_API void dg_putbufferuint64 (
+    DGLU_API UINT32 dg_popbufferuint32 (
         Bufferhandle* pBHarrayhead,
-		UINT64 bufferid,
-		UINT64 offset,
-		UINT64 data);
-	
-	DGLU_API extern const char* dg_pushbufferuint64name;
-	DGLU_API void dg_pushbufferuint64 (
-		Bufferhandle* pBHarrayhead,
-		UINT64 bufferid,
-		UINT64 data);
-	
-	DGLU_API extern const char* dg_pushbuffersegmentname;
-	DGLU_API void dg_pushbuffersegment (
-		Bufferhandle* pBHarrayhead,
-		UINT64 bufferid,
-		UINT64 length,
-		unsigned char* psrc);
-	
-	DGLU_API extern const char* dg_pickbuffersegmentname;
-	DGLU_API void dg_pickbuffersegment (
-		Bufferhandle* pBHarrayhead,
-		UINT64 bufferid,
-		UINT64 offset,
-		UINT64 length);
-	
-	DGLU_API extern const char* dg_popbuffersegmentname;
-	DGLU_API void dg_popbuffersegment (
+        UINT64 bufferid);
+    
+    DGLU_API extern const char* dg_getbufferuint64name;
+    DGLU_API UINT64 dg_getbufferuint64 (
         Bufferhandle* pBHarrayhead,
-		UINT64 bufferid,
-		UINT64 length,
-		unsigned char* pdest);
-	
-	DGLU_API extern const char* dg_getbufferbytename;
-	DGLU_API unsigned char dg_getbufferbyte (
+        UINT64 bufferid,
+        UINT64 offset);  // in bytes, that way this can be used in mixed buffers
+    
+    DGLU_API extern const char* dg_putbufferuint64name;
+    DGLU_API void dg_putbufferuint64 (
         Bufferhandle* pBHarrayhead,
-		UINT64 bufferid,
-		UINT64 offset);
-	
-	DGLU_API extern const char* dg_putbufferbytename;
-	DGLU_API void dg_putbufferbyte (
-		Bufferhandle* pBHarrayhead,
-		UINT64 bufferid,
-		UINT64 offset,
-		unsigned char data);
-	
-	DGLU_API extern const char* dg_popbufferbytename;
-	DGLU_API unsigned char dg_popbufferbyte (
-		Bufferhandle* pBHarrayhead,
-		UINT64 bufferid);
-	
-	DGLU_API extern const char* dg_pushbufferbytename;
-	DGLU_API void dg_pushbufferbyte (
-		Bufferhandle* pBHarrayhead,
-		UINT64 bufferid,
-		unsigned char data);
-	
-	DGLU_API extern const char* dg_popbufferuint64name;
-	DGLU_API UINT64 dg_popbufferuint64 (
-		Bufferhandle* pBHarrayhead,
-		UINT64 bufferid);
-	
-	DGLU_API extern const char* dg_insertinbuffername;
-	DGLU_API void dg_insertinbuffer (
+        UINT64 bufferid,
+        UINT64 offset,
+        UINT64 data);
+    
+    DGLU_API extern const char* dg_pushbufferuint64name;
+    DGLU_API void dg_pushbufferuint64 (
         Bufferhandle* pBHarrayhead,
-		UINT64 bufferid,
-		UINT64 offset, // in bytes
-		UINT64 length); // in bytes
+        UINT64 bufferid,
+        UINT64 data);
+    
+    DGLU_API extern const char* dg_pushbuffersegmentname;
+    DGLU_API void dg_pushbuffersegment (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 length,
+        unsigned char* psrc);
+    
+    DGLU_API extern const char* dg_pickbuffersegmentname;
+    DGLU_API void dg_pickbuffersegment (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 offset,
+        UINT64 length);
+    
+    DGLU_API extern const char* dg_popbuffersegmentname;
+    DGLU_API void dg_popbuffersegment (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 length,
+        unsigned char* pdest);
+    
+    DGLU_API extern const char* dg_getbufferbytename;
+    DGLU_API unsigned char dg_getbufferbyte (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 offset);
+    
+    DGLU_API extern const char* dg_putbufferbytename;
+    DGLU_API void dg_putbufferbyte (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 offset,
+        unsigned char data);
+    
+    DGLU_API extern const char* dg_popbufferbytename;
+    DGLU_API unsigned char dg_popbufferbyte (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid);
+    
+    DGLU_API extern const char* dg_pushbufferbytename;
+    DGLU_API void dg_pushbufferbyte (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        unsigned char data);
+    
+    DGLU_API extern const char* dg_popbufferuint64name;
+    DGLU_API UINT64 dg_popbufferuint64 (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid);
+    
+    DGLU_API extern const char* dg_insertinbuffername;
+    DGLU_API void dg_insertinbuffer (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 offset, // in bytes
+        UINT64 length); // in bytes
   
     DGLU_API extern const char dg_replacebuffersegmentname[];
     DGLU_API void dg_replacebuffersegment (
@@ -3553,29 +3682,29 @@ extern "C" {
         UINT64 destlength,
         unsigned char* psrc,
         UINT64 srclength);     
-	
-	DGLU_API extern const char* dg_deleteinbuffername;
-	DGLU_API void dg_deleteinbuffer (
+    
+    DGLU_API extern const char* dg_deleteinbuffername;
+    DGLU_API void dg_deleteinbuffer (
         Bufferhandle* pBHarrayhead,
-		UINT64 bufferid,
-		UINT64 offset, // in bytes
-		UINT64 length); // in bytes
-	
-	DGLU_API extern const char* dg_getbufferlengthname;
-	DGLU_API UINT64 dg_getbufferlength (
-		Bufferhandle* pBHarrayhead,
-		UINT64 bufferid);
-	
-	DGLU_API extern const char* dg_getpbufferhandlename;
-	DGLU_API Bufferhandle* dg_getpbufferhandle (
-		Bufferhandle* pBHarrayhead,
-		UINT64 bufferid);
-	
-	DGLU_API extern const char* dg_push0stringtobuffersegmentname;
-	DGLU_API void dg_push0stringtobuffersegment (
-		Bufferhandle* pBHarrayhead,
-		UINT64 bufferid,
-		unsigned char* psrc);
+        UINT64 bufferid,
+        UINT64 offset, // in bytes
+        UINT64 length); // in bytes
+    
+    DGLU_API extern const char* dg_getbufferlengthname;
+    DGLU_API UINT64 dg_getbufferlength (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid);
+    
+    DGLU_API extern const char* dg_getpbufferhandlename;
+    DGLU_API Bufferhandle* dg_getpbufferhandle (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid);
+    
+    DGLU_API extern const char* dg_push0stringtobuffersegmentname;
+    DGLU_API void dg_push0stringtobuffersegment (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        unsigned char* psrc);
                                                  
     DGLU_API extern const char* dg_freebuffersetname;
     DGLU_API void dg_freebufferset (
@@ -3642,18 +3771,55 @@ extern "C" {
     DGLU_API void dg_pushdatastack (
         Bufferhandle* pBHarrayhead,
         UINT64 data);
+
+    DGLU_API extern const char* dg_pushbracketobtodatastackname;
+    DGLU_API void dg_pushbracketobtodatastack (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 offset);
+
+    DGLU_API extern const char* dg_pushu128bracketobtodatastackname;
+    DGLU_API void dg_pushu128bracketobtodatastack (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 offset);
         
     DGLU_API void dg_pushf64stack (
         Bufferhandle* pBHarrayhead,
         UINT64 data);
+
+    DGLU_API extern const char* dg_pushbracketobtof64stackname;
+    DGLU_API void dg_pushbracketobtof64stack (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 offset);
         
     DGLU_API void dg_pushsearchorderstack (
        Bufferhandle* pBHarrayhead,
        UINT64 wid);
-	
-	
-	DGLU_API UINT64 dg_popdatastack (Bufferhandle* pBHarrayhead);
-	//                 ( data -- )
+    
+    
+    DGLU_API UINT64 dg_popdatastack (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API extern const char* dg_popdatastacktobracketobname;
+    DGLU_API void dg_popdatastacktobracketob (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 offset);
+
+    DGLU_API extern const char* dg_popdatastacktou128bracketobname;
+    DGLU_API void dg_popdatastacktou128bracketob (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 offset);
+
+    DGLU_API UINT64 dg_popf64stack (Bufferhandle* pBHarrayhead);
+
+    DGLU_API extern const char* dg_popf64stacktobracketobname;
+    DGLU_API void dg_popf64stacktobracketob (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 offset);
     
     DGLU_API void dg_compilesegment (
         Bufferhandle* pBHarrayhead,
@@ -3756,71 +3922,71 @@ extern "C" {
     DGLU_API void dg_argstoargsbuffer (Bufferhandle* pBHarrayhead, int argc, char* argv[]);
     
     //////////////////////////////
-	// End of C Buffer Routines //
-	//////////////////////////////
-	
+    // End of C Buffer Routines //
+    //////////////////////////////
     
-		
-	////////////////////////
-	// C lstring routines //
-	////////////////////////
-	
-	DGLU_API extern const char* dg_getnumberoflstringsonstackname;
-	DGLU_API UINT64 dg_getnumberoflstringsonstack(
+    
+        
+    ////////////////////////
+    // C lstring routines //
+    ////////////////////////
+    
+    DGLU_API extern const char* dg_getnumberoflstringsonstackname;
+    DGLU_API UINT64 dg_getnumberoflstringsonstack(
         Bufferhandle* pBHarrayhead,
-		UINT64 offsetbufferid);
-	
-	DGLU_API extern const char* dg_getlstringstartoffsetname;
-	DGLU_API UINT64 dg_getlstringstartoffset (
-		Bufferhandle *pBHarrayhead,
-		UINT64 offsetbufferid,
-		UINT64 stringid);
-	
-	DGLU_API extern const char* dg_getlstringlengthname;
-	DGLU_API UINT64 dg_getlstringlength (
-		Bufferhandle *pBHarrayhead,
-		UINT64 offsetbufferid,
-		UINT64 stringid);
-	
-	DGLU_API extern const char* dg_getplstringname;
-	DGLU_API unsigned char* dg_getplstring(
+        UINT64 offsetbufferid);
+    
+    DGLU_API extern const char* dg_getlstringstartoffsetname;
+    DGLU_API UINT64 dg_getlstringstartoffset (
+        Bufferhandle *pBHarrayhead,
+        UINT64 offsetbufferid,
+        UINT64 stringid);
+    
+    DGLU_API extern const char* dg_getlstringlengthname;
+    DGLU_API UINT64 dg_getlstringlength (
+        Bufferhandle *pBHarrayhead,
+        UINT64 offsetbufferid,
+        UINT64 stringid);
+    
+    DGLU_API extern const char* dg_getplstringname;
+    DGLU_API unsigned char* dg_getplstring(
         Bufferhandle* pBHarrayhead,
-		UINT64  offsetbufferid,
-		UINT64  stringbufferid,
-		UINT64  stringid,
-		UINT64* pstringlength);
-	
-	DGLU_API extern const char* dg_getlstringname;
-	DGLU_API void dg_getlstring (
-        Bufferhandle* pBHarrayhead,
-		UINT64 offsetbufferid,
-		UINT64 stringbufferid,
-		UINT64 stringid,
-		UINT64 maxlength,
-		unsigned char* pdest);
-	
-	DGLU_API extern const char* dg_poplstringname;
-	DGLU_API void dg_poplstring (
-        Bufferhandle* pBHarrayhead,
-		UINT64 offsetbufferid,
-		UINT64 stringbufferid,
-		UINT64 maxlength,
-		unsigned char* pdest);
-	
-	DGLU_API extern const char* dg_pushlstringname;
-	DGLU_API void dg_pushlstring (
+        UINT64  offsetbufferid,
+        UINT64  stringbufferid,
+        UINT64  stringid,
+        UINT64* pstringlength);
+    
+    DGLU_API extern const char* dg_getlstringname;
+    DGLU_API void dg_getlstring (
         Bufferhandle* pBHarrayhead,
         UINT64 offsetbufferid,
-		UINT64 stringbufferid,
-		UINT64 length,
-		unsigned char* psrc);
-	
-	DGLU_API extern const char* dg_growlstringname;
-	DGLU_API void dg_growlstring (
+        UINT64 stringbufferid,
+        UINT64 stringid,
+        UINT64 maxlength,
+        unsigned char* pdest);
+    
+    DGLU_API extern const char* dg_poplstringname;
+    DGLU_API void dg_poplstring (
         Bufferhandle* pBHarrayhead,
-		UINT64 offsetbufferid,
-		UINT64 stringbufferid,
-		UINT64 length);
+        UINT64 offsetbufferid,
+        UINT64 stringbufferid,
+        UINT64 maxlength,
+        unsigned char* pdest);
+    
+    DGLU_API extern const char* dg_pushlstringname;
+    DGLU_API void dg_pushlstring (
+        Bufferhandle* pBHarrayhead,
+        UINT64 offsetbufferid,
+        UINT64 stringbufferid,
+        UINT64 length,
+        unsigned char* psrc);
+    
+    DGLU_API extern const char* dg_growlstringname;
+    DGLU_API void dg_growlstring (
+        Bufferhandle* pBHarrayhead,
+        UINT64 offsetbufferid,
+        UINT64 stringbufferid,
+        UINT64 length);
     
     DGLU_API extern const char dg_catlstringname[];
     DGLU_API void dg_catlstring (
@@ -3832,65 +3998,65 @@ extern "C" {
         Bufferhandle* pBHarrayhead,
         UINT64 offsetbufferid,
         UINT64 u);
-		
-	DGLU_API extern const char* dg_picklstringname;
-	DGLU_API void dg_picklstring (
+        
+    DGLU_API extern const char* dg_picklstringname;
+    DGLU_API void dg_picklstring (
         Bufferhandle* pBHarrayhead,
-		UINT64 offsetbufferid,
-		UINT64 stringbufferid,
-		UINT64 n);
-	
-	DGLU_API extern const char* dg_droplstringname;
-	DGLU_API void dg_droplstring (
+        UINT64 offsetbufferid,
+        UINT64 stringbufferid,
+        UINT64 n);
+    
+    DGLU_API extern const char* dg_droplstringname;
+    DGLU_API void dg_droplstring (
         Bufferhandle* pBHarrayhead,
-		UINT64 offsetbufferid,
-		UINT64 stringbufferid);
+        UINT64 offsetbufferid,
+        UINT64 stringbufferid);
   
     DGLU_API extern const char* dg_dropnlstringsname;
     DGLU_API void dg_dropnlstrings (Bufferhandle* pBHarrayhead,
         UINT64 offsetbufferid,
         UINT64 stringbufferid,
         UINT64 n);
-	
-	DGLU_API extern const char* dg_deletelstringname;
-	DGLU_API void dg_deletelstring (
-        Bufferhandle* pBHarrayhead,
-		UINT64 offsetbufferid,
-		UINT64 stringbufferid,
-		UINT64 stringid);
-	
-	DGLU_API extern const char* dg_insertlstringname;
-	DGLU_API void dg_insertlstring (
+    
+    DGLU_API extern const char* dg_deletelstringname;
+    DGLU_API void dg_deletelstring (
         Bufferhandle* pBHarrayhead,
         UINT64 offsetbufferid,
-		UINT64 stringbufferid,
-		UINT64 stringid,
-		UINT64 length);
-	
-	DGLU_API extern const char* dg_deleteinlstringname;
-	DGLU_API void dg_deleteinlstring (
+        UINT64 stringbufferid,
+        UINT64 stringid);
+    
+    DGLU_API extern const char* dg_insertlstringname;
+    DGLU_API void dg_insertlstring (
         Bufferhandle* pBHarrayhead,
-		UINT64 offsetbufferid,
-		UINT64 stringbufferid,
-		UINT64 stringid,
-		UINT64 offset,
-		UINT64 length);
-	
-	DGLU_API extern const char* dg_insertinlstringname;
-	DGLU_API void dg_insertinlstring (
+        UINT64 offsetbufferid,
+        UINT64 stringbufferid,
+        UINT64 stringid,
+        UINT64 length);
+    
+    DGLU_API extern const char* dg_deleteinlstringname;
+    DGLU_API void dg_deleteinlstring (
         Bufferhandle* pBHarrayhead,
-		UINT64 offsetbufferid,
-		UINT64 stringbufferid,
-		UINT64 stringid,
-		UINT64 offset,
-		UINT64 length);
-	
-	DGLU_API extern const char* dg_catlstringnname;
-	DGLU_API void dg_catlstringn (
+        UINT64 offsetbufferid,
+        UINT64 stringbufferid,
+        UINT64 stringid,
+        UINT64 offset,
+        UINT64 length);
+    
+    DGLU_API extern const char* dg_insertinlstringname;
+    DGLU_API void dg_insertinlstring (
         Bufferhandle* pBHarrayhead,
-		UINT64 offsetbufferid,
-		UINT64 stringbufferid,
-		UINT64 stringid);
+        UINT64 offsetbufferid,
+        UINT64 stringbufferid,
+        UINT64 stringid,
+        UINT64 offset,
+        UINT64 length);
+    
+    DGLU_API extern const char* dg_catlstringnname;
+    DGLU_API void dg_catlstringn (
+        Bufferhandle* pBHarrayhead,
+        UINT64 offsetbufferid,
+        UINT64 stringbufferid,
+        UINT64 stringid);
                                   
     DGLU_API extern const char* dg_stotoplstringname;
     DGLU_API void dg_stotoplstring (
@@ -3899,16 +4065,16 @@ extern "C" {
         UINT64 stringbufferid,
         UINT64 length,
         unsigned char* psrc);
-	
-	DGLU_API extern const char* dg_copystolstringnname;
-	DGLU_API void dg_copystolstringn (
+    
+    DGLU_API extern const char* dg_copystolstringnname;
+    DGLU_API void dg_copystolstringn (
         Bufferhandle* pBHarrayhead,
-		UINT64 offsetbufferid,
-		UINT64 stringbufferid,
-		UINT64 stringid,
-		UINT64 offset,
-		unsigned char* psrc,
-		UINT64 length);
+        UINT64 offsetbufferid,
+        UINT64 stringbufferid,
+        UINT64 stringid,
+        UINT64 offset,
+        unsigned char* psrc,
+        UINT64 length);
   
     DGLU_API extern const char* dg_pushstolstringnname;
     DGLU_API void dg_pushstolstringn (
@@ -3918,43 +4084,43 @@ extern "C" {
         UINT64 stringid,
         unsigned char* psrc,
         UINT64 length);
-	
-	DGLU_API extern const char* dg_copysfromlstringnname;
-	DGLU_API void dg_copysfromlstringn (
+    
+    DGLU_API extern const char* dg_copysfromlstringnname;
+    DGLU_API void dg_copysfromlstringn (
         Bufferhandle* pBHarrayhead,
-		UINT64 offsetbufferid,
-		UINT64 stringbufferid,
-		UINT64 stringid,
-		UINT64 offset,
-		UINT64 length,
-		unsigned char* pdest);
-	
-	DGLU_API extern const char* dg_setlengthlstringnname;
-	DGLU_API void dg_setlengthlstringn (
+        UINT64 offsetbufferid,
+        UINT64 stringbufferid,
+        UINT64 stringid,
+        UINT64 offset,
+        UINT64 length,
+        unsigned char* pdest);
+    
+    DGLU_API extern const char* dg_setlengthlstringnname;
+    DGLU_API void dg_setlengthlstringn (
         Bufferhandle* pBHarrayhead,
-		UINT64 offsetbufferid,
-		UINT64 stringbufferid,
-		UINT64 stringid,
-		UINT64 newlength);
-	
-	DGLU_API extern const char* dg_replacelstringnname;
-	DGLU_API void dg_replacelstringn (
+        UINT64 offsetbufferid,
+        UINT64 stringbufferid,
+        UINT64 stringid,
+        UINT64 newlength);
+    
+    DGLU_API extern const char* dg_replacelstringnname;
+    DGLU_API void dg_replacelstringn (
         Bufferhandle* pBHarrayhead,
-		UINT64 offsetbufferid,
-		UINT64 stringbufferid,
-		UINT64 stringid,
-		unsigned char* psrc,
-		UINT64 length);
-	
-	DGLU_API extern const char* dg_copylstringntoreplacelstringnname;
-	DGLU_API void dg_copylstringntoreplacelstringn (
-		Bufferhandle* pBHarrayhead,
-		UINT64 srcoffsetbufferid,
-		UINT64 srcstringbufferid,
-		UINT64 srcstringid,
-		UINT64 destoffsetbufferid,
-		UINT64 deststringbufferid,
-		UINT64 deststringid);
+        UINT64 offsetbufferid,
+        UINT64 stringbufferid,
+        UINT64 stringid,
+        unsigned char* psrc,
+        UINT64 length);
+    
+    DGLU_API extern const char* dg_copylstringntoreplacelstringnname;
+    DGLU_API void dg_copylstringntoreplacelstringn (
+        Bufferhandle* pBHarrayhead,
+        UINT64 srcoffsetbufferid,
+        UINT64 srcstringbufferid,
+        UINT64 srcstringid,
+        UINT64 destoffsetbufferid,
+        UINT64 deststringbufferid,
+        UINT64 deststringid);
 
     DGLU_API extern const char* dg_copytoinsertlstrntomname;
     DGLU_API void dg_copytoinsertlstrntom (
@@ -4320,7 +4486,7 @@ extern "C" {
         UINT64* premainder);
     
     // #define dg_packedlstringmagic (0x6b636170)
-	
+    
     
     // ///////////////////////////
     // C Lstring Queue Routines //
@@ -4412,106 +4578,106 @@ extern "C" {
         SharedQueueHandleBufferStructs* psharedqueuebuffer, 
         UINT64 sharedquebufferlength);
     
-	// ///////////////////////
-	// C Wordlist Routines  //
-	// ///////////////////////
-	
-	DGLU_API extern const char* dg_newwordlistname;
+    // ///////////////////////
+    // C Wordlist Routines  //
+    // ///////////////////////
     
-	DGLU_API UINT64 dg_newwordlist (
+    DGLU_API extern const char* dg_newwordlistname;
+    
+    DGLU_API UINT64 dg_newwordlist (
         Bufferhandle* pBHarrayhead, 
         UINT64 parentelementid);
-	
-	
-	DGLU_API extern const char* dg_newwordname;
-	
-	DGLU_API UINT64 dg_newword (
-		Bufferhandle* pBHarrayhead,
-        UINT64 compilebufid,
-		UINT64 compilebufoffset,
-		UINT64 databufid,
-		UINT64 databufoffset,
-		UINT64 namebufid,
-		UINT64 nameoffset,
-		UINT64 namelength);
-
-
-	DGLU_API extern const char* dg_newwordcopynamename;
-	
-	DGLU_API UINT64 dg_newwordcopyname (
-		Bufferhandle* pBHarrayhead,
-		UINT64 compilebufid,
-		UINT64 compilebufoffset,
-		UINT64 databufid,
-		UINT64 databufoffset,
-		UINT64 namebufid,
-		UINT64 nameoffset,
-		UINT64 namelength);
-	
-	
-	DGLU_API UINT64 dg_new0stringnamecoreword (
-		Bufferhandle* pBHarrayhead, 
-		UINT64 compilebufoffset,
-		UINT64 databufoffset,
-		unsigned char* pname);
-	
-	
-	DGLU_API UINT64 dg_new0stringcorenameword (
-		Bufferhandle* pBHarrayhead, 
-		UINT64 compilebufid,
-		UINT64 compilebufoffset,
-		UINT64 databufid,
-		UINT64 databufoffset,
-		unsigned char* pname);
-	
-	
-	DGLU_API extern const char* dg_getpdefinitionname;   
-	
-	DGLU_API Definitionheader* dg_getpdefinition (
+    
+    
+    DGLU_API extern const char* dg_newwordname;
+    
+    DGLU_API UINT64 dg_newword (
         Bufferhandle* pBHarrayhead,
-		UINT64 definitionid);
-	
-	
-	DGLU_API extern const char* dg_linkdefinitionname;        
-	
-	DGLU_API void dg_linkdefinition (
-		Bufferhandle* pBHarrayhead,
-		UINT64 wordlistid,
-		UINT64 newwordid);
-	
-	
-	DGLU_API extern const char* dg_createovariablebufdefname;         
-	
-	DGLU_API UINT64 dg_createovariablebufdef (
-		Bufferhandle* pBHarrayhead,
-		unsigned char* pname,
-		UINT64 namelength);
-	
-	
-	DGLU_API extern const char* dg_createocompilebufdefname;         
-	
-	DGLU_API UINT64 dg_createocompilebufdef (
-		Bufferhandle* pBHarrayhead,
-		unsigned char* pname,
-		UINT64 namelength);
-	
-	
-	DGLU_API extern const char* dg_createsubthreaddefname;    
-	
-	DGLU_API UINT64 dg_createsubthreaddef (
-		Bufferhandle* pBHarrayhead,
-		unsigned char* pname,
-		UINT64 namelength);
-	
-	
-	DGLU_API extern const char* dg_createvariabledefname;         
-	
-	DGLU_API UINT64 dg_createvariabledef (
-		Bufferhandle* pBHarrayhead,
-		unsigned char* pname,
-		UINT64 namelength);
-	
-	
+        UINT64 compilebufid,
+        UINT64 compilebufoffset,
+        UINT64 databufid,
+        UINT64 databufoffset,
+        UINT64 namebufid,
+        UINT64 nameoffset,
+        UINT64 namelength);
+
+
+    DGLU_API extern const char* dg_newwordcopynamename;
+    
+    DGLU_API UINT64 dg_newwordcopyname (
+        Bufferhandle* pBHarrayhead,
+        UINT64 compilebufid,
+        UINT64 compilebufoffset,
+        UINT64 databufid,
+        UINT64 databufoffset,
+        UINT64 namebufid,
+        UINT64 nameoffset,
+        UINT64 namelength);
+    
+    
+    DGLU_API UINT64 dg_new0stringnamecoreword (
+        Bufferhandle* pBHarrayhead, 
+        UINT64 compilebufoffset,
+        UINT64 databufoffset,
+        unsigned char* pname);
+    
+    
+    DGLU_API UINT64 dg_new0stringcorenameword (
+        Bufferhandle* pBHarrayhead, 
+        UINT64 compilebufid,
+        UINT64 compilebufoffset,
+        UINT64 databufid,
+        UINT64 databufoffset,
+        unsigned char* pname);
+    
+    
+    DGLU_API extern const char* dg_getpdefinitionname;   
+    
+    DGLU_API Definitionheader* dg_getpdefinition (
+        Bufferhandle* pBHarrayhead,
+        UINT64 definitionid);
+    
+    
+    DGLU_API extern const char* dg_linkdefinitionname;        
+    
+    DGLU_API void dg_linkdefinition (
+        Bufferhandle* pBHarrayhead,
+        UINT64 wordlistid,
+        UINT64 newwordid);
+    
+    
+    DGLU_API extern const char* dg_createovariablebufdefname;         
+    
+    DGLU_API UINT64 dg_createovariablebufdef (
+        Bufferhandle* pBHarrayhead,
+        unsigned char* pname,
+        UINT64 namelength);
+    
+    
+    DGLU_API extern const char* dg_createocompilebufdefname;         
+    
+    DGLU_API UINT64 dg_createocompilebufdef (
+        Bufferhandle* pBHarrayhead,
+        unsigned char* pname,
+        UINT64 namelength);
+    
+    
+    DGLU_API extern const char* dg_createsubthreaddefname;    
+    
+    DGLU_API UINT64 dg_createsubthreaddef (
+        Bufferhandle* pBHarrayhead,
+        unsigned char* pname,
+        UINT64 namelength);
+    
+    
+    DGLU_API extern const char* dg_createvariabledefname;         
+    
+    DGLU_API UINT64 dg_createvariabledef (
+        Bufferhandle* pBHarrayhead,
+        unsigned char* pname,
+        UINT64 namelength);
+    
+    
     DGLU_API extern const char* dg_createdconstantdefname;
 
     DGLU_API UINT64 dg_createdconstantdef (
@@ -4522,13 +4688,13 @@ extern "C" {
         UINT64 namelength);
     
     
-	DGLU_API extern const char* dg_createconstantdefname;        
-	
-	DGLU_API UINT64 dg_createconstantdef (
-		Bufferhandle* pBHarrayhead,
-		UINT64 dataid,
-		unsigned char* pname,
-		UINT64 namelength);
+    DGLU_API extern const char* dg_createconstantdefname;        
+    
+    DGLU_API UINT64 dg_createconstantdef (
+        Bufferhandle* pBHarrayhead,
+        UINT64 dataid,
+        unsigned char* pname,
+        UINT64 namelength);
   
   
     DGLU_API extern const char* dg_createbrackettoorderconstantdefname;
@@ -4682,15 +4848,15 @@ extern "C" {
         
     DGLU_API void dg_forthfedot(Bufferhandle* pBHarrayhead);
     
-	
-	
+    
+    
         
         
-	/*
-	//////////////////////////////////
-	// Some Buffer Parsing Routines //
-	//////////////////////////////////
-	
+    /*
+    //////////////////////////////////
+    // Some Buffer Parsing Routines //
+    //////////////////////////////////
+    
     DGLU_API extern const char dg_captureerrorlinename[];
 
     DGLU_API void dg_captureerrorline(
@@ -4698,38 +4864,38 @@ extern "C" {
         UINT32 bufferid);
     
     */
-	DGLU_API extern const char* dg_evaluatebuffername;       
-	
-	DGLU_API void dg_evaluatebuffer (
+    DGLU_API extern const char* dg_evaluatebuffername;       
+    
+    DGLU_API void dg_evaluatebuffer (
         Bufferhandle* pBHarrayhead, 
-		UINT64 bufferid);
-	
-	
-	DGLU_API void dg_forthevaluatebuffer (Bufferhandle* pBHarrayhead);
-	//                   ( bufferid -- )
-	
+        UINT64 bufferid);
+    
+    
+    DGLU_API void dg_forthevaluatebuffer (Bufferhandle* pBHarrayhead);
+    //                   ( bufferid -- )
+    
 /*
-	DGLU_API extern const char* dg_argstoargsbuffername;  
-	
-	DGLU_API void dg_argstoargsbuffer (
+    DGLU_API extern const char* dg_argstoargsbuffername;  
+    
+    DGLU_API void dg_argstoargsbuffer (
         Bufferhandle* pBHarrayhead, 
-		INT64 argc,
-		char* argv[]);
-*/	
-	
-	DGLU_API extern const char* dg_forthdopromptgetstateerror;
-	
-	DGLU_API void dg_forthdoprompt (Bufferhandle* pBHarrayhead);
+        INT64 argc,
+        char* argv[]);
+*/    
+    
+    DGLU_API extern const char* dg_forthdopromptgetstateerror;
+    
+    DGLU_API void dg_forthdoprompt (Bufferhandle* pBHarrayhead);
     
     /////////////////////////////////////////
-	// End of Some Buffer Parsing Routines //
-	/////////////////////////////////////////
-	
+    // End of Some Buffer Parsing Routines //
+    /////////////////////////////////////////
+    
     
     
     //////////////////////////////////
     // C Hierarchical List Routines //
-	//////////////////////////////////
+    //////////////////////////////////
     
     DGLU_API extern const char* dg_sortedkeyslstringname;
     
@@ -5092,888 +5258,888 @@ extern "C" {
     // ///////////////////////////////////////
     
     
-	// ////////////////////
-	// FORTH Core Words  //
-	// ////////////////////
-	
-	
-	DGLU_API extern const char dg_forthstorename[];  
-	
-	DGLU_API void dg_forthstore (Bufferhandle* pBHarrayhead);
-	//         ( data address -- )
-	
-	
-	DGLU_API extern const char dg_forthnumbersignname[];    
-	
-	DGLU_API void dg_forthnumbersign (Bufferhandle* pBHarrayhead);
-	//              ( u1 -- u1/base )
-	//              ( number$ -pad- number$2 )
-	
-	
-	DGLU_API extern const char dg_forthnumbersigngreatername[];        
-	
-	DGLU_API void dg_forthnumbersigngreater (Bufferhandle* pBHarrayhead);
-	//                     ( u1 -- addressofnumber$ lengthofnumber$ )
-	//                     ( number$ -pad- number$ )
-	
-	
-	DGLU_API extern const char dg_forthnumbersignsname[];
-	
-	DGLU_API void dg_forthnumbersigns (Bufferhandle* pBHarrayhead);
-	//               ( u1 -- 0 )
-	//               ( number$ -pad- number$2 )
-	
-	
-	DGLU_API extern const char dg_forthtickname[]; 
-	
-	DGLU_API void dg_forthtick (Bufferhandle* pBHarrayhead);
-	//             ( "<spaces>name<spaces>morestuff" -currentinputbuffer- "<spaces>morestuff")
-	//             ( -- executiontoken )
-	
-	
-	DGLU_API extern const char dg_forthparenname[];
-	
-	DGLU_API void dg_forthparen (Bufferhandle* pBHarrayhead); // ( ( ) comment
-	//         ( "somestuff<rightdg_forthparen>morestuff" -currentinputbuffer- "morestuff" )
-	
-	
-	DGLU_API extern const char dg_forthstarname[];       
-	
-	DGLU_API void dg_forthstar (Bufferhandle* pBHarrayhead);          
-	//        ( n1 n2 -- n1*n2 )
+    // ////////////////////
+    // FORTH Core Words  //
+    // ////////////////////
     
-	
-	DGLU_API extern const char dg_forthstarslashname[];
-	
-	DGLU_API void dg_forthstarslash (Bufferhandle* pBHarrayhead);     
-	//             ( n1 n2 n3 -- n1*n2/n3 )
-	
-	
-	DGLU_API extern const char dg_forthstarslashmodname[];
-	
-	DGLU_API void dg_forthstarslashmod (Bufferhandle* pBHarrayhead);  
-	//                ( n1 n2 n3 -- remainder n1*n2/n3 )
-	
-	
-	DGLU_API extern const char dg_forthplusname[];            
-	
-	DGLU_API void dg_forthplus (Bufferhandle* pBHarrayhead);          
-	//        ( n1 n2 -- n1+n2 )
-	
-	
-	DGLU_API extern const char dg_forthplusstorename[];
-	
-	DGLU_API void dg_forthplusstore (Bufferhandle* pBHarrayhead);
-	//             ( n1 addr -- )
-	
-	
-	DGLU_API extern const char dg_checkplusloopdonename[];   
-	
-	DGLU_API UINT64 dg_checkplusloopdone (Bufferhandle* pBHarrayhead);
-	//                             ( index limit -r- | index limit )
-	//                             ( loopstep -- )
     
-	
-	DGLU_API extern const char dg_forthplusloopname[];
-	
-	DGLU_API void dg_forthplusloop (Bufferhandle* pBHarrayhead);
-	//            ( do-sys -- )
-	//            ( compiles code that does: ) ( loopstep -- ) 
-	//            ( loop-sys1 -controlflowstack- ) if loop ends
-	//            ( loop-sys1 -controlflowstack- loop-sys1' ) if loop does not end
-	
-	
-	DGLU_API extern const char dg_forthcommaname[]; 
-	
-	DGLU_API void dg_forthcomma (Bufferhandle* pBHarrayhead);
-	//         ( n1 -- )
-	//         ( -currentcompilebuffer- n1 )
-	
-	
-	DGLU_API extern const char dg_forthminusname[];
-	
-	DGLU_API void dg_forthminus (Bufferhandle* pBHarrayhead);         
-	//         ( n1 n2 -- n1-n2 )
-	
-	
-	DGLU_API extern const char dg_forthdotname[];
-	
-	DGLU_API void dg_forthdot (Bufferhandle* pBHarrayhead);
-	//            ( n1 -- )
-	
-	
-	DGLU_API extern const char dg_forthdotquotesname[];
-	
-	DGLU_API void dg_forthdotquotes (Bufferhandle* pBHarrayhead); // compiling routine
-	//                  ( "stuff<quotes>morestuff" -currentinputbuffer- "morestuff" )
-	
-	
+    DGLU_API extern const char dg_forthstorename[];  
+    
+    DGLU_API void dg_forthstore (Bufferhandle* pBHarrayhead);
+    //         ( data address -- )
+    
+    
+    DGLU_API extern const char dg_forthnumbersignname[];    
+    
+    DGLU_API void dg_forthnumbersign (Bufferhandle* pBHarrayhead);
+    //              ( u1 -- u1/base )
+    //              ( number$ -pad- number$2 )
+    
+    
+    DGLU_API extern const char dg_forthnumbersigngreatername[];        
+    
+    DGLU_API void dg_forthnumbersigngreater (Bufferhandle* pBHarrayhead);
+    //                     ( u1 -- addressofnumber$ lengthofnumber$ )
+    //                     ( number$ -pad- number$ )
+    
+    
+    DGLU_API extern const char dg_forthnumbersignsname[];
+    
+    DGLU_API void dg_forthnumbersigns (Bufferhandle* pBHarrayhead);
+    //               ( u1 -- 0 )
+    //               ( number$ -pad- number$2 )
+    
+    
+    DGLU_API extern const char dg_forthtickname[]; 
+    
+    DGLU_API void dg_forthtick (Bufferhandle* pBHarrayhead);
+    //             ( "<spaces>name<spaces>morestuff" -currentinputbuffer- "<spaces>morestuff")
+    //             ( -- executiontoken )
+    
+    
+    DGLU_API extern const char dg_forthparenname[];
+    
+    DGLU_API void dg_forthparen (Bufferhandle* pBHarrayhead); // ( ( ) comment
+    //         ( "somestuff<rightdg_forthparen>morestuff" -currentinputbuffer- "morestuff" )
+    
+    
+    DGLU_API extern const char dg_forthstarname[];       
+    
+    DGLU_API void dg_forthstar (Bufferhandle* pBHarrayhead);          
+    //        ( n1 n2 -- n1*n2 )
+    
+    
+    DGLU_API extern const char dg_forthstarslashname[];
+    
+    DGLU_API void dg_forthstarslash (Bufferhandle* pBHarrayhead);     
+    //             ( n1 n2 n3 -- n1*n2/n3 )
+    
+    
+    DGLU_API extern const char dg_forthstarslashmodname[];
+    
+    DGLU_API void dg_forthstarslashmod (Bufferhandle* pBHarrayhead);  
+    //                ( n1 n2 n3 -- remainder n1*n2/n3 )
+    
+    
+    DGLU_API extern const char dg_forthplusname[];            
+    
+    DGLU_API void dg_forthplus (Bufferhandle* pBHarrayhead);          
+    //        ( n1 n2 -- n1+n2 )
+    
+    
+    DGLU_API extern const char dg_forthplusstorename[];
+    
+    DGLU_API void dg_forthplusstore (Bufferhandle* pBHarrayhead);
+    //             ( n1 addr -- )
+    
+    
+    DGLU_API extern const char dg_checkplusloopdonename[];   
+    
+    DGLU_API UINT64 dg_checkplusloopdone (Bufferhandle* pBHarrayhead);
+    //                             ( index limit -r- | index limit )
+    //                             ( loopstep -- )
+    
+    
+    DGLU_API extern const char dg_forthplusloopname[];
+    
+    DGLU_API void dg_forthplusloop (Bufferhandle* pBHarrayhead);
+    //            ( do-sys -- )
+    //            ( compiles code that does: ) ( loopstep -- ) 
+    //            ( loop-sys1 -controlflowstack- ) if loop ends
+    //            ( loop-sys1 -controlflowstack- loop-sys1' ) if loop does not end
+    
+    
+    DGLU_API extern const char dg_forthcommaname[]; 
+    
+    DGLU_API void dg_forthcomma (Bufferhandle* pBHarrayhead);
+    //         ( n1 -- )
+    //         ( -currentcompilebuffer- n1 )
+    
+    
+    DGLU_API extern const char dg_forthminusname[];
+    
+    DGLU_API void dg_forthminus (Bufferhandle* pBHarrayhead);         
+    //         ( n1 n2 -- n1-n2 )
+    
+    
+    DGLU_API extern const char dg_forthdotname[];
+    
+    DGLU_API void dg_forthdot (Bufferhandle* pBHarrayhead);
+    //            ( n1 -- )
+    
+    
+    DGLU_API extern const char dg_forthdotquotesname[];
+    
+    DGLU_API void dg_forthdotquotes (Bufferhandle* pBHarrayhead); // compiling routine
+    //                  ( "stuff<quotes>morestuff" -currentinputbuffer- "morestuff" )
+    
+    
     DGLU_API extern const char dg_forthdotrname[];
     
     DGLU_API void dg_forthdotr (Bufferhandle* pBHarrayhead);
     //            ( n1 n2 -- )
     
        
-	DGLU_API extern const char dg_forthslashname[];
-	
-	DGLU_API void dg_forthslash (Bufferhandle* pBHarrayhead);         
-	//         ( n1 n2 -- n1/n2 )
+    DGLU_API extern const char dg_forthslashname[];
     
-	
-	DGLU_API extern const char dg_forthslashmodname[];
-	
-	DGLU_API void dg_forthslashmod (Bufferhandle* pBHarrayhead);      
-	//            ( n1 n2 -- remainder quotient )
-	
-	
-	DGLU_API extern const char dg_forthzerolessname[];
-	
-	DGLU_API void dg_forthzeroless (Bufferhandle* pBHarrayhead);      
-	//            ( n1 -- flag )
-	
-	
-	DGLU_API extern const char dg_forthzeroequalsname[];
-	
-	DGLU_API void dg_forthzeroequals (Bufferhandle* pBHarrayhead);    
-	//              ( n1 -- flag )
-	
-	
-	DGLU_API extern const char dg_forthoneplusname[];
-	
-	DGLU_API void dg_forthoneplus (Bufferhandle* pBHarrayhead);       
-	//           ( n1 -- n1++ )
-	
-	
-	DGLU_API extern const char dg_forthoneminusname[];
-	
-	DGLU_API void dg_forthoneminus (Bufferhandle* pBHarrayhead);      
-	//            ( n1 -- n1-1 )
+    DGLU_API void dg_forthslash (Bufferhandle* pBHarrayhead);         
+    //         ( n1 n2 -- n1/n2 )
     
-	
-	DGLU_API extern const char dg_forthtwostorename[];
-	
-	DGLU_API void dg_forthtwostore (Bufferhandle* pBHarrayhead);
-	//            ( n1 n2 addr -- )
-	
-	
-	DGLU_API extern const char dg_forthtwostarname[];
-	
-	DGLU_API void dg_forthtwostar (Bufferhandle* pBHarrayhead);      
-	//           ( n1 -- n1*2 )
-	
-	
-	DGLU_API extern const char dg_forthtwoslashname[];
-	
-	DGLU_API void dg_forthtwoslash (Bufferhandle* pBHarrayhead);     
-	//            ( n1 -- n1/2 )
-	
-	
-	DGLU_API extern const char dg_forthtwofetchname[];
-	
-	DGLU_API void dg_forthtwofetch (Bufferhandle* pBHarrayhead);
-	//            ( addr -- n1 n2 )
-	
-	
-	DGLU_API extern const char dg_forthtwodropname[];
-	
-	DGLU_API void dg_forthtwodrop (Bufferhandle* pBHarrayhead);       
-	//           ( n1 n2 -- )
-	
-	
-	DGLU_API extern const char dg_forthtwodupname[];
-	
-	DGLU_API void dg_forthtwodup (Bufferhandle* pBHarrayhead);        
-	//          ( n1 n2 -- n1 n2 n1 n2 )
-	
-	
-	DGLU_API extern const char dg_forthtwoovername[];
-	
-	DGLU_API void dg_forthtwoover (Bufferhandle* pBHarrayhead);       
-	//           ( n1 n2 n3 n4 -- n1 n2 n3 n4 n1 n2 )
-	
-	
-	DGLU_API extern const char dg_forthtwoswapname[];
-	
-	DGLU_API void dg_forthtwoswap (Bufferhandle* pBHarrayhead);       
-	//           ( n1 n2 n3 n4 -- n3 n4 n1 n2 )
-	
-	
-	DGLU_API extern const char dg_forthcolonname[];
-	
-	DGLU_API void dg_forthcolon (Bufferhandle* pBHarrayhead);
-	//              ( "<delimiters>name<delimiters>morestuff" -currentinputbuffer- "spaces<morestuff>" )
-	//              ( -- colonsys )
-	
-	
+    
+    DGLU_API extern const char dg_forthslashmodname[];
+    
+    DGLU_API void dg_forthslashmod (Bufferhandle* pBHarrayhead);      
+    //            ( n1 n2 -- remainder quotient )
+    
+    
+    DGLU_API extern const char dg_forthzerolessname[];
+    
+    DGLU_API void dg_forthzeroless (Bufferhandle* pBHarrayhead);      
+    //            ( n1 -- flag )
+    
+    
+    DGLU_API extern const char dg_forthzeroequalsname[];
+    
+    DGLU_API void dg_forthzeroequals (Bufferhandle* pBHarrayhead);    
+    //              ( n1 -- flag )
+    
+    
+    DGLU_API extern const char dg_forthoneplusname[];
+    
+    DGLU_API void dg_forthoneplus (Bufferhandle* pBHarrayhead);       
+    //           ( n1 -- n1++ )
+    
+    
+    DGLU_API extern const char dg_forthoneminusname[];
+    
+    DGLU_API void dg_forthoneminus (Bufferhandle* pBHarrayhead);      
+    //            ( n1 -- n1-1 )
+    
+    
+    DGLU_API extern const char dg_forthtwostorename[];
+    
+    DGLU_API void dg_forthtwostore (Bufferhandle* pBHarrayhead);
+    //            ( n1 n2 addr -- )
+    
+    
+    DGLU_API extern const char dg_forthtwostarname[];
+    
+    DGLU_API void dg_forthtwostar (Bufferhandle* pBHarrayhead);      
+    //           ( n1 -- n1*2 )
+    
+    
+    DGLU_API extern const char dg_forthtwoslashname[];
+    
+    DGLU_API void dg_forthtwoslash (Bufferhandle* pBHarrayhead);     
+    //            ( n1 -- n1/2 )
+    
+    
+    DGLU_API extern const char dg_forthtwofetchname[];
+    
+    DGLU_API void dg_forthtwofetch (Bufferhandle* pBHarrayhead);
+    //            ( addr -- n1 n2 )
+    
+    
+    DGLU_API extern const char dg_forthtwodropname[];
+    
+    DGLU_API void dg_forthtwodrop (Bufferhandle* pBHarrayhead);       
+    //           ( n1 n2 -- )
+    
+    
+    DGLU_API extern const char dg_forthtwodupname[];
+    
+    DGLU_API void dg_forthtwodup (Bufferhandle* pBHarrayhead);        
+    //          ( n1 n2 -- n1 n2 n1 n2 )
+    
+    
+    DGLU_API extern const char dg_forthtwoovername[];
+    
+    DGLU_API void dg_forthtwoover (Bufferhandle* pBHarrayhead);       
+    //           ( n1 n2 n3 n4 -- n1 n2 n3 n4 n1 n2 )
+    
+    
+    DGLU_API extern const char dg_forthtwoswapname[];
+    
+    DGLU_API void dg_forthtwoswap (Bufferhandle* pBHarrayhead);       
+    //           ( n1 n2 n3 n4 -- n3 n4 n1 n2 )
+    
+    
+    DGLU_API extern const char dg_forthcolonname[];
+    
+    DGLU_API void dg_forthcolon (Bufferhandle* pBHarrayhead);
+    //              ( "<delimiters>name<delimiters>morestuff" -currentinputbuffer- "spaces<morestuff>" )
+    //              ( -- colonsys )
+    
+    
  #define dg_forthsemicolonnamelength (1)   
-	DGLU_API extern const char dg_forthsemicolonname[];
-	
-	DGLU_API void dg_forthsemicolon (Bufferhandle* pBHarrayhead);
-	//                  ( colonsys -- )
-	
-	
-	DGLU_API extern const char dg_forthlessthanname[];
-	
-	DGLU_API void dg_forthlessthan (Bufferhandle* pBHarrayhead);      
-	//            ( n1 n2 -- flag )
-	
-	
-	
-	DGLU_API extern const char dg_forthlessthannumbersignname[];
-	
-	DGLU_API void dg_forthlessthannumbersign (Bufferhandle* pBHarrayhead);
-	//                      ( -- )
-	//                      ( "number$" -pad- )
-	
-	
-	DGLU_API extern const char dg_forthequalsname[];
-	
-	DGLU_API void dg_forthequals (Bufferhandle* pBHarrayhead);
-	//          ( n1 n2 -- flag )
-	
-	
-	DGLU_API extern const char dg_forthgreaterthanname[];
-	
-	DGLU_API void dg_forthgreaterthan (Bufferhandle* pBHarrayhead);   
-	//               ( n1 n2 -- flag )
-	
-	
-	DGLU_API extern const char dg_forthtobodyname[];
-	
-	DGLU_API void dg_forthtobody (Bufferhandle* pBHarrayhead); 
-	//          ( executiontoken -- address )
-	
-	
-	DGLU_API extern const char dg_forthtoinname[];
-	
-	DGLU_API void dg_forthtoin (Bufferhandle* pBHarrayhead);
-	//        (  -- addressofcurrentoffset )
-	
-	
-	DGLU_API extern const char dg_forthtonumbername[];
-	
-	DGLU_API void dg_forthtonumber (Bufferhandle* pBHarrayhead);
-	//            ( ud1 c-addr1 u1 -- ud2 c-addr2 u2)
-	
-	
-	DGLU_API extern const char dg_forthtorname[];
-	
-	DGLU_API void dg_forthtor (Bufferhandle* pBHarrayhead);
-	//       ( x1 -- )
-	//       ( -r- x1 )
-	
-	
-	DGLU_API extern const char dg_forthquestiondupname[];
-	
-	DGLU_API void dg_forthquestiondup (Bufferhandle* pBHarrayhead);   
-	// ( n1 -- n1 ) if n1 = 0 or 
-	// ( n1 -- n1 n1 ) if n1 != 0
-	
-	
-	DGLU_API extern const char dg_forthfetchname[];
-	
-	DGLU_API void dg_forthfetch (Bufferhandle* pBHarrayhead);
-	//         ( address -- data )
-	
-	
-	DGLU_API extern const char dg_forthabortname[];
-	
-	DGLU_API void dg_forthabort (Bufferhandle* pBHarrayhead);
-	//              ( xintegers -- )
-	//              ( xintegers -r- )
+    DGLU_API extern const char dg_forthsemicolonname[];
     
-	
-	DGLU_API extern const char dg_forthabortquotesname[];
-	
-	DGLU_API void dg_forthabortquotes (Bufferhandle* pBHarrayhead);
-	//                    ( flag -- )
+    DGLU_API void dg_forthsemicolon (Bufferhandle* pBHarrayhead);
+    //                  ( colonsys -- )
     
-	
-	DGLU_API extern const char dg_forthabsname[];
-	
-	DGLU_API void dg_forthabs (Bufferhandle* pBHarrayhead);   
-	//               ( n1 -- u1 )
-	
-	
-	DGLU_API extern const char dg_forthacceptname[];
-	
-	DGLU_API void dg_forthaccept (Bufferhandle* pBHarrayhead);
-	//               ( caddr +n1 -- +n2 )
-	
-	
-	DGLU_API extern const char dg_forthalignname[];
-	
-	DGLU_API void dg_forthalign (Bufferhandle* pBHarrayhead);
-	//              ( -- )
-	
-	
-	DGLU_API extern const char dg_forthalignedname[];
-	
-	DGLU_API void dg_forthaligned (Bufferhandle* pBHarrayhead);
-	//                ( addr -- a-addr )
-	
-	
-	DGLU_API extern const char dg_forthallotname[];
-	
-	DGLU_API void dg_forthallot (Bufferhandle* pBHarrayhead);
-	//         ( n1 -- )
-	//         ( -currentnewvariablebuffer- +n1bytes )
     
-	
-	DGLU_API extern const char dg_forthandname[];
-	
-	DGLU_API void dg_forthand (Bufferhandle* pBHarrayhead);    
-	//              ( u1 u2 -- u1&u2 ) funky name to aDGLU_API void using reserved word
-	
-	
-	DGLU_API extern const char dg_forthbasename[];
-	
-	DGLU_API void dg_forthbase (Bufferhandle* pBHarrayhead);
-	//             ( -- a-addr )
+    DGLU_API extern const char dg_forthlessthanname[];
     
-	
-	DGLU_API extern const char dg_forthbeginname[];
-	
-	DGLU_API void dg_forthbegin (Bufferhandle* pBHarrayhead);
-	//              ( -- codespaceoffset )
-	
-	
-	DGLU_API extern const char dg_forthblname[];
-	
-	DGLU_API void dg_forthbl  (Bufferhandle* pBHarrayhead);    
-	//              ( -- space ) a.k.a. bl
-	
-	
-	DGLU_API extern const char dg_forthcstorename[];
-	
-	DGLU_API void dg_forthcstore (Bufferhandle* pBHarrayhead);
-	//          ( char c-addr -- )
-	
-	
-	DGLU_API extern const char dg_forthccommaname[];
-	
-	DGLU_API void dg_forthccomma (Bufferhandle* pBHarrayhead);
-	//          ( char -- )
-	
-	
-	DGLU_API extern const char dg_forthcfetchname[];
-	
-	DGLU_API void dg_forthcfetch (Bufferhandle* pBHarrayhead);
-	//         ( address -- char )
-	
-	
-	DGLU_API extern const char dg_forthcellplusname[];
-	
-	DGLU_API void dg_forthcellplus (Bufferhandle* pBHarrayhead);
-	//            ( a-addr1 -- a-addr2 )
-	
-	
-	DGLU_API extern const char dg_forthcellsname[];
-	
-	DGLU_API void dg_forthcells (Bufferhandle* pBHarrayhead);
-	//         ( n1 -- n1*dg_forthcellsize )
-	
-	
-	DGLU_API extern const char dg_forthcharname[];
-	
-	DGLU_API void dg_forthchar (Bufferhandle* pBHarrayhead);
-	//             ( "<spaces>word<spaces>morestuff" -currentinputbuffer- "<spaces>morestuff" )
-	//             ( -- firstcharofword )
+    DGLU_API void dg_forthlessthan (Bufferhandle* pBHarrayhead);      
+    //            ( n1 n2 -- flag )
     
-	
-	DGLU_API extern const char dg_forthcharplusname[];
-	
-	DGLU_API void dg_forthcharplus (Bufferhandle* pBHarrayhead);
-	//            ( c-addr1 -- c-addr2 )
-	
-	
-	DGLU_API extern const char dg_forthcharsname[];
-	
-	DGLU_API void dg_forthchars (Bufferhandle* pBHarrayhead);
-	//         ( n1 -- n1*charsize )
-	
+    
+    
+    DGLU_API extern const char dg_forthlessthannumbersignname[];
+    
+    DGLU_API void dg_forthlessthannumbersign (Bufferhandle* pBHarrayhead);
+    //                      ( -- )
+    //                      ( "number$" -pad- )
+    
+    
+    DGLU_API extern const char dg_forthequalsname[];
+    
+    DGLU_API void dg_forthequals (Bufferhandle* pBHarrayhead);
+    //          ( n1 n2 -- flag )
+    
+    
+    DGLU_API extern const char dg_forthgreaterthanname[];
+    
+    DGLU_API void dg_forthgreaterthan (Bufferhandle* pBHarrayhead);   
+    //               ( n1 n2 -- flag )
+    
+    
+    DGLU_API extern const char dg_forthtobodyname[];
+    
+    DGLU_API void dg_forthtobody (Bufferhandle* pBHarrayhead); 
+    //          ( executiontoken -- address )
+    
+    
+    DGLU_API extern const char dg_forthtoinname[];
+    
+    DGLU_API void dg_forthtoin (Bufferhandle* pBHarrayhead);
+    //        (  -- addressofcurrentoffset )
+    
+    
+    DGLU_API extern const char dg_forthtonumbername[];
+    
+    DGLU_API void dg_forthtonumber (Bufferhandle* pBHarrayhead);
+    //            ( ud1 c-addr1 u1 -- ud2 c-addr2 u2)
+    
+    
+    DGLU_API extern const char dg_forthtorname[];
+    
+    DGLU_API void dg_forthtor (Bufferhandle* pBHarrayhead);
+    //       ( x1 -- )
+    //       ( -r- x1 )
+    
+    
+    DGLU_API extern const char dg_forthquestiondupname[];
+    
+    DGLU_API void dg_forthquestiondup (Bufferhandle* pBHarrayhead);   
+    // ( n1 -- n1 ) if n1 = 0 or 
+    // ( n1 -- n1 n1 ) if n1 != 0
+    
+    
+    DGLU_API extern const char dg_forthfetchname[];
+    
+    DGLU_API void dg_forthfetch (Bufferhandle* pBHarrayhead);
+    //         ( address -- data )
+    
+    
+    DGLU_API extern const char dg_forthabortname[];
+    
+    DGLU_API void dg_forthabort (Bufferhandle* pBHarrayhead);
+    //              ( xintegers -- )
+    //              ( xintegers -r- )
+    
+    
+    DGLU_API extern const char dg_forthabortquotesname[];
+    
+    DGLU_API void dg_forthabortquotes (Bufferhandle* pBHarrayhead);
+    //                    ( flag -- )
+    
+    
+    DGLU_API extern const char dg_forthabsname[];
+    
+    DGLU_API void dg_forthabs (Bufferhandle* pBHarrayhead);   
+    //               ( n1 -- u1 )
+    
+    
+    DGLU_API extern const char dg_forthacceptname[];
+    
+    DGLU_API void dg_forthaccept (Bufferhandle* pBHarrayhead);
+    //               ( caddr +n1 -- +n2 )
+    
+    
+    DGLU_API extern const char dg_forthalignname[];
+    
+    DGLU_API void dg_forthalign (Bufferhandle* pBHarrayhead);
+    //              ( -- )
+    
+    
+    DGLU_API extern const char dg_forthalignedname[];
+    
+    DGLU_API void dg_forthaligned (Bufferhandle* pBHarrayhead);
+    //                ( addr -- a-addr )
+    
+    
+    DGLU_API extern const char dg_forthallotname[];
+    
+    DGLU_API void dg_forthallot (Bufferhandle* pBHarrayhead);
+    //         ( n1 -- )
+    //         ( -currentnewvariablebuffer- +n1bytes )
+    
+    
+    DGLU_API extern const char dg_forthandname[];
+    
+    DGLU_API void dg_forthand (Bufferhandle* pBHarrayhead);    
+    //              ( u1 u2 -- u1&u2 ) funky name to aDGLU_API void using reserved word
+    
+    
+    DGLU_API extern const char dg_forthbasename[];
+    
+    DGLU_API void dg_forthbase (Bufferhandle* pBHarrayhead);
+    //             ( -- a-addr )
+    
+    
+    DGLU_API extern const char dg_forthbeginname[];
+    
+    DGLU_API void dg_forthbegin (Bufferhandle* pBHarrayhead);
+    //              ( -- codespaceoffset )
+    
+    
+    DGLU_API extern const char dg_forthblname[];
+    
+    DGLU_API void dg_forthbl  (Bufferhandle* pBHarrayhead);    
+    //              ( -- space ) a.k.a. bl
+    
+    
+    DGLU_API extern const char dg_forthcstorename[];
+    
+    DGLU_API void dg_forthcstore (Bufferhandle* pBHarrayhead);
+    //          ( char c-addr -- )
+    
+    
+    DGLU_API extern const char dg_forthccommaname[];
+    
+    DGLU_API void dg_forthccomma (Bufferhandle* pBHarrayhead);
+    //          ( char -- )
+    
+    
+    DGLU_API extern const char dg_forthcfetchname[];
+    
+    DGLU_API void dg_forthcfetch (Bufferhandle* pBHarrayhead);
+    //         ( address -- char )
+    
+    
+    DGLU_API extern const char dg_forthcellplusname[];
+    
+    DGLU_API void dg_forthcellplus (Bufferhandle* pBHarrayhead);
+    //            ( a-addr1 -- a-addr2 )
+    
+    
+    DGLU_API extern const char dg_forthcellsname[];
+    
+    DGLU_API void dg_forthcells (Bufferhandle* pBHarrayhead);
+    //         ( n1 -- n1*dg_forthcellsize )
+    
+    
+    DGLU_API extern const char dg_forthcharname[];
+    
+    DGLU_API void dg_forthchar (Bufferhandle* pBHarrayhead);
+    //             ( "<spaces>word<spaces>morestuff" -currentinputbuffer- "<spaces>morestuff" )
+    //             ( -- firstcharofword )
+    
+    
+    DGLU_API extern const char dg_forthcharplusname[];
+    
+    DGLU_API void dg_forthcharplus (Bufferhandle* pBHarrayhead);
+    //            ( c-addr1 -- c-addr2 )
+    
+    
+    DGLU_API extern const char dg_forthcharsname[];
+    
+    DGLU_API void dg_forthchars (Bufferhandle* pBHarrayhead);
+    //         ( n1 -- n1*charsize )
+    
  
     DGLU_API extern const char dg_forthcmovename[];
     
     DGLU_API void dg_forthcmove (Bufferhandle* pBHarrayhead);
     //             ( addr1 addr2 u -- )
     
-	
+    
     DGLU_API extern const char dg_forthcmovetoname[];
     
     DGLU_API void dg_forthcmoveto (Bufferhandle* pBHarrayhead);
     //             ( addr1 addr2 u -- )
     
        
-	DGLU_API extern const char dg_forthconstantname[];
-	
-	DGLU_API void dg_forthconstant (Bufferhandle* pBHarrayhead);
-	//                 ( "<spaces>word<spaces>morestuff" -currentinputbuffer- "<spaces>morestuff" )
-	//                 ( n1 -- )
-	
-	
-	DGLU_API extern const char dg_forthcountname[];
-	
-	DGLU_API void dg_forthcount (Bufferhandle* pBHarrayhead);
-	//              ( c-addr1 -- c-addr2 u )
-	
-	
-	DGLU_API extern const char dg_forthcrname[];
-	
-	DGLU_API void dg_forthcr (Bufferhandle* pBHarrayhead);
-	//           ( -- )
+    DGLU_API extern const char dg_forthconstantname[];
     
-	
-	DGLU_API extern const char dg_forthcreatename[];
-	
-	DGLU_API void dg_forthcreate (Bufferhandle* pBHarrayhead);
-	//               ( "<spaces>word<spaces>morestuff" -currentinputbuffer- "<spaces>morestuff" )
-	
-	
-	DGLU_API extern const char dg_forthdecimalname[];
-	
-	DGLU_API void dg_forthdecimal (Bufferhandle* pBHarrayhead);
-	//                    ( -- )
-	
-	
-	DGLU_API extern const char dg_forthdepthname[];
-	
-	DGLU_API void dg_forthdepth (Bufferhandle* pBHarrayhead);
-	//              ( nx ... n2 n1 -- nx ... n2 n1 x )
-	
-	
-	DGLU_API extern const char dg_forthdoname[];
-	
-	DGLU_API void dg_forthdo (Bufferhandle* pBHarrayhead);
-	//           ( -- do-sys )
-	
-	
-	DGLU_API extern const char dg_forthdoesname[];
-	
-	DGLU_API void dg_forthdoes (Bufferhandle* pBHarrayhead);
-	//             ( -- )
-	
-	
-	DGLU_API extern const char dg_forthdropname[];
-	
-	DGLU_API void dg_forthdrop (Bufferhandle* pBHarrayhead);          
-	//        ( n1 -- )
-	
-	
-	DGLU_API extern const char dg_forthdupname[];
-	
-	DGLU_API void dg_forthdup (Bufferhandle* pBHarrayhead);
-	//            ( n1 -- n1 n1)
-	
-	
-	DGLU_API extern const char dg_forthelsename[];
-	
-	DGLU_API void dg_forthelse (Bufferhandle* pBHarrayhead);
-	//             ( ifoffset -- elseoffset )
-	
-	
-	DGLU_API extern const char dg_forthemitname[];
-	
-	DGLU_API void dg_forthemit (Bufferhandle* pBHarrayhead);          
-	//        ( n1 -- )
-	
-	
-	DGLU_API extern const char dg_forthenvironmentqueryname[];
-	
-	DGLU_API void dg_forthenvironmentquery (Bufferhandle* pBHarrayhead);
-	//                    ( c-addr u -- false | i*x true )
-	
-	
-	DGLU_API extern const char dg_forthevaluatename[];
-	
-	DGLU_API void dg_forthevaluate (Bufferhandle* pBHarrayhead);
-	//                 ( c-addr u -- )
-	
-	
-	DGLU_API extern const char dg_forthexecutename[];
-	
-	DGLU_API void dg_forthexecute (Bufferhandle* pBHarrayhead);
-	//                ( executiontoken -- )
-	
-	
-	DGLU_API extern const char dg_forthexitname[];
-	
-	DGLU_API void dg_forthexit (Bufferhandle* pBHarrayhead);
-	//             ( -- )
-	
-	
-	DGLU_API extern const char dg_forthfillname[];
-	
-	DGLU_API void dg_forthfill (Bufferhandle* pBHarrayhead);
-	//             ( c-addr n char -- )
-	
-	
-	DGLU_API extern const char dg_forthfindname[];
-	
-	DGLU_API void dg_forthfind (Bufferhandle* pBHarrayhead);
-	//             ( c-addr -- c-addr 0 ) if word not found
-	//             ( c-addr -- xt 1 ) if word found and it is dg_forthimmediate
-	//             ( c-addr -- xt -1 ) if word found and it is not dg_forthimmediate
-	
-	
-	DGLU_API extern const char dg_forthfmslashmodname[];
-	
-	DGLU_API void dg_forthfmslashmod (Bufferhandle* pBHarrayhead);
-	//              ( d1 n1 -- n2 n3 )
-	
-	
-	DGLU_API extern const char dg_forthherename[];
-	
-	DGLU_API void dg_forthhere (Bufferhandle* pBHarrayhead);
-	//             ( -- addr )
-	
-	
-	DGLU_API extern const char dg_forthholdname[];
-	
-	DGLU_API void dg_forthhold (Bufferhandle* pBHarrayhead);
-	//        ( char -- )
+    DGLU_API void dg_forthconstant (Bufferhandle* pBHarrayhead);
+    //                 ( "<spaces>word<spaces>morestuff" -currentinputbuffer- "<spaces>morestuff" )
+    //                 ( n1 -- )
     
-	
-	DGLU_API extern const char dg_forthiname[];
-	
-	DGLU_API void dg_forthi (Bufferhandle* pBHarrayhead);
-	//          ( limit index -rstack- limit index )
-	//          ( -- index )
-	
-	
-	DGLU_API extern const char dg_forthifname[];
-	
-	DGLU_API void dg_forthif (Bufferhandle* pBHarrayhead);
-	//           ( -- ifoffset )
-	
-	
-	DGLU_API extern const char dg_forthimmediatename[];
-	
-	DGLU_API void dg_forthimmediate (Bufferhandle* pBHarrayhead);
-	//             ( -- )
-	
-	
-	DGLU_API extern const char dg_forthinvertname[];
-	
-	DGLU_API void dg_forthinvert (Bufferhandle* pBHarrayhead);
-	//               ( x1 -- x2 )
-	
-	
-	DGLU_API extern const char dg_forthjname[];
-	
-	DGLU_API void dg_forthj (Bufferhandle* pBHarrayhead);
-	//          ( limit2 index2 limit1 index1 -rstack- limit2 index2 limit1 index1 )
-	//          ( -- index2 )
-	
-	
-	DGLU_API extern const char dg_forthkeyname[];
-	
-	DGLU_API void dg_forthkey (Bufferhandle* pBHarrayhead);
-	//            ( -- char )
-	
-	
-	DGLU_API extern const char dg_forthleavename[];
-	
-	DGLU_API void  dg_forthleave (Bufferhandle* pBHarrayhead);
-	//               ( compile: ) ( -- ) ( -leavestack- leaveoffset )
-	//               ( compiled code does: ) ( loopsys -rstack- )
-	
-	
-	DGLU_API extern const char dg_forthliteralname[];
-	
-	DGLU_API void dg_forthliteral (Bufferhandle* pBHarrayhead);
-	//                ( n1 -- )
-	
-	
-	DGLU_API extern const char dg_checkloopdonename[];                     
-	
-	DGLU_API UINT64 dg_checkloopdone (Bufferhandle* pBHarrayhead);
-	//                         ( index limit -r- | index limit )
-	
-	
-	DGLU_API extern const char dg_forthloopname[];
-	
-	DGLU_API void dg_forthloop (Bufferhandle* pBHarrayhead);
-	//               ( do-sys -- )
-	//               ( compiled code does: ) ( -- )
-	//               ( loop-sys1 -controlflowstack- ) if loop ends
-	//               ( loop-sys1 -controlflowstack- loop-sys1' ) if loop does not end
-	
-	
-	DGLU_API extern const char dg_forthlshiftname[];
-	
-	DGLU_API void dg_forthlshift (Bufferhandle* pBHarrayhead);
-	//          ( x1 u -- x2 )
-	
-	
-	DGLU_API extern const char dg_forthmstarname[];
-	
-	DGLU_API void dg_forthmstar (Bufferhandle* pBHarrayhead);
-	//         ( n1 n2 -- d ) 
-	
-	
-	DGLU_API extern const char dg_forthmaxname[];
-	
-	DGLU_API void dg_forthmax (Bufferhandle* pBHarrayhead);    
-	//             ( n1 n2 -- n3 )
-	
-	
-	DGLU_API extern const char dg_forthminname[];
-	
-	DGLU_API void dg_forthmin (Bufferhandle* pBHarrayhead);    
-	//             ( n1 n2 -- n3 )
-	
-	
-	DGLU_API extern const char dg_forthmodname[];
-	
-	DGLU_API void dg_forthmod (Bufferhandle* pBHarrayhead);           
-	//            ( n1 n2 -- n1modn2 )
-	
-	
-	DGLU_API extern const char dg_forthmovename[];
-	
-	DGLU_API void dg_forthmove (Bufferhandle* pBHarrayhead);
-	//             ( addr1 addr2 u -- )
-	
-	
-	DGLU_API extern const char dg_forthnegatename[];
-	
-	DGLU_API void dg_forthnegate (Bufferhandle* pBHarrayhead); 
-	//               ( n1 -- 0-n1 ) 
-	
-	
-	DGLU_API extern const char dg_forthorname[];
-	
-	DGLU_API void dg_forthor (Bufferhandle* pBHarrayhead);  
-	//           ( x1 x2 -- x3 )
-	
-	
-	DGLU_API extern const char dg_forthovername[];
-	
-	DGLU_API void dg_forthover (Bufferhandle* pBHarrayhead);          
-	//        ( n1 n0 -- n1 n0 n1 )
-	
-	
-	DGLU_API extern const char dg_forthpostponename[];
-	
-	DGLU_API void dg_forthpostpone (Bufferhandle* pBHarrayhead);
-	//            (compile mode)
-	//            ( "<spaces>word<spaces>morestuff" -currentinputbuffer- "<spaces>morestuff" )
-	
-	
-	DGLU_API extern const char dg_forthquitname[];
-	
-	DGLU_API void dg_forthquit (Bufferhandle* pBHarrayhead);
-	//             ( rx ... r1 r0 -r- )
-	
-	
-	DGLU_API extern const char dg_forthrfromname[];
-	
-	DGLU_API void dg_forthrfrom (Bufferhandle* pBHarrayhead);
-	//         ( x1 -r- )
-	//         ( -- x1 )
-	
-	
-	DGLU_API extern const char dg_forthrfetchname[];
-	
-	DGLU_API void dg_forthrfetch (Bufferhandle* pBHarrayhead);
-	//          ( x1 -r- x1 )
-	//          ( -- x1 )
-	
-	
-	DGLU_API extern const char dg_forthrecursename[];
-	
-	DGLU_API void dg_forthrecurse (Bufferhandle* pBHarrayhead);
-	//           ( -- )
-	
-	
-	DGLU_API extern const char dg_forthrepeatname[];
-	
-	DGLU_API void dg_forthrepeat (Bufferhandle* pBHarrayhead);
-	//               ( whileoffset beginoffset -- )
-	
-	
-	DGLU_API extern const char dg_forthrotname[];
-	
-	DGLU_API void dg_forthrot (Bufferhandle* pBHarrayhead);           
-	//       ( n1 n2 n3 -- n2 n3 n1 )
-	
-	
-	DGLU_API extern const char dg_forthrshiftname[];
-	
-	DGLU_API void dg_forthrshift (Bufferhandle* pBHarrayhead);        
-	//          ( n1 u -- n2 )
-	
-	
-	DGLU_API extern const char dg_forthsquotesname[];
-	
-	DGLU_API void dg_forthsquotes (Bufferhandle* pBHarrayhead); // ( S" )
-	//           ( "somestuff<rightdg_forthparen>morestuff" -currentinputbuffer- "morestuff" )
-	//           ( -- caddr u  )
-	
-	
-	DGLU_API extern const char dg_forthstodname[];
-	
-	DGLU_API void dg_forthstod (Bufferhandle* pBHarrayhead);
-	//        ( n -- d )
+    
+    DGLU_API extern const char dg_forthcountname[];
+    
+    DGLU_API void dg_forthcount (Bufferhandle* pBHarrayhead);
+    //              ( c-addr1 -- c-addr2 u )
+    
+    
+    DGLU_API extern const char dg_forthcrname[];
+    
+    DGLU_API void dg_forthcr (Bufferhandle* pBHarrayhead);
+    //           ( -- )
+    
+    
+    DGLU_API extern const char dg_forthcreatename[];
+    
+    DGLU_API void dg_forthcreate (Bufferhandle* pBHarrayhead);
+    //               ( "<spaces>word<spaces>morestuff" -currentinputbuffer- "<spaces>morestuff" )
+    
+    
+    DGLU_API extern const char dg_forthdecimalname[];
+    
+    DGLU_API void dg_forthdecimal (Bufferhandle* pBHarrayhead);
+    //                    ( -- )
+    
+    
+    DGLU_API extern const char dg_forthdepthname[];
+    
+    DGLU_API void dg_forthdepth (Bufferhandle* pBHarrayhead);
+    //              ( nx ... n2 n1 -- nx ... n2 n1 x )
+    
+    
+    DGLU_API extern const char dg_forthdoname[];
+    
+    DGLU_API void dg_forthdo (Bufferhandle* pBHarrayhead);
+    //           ( -- do-sys )
+    
+    
+    DGLU_API extern const char dg_forthdoesname[];
+    
+    DGLU_API void dg_forthdoes (Bufferhandle* pBHarrayhead);
+    //             ( -- )
+    
+    
+    DGLU_API extern const char dg_forthdropname[];
+    
+    DGLU_API void dg_forthdrop (Bufferhandle* pBHarrayhead);          
+    //        ( n1 -- )
+    
+    
+    DGLU_API extern const char dg_forthdupname[];
+    
+    DGLU_API void dg_forthdup (Bufferhandle* pBHarrayhead);
+    //            ( n1 -- n1 n1)
+    
+    
+    DGLU_API extern const char dg_forthelsename[];
+    
+    DGLU_API void dg_forthelse (Bufferhandle* pBHarrayhead);
+    //             ( ifoffset -- elseoffset )
+    
+    
+    DGLU_API extern const char dg_forthemitname[];
+    
+    DGLU_API void dg_forthemit (Bufferhandle* pBHarrayhead);          
+    //        ( n1 -- )
+    
+    
+    DGLU_API extern const char dg_forthenvironmentqueryname[];
+    
+    DGLU_API void dg_forthenvironmentquery (Bufferhandle* pBHarrayhead);
+    //                    ( c-addr u -- false | i*x true )
+    
+    
+    DGLU_API extern const char dg_forthevaluatename[];
+    
+    DGLU_API void dg_forthevaluate (Bufferhandle* pBHarrayhead);
+    //                 ( c-addr u -- )
+    
+    
+    DGLU_API extern const char dg_forthexecutename[];
+    
+    DGLU_API void dg_forthexecute (Bufferhandle* pBHarrayhead);
+    //                ( executiontoken -- )
+    
+    
+    DGLU_API extern const char dg_forthexitname[];
+    
+    DGLU_API void dg_forthexit (Bufferhandle* pBHarrayhead);
+    //             ( -- )
+    
+    
+    DGLU_API extern const char dg_forthfillname[];
+    
+    DGLU_API void dg_forthfill (Bufferhandle* pBHarrayhead);
+    //             ( c-addr n char -- )
+    
+    
+    DGLU_API extern const char dg_forthfindname[];
+    
+    DGLU_API void dg_forthfind (Bufferhandle* pBHarrayhead);
+    //             ( c-addr -- c-addr 0 ) if word not found
+    //             ( c-addr -- xt 1 ) if word found and it is dg_forthimmediate
+    //             ( c-addr -- xt -1 ) if word found and it is not dg_forthimmediate
+    
+    
+    DGLU_API extern const char dg_forthfmslashmodname[];
+    
+    DGLU_API void dg_forthfmslashmod (Bufferhandle* pBHarrayhead);
+    //              ( d1 n1 -- n2 n3 )
+    
+    
+    DGLU_API extern const char dg_forthherename[];
+    
+    DGLU_API void dg_forthhere (Bufferhandle* pBHarrayhead);
+    //             ( -- addr )
+    
+    
+    DGLU_API extern const char dg_forthholdname[];
+    
+    DGLU_API void dg_forthhold (Bufferhandle* pBHarrayhead);
+    //        ( char -- )
+    
+    
+    DGLU_API extern const char dg_forthiname[];
+    
+    DGLU_API void dg_forthi (Bufferhandle* pBHarrayhead);
+    //          ( limit index -rstack- limit index )
+    //          ( -- index )
+    
+    
+    DGLU_API extern const char dg_forthifname[];
+    
+    DGLU_API void dg_forthif (Bufferhandle* pBHarrayhead);
+    //           ( -- ifoffset )
+    
+    
+    DGLU_API extern const char dg_forthimmediatename[];
+    
+    DGLU_API void dg_forthimmediate (Bufferhandle* pBHarrayhead);
+    //             ( -- )
+    
+    
+    DGLU_API extern const char dg_forthinvertname[];
+    
+    DGLU_API void dg_forthinvert (Bufferhandle* pBHarrayhead);
+    //               ( x1 -- x2 )
+    
+    
+    DGLU_API extern const char dg_forthjname[];
+    
+    DGLU_API void dg_forthj (Bufferhandle* pBHarrayhead);
+    //          ( limit2 index2 limit1 index1 -rstack- limit2 index2 limit1 index1 )
+    //          ( -- index2 )
+    
+    
+    DGLU_API extern const char dg_forthkeyname[];
+    
+    DGLU_API void dg_forthkey (Bufferhandle* pBHarrayhead);
+    //            ( -- char )
+    
+    
+    DGLU_API extern const char dg_forthleavename[];
+    
+    DGLU_API void  dg_forthleave (Bufferhandle* pBHarrayhead);
+    //               ( compile: ) ( -- ) ( -leavestack- leaveoffset )
+    //               ( compiled code does: ) ( loopsys -rstack- )
+    
+    
+    DGLU_API extern const char dg_forthliteralname[];
+    
+    DGLU_API void dg_forthliteral (Bufferhandle* pBHarrayhead);
+    //                ( n1 -- )
+    
+    
+    DGLU_API extern const char dg_checkloopdonename[];                     
+    
+    DGLU_API UINT64 dg_checkloopdone (Bufferhandle* pBHarrayhead);
+    //                         ( index limit -r- | index limit )
+    
+    
+    DGLU_API extern const char dg_forthloopname[];
+    
+    DGLU_API void dg_forthloop (Bufferhandle* pBHarrayhead);
+    //               ( do-sys -- )
+    //               ( compiled code does: ) ( -- )
+    //               ( loop-sys1 -controlflowstack- ) if loop ends
+    //               ( loop-sys1 -controlflowstack- loop-sys1' ) if loop does not end
+    
+    
+    DGLU_API extern const char dg_forthlshiftname[];
+    
+    DGLU_API void dg_forthlshift (Bufferhandle* pBHarrayhead);
+    //          ( x1 u -- x2 )
+    
+    
+    DGLU_API extern const char dg_forthmstarname[];
+    
+    DGLU_API void dg_forthmstar (Bufferhandle* pBHarrayhead);
+    //         ( n1 n2 -- d ) 
+    
+    
+    DGLU_API extern const char dg_forthmaxname[];
+    
+    DGLU_API void dg_forthmax (Bufferhandle* pBHarrayhead);    
+    //             ( n1 n2 -- n3 )
+    
+    
+    DGLU_API extern const char dg_forthminname[];
+    
+    DGLU_API void dg_forthmin (Bufferhandle* pBHarrayhead);    
+    //             ( n1 n2 -- n3 )
+    
+    
+    DGLU_API extern const char dg_forthmodname[];
+    
+    DGLU_API void dg_forthmod (Bufferhandle* pBHarrayhead);           
+    //            ( n1 n2 -- n1modn2 )
+    
+    
+    DGLU_API extern const char dg_forthmovename[];
+    
+    DGLU_API void dg_forthmove (Bufferhandle* pBHarrayhead);
+    //             ( addr1 addr2 u -- )
+    
+    
+    DGLU_API extern const char dg_forthnegatename[];
+    
+    DGLU_API void dg_forthnegate (Bufferhandle* pBHarrayhead); 
+    //               ( n1 -- 0-n1 ) 
+    
+    
+    DGLU_API extern const char dg_forthorname[];
+    
+    DGLU_API void dg_forthor (Bufferhandle* pBHarrayhead);  
+    //           ( x1 x2 -- x3 )
+    
+    
+    DGLU_API extern const char dg_forthovername[];
+    
+    DGLU_API void dg_forthover (Bufferhandle* pBHarrayhead);          
+    //        ( n1 n0 -- n1 n0 n1 )
+    
+    
+    DGLU_API extern const char dg_forthpostponename[];
+    
+    DGLU_API void dg_forthpostpone (Bufferhandle* pBHarrayhead);
+    //            (compile mode)
+    //            ( "<spaces>word<spaces>morestuff" -currentinputbuffer- "<spaces>morestuff" )
+    
+    
+    DGLU_API extern const char dg_forthquitname[];
+    
+    DGLU_API void dg_forthquit (Bufferhandle* pBHarrayhead);
+    //             ( rx ... r1 r0 -r- )
+    
+    
+    DGLU_API extern const char dg_forthrfromname[];
+    
+    DGLU_API void dg_forthrfrom (Bufferhandle* pBHarrayhead);
+    //         ( x1 -r- )
+    //         ( -- x1 )
+    
+    
+    DGLU_API extern const char dg_forthrfetchname[];
+    
+    DGLU_API void dg_forthrfetch (Bufferhandle* pBHarrayhead);
+    //          ( x1 -r- x1 )
+    //          ( -- x1 )
+    
+    
+    DGLU_API extern const char dg_forthrecursename[];
+    
+    DGLU_API void dg_forthrecurse (Bufferhandle* pBHarrayhead);
+    //           ( -- )
+    
+    
+    DGLU_API extern const char dg_forthrepeatname[];
+    
+    DGLU_API void dg_forthrepeat (Bufferhandle* pBHarrayhead);
+    //               ( whileoffset beginoffset -- )
+    
+    
+    DGLU_API extern const char dg_forthrotname[];
+    
+    DGLU_API void dg_forthrot (Bufferhandle* pBHarrayhead);           
+    //       ( n1 n2 n3 -- n2 n3 n1 )
+    
+    
+    DGLU_API extern const char dg_forthrshiftname[];
+    
+    DGLU_API void dg_forthrshift (Bufferhandle* pBHarrayhead);        
+    //          ( n1 u -- n2 )
+    
+    
+    DGLU_API extern const char dg_forthsquotesname[];
+    
+    DGLU_API void dg_forthsquotes (Bufferhandle* pBHarrayhead); // ( S" )
+    //           ( "somestuff<rightdg_forthparen>morestuff" -currentinputbuffer- "morestuff" )
+    //           ( -- caddr u  )
+    
+    
+    DGLU_API extern const char dg_forthstodname[];
+    
+    DGLU_API void dg_forthstod (Bufferhandle* pBHarrayhead);
+    //        ( n -- d )
  
  
     DGLU_API extern const char dg_forthscreatename[];
        
     DGLU_API void dg_forthscreate (Bufferhandle* pBHarrayhead);
     //               ( c-addr u -- )
-	
-	
-	DGLU_API extern const char dg_forthsignname[];
-	
-	DGLU_API void dg_forthsign (Bufferhandle* pBHarrayhead);
-	//             ( n -- )
-	
-	
-	DGLU_API extern const char dg_forthsmslashremname[];
-	
-	DGLU_API void dg_forthsmslashrem (Bufferhandle* pBHarrayhead);
-	//              ( d1 n1 -- n2 n3 )
-	
-	
-	DGLU_API extern const char dg_forthsourcename[];
-	
-	DGLU_API void dg_forthsource (Bufferhandle* pBHarrayhead);
-	//               ( -- caddr u )
-	
-	
-	DGLU_API extern const char* dg_forthspaceputcerror;
-	
-	DGLU_API extern const char dg_forthspacename[];
-	
-	DGLU_API void dg_forthspace (Bufferhandle* pBHarrayhead);         
-	//              ( -- )
-	
-	
-	DGLU_API extern const char dg_forthspacesname[];
-	
-	DGLU_API void dg_forthspaces (Bufferhandle* pBHarrayhead);        
-	//               ( n -- )
-	
-	
-	DGLU_API extern const char dg_forthstatename[];
-	
-	DGLU_API void dg_forthstate (Bufferhandle* pBHarrayhead);
-	//              ( -- a-addr )
-	
-	
-	DGLU_API extern const char dg_forthswapname[];
-	
-	DGLU_API void dg_forthswap (Bufferhandle* pBHarrayhead);          
-	//        ( n1 n2 -- n2 n1 )
-	
-	
-	DGLU_API extern const char dg_forththenname[];
-	
-	DGLU_API void dg_forththen (Bufferhandle* pBHarrayhead);
-	//             ( ifoffset -- )
-	
-	
-	DGLU_API extern const char dg_forthtypename[];
-	
-	DGLU_API void dg_forthtype (Bufferhandle* pBHarrayhead);
-	//             ( c-addr u -- )
-	
-	
-	DGLU_API extern const char dg_forthudotname[];
-	
-	DGLU_API void dg_forthudot (Bufferhandle* pBHarrayhead);
-	//        ( u -- )
-	
-	
-	DGLU_API extern const char dg_forthulessthanname[];
-	
-	DGLU_API void dg_forthulessthan (Bufferhandle* pBHarrayhead);     
-	//             ( u1 u2 -- flag )
     
-	
-	DGLU_API extern const char dg_forthumstarname[];
-	
-	DGLU_API void dg_forthumstar (Bufferhandle* pBHarrayhead);        
-	//          ( u1 u2 -- ud )
-	
-	
-	DGLU_API extern const char dg_forthumslashmodname[];
-	
-	DGLU_API void dg_forthumslashmod (Bufferhandle* pBHarrayhead);    
-	//              ( ud u1 -- u2 u3 )
-	
-	
-	DGLU_API extern const char dg_forthunloopname[];
-	
-	DGLU_API void dg_forthunloop (Bufferhandle* pBHarrayhead);
-	//               ( limit index -rstack- )
     
-	
-	DGLU_API extern const char dg_forthuntilname[];
-	
-	DGLU_API void dg_forthuntil (Bufferhandle* pBHarrayhead);
-	//              ( beginoffset -- )
-	
-	
-	DGLU_API extern const char dg_forthvariablename[];
-	
-	DGLU_API void dg_forthvariable (Bufferhandle* pBHarrayhead);
-	//                 ( "<spaces>word<spaces>morestuff" -currentinputbuffer- "<spaces>morestuff" )
-	//                 ( -currentnewvariablebuffer- +sizeofunsignedint )
-	
-	
-	DGLU_API extern const char dg_forthwhilename[];
-	
-	DGLU_API void dg_forthwhile (Bufferhandle* pBHarrayhead);
-	//              ( beginoffset -- whileoffset beginoffset )
-	
-	
-	DGLU_API extern const char dg_forthwordname[];
-	
-	DGLU_API void dg_forthword (Bufferhandle* pBHarrayhead);
-	//        ( "<chars>word<char>morestuff" -currentinputbuffer- "<char>morestuff")
-	//        ( char -- c-addr )
-	//        ( -wordbuffer- "word" )
-	
-	
-	DGLU_API extern const char dg_forthxorname[];
-	
-	DGLU_API void dg_forthxor (Bufferhandle* pBHarrayhead);  
-	//            ( x1 x2 -- x3 )      
-	
-	
-	DGLU_API extern const char dg_forthleftbracketname[];
-	
-	DGLU_API void dg_forthleftbracket (Bufferhandle* pBHarrayhead);
-	//                   ( -- )
-	
-	
-	DGLU_API extern const char dg_forthbrackettickname[];
-	
-	DGLU_API void dg_forthbrackettick (Bufferhandle* pBHarrayhead);
-	// ( "<spaces>name<spaces>morestuff" -currentinputbuffer- "<spaces>morestuff" )
-	// ( -- )
-	// ( compiled code does: ) ( -- executiontokenofname )
-	
-	
-	DGLU_API extern const char dg_forthbracketcharname[];
-	
-	DGLU_API void dg_forthbracketchar (Bufferhandle* pBHarrayhead);
-	// ( "<spaces>name<spaces>morestuff" -currentinputbuffer- "<spaces>morestuff" )
-	// ( -- )
-	// ( compiled code does: ) ( -- firstcharofname )
-	
-	
-	DGLU_API extern const char dg_forthrightbracketname[];
-	
-	DGLU_API void dg_forthrightbracket (Bufferhandle* pBHarrayhead);
-	//                   ( -- )
-	
-	
-	// ///////////////////////////
-	// end of core FORTH words  // 
-	// ///////////////////////////
+    DGLU_API extern const char dg_forthsignname[];
+    
+    DGLU_API void dg_forthsign (Bufferhandle* pBHarrayhead);
+    //             ( n -- )
+    
+    
+    DGLU_API extern const char dg_forthsmslashremname[];
+    
+    DGLU_API void dg_forthsmslashrem (Bufferhandle* pBHarrayhead);
+    //              ( d1 n1 -- n2 n3 )
+    
+    
+    DGLU_API extern const char dg_forthsourcename[];
+    
+    DGLU_API void dg_forthsource (Bufferhandle* pBHarrayhead);
+    //               ( -- caddr u )
+    
+    
+    DGLU_API extern const char* dg_forthspaceputcerror;
+    
+    DGLU_API extern const char dg_forthspacename[];
+    
+    DGLU_API void dg_forthspace (Bufferhandle* pBHarrayhead);         
+    //              ( -- )
+    
+    
+    DGLU_API extern const char dg_forthspacesname[];
+    
+    DGLU_API void dg_forthspaces (Bufferhandle* pBHarrayhead);        
+    //               ( n -- )
+    
+    
+    DGLU_API extern const char dg_forthstatename[];
+    
+    DGLU_API void dg_forthstate (Bufferhandle* pBHarrayhead);
+    //              ( -- a-addr )
+    
+    
+    DGLU_API extern const char dg_forthswapname[];
+    
+    DGLU_API void dg_forthswap (Bufferhandle* pBHarrayhead);          
+    //        ( n1 n2 -- n2 n1 )
+    
+    
+    DGLU_API extern const char dg_forththenname[];
+    
+    DGLU_API void dg_forththen (Bufferhandle* pBHarrayhead);
+    //             ( ifoffset -- )
+    
+    
+    DGLU_API extern const char dg_forthtypename[];
+    
+    DGLU_API void dg_forthtype (Bufferhandle* pBHarrayhead);
+    //             ( c-addr u -- )
+    
+    
+    DGLU_API extern const char dg_forthudotname[];
+    
+    DGLU_API void dg_forthudot (Bufferhandle* pBHarrayhead);
+    //        ( u -- )
+    
+    
+    DGLU_API extern const char dg_forthulessthanname[];
+    
+    DGLU_API void dg_forthulessthan (Bufferhandle* pBHarrayhead);     
+    //             ( u1 u2 -- flag )
+    
+    
+    DGLU_API extern const char dg_forthumstarname[];
+    
+    DGLU_API void dg_forthumstar (Bufferhandle* pBHarrayhead);        
+    //          ( u1 u2 -- ud )
+    
+    
+    DGLU_API extern const char dg_forthumslashmodname[];
+    
+    DGLU_API void dg_forthumslashmod (Bufferhandle* pBHarrayhead);    
+    //              ( ud u1 -- u2 u3 )
+    
+    
+    DGLU_API extern const char dg_forthunloopname[];
+    
+    DGLU_API void dg_forthunloop (Bufferhandle* pBHarrayhead);
+    //               ( limit index -rstack- )
+    
+    
+    DGLU_API extern const char dg_forthuntilname[];
+    
+    DGLU_API void dg_forthuntil (Bufferhandle* pBHarrayhead);
+    //              ( beginoffset -- )
+    
+    
+    DGLU_API extern const char dg_forthvariablename[];
+    
+    DGLU_API void dg_forthvariable (Bufferhandle* pBHarrayhead);
+    //                 ( "<spaces>word<spaces>morestuff" -currentinputbuffer- "<spaces>morestuff" )
+    //                 ( -currentnewvariablebuffer- +sizeofunsignedint )
+    
+    
+    DGLU_API extern const char dg_forthwhilename[];
+    
+    DGLU_API void dg_forthwhile (Bufferhandle* pBHarrayhead);
+    //              ( beginoffset -- whileoffset beginoffset )
+    
+    
+    DGLU_API extern const char dg_forthwordname[];
+    
+    DGLU_API void dg_forthword (Bufferhandle* pBHarrayhead);
+    //        ( "<chars>word<char>morestuff" -currentinputbuffer- "<char>morestuff")
+    //        ( char -- c-addr )
+    //        ( -wordbuffer- "word" )
+    
+    
+    DGLU_API extern const char dg_forthxorname[];
+    
+    DGLU_API void dg_forthxor (Bufferhandle* pBHarrayhead);  
+    //            ( x1 x2 -- x3 )      
+    
+    
+    DGLU_API extern const char dg_forthleftbracketname[];
+    
+    DGLU_API void dg_forthleftbracket (Bufferhandle* pBHarrayhead);
+    //                   ( -- )
+    
+    
+    DGLU_API extern const char dg_forthbrackettickname[];
+    
+    DGLU_API void dg_forthbrackettick (Bufferhandle* pBHarrayhead);
+    // ( "<spaces>name<spaces>morestuff" -currentinputbuffer- "<spaces>morestuff" )
+    // ( -- )
+    // ( compiled code does: ) ( -- executiontokenofname )
+    
+    
+    DGLU_API extern const char dg_forthbracketcharname[];
+    
+    DGLU_API void dg_forthbracketchar (Bufferhandle* pBHarrayhead);
+    // ( "<spaces>name<spaces>morestuff" -currentinputbuffer- "<spaces>morestuff" )
+    // ( -- )
+    // ( compiled code does: ) ( -- firstcharofname )
+    
+    
+    DGLU_API extern const char dg_forthrightbracketname[];
+    
+    DGLU_API void dg_forthrightbracket (Bufferhandle* pBHarrayhead);
+    //                   ( -- )
+    
+    
+    // ///////////////////////////
+    // end of core FORTH words  // 
+    // ///////////////////////////
     
     
     // //////////////////////////////
@@ -5992,9 +6158,9 @@ extern "C" {
     
     
     DGLU_API extern const char dg_forthzerogreatername[];
-	
-	DGLU_API void dg_forthzerogreater (Bufferhandle* pBHarrayhead);      
-	//             ( n1 -- flag )
+    
+    DGLU_API void dg_forthzerogreater (Bufferhandle* pBHarrayhead);      
+    //             ( n1 -- flag )
     
     
     DGLU_API extern const char dg_forthdotparenname[];
@@ -6038,9 +6204,9 @@ extern "C" {
     
     
     DGLU_API extern const char dg_forthnotequalsname[];
-	
-	DGLU_API void dg_forthnotequals (Bufferhandle* pBHarrayhead);
-	//             ( n1 n2 -- flag )
+    
+    DGLU_API void dg_forthnotequals (Bufferhandle* pBHarrayhead);
+    //             ( n1 n2 -- flag )
     
     
     DGLU_API extern const char dg_fortherasename[];
@@ -6059,9 +6225,9 @@ extern "C" {
     
     DGLU_API void dg_forthroll (Bufferhandle* pBHarrayhead);
     
-	
-	DGLU_API void dg_forthugreaterthan (Bufferhandle* pBHarrayhead);     
-	//             ( u1 u2 -- flag )
+    
+    DGLU_API void dg_forthugreaterthan (Bufferhandle* pBHarrayhead);     
+    //             ( u1 u2 -- flag )
     
 
     DGLU_API void dg_forthtib (Bufferhandle* pBHarrayhead);
@@ -6080,8 +6246,8 @@ extern "C" {
     //            ( c-addr1 u1 -- c-addr2 u2 )   
     
     DGLU_API void dg_forthcompiles (Bufferhandle* pBHarrayhead);
-	//            ( addr u -- )
-	//            ( dcompiles copy of string at addr u and code that does: ( -- addr' u )
+    //            ( addr u -- )
+    //            ( dcompiles copy of string at addr u and code that does: ( -- addr' u )
  
  
     DGLU_API void dg_forthblank (Bufferhandle* pBHarrayhead);
@@ -6101,53 +6267,53 @@ extern "C" {
     //               ( caddr1 u1 caddr2 u2 -- flag )
        
     
-	// //////////////////////
-	// Search-Order words  // 
-	// //////////////////////
-	
-	
-	DGLU_API void dg_forthdefinitions (Bufferhandle* pBHarrayhead);
-	//               ( -- )
-	
-	
-	// see dg_forthfind
-	
-	DGLU_API void dg_forthgetcurrent (Bufferhandle* pBHarrayhead);
-	//              ( -- currentcompilewordlistid )
-	
-	
-	DGLU_API void dg_forthgetorder (Bufferhandle* pBHarrayhead);
-	//            ( -- wordlistidn ... wordlistid1 n )
-	
-	
-	DGLU_API void dg_forthsearchwordlist (Bufferhandle* pBHarrayhead); 
-	//             ( c-addr u wid -- 0 ) if word not found
-	//             ( c-addr u wid -- xt 1 ) if word found and it is dg_forthimmediate
-	//             ( c-addr u wid -- xt -1 ) if word found and it is not dg_forthimmediate
-	
-	
-	DGLU_API void dg_forthsetcurrent (Bufferhandle* pBHarrayhead);
-	//              ( wordlistid -- )
-	
-	
-	DGLU_API void dg_forthsetorder (Bufferhandle* pBHarrayhead);
-	//            ( wordlistidn ... wordlistid1 n -- )
-	
-	
-	DGLU_API void dg_forthwordlist (Bufferhandle* pBHarrayhead);
-	//               ( -- wordlistid )
-	
-	
-	///////////////////////////////
-	// End of search-order words // 
-	///////////////////////////////
-	
-	
-	
-	// /////////////////////////////
-	// Forth Double Number Words  //
-	// /////////////////////////////
-	
+    // //////////////////////
+    // Search-Order words  // 
+    // //////////////////////
+    
+    
+    DGLU_API void dg_forthdefinitions (Bufferhandle* pBHarrayhead);
+    //               ( -- )
+    
+    
+    // see dg_forthfind
+    
+    DGLU_API void dg_forthgetcurrent (Bufferhandle* pBHarrayhead);
+    //              ( -- currentcompilewordlistid )
+    
+    
+    DGLU_API void dg_forthgetorder (Bufferhandle* pBHarrayhead);
+    //            ( -- wordlistidn ... wordlistid1 n )
+    
+    
+    DGLU_API void dg_forthsearchwordlist (Bufferhandle* pBHarrayhead); 
+    //             ( c-addr u wid -- 0 ) if word not found
+    //             ( c-addr u wid -- xt 1 ) if word found and it is dg_forthimmediate
+    //             ( c-addr u wid -- xt -1 ) if word found and it is not dg_forthimmediate
+    
+    
+    DGLU_API void dg_forthsetcurrent (Bufferhandle* pBHarrayhead);
+    //              ( wordlistid -- )
+    
+    
+    DGLU_API void dg_forthsetorder (Bufferhandle* pBHarrayhead);
+    //            ( wordlistidn ... wordlistid1 n -- )
+    
+    
+    DGLU_API void dg_forthwordlist (Bufferhandle* pBHarrayhead);
+    //               ( -- wordlistid )
+    
+    
+    ///////////////////////////////
+    // End of search-order words // 
+    ///////////////////////////////
+    
+    
+    
+    // /////////////////////////////
+    // Forth Double Number Words  //
+    // /////////////////////////////
+    
 
     DGLU_API void dg_forthtwoconstant (Bufferhandle* pBHarrayhead);
     
@@ -6166,8 +6332,8 @@ extern "C" {
     
     DGLU_API void dg_forthdlessthan (Bufferhandle* pBHarrayhead); 
     
-	
-	DGLU_API void dg_forthdequals (Bufferhandle* pBHarrayhead); 
+    
+    DGLU_API void dg_forthdequals (Bufferhandle* pBHarrayhead); 
  
  
     DGLU_API void dg_forthdtos (Bufferhandle* pBHarrayhead);   
@@ -6216,12 +6382,12 @@ extern "C" {
     
     
     DGLU_API void dg_forthmstarslash (Bufferhandle* pBHarrayhead);
-	
-	
-	// ////////////////////////////////////
-	// End of Forth Double Number Words  //
-	// ////////////////////////////////////
-	
+    
+    
+    // ////////////////////////////////////
+    // End of Forth Double Number Words  //
+    // ////////////////////////////////////
+    
  
     // //////////////////////////////
     // Forth Floating Point Words  //
@@ -6353,76 +6519,78 @@ extern "C" {
      DGLU_API void dg_forthsfloatplus (Bufferhandle* pBHarrayhead);
      
      DGLU_API void dg_forthsfloats (Bufferhandle* pBHarrayhead);
+
+     DGLU_API void dg_forthf64comma (Bufferhandle* pBHarrayhead);
      
     
-	// /////////////////////////////////////
+    // /////////////////////////////////////
     // End of Forth Floating Point Words  //
     // /////////////////////////////////////
     
     
-	// //////////////////////////
-	// FORTH Definition Words  //
-	// //////////////////////////
-	
-	
-	DGLU_API void dg_forthnewdefinition (Bufferhandle* pBHarrayhead);
-	//                ( compilebufid compilebufoffset databufid databufoffset pname namelength -- executiontoken )
-	
-	
-	DGLU_API void dg_forthgetswordhead (Bufferhandle* pBHarrayhead);
-	//                ( executiontoken -- pwordhead wordheadlength )
-	
-	
-	DGLU_API void dg_forthtohead (Bufferhandle* pBHarrayhead);
-	//                ( executiontoken -- pwordhead )
-	
-	
-	DGLU_API void dg_forthlinkdefinition (Bufferhandle* pBHarrayhead);
-	//                ( executiontoken wordlistid -- )
-	
-	
-	DGLU_API void dg_forthnewsubroutinedefinition (Bufferhandle* pBHarrayhead);
-	//               ( pname namelength -- executiontoken )
-	
-	
-	DGLU_API void dg_forthnewvariabledefinition (Bufferhandle* pBHarrayhead);
-	//               ( pname namelength -- executiontoken );
-	
-	
-	DGLU_API void dg_forthnewconstantdefinition (Bufferhandle* pBHarrayhead);
-	//              ( constant pname namelength -- executiontoken )
-	
-	
-	DGLU_API void dg_forthgetnewestdefinitioninwordlist (Bufferhandle* pBHarrayhead);
-	//              ( wordlistid -- executiontoken )
-	
-	
-	DGLU_API void dg_forthgetnextdefinition (Bufferhandle* pBHarrayhead);
-	//              ( executiontoken -- nextexecutiontoken )
-	
-	
-	DGLU_API void dg_forthfinddefinitioninwordlist (Bufferhandle* pBHarrayhead);
-	//              ( wordlistid pname namelength -- executiontoken )
-	
-	
-	DGLU_API void dg_forthfinddefinitioninsearchorder (Bufferhandle* pBHarrayhead);
-	//              ( pname namelength -- executiontoken )
-	
-	
-	DGLU_API void dg_forthputnewestdefinitioncompiletype (Bufferhandle* pBHarrayhead);
-	//              ( compilebuffoffset compilebufid -- )
-	
-	
-	DGLU_API void dg_forthgetcompileroutine (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthsetcompileroutine (Bufferhandle* pBHarrayhead);
+    // //////////////////////////
+    // FORTH Definition Words  //
+    // //////////////////////////
+    
+    
+    DGLU_API void dg_forthnewdefinition (Bufferhandle* pBHarrayhead);
+    //                ( compilebufid compilebufoffset databufid databufoffset pname namelength -- executiontoken )
+    
+    
+    DGLU_API void dg_forthgetswordhead (Bufferhandle* pBHarrayhead);
+    //                ( executiontoken -- pwordhead wordheadlength )
+    
+    
+    DGLU_API void dg_forthtohead (Bufferhandle* pBHarrayhead);
+    //                ( executiontoken -- pwordhead )
+    
+    
+    DGLU_API void dg_forthlinkdefinition (Bufferhandle* pBHarrayhead);
+    //                ( executiontoken wordlistid -- )
+    
+    
+    DGLU_API void dg_forthnewsubroutinedefinition (Bufferhandle* pBHarrayhead);
+    //               ( pname namelength -- executiontoken )
+    
+    
+    DGLU_API void dg_forthnewvariabledefinition (Bufferhandle* pBHarrayhead);
+    //               ( pname namelength -- executiontoken );
+    
+    
+    DGLU_API void dg_forthnewconstantdefinition (Bufferhandle* pBHarrayhead);
+    //              ( constant pname namelength -- executiontoken )
+    
+    
+    DGLU_API void dg_forthgetnewestdefinitioninwordlist (Bufferhandle* pBHarrayhead);
+    //              ( wordlistid -- executiontoken )
+    
+    
+    DGLU_API void dg_forthgetnextdefinition (Bufferhandle* pBHarrayhead);
+    //              ( executiontoken -- nextexecutiontoken )
+    
+    
+    DGLU_API void dg_forthfinddefinitioninwordlist (Bufferhandle* pBHarrayhead);
+    //              ( wordlistid pname namelength -- executiontoken )
+    
+    
+    DGLU_API void dg_forthfinddefinitioninsearchorder (Bufferhandle* pBHarrayhead);
+    //              ( pname namelength -- executiontoken )
+    
+    
+    DGLU_API void dg_forthputnewestdefinitioncompiletype (Bufferhandle* pBHarrayhead);
+    //              ( compilebuffoffset compilebufid -- )
+    
+    
+    DGLU_API void dg_forthgetcompileroutine (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthsetcompileroutine (Bufferhandle* pBHarrayhead);
     
     
     DGLU_API void dg_forthgetodf (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthsetodf (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthsetodf (Bufferhandle* pBHarrayhead);
  
  
     DGLU_API void dg_forthtocurrent (Bufferhandle* pBHarrayhead);   
@@ -6438,20 +6606,26 @@ extern "C" {
     
     
     DGLU_API void dg_forthwordlistdot(Bufferhandle* pBHarrayhead);
+
+
+    DGLU_API void dg_forthlibdot(Bufferhandle* pBHarrayhead);
     
     
     DGLU_API void dg_forthcreatebracketwordlistdot(Bufferhandle* pBHarrayhead);
+
     
-     	
-	// /////////////////////////////////
-	// End of FORTH Definition Words  //
-	// /////////////////////////////////
-	
-	
-	DGLU_API void dg_initwordlists (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthbye (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthcreatebracketlibdot(Bufferhandle* pBHarrayhead);
+    
+         
+    // /////////////////////////////////
+    // End of FORTH Definition Words  //
+    // /////////////////////////////////
+    
+    
+    DGLU_API void dg_initwordlists (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthbye (Bufferhandle* pBHarrayhead);
  
  
     DGLU_API void dg_forthsynonym (Bufferhandle* pBHarrayhead);   
@@ -6512,370 +6686,270 @@ extern "C" {
     
     
     DGLU_API void dg_forthtypedlocalenumcurly (Bufferhandle* pBHarrayhead);
-	
-	
-	// //////////////////////
-	// FORTH Buffer Words  //
-	// //////////////////////
-	
-	
-	DGLU_API void dg_forthocfetch (Bufferhandle* pBHarrayhead);
-	//                  ( offset bufferid -- byte )
+
+
+    DGLU_API void dg_forthbenchmark(Bufferhandle* pBHarrayhead);
     
-	
-	DGLU_API void dg_forthofetch (Bufferhandle* pBHarrayhead);
-	//                   ( offset bufferid -- dword)
-	
-	
-	DGLU_API void dg_forthostonewstring (Bufferhandle* pBHarrayhead);
-	//                    ( offset bufferid length -- )
-	//                    ( -$- string )
-	
-	
-	DGLU_API void dg_forthocstore (Bufferhandle* pBHarrayhead);
-	//                    ( byte offset bufferid -- )
-	
-	
-	DGLU_API void dg_forthostore (Bufferhandle* pBHarrayhead);
-	//                    ( dword offset bufferid -- )
-	
-	
-	DGLU_API void dg_forthctobuf (Bufferhandle* pBHarrayhead);
-	//                   ( byte bufferid -- )
-	
-	
-	DGLU_API void dg_forthtobuf (Bufferhandle* pBHarrayhead);
-	//                    ( dword bufferid -- )
-	
-	
-	DGLU_API void dg_forthstringtobuf (Bufferhandle* pBHarrayhead);
-	//                     ( bufferid -- )
-	//                     ( string -$- )
-	
-	
-	DGLU_API void dg_forthbuftoc (Bufferhandle* pBHarrayhead);
-	//                  ( bufferid -- byte )
-	
-	
-	DGLU_API void dg_forthbufto (Bufferhandle* pBHarrayhead);
-	//                   ( bufferid -- dword )
-	
-	
-	DGLU_API void dg_forthbuftostring (Bufferhandle* pBHarrayhead);
-	//                    ( length bufferid -- )
-	//                    ( -$- string )
-	
-	
-	DGLU_API void dg_forthosstore (Bufferhandle* pBHarrayhead);
-	//                     ( offset bufferid length pdest -- ) 
-	
-	
-	
-	DGLU_API void dg_forthosfetch (Bufferhandle* pBHarrayhead);
-	//                     ( psrc offset length bufferid -- )
-	
-	
-	DGLU_API void dg_forthstobuf (Bufferhandle* pBHarrayhead);
-	//                      ( psrc length bufferid -- )
-	
-	
-	DGLU_API void dg_forthbuftos (Bufferhandle* pBHarrayhead);
-	//                     ( bufferid pdest length -- );
-	
-	
-	DGLU_API void dg_forthlengthbuf (Bufferhandle* pBHarrayhead);
-	//                    ( bufferid -- bufferlength )
-	
-	
-	DGLU_API void dg_forthgetsbufferhandlearrayhead (Bufferhandle* pBHarrayhead);
-	//                    ( -- pBHarrayhead sizeofBufferhandle )
-	
-	
-	DGLU_API void dg_forthgetsbufferhandle (Bufferhandle* pBHarrayhead);
-	//                     ( bufferid -- pBufferheader sizeofBufferhandle )
-	
-	
-	DGLU_API void dg_forthgetoarrayelement (Bufferhandle* pBHarrayhead);
-	//                     ( elementindex elementsize bufferid -- oarrayelement )
-	
-	
-	DGLU_API void dg_forthgetparrayelement (Bufferhandle* pBHarrayhead);
-	//                ( elementindex elementsize bufferid -- parrayelement )
-	
-	
-	DGLU_API void dg_forthgetbuffersize (Bufferhandle* pBHarrayhead);
-	//                ( bufferid -- buffersize )
-	
-	
-	DGLU_API void dg_forthgetbuffermaxsize (Bufferhandle* pBHarrayhead);
-	//                ( bufferid -- buffermaxsize )
-	
-	
-	DGLU_API void dg_forthgetbuffergrowby (Bufferhandle* pBHarrayhead);
-	//                ( bufferid -- buffergrowby )
-	
-	
-	DGLU_API void dg_forthgetbuffercurrentoffset (Bufferhandle* pBHarrayhead);
-	//                ( bufferid -- buffercurrentoffset )
-	
-	
-	DGLU_API void dg_forthputbuffercurrentoffset (Bufferhandle* pBHarrayhead);
-	//                ( currentoffset bufferid -- )
-	
-	
-	DGLU_API void dg_forthgetpbufferlength (Bufferhandle* pBHarrayhead);
-	//                ( bufferid -- pbufferlength )
-	
-	
-	DGLU_API void dg_forthgetpbuffercurrentoffset (Bufferhandle* pBHarrayhead);
-	//                ( bufferid -- pbuffercurrentoffset )
     
-	
-	DGLU_API void dg_forthinsertinbuffer (Bufferhandle* pBHarrayhead);
-	//                ( offset length bufferid -- )
-	
-	
-	DGLU_API void dg_forthdeleteinbuffer (Bufferhandle* pBHarrayhead);
-	//                   ( offset length bufferid -- )
-	
-    DGLU_API void dg_forthreplaceinbuffer (Bufferhandle* pBHarrayhead);
-    //     ( psrc srclength destoffset destbufferid destlength -- )	
+    // //////////////////////
+    // FORTH Buffer Words  //
+    // //////////////////////
+    
+    
+    DGLU_API void dg_forthocfetch (Bufferhandle* pBHarrayhead);
+   
+    DGLU_API void dg_forthofetch (Bufferhandle* pBHarrayhead);
+  
+    DGLU_API void dg_forthostonewstring (Bufferhandle* pBHarrayhead);
+  
+    DGLU_API void dg_forthocstore (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthostore (Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthotwostore (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthctobuf (Bufferhandle* pBHarrayhead);
+   
+    DGLU_API void dg_forthtobuf (Bufferhandle* pBHarrayhead);   
+    
+    DGLU_API void dg_forthstringtobuf (Bufferhandle* pBHarrayhead);
+  
+    DGLU_API void dg_forthbuftoc (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthbufto (Bufferhandle* pBHarrayhead); 
+    
+    DGLU_API void dg_forthbuftostring (Bufferhandle* pBHarrayhead);  
+    
+    DGLU_API void dg_forthosstore (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthosfetch (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthstobuf (Bufferhandle* pBHarrayhead);    
+    
+    DGLU_API void dg_forthbuftos (Bufferhandle* pBHarrayhead);    
+    
+    DGLU_API void dg_forthlengthbuf (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthgetsbufferhandlearrayhead (Bufferhandle* pBHarrayhead);    
+    
+    DGLU_API void dg_forthgetsbufferhandle (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthgetoarrayelement (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthgetparrayelement (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthgetbuffersize (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthgetbuffermaxsize (Bufferhandle* pBHarrayhead);    
+    
+    DGLU_API void dg_forthgetbuffergrowby (Bufferhandle* pBHarrayhead);    
+    
+    DGLU_API void dg_forthgetbuffercurrentoffset (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthputbuffercurrentoffset (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthgetpbufferlength (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthgetpbuffercurrentoffset (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthinsertinbuffer (Bufferhandle* pBHarrayhead);    
+    
+    DGLU_API void dg_forthdeleteinbuffer (Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthreplaceinbuffer (Bufferhandle* pBHarrayhead);  
     
     DGLU_API void dg_forthinsertsintobuffer (Bufferhandle* pBHarrayhead);
-    //     ( psrc srclength destoffset destbufferid -- )	
     
-	DGLU_API void dg_forthgrowbuffer (Bufferhandle* pBHarrayhead);
-	//               ( length bufferid -- )
-	
-	
-	DGLU_API void dg_forthshrinkbuffer (Bufferhandle* pBHarrayhead);
-	//                 ( length bufferid -- )
-	
-	
-	DGLU_API void dg_forthemptybuffer (Bufferhandle* pBHarrayhead);
-	//                ( bufferid -- )
-	
-	
-	DGLU_API void dg_forthnewbuffer (Bufferhandle* pBHarrayhead);
-	//              ( growby maxsize -- bufferid )
-	
-	
-	DGLU_API void dg_forthfreebuffer (Bufferhandle* pBHarrayhead);
-	//               ( bufferid -- )
-	
-	
-	DGLU_API void dg_forthgetpbufferoffset (Bufferhandle* pBHarrayhead);
-	//                     ( offset bufferid -- address )
-	
-	
-	DGLU_API void dg_forthgetpbuffer (Bufferhandle* pBHarrayhead);
-	//               ( bufferid -- pbuffer pbufferlength )
-    
-    
-    DGLU_API void dg_forthgetsbuffer (Bufferhandle* pBHarrayhead);
-    //               ( bufferid -- pbuffer bufferlength )
-	
-	
-	DGLU_API void dg_forthgetpbuffersegment (Bufferhandle* pBHarrayhead);
-	//                      ( offset length bufferid -- pbuffersegment )
-	
-	
-	DGLU_API void dg_forthlinecomment (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthgrowbuffer (Bufferhandle* pBHarrayhead);
 
-	
-	DGLU_API void dg_forthparse (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthshrinkbuffer (Bufferhandle* pBHarrayhead);
+  
+    DGLU_API void dg_forthemptybuffer (Bufferhandle* pBHarrayhead);
  
+    DGLU_API void dg_forthnewbuffer (Bufferhandle* pBHarrayhead);
+  
+    DGLU_API void dg_forthfreebuffer (Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthgetpbufferoffset (Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthgetpbuffer (Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthgetsbuffer (Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthgetpbuffersegment (Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthlinecomment (Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthparse (Bufferhandle* pBHarrayhead);
  
     DGLU_API void dg_forthlinesparse (Bufferhandle* pBHarrayhead);   
  
- 
     DGLU_API void dg_forthparsebuffer (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthparseword (Bufferhandle* pBHarrayhead);
- 
+    
+    DGLU_API void dg_forthparseword (Bufferhandle* pBHarrayhead);
     
     DGLU_API void dg_forthparsewords (Bufferhandle* pBHarrayhead);
     
-    
     DGLU_API void dg_forthlinesparsenames (Bufferhandle* pBHarrayhead);
-    
     
     DGLU_API void dg_forthparseline (Bufferhandle* pBHarrayhead);
     
-
-	DGLU_API void dg_forthcscanbuf (Bufferhandle* pBHarrayhead);
-	//                    ( bufferid offset value -- index )
-	
-	
-	DGLU_API void dg_forthscanbuf (Bufferhandle* pBHarrayhead);
-	//                   ( bufferid offset value -- index )
-	
-	
-	DGLU_API void dg_forthmaxusedbuffers (Bufferhandle* pBHarrayhead);
-	//                       ( -- maxusedbuffers )
-	
-	
-	DGLU_API void dg_forthinusebuffers (Bufferhandle* pBHarrayhead);
-	//                       ( -- inusebuffers )
-	
-	
-	DGLU_API void dg_forthinusebytes (Bufferhandle* pBHarrayhead);
-	//                       ( -- inusebytes )
-	
-	
-	DGLU_API void dg_forthallocatedbytes (Bufferhandle* pBHarrayhead);
-	//                           ( -- totalallocatedbytes )
+    DGLU_API void dg_forthcscanbuf (Bufferhandle* pBHarrayhead);
+  
+    DGLU_API void dg_forthscanbuf (Bufferhandle* pBHarrayhead);
+ 
+    DGLU_API void dg_forthmaxusedbuffers (Bufferhandle* pBHarrayhead);
     
-
+    DGLU_API void dg_forthinusebuffers (Bufferhandle* pBHarrayhead);
+  
+    DGLU_API void dg_forthinusebytes (Bufferhandle* pBHarrayhead);
+  
+    DGLU_API void dg_forthallocatedbytes (Bufferhandle* pBHarrayhead);
+   
     DGLU_API void dg_forthgetpnewbuffer(Bufferhandle* pBHarrayhead);
-    //                           ( bufferlength -- pnewbuffer )
-    
-    
+       
     DGLU_API void dg_forthu16store (Bufferhandle* pBHarrayhead);
-    
     
     DGLU_API void dg_forthu32store (Bufferhandle* pBHarrayhead);
     
-    
     DGLU_API void dg_forthu16fetch (Bufferhandle* pBHarrayhead);
     
-    
     DGLU_API void dg_forthu32fetch (Bufferhandle* pBHarrayhead);
-    
-    
+        
     DGLU_API void dg_forthu32comma (Bufferhandle* pBHarrayhead);
-	
-	
-	// /////////////////////////////
-	// End of FORTH Buffer Words  //
-	// /////////////////////////////
-	
-	
-	// ///////////////////////
-	// FORTH Lstring Words  //
-	// ///////////////////////
-	
-	
-	DGLU_API void dg_forthdepthlstring(Bufferhandle* pBHarrayhead);  // LSTRINGSTACKDEPTH ?
-	//                              ( stringoffsetbufferid -- n );
-	//                              ( endoffset$1 endoffset$2 ... endoffset$n -offsetbuffer- 
-	//                                  endoffset$1 endoffset$2 ... endoffset$n ) 
-	
-	
-	DGLU_API void dg_forthstartoffsetlstring (Bufferhandle *pBHarrayhead);
-	//                          ( stringid stringoffsetbufferid -- lstringstartoffset )
-	//                          ( endoffset$1 endoffset$2 ... endoffset$stringid ... endoffset$n -offsetbuffer- 
-	//                              endoffset$1 endoffset$2 ... endoffset$stringid ... endoffset$n )
-	
-	
-	DGLU_API void dg_forthlengthlstring (Bufferhandle *pBHarrayhead);
-	//                     ( stringid stringoffsetbufferid -- lstringlength )
-	//                          ( endoffset$1 endoffset$2 ... endoffset$stringid ... endoffset$n -offsetbuffer- 
-	//                              endoffset$1 endoffset$2 ... endoffset$stringid ... endoffset$n )                     
-	
-	
-	DGLU_API void dg_forthgetslstringn(Bufferhandle* pBHarrayhead);
-	//               ( stringid offsetbufferid stringbufferid -- plstring lstringlength )
-	//               ( $0 $1 ... $stringid ... $n -offsetbuffer&stringbuffer- $0 $1 ... $stringid ... $n )
-	
-	
-	DGLU_API void dg_forthgetlstring (Bufferhandle* pBHarrayhead);
-	//               ( stringid offsetbufferid stringbufferid pdest maxlength -- )
-	//               ( $0 $1 ... $stringid ... $n -offsetbuffer&stringbuffer- $0 $1 ... $stringid ... $n )
-	
-	
-	DGLU_API void dg_forthlstringtos (Bufferhandle* pBHarrayhead);
-	//               ( offsetbufferid stringbufferid pdest maxlength -- )
-	//               ( l$ -offsetbuffer&stringbuffer- )
-	
-	
-	DGLU_API void dg_forthstolstring (Bufferhandle* pBHarrayhead);
-	//                ( psrc length offsetbufferid stringbufferid -- )
-	//                ( -offsetbuffer&stringbuffer- l$ )
-	
-	
-	DGLU_API void dg_forthgrowlstring (Bufferhandle* pBHarrayhead);
-	//                ( n offsetbufferid stringbufferid -- )
-	//                ( $1 -offsetbuffer&stringbuffer- l$' )
-	
-	
-	DGLU_API void dg_forthshortenlstring ( Bufferhandle* pBHarrayhead );
-	
-	
-	DGLU_API void dg_forthpicklstring (Bufferhandle* pBHarrayhead);
-	//                ( n offsetbufferid stringbufferid -- )
-	//                ( $n $n-1 ... $1 $0 -offsetbuffer&stringbuffer- $n $n-1 ... $1 $0 $n )
-	
-	
-	DGLU_API void dg_forthdroplstring (Bufferhandle* pBHarrayhead);
-	//                ( offsetbufferid stringbufferid -- )
-	//                ( l$ -offsetbuffer&stringbuffer- )
-	
-	
-	DGLU_API void dg_forthdeletelstring (Bufferhandle* pBHarrayhead);
-	//                  ( stringid offsetbufferid stringbufferid -- )
-	//                  ( $0 $1 ... $stringid ... $n -offsetbuffer&stringbuffer- $0 $1 ... $n )
-	
-	
-	DGLU_API void dg_forthinsertlstring (Bufferhandle* pBHarrayhead);
-	//                ( psrc length n offsetbufferid stringbufferid -- )
-	//                ( L$0 L$1 L$2 ... L$N ... L$TOP -offsetbuffer&stringbuffer- 
-	//                    L$0 L$1 L$2 ... copyL$psrc L$N ... L$TOP )
-	
-	
-	DGLU_API void dg_forthnewlstring (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthrolllstring (Bufferhandle* pBHarrayhead);
-	//             ( nd offsetbufferid stringbufferid -- )
-	//             ( l$depth-1{bottom} ... l$nd+1 l$nd l$nd-1 ... l$1 l$0{top} -l$- 
-	//                 l$depth-1{bottom} ... l$nd+1 l$nd-1 ... l$1 l$0 l$nd )
-	
-	
-	DGLU_API void dg_forthminusrolllstring (Bufferhandle* pBHarrayhead);
-	//             ( nd offsetbufferid stringbufferid -- )
-	//             ( l$depth-1{bottom} ... l$nd+1 l$nd l$nd-1 ... l$1 l$0{top} -l$- 
-	//                 l$depth-1{bottom} ... l$nd+1 l$0{top} l$nd l$nd-1 ... l$1 )
-	
-	
-	DGLU_API void dg_forthdeleteinlstring (Bufferhandle* pBHarrayhead);
-	//             ( offset length n offsetbufferid stringbufferid -- )
-	//             ( l$depth-1{bottom} ... l$nd+1 l$nd l$nd-1 ... l$1 l$0{top} -l$- 
-	//                 l$depth-1{bottom} ... l$nd+1 l$nd' l$nd-1 ... l$1 l$0{top} )
-	
-	
-	DGLU_API void dg_forthinsertinlstring (Bufferhandle* pBHarrayhead);
-	//             ( offset length n offsetbufferid stringbufferid -- )
-	//             ( l$depth-1{bottom} ... l$nd+1 l$nd l$nd-1 ... l$1 l$0{top} -l$- 
-	//                 l$depth-1{bottom} ... l$nd+1 l$nd' l$nd-1 ... l$1 l$0{top} )
-	
-	
-	DGLU_API void dg_forthcatlstringn (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthcopystolstringn (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthcopysfromlstringn (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthsetlengthlstringn (Bufferhandle* pBHarrayhead);
-	//             ( newlength n offsetbufferid stringbufferid -- )
-	
-	
-	DGLU_API void dg_forthcopystoreplacelstringn (Bufferhandle* pBHarrayhead);
-	//             ( psrc length index offsetbufferid stringbufferid -- )
-	
-	
-	DGLU_API void dg_forthcopylstringntoreplacelstringn (Bufferhandle* pBHarrayhead);
-	//             ( srcn srcoffsetbufferid srcstringbufferid destn destoffsetbufferid 
-	//               deststringbufferid -- )
-	
+
+    DGLU_API void dg_forthof64store (Bufferhandle* pBHarrayhead);
+    
+    
+    // /////////////////////////////
+    // End of FORTH Buffer Words  //
+    // /////////////////////////////
+    
+    
+    // ///////////////////////
+    // FORTH Lstring Words  //
+    // ///////////////////////
+    
+    
+    DGLU_API void dg_forthdepthlstring(Bufferhandle* pBHarrayhead);  // LSTRINGSTACKDEPTH ?
+    //                              ( stringoffsetbufferid -- n );
+    //                              ( endoffset$1 endoffset$2 ... endoffset$n -offsetbuffer- 
+    //                                  endoffset$1 endoffset$2 ... endoffset$n ) 
+    
+    
+    DGLU_API void dg_forthstartoffsetlstring (Bufferhandle *pBHarrayhead);
+    //                          ( stringid stringoffsetbufferid -- lstringstartoffset )
+    //                          ( endoffset$1 endoffset$2 ... endoffset$stringid ... endoffset$n -offsetbuffer- 
+    //                              endoffset$1 endoffset$2 ... endoffset$stringid ... endoffset$n )
+    
+    
+    DGLU_API void dg_forthlengthlstring (Bufferhandle *pBHarrayhead);
+    //                     ( stringid stringoffsetbufferid -- lstringlength )
+    //                          ( endoffset$1 endoffset$2 ... endoffset$stringid ... endoffset$n -offsetbuffer- 
+    //                              endoffset$1 endoffset$2 ... endoffset$stringid ... endoffset$n )                     
+    
+    
+    DGLU_API void dg_forthgetslstringn(Bufferhandle* pBHarrayhead);
+    //               ( stringid offsetbufferid stringbufferid -- plstring lstringlength )
+    //               ( $0 $1 ... $stringid ... $n -offsetbuffer&stringbuffer- $0 $1 ... $stringid ... $n )
+    
+    
+    DGLU_API void dg_forthgetlstring (Bufferhandle* pBHarrayhead);
+    //               ( stringid offsetbufferid stringbufferid pdest maxlength -- )
+    //               ( $0 $1 ... $stringid ... $n -offsetbuffer&stringbuffer- $0 $1 ... $stringid ... $n )
+    
+    
+    DGLU_API void dg_forthlstringtos (Bufferhandle* pBHarrayhead);
+    //               ( offsetbufferid stringbufferid pdest maxlength -- )
+    //               ( l$ -offsetbuffer&stringbuffer- )
+    
+    
+    DGLU_API void dg_forthstolstring (Bufferhandle* pBHarrayhead);
+    //                ( psrc length offsetbufferid stringbufferid -- )
+    //                ( -offsetbuffer&stringbuffer- l$ )
+    
+    
+    DGLU_API void dg_forthgrowlstring (Bufferhandle* pBHarrayhead);
+    //                ( n offsetbufferid stringbufferid -- )
+    //                ( $1 -offsetbuffer&stringbuffer- l$' )
+    
+    
+    DGLU_API void dg_forthshortenlstring ( Bufferhandle* pBHarrayhead );
+    
+    
+    DGLU_API void dg_forthpicklstring (Bufferhandle* pBHarrayhead);
+    //                ( n offsetbufferid stringbufferid -- )
+    //                ( $n $n-1 ... $1 $0 -offsetbuffer&stringbuffer- $n $n-1 ... $1 $0 $n )
+    
+    
+    DGLU_API void dg_forthdroplstring (Bufferhandle* pBHarrayhead);
+    //                ( offsetbufferid stringbufferid -- )
+    //                ( l$ -offsetbuffer&stringbuffer- )
+    
+    
+    DGLU_API void dg_forthdeletelstring (Bufferhandle* pBHarrayhead);
+    //                  ( stringid offsetbufferid stringbufferid -- )
+    //                  ( $0 $1 ... $stringid ... $n -offsetbuffer&stringbuffer- $0 $1 ... $n )
+    
+    
+    DGLU_API void dg_forthinsertlstring (Bufferhandle* pBHarrayhead);
+    //                ( psrc length n offsetbufferid stringbufferid -- )
+    //                ( L$0 L$1 L$2 ... L$N ... L$TOP -offsetbuffer&stringbuffer- 
+    //                    L$0 L$1 L$2 ... copyL$psrc L$N ... L$TOP )
+    
+    
+    DGLU_API void dg_forthnewlstring (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthrolllstring (Bufferhandle* pBHarrayhead);
+    //             ( nd offsetbufferid stringbufferid -- )
+    //             ( l$depth-1{bottom} ... l$nd+1 l$nd l$nd-1 ... l$1 l$0{top} -l$- 
+    //                 l$depth-1{bottom} ... l$nd+1 l$nd-1 ... l$1 l$0 l$nd )
+    
+    
+    DGLU_API void dg_forthminusrolllstring (Bufferhandle* pBHarrayhead);
+    //             ( nd offsetbufferid stringbufferid -- )
+    //             ( l$depth-1{bottom} ... l$nd+1 l$nd l$nd-1 ... l$1 l$0{top} -l$- 
+    //                 l$depth-1{bottom} ... l$nd+1 l$0{top} l$nd l$nd-1 ... l$1 )
+    
+    
+    DGLU_API void dg_forthdeleteinlstring (Bufferhandle* pBHarrayhead);
+    //             ( offset length n offsetbufferid stringbufferid -- )
+    //             ( l$depth-1{bottom} ... l$nd+1 l$nd l$nd-1 ... l$1 l$0{top} -l$- 
+    //                 l$depth-1{bottom} ... l$nd+1 l$nd' l$nd-1 ... l$1 l$0{top} )
+    
+    
+    DGLU_API void dg_forthinsertinlstring (Bufferhandle* pBHarrayhead);
+    //             ( offset length n offsetbufferid stringbufferid -- )
+    //             ( l$depth-1{bottom} ... l$nd+1 l$nd l$nd-1 ... l$1 l$0{top} -l$- 
+    //                 l$depth-1{bottom} ... l$nd+1 l$nd' l$nd-1 ... l$1 l$0{top} )
+    
+    
+    DGLU_API void dg_forthcatlstringn (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthcopystolstringn (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthcopysfromlstringn (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthsetlengthlstringn (Bufferhandle* pBHarrayhead);
+    //             ( newlength n offsetbufferid stringbufferid -- )
+    
+    
+    DGLU_API void dg_forthcopystoreplacelstringn (Bufferhandle* pBHarrayhead);
+    //             ( psrc length index offsetbufferid stringbufferid -- )
+    
+    
+    DGLU_API void dg_forthcopylstringntoreplacelstringn (Bufferhandle* pBHarrayhead);
+    //             ( srcn srcoffsetbufferid srcstringbufferid destn destoffsetbufferid 
+    //               deststringbufferid -- )
+    
     
     DGLU_API void dg_forthnewfreeablelstringarray (Bufferhandle* pBHarrayhead);
     
-	
+    
     DGLU_API void dg_forthfreefreeablelstringarray (Bufferhandle* pBHarrayhead);
     
 
@@ -6923,103 +6997,103 @@ extern "C" {
     DGLU_API void dg_forthrunfileandwaitnoenvstring(Bufferhandle* pBHarrayhead);
     
     
-	// //////////////////////////////
-	// End of Forth Lstring Words  //
-	// //////////////////////////////
-	
-	
-	// /////////////////////
-	// Forth Error Words  //
-	// /////////////////////
-	
-	// call this O0$>ERROR ?
-	DGLU_API void dg_forthpushoerror (Bufferhandle* pBHarrayhead); 
-	//                    ( offset bufferid -- )
-	//                    ( -error- offset bufferid )
-	
-	DGLU_API void dg_forthgetoerror (Bufferhandle* pBHarrayhead);
-	//             ( offset bufferid -error- )
-	//             ( index -- offset bufferid )
-	
-	// call this ERROR>p0$ ?
-	//DGLU_API void dg_forthpoperror (Bufferhandle* pBHarrayhead);
-	//             ( offset bufferid -error- )
-	//             ( -- pError0$ )
-	
-	DGLU_API void dg_forthpopoerror (Bufferhandle* pBHarrayhead);
-	//             ( offset bufferid -error- )
-	//             ( -- offset bufferid )
-	
-	// also need ERROR>O0$ so comparisons can be done and 2=
-	
-	// call this GETERRORN ?
-	//DGLU_API void dg_forthgeterror (Bufferhandle* pBHarrayhead);
-	//             ( errorstackindex - pError0$ )
-	
-	DGLU_API void dg_forthgeterrorcount (Bufferhandle* pBHarrayhead);
-	
+    // //////////////////////////////
+    // End of Forth Lstring Words  //
+    // //////////////////////////////
     
-	DGLU_API void dg_forthcheckerrordepth (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthdroptoerrorcount (Bufferhandle* pBHarrayhead);
-	
+    
+    // /////////////////////
+    // Forth Error Words  //
+    // /////////////////////
+    
+    // call this O0$>ERROR ?
+    DGLU_API void dg_forthpushoerror (Bufferhandle* pBHarrayhead); 
+    //                    ( offset bufferid -- )
+    //                    ( -error- offset bufferid )
+    
+    DGLU_API void dg_forthgetoerror (Bufferhandle* pBHarrayhead);
+    //             ( offset bufferid -error- )
+    //             ( index -- offset bufferid )
+    
+    // call this ERROR>p0$ ?
+    //DGLU_API void dg_forthpoperror (Bufferhandle* pBHarrayhead);
+    //             ( offset bufferid -error- )
+    //             ( -- pError0$ )
+    
+    DGLU_API void dg_forthpopoerror (Bufferhandle* pBHarrayhead);
+    //             ( offset bufferid -error- )
+    //             ( -- offset bufferid )
+    
+    // also need ERROR>O0$ so comparisons can be done and 2=
+    
+    // call this GETERRORN ?
+    //DGLU_API void dg_forthgeterror (Bufferhandle* pBHarrayhead);
+    //             ( errorstackindex - pError0$ )
+    
+    DGLU_API void dg_forthgeterrorcount (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthcheckerrordepth (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthdroptoerrorcount (Bufferhandle* pBHarrayhead);
+    
 
-	// ////////////////////////////
-	// End of Forth Error Words  //
-	// //////////////////////////// 
+    // ////////////////////////////
+    // End of Forth Error Words  //
+    // //////////////////////////// 
     
-	DGLU_API void dg_forthudmslashmod (Bufferhandle* pBHarrayhead);
-	//               ( ud u1 -- ud2 rem )
-	
-	
-	DGLU_API void dg_forthpick(Bufferhandle* pBHarrayhead);
-	//            ( nidx ... n2 n1 n0 idx -- n2 n1 n0 nidx )
+    DGLU_API void dg_forthudmslashmod (Bufferhandle* pBHarrayhead);
+    //               ( ud u1 -- ud2 rem )
+    
+    
+    DGLU_API void dg_forthpick(Bufferhandle* pBHarrayhead);
+    //            ( nidx ... n2 n1 n0 idx -- n2 n1 n0 nidx )
     
     DGLU_API void dg_forthminusrot(Bufferhandle* pBHarrayhead);
     //            ( n1 n2 n3 -- n3 n1 n2 )
     
     DGLU_API void dg_forthodoes (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API extern const char* dg_callbuffername;
-	
-	DGLU_API UINT64 dg_callbuffer (
+    
+    
+    DGLU_API extern const char* dg_callbuffername;
+    
+    DGLU_API UINT64 dg_callbuffer (
         Bufferhandle* pBHarrayhead,
         UINT64 bufferid,
         UINT64 offset);
-	
-	
-	// DGLU_API void jmpbuffer (DGLU_API void);
-	//             ( offset bufferid pBHarrayhead -ret- ) 
-	//             ( note: no return address on top of pBHarrayhead! )
-	
-	
-	DGLU_API void dg_initjumpbuffer (Bufferhandle* pBHarrayhead);
-	
-	
-	
-	DGLU_API extern const char* dg_stateexecute;  // setting the state variable to this puts script interpreter into execute mode
-	
-	DGLU_API extern const char dg_statecompile[];  // setting the state variable to this puts script interpreter into compile mode
-	
-	
+    
+    
+    // DGLU_API void jmpbuffer (DGLU_API void);
+    //             ( offset bufferid pBHarrayhead -ret- ) 
+    //             ( note: no return address on top of pBHarrayhead! )
+    
+    
+    DGLU_API void dg_initjumpbuffer (Bufferhandle* pBHarrayhead);
+    
+    
+    
+    DGLU_API extern const char* dg_stateexecute;  // setting the state variable to this puts script interpreter into execute mode
+    
+    DGLU_API extern const char dg_statecompile[];  // setting the state variable to this puts script interpreter into compile mode
+    
+    
     DGLU_API const char* dg_initbuffers(Bufferhandle* pBHarrayhead);
     
     
-	DGLU_API void dg_initvariables (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_initvariables (Bufferhandle* pBHarrayhead);
     
     
     DGLU_API UINT64 dg_isnegative (UINT64 x);
-	
-	
-	
-	// ////////////////////////////
-	// Forth Compiling Routines  //
-	// ////////////////////////////
-	
-	
-	DGLU_API void dg_forthsafe (Bufferhandle* pBHarrayhead);
+    
+    
+    
+    // ////////////////////////////
+    // Forth Compiling Routines  //
+    // ////////////////////////////
+    
+    
+    DGLU_API void dg_forthsafe (Bufferhandle* pBHarrayhead);
     
     
     DGLU_API void dg_forthiscolon (Bufferhandle* pBHarrayhead);
@@ -7029,8 +7103,8 @@ extern "C" {
     
     
     DGLU_API void dg_forthisobto (Bufferhandle* pBHarrayhead);
-	
-	
+    
+    
     DGLU_API void dg_forthispto (Bufferhandle* pBHarrayhead);
     
     
@@ -7052,64 +7126,64 @@ extern "C" {
     DGLU_API  void dg_forthstringtonewobword(Bufferhandle* pBHarrayhead);
     
     
-	DGLU_API void dg_forthcompilebranch (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthresolvecompiledbranch (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthcompilecallcore (Bufferhandle* pBHarrayhead); 
-	//                   ( addr -- )
-	
-	
-	DGLU_API void dg_forthcompilecallsamebuffer (Bufferhandle* pBHarrayhead);
-	//                         ( offsetinsamebuffer -- )
-	
-	
-	DGLU_API void dg_forthcompilecallbuffer (Bufferhandle* pBHarrayhead);
-	//                     ( bufferoffset bufferid -- )
-	
-	
-	DGLU_API void dg_forthcompilesafecallbuffer (Bufferhandle* pBHarrayhead);
-	//                     ( bufferoffset bufferid -- )
-	
+    DGLU_API void dg_forthcompilebranch (Bufferhandle* pBHarrayhead);
     
-	// /////////////////////////
-	// Compile Type Routines  //
-	// /////////////////////////
-	
-	DGLU_API void dg_forthdocompiletypealwaysexecute(Bufferhandle* pBHarrayhead);
-		
-	DGLU_API void dg_forthdocompiletypesubroutine(Bufferhandle* pBHarrayhead);
-	    
+    
+    DGLU_API void dg_forthresolvecompiledbranch (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthcompilecallcore (Bufferhandle* pBHarrayhead); 
+    //                   ( addr -- )
+    
+    
+    DGLU_API void dg_forthcompilecallsamebuffer (Bufferhandle* pBHarrayhead);
+    //                         ( offsetinsamebuffer -- )
+    
+    
+    DGLU_API void dg_forthcompilecallbuffer (Bufferhandle* pBHarrayhead);
+    //                     ( bufferoffset bufferid -- )
+    
+    
+    DGLU_API void dg_forthcompilesafecallbuffer (Bufferhandle* pBHarrayhead);
+    //                     ( bufferoffset bufferid -- )
+    
+    
+    // /////////////////////////
+    // Compile Type Routines  //
+    // /////////////////////////
+    
+    DGLU_API void dg_forthdocompiletypealwaysexecute(Bufferhandle* pBHarrayhead);
+        
+    DGLU_API void dg_forthdocompiletypesubroutine(Bufferhandle* pBHarrayhead);
+        
     DGLU_API void dg_forthdocompiletypepreserveregs(Bufferhandle* pBHarrayhead);
-    	
-	DGLU_API void dg_forthdocompiletypesafesubroutine(Bufferhandle* pBHarrayhead);	
-	
-	DGLU_API void dg_forthdocompiletypedpushn(Bufferhandle* pBHarrayhead);
+        
+    DGLU_API void dg_forthdocompiletypesafesubroutine(Bufferhandle* pBHarrayhead);    
+    
+    DGLU_API void dg_forthdocompiletypedpushn(Bufferhandle* pBHarrayhead);
  
     DGLU_API void dg_forthdocompiletypedpushf(Bufferhandle* pBHarrayhead);   
-	
-	DGLU_API void dg_forthdocompiletypedpushdn(Bufferhandle* pBHarrayhead);
+    
+    DGLU_API void dg_forthdocompiletypedpushdn(Bufferhandle* pBHarrayhead);
 
-	DGLU_API void dg_forthdocompiletypedpushp(Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthdocompiletypedpushp(Bufferhandle* pBHarrayhead);
 
-	DGLU_API void dg_forthdocompiletypedpushs(Bufferhandle* pBHarrayhead);
-	
+    DGLU_API void dg_forthdocompiletypedpushs(Bufferhandle* pBHarrayhead);
+    
     DGLU_API void dg_forthdocompiletypewordsstringquotes (Bufferhandle* pBHarrayhead);
     
     DGLU_API void dg_forthdocompiletypewords0stringquotes (Bufferhandle* pBHarrayhead);
 
     DGLU_API void dg_forthdocompiletyperunfileandwaitnoenvquotes (Bufferhandle* pBHarrayhead);
-    	
-	DGLU_API void dg_forthdocompiletypecdecl(Bufferhandle* pBHarrayhead);
-		
-	DGLU_API void dg_forthdocompiletypecdeclretuint128(Bufferhandle* pBHarrayhead);
+        
+    DGLU_API void dg_forthdocompiletypecdecl(Bufferhandle* pBHarrayhead);
+        
+    DGLU_API void dg_forthdocompiletypecdeclretuint128(Bufferhandle* pBHarrayhead);
     
     DGLU_API void dg_forthdocompiletypedfpcdecl(Bufferhandle* pBHarrayhead);
 
-	DGLU_API void dg_forthdocompiletypecppmemberfunction(Bufferhandle* pBHarrayhead);
-	
+    DGLU_API void dg_forthdocompiletypecppmemberfunction(Bufferhandle* pBHarrayhead);
+    
     DGLU_API void dg_forthdocompiletypecall(Bufferhandle* pBHarrayhead);
 
     DGLU_API void dg_forthdocompiletypeftcolon(Bufferhandle* pBHarrayhead);
@@ -7117,214 +7191,248 @@ extern "C" {
     DGLU_API void dg_forthdocompiletypedpushbracketrbpplusn(Bufferhandle* pBHarrayhead);
     
     DGLU_API void dg_forthdocompiletypebrackettoorder(Bufferhandle* pBHarrayhead);
-    
+
     DGLU_API void dg_forthdocompiletypebracketwordlistdot(Bufferhandle* pBHarrayhead);
     
-	
-	// ////////////////////////////
-	// Forth string stack words  //
-	// ////////////////////////////          
+    DGLU_API void dg_forthdocompiletypebracketlibdot(Bufferhandle* pBHarrayhead);
 
-	
-	DGLU_API void dg_forthcomparestring ( Bufferhandle* pBHarrayhead );
-	//                 ( $1 $2 -$- $1 $2 )
-	//                 ( -- flag )
-	
-	
-	DGLU_API void dg_forthgetmidstring ( Bufferhandle* pBHarrayhead );
-	//             ( $1 -$- $1 $2 )
-	//             ( offset length -- )
-	
-	
-	DGLU_API void dg_forthcatstring ( Bufferhandle* pBHarrayhead );
-	//                  ( $1 $2 -$- $1+$2 )
-	
-	
-	DGLU_API void dg_forthlengthstring ( Bufferhandle* pBHarrayhead );
-	//                ( $1 -$- $1 )
-	//                ( -- length )
-	
-	
-	DGLU_API void dg_forthshortenstring ( Bufferhandle* pBHarrayhead );
-	//                 ( $1 -$- $1' )
-	
-	
-	DGLU_API void dg_forthpickstring (Bufferhandle* pBHarrayhead);
-	//              ( $x .. $3 $2 $1 $0 -$- $x ... $3 $2 $1 $0 $x )
-	//              ( x -- )
-	
-	
-	DGLU_API void dg_forthdupstring ( Bufferhandle* pBHarrayhead );
-	//             ( $1 -$- $1 $1 )
-	
-	
-	DGLU_API void dg_forthoverstring (Bufferhandle* pBHarrayhead);
-	//              ( $1 $0 -$- $1 $0 $1 )
-	
-	
-	DGLU_API void dg_forthdropstring (Bufferhandle* pBHarrayhead);
-	//              ( $0 -$- )
-	
-	
-	DGLU_API void dg_forthdeletestring (Bufferhandle* pBHarrayhead);
-	//                ( ... $n+1 $n $n-1... $1 $0 -$- $n+1 $n-1 ... $1 $0 )
-	//                ( n -- )
-	
-	
-	DGLU_API void dg_forthswapstring (Bufferhandle* pBHarrayhead);
-	//              ( $1 $0 -$- $0 $1 )
-	
-	
-	DGLU_API void dg_forthnipstring (Bufferhandle* pBHarrayhead);
-	//              ( $1 $0 -$- $0 )
-	
-	
-	DGLU_API void dg_forthrotstring (Bufferhandle* pBHarrayhead);
-	//             ( $2 $1 $0 -$- $0 $1 $2 )
-	
-	
-	DGLU_API void dg_forthdepthstring (Bufferhandle* pBHarrayhead);
-	//               ( -- n )
-	//               ( $1 $2 $3 ... $n -$- $1 $2 $3 ... $n )
-	
-	
-	DGLU_API void dg_forthnewstring (Bufferhandle* pBHarrayhead);
-	//             ( -$- empty$ )
-	
-	
-	DGLU_API void dg_forthctonewstring (Bufferhandle* pBHarrayhead);      
-	//                ( -$- char$ )
-	//                ( char -- )
-	
-	
-	DGLU_API void dg_forthtonewstring (Bufferhandle* pBHarrayhead);      
-	//                ( -$- $u )
-	//                ( u -- )
-	
-	
-	DGLU_API void dg_forthturnstringinto0string (Bufferhandle* pBHarrayhead); 
-	//                         ( $1 -$- 0$1 )
-	
-	
-	DGLU_API void dg_forthinsertinstring (Bufferhandle* pBHarrayhead);
-	//                  ( offset -- )
-	//                  ( $1 $2 -$- $2in$1atoffset )
-	
-	
-	DGLU_API void dg_forthdeleteinstring (Bufferhandle* pBHarrayhead);
-	//                  ( offset length -- )
-	//                  ( $1 -$- $1' )
-	
-	
-	DGLU_API void dg_forthholdstring (Bufferhandle* pBHarrayhead); 
-	//                             ( $1 -$- $1' )
-	//                             ( char -- )
-	
-	
-	DGLU_API void dg_forthnumbersignstring (Bufferhandle* pBHarrayhead);   
-	//                           ( $1 -$- $1' ) 
-	//                           ( ud -- ud' )
-	
-	
-	DGLU_API void dg_forthnumbersignsstring (Bufferhandle* pBHarrayhead);  
-	//                            ( $1 -$- $1' ) 
-	//                            ( ud -- 0 0)
-	
-	
-	DGLU_API void dg_forthsignstring (Bufferhandle* pBHarrayhead);    
-	//                          ( $1 -$- $1' ) 
-	//                          ( n -- )
-	
-	
-	DGLU_API void dg_forthstringcfetch (Bufferhandle* pBHarrayhead); 
-	//                     ( $1 -$- $1 )   
-	//                     ( position -- char )
-	
-	
-	DGLU_API void dg_forthstringcstore (Bufferhandle* pBHarrayhead);   
-	//                   ( $1 -$- $1' )  
-	//                   ( char position -- )
-	
-	
-	DGLU_API void dg_forthstringtoc (Bufferhandle* pBHarrayhead);
-	//                     ( $1 -$- $1' )
-	//                     ( -- char )
-	
-	
-	DGLU_API void dg_forthstringto (Bufferhandle* pBHarrayhead);
-	//                     ( $1 -$- $1' )
-	//                     ( -- u )
-	
-	
-	DGLU_API void dg_forthctostring (Bufferhandle* pBHarrayhead);
-	//                    ( $1 -$- $1' )
-	//                    ( char -- )
-	
-	
-	DGLU_API void dg_forthtostring (Bufferhandle* pBHarrayhead);
-	//                    ( $1 -$- $1' )
-	//                    ( u -- )
-	
-	
-	DGLU_API void dg_forthsplitstring (Bufferhandle* pBHarrayhead);
-	//               ( $1 -$- $2 $3 )
-	//               ( n -- )
-	
-	
-	DGLU_API void dg_forthputmidstring (Bufferhandle* pBHarrayhead);
-	//                ( n -- )
-	//                ( destination$ source$ -$- destination$' )
-	
-	
-	DGLU_API void dg_forthstringquotes (Bufferhandle* pBHarrayhead ); 
-	// everything up to word ending in " is put onto string stack as a string
-	
-	
-	DGLU_API void dg_forthstostring (Bufferhandle* pBHarrayhead);
-	//               ( addr length -- )
-	//               ( -- $1 )
-	
-	
-	DGLU_API void dg_forthgetsstringnd (Bufferhandle* pBHarrayhead);
-	//               ( $n $n-1 ... $1 $0 -$- $n $n-1 ... $1 $0 )
-	//               ( n -- pstringn dg_forthlengthstringn )
-	
-	
-	DGLU_API void dg_forthgetenvstring (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthasciitounicodestring (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthunicodetoasciistring (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthgrowstring (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthrollstring (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthminusrollstring (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthstripstring (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthdeleteinstringnd (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthinsertinstringnd (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthcatstringnd (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthstrippathfromfilenamestring (Bufferhandle* pBHarrayhead);
-	//        ( path\filename$ -$- filename$ )
-	
+    DGLU_API void dg_forthdocompiletypecompilepushlocal(Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthdocompiletypevalue(Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthdocompiletypetwovalue(Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthdocompiletypefvalue(Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthdocompiletypeostore(Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthdocompiletypeof64store(Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthdocompiletypeotwostore (Bufferhandle* pBHarrayhead);
+
+    DGLU_API extern const char* dg_docompiletypeostorename;
+    DGLU_API void dg_docompiletypeostore (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 offset);
+
+    DGLU_API extern const char* dg_docompiletypeof64storename;
+    DGLU_API void dg_docompiletypeof64store (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 offset);
+
+    DGLU_API extern const char* dg_docompiletypeotwostorename;
+    DGLU_API void dg_docompiletypeotwostore (
+        Bufferhandle* pBHarrayhead,
+        UINT64 bufferid,
+        UINT64 offset);
     
-	DGLU_API void dg_forthfillnewstring (Bufferhandle* pBHarrayhead);
+    
+    // ////////////////////////////
+    // Forth string stack words  //
+    // ////////////////////////////          
+
+    
+    DGLU_API void dg_forthcomparestring ( Bufferhandle* pBHarrayhead );
+    //                 ( $1 $2 -$- $1 $2 )
+    //                 ( -- flag )
+    
+    
+    DGLU_API void dg_forthgetmidstring ( Bufferhandle* pBHarrayhead );
+    //             ( $1 -$- $1 $2 )
+    //             ( offset length -- )
+    
+    
+    DGLU_API void dg_forthcatstring ( Bufferhandle* pBHarrayhead );
+    //                  ( $1 $2 -$- $1+$2 )
+    
+    
+    DGLU_API void dg_forthlengthstring ( Bufferhandle* pBHarrayhead );
+    //                ( $1 -$- $1 )
+    //                ( -- length )
+    
+    
+    DGLU_API void dg_forthshortenstring ( Bufferhandle* pBHarrayhead );
+    //                 ( $1 -$- $1' )
+    
+    
+    DGLU_API void dg_forthpickstring (Bufferhandle* pBHarrayhead);
+    //              ( $x .. $3 $2 $1 $0 -$- $x ... $3 $2 $1 $0 $x )
+    //              ( x -- )
+    
+    
+    DGLU_API void dg_forthdupstring ( Bufferhandle* pBHarrayhead );
+    //             ( $1 -$- $1 $1 )
+    
+    
+    DGLU_API void dg_forthoverstring (Bufferhandle* pBHarrayhead);
+    //              ( $1 $0 -$- $1 $0 $1 )
+    
+    
+    DGLU_API void dg_forthdropstring (Bufferhandle* pBHarrayhead);
+    //              ( $0 -$- )
+    
+    
+    DGLU_API void dg_forthdeletestring (Bufferhandle* pBHarrayhead);
+    //                ( ... $n+1 $n $n-1... $1 $0 -$- $n+1 $n-1 ... $1 $0 )
+    //                ( n -- )
+    
+    
+    DGLU_API void dg_forthswapstring (Bufferhandle* pBHarrayhead);
+    //              ( $1 $0 -$- $0 $1 )
+    
+    
+    DGLU_API void dg_forthnipstring (Bufferhandle* pBHarrayhead);
+    //              ( $1 $0 -$- $0 )
+    
+    
+    DGLU_API void dg_forthrotstring (Bufferhandle* pBHarrayhead);
+    //             ( $2 $1 $0 -$- $0 $1 $2 )
+    
+    
+    DGLU_API void dg_forthdepthstring (Bufferhandle* pBHarrayhead);
+    //               ( -- n )
+    //               ( $1 $2 $3 ... $n -$- $1 $2 $3 ... $n )
+    
+    
+    DGLU_API void dg_forthnewstring (Bufferhandle* pBHarrayhead);
+    //             ( -$- empty$ )
+    
+    
+    DGLU_API void dg_forthctonewstring (Bufferhandle* pBHarrayhead);      
+    //                ( -$- char$ )
+    //                ( char -- )
+    
+    
+    DGLU_API void dg_forthtonewstring (Bufferhandle* pBHarrayhead);      
+    //                ( -$- $u )
+    //                ( u -- )
+    
+    
+    DGLU_API void dg_forthturnstringinto0string (Bufferhandle* pBHarrayhead); 
+    //                         ( $1 -$- 0$1 )
+    
+    
+    DGLU_API void dg_forthinsertinstring (Bufferhandle* pBHarrayhead);
+    //                  ( offset -- )
+    //                  ( $1 $2 -$- $2in$1atoffset )
+    
+    
+    DGLU_API void dg_forthdeleteinstring (Bufferhandle* pBHarrayhead);
+    //                  ( offset length -- )
+    //                  ( $1 -$- $1' )
+    
+    
+    DGLU_API void dg_forthholdstring (Bufferhandle* pBHarrayhead); 
+    //                             ( $1 -$- $1' )
+    //                             ( char -- )
+    
+    
+    DGLU_API void dg_forthnumbersignstring (Bufferhandle* pBHarrayhead);   
+    //                           ( $1 -$- $1' ) 
+    //                           ( ud -- ud' )
+    
+    
+    DGLU_API void dg_forthnumbersignsstring (Bufferhandle* pBHarrayhead);  
+    //                            ( $1 -$- $1' ) 
+    //                            ( ud -- 0 0)
+    
+    
+    DGLU_API void dg_forthsignstring (Bufferhandle* pBHarrayhead);    
+    //                          ( $1 -$- $1' ) 
+    //                          ( n -- )
+    
+    
+    DGLU_API void dg_forthstringcfetch (Bufferhandle* pBHarrayhead); 
+    //                     ( $1 -$- $1 )   
+    //                     ( position -- char )
+    
+    
+    DGLU_API void dg_forthstringcstore (Bufferhandle* pBHarrayhead);   
+    //                   ( $1 -$- $1' )  
+    //                   ( char position -- )
+    
+    
+    DGLU_API void dg_forthstringtoc (Bufferhandle* pBHarrayhead);
+    //                     ( $1 -$- $1' )
+    //                     ( -- char )
+    
+    
+    DGLU_API void dg_forthstringto (Bufferhandle* pBHarrayhead);
+    //                     ( $1 -$- $1' )
+    //                     ( -- u )
+    
+    
+    DGLU_API void dg_forthctostring (Bufferhandle* pBHarrayhead);
+    //                    ( $1 -$- $1' )
+    //                    ( char -- )
+    
+    
+    DGLU_API void dg_forthtostring (Bufferhandle* pBHarrayhead);
+    //                    ( $1 -$- $1' )
+    //                    ( u -- )
+    
+    
+    DGLU_API void dg_forthsplitstring (Bufferhandle* pBHarrayhead);
+    //               ( $1 -$- $2 $3 )
+    //               ( n -- )
+    
+    
+    DGLU_API void dg_forthputmidstring (Bufferhandle* pBHarrayhead);
+    //                ( n -- )
+    //                ( destination$ source$ -$- destination$' )
+    
+    
+    DGLU_API void dg_forthstringquotes (Bufferhandle* pBHarrayhead ); 
+    // everything up to word ending in " is put onto string stack as a string
+    
+    
+    DGLU_API void dg_forthstostring (Bufferhandle* pBHarrayhead);
+    //               ( addr length -- )
+    //               ( -- $1 )
+    
+    
+    DGLU_API void dg_forthgetsstringnd (Bufferhandle* pBHarrayhead);
+    //               ( $n $n-1 ... $1 $0 -$- $n $n-1 ... $1 $0 )
+    //               ( n -- pstringn dg_forthlengthstringn )
+    
+    
+    DGLU_API void dg_forthgetenvstring (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthasciitounicodestring (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthunicodetoasciistring (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthgrowstring (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthrollstring (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthminusrollstring (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthstripstring (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthdeleteinstringnd (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthinsertinstringnd (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthcatstringnd (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthstrippathfromfilenamestring (Bufferhandle* pBHarrayhead);
+    //        ( path\filename$ -$- filename$ )
+    
+    
+    DGLU_API void dg_forthfillnewstring (Bufferhandle* pBHarrayhead);
     //        ( char n -- )
     //        ( -$- a$ )
     
@@ -7361,22 +7469,22 @@ extern "C" {
     DGLU_API void dg_forthtofactorialulestring(Bufferhandle* pBHarrayhead);
     
     
-	// /////////////////////////////
-	//  End of string stack words //
-	// /////////////////////////////
-	
-	
-	DGLU_API UINT64 dg_chartodigit (unsigned char c);
+    // /////////////////////////////
+    //  End of string stack words //
+    // /////////////////////////////
+    
+    
+    DGLU_API UINT64 dg_chartodigit (unsigned char c);
     
     
     DGLU_API UINT64 dg_chartodigitlowertoo (unsigned char c);
-	
-	
-	DGLU_API UINT64 dg_pchartonumber (
+    
+    
+    DGLU_API UINT64 dg_pchartonumber (
         unsigned char* pnumber,
-		UINT64 length,
-		UINT64 base,
-		UINT64* flag);
+        UINT64 length,
+        UINT64 base,
+        UINT64* flag);
   
     DGLU_API INT64 dg_pchartonumberskipperiod (
         UINT8* pnumber,
@@ -7405,26 +7513,26 @@ extern "C" {
         UINT64 length,
         UINT64* pflag);
         
-	DGLU_API unsigned char dg_digittochar (UINT64 d);
+    DGLU_API unsigned char dg_digittochar (UINT64 d);
     
-	
     
-	DGLU_API void dg_forthocall ( Bufferhandle* pBHarrayhead );
-	//           ( compileoffset compilebufid -- )
-	
-	
-	DGLU_API void dg_forthqueryendevaluate (Bufferhandle* pBHarrayhead);
-	//                     ( flag -- )
-	
-	
-	DGLU_API void dg_forthtype0string (Bufferhandle* pBHarrayhead);
-	//                     ( caddr -- )
-	
-	
+    
+    DGLU_API void dg_forthocall ( Bufferhandle* pBHarrayhead );
+    //           ( compileoffset compilebufid -- )
+    
+    
+    DGLU_API void dg_forthqueryendevaluate (Bufferhandle* pBHarrayhead);
+    //                     ( flag -- )
+    
+    
+    DGLU_API void dg_forthtype0string (Bufferhandle* pBHarrayhead);
+    //                     ( caddr -- )
+    
+    
     DGLU_API void dg_forthquestion (Bufferhandle* pBHarrayhead);
     
 
-	DGLU_API void dg_forthdots (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthdots (Bufferhandle* pBHarrayhead);
  
     
     DGLU_API void dg_forthdumphex (Bufferhandle* pBHarrayhead);
@@ -7432,18 +7540,18 @@ extern "C" {
     
     DGLU_API void dg_forthwords (Bufferhandle* pBHarrayhead);
     //              ( -- )
-	
-	
-	DGLU_API void dg_forthdotstrings (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthdotwordname (Bufferhandle* pBHarrayhead);
-	//              ( executiontoken -- )
-	
-	
-	DGLU_API void dg_forthshowwordlist (Bufferhandle* pBHarrayhead);
-	//              ( wordlistid -- )
-	
+    
+    
+    DGLU_API void dg_forthdotstrings (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthdotwordname (Bufferhandle* pBHarrayhead);
+    //              ( executiontoken -- )
+    
+    
+    DGLU_API void dg_forthshowwordlist (Bufferhandle* pBHarrayhead);
+    //              ( wordlistid -- )
+    
     
     DGLU_API void dg_forthshowsortedwordlist (Bufferhandle* pBHarrayhead);
     //              ( wordlistid -- )
@@ -7451,24 +7559,24 @@ extern "C" {
     
     DGLU_API void dg_forthshowallwords (Bufferhandle* pBHarrayhead);
     //              ( -- )
-	
-	
-	DGLU_API void dg_forthcscan (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthcscanlstring (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthcscanstring (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthminuscscanstring (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthscan (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthscanlstring (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthcscan (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthcscanlstring (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthcscanstring (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthminuscscanstring (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthscan (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthscanlstring (Bufferhandle* pBHarrayhead);
     
     
     DGLU_API void dg_forthcodeallot (Bufferhandle* pBHarrayhead);
@@ -7545,85 +7653,76 @@ extern "C" {
     DGLU_API void dg_forthdiaperoff (Bufferhandle* pBHarrayhead);
     
     DGLU_API void dg_forthdiaperon (Bufferhandle* pBHarrayhead);
-	
-	
-	
-	
-	
-	
-	// ///////////////////////////////////////
-	// End of Forth string extension words  //
-	// ///////////////////////////////////////
-	
+    
+    
+    
+    
+    
+    
+    // ///////////////////////////////////////
+    // End of Forth string extension words  //
+    // ///////////////////////////////////////
+    
     
     
     DGLU_API void dg_forthurlencodestring (Bufferhandle* pBHarrayhead);
     
-	
-	DGLU_API void dg_forthurldecodestring (Bufferhandle* pBHarrayhead);
-	
-	
-	// fileio stuff
-	
-	DGLU_API void dg_forthloadfilestring (Bufferhandle* pBHarrayhead);
-	//              ( filename$ -$- )
-	//              ( -- bufferid )
-	
-	
-	DGLU_API void dg_forthsavefilestring (Bufferhandle* pBHarrayhead);
-	//              ( filename$ -$- )
-	//              ( bufferid -- )
-	
-	
-	DGLU_API void dg_forthfixpathstring (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthincludefilestring (Bufferhandle* pBHarrayhead);
-	//                 ( filename$ -$- )  
-	
-	
-	DGLU_API void dg_forthqueryincludefilestring (Bufferhandle* pBHarrayhead);
-	//                      ( filename$ -$- )
-	//                      ( flag -- )
-	
-	// library stuff
-    DGLU_API void dg_forthopenlibrarystring (Bufferhandle* pBHarrayhead);
-	//                 ( libraryname$ -$- )
-	//                 ( -openlibraryhandlestack- libraryhandle )
-	//                 ( -- wordlistid libraryhandle )
     
+    DGLU_API void dg_forthurldecodestring (Bufferhandle* pBHarrayhead);
+    
+    
+    // fileio stuff
+    
+    DGLU_API void dg_forthloadfilestring (Bufferhandle* pBHarrayhead);
+    //              ( filename$ -$- )
+    //              ( -- bufferid )
+    
+    
+    DGLU_API void dg_forthsavefilestring (Bufferhandle* pBHarrayhead);
+    //              ( filename$ -$- )
+    //              ( bufferid -- )
+    
+    
+    DGLU_API void dg_forthfixpathstring (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthincludefilestring (Bufferhandle* pBHarrayhead);
+    //                 ( filename$ -$- )  
+    
+    
+    DGLU_API void dg_forthqueryincludefilestring (Bufferhandle* pBHarrayhead);
+    //                      ( filename$ -$- )
+    //                      ( flag -- )
+    
+    // library stuff
+    DGLU_API void dg_forthopenlibstring (Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthopenlibrarystring (Bufferhandle* pBHarrayhead);
     
     DGLU_API void dg_forthloadlibrarystringsub (Bufferhandle* pBHarrayhead);
     
-	DGLU_API void dg_forthloadlibrarystring (Bufferhandle* pBHarrayhead);
-	//                 ( libraryname$ -$- )
-	//                 ( -openlibraryhandlestack- libraryhandle )
-	//                 ( -- wordlistid )
+    DGLU_API void dg_forthloadlibrarystring (Bufferhandle* pBHarrayhead);
     
     DGLU_API void dg_forthshowopenlibrary (Bufferhandle* pBHarrayhead);
-    //			       ( openlibraryhandle -- )
-	
+    
     DGLU_API void dg_forthshowlibrarystring (Bufferhandle* pBHarrayhead);
-    //                 ( filename$ -$- )
 
     DGLU_API void dg_forthfindlibrarysymbol (Bufferhandle* pBHarrayhead);
-    //                 ( symbolname$ -$- )
-    //                 ( openlibraryhandle -- symboladdress )
 
-	// Windows specific
+    // Windows specific
     /*
-	DGLU_API extern const char* dg_forthloadstdcalllibrarystringname;
-	
-	DGLU_API void dg_forthloadstdcalllibrarystring (Bufferhandle* pBHarrayhead);
-	//                 ( libraryname$ -$- )
-	//                 ( -openlibraryhandlestack- libraryhandle )
-	//                 ( -- wordlistid )
-	*/
+    DGLU_API extern const char* dg_forthloadstdcalllibrarystringname;
+    
+    DGLU_API void dg_forthloadstdcalllibrarystring (Bufferhandle* pBHarrayhead);
+    //                 ( libraryname$ -$- )
+    //                 ( -openlibraryhandlestack- libraryhandle )
+    //                 ( -- wordlistid )
+    */
 
-	DGLU_API void dg_forthfreelibrary (Bufferhandle* pBHarrayhead);
-	
+    DGLU_API void dg_forthfreelibrary (Bufferhandle* pBHarrayhead);
+    
 
-	DGLU_API UINT64 dg_callprocaddress (
+    DGLU_API UINT64 dg_callprocaddress (
         UINT64* pints,
         UINT64 n,
         UINT64* plength,
@@ -7662,9 +7761,9 @@ extern "C" {
     
     
     //DGLU_API UINT32 dg_callprocaddressnodrop (UINT32* pints, 
-	//											 UINT32 n, 
-	//											 UINT32* plength, 
-	//											 UINT32* address);
+    //                                             UINT32 n, 
+    //                                             UINT32* plength, 
+    //                                             UINT32* address);
     
                                             
     DGLU_API UINT32 dg_callcppmemberwin32 (UINT32* pints, 
@@ -7673,48 +7772,48 @@ extern "C" {
                                            UINT32* address);
     
 */
-	DGLU_API void dg_forthcallprocaddress (Bufferhandle* pBHarrayhead);
-	//  ( paramn paramn-1 paramn-2 ... param1 n procaddress -- returnvalue )
+    DGLU_API void dg_forthcallprocaddress (Bufferhandle* pBHarrayhead);
+    //  ( paramn paramn-1 paramn-2 ... param1 n procaddress -- returnvalue )
 
-	
-	DGLU_API void dg_forthcallprocaddressretuint128 (Bufferhandle* pBHarrayhead);
-	
+    
+    DGLU_API void dg_forthcallprocaddressretuint128 (Bufferhandle* pBHarrayhead);
+    
 
     DGLU_API void dg_forthcalldfpprocaddress (Bufferhandle* pBHarrayhead);
-	
-/*
-	DGLU_API void dg_forthcallcppmemberfunction (Bufferhandle* pBHarrayhead);
-	//                     ( paramn paramn-1 paramn-2 ... param1 n procaddress -- returnvalue )
-	
     
-	
-	//DGLU_API void dg_forthcallprocaddressnodrop (Bufferhandle* pBHarrayhead);
-	//                           ( paramn paramn-1 paramn-2 ... param1 n procaddress -- returnvalue )
+/*
+    DGLU_API void dg_forthcallcppmemberfunction (Bufferhandle* pBHarrayhead);
+    //                     ( paramn paramn-1 paramn-2 ... param1 n procaddress -- returnvalue )
+    
+    
+    
+    //DGLU_API void dg_forthcallprocaddressnodrop (Bufferhandle* pBHarrayhead);
+    //                           ( paramn paramn-1 paramn-2 ... param1 n procaddress -- returnvalue )
 
-	
-	DGLU_API void dg_forthloadstdcallllibwordlist (Bufferhandle* pBHarrayhead);
-	//                                 ( libraryhandle -- )
-	
-	
-	DGLU_API const char* dg_determinecalltypefromname (const char* pname, UINT32 namelength, UINT32* pcalltype);
-	
-	
-	DGLU_API void dg_forthloadcdecllibwordlist (Bufferhandle* pBHarrayhead);
-	//                                 ( libraryhandle -- )
+    
+    DGLU_API void dg_forthloadstdcallllibwordlist (Bufferhandle* pBHarrayhead);
+    //                                 ( libraryhandle -- )
+    
+    
+    DGLU_API const char* dg_determinecalltypefromname (const char* pname, UINT32 namelength, UINT32* pcalltype);
+    
+    
+    DGLU_API void dg_forthloadcdecllibwordlist (Bufferhandle* pBHarrayhead);
+    //                                 ( libraryhandle -- )
 */
     DGLU_API void dg_forthcreateov (Bufferhandle* pBHarrayhead);
     
-	
-	DGLU_API void dg_forthcreateov (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthcreateoc (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthosquotes (Bufferhandle* pBHarrayhead); // ( OS" )
-	
+    
+    DGLU_API void dg_forthcreateov (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthcreateoc (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthosquotes (Bufferhandle* pBHarrayhead); // ( OS" )
+    
 
-	DGLU_API void dg_fortho0quotes (Bufferhandle* pBHarrayhead); // ( O0" )
+    DGLU_API void dg_fortho0quotes (Bufferhandle* pBHarrayhead); // ( O0" )
  
  
     DGLU_API UINT64 dg_packtwobytevex (
@@ -7742,117 +7841,117 @@ extern "C" {
         UINT64 rexdotw, // 0x48 comes from opcode I think
         UINT64 usethreebytevex); // not zero means use three byte vex
 
-	DGLU_API void dg_fortherrorquotes( Bufferhandle* pBHarrayhead); // ( ERROR" )
-	
-	
-	DGLU_API void dg_forthtooname (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthlatest (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_fortherrorquotes( Bufferhandle* pBHarrayhead); // ( ERROR" )
+    
+    
+    DGLU_API void dg_forthtooname (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthlatest (Bufferhandle* pBHarrayhead);
 
-	
-	DGLU_API void dg_forthbracketlatest (Bufferhandle* pBHarrayhead);
-	
+    
+    DGLU_API void dg_forthbracketlatest (Bufferhandle* pBHarrayhead);
+    
 
-	DGLU_API void dg_forthbracketcolononame (Bufferhandle* pBHarrayhead);
-	
-	
+    DGLU_API void dg_forthbracketcolononame (Bufferhandle* pBHarrayhead);
+    
+    
     DGLU_API void dg_forthbracketwordnametoerror (Bufferhandle* pBHarrayhead);
     
     
-	DGLU_API void dg_forthnametoe (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthnametoe (Bufferhandle* pBHarrayhead);
    
-	
-	/*
-	 DGLU_API extern const char* dg_compilepushdatastackname;
-	 
-	 DGLU_API void dg_compilepushdatastack (Bufferhandle* pBHarrayhead);
-	 */
-	
+    
+    /*
+     DGLU_API extern const char* dg_compilepushdatastackname;
+     
+     DGLU_API void dg_compilepushdatastack (Bufferhandle* pBHarrayhead);
+     */
+    
 
-	DGLU_API void dg_forthcompilegetolderrorcount (Bufferhandle* pBHarrayhead);
-	
+    DGLU_API void dg_forthcompilegetolderrorcount (Bufferhandle* pBHarrayhead);
+    
 
-	DGLU_API void dg_compile0string (Bufferhandle* pBHarrayhead, unsigned char* psrc);
-	
-	
-	DGLU_API void dg_forthqueryerrorif (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthtoorder (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthorderfrom (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthforthwords (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_fortherrorwords (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthenvironmentwords (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthbufferwords (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthstringwords (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthlibrarywords (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthuserwords (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthshowlicense (Bufferhandle* pBHarrayhead);
-	//               ( -- )
-	
-	DGLU_API void dg_forthcrlf (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthgethstdin (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthgethstdout (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthgethstderror (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthgetfilelength (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthreadavailabletobuffer (Bufferhandle* pBHarrayhead);
-	
-	
-	DGLU_API void dg_forthreadwaitforntobuffer(Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_compile0string (Bufferhandle* pBHarrayhead, unsigned char* psrc);
+    
+    
+    DGLU_API void dg_forthqueryerrorif (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthtoorder (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthorderfrom (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthforthwords (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_fortherrorwords (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthenvironmentwords (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthbufferwords (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthstringwords (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthlibrarywords (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthuserwords (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthshowlicense (Bufferhandle* pBHarrayhead);
+    //               ( -- )
+    
+    DGLU_API void dg_forthcrlf (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthgethstdin (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthgethstdout (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthgethstderror (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthgetfilelength (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthreadavailabletobuffer (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthreadwaitforntobuffer(Bufferhandle* pBHarrayhead);
     
 
     DGLU_API extern const char* dg_inithlistsname;
 
 
     DGLU_API void dg_inithlists (Bufferhandle* pBHarrayhead);
-	
+    
 
     DGLU_API Bufferhandle* dg_initwithoutwordlists(int argc, char* argv[]);
     
     
-	DGLU_API Bufferhandle* dg_init(int argc, char* argv[]);
-	
-	
-	DGLU_API void dg_cleanup (Bufferhandle* pBHarrayhead);
-	
+    DGLU_API Bufferhandle* dg_init(int argc, char* argv[]);
+    
+    
+    DGLU_API void dg_cleanup (Bufferhandle* pBHarrayhead);
+    
 
-	DGLU_API void dg_main (int argc, char* argv[]);
-	
+    DGLU_API void dg_main (int argc, char* argv[]);
+    
 
-	int main(int argc, char* argv[]);
-	
+    int main(int argc, char* argv[]);
+    
 
     DGLU_API void dg_forthbswap (Bufferhandle* pBHarrayhead);
-	
+    
     
     DGLU_API void dg_forthpagesize(Bufferhandle* pBHarrayhead);
     
@@ -7992,8 +8091,8 @@ extern "C" {
         UINT64 comparedatalength,
         UINT64 keyofmidrangevalue);
 
-	
-	/////////////////////////////////////////////
+    
+    /////////////////////////////////////////////
     // End of Forth Hierarchical List Routines //
     ///////////////////////////////////////////// 
     
@@ -8040,6 +8139,21 @@ extern "C" {
     
     DGLU_API extern const char dg_forthqueryclearlocalsname[];
     DGLU_API void dg_forthqueryclearlocals(Bufferhandle* pBHarrayhead);
+
+    DGLU_API extern const char dg_forthcurlybracename[];
+    DGLU_API void dg_forthcurlybrace (Bufferhandle* pBHarrayhead);
+
+    DGLU_API extern const char dg_forthtoname[];
+    DGLU_API void dg_forthto(Bufferhandle* pBHarrayhead);
+
+    DGLU_API extern const char dg_forthvaluename[];
+    DGLU_API void dg_forthvalue(Bufferhandle* pBHarrayhead);
+
+    DGLU_API extern const char dg_forthtwovaluename[];
+    DGLU_API void dg_forthtwovalue(Bufferhandle* pBHarrayhead);
+
+    DGLU_API extern const char dg_forthfvaluename[];
+    DGLU_API void dg_forthfvalue(Bufferhandle* pBHarrayhead);
     
     // ////////////////////////////////
     // End of Forth Locals Routines  //

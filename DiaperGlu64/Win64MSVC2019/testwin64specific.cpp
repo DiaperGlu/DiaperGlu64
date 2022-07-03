@@ -1316,7 +1316,7 @@ void testdg_forthfindlibrarysymbol()
     dg_initvariables(&BHarrayhead);
 
     perror = dg_loadlibrary(
-        (const char*)"diapergluosapi.dll",
+        (const char*)DG_DIAPERGLUOSAPI_LIB_NAME, // (const char*)"diapergluosapi.dll",
         &hlibrary,
         dg_success);
 
@@ -1397,7 +1397,7 @@ void testdg_forthcallprocaddress()
     dg_initvariables(&BHarrayhead);
 
     perror = dg_loadlibrary(
-        (const char*)"diapergluosapi.dll",
+        (const char*)DG_DIAPERGLUOSAPI_LIB_NAME, // (const char*)"diapergluosapi.dll",
         &hlibrary,
         dg_success);
 
@@ -1526,7 +1526,7 @@ void testdg_forthcallprocaddressretuint128()
     dg_initvariables(&BHarrayhead);
 
     perror = dg_loadlibrary(
-        (const char*)"diapergluosapi.dll",
+        (const char*)DG_DIAPERGLUOSAPI_LIB_NAME, // (const char*)"diapergluosapi.dll",
         &hlibrary,
         dg_success);
 
@@ -1668,7 +1668,7 @@ void testdg_forthcalldfpprocaddress()
     dg_initvariables(&BHarrayhead);
 
     perror = dg_loadlibrary(
-        (const char*)"diapergluosapi.dll",
+        (const char*)DG_DIAPERGLUOSAPI_LIB_NAME, // (const char*)"diapergluosapi.dll",
         &hlibrary,
         dg_success);
 
@@ -1812,8 +1812,8 @@ void testdg_forthopenlibrarystring()
         &BHarrayhead,
         DG_STRINGOFFSETSTACK_BUFFERID,
         DG_STRINGSTRINGSTACK_BUFFERID,
-        18,
-        (unsigned char*)"diapergluosapi.dll");
+        DG_DIAPERGLUOSAPI_LIB_NAME_LENGTH, // 18,
+        (unsigned char*)DG_DIAPERGLUOSAPI_LIB_NAME); // (unsigned char*)"diapergluosapi.dll");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {

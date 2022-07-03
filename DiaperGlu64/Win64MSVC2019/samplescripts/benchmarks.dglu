@@ -1,0 +1,188 @@
+
+CRLF ." Repeatedly does function for 1s and counts how many times it could do it."
+CRLF ."  (Note: operating system is multitasking during test.)
+CRLF
+CRLF ." Benchmarks:"
+CRLF ." Function              NumberDone          Duration    RawTime/op(ps)  FinalTime/op(ps)"
+
+
+VARIABLE X
+VARIABLE basenoptime
+VARIABLE basecolontime
+
+CREATE Y 1024 CELLS ALLOT
+CREATE Z 1024 CELLS ALLOT
+
+: dobenchmark ( "<delims>name<delims>morestuff"-cib- morestuff ) ( -- time ) 
+  ' >BODY  1000000 BENCHMARK  2DUP
+  16 .R  ."   " 16 .R  ."   "  1000000 -ROT */ DUP 16 .R ;
+
+: .timeminusnop ( time -- )
+   basenoptime @ - ."   " 16 .R ;
+
+: .timeminuscolon ( time -- )
+   basecolontime @ - ."   " 16 .R ;
+
+CRLF ." empty_test      " dobenchmark NOP basenoptime !
+
+: tempty: ;
+
+CRLF ." empty : ;       " dobenchmark tempty: basecolontime !
+
+: t2DROP 1 2 2DROP ;
+
+CRLF ." 1 2 2DROP       " dobenchmark t2DROP .timeminuscolon
+ 
+: t2DROPb  1 2 2DROP  1 2 2DROP  ;
+
+CRLF ." 1 2 2DROP twice " dobenchmark t2DROPb .timeminuscolon
+
+345 654
+CRLF ." SWAP            " dobenchmark SWAP .timeminusnop
+2DROP
+
+: tswapusing{ { | x y } y x ;
+345 654
+CRLF ." swap using {    " dobenchmark tswapusing{ .timeminuscolon
+2DROP
+
+: tDROP  1 DROP ;
+CRLF ." 1 DROP          " dobenchmark tDROP .timeminuscolon
+
+: tDUPDROP  DUP DROP ;
+345
+CRLF ." DUP DROP        " dobenchmark tDUPDROP .timeminuscolon
+DROP
+
+345 654 384
+CRLF ." ROT             " dobenchmark ROT .timeminusnop
+2DROP DROP
+
+0
+CRLF ." 0=              " dobenchmark 0= .timeminusnop
+DROP
+
+0
+CRLF ." 0>              " dobenchmark 0> .timeminusnop
+DROP
+
+0
+CRLF ." 0<              " dobenchmark 0< .timeminusnop
+DROP
+
+0
+CRLF ." 0<>             " dobenchmark 0<> .timeminusnop
+DROP
+
+0
+CRLF ." NEGATE          " dobenchmark NEGATE .timeminusnop
+DROP
+
+: t@ X @ DROP ;
+CRLF ." X @ DROP        " dobenchmark t@ .timeminuscolon
+
+: t! 0 X ! ;
+CRLF ." 0 X !           " dobenchmark t! .timeminuscolon
+
+: t+ 1 2 + DROP ;
+CRLF ." 1 2 + DROP      " dobenchmark t+ .timeminuscolon
+
+: t- 1 2 - DROP ;
+CRLF ." 1 2 - DROP      " dobenchmark t- .timeminuscolon
+
+: t* 1 2 * DROP ;
+CRLF ." 1 2 * DROP      " dobenchmark t* .timeminuscolon
+
+: t/ 2 1 + DROP ;
+CRLF ." 2 1 / DROP      " dobenchmark t/ .timeminuscolon
+
+: tmove1 Y Z 1 MOVE ;
+CRLF ." Y Z 1 MOVE      " dobenchmark tmove1 .timeminuscolon
+
+: tmove1000 Y Z 1000 MOVE ; 
+CRLF ." Y Z 1000 MOVE   " dobenchmark tmove1000 .timeminuscolon
+
+: tcmove1 Y Z 1 CMOVE ;
+CRLF ." Y Z 1 CMOVE     " dobenchmark tcmove1 .timeminuscolon
+
+: tcmove1000 Y Z 1000 CMOVE ;
+CRLF ." Y Z 1000 CMOVE  " dobenchmark tcmove1000 .timeminuscolon
+
+: t1doloop 1 0 DO LOOP ;
+CRLF ." 1 0 DO LOOP     " dobenchmark t1doloop .timeminuscolon
+
+CODE 1asmloopusingdec
+ 1 N  RCX  MOV,
+ BEGIN,
+   RCX  DEC,
+ ZS UNTIL,
+ RET,
+END-CODE
+CRLF ." 1 asm dec loop  " dobenchmark 1asmloopusingdec .timeminusnop
+
+CODE 1asmloopusingloop
+ 1 N  RCX  MOV,
+ BEGIN,
+ LOOPDONEUNTIL,
+ RET,
+END-CODE
+CRLF ." 1 asm loop loop " dobenchmark 1asmloopusingdec .timeminusnop
+
+: t1000doloop 1000 0 DO LOOP ;
+CRLF ." 1000 0 DO LOOP  " dobenchmark t1000doloop .timeminuscolon
+
+: t1000local|loop 1000 LOCALS| x | BEGIN x 1- DUP TO x 0= UNTIL ;
+CRLF ." 1000LOCALS| LOOP" dobenchmark t1000local|loop .timeminuscolon
+
+: t1000{loop 1000 { | x } BEGIN x 1- DUP TO x 0= UNTIL ;
+CRLF ." 1000 { LOOP     " dobenchmark t1000{loop .timeminuscolon
+
+CODE 1000asmloopusingloop
+ 1000 N  RCX  MOV,
+ BEGIN,
+ LOOPDONEUNTIL,
+ RET,
+END-CODE
+CRLF ." 1000 loop loop  " dobenchmark 1000asmloopusingloop .timeminusnop
+
+CODE 1000asmloopusingdec
+ 1000 N  RCX  MOV,
+ BEGIN,
+   RCX  DEC,
+ ZS UNTIL,
+ RET,
+END-CODE
+CRLF ." 1000 dec loop   " dobenchmark 1000asmloopusingdec .timeminusnop
+
+: t1doidroploop 1 0 DO I DROP LOOP ;
+CRLF ." 1 DO I DROP LOOP" dobenchmark t1doidroploop .timeminuscolon
+
+: tworstcasesearch S" 329843745" EVALUATE DROP ;
+CRLF ." search number   " dobenchmark tworstcasesearch .timeminuscolon
+
+X86-WORDLIST >SEARCH-ORDER
+CRLF ." search num +asm " dobenchmark tworstcasesearch .timeminuscolon
+
+: ttrueifthen TRUE IF THEN ;
+CRLF ." TRUE IF THEN    " dobenchmark ttrueifthen .timeminuscolon
+
+: tfalseifthen FALSE IF THEN ;
+CRLF ." FALSE IF THEN   " dobenchmark tfalseifthen .timeminuscolon
+
+: t100000! 100000 >FACTORIALULE$ DROP$ ;
+CRLF ." 100000!         " dobenchmark t100000! .timeminuscolon
+
+: tUDM/MOD 0 -1 -1 UDM/MOD 2DROP DROP ;
+CRLF ." UDM/MOD         " dobenchmark tUDM/MOD .timeminuscolon
+
+-1 -1 -1
+CRLF ." UDM/MOD no colon" dobenchmark tUDM/MOD .timeminusnop
+2DROP DROP
+
+: tSM/REM 0 -1 1000000 SM/REM 2DROP ;
+CRLF ." SM/REM          " dobenchmark tSM/REM .timeminuscolon
+
+
+
+
+

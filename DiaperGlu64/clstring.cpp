@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.4.
+//    This file is part of DiaperGlu v5.5.
 //
-//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.4; if not, write to the Free Software
+//    along with DiaperGlu v5.5; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 5, 2022               //
-// version 5.4                //
+// July 2, 2022               //
+// version 5.5                //
 // /////////////////////////////
 
 
@@ -35,11 +35,11 @@ const char* dg_getlstringstartoffsetname =  "dg_getlstringstartoffset";
 
 UINT64 dg_getlstringstartoffset (
     Bufferhandle *pBHarrayhead,
-	UINT64 offsetbufferid,
+    UINT64 offsetbufferid,
     UINT64 stringid)
 {
-	UINT64 stringstartoffset = 0; // = 0 needs to be here
-	UINT64 bufferlength;
+    UINT64 stringstartoffset = 0; // = 0 needs to be here
+    UINT64 bufferlength;
     UINT64 numberofstringsonstack;
 
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
@@ -49,39 +49,39 @@ UINT64 dg_getlstringstartoffset (
         return(0);
     }
 
-	bufferlength = dg_getbufferlength(pBHarrayhead, offsetbufferid);
+    bufferlength = dg_getbufferlength(pBHarrayhead, offsetbufferid);
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_getlstringstartoffsetname);
-		return (0);
-	}
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_getlstringstartoffsetname);
+        return (0);
+    }
 
-	numberofstringsonstack = bufferlength / sizeof (UINT64); // 0-3 bytes = 0, 4-7 bytes = 1, etc.
+    numberofstringsonstack = bufferlength / sizeof (UINT64); // 0-3 bytes = 0, 4-7 bytes = 1, etc.
 
-	if (stringid >= numberofstringsonstack)
-	{
+    if (stringid >= numberofstringsonstack)
+    {
         dg_pusherror(pBHarrayhead, dg_lstringidtoohigherror);
-		dg_pusherror(pBHarrayhead, dg_getlstringstartoffsetname);
-		return (0);
-	}
+        dg_pusherror(pBHarrayhead, dg_getlstringstartoffsetname);
+        return (0);
+    }
 
-	// end of string is pushed onto the offset stack. The start of the first string is at 0, so that offset isn't pushed.
-	if (stringid != 0)
-	{
-		stringstartoffset = (UINT64)dg_getbufferuint64(
+    // end of string is pushed onto the offset stack. The start of the first string is at 0, so that offset isn't pushed.
+    if (stringid != 0)
+    {
+        stringstartoffset = (UINT64)dg_getbufferuint64(
             pBHarrayhead, 
             offsetbufferid, 
             (stringid - 1) * sizeof(UINT64));
 
-		if (pBHarrayhead->errorcount != olderrorcount)
-		{
-			dg_pusherror(pBHarrayhead, dg_getlstringstartoffsetname);
-			return (0);
-		}
-	}
+        if (pBHarrayhead->errorcount != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_getlstringstartoffsetname);
+            return (0);
+        }
+    }
 
-	return (stringstartoffset);
+    return (stringstartoffset);
 }
 
 
@@ -89,12 +89,12 @@ const char* dg_getlstringlengthname = "dg_getlstringlength";
 
 UINT64 dg_getlstringlength (
     Bufferhandle *pBHarrayhead,
-	UINT64 offsetbufferid,
-	UINT64 stringid)
+    UINT64 offsetbufferid,
+    UINT64 stringid)
 {
-	UINT64 stringstartoffset;
-	UINT64 stringendoffset = 0;
-//	UINT64 bufferlength = 0;
+    UINT64 stringstartoffset;
+    UINT64 stringendoffset = 0;
+//    UINT64 bufferlength = 0;
 
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
@@ -103,34 +103,34 @@ UINT64 dg_getlstringlength (
         return (0);
     }
 
-	stringstartoffset = dg_getlstringstartoffset(pBHarrayhead, offsetbufferid, stringid);
+    stringstartoffset = dg_getlstringstartoffset(pBHarrayhead, offsetbufferid, stringid);
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_getlstringlengthname);
-		return (0);
-	}
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_getlstringlengthname);
+        return (0);
+    }
 
-	stringendoffset = (UINT64)dg_getbufferuint64(
+    stringendoffset = (UINT64)dg_getbufferuint64(
         pBHarrayhead, 
         offsetbufferid, 
         stringid * sizeof(UINT64));
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_getlstringlengthname);
-		return (0);
-	}
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_getlstringlengthname);
+        return (0);
+    }
 
 
-	if (stringendoffset < stringstartoffset)
-	{
+    if (stringendoffset < stringstartoffset)
+    {
         dg_pusherror(pBHarrayhead, dg_lstringsoffsetscorrupt);
-		dg_pusherror(pBHarrayhead, dg_getlstringlengthname);
-		return (0);
-	}
+        dg_pusherror(pBHarrayhead, dg_getlstringlengthname);
+        return (0);
+    }
 
-	return (stringendoffset - stringstartoffset);
+    return (stringendoffset - stringstartoffset);
 }
 
 
@@ -138,36 +138,36 @@ const char* dg_getnumberoflstringsonstackname = "dg_getnumberoflstringsonstack";
 
 UINT64 dg_getnumberoflstringsonstack(
     Bufferhandle* pBHarrayhead,
-	UINT64 offsetbufferid)
+    UINT64 offsetbufferid)
 {
     UINT64 bufferlength = 0;
-	UINT64 numberofstringsonstack = 0;
+    UINT64 numberofstringsonstack = 0;
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
     if (baderrorcount == olderrorcount)
     {
         return (0);
     }
 
-	bufferlength = dg_getbufferlength(pBHarrayhead, offsetbufferid);
+    bufferlength = dg_getbufferlength(pBHarrayhead, offsetbufferid);
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_getnumberoflstringsonstackname);
-		return (0);
-	}
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_getnumberoflstringsonstackname);
+        return (0);
+    }
 
-	if (bufferlength % sizeof(UINT64) != 0)
-	{
+    if (bufferlength % sizeof(UINT64) != 0)
+    {
         dg_pusherror(pBHarrayhead, dg_lstringstackdepthcorrupt);
-		dg_pusherror(pBHarrayhead, dg_getnumberoflstringsonstackname);
-		return(0);
-	}
+        dg_pusherror(pBHarrayhead, dg_getnumberoflstringsonstackname);
+        return(0);
+    }
 
-	numberofstringsonstack = bufferlength / sizeof (UINT64); // 0 bytes = 0, 4 bytes = 1, etc.
+    numberofstringsonstack = bufferlength / sizeof (UINT64); // 0 bytes = 0, 4 bytes = 1, etc.
 
-	return(numberofstringsonstack);
+    return(numberofstringsonstack);
 }
 
 
@@ -175,13 +175,13 @@ const char* dg_getplstringname = "dg_getplstring";
 
 unsigned char* dg_getplstring(
     Bufferhandle* pBHarrayhead,
-	UINT64  offsetbufferid,
-	UINT64  stringbufferid,
-	UINT64  stringid,
-	UINT64* pstringlength)
+    UINT64  offsetbufferid,
+    UINT64  stringbufferid,
+    UINT64  stringid,
+    UINT64* pstringlength)
 {
-	UINT64 stringstartoffset;
-	unsigned char* plstring;
+    UINT64 stringstartoffset;
+    unsigned char* plstring;
     const char* perror;
 
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
@@ -202,44 +202,44 @@ unsigned char* dg_getplstring(
         return ((unsigned char*)badbufferhandle);
     }
 
-	stringstartoffset = dg_getlstringstartoffset(
+    stringstartoffset = dg_getlstringstartoffset(
         pBHarrayhead, 
         offsetbufferid, 
         stringid);
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_getplstringname);
-		return ((unsigned char*)badbufferhandle);
-	}
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_getplstringname);
+        return ((unsigned char*)badbufferhandle);
+    }
 
-	*pstringlength = dg_getlstringlength(
+    *pstringlength = dg_getlstringlength(
         pBHarrayhead, 
         offsetbufferid, 
         stringid);
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_getplstringname);
-		return ((unsigned char*)badbufferhandle);
-	}
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_getplstringname);
+        return ((unsigned char*)badbufferhandle);
+    }
 
-	plstring = dg_getpbuffersegment(
+    plstring = dg_getpbuffersegment(
         pBHarrayhead, 
         stringbufferid, 
         stringstartoffset, 
         *pstringlength);
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		*pstringlength = 0;
-		dg_pusherror(pBHarrayhead, dg_getplstringname);
-		return ((unsigned char*)badbufferhandle);
-	}
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        *pstringlength = 0;
+        dg_pusherror(pBHarrayhead, dg_getplstringname);
+        return ((unsigned char*)badbufferhandle);
+    }
  
    // dg_printzerostring(pBHarrayhead, (unsigned char*)" exiting dg_getplstring\n");
 
-	return (plstring);
+    return (plstring);
 }
 
 
@@ -247,61 +247,61 @@ const char* dg_getlstringname = "dg_getlstring";
 
 void dg_getlstring (
     Bufferhandle* pBHarrayhead,
-	UINT64 offsetbufferid,
-	UINT64 stringbufferid,
-	UINT64 stringid,
-	UINT64 maxlength,
-	unsigned char* pdest)
+    UINT64 offsetbufferid,
+    UINT64 stringbufferid,
+    UINT64 stringid,
+    UINT64 maxlength,
+    unsigned char* pdest)
 {
-	UINT64 stringstartoffset = 0;
-	UINT64 stringlength = 0;
+    UINT64 stringstartoffset = 0;
+    UINT64 stringlength = 0;
     
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
     if (baderrorcount == olderrorcount)
     {
         return;
     }
 
-	stringstartoffset = dg_getlstringstartoffset(
+    stringstartoffset = dg_getlstringstartoffset(
         pBHarrayhead, 
         offsetbufferid, 
         stringid);
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_getlstringname);
-		return;
-	}
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_getlstringname);
+        return;
+    }
 
-	stringlength = dg_getlstringlength(
+    stringlength = dg_getlstringlength(
         pBHarrayhead, 
         offsetbufferid, 
         stringid);
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_getlstringname);
-		return;
-	}
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_getlstringname);
+        return;
+    }
 
-	if (stringlength > maxlength)
-	{
+    if (stringlength > maxlength)
+    {
         dg_pusherror(pBHarrayhead, dg_toobigfordesterror);
-		dg_pusherror(pBHarrayhead, dg_getlstringname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_getlstringname);
+        return;
+    }
 
-	dg_getbuffersegment(pBHarrayhead, 
-		stringbufferid, 
-		stringstartoffset, 
-		stringlength, 
-		pdest);
+    dg_getbuffersegment(pBHarrayhead, 
+        stringbufferid, 
+        stringstartoffset, 
+        stringlength, 
+        pdest);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_getlstringname);
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_getlstringname);
+    }
 }
 
 
@@ -309,12 +309,12 @@ const char* dg_poplstringname  = "dg_poplstring";
 
 void dg_poplstring (
     Bufferhandle* pBHarrayhead,
-	UINT64 offsetbufferid,
-	UINT64 stringbufferid,
-	UINT64 maxlength,
-	unsigned char* pdest)
+    UINT64 offsetbufferid,
+    UINT64 stringbufferid,
+    UINT64 maxlength,
+    unsigned char* pdest)
 {
-	UINT64 stringid;
+    UINT64 stringid;
 
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
@@ -323,48 +323,48 @@ void dg_poplstring (
         return;
     }
 
-	// need to get stringid of last string
-	stringid = dg_getnumberoflstringsonstack(pBHarrayhead, offsetbufferid);
+    // need to get stringid of last string
+    stringid = dg_getnumberoflstringsonstack(pBHarrayhead, offsetbufferid);
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_poplstringname);
-		return;
-	}
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_poplstringname);
+        return;
+    }
 
-	// check to see if no strings on stack
-	if (stringid == 0)
-	{
+    // check to see if no strings on stack
+    if (stringid == 0)
+    {
         dg_pusherror(pBHarrayhead, dg_lstringstackunderflowerror);
-		dg_pusherror(pBHarrayhead, dg_poplstringname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_poplstringname);
+        return;
+    }
 
-	stringid--;
+    stringid--;
 
-	// get the string
-	dg_getlstring(
+    // get the string
+    dg_getlstring(
         pBHarrayhead,
-		offsetbufferid,
-		stringbufferid,
-		stringid,
-		maxlength,
-		pdest);
+        offsetbufferid,
+        stringbufferid,
+        stringid,
+        maxlength,
+        pdest);
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_poplstringname);
-		return;
-	}
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_poplstringname);
+        return;
+    }
 
-	// dg_droplstring should work no problem
-	dg_droplstring(pBHarrayhead, offsetbufferid, stringbufferid);
+    // dg_droplstring should work no problem
+    dg_droplstring(pBHarrayhead, offsetbufferid, stringbufferid);
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_poplstringname);
-		return;
-	}
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_poplstringname);
+        return;
+    }
 }
 
 
@@ -377,36 +377,36 @@ void dg_pushlstring (
     UINT64 length,
     unsigned char* psrc)
 {
-	const char* pError;
-	UINT64 oldoffsetbufferlength;
+    const char* pError;
+    UINT64 oldoffsetbufferlength;
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
-	oldoffsetbufferlength =
-		dg_getbufferlength(pBHarrayhead, stringbufferid);
+    oldoffsetbufferlength =
+        dg_getbufferlength(pBHarrayhead, stringbufferid);
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_pushlstringname);
-		return;
-	}
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_pushlstringname);
+        return;
+    }
 
-	dg_pushbuffersegment(pBHarrayhead, stringbufferid, length, psrc);
+    dg_pushbuffersegment(pBHarrayhead, stringbufferid, length, psrc);
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_pushlstringname);
-		return;
-	}
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_pushlstringname);
+        return;
+    }
 
-	dg_pushbufferuint64(pBHarrayhead, offsetbufferid, oldoffsetbufferlength + length);
+    dg_pushbufferuint64(pBHarrayhead, offsetbufferid, oldoffsetbufferlength + length);
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_shrinkbuffer(pBHarrayhead, stringbufferid, length, &pError);
-		dg_pusherror(pBHarrayhead, dg_pushlstringname);
-		return;
-	}
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_shrinkbuffer(pBHarrayhead, stringbufferid, length, &pError);
+        dg_pusherror(pBHarrayhead, dg_pushlstringname);
+        return;
+    }
 }
 
 
@@ -418,10 +418,10 @@ void dg_growlstring (
     UINT64 stringbufferid,
     UINT64 length)
 {
-	UINT64* poffsetbuffer;
-	UINT64* poffsetlength;
+    UINT64* poffsetbuffer;
+    UINT64* poffsetlength;
 
-	const char* pError;
+    const char* pError;
 
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
@@ -430,32 +430,32 @@ void dg_growlstring (
         return;
     }
 
-	poffsetbuffer = (UINT64*)dg_getpbuffer(pBHarrayhead, offsetbufferid, &poffsetlength);
+    poffsetbuffer = (UINT64*)dg_getpbuffer(pBHarrayhead, offsetbufferid, &poffsetlength);
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_growlstringname);
-		return;
-	}
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_growlstringname);
+        return;
+    }
 
-	if (*poffsetlength < sizeof (UINT64))
-	{
+    if (*poffsetlength < sizeof (UINT64))
+    {
         dg_pusherror(pBHarrayhead, dg_lstringstackunderflowerror);
-		dg_pusherror(pBHarrayhead, dg_growlstringname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_growlstringname);
+        return;
+    }
 
-	dg_growbuffer(pBHarrayhead, stringbufferid, length, &pError, FORTH_FALSE);
+    dg_growbuffer(pBHarrayhead, stringbufferid, length, &pError, FORTH_FALSE);
 
-	if (pError != dg_success)
-	{
+    if (pError != dg_success)
+    {
         dg_pusherror(pBHarrayhead, pError);
         dg_pusherror(pBHarrayhead, dg_growbuffername);
-		dg_pusherror(pBHarrayhead, dg_growlstringname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_growlstringname);
+        return;
+    }
 
-	*(poffsetbuffer + (((*poffsetlength) / sizeof(UINT64)) - 1)) += length;
+    *(poffsetbuffer + (((*poffsetlength) / sizeof(UINT64)) - 1)) += length;
 }
 
 
@@ -465,43 +465,43 @@ void dg_catlstring (
     Bufferhandle* pBHarrayhead,
     UINT64 offsetbufferid)
 {
-	UINT64* poffsetlength;
-	unsigned char* poffsetstack;
+    UINT64* poffsetlength;
+    unsigned char* poffsetstack;
 
-	UINT64* pints;
+    UINT64* pints;
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
     if (baderrorcount == olderrorcount)
     {
         return;
     }
 
-	poffsetstack = dg_getpbuffer(
+    poffsetstack = dg_getpbuffer(
         pBHarrayhead,
         offsetbufferid,
         &poffsetlength);
 
-	if (poffsetstack == (unsigned char*)badbufferhandle)
-	{
-		dg_pusherror(pBHarrayhead, dg_catlstringname);
-		return;
-	}
+    if (poffsetstack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_catlstringname);
+        return;
+    }
 
-	if (*poffsetlength < (2 * sizeof(UINT64)) )
-	{
-		dg_pusherror(pBHarrayhead, dg_lstringstackunderflowerror);
-		dg_pusherror(pBHarrayhead, dg_catlstringname);
-		return;
-	}
+    if (*poffsetlength < (2 * sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_lstringstackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_catlstringname);
+        return;
+    }
 
-	// could check for misaligned offset stack here
+    // could check for misaligned offset stack here
 
-	pints = (UINT64*)(poffsetstack + *poffsetlength - 2*sizeof(UINT64));
-	
-	pints[0] = pints[1];
+    pints = (UINT64*)(poffsetstack + *poffsetlength - 2*sizeof(UINT64));
+    
+    pints[0] = pints[1];
 
-	*poffsetlength -= sizeof (UINT64);
+    *poffsetlength -= sizeof (UINT64);
 }
 
 const char dg_catulstringsname[] = "dg_catulstrings";
@@ -569,28 +569,28 @@ void dg_stotoplstring (
     UINT64 length,
     unsigned char* psrc)
 {
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
     if (baderrorcount == olderrorcount)
     {
         return;
     }
 
-	dg_pushlstring(pBHarrayhead, offsetbufferid, stringbufferid, length, psrc);
+    dg_pushlstring(pBHarrayhead, offsetbufferid, stringbufferid, length, psrc);
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_stotoplstringname);
-		return;
-	}
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_stotoplstringname);
+        return;
+    }
 
-	dg_catlstring(pBHarrayhead, offsetbufferid);
+    dg_catlstring(pBHarrayhead, offsetbufferid);
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_stotoplstringname);
-		return;
-	}
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_stotoplstringname);
+        return;
+    }
 }
 
 
@@ -601,114 +601,114 @@ void dg_picklstring (Bufferhandle* pBHarrayhead,
     UINT64 stringbufferid,
     UINT64 n)
 {
-	const char* pError;
+    const char* pError;
 
-	UINT64 length = 0;
-	UINT64 depth;
-	UINT64 startoffset = 0;
+    UINT64 length = 0;
+    UINT64 depth;
+    UINT64 startoffset = 0;
 
-	UINT64 oldslength;
+    UINT64 oldslength;
 
-	UINT64 index;
+    UINT64 index;
 
-	UINT64* poffsetbuffer;
-	UINT64* poffsetbufferlength;
+    UINT64* poffsetbuffer;
+    UINT64* poffsetbufferlength;
 
-//	UINT64 i = 0;
+//    UINT64 i = 0;
 
-//	UINT64 stringbufferlength = 0;
-	unsigned char* pstringbuffer = NULL;
-	UINT64* pstringbufferlength = NULL;
+//    UINT64 stringbufferlength = 0;
+    unsigned char* pstringbuffer = NULL;
+    UINT64* pstringbufferlength = NULL;
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
     if (baderrorcount == olderrorcount)
     {
         return;
     }
 
-	poffsetbuffer = (UINT64*)dg_getpbuffer(pBHarrayhead, offsetbufferid, &poffsetbufferlength);
+    poffsetbuffer = (UINT64*)dg_getpbuffer(pBHarrayhead, offsetbufferid, &poffsetbufferlength);
 
-	if ((UINT64*)badbufferhandle == poffsetbuffer)
-	{
-		dg_pusherror(pBHarrayhead, dg_picklstringname);
-		return;
-	}
-
-	depth = (*poffsetbufferlength) / sizeof(UINT64);
-	
-	if (n >= depth)  // this covers the n = -1 case and depth = 0 case
-	{
-		dg_pusherror(pBHarrayhead, dg_lstringstackunderflowerror);
+    if ((UINT64*)badbufferhandle == poffsetbuffer)
+    {
         dg_pusherror(pBHarrayhead, dg_picklstringname);
-		return;
-	}
+        return;
+    }
 
-	index = depth - (n+1);
-
-	// start offset set to 0 at the top
-	if (index != 0)
-	{
-		startoffset = poffsetbuffer[index - 1];
-	}
-
-	// check for bad length
-	if (startoffset > poffsetbuffer[index])
-	{
-		dg_pusherror(pBHarrayhead, dg_lstringsoffsetscorrupt);
+    depth = (*poffsetbufferlength) / sizeof(UINT64);
+    
+    if (n >= depth)  // this covers the n = -1 case and depth = 0 case
+    {
+        dg_pusherror(pBHarrayhead, dg_lstringstackunderflowerror);
         dg_pusherror(pBHarrayhead, dg_picklstringname);
-		return;
-	}
+        return;
+    }
 
-	length = poffsetbuffer[index] - startoffset;
+    index = depth - (n+1);
 
-	// grow string buffer
-	oldslength = dg_growbuffer(pBHarrayhead, stringbufferid, length, &pError, false);
+    // start offset set to 0 at the top
+    if (index != 0)
+    {
+        startoffset = poffsetbuffer[index - 1];
+    }
 
-	if (pError != dg_success)
-	{
-		dg_pusherror(pBHarrayhead, pError);
+    // check for bad length
+    if (startoffset > poffsetbuffer[index])
+    {
+        dg_pusherror(pBHarrayhead, dg_lstringsoffsetscorrupt);
+        dg_pusherror(pBHarrayhead, dg_picklstringname);
+        return;
+    }
+
+    length = poffsetbuffer[index] - startoffset;
+
+    // grow string buffer
+    oldslength = dg_growbuffer(pBHarrayhead, stringbufferid, length, &pError, false);
+
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, pError);
         dg_pusherror(pBHarrayhead, dg_growbuffername);
         dg_pusherror(pBHarrayhead, dg_picklstringname);
-		return;
-	}
+        return;
+    }
 
-	// could check to make sure current end of offset buffer is correct
-	if (poffsetbuffer[depth - 1] != oldslength)
-	{
-		dg_pusherror(pBHarrayhead, dg_lstringtopoffsetwasbad);
+    // could check to make sure current end of offset buffer is correct
+    if (poffsetbuffer[depth - 1] != oldslength)
+    {
+        dg_pusherror(pBHarrayhead, dg_lstringtopoffsetwasbad);
         dg_pusherror(pBHarrayhead, dg_picklstringname);
-		return;
-	}
+        return;
+    }
 
-	// push new end offset to offset buffer
-	dg_pushbufferuint64(pBHarrayhead, offsetbufferid, oldslength + length);
+    // push new end offset to offset buffer
+    dg_pushbufferuint64(pBHarrayhead, offsetbufferid, oldslength + length);
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_picklstringname);
-		return;
-	}
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_picklstringname);
+        return;
+    }
 
-	// get pointer to string buffer
-	pstringbuffer = dg_getpbuffer(pBHarrayhead, stringbufferid, &pstringbufferlength);
+    // get pointer to string buffer
+    pstringbuffer = dg_getpbuffer(pBHarrayhead, stringbufferid, &pstringbufferlength);
 
-	if (pstringbuffer == (unsigned char*)badbufferhandle)
-	{
-		dg_pusherror(pBHarrayhead, dg_picklstringname);
-		return;
-	}
+    if (pstringbuffer == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_picklstringname);
+        return;
+    }
 
-	// blockmove - we know memory is ok
+    // blockmove - we know memory is ok
     dg_movebytes(
         pstringbuffer + startoffset, 
         pstringbuffer + (*pstringbufferlength) - length, 
         length);
 
-	//for (i = 0; i < length; i++)
-	//{
-	//	*(pstringbuffer + (*pstringbufferlength) - length + i) = *(pstringbuffer + startoffset + i);
-	//}	
+    //for (i = 0; i < length; i++)
+    //{
+    //    *(pstringbuffer + (*pstringbufferlength) - length + i) = *(pstringbuffer + startoffset + i);
+    //}    
 }
 
 
@@ -718,70 +718,70 @@ void dg_droplstring (Bufferhandle* pBHarrayhead,
     UINT64 offsetbufferid,
     UINT64 stringbufferid)
 {
-	UINT64 lstringlength;
-	UINT64 stringid;
-	const char* pError;
+    UINT64 lstringlength;
+    UINT64 stringid;
+    const char* pError;
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
     if (baderrorcount == olderrorcount)
     {
         return;
     }
 
-	// need to get stringid of last string
-	stringid = dg_getnumberoflstringsonstack(pBHarrayhead, offsetbufferid);
+    // need to get stringid of last string
+    stringid = dg_getnumberoflstringsonstack(pBHarrayhead, offsetbufferid);
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_droplstringname);
-		return;
-	}
-
-	// check to see if no strings on stack
-	if (stringid == 0)
-	{
-		dg_pusherror(pBHarrayhead, dg_lstringstackunderflowerror);
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_droplstringname);
-		return;
-	}
+        return;
+    }
 
-	stringid--;
+    // check to see if no strings on stack
+    if (stringid == 0)
+    {
+        dg_pusherror(pBHarrayhead, dg_lstringstackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_droplstringname);
+        return;
+    }
 
-	lstringlength = dg_getlstringlength(pBHarrayhead, offsetbufferid, stringid);
-	// could just set the string buffer length to the last offset in the buffer...
-	//  would be more reliable
+    stringid--;
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_droplstringname);
-		return;
-	}
+    lstringlength = dg_getlstringlength(pBHarrayhead, offsetbufferid, stringid);
+    // could just set the string buffer length to the last offset in the buffer...
+    //  would be more reliable
 
-	// dg_shrinkbuffer should work no problem
-	dg_shrinkbuffer(pBHarrayhead, offsetbufferid, sizeof(UINT64), &pError);
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_droplstringname);
+        return;
+    }
 
-	// but just in case
-	if (pError != dg_success)
-	{
+    // dg_shrinkbuffer should work no problem
+    dg_shrinkbuffer(pBHarrayhead, offsetbufferid, sizeof(UINT64), &pError);
+
+    // but just in case
+    if (pError != dg_success)
+    {
         dg_pusherror(pBHarrayhead, pError);
         // would be nice to push buffer name here
         dg_pusherror(pBHarrayhead, dg_shrinkbuffername);
-		dg_pusherror(pBHarrayhead, dg_droplstringname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_droplstringname);
+        return;
+    }
 
-	dg_shrinkbuffer(pBHarrayhead, stringbufferid, lstringlength, &pError);
+    dg_shrinkbuffer(pBHarrayhead, stringbufferid, lstringlength, &pError);
 
-	if (pError != dg_success)
-	{
-		// don't really need to put the grow in, but just to be thorough
-		dg_growbuffer(pBHarrayhead, offsetbufferid, sizeof(UINT64), &pError, false);
+    if (pError != dg_success)
+    {
+        // don't really need to put the grow in, but just to be thorough
+        dg_growbuffer(pBHarrayhead, offsetbufferid, sizeof(UINT64), &pError, false);
         dg_pusherror(pBHarrayhead, pError);
         // would be nice to push buffer name here
         dg_pusherror(pBHarrayhead, dg_shrinkbuffername);
-		dg_pusherror(pBHarrayhead, dg_droplstringname);
-	}
+        dg_pusherror(pBHarrayhead, dg_droplstringname);
+    }
 }
 
 
@@ -901,98 +901,98 @@ void dg_deletelstring (Bufferhandle* pBHarrayhead,
     UINT64 stringbufferid,
     UINT64 stringid)
 {
-	UINT64 lstringlength;
-	UINT64 numonstack;
-	const char* pError;
-	UINT64 lstringstartoffset;
-	UINT64 i;
-	UINT64* poffsetlength;
-	UINT64* poffsetbuffer;
+    UINT64 lstringlength;
+    UINT64 numonstack;
+    const char* pError;
+    UINT64 lstringstartoffset;
+    UINT64 i;
+    UINT64* poffsetlength;
+    UINT64* poffsetbuffer;
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
     if (baderrorcount == olderrorcount)
     {
         return;
     }
 
-	// need to get stringid of last string
-	numonstack = dg_getnumberoflstringsonstack(pBHarrayhead, offsetbufferid);
+    // need to get stringid of last string
+    numonstack = dg_getnumberoflstringsonstack(pBHarrayhead, offsetbufferid);
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_deletelstringname);
-		return;
-	}
-
-	// check to see if desired string is on stack
-	if ( stringid >= numonstack)
-	{
-		dg_pusherror(pBHarrayhead, dg_lstringidtoohigherror);
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_deletelstringname);
-		return;
-	}
+        return;
+    }
 
-	lstringlength = dg_getlstringlength(pBHarrayhead, offsetbufferid, stringid);
+    // check to see if desired string is on stack
+    if ( stringid >= numonstack)
+    {
+        dg_pusherror(pBHarrayhead, dg_lstringidtoohigherror);
+        dg_pusherror(pBHarrayhead, dg_deletelstringname);
+        return;
+    }
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_deletelstringname);
-		return;
-	}
+    lstringlength = dg_getlstringlength(pBHarrayhead, offsetbufferid, stringid);
 
-	lstringstartoffset = dg_getlstringstartoffset(pBHarrayhead,
-		offsetbufferid,
-		stringid);
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_deletelstringname);
+        return;
+    }
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_deletelstringname);
-		return;
-	}
+    lstringstartoffset = dg_getlstringstartoffset(pBHarrayhead,
+        offsetbufferid,
+        stringid);
 
-	dg_deleteinbuffer(pBHarrayhead, 
-		stringbufferid,
-		lstringstartoffset,
-		lstringlength);
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_deletelstringname);
+        return;
+    }
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_deletelstringname);
-		return;
-	}
-	
-	if (numonstack > 1)
-	{
-		poffsetbuffer = 
-		    (UINT64*)dg_getpbuffer(pBHarrayhead, offsetbufferid, &poffsetlength);
+    dg_deleteinbuffer(pBHarrayhead, 
+        stringbufferid,
+        lstringstartoffset,
+        lstringlength);
 
-		if (poffsetbuffer == (UINT64*)badbufferhandle)
-		{
-		    dg_pusherror(pBHarrayhead, dg_deletelstringname);
-		    return;
-		}
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_deletelstringname);
+        return;
+    }
+    
+    if (numonstack > 1)
+    {
+        poffsetbuffer = 
+            (UINT64*)dg_getpbuffer(pBHarrayhead, offsetbufferid, &poffsetlength);
 
-		// now we need to update all end of string offsets,
-		//  delete the one for the string deleted, and then subtract length from all the ones after
-		for (i=stringid; i < numonstack - 1; i++)
-		{
-			poffsetbuffer[i] = poffsetbuffer[i+1] - lstringlength;
-		}
-	}
+        if (poffsetbuffer == (UINT64*)badbufferhandle)
+        {
+            dg_pusherror(pBHarrayhead, dg_deletelstringname);
+            return;
+        }
+
+        // now we need to update all end of string offsets,
+        //  delete the one for the string deleted, and then subtract length from all the ones after
+        for (i=stringid; i < numonstack - 1; i++)
+        {
+            poffsetbuffer[i] = poffsetbuffer[i+1] - lstringlength;
+        }
+    }
 
 
-	// shrinks should work no problem
-	dg_shrinkbuffer(pBHarrayhead, offsetbufferid, sizeof(UINT64), &pError);
+    // shrinks should work no problem
+    dg_shrinkbuffer(pBHarrayhead, offsetbufferid, sizeof(UINT64), &pError);
 
-	// but just in case
-	if (pError != dg_success)
-	{
+    // but just in case
+    if (pError != dg_success)
+    {
         dg_pusherror(pBHarrayhead, pError);
         dg_pusherror(pBHarrayhead, dg_shrinkbuffername);
-		dg_pusherror(pBHarrayhead, dg_deletelstringname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_deletelstringname);
+        return;
+    }
 }
 
 
@@ -1004,108 +1004,108 @@ void dg_insertlstring (Bufferhandle* pBHarrayhead,
     UINT64 stringid,
     UINT64 length)
 {
-	UINT64 numonstack;
-	UINT64 lstringstartoffset;
-	UINT64 i;
-	UINT64* poffsetlength;
-	UINT64* poffsetbuffer;
+    UINT64 numonstack;
+    UINT64 lstringstartoffset;
+    UINT64 i;
+    UINT64* poffsetlength;
+    UINT64* poffsetbuffer;
     UINT64 n;
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
     if (baderrorcount == olderrorcount)
     {
         return;
     }
 
-	// need to get stringid of last string
-	numonstack = dg_getnumberoflstringsonstack(pBHarrayhead, offsetbufferid);
+    // need to get stringid of last string
+    numonstack = dg_getnumberoflstringsonstack(pBHarrayhead, offsetbufferid);
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_insertlstringname);
-		return;
-	}
-
-	// check to see if desired position for new string is on l$stack
-	//   pushing to end of l$stack is ok
-	if ( stringid > numonstack)
-	{
-		dg_pusherror(pBHarrayhead, dg_lstringidtoohigherror);
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_insertlstringname);
-		return;
-	}
+        return;
+    }
 
-	// if pushing to end then this is just pushlstring
-	//if (numonstack == stringid)
-	//{
-	//	dg_pushlstring(pBHarrayhead, offsetbufferid, stringbufferid, length, psrc);
+    // check to see if desired position for new string is on l$stack
+    //   pushing to end of l$stack is ok
+    if ( stringid > numonstack)
+    {
+        dg_pusherror(pBHarrayhead, dg_lstringidtoohigherror);
+        dg_pusherror(pBHarrayhead, dg_insertlstringname);
+        return;
+    }
 
-	//	if (pBHarrayhead->errorcount != olderrorcount)
-	//	{
-	//		dg_pusherror(pBHarrayhead, dg_insertlstringname);
-	//		return;
-	//	}
+    // if pushing to end then this is just pushlstring
+    //if (numonstack == stringid)
+    //{
+    //    dg_pushlstring(pBHarrayhead, offsetbufferid, stringbufferid, length, psrc);
 
-	//	return;
-	//}
+    //    if (pBHarrayhead->errorcount != olderrorcount)
+    //    {
+    //        dg_pusherror(pBHarrayhead, dg_insertlstringname);
+    //        return;
+    //    }
 
-	// grow offset buffer (push empty string onto end of l$ stack)
-	dg_pushlstring(pBHarrayhead, offsetbufferid, stringbufferid, 0, (unsigned char*)"");
+    //    return;
+    //}
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_insertlstringname);
-		return;
-	}
+    // grow offset buffer (push empty string onto end of l$ stack)
+    dg_pushlstring(pBHarrayhead, offsetbufferid, stringbufferid, 0, (unsigned char*)"");
 
-	// get offset of insert in l$stack string buffer
-	lstringstartoffset = dg_getlstringstartoffset(pBHarrayhead,
-		offsetbufferid,
-		stringid);
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_insertlstringname);
+        return;
+    }
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_insertlstringname);
-		return;
-	}
+    // get offset of insert in l$stack string buffer
+    lstringstartoffset = dg_getlstringstartoffset(pBHarrayhead,
+        offsetbufferid,
+        stringid);
 
-	// grow string buffer 
-	dg_insertinbuffer(pBHarrayhead, 
-		stringbufferid,
-		lstringstartoffset,
-		length);
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_insertlstringname);
+        return;
+    }
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		// dropping the empty string
-		dg_droplstring(pBHarrayhead, offsetbufferid, stringbufferid);
-		dg_pusherror(pBHarrayhead, dg_insertlstringname);
-		return;
-	}
+    // grow string buffer 
+    dg_insertinbuffer(pBHarrayhead, 
+        stringbufferid,
+        lstringstartoffset,
+        length);
 
-	//dg_putbuffersegment(pBHarrayhead, stringbufferid, lstringstartoffset, length, psrc);
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        // dropping the empty string
+        dg_droplstring(pBHarrayhead, offsetbufferid, stringbufferid);
+        dg_pusherror(pBHarrayhead, dg_insertlstringname);
+        return;
+    }
 
-	// should be impossible to get this error
-	//if (pBHarrayhead->errorcount != olderrorcount)
-	//{
-		// dropping the empty string
-	//	dg_droplstring(pBHarrayhead, offsetbufferid, stringbufferid);
-	//	dg_pusherror(pBHarrayhead, dg_insertlstringname);
-	//	return;
-	//}
+    //dg_putbuffersegment(pBHarrayhead, stringbufferid, lstringstartoffset, length, psrc);
 
-	poffsetbuffer = 
-	    (UINT64*)dg_getpbuffer(pBHarrayhead, offsetbufferid, &poffsetlength);
+    // should be impossible to get this error
+    //if (pBHarrayhead->errorcount != olderrorcount)
+    //{
+        // dropping the empty string
+    //    dg_droplstring(pBHarrayhead, offsetbufferid, stringbufferid);
+    //    dg_pusherror(pBHarrayhead, dg_insertlstringname);
+    //    return;
+    //}
 
-	if (poffsetbuffer == (UINT64*)badbufferhandle)
-	{
-	    dg_pusherror(pBHarrayhead, dg_insertlstringname);
-	    return;
-	}
+    poffsetbuffer = 
+        (UINT64*)dg_getpbuffer(pBHarrayhead, offsetbufferid, &poffsetlength);
 
-	// now we need to update all end of string offsets,
-	//  add length from all the ones after backwards
+    if (poffsetbuffer == (UINT64*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_insertlstringname);
+        return;
+    }
+
+    // now we need to update all end of string offsets,
+    //  add length from all the ones after backwards
     //  then go back and set length of first one
     if (numonstack < stringid)
     {
@@ -1113,7 +1113,7 @@ void dg_insertlstring (Bufferhandle* pBHarrayhead,
     }
 
     for (i=0; i < ((numonstack + 1) - stringid); i++)
-	{
+    {
         n = numonstack - i;
 
         if (n > 0)
@@ -1125,7 +1125,7 @@ void dg_insertlstring (Bufferhandle* pBHarrayhead,
             poffsetbuffer[n] = length;
             break;
         }
-	}	
+    }    
 }
 
 
@@ -1138,91 +1138,91 @@ void dg_deleteinlstring (Bufferhandle* pBHarrayhead,
     UINT64 offset,
     UINT64 length)
 {
-	UINT64 lstringlength;
-	UINT64 numonstack;
-	UINT64 lstringstartoffset;
-	UINT64 i;
-	UINT64* poffsetlength;
-	UINT64* poffsetbuffer;
+    UINT64 lstringlength;
+    UINT64 numonstack;
+    UINT64 lstringstartoffset;
+    UINT64 i;
+    UINT64* poffsetlength;
+    UINT64* poffsetbuffer;
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
     if (baderrorcount == olderrorcount)
     {
         return;
     }
 
-	// need to get stringid of last string
-	numonstack = dg_getnumberoflstringsonstack(pBHarrayhead, offsetbufferid);
+    // need to get stringid of last string
+    numonstack = dg_getnumberoflstringsonstack(pBHarrayhead, offsetbufferid);
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_deleteinlstringname);
-		return;
-	}
-
-	// check to see if desired string is on stack
-	if ( stringid >= numonstack)
-	{
-		dg_pusherror(pBHarrayhead, dg_lstringidtoohigherror);
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_deleteinlstringname);
-		return;
-	}
+        return;
+    }
 
-	lstringlength = dg_getlstringlength(pBHarrayhead, offsetbufferid, stringid);
+    // check to see if desired string is on stack
+    if ( stringid >= numonstack)
+    {
+        dg_pusherror(pBHarrayhead, dg_lstringidtoohigherror);
+        dg_pusherror(pBHarrayhead, dg_deleteinlstringname);
+        return;
+    }
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_deleteinlstringname);
-		return;
-	}
+    lstringlength = dg_getlstringlength(pBHarrayhead, offsetbufferid, stringid);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_deleteinlstringname);
+        return;
+    }
 
     if (offset + length > lstringlength)
     {
         dg_pusherror(pBHarrayhead, dg_lstringsegmentgoespastenderror);
         dg_pusherror(pBHarrayhead, dg_deleteinlstringname);
-		return;
+        return;
         
     }
 
-	lstringstartoffset = dg_getlstringstartoffset(pBHarrayhead,
-		offsetbufferid,
-		stringid);
+    lstringstartoffset = dg_getlstringstartoffset(pBHarrayhead,
+        offsetbufferid,
+        stringid);
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_deleteinlstringname);
-		return;
-	}
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_deleteinlstringname);
+        return;
+    }
 
     // this should work
-	dg_deleteinbuffer(pBHarrayhead, 
-		stringbufferid,
-		lstringstartoffset + offset,
-		length);
+    dg_deleteinbuffer(pBHarrayhead, 
+        stringbufferid,
+        lstringstartoffset + offset,
+        length);
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_deleteinlstringname);
-		return;
-	}
-	
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_deleteinlstringname);
+        return;
+    }
+    
     // this should work
-	poffsetbuffer = 
-	    (UINT64*)dg_getpbuffer(pBHarrayhead, offsetbufferid, &poffsetlength);
+    poffsetbuffer = 
+        (UINT64*)dg_getpbuffer(pBHarrayhead, offsetbufferid, &poffsetlength);
 
-	if (poffsetbuffer == (UINT64*)badbufferhandle)
-	{
-	    dg_pusherror(pBHarrayhead, dg_deleteinlstringname);
-	    return;
-	}
+    if (poffsetbuffer == (UINT64*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_deleteinlstringname);
+        return;
+    }
 
-	// now we need to update all end of string offsets,
-	//  subtract length from lstring stringid and all the ones after
-	for (i=stringid; i < numonstack; i++)
-	{
-		poffsetbuffer[i] = poffsetbuffer[i] - length;
-	}
+    // now we need to update all end of string offsets,
+    //  subtract length from lstring stringid and all the ones after
+    for (i=stringid; i < numonstack; i++)
+    {
+        poffsetbuffer[i] = poffsetbuffer[i] - length;
+    }
 }
 
 
@@ -1235,92 +1235,92 @@ void dg_insertinlstring (Bufferhandle* pBHarrayhead,
     UINT64 offset,
     UINT64 length)
 {
-	UINT64 lstringlength;
-	UINT64 numonstack;
-	UINT64 lstringstartoffset;
-	UINT64 i;
-	UINT64* poffsetlength;
-	UINT64* poffsetbuffer;
+    UINT64 lstringlength;
+    UINT64 numonstack;
+    UINT64 lstringstartoffset;
+    UINT64 i;
+    UINT64* poffsetlength;
+    UINT64* poffsetbuffer;
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
     if (baderrorcount == olderrorcount)
     {
         return;
     }
 
-	// need to get stringid of last string
-	numonstack = dg_getnumberoflstringsonstack(pBHarrayhead, offsetbufferid);
+    // need to get stringid of last string
+    numonstack = dg_getnumberoflstringsonstack(pBHarrayhead, offsetbufferid);
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_insertinlstringname);
-		return;
-	}
-
-	// check to see if desired string is on stack
-	if ( stringid >= numonstack)
-	{
-		dg_pusherror(pBHarrayhead, dg_lstringidtoohigherror);
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_insertinlstringname);
-		return;
-	}
+        return;
+    }
 
-	lstringlength = dg_getlstringlength(pBHarrayhead, offsetbufferid, stringid);
+    // check to see if desired string is on stack
+    if ( stringid >= numonstack)
+    {
+        dg_pusherror(pBHarrayhead, dg_lstringidtoohigherror);
+        dg_pusherror(pBHarrayhead, dg_insertinlstringname);
+        return;
+    }
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_insertinlstringname);
-		return;
-	}
+    lstringlength = dg_getlstringlength(pBHarrayhead, offsetbufferid, stringid);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_insertinlstringname);
+        return;
+    }
 
     if (offset > lstringlength)
     {
         dg_pusherror(pBHarrayhead, dg_lstringoffsetpastenderror);
         dg_pusherror(pBHarrayhead, dg_insertinlstringname);
-		return;
+        return;
         
     }
 
-	lstringstartoffset = dg_getlstringstartoffset(pBHarrayhead,
-		offsetbufferid,
-		stringid);
+    lstringstartoffset = dg_getlstringstartoffset(pBHarrayhead,
+        offsetbufferid,
+        stringid);
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_insertinlstringname);
-		return;
-	}
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_insertinlstringname);
+        return;
+    }
 
     // this should work
-	dg_insertinbuffer(
+    dg_insertinbuffer(
         pBHarrayhead, 
-		stringbufferid,
-		lstringstartoffset + offset,
-		length);
+        stringbufferid,
+        lstringstartoffset + offset,
+        length);
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_insertinlstringname);
-		return;
-	}
-	
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_insertinlstringname);
+        return;
+    }
+    
     // this should work
-	poffsetbuffer = 
-	    (UINT64*)dg_getpbuffer(pBHarrayhead, offsetbufferid, &poffsetlength);
+    poffsetbuffer = 
+        (UINT64*)dg_getpbuffer(pBHarrayhead, offsetbufferid, &poffsetlength);
 
-	if (poffsetbuffer == (UINT64*)badbufferhandle)
-	{
-	    dg_pusherror(pBHarrayhead, dg_insertinlstringname);
-	    return;
-	}
+    if (poffsetbuffer == (UINT64*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_insertinlstringname);
+        return;
+    }
 
-	// now we need to update all end of string offsets,
-	//  subtract length from lstring stringid and all the ones after
-	for (i=stringid; i < numonstack; i++)
-	{
-		poffsetbuffer[i] = poffsetbuffer[i] + length;
-	}
+    // now we need to update all end of string offsets,
+    //  subtract length from lstring stringid and all the ones after
+    for (i=stringid; i < numonstack; i++)
+    {
+        poffsetbuffer[i] = poffsetbuffer[i] + length;
+    }
 }
 
 
@@ -1335,51 +1335,51 @@ void dg_catlstringn (
 //     ( l$0 ... l$n-1 l$n l$n+1 l$n+2 ... l$top -l$- 
 //         l$0 ... l$n-1 l$n+l$n+1 l$n+2 ... l$top )
 {
-	UINT64 numonstack;
-	UINT64 i;
-	UINT64* poffsetlength;
-	UINT64* poffsetbuffer;
+    UINT64 numonstack;
+    UINT64 i;
+    UINT64* poffsetlength;
+    UINT64* poffsetbuffer;
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
     if (baderrorcount == olderrorcount)
     {
         return;
     }
 
-	// need to get stringid of last string
-	numonstack = dg_getnumberoflstringsonstack(pBHarrayhead, offsetbufferid);
+    // need to get stringid of last string
+    numonstack = dg_getnumberoflstringsonstack(pBHarrayhead, offsetbufferid);
 
-	if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_catlstringnname);
-		return;
-	}
-
-	// check to see if desired string is on stack
-	if ( stringid + 1 >= numonstack)
-	{
-		dg_pusherror(pBHarrayhead, dg_lstringidtoohigherror);
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_catlstringnname);
-		return;
-	}
-	
+        return;
+    }
+
+    // check to see if desired string is on stack
+    if ( stringid + 1 >= numonstack)
+    {
+        dg_pusherror(pBHarrayhead, dg_lstringidtoohigherror);
+        dg_pusherror(pBHarrayhead, dg_catlstringnname);
+        return;
+    }
+    
     // this should work
-	poffsetbuffer = 
-	    (UINT64*)dg_getpbuffer(pBHarrayhead, offsetbufferid, &poffsetlength);
+    poffsetbuffer = 
+        (UINT64*)dg_getpbuffer(pBHarrayhead, offsetbufferid, &poffsetlength);
 
-	if (poffsetbuffer == (UINT64*)badbufferhandle)
-	{
-	    dg_pusherror(pBHarrayhead, dg_catlstringnname);
-	    return;
-	}
+    if (poffsetbuffer == (UINT64*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_catlstringnname);
+        return;
+    }
 
-	// now we need to update all end of string offsets,
-	//  subtract length from lstring stringid and all the ones after
-	for (i=stringid; i < numonstack - 1; i++)
-	{
-		poffsetbuffer[i] = poffsetbuffer[i+1];
-	}
+    // now we need to update all end of string offsets,
+    //  subtract length from lstring stringid and all the ones after
+    for (i=stringid; i < numonstack - 1; i++)
+    {
+        poffsetbuffer[i] = poffsetbuffer[i+1];
+    }
 
     *poffsetlength -= sizeof(UINT64);
 }
@@ -1412,24 +1412,24 @@ void dg_copystolstringn (Bufferhandle* pBHarrayhead,
         stringid);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_copystolstringnname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_copystolstringnname);
+        return;
+    }
 
     lstringlength = ::dg_getlstringlength(pBHarrayhead, offsetbufferid, stringid);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_copystolstringnname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_copystolstringnname);
+        return;
+    }
 
     if (offset + length > lstringlength)
     {
         dg_pusherror(pBHarrayhead, dg_lstringsegmentgoespastenderror);
         dg_pusherror(pBHarrayhead, dg_copystolstringnname);
-		return;
+        return;
     }
 
     dg_putbuffersegment(
@@ -1440,10 +1440,10 @@ void dg_copystolstringn (Bufferhandle* pBHarrayhead,
         psrc);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_copystolstringnname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_copystolstringnname);
+        return;
+    }
 }
 
 
@@ -1473,18 +1473,18 @@ void dg_pushstolstringn (Bufferhandle* pBHarrayhead,
         stringid);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_pushstolstringnname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_pushstolstringnname);
+        return;
+    }
 
     lstringlength = ::dg_getlstringlength(pBHarrayhead, offsetbufferid, stringid);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_pushstolstringnname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_pushstolstringnname);
+        return;
+    }
  
     dg_insertinlstring (
         pBHarrayhead,
@@ -1495,10 +1495,10 @@ void dg_pushstolstringn (Bufferhandle* pBHarrayhead,
         length);  
         
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_pushstolstringnname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_pushstolstringnname);
+        return;
+    }
 
     dg_putbuffersegment(
         pBHarrayhead,
@@ -1508,10 +1508,10 @@ void dg_pushstolstringn (Bufferhandle* pBHarrayhead,
         psrc);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_pushstolstringnname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_pushstolstringnname);
+        return;
+    }
 }
 
 
@@ -1542,24 +1542,24 @@ void dg_copysfromlstringn (Bufferhandle* pBHarrayhead,
         stringid);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_copysfromlstringnname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_copysfromlstringnname);
+        return;
+    }
 
     lstringlength = ::dg_getlstringlength(pBHarrayhead, offsetbufferid, stringid);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_copysfromlstringnname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_copysfromlstringnname);
+        return;
+    }
 
     if (offset + length > lstringlength)
     {
         dg_pusherror(pBHarrayhead, dg_lstringsegmentgoespastenderror);
         dg_pusherror(pBHarrayhead, dg_copysfromlstringnname);
-		return;
+        return;
     }
 
     dg_getbuffersegment(
@@ -1570,10 +1570,10 @@ void dg_copysfromlstringn (Bufferhandle* pBHarrayhead,
         pdest);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_copysfromlstringnname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_copysfromlstringnname);
+        return;
+    }
 }
 
 
@@ -1603,28 +1603,28 @@ void dg_setlengthlstringn (
         stringid);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_setlengthlstringnname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_setlengthlstringnname);
+        return;
+    }
 
     lstringlength = ::dg_getlstringlength(pBHarrayhead, offsetbufferid, stringid);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_setlengthlstringnname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_setlengthlstringnname);
+        return;
+    }
 
-	if (newlength==lstringlength)
-	{
-		// nothing to be done
-		return;
-	}
+    if (newlength==lstringlength)
+    {
+        // nothing to be done
+        return;
+    }
 
-	if (newlength<lstringlength)
-	{
-		dg_deleteinlstring (
+    if (newlength<lstringlength)
+    {
+        dg_deleteinlstring (
             pBHarrayhead,
             offsetbufferid,
             stringbufferid,
@@ -1633,12 +1633,12 @@ void dg_setlengthlstringn (
             lstringlength - newlength);
 
         if (pBHarrayhead->errorcount != olderrorcount)
-	    {
-		    dg_pusherror(pBHarrayhead, dg_setlengthlstringnname);
-	    }
+        {
+            dg_pusherror(pBHarrayhead, dg_setlengthlstringnname);
+        }
 
         return;
-	}
+    }
 
     dg_insertinlstring (
         pBHarrayhead,
@@ -1649,9 +1649,9 @@ void dg_setlengthlstringn (
         newlength - lstringlength);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_setlengthlstringnname);
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_setlengthlstringnname);
+    }
 }
 
 
@@ -1680,10 +1680,10 @@ void dg_replacelstringn (Bufferhandle* pBHarrayhead,
         length);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_replacelstringnname);
+    {
+        dg_pusherror(pBHarrayhead, dg_replacelstringnname);
         return;
-	}
+    }
 
     dg_copystolstringn (
         pBHarrayhead,
@@ -1695,10 +1695,10 @@ void dg_replacelstringn (Bufferhandle* pBHarrayhead,
         length);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_replacelstringnname);
+    {
+        dg_pusherror(pBHarrayhead, dg_replacelstringnname);
         return;
-	}
+    }
 }
 
 
@@ -1707,8 +1707,8 @@ const char* dg_copylstringntoreplacelstringnname = "dg_copylstringntoreplacelstr
 void dg_copylstringntoreplacelstringn (
     Bufferhandle* pBHarrayhead,
     UINT64 srcoffsetbufferid,
-	UINT64 srcstringbufferid,
-	UINT64 srcstringid,
+    UINT64 srcstringbufferid,
+    UINT64 srcstringid,
     UINT64 destoffsetbufferid,
     UINT64 deststringbufferid,
     UINT64 deststringid)
@@ -1731,10 +1731,10 @@ void dg_copylstringntoreplacelstringn (
     srclstringlength = ::dg_getlstringlength(pBHarrayhead, srcoffsetbufferid, srcstringid);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_copylstringntoreplacelstringnname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_copylstringntoreplacelstringnname);
+        return;
+    }
 
     // destination lstring stack underflow checked in this call.
 
@@ -1749,10 +1749,10 @@ void dg_copylstringntoreplacelstringn (
         srclstringlength);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_copylstringntoreplacelstringnname);
+    {
+        dg_pusherror(pBHarrayhead, dg_copylstringntoreplacelstringnname);
         return;
-	}
+    }
 
     // getting pointer to source lstring
     psrclstring = dg_getplstring(
@@ -1763,10 +1763,10 @@ void dg_copylstringntoreplacelstringn (
         &srclstringlength);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_copylstringntoreplacelstringnname);
+    {
+        dg_pusherror(pBHarrayhead, dg_copylstringntoreplacelstringnname);
         return;
-	}
+    }
 
     dg_copystolstringn (
         pBHarrayhead,
@@ -1778,10 +1778,10 @@ void dg_copylstringntoreplacelstringn (
         srclstringlength);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_copylstringntoreplacelstringnname);
+    {
+        dg_pusherror(pBHarrayhead, dg_copylstringntoreplacelstringnname);
         return;
-	}
+    }
 }
 
 
@@ -1790,8 +1790,8 @@ const char* dg_copytoinsertlstrntomname = "dg_copytoinsertlstrntom";
 void dg_copytoinsertlstrntom (
     Bufferhandle* pBHarrayhead,
     UINT64 srcoffsetbufferidn,
-	UINT64 srcstringbufferidn,
-	UINT64 srcstringidn,
+    UINT64 srcstringbufferidn,
+    UINT64 srcstringidn,
     UINT64 srcoffsetn,
     UINT64 destoffsetbufferidm,
     UINT64 deststringbufferidm,
@@ -1818,8 +1818,8 @@ void dg_copytoinsertlstrntom (
     psrcn = dg_getplstring(
         pBHarrayhead,
         srcoffsetbufferidn,
-		srcstringbufferidn,
-		srcstringidn,
+        srcstringbufferidn,
+        srcstringidn,
         &srclengthn);
         
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
@@ -1845,9 +1845,9 @@ void dg_copytoinsertlstrntom (
     
     dg_insertinlstring (
         pBHarrayhead,
-		destoffsetbufferidm,
-		deststringbufferidm,
-		deststringidm,
+        destoffsetbufferidm,
+        deststringbufferidm,
+        deststringidm,
         destoffsetm,
         length);
         
@@ -1861,8 +1861,8 @@ void dg_copytoinsertlstrntom (
     pdestm = dg_getplstring(
         pBHarrayhead,
         destoffsetbufferidm,
-		deststringbufferidm,
-		deststringidm,
+        deststringbufferidm,
+        deststringidm,
         &destlengthm);
         
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
@@ -1901,22 +1901,22 @@ void dg_makesurelstringnexists (
     
     UINT64 depth;
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
     if (baderrorcount == olderrorcount)
     {
         return;
     }
 
-	poffsetbuffer = dg_getpbuffer(pBHarrayhead, lstringoffsetbufferid, &poffsetbufferlength);
+    poffsetbuffer = dg_getpbuffer(pBHarrayhead, lstringoffsetbufferid, &poffsetbufferlength);
 
-	if ((unsigned char*)badbufferhandle == poffsetbuffer)
-	{
-		dg_pusherror(pBHarrayhead, dg_makesurelstringnexistsname);
-		return;
-	}
+    if ((unsigned char*)badbufferhandle == poffsetbuffer)
+    {
+        dg_pusherror(pBHarrayhead, dg_makesurelstringnexistsname);
+        return;
+    }
 
-	depth = (*poffsetbufferlength) / sizeof(UINT64);
+    depth = (*poffsetbufferlength) / sizeof(UINT64);
     
     while (depth <= n)
     {
@@ -1946,44 +1946,44 @@ void dg_freefreeablelstringarray(
         Bufferhandle* pBHarrayhead, 
         UINT64 freeindexbuffer)
 {
-	struct Freeablelstringarrayheader myflstrheader;
-	
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	if (baderrorcount == olderrorcount)
-	{
-		return;
-	}
-	
-	dg_getbuffersegment(pBHarrayhead, freeindexbuffer, 0, sizeof(Freeablelstringarrayheader), (unsigned char*)(&myflstrheader));
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		// not freeing this buffer because we don't know what it is
-		dg_pusherror(pBHarrayhead, dg_freefreeablelstringarrayname);
-		return;
-	}
-	
-	// it's not a freeable lstring array
-	if (myflstrheader.magic != dg_freeablelstringheadermagic)
-	{
-		dg_pusherror(pBHarrayhead, dg_badmagicerror);
-		dg_pusherror(pBHarrayhead, dg_freefreeablelstringarrayname);
-		return;
-	}		
-	
-	dg_freebuffer(pBHarrayhead, myflstrheader.lstringoffsetbufferid);
-	dg_freebuffer(pBHarrayhead, myflstrheader.lstringstringbufferid);
-	dg_freebuffer(pBHarrayhead, freeindexbuffer); 
-	
-	/*
-	// dg_freebuffer does not return errors
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_freefreeablelstringarrayname);
-		return;
-	}
-	*/
+    struct Freeablelstringarrayheader myflstrheader;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    dg_getbuffersegment(pBHarrayhead, freeindexbuffer, 0, sizeof(Freeablelstringarrayheader), (unsigned char*)(&myflstrheader));
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        // not freeing this buffer because we don't know what it is
+        dg_pusherror(pBHarrayhead, dg_freefreeablelstringarrayname);
+        return;
+    }
+    
+    // it's not a freeable lstring array
+    if (myflstrheader.magic != dg_freeablelstringheadermagic)
+    {
+        dg_pusherror(pBHarrayhead, dg_badmagicerror);
+        dg_pusherror(pBHarrayhead, dg_freefreeablelstringarrayname);
+        return;
+    }        
+    
+    dg_freebuffer(pBHarrayhead, myflstrheader.lstringoffsetbufferid);
+    dg_freebuffer(pBHarrayhead, myflstrheader.lstringstringbufferid);
+    dg_freebuffer(pBHarrayhead, freeindexbuffer); 
+    
+    /*
+    // dg_freebuffer does not return errors
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_freefreeablelstringarrayname);
+        return;
+    }
+    */
 }
 
 // allocates an lstring array's offset and string buffers
@@ -2007,77 +2007,77 @@ const char* dg_newfreeablelstringarrayname = "dg_newfreeablelstringarray";
 
 UINT64 dg_newfreeablelstringarray(Bufferhandle* pBHarrayhead)
 {
-	struct Freeablelstringarrayheader myflstrheader;
-	UINT64 myflstrheaderbufferid = (UINT64)dg_badbufferid;
-	const char* pError;
-	
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	if (baderrorcount == olderrorcount)
-	{
-		return((UINT64)dg_badbufferid);
-	}
-	
-	myflstrheader.magic = dg_freeablelstringheadermagic;
-	myflstrheader.firstfreeid = (UINT64)dg_freeablelstringlastfreeid;
-	
-	myflstrheader.lstringoffsetbufferid = dg_newbuffer(pBHarrayhead,
-													   dg_defaultbuffergrowby,
-													   dg_defaultbuffermaxsize,
-													   &pError,
-													   FORTH_FALSE);
-	
-	if (pError != dg_success)
-	{
-		dg_pusherror(pBHarrayhead, pError);
-		dg_pusherror(pBHarrayhead, dg_newbuffername);
-		dg_pusherror(pBHarrayhead, dg_newfreeablelstringarrayname);
-		return((UINT64)dg_badbufferid);
-	}
-	
-	myflstrheader.lstringstringbufferid = dg_newbuffer(pBHarrayhead,
-													   dg_defaultbuffergrowby,
-													   dg_defaultbuffermaxsize,
-													   &pError,
-													   FORTH_FALSE);
-	
-	if (pError != dg_success)
-	{
-		dg_freebuffer(pBHarrayhead, myflstrheader.lstringoffsetbufferid);
-		dg_pusherror(pBHarrayhead, pError);
-		dg_pusherror(pBHarrayhead, dg_newbuffername);
-		dg_pusherror(pBHarrayhead, dg_newfreeablelstringarrayname);
-		return((UINT64)dg_badbufferid);
-	}
-	
-	myflstrheaderbufferid = dg_newbuffer(pBHarrayhead,
-										 dg_defaultbuffergrowby,
-										 dg_defaultbuffermaxsize,
-										 &pError,
-										 FORTH_FALSE);
-	
-	if (pError != dg_success)
-	{
-		dg_freebuffer(pBHarrayhead, myflstrheader.lstringoffsetbufferid);
-		dg_freebuffer(pBHarrayhead, myflstrheader.lstringstringbufferid);
-		dg_pusherror(pBHarrayhead, pError);
-		dg_pusherror(pBHarrayhead, dg_newbuffername);
-		dg_pusherror(pBHarrayhead, dg_newfreeablelstringarrayname);
-		return((UINT64)dg_badbufferid);
-	}
-	
-	dg_pushbuffersegment(pBHarrayhead, myflstrheaderbufferid, sizeof(Freeablelstringarrayheader), (unsigned char*)(&myflstrheader));
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_freebuffer(pBHarrayhead, myflstrheader.lstringoffsetbufferid);
-		dg_freebuffer(pBHarrayhead, myflstrheader.lstringstringbufferid);
-		dg_freebuffer(pBHarrayhead, myflstrheaderbufferid);
-		dg_pusherror(pBHarrayhead, dg_newfreeablelstringarrayname);
-		return((UINT64)dg_badbufferid);
-	}
-	
-	return(myflstrheaderbufferid);
+    struct Freeablelstringarrayheader myflstrheader;
+    UINT64 myflstrheaderbufferid = (UINT64)dg_badbufferid;
+    const char* pError;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return((UINT64)dg_badbufferid);
+    }
+    
+    myflstrheader.magic = dg_freeablelstringheadermagic;
+    myflstrheader.firstfreeid = (UINT64)dg_freeablelstringlastfreeid;
+    
+    myflstrheader.lstringoffsetbufferid = dg_newbuffer(pBHarrayhead,
+                                                       dg_defaultbuffergrowby,
+                                                       dg_defaultbuffermaxsize,
+                                                       &pError,
+                                                       FORTH_FALSE);
+    
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_newbuffername);
+        dg_pusherror(pBHarrayhead, dg_newfreeablelstringarrayname);
+        return((UINT64)dg_badbufferid);
+    }
+    
+    myflstrheader.lstringstringbufferid = dg_newbuffer(pBHarrayhead,
+                                                       dg_defaultbuffergrowby,
+                                                       dg_defaultbuffermaxsize,
+                                                       &pError,
+                                                       FORTH_FALSE);
+    
+    if (pError != dg_success)
+    {
+        dg_freebuffer(pBHarrayhead, myflstrheader.lstringoffsetbufferid);
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_newbuffername);
+        dg_pusherror(pBHarrayhead, dg_newfreeablelstringarrayname);
+        return((UINT64)dg_badbufferid);
+    }
+    
+    myflstrheaderbufferid = dg_newbuffer(pBHarrayhead,
+                                         dg_defaultbuffergrowby,
+                                         dg_defaultbuffermaxsize,
+                                         &pError,
+                                         FORTH_FALSE);
+    
+    if (pError != dg_success)
+    {
+        dg_freebuffer(pBHarrayhead, myflstrheader.lstringoffsetbufferid);
+        dg_freebuffer(pBHarrayhead, myflstrheader.lstringstringbufferid);
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_newbuffername);
+        dg_pusherror(pBHarrayhead, dg_newfreeablelstringarrayname);
+        return((UINT64)dg_badbufferid);
+    }
+    
+    dg_pushbuffersegment(pBHarrayhead, myflstrheaderbufferid, sizeof(Freeablelstringarrayheader), (unsigned char*)(&myflstrheader));
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_freebuffer(pBHarrayhead, myflstrheader.lstringoffsetbufferid);
+        dg_freebuffer(pBHarrayhead, myflstrheader.lstringstringbufferid);
+        dg_freebuffer(pBHarrayhead, myflstrheaderbufferid);
+        dg_pusherror(pBHarrayhead, dg_newfreeablelstringarrayname);
+        return((UINT64)dg_badbufferid);
+    }
+    
+    return(myflstrheaderbufferid);
 }
 
 
@@ -2088,185 +2088,185 @@ void dg_freefreeablelstring(
    UINT64 freeindexbuffer,
    UINT64 lstringindex)
 {
-	struct Freeablelstringarrayheader myflstrheader;
-	
-	UINT64 lstringoffsetbufferlength;
-	UINT64 freeindexbufferlength;
-	
-	UINT64 isfreenextfreeflag;
-	
-	UINT64 lstringlength;
-	
-	const char* pError;
-	
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	if (baderrorcount == olderrorcount)
-	{
-		return;
-	}
-	
-	// check freeable lstring array buffers for correct magic id and buffer lengths
-	dg_getbuffersegment(pBHarrayhead, freeindexbuffer, 0, sizeof(Freeablelstringarrayheader), (unsigned char*)(&myflstrheader));
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
-		return;
-	}
-	
-	if (myflstrheader.magic != dg_freeablelstringheadermagic)
-	{
-		dg_pusherror(pBHarrayhead, dg_badmagicerror);
-		dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
-		return;
-	}	
-	
-	freeindexbufferlength = dg_getbufferlength(pBHarrayhead, freeindexbuffer);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
-		return;
-	}
-	
-	if ( ((freeindexbufferlength - sizeof(Freeablelstringarrayheader)) % sizeof(UINT64)) != 0 )
-	{
-		dg_pusherror(pBHarrayhead, dg_arraymisalignederror); 
-		dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
-		return;
-	}
-	
-	lstringoffsetbufferlength = dg_getbufferlength(pBHarrayhead, myflstrheader.lstringoffsetbufferid);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
-		return;
-	}	
-	
-	// if array corrupt throw error -- doing it this way to prevent possibility of overflow
-	if (lstringoffsetbufferlength != (freeindexbufferlength - sizeof(Freeablelstringarrayheader)) )
-	{
-		dg_pusherror(pBHarrayhead, dg_arraymisalignederror);
-		dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
-		return;
-	}
-	
-	// if lstring index off end throw error
-	if (lstringindex >= (lstringoffsetbufferlength / sizeof(UINT64)) )
-	{
-		dg_pusherror(pBHarrayhead, dg_lstringidtoohigherror);
-		dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
-		return;
-	}
-		
-	// if already free then throw error
-		// addition can't overflow since index is in array
-	isfreenextfreeflag = dg_getbufferuint64(pBHarrayhead,
-										   freeindexbuffer,
-										   (lstringindex * sizeof(UINT64)) + sizeof(Freeablelstringarrayheader) );
-		
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
-		return;
-	}
-	
+    struct Freeablelstringarrayheader myflstrheader;
+    
+    UINT64 lstringoffsetbufferlength;
+    UINT64 freeindexbufferlength;
+    
+    UINT64 isfreenextfreeflag;
+    
+    UINT64 lstringlength;
+    
+    const char* pError;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    // check freeable lstring array buffers for correct magic id and buffer lengths
+    dg_getbuffersegment(pBHarrayhead, freeindexbuffer, 0, sizeof(Freeablelstringarrayheader), (unsigned char*)(&myflstrheader));
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
+        return;
+    }
+    
+    if (myflstrheader.magic != dg_freeablelstringheadermagic)
+    {
+        dg_pusherror(pBHarrayhead, dg_badmagicerror);
+        dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
+        return;
+    }    
+    
+    freeindexbufferlength = dg_getbufferlength(pBHarrayhead, freeindexbuffer);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
+        return;
+    }
+    
+    if ( ((freeindexbufferlength - sizeof(Freeablelstringarrayheader)) % sizeof(UINT64)) != 0 )
+    {
+        dg_pusherror(pBHarrayhead, dg_arraymisalignederror); 
+        dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
+        return;
+    }
+    
+    lstringoffsetbufferlength = dg_getbufferlength(pBHarrayhead, myflstrheader.lstringoffsetbufferid);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
+        return;
+    }    
+    
+    // if array corrupt throw error -- doing it this way to prevent possibility of overflow
+    if (lstringoffsetbufferlength != (freeindexbufferlength - sizeof(Freeablelstringarrayheader)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_arraymisalignederror);
+        dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
+        return;
+    }
+    
+    // if lstring index off end throw error
+    if (lstringindex >= (lstringoffsetbufferlength / sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_lstringidtoohigherror);
+        dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
+        return;
+    }
+        
+    // if already free then throw error
+        // addition can't overflow since index is in array
+    isfreenextfreeflag = dg_getbufferuint64(pBHarrayhead,
+                                           freeindexbuffer,
+                                           (lstringindex * sizeof(UINT64)) + sizeof(Freeablelstringarrayheader) );
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
+        return;
+    }
+    
     if (isfreenextfreeflag != (UINT64)dg_freeablelstringisnotfreeid)
-	{
-		dg_pusherror(pBHarrayhead, dg_alreadyfreeerror);
-		dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
-		return;
-	}
-		
-	// if lstring is last in array then just drop it and the free flag for it
-		// +1 can't overflow because of previous < x*sizeof(UINT64) calculation
-	if ( (lstringindex + 1) == (lstringoffsetbufferlength / sizeof(UINT64)) )
-	{
-		// drop last lstring
-		dg_droplstring(pBHarrayhead, myflstrheader.lstringoffsetbufferid, myflstrheader.lstringstringbufferid);
-		
-		// shouldnt get an error dropping...
-		if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-		{
-			dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
-			return;
-		}
-		
-		// shorten free buffer by sizeof (UINT64)
-		dg_shrinkbuffer(pBHarrayhead, freeindexbuffer, sizeof(UINT64), &pError);
-		
-		// can't really get an error shrinking since buffer is large enough
-		if (pError != dg_success)
-		{
-			//allocate a newlstring so array won't be misaligned
-			dg_pushlstring(pBHarrayhead,
-						   myflstrheader.lstringoffsetbufferid, 
-						   myflstrheader.lstringstringbufferid,
-						   0,
-						   (unsigned char*)"");
-			
-			dg_pusherror(pBHarrayhead, pError);
-			dg_pusherror(pBHarrayhead, dg_shrinkbuffername);
-			dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
-		}
-		
-		return;
-	}
-			
-	// otherwise, shorten lstring length to 0, add it to free list
-	// shorten lstring to 0
-	lstringlength = dg_getlstringlength (pBHarrayhead,
-										 myflstrheader.lstringoffsetbufferid,
-										 lstringindex);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
-		return;
-	}
-	
-	dg_deleteinlstring (pBHarrayhead,
-						myflstrheader.lstringoffsetbufferid, 
-						myflstrheader.lstringstringbufferid,
-						lstringindex,
-						0,
-						lstringlength);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
-		return;
-	}
-	
+    {
+        dg_pusherror(pBHarrayhead, dg_alreadyfreeerror);
+        dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
+        return;
+    }
+        
+    // if lstring is last in array then just drop it and the free flag for it
+        // +1 can't overflow because of previous < x*sizeof(UINT64) calculation
+    if ( (lstringindex + 1) == (lstringoffsetbufferlength / sizeof(UINT64)) )
+    {
+        // drop last lstring
+        dg_droplstring(pBHarrayhead, myflstrheader.lstringoffsetbufferid, myflstrheader.lstringstringbufferid);
+        
+        // shouldnt get an error dropping...
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
+            return;
+        }
+        
+        // shorten free buffer by sizeof (UINT64)
+        dg_shrinkbuffer(pBHarrayhead, freeindexbuffer, sizeof(UINT64), &pError);
+        
+        // can't really get an error shrinking since buffer is large enough
+        if (pError != dg_success)
+        {
+            //allocate a newlstring so array won't be misaligned
+            dg_pushlstring(pBHarrayhead,
+                           myflstrheader.lstringoffsetbufferid, 
+                           myflstrheader.lstringstringbufferid,
+                           0,
+                           (unsigned char*)"");
+            
+            dg_pusherror(pBHarrayhead, pError);
+            dg_pusherror(pBHarrayhead, dg_shrinkbuffername);
+            dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
+        }
+        
+        return;
+    }
+            
+    // otherwise, shorten lstring length to 0, add it to free list
+    // shorten lstring to 0
+    lstringlength = dg_getlstringlength (pBHarrayhead,
+                                         myflstrheader.lstringoffsetbufferid,
+                                         lstringindex);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
+        return;
+    }
+    
+    dg_deleteinlstring (pBHarrayhead,
+                        myflstrheader.lstringoffsetbufferid, 
+                        myflstrheader.lstringstringbufferid,
+                        lstringindex,
+                        0,
+                        lstringlength);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
+        return;
+    }
+    
     // go from firstfree -> a -> b -> lastinlist
-	// firstfree -> n -> a -> b -> lastinlist
-	dg_putbufferuint64(pBHarrayhead, freeindexbuffer, (lstringindex * sizeof(UINT64)) + sizeof(Freeablelstringarrayheader), myflstrheader.firstfreeid);
-	
-	// this error can't really happen
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		// but if it does then lstring gets leaked... 
-		dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
-		return;
-	}
-	
-	myflstrheader.firstfreeid = lstringindex;
-	
-	dg_putbuffersegment(pBHarrayhead, 
-						freeindexbuffer, 
-						0,
-						sizeof(myflstrheader),
-	                    (unsigned char*)(&myflstrheader));
-	
-	// this error can't really happen
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		// but if it does then freed lstring gets leaked...  but you have a bigger problem, somehow your computer hardware lost bits :-)
-		dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
-		return;
-	}
+    // firstfree -> n -> a -> b -> lastinlist
+    dg_putbufferuint64(pBHarrayhead, freeindexbuffer, (lstringindex * sizeof(UINT64)) + sizeof(Freeablelstringarrayheader), myflstrheader.firstfreeid);
+    
+    // this error can't really happen
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        // but if it does then lstring gets leaked... 
+        dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
+        return;
+    }
+    
+    myflstrheader.firstfreeid = lstringindex;
+    
+    dg_putbuffersegment(pBHarrayhead, 
+                        freeindexbuffer, 
+                        0,
+                        sizeof(myflstrheader),
+                        (unsigned char*)(&myflstrheader));
+    
+    // this error can't really happen
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        // but if it does then freed lstring gets leaked...  but you have a bigger problem, somehow your computer hardware lost bits :-)
+        dg_pusherror(pBHarrayhead, dg_freefreeablelstringname);
+        return;
+    }
 }
 
 
@@ -2276,146 +2276,146 @@ UINT64 dg_newfreeablelstring (
    Bufferhandle* pBHarrayhead,
    UINT64 freeindexbuffer)
 {
-	struct Freeablelstringarrayheader myflstrheader;
-	
-	UINT64 isfreenextfreeflag;
-	UINT64 isfreenextfreeflagtemp;
-	
-	UINT64 freeindexbufferlength;
-	UINT64 lstringoffsetbufferlength;
-	
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	if (baderrorcount == olderrorcount)
-	{
-		return((UINT64)(dg_badlstringid));
-	}
-	
-	// check freeable lstring array buffers for correct magic id and buffer lengths
-	dg_getbuffersegment(pBHarrayhead, freeindexbuffer, 0, sizeof(Freeablelstringarrayheader), (unsigned char*)(&myflstrheader));
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_newfreeablelstringname);
-		return((UINT64)(dg_badlstringid));
-	}
-	
-	if (myflstrheader.magic != dg_freeablelstringheadermagic)
-	{
-		dg_pusherror(pBHarrayhead, dg_badmagicerror);
-		dg_pusherror(pBHarrayhead, dg_newfreeablelstringname);
-		return((UINT64)(dg_badlstringid));
-	}
-	
-	freeindexbufferlength = dg_getbufferlength(pBHarrayhead, freeindexbuffer);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_newfreeablelstringname);
-		return((UINT64)(dg_badlstringid));
-	}
-	
-	if ( ((freeindexbufferlength - sizeof(Freeablelstringarrayheader)) % sizeof(UINT64)) != 0 )
-	{
-		dg_pusherror(pBHarrayhead, dg_arraymisalignederror); 
-		dg_pusherror(pBHarrayhead, dg_newfreeablelstringname);
-		return((UINT64)(dg_badlstringid));
-	}
-	
-	lstringoffsetbufferlength = dg_getbufferlength(pBHarrayhead, myflstrheader.lstringoffsetbufferid);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_newfreeablelstringname);
-		return((UINT64)(dg_badlstringid));
-	}	
-	
-	// if array corrupt throw error -- doing it this way to prevent possibility of overflow
-	if (lstringoffsetbufferlength != (freeindexbufferlength - sizeof(Freeablelstringarrayheader)) )
-	{
-		dg_pusherror(pBHarrayhead, dg_arraymisalignederror);
-		dg_pusherror(pBHarrayhead, dg_newfreeablelstringname);
-		return((UINT64)(dg_badlstringid));
-	}
-	
-	if ((UINT64)dg_freeablelstringlastfreeid == myflstrheader.firstfreeid)
-		// or any invalid index, which is > number of lstrings
-	{
-		//since no lstrings are in the free list, allocate a newlstring
-		dg_pushlstring(pBHarrayhead,
-					   myflstrheader.lstringoffsetbufferid,
-					   myflstrheader.lstringstringbufferid,
-					   0,
-					   (unsigned char*)"");
-		
-		if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-		{
-			dg_pusherror(pBHarrayhead, dg_newfreeablelstringname);
-			return((UINT64)(dg_badlstringid));
-		}
-											 											 
-		//mark the newlstring as allocated
-		dg_pushbufferuint64(pBHarrayhead, 
-						   freeindexbuffer,
-						   (UINT64)dg_freeablelstringisnotfreeid);
-		
-		if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-		{
-			dg_droplstring(pBHarrayhead, myflstrheader.lstringoffsetbufferid, myflstrheader.lstringstringbufferid);
-			// not checking error from this droplstring because: a) we just pushed this lstring and b) we are already erroring out
-			dg_pusherror(pBHarrayhead, dg_newfreeablelstringname);
-			return((UINT64)(dg_badlstringid));
-		}
-		
-		// return the new lstring index
-		return (lstringoffsetbufferlength / sizeof(UINT64));
-	}
-	
-	isfreenextfreeflag = dg_getbufferuint64(
-	    pBHarrayhead,
-		freeindexbuffer,
-		(myflstrheader.firstfreeid * sizeof(UINT64)) + sizeof(Freeablelstringarrayheader) );
-	
-	if ((UINT64)dg_freeablelstringisnotfreeid == isfreenextfreeflag)
-	{
-		dg_pusherror(pBHarrayhead, dg_wasnottrulyfreeerror);
-		dg_pusherror(pBHarrayhead, dg_newfreeablelstringname);
-		return((UINT64)(dg_badlstringid));
-	}
-	
-	// unlink lstring from free list
-	// go from firstfree -> a -> b -> c -> lastfree
-	
-	// to firstfree -> b -> c -> lastfree
-	isfreenextfreeflagtemp = myflstrheader.firstfreeid;
-	myflstrheader.firstfreeid = isfreenextfreeflag;
-	
-	dg_putbuffersegment(pBHarrayhead, 
-						freeindexbuffer, 
-						0,
-						sizeof(myflstrheader),
-	                    (unsigned char*)(&myflstrheader));
-	
-	// this error can't really happen
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		// but if it does then freed lstring gets leaked...  but you have a bigger problem, somehow your computer hardware lost bits :-)
-		dg_pusherror(pBHarrayhead, dg_newfreeablelstringname);
-		return((UINT64)(dg_badlstringid));
-	}
-	
-	// and a -> isnotfree
-	dg_putbufferuint64(pBHarrayhead,
-					  freeindexbuffer,
-					  (isfreenextfreeflagtemp * sizeof(UINT64)) + sizeof(Freeablelstringarrayheader),
-					  (UINT64)dg_freeablelstringisnotfreeid);
-	
-	// this error can't really happen
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		// we just did getbufferdword from this buffer offset and it worked so something is wrong with computer hardware
-		dg_pusherror(pBHarrayhead, dg_newfreeablelstringname);
-	}
+    struct Freeablelstringarrayheader myflstrheader;
+    
+    UINT64 isfreenextfreeflag;
+    UINT64 isfreenextfreeflagtemp;
+    
+    UINT64 freeindexbufferlength;
+    UINT64 lstringoffsetbufferlength;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return((UINT64)(dg_badlstringid));
+    }
+    
+    // check freeable lstring array buffers for correct magic id and buffer lengths
+    dg_getbuffersegment(pBHarrayhead, freeindexbuffer, 0, sizeof(Freeablelstringarrayheader), (unsigned char*)(&myflstrheader));
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_newfreeablelstringname);
+        return((UINT64)(dg_badlstringid));
+    }
+    
+    if (myflstrheader.magic != dg_freeablelstringheadermagic)
+    {
+        dg_pusherror(pBHarrayhead, dg_badmagicerror);
+        dg_pusherror(pBHarrayhead, dg_newfreeablelstringname);
+        return((UINT64)(dg_badlstringid));
+    }
+    
+    freeindexbufferlength = dg_getbufferlength(pBHarrayhead, freeindexbuffer);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_newfreeablelstringname);
+        return((UINT64)(dg_badlstringid));
+    }
+    
+    if ( ((freeindexbufferlength - sizeof(Freeablelstringarrayheader)) % sizeof(UINT64)) != 0 )
+    {
+        dg_pusherror(pBHarrayhead, dg_arraymisalignederror); 
+        dg_pusherror(pBHarrayhead, dg_newfreeablelstringname);
+        return((UINT64)(dg_badlstringid));
+    }
+    
+    lstringoffsetbufferlength = dg_getbufferlength(pBHarrayhead, myflstrheader.lstringoffsetbufferid);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_newfreeablelstringname);
+        return((UINT64)(dg_badlstringid));
+    }    
+    
+    // if array corrupt throw error -- doing it this way to prevent possibility of overflow
+    if (lstringoffsetbufferlength != (freeindexbufferlength - sizeof(Freeablelstringarrayheader)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_arraymisalignederror);
+        dg_pusherror(pBHarrayhead, dg_newfreeablelstringname);
+        return((UINT64)(dg_badlstringid));
+    }
+    
+    if ((UINT64)dg_freeablelstringlastfreeid == myflstrheader.firstfreeid)
+        // or any invalid index, which is > number of lstrings
+    {
+        //since no lstrings are in the free list, allocate a newlstring
+        dg_pushlstring(pBHarrayhead,
+                       myflstrheader.lstringoffsetbufferid,
+                       myflstrheader.lstringstringbufferid,
+                       0,
+                       (unsigned char*)"");
+        
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_newfreeablelstringname);
+            return((UINT64)(dg_badlstringid));
+        }
+                                                                                          
+        //mark the newlstring as allocated
+        dg_pushbufferuint64(pBHarrayhead, 
+                           freeindexbuffer,
+                           (UINT64)dg_freeablelstringisnotfreeid);
+        
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_droplstring(pBHarrayhead, myflstrheader.lstringoffsetbufferid, myflstrheader.lstringstringbufferid);
+            // not checking error from this droplstring because: a) we just pushed this lstring and b) we are already erroring out
+            dg_pusherror(pBHarrayhead, dg_newfreeablelstringname);
+            return((UINT64)(dg_badlstringid));
+        }
+        
+        // return the new lstring index
+        return (lstringoffsetbufferlength / sizeof(UINT64));
+    }
+    
+    isfreenextfreeflag = dg_getbufferuint64(
+        pBHarrayhead,
+        freeindexbuffer,
+        (myflstrheader.firstfreeid * sizeof(UINT64)) + sizeof(Freeablelstringarrayheader) );
+    
+    if ((UINT64)dg_freeablelstringisnotfreeid == isfreenextfreeflag)
+    {
+        dg_pusherror(pBHarrayhead, dg_wasnottrulyfreeerror);
+        dg_pusherror(pBHarrayhead, dg_newfreeablelstringname);
+        return((UINT64)(dg_badlstringid));
+    }
+    
+    // unlink lstring from free list
+    // go from firstfree -> a -> b -> c -> lastfree
+    
+    // to firstfree -> b -> c -> lastfree
+    isfreenextfreeflagtemp = myflstrheader.firstfreeid;
+    myflstrheader.firstfreeid = isfreenextfreeflag;
+    
+    dg_putbuffersegment(pBHarrayhead, 
+                        freeindexbuffer, 
+                        0,
+                        sizeof(myflstrheader),
+                        (unsigned char*)(&myflstrheader));
+    
+    // this error can't really happen
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        // but if it does then freed lstring gets leaked...  but you have a bigger problem, somehow your computer hardware lost bits :-)
+        dg_pusherror(pBHarrayhead, dg_newfreeablelstringname);
+        return((UINT64)(dg_badlstringid));
+    }
+    
+    // and a -> isnotfree
+    dg_putbufferuint64(pBHarrayhead,
+                      freeindexbuffer,
+                      (isfreenextfreeflagtemp * sizeof(UINT64)) + sizeof(Freeablelstringarrayheader),
+                      (UINT64)dg_freeablelstringisnotfreeid);
+    
+    // this error can't really happen
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        // we just did getbufferdword from this buffer offset and it worked so something is wrong with computer hardware
+        dg_pusherror(pBHarrayhead, dg_newfreeablelstringname);
+    }
 
     return(isfreenextfreeflagtemp);
 }
@@ -2433,19 +2433,19 @@ UINT64 dg_isfreeablelstringfree (
     UINT64 magic;
     
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	if (baderrorcount == olderrorcount)
-	{
-		return(isfreeflag);
-	}
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return(isfreeflag);
+    }
     
     bufferlength = dg_getbufferlength(pBHarrayhead, freeindexbuffer);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_isfreeablelstringfreename);
-		return(isfreeflag);
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_isfreeablelstringfreename);
+        return(isfreeflag);
+    }
     
     if (bufferlength < sizeof(Freeablelstringarrayheader))
     {
@@ -2455,9 +2455,9 @@ UINT64 dg_isfreeablelstringfree (
     
     // checking magic
     magic = dg_getbufferuint64(
-	    pBHarrayhead,
-		freeindexbuffer,
-		0);
+        pBHarrayhead,
+        freeindexbuffer,
+        0);
         
     if (magic != dg_freeablelstringheadermagic)
     {
@@ -2472,9 +2472,9 @@ UINT64 dg_isfreeablelstringfree (
     
     // off end of buffer is ok since buffer can shrink when doing a free
     isfreeflag = dg_getbufferuint64(
-	    pBHarrayhead,
-		freeindexbuffer,
-		(flstringid << 3) + sizeof(Freeablelstringarrayheader) );
+        pBHarrayhead,
+        freeindexbuffer,
+        (flstringid << 3) + sizeof(Freeablelstringarrayheader) );
         
     if (isfreeflag != (UINT64)dg_freeablelstringisnotfreeid)
     {
@@ -2484,11 +2484,11 @@ UINT64 dg_isfreeablelstringfree (
     {
         isfreeflag = FORTH_FALSE;
     }
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_isfreeablelstringfreename);
-	}
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_isfreeablelstringfreename);
+    }
 
     return(isfreeflag);
 }
@@ -2506,11 +2506,11 @@ Freeablelstringarrayheader* dg_getsflstrheader(
     const char* pError;
     
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	if (baderrorcount == olderrorcount)
-	{
-		return(pflstrheader);
-	}
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return(pflstrheader);
+    }
     
     pError = dg_putuint64(pflstrheaderlength, (UINT64)sizeof(Freeablelstringarrayheader));
     
@@ -2546,11 +2546,11 @@ void dg_copyflstrheadertos(
     UINT64 flstrheaderlength)
 {
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	if (baderrorcount == olderrorcount)
-	{
-		return;
-	}
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
     
     dg_getbuffersegment (
         pBHarrayhead,
@@ -2587,11 +2587,11 @@ void dg_insertsintoflstrn(
     struct Freeablelstringarrayheader myflstrheader;
     
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	if (baderrorcount == olderrorcount)
-	{
-		return;
-	}
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
 
     dg_copyflstrheadertos(
         pBHarrayhead,
@@ -2607,9 +2607,9 @@ void dg_insertsintoflstrn(
     
     dg_insertinlstring (
         pBHarrayhead,
-		myflstrheader.lstringoffsetbufferid,
-		myflstrheader.lstringstringbufferid,
-		flstringid,
+        myflstrheader.lstringoffsetbufferid,
+        myflstrheader.lstringstringbufferid,
+        flstringid,
         offset,
         length);
         
@@ -2621,9 +2621,9 @@ void dg_insertsintoflstrn(
     
     dg_copystolstringn (
         pBHarrayhead,
-		myflstrheader.lstringoffsetbufferid,
-		myflstrheader.lstringstringbufferid,
-		flstringid,
+        myflstrheader.lstringoffsetbufferid,
+        myflstrheader.lstringstringbufferid,
+        flstringid,
         offset,
         psrc,
         length);
@@ -2648,11 +2648,11 @@ void dg_copysfromflstrn(
     struct Freeablelstringarrayheader myflstrheader;
     
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	if (baderrorcount == olderrorcount)
-	{
-		return;
-	}
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
 
     dg_copyflstrheadertos(
         pBHarrayhead,
@@ -2668,9 +2668,9 @@ void dg_copysfromflstrn(
     
     dg_copysfromlstringn (
         pBHarrayhead,
-		myflstrheader.lstringoffsetbufferid,
-		myflstrheader.lstringstringbufferid,
-		flstringid,
+        myflstrheader.lstringoffsetbufferid,
+        myflstrheader.lstringstringbufferid,
+        flstringid,
         offset,
         length,
         pdest);
@@ -2714,11 +2714,11 @@ void dg_copytoinsertflstrntom(
     struct Freeablelstringarrayheader myflstrheaderm;
     
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	if (baderrorcount == olderrorcount)
-	{
-		return;
-	}
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
     
     // get source header
     dg_copyflstrheadertos(
@@ -2779,11 +2779,11 @@ void dg_deleteinflstringn(
     struct Freeablelstringarrayheader myflstrheader;
     
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	if (baderrorcount == olderrorcount)
-	{
-		return;
-	}
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
 
     dg_copyflstrheadertos(
         pBHarrayhead,
@@ -2799,9 +2799,9 @@ void dg_deleteinflstringn(
 
     dg_deleteinlstring (
         pBHarrayhead,
-		myflstrheader.lstringoffsetbufferid,
-		myflstrheader.lstringstringbufferid,
-		flstringid,
+        myflstrheader.lstringoffsetbufferid,
+        myflstrheader.lstringstringbufferid,
+        flstringid,
         offset,
         length);
         
@@ -2824,11 +2824,11 @@ UINT64 dg_getlengthflstringn (
     UINT64 length = 0;
     
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	if (baderrorcount == olderrorcount)
-	{
-		return (length);
-	}
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return (length);
+    }
 
     dg_copyflstrheadertos(
         pBHarrayhead,
@@ -2864,83 +2864,83 @@ UINT64 dg_newfreeablelstringonend (
    unsigned char* plstring,
    UINT64 lstringlength)
 {
-	struct Freeablelstringarrayheader myflstrheader;
-		
-	UINT64 freeindexbufferlength;
-	UINT64 lstringoffsetbufferlength;
-	
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	if (baderrorcount == olderrorcount)
-	{
-		return((UINT64)(dg_badlstringid));
-	}
-	
-	// check freeable lstring array buffers for correct magic id and buffer lengths
-	dg_getbuffersegment(pBHarrayhead, freeindexbuffer, 0, sizeof(Freeablelstringarrayheader), (unsigned char*)(&myflstrheader));
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_newfreeablelstringonendname);
-		return((UINT64)(dg_badlstringid));
-	}
-	
-	if (myflstrheader.magic != dg_freeablelstringheadermagic)
-	{
-		dg_pusherror(pBHarrayhead, dg_badmagicerror);
-		dg_pusherror(pBHarrayhead, dg_newfreeablelstringonendname);
-		return((UINT64)(dg_badlstringid));
-	}
-	
-	freeindexbufferlength = dg_getbufferlength(pBHarrayhead, freeindexbuffer);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_newfreeablelstringonendname);
-		return((UINT64)(dg_badlstringid));
-	}
-	
-	if ( ((freeindexbufferlength - sizeof(Freeablelstringarrayheader)) % sizeof(UINT64)) != 0 )
-	{
-		dg_pusherror(pBHarrayhead, dg_arraymisalignederror); 
-		dg_pusherror(pBHarrayhead, dg_newfreeablelstringonendname);
-		return((UINT64)(dg_badlstringid));
-	}
-	
-	lstringoffsetbufferlength = dg_getbufferlength(pBHarrayhead, myflstrheader.lstringoffsetbufferid);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_newfreeablelstringonendname);
-		return((UINT64)(dg_badlstringid));
-	}	
-	
-	// if array corrupt throw error -- doing it this way to prevent possibility of overflow
-	if (lstringoffsetbufferlength != (freeindexbufferlength - sizeof(Freeablelstringarrayheader)) )
-	{
-		dg_pusherror(pBHarrayhead, dg_arraymisalignederror);
-		dg_pusherror(pBHarrayhead, dg_newfreeablelstringonendname);
-		return((UINT64)(dg_badlstringid));
-	}
-	
+    struct Freeablelstringarrayheader myflstrheader;
+        
+    UINT64 freeindexbufferlength;
+    UINT64 lstringoffsetbufferlength;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return((UINT64)(dg_badlstringid));
+    }
+    
+    // check freeable lstring array buffers for correct magic id and buffer lengths
+    dg_getbuffersegment(pBHarrayhead, freeindexbuffer, 0, sizeof(Freeablelstringarrayheader), (unsigned char*)(&myflstrheader));
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_newfreeablelstringonendname);
+        return((UINT64)(dg_badlstringid));
+    }
+    
+    if (myflstrheader.magic != dg_freeablelstringheadermagic)
+    {
+        dg_pusherror(pBHarrayhead, dg_badmagicerror);
+        dg_pusherror(pBHarrayhead, dg_newfreeablelstringonendname);
+        return((UINT64)(dg_badlstringid));
+    }
+    
+    freeindexbufferlength = dg_getbufferlength(pBHarrayhead, freeindexbuffer);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_newfreeablelstringonendname);
+        return((UINT64)(dg_badlstringid));
+    }
+    
+    if ( ((freeindexbufferlength - sizeof(Freeablelstringarrayheader)) % sizeof(UINT64)) != 0 )
+    {
+        dg_pusherror(pBHarrayhead, dg_arraymisalignederror); 
+        dg_pusherror(pBHarrayhead, dg_newfreeablelstringonendname);
+        return((UINT64)(dg_badlstringid));
+    }
+    
+    lstringoffsetbufferlength = dg_getbufferlength(pBHarrayhead, myflstrheader.lstringoffsetbufferid);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_newfreeablelstringonendname);
+        return((UINT64)(dg_badlstringid));
+    }    
+    
+    // if array corrupt throw error -- doing it this way to prevent possibility of overflow
+    if (lstringoffsetbufferlength != (freeindexbufferlength - sizeof(Freeablelstringarrayheader)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_arraymisalignederror);
+        dg_pusherror(pBHarrayhead, dg_newfreeablelstringonendname);
+        return((UINT64)(dg_badlstringid));
+    }
+    
     //ignoring the free list and allocating a newlstring
     dg_pushlstring(pBHarrayhead,
         myflstrheader.lstringoffsetbufferid,
         myflstrheader.lstringstringbufferid,
         lstringlength,
         plstring);
-		
+        
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
         dg_pusherror(pBHarrayhead, dg_newfreeablelstringonendname);
         return((UINT64)(dg_badlstringid));
     }
-											 											 
+                                                                                          
     //mark the newlstring as allocated
     dg_pushbufferuint64(pBHarrayhead, 
         freeindexbuffer,
         (UINT64)dg_freeablelstringisnotfreeid);
-		
+        
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
         dg_droplstring(pBHarrayhead, myflstrheader.lstringoffsetbufferid, myflstrheader.lstringstringbufferid);
@@ -2948,7 +2948,7 @@ UINT64 dg_newfreeablelstringonend (
         dg_pusherror(pBHarrayhead, dg_newfreeablelstringonendname);
         return((UINT64)(dg_badlstringid));
     }
-		
+        
     // return the new lstring index
     return (lstringoffsetbufferlength / sizeof(UINT64));
 }
@@ -3066,7 +3066,7 @@ void dg_deleteuint64inlstringn (
     {
         dg_deleteinlstring (
             pBHarrayhead,
-			lstringoffsetbufferid, // lstring holding sort key array
+            lstringoffsetbufferid, // lstring holding sort key array
             lstringstringbufferid,
             lstringindex,
             sortedkeyslength << 3,
@@ -3525,60 +3525,60 @@ void dg_urlencodelstring (
 
 {
     UINT64 src;
-	UINT64 dest;
-	unsigned char* pstring = NULL;
+    UINT64 dest;
+    unsigned char* pstring = NULL;
 
-	UINT64 stringlength = 0;
-	UINT64 stringstackdepth;
+    UINT64 stringlength = 0;
+    UINT64 stringstackdepth;
 
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
     
     if (baderrorcount == olderrorcount)
     {
         return;
     }
 
-	unsigned char c;
+    unsigned char c;
 
-	// need to get depth of string stack first
-	stringstackdepth = dg_getnumberoflstringsonstack(
+    // need to get depth of string stack first
+    stringstackdepth = dg_getnumberoflstringsonstack(
         pBHarrayhead,
         lstringoffsetbufferid);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_urlencodelstringname);
-		return;
-	}
-
-	if (stringstackdepth < 1)
-	{
-		dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_urlencodelstringname);
-		return;
-	}
-
-	pstring = (unsigned char*)dg_getplstring(
-		pBHarrayhead, 
-		lstringoffsetbufferid,
-		lstringstringbufferid,
-		stringstackdepth - 1,
-		&stringlength);
-
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_urlencodelstringname);
         return;
-	}
+    }
+
+    if (stringstackdepth < 1)
+    {
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_urlencodelstringname);
+        return;
+    }
+
+    pstring = (unsigned char*)dg_getplstring(
+        pBHarrayhead, 
+        lstringoffsetbufferid,
+        lstringstringbufferid,
+        stringstackdepth - 1,
+        &stringlength);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_urlencodelstringname);
+        return;
+    }
  
     // old way which had a bug where both <space> and + become +
-	// if src = <space>, change to +, src+1, dest+1
-	// if src = %, change to %25, src+3 dest+3
+    // if src = <space>, change to +, src+1, dest+1
+    // if src = %, change to %25, src+3 dest+3
     // if src = /, change to %2F, src+3 dest+3
     // if src = <, change to %3C, src+3 dest+3
     // if src = >, change to %3E, src+3 dest+3
-	// if src < 0x20, insert 2 1 after src, change src to %xx src+3, dest+3
+    // if src < 0x20, insert 2 1 after src, change src to %xx src+3, dest+3
     // if src >= 0x7F, insert 2 1 after src, change src to %xx src+3, dest+3
     
     // what this should be:
@@ -3592,17 +3592,17 @@ void dg_urlencodelstring (
     
     //  everything else converted to %xx where xx is the hex ascii code...
 
-	if (stringlength == 0)
-	{
-		return;
-	}
+    if (stringlength == 0)
+    {
+        return;
+    }
 
-	src=0; 
-	dest=0;
+    src=0; 
+    dest=0;
 
-	while (src < stringlength)
-	{
-		c = pstring[src];
+    while (src < stringlength)
+    {
+        c = pstring[src];
         
         if (
             (c < 0x2D) ||
@@ -3655,7 +3655,7 @@ void dg_urlencodelstring (
             src = src + 1;
             dest = dest + 1;
         }
-	}
+    }
 }
 
 
@@ -3671,123 +3671,123 @@ void dg_urldecodelstring (
 //   and if you see a + then it's a mistake and they must want the space...
 //   in short, leaving this routine alone 4/16/2020 J.N.
 {
-	UINT64 src;
-	UINT64 dest;
-	unsigned char* pstring = NULL;
+    UINT64 src;
+    UINT64 dest;
+    unsigned char* pstring = NULL;
 
-	UINT64 stringlength = 0;
-	UINT64 stringstackdepth;
+    UINT64 stringlength = 0;
+    UINT64 stringstackdepth;
 
-	UINT64 t1;
-	UINT64 t2;
+    UINT64 t1;
+    UINT64 t2;
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
     
     if (baderrorcount == olderrorcount)
     {
         return;
     }
 
-	unsigned char c;
+    unsigned char c;
 
-	// need to get depth of string stack first
-	stringstackdepth = dg_getnumberoflstringsonstack(
+    // need to get depth of string stack first
+    stringstackdepth = dg_getnumberoflstringsonstack(
         pBHarrayhead,
         lstringoffsetbufferid);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		//dg_pusherror(pBHarrayhead, dg_urldecodelstringname);
-		return;
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        //dg_pusherror(pBHarrayhead, dg_urldecodelstringname);
+        return;
+    }
 
-	if (stringstackdepth < 1)
-	{
-		// not enough strings to do compare, will push error and push not equal
-		//dg_pusherror(pBHarrayhead, dg_forthurldecodestringssunderflowerror);
-		return;
-	}
+    if (stringstackdepth < 1)
+    {
+        // not enough strings to do compare, will push error and push not equal
+        //dg_pusherror(pBHarrayhead, dg_forthurldecodestringssunderflowerror);
+        return;
+    }
 
-	pstring = (unsigned char*)dg_getplstring(
-		pBHarrayhead, 
-		lstringoffsetbufferid,
-		lstringstringbufferid,
-		stringstackdepth - 1,
-		&stringlength);
+    pstring = (unsigned char*)dg_getplstring(
+        pBHarrayhead, 
+        lstringoffsetbufferid,
+        lstringstringbufferid,
+        stringstackdepth - 1,
+        &stringlength);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		//dg_pusherror(pBHarrayhead, dg_urldecodelstringname);
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        //dg_pusherror(pBHarrayhead, dg_urldecodelstringname);
+    }
 
-	// if src = + change to <space>, src+1, dest+1
-	// if src = %, try to convert using next to characters, move src+3 dest+1
-	// if src = anything else, move src to dest, src+1, dest+1
+    // if src = + change to <space>, src+1, dest+1
+    // if src = %, try to convert using next to characters, move src+3 dest+1
+    // if src = anything else, move src to dest, src+1, dest+1
 
-	// when src hits end of string, shrink string to dest
+    // when src hits end of string, shrink string to dest
 
-	if (stringlength == 0)
-	{
-		return;
-	}
+    if (stringlength == 0)
+    {
+        return;
+    }
 
-	src=0; 
-	dest=0;
+    src=0; 
+    dest=0;
 
-	while (src < stringlength)
-	{
-		c = pstring[src];
+    while (src < stringlength)
+    {
+        c = pstring[src];
 
-		if (c == '+')
-		{
-			pstring[dest]=' ';
-			src = src + 1;
-			dest = dest + 1;
-		}
-		else
-		{
-			if (c != '%')
-			{
-		 	    pstring[dest]=c;
-			    src = src + 1;
-			    dest = dest + 1;
-			}
-			else
-			{
-				if ((src + 2) >= stringlength)
-				{
-					pstring[dest] = '-';
-				}
-				else
-				{
-					t1 = dg_chartodigitlowertoo(pstring[src+1]);
-					t2 = dg_chartodigitlowertoo(pstring[src+2]);
+        if (c == '+')
+        {
+            pstring[dest]=' ';
+            src = src + 1;
+            dest = dest + 1;
+        }
+        else
+        {
+            if (c != '%')
+            {
+                 pstring[dest]=c;
+                src = src + 1;
+                dest = dest + 1;
+            }
+            else
+            {
+                if ((src + 2) >= stringlength)
+                {
+                    pstring[dest] = '-';
+                }
+                else
+                {
+                    t1 = dg_chartodigitlowertoo(pstring[src+1]);
+                    t2 = dg_chartodigitlowertoo(pstring[src+2]);
 
-					if ((t1 == (UINT64)largestunsignedint) || ( t2 == (UINT64)largestunsignedint))
-					{
-						pstring[dest] = '-';
-					}
-					else
-					{
-						pstring[dest] = t1 * 0x10 + t2;
-					}
-				}
+                    if ((t1 == (UINT64)largestunsignedint) || ( t2 == (UINT64)largestunsignedint))
+                    {
+                        pstring[dest] = '-';
+                    }
+                    else
+                    {
+                        pstring[dest] = t1 * 0x10 + t2;
+                    }
+                }
 
-				src = src + 3;
-				dest = dest + 1;
+                src = src + 3;
+                dest = dest + 1;
 
-			}
-		}
-	}
+            }
+        }
+    }
 
-	if (dest < stringlength)
-	{
-		// dg_pushbufferdword(
+    if (dest < stringlength)
+    {
+        // dg_pushbufferdword(
         //    pBHarrayhead,
         //    DG_DATASTACK_BUFFERID,
         //    stringlength - dest);
         
-		// dg_forthshortenstring(pBHarrayhead);
+        // dg_forthshortenstring(pBHarrayhead);
         
         dg_setlengthlstringn (
             pBHarrayhead,
@@ -3801,7 +3801,7 @@ void dg_urldecodelstring (
             //dg_pusherror(pBHarrayhead, dg_urldecodelstringname);
             return;
         }
-	}
+    }
 }
 
 
@@ -3812,10 +3812,10 @@ void dg_stonewstring (
 {
     dg_pushlstring(
         pBHarrayhead,
-		DG_STRINGOFFSETSTACK_BUFFERID,
-		DG_STRINGSTRINGSTACK_BUFFERID,
-		stringlength,
-		pstring);
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringlength,
+        pstring);
 }
 
 const char* dg_stonew0stringname = "dg_stonew0string";
@@ -3887,16 +3887,16 @@ void dg_pzerostringtonewstring(
     }
     
     dg_pushlstring(pBHarrayhead,
-		DG_STRINGOFFSETSTACK_BUFFERID,
-		DG_STRINGSTRINGSTACK_BUFFERID,
-		u1,
-		pzerostring);
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        u1,
+        pzerostring);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_pzerostringtonewstringname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_pzerostringtonewstringname);
+        return;
+    }
 }
 
 
@@ -3930,30 +3930,30 @@ void dg_uleextendlstringntol (
         stringid);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_uleextendlstringntolname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_uleextendlstringntolname);
+        return;
+    }
 
     lstringlength = ::dg_getlstringlength(pBHarrayhead, offsetbufferid, stringid);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_uleextendlstringntolname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_uleextendlstringntolname);
+        return;
+    }
 
-	if (newlength==lstringlength)
-	{
-		// nothing to be done
-		return;
-	}
+    if (newlength==lstringlength)
+    {
+        // nothing to be done
+        return;
+    }
 
     // nothing needs to be done
-	if (newlength<lstringlength)
-	{
+    if (newlength<lstringlength)
+    {
         return;
-	}
+    }
  
     growamount = newlength - lstringlength;
     insertoffset = lstringlength;
@@ -3967,9 +3967,9 @@ void dg_uleextendlstringntol (
         growamount);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_uleextendlstringntolname);
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_uleextendlstringntolname);
+    }
  
     plstring = dg_getplstring(
         pBHarrayhead,
@@ -4029,10 +4029,10 @@ void dg_uleaddlstringntolstringn (
         stringida);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_uleaddlstringntolstringnname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_uleaddlstringntolstringnname);
+        return;
+    }
  
     lstringlengthb = dg_getlstringlength(
         pBHarrayhead, 
@@ -4040,14 +4040,14 @@ void dg_uleaddlstringntolstringn (
         stringidb);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_uleaddlstringntolstringnname);
-		return;
-	}   
+    {
+        dg_pusherror(pBHarrayhead, dg_uleaddlstringntolstringnname);
+        return;
+    }   
 
-	if (lstringlengtha < lstringlengthb)
-	{
-		dg_uleextendlstringntol (
+    if (lstringlengtha < lstringlengthb)
+    {
+        dg_uleextendlstringntol (
             pBHarrayhead,
             offsetbufferida,
             stringbufferida,
@@ -4059,11 +4059,11 @@ void dg_uleaddlstringntolstringn (
             dg_pusherror(pBHarrayhead, dg_uleaddlstringntolstringnname);
             return;
         }
-	}
+    }
  
     if (lstringlengthb < lstringlengtha)
-	{
-		dg_uleextendlstringntol (
+    {
+        dg_uleextendlstringntol (
             pBHarrayhead,
             offsetbufferidb,
             stringbufferidb,
@@ -4075,7 +4075,7 @@ void dg_uleaddlstringntolstringn (
             dg_pusherror(pBHarrayhead, dg_uleaddlstringntolstringnname);
             return;
         }
-	}   
+    }   
 
     plstringa = dg_getplstring(
         pBHarrayhead,
@@ -4149,10 +4149,10 @@ void dg_uleadclstringntolstringn (
         stringida);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_uleadclstringntolstringnname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_uleadclstringntolstringnname);
+        return;
+    }
  
     lstringlengthb = dg_getlstringlength(
         pBHarrayhead, 
@@ -4160,14 +4160,14 @@ void dg_uleadclstringntolstringn (
         stringidb);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_uleadclstringntolstringnname);
-		return;
-	}   
+    {
+        dg_pusherror(pBHarrayhead, dg_uleadclstringntolstringnname);
+        return;
+    }   
 
-	if (lstringlengtha < lstringlengthb)
-	{
-		dg_uleextendlstringntol (
+    if (lstringlengtha < lstringlengthb)
+    {
+        dg_uleextendlstringntol (
             pBHarrayhead,
             offsetbufferida,
             stringbufferida,
@@ -4179,11 +4179,11 @@ void dg_uleadclstringntolstringn (
             dg_pusherror(pBHarrayhead, dg_uleadclstringntolstringnname);
             return;
         }
-	}
+    }
  
     if (lstringlengthb < lstringlengtha)
-	{
-		dg_uleextendlstringntol (
+    {
+        dg_uleextendlstringntol (
             pBHarrayhead,
             offsetbufferidb,
             stringbufferidb,
@@ -4195,7 +4195,7 @@ void dg_uleadclstringntolstringn (
             dg_pusherror(pBHarrayhead, dg_uleadclstringntolstringnname);
             return;
         }
-	}   
+    }   
 
     plstringa = dg_getplstring(
         pBHarrayhead,
@@ -4269,10 +4269,10 @@ void dg_ulesbblstringntolstringn (
         stringida);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_ulesbblstringntolstringnname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_ulesbblstringntolstringnname);
+        return;
+    }
  
     lstringlengthb = dg_getlstringlength(
         pBHarrayhead, 
@@ -4280,14 +4280,14 @@ void dg_ulesbblstringntolstringn (
         stringidb);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_ulesbblstringntolstringnname);
-		return;
-	}   
+    {
+        dg_pusherror(pBHarrayhead, dg_ulesbblstringntolstringnname);
+        return;
+    }   
 
-	if (lstringlengtha < lstringlengthb)
-	{
-		dg_uleextendlstringntol (
+    if (lstringlengtha < lstringlengthb)
+    {
+        dg_uleextendlstringntol (
             pBHarrayhead,
             offsetbufferida,
             stringbufferida,
@@ -4299,11 +4299,11 @@ void dg_ulesbblstringntolstringn (
             dg_pusherror(pBHarrayhead, dg_ulesbblstringntolstringnname);
             return;
         }
-	}
+    }
  
     if (lstringlengthb < lstringlengtha)
-	{
-		dg_uleextendlstringntol (
+    {
+        dg_uleextendlstringntol (
             pBHarrayhead,
             offsetbufferidb,
             stringbufferidb,
@@ -4315,7 +4315,7 @@ void dg_ulesbblstringntolstringn (
             dg_pusherror(pBHarrayhead, dg_ulesbblstringntolstringnname);
             return;
         }
-	}   
+    }   
 
     plstringa = dg_getplstring(
         pBHarrayhead,
@@ -4732,10 +4732,10 @@ void dg_ulemulu64tolstringn (
     // set lstringb to 0
     plstring = dg_getplstring(
         pBHarrayhead,
-	    offsetbufferidb,
-	    stringbufferidb,
-	    stringidb,
-	    &lstringlength);
+        offsetbufferidb,
+        stringbufferidb,
+        stringidb,
+        &lstringlength);
      
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -4779,13 +4779,13 @@ void dg_ulemulu64tolstringn (
     
     // copy lstringb to lstringa
     dg_copylstringntoreplacelstringn (
-		pBHarrayhead,
-		offsetbufferidb,
-		stringbufferidb,
-		stringidb,
-		offsetbufferida,
-		stringbufferida,
-		stringida);
+        pBHarrayhead,
+        offsetbufferidb,
+        stringbufferidb,
+        stringidb,
+        offsetbufferida,
+        stringbufferida,
+        stringida);
   
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -4918,10 +4918,10 @@ void dg_uleandlstringntolstringn (
         stringida);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_uleandlstringntolstringnname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_uleandlstringntolstringnname);
+        return;
+    }
  
     lstringlengthb = dg_getlstringlength(
         pBHarrayhead, 
@@ -4929,14 +4929,14 @@ void dg_uleandlstringntolstringn (
         stringidb);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_uleandlstringntolstringnname);
-		return;
-	}   
+    {
+        dg_pusherror(pBHarrayhead, dg_uleandlstringntolstringnname);
+        return;
+    }   
 
-	if (lstringlengtha < lstringlengthb)
-	{
-		dg_uleextendlstringntol (
+    if (lstringlengtha < lstringlengthb)
+    {
+        dg_uleextendlstringntol (
             pBHarrayhead,
             offsetbufferida,
             stringbufferida,
@@ -4948,11 +4948,11 @@ void dg_uleandlstringntolstringn (
             dg_pusherror(pBHarrayhead, dg_uleandlstringntolstringnname);
             return;
         }
-	}
+    }
  
     if (lstringlengthb < lstringlengtha)
-	{
-		dg_uleextendlstringntol (
+    {
+        dg_uleextendlstringntol (
             pBHarrayhead,
             offsetbufferidb,
             stringbufferidb,
@@ -4964,7 +4964,7 @@ void dg_uleandlstringntolstringn (
             dg_pusherror(pBHarrayhead, dg_uleandlstringntolstringnname);
             return;
         }
-	}   
+    }   
 
     plstringa = dg_getplstring(
         pBHarrayhead,
@@ -5037,10 +5037,10 @@ void dg_uleorlstringntolstringn (
         stringida);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_uleorlstringntolstringnname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_uleorlstringntolstringnname);
+        return;
+    }
  
     lstringlengthb = dg_getlstringlength(
         pBHarrayhead, 
@@ -5048,14 +5048,14 @@ void dg_uleorlstringntolstringn (
         stringidb);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_uleorlstringntolstringnname);
-		return;
-	}   
+    {
+        dg_pusherror(pBHarrayhead, dg_uleorlstringntolstringnname);
+        return;
+    }   
 
-	if (lstringlengtha < lstringlengthb)
-	{
-		dg_uleextendlstringntol (
+    if (lstringlengtha < lstringlengthb)
+    {
+        dg_uleextendlstringntol (
             pBHarrayhead,
             offsetbufferida,
             stringbufferida,
@@ -5067,11 +5067,11 @@ void dg_uleorlstringntolstringn (
             dg_pusherror(pBHarrayhead, dg_uleorlstringntolstringnname);
             return;
         }
-	}
+    }
  
     if (lstringlengthb < lstringlengtha)
-	{
-		dg_uleextendlstringntol (
+    {
+        dg_uleextendlstringntol (
             pBHarrayhead,
             offsetbufferidb,
             stringbufferidb,
@@ -5083,7 +5083,7 @@ void dg_uleorlstringntolstringn (
             dg_pusherror(pBHarrayhead, dg_uleorlstringntolstringnname);
             return;
         }
-	}   
+    }   
 
     plstringa = dg_getplstring(
         pBHarrayhead,
@@ -5156,10 +5156,10 @@ void dg_ulexorlstringntolstringn (
         stringida);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_ulexorlstringntolstringnname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_ulexorlstringntolstringnname);
+        return;
+    }
  
     lstringlengthb = dg_getlstringlength(
         pBHarrayhead, 
@@ -5167,14 +5167,14 @@ void dg_ulexorlstringntolstringn (
         stringidb);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_ulexorlstringntolstringnname);
-		return;
-	}   
+    {
+        dg_pusherror(pBHarrayhead, dg_ulexorlstringntolstringnname);
+        return;
+    }   
 
-	if (lstringlengtha < lstringlengthb)
-	{
-		dg_uleextendlstringntol (
+    if (lstringlengtha < lstringlengthb)
+    {
+        dg_uleextendlstringntol (
             pBHarrayhead,
             offsetbufferida,
             stringbufferida,
@@ -5186,11 +5186,11 @@ void dg_ulexorlstringntolstringn (
             dg_pusherror(pBHarrayhead, dg_ulexorlstringntolstringnname);
             return;
         }
-	}
+    }
  
     if (lstringlengthb < lstringlengtha)
-	{
-		dg_uleextendlstringntol (
+    {
+        dg_uleextendlstringntol (
             pBHarrayhead,
             offsetbufferidb,
             stringbufferidb,
@@ -5202,7 +5202,7 @@ void dg_ulexorlstringntolstringn (
             dg_pusherror(pBHarrayhead, dg_ulexorlstringntolstringnname);
             return;
         }
-	}   
+    }   
 
     plstringa = dg_getplstring(
         pBHarrayhead,
@@ -5275,10 +5275,10 @@ void dg_ulenandlstringntolstringn (
         stringida);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_ulenandlstringntolstringnname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_ulenandlstringntolstringnname);
+        return;
+    }
  
     lstringlengthb = dg_getlstringlength(
         pBHarrayhead, 
@@ -5286,14 +5286,14 @@ void dg_ulenandlstringntolstringn (
         stringidb);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_ulenandlstringntolstringnname);
-		return;
-	}   
+    {
+        dg_pusherror(pBHarrayhead, dg_ulenandlstringntolstringnname);
+        return;
+    }   
 
-	if (lstringlengtha < lstringlengthb)
-	{
-		dg_uleextendlstringntol (
+    if (lstringlengtha < lstringlengthb)
+    {
+        dg_uleextendlstringntol (
             pBHarrayhead,
             offsetbufferida,
             stringbufferida,
@@ -5305,11 +5305,11 @@ void dg_ulenandlstringntolstringn (
             dg_pusherror(pBHarrayhead, dg_ulenandlstringntolstringnname);
             return;
         }
-	}
+    }
  
     if (lstringlengthb < lstringlengtha)
-	{
-		dg_uleextendlstringntol (
+    {
+        dg_uleextendlstringntol (
             pBHarrayhead,
             offsetbufferidb,
             stringbufferidb,
@@ -5321,7 +5321,7 @@ void dg_ulenandlstringntolstringn (
             dg_pusherror(pBHarrayhead, dg_ulenandlstringntolstringnname);
             return;
         }
-	}   
+    }   
 
     plstringa = dg_getplstring(
         pBHarrayhead,
@@ -5394,10 +5394,10 @@ void dg_ulenorlstringntolstringn (
         stringida);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_ulenorlstringntolstringnname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_ulenorlstringntolstringnname);
+        return;
+    }
  
     lstringlengthb = dg_getlstringlength(
         pBHarrayhead, 
@@ -5405,14 +5405,14 @@ void dg_ulenorlstringntolstringn (
         stringidb);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_ulenorlstringntolstringnname);
-		return;
-	}   
+    {
+        dg_pusherror(pBHarrayhead, dg_ulenorlstringntolstringnname);
+        return;
+    }   
 
-	if (lstringlengtha < lstringlengthb)
-	{
-		dg_uleextendlstringntol (
+    if (lstringlengtha < lstringlengthb)
+    {
+        dg_uleextendlstringntol (
             pBHarrayhead,
             offsetbufferida,
             stringbufferida,
@@ -5424,11 +5424,11 @@ void dg_ulenorlstringntolstringn (
             dg_pusherror(pBHarrayhead, dg_ulenorlstringntolstringnname);
             return;
         }
-	}
+    }
  
     if (lstringlengthb < lstringlengtha)
-	{
-		dg_uleextendlstringntol (
+    {
+        dg_uleextendlstringntol (
             pBHarrayhead,
             offsetbufferidb,
             stringbufferidb,
@@ -5440,7 +5440,7 @@ void dg_ulenorlstringntolstringn (
             dg_pusherror(pBHarrayhead, dg_ulenorlstringntolstringnname);
             return;
         }
-	}   
+    }   
 
     plstringa = dg_getplstring(
         pBHarrayhead,
@@ -5513,10 +5513,10 @@ void dg_ulexnorlstringntolstringn (
         stringida);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_ulexnorlstringntolstringnname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_ulexnorlstringntolstringnname);
+        return;
+    }
  
     lstringlengthb = dg_getlstringlength(
         pBHarrayhead, 
@@ -5524,14 +5524,14 @@ void dg_ulexnorlstringntolstringn (
         stringidb);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_ulexnorlstringntolstringnname);
-		return;
-	}   
+    {
+        dg_pusherror(pBHarrayhead, dg_ulexnorlstringntolstringnname);
+        return;
+    }   
 
-	if (lstringlengtha < lstringlengthb)
-	{
-		dg_uleextendlstringntol (
+    if (lstringlengtha < lstringlengthb)
+    {
+        dg_uleextendlstringntol (
             pBHarrayhead,
             offsetbufferida,
             stringbufferida,
@@ -5543,11 +5543,11 @@ void dg_ulexnorlstringntolstringn (
             dg_pusherror(pBHarrayhead, dg_ulexnorlstringntolstringnname);
             return;
         }
-	}
+    }
  
     if (lstringlengthb < lstringlengtha)
-	{
-		dg_uleextendlstringntol (
+    {
+        dg_uleextendlstringntol (
             pBHarrayhead,
             offsetbufferidb,
             stringbufferidb,
@@ -5559,7 +5559,7 @@ void dg_ulexnorlstringntolstringn (
             dg_pusherror(pBHarrayhead, dg_ulexnorlstringntolstringnname);
             return;
         }
-	}   
+    }   
 
     plstringa = dg_getplstring(
         pBHarrayhead,
@@ -5637,10 +5637,10 @@ void dg_mulu64bylstringnaddtolstringn (
         stringida);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_mulu64bylstringnaddtolstringnname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_mulu64bylstringnaddtolstringnname);
+        return;
+    }
  
     lstringlengthainu64s = dg_getnearesthighestmultiple (
         lstringlengthainbytes,
@@ -5652,25 +5652,25 @@ void dg_mulu64bylstringnaddtolstringn (
         stringidb);
         
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_mulu64bylstringnaddtolstringnname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_mulu64bylstringnaddtolstringnname);
+        return;
+    }
         
     lstringlengthbinu64s = dg_getnearesthighestmultiple (
         lstringlengthbinbytes,
         sizeof(UINT64)) / sizeof(UINT64);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_mulu64bylstringnaddtolstringnname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_mulu64bylstringnaddtolstringnname);
+        return;
+    }
  
     // align lstring to a multiple of sizeof(u64) if needed
     if (lstringlengthainbytes < lstringlengthainu64s * sizeof(UINT64))
-	{
-		dg_uleextendlstringntol (
+    {
+        dg_uleextendlstringntol (
             pBHarrayhead,
             offsetbufferida,
             stringbufferida,
@@ -5682,12 +5682,12 @@ void dg_mulu64bylstringnaddtolstringn (
             dg_pusherror(pBHarrayhead, dg_mulu64bylstringnaddtolstringnname);
             return;
         }
-	}   
+    }   
  
     // destination length must be at least 1 more than source length
     if (lstringlengthbinbytes < ((lstringlengthainu64s + 1)*sizeof(UINT64)))
-	{
-		dg_uleextendlstringntol (
+    {
+        dg_uleextendlstringntol (
             pBHarrayhead,
             offsetbufferidb,
             stringbufferidb,
@@ -5699,7 +5699,7 @@ void dg_mulu64bylstringnaddtolstringn (
             dg_pusherror(pBHarrayhead, dg_mulu64bylstringnaddtolstringnname);
             return;
         }
-	}   
+    }   
 
     plstringa = (UINT64*)dg_getplstring(
         pBHarrayhead,
@@ -5837,10 +5837,10 @@ void dg_divlstringnbyu64 (
         stringida);
 
     if (pBHarrayhead->errorcount != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_divlstringnbyu64name);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_divlstringnbyu64name);
+        return;
+    }
  
     lstringlengthainu64s = dg_getnearesthighestmultiple (
         lstringlengthainbytes,

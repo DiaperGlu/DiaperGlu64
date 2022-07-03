@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.4.
+//    This file is part of DiaperGlu v5.5.
 //
-//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.4; if not, write to the Free Software
+//    along with DiaperGlu v5.5; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 5, 2022               //
-// version 5.4                //
+// July 2, 2022               //
+// version 5.5                //
 // /////////////////////////////
 
 #include <signal.h>
@@ -99,18 +99,18 @@
 void dg_setcatchallcatchaddress((void (*)(int, __siginfo*, void*)) address)
 {
     struct sigaction mysigaction;
-	UINT32 i;
-	
-	// this would run a lot faster if I used a predifined (static?) constant structure
-	mysigaction.sa_sigaction = address;
+    UINT32 i;
+    
+    // this would run a lot faster if I used a predifined (static?) constant structure
+    mysigaction.sa_sigaction = address;
 
-	// sa_mask on mac os x is UINT32
+    // sa_mask on mac os x is UINT32
     //  blocks signals from occurring during handler
     //  what happens if another signal happens during the handler?
-	mysigaction.sa_mask = 0;
+    mysigaction.sa_mask = 0;
 
     // SA_RESETHAND means throw away further occurrences of signal during handler
-	mysigaction.sa_flags = SA_RESETHAND | SA_SIGINFO;
+    mysigaction.sa_flags = SA_RESETHAND | SA_SIGINFO;
 
     sigaction(SIGHUP, &mysigaction, NULL);
     sigaction(SIGINT, &mysigaction, NULL);
@@ -122,7 +122,7 @@ void dg_setcatchallcatchaddress((void (*)(int, __siginfo*, void*)) address)
     sigaction(SIGFPE, &mysigaction, NULL);
     // can't catch SIGKILL
     sigaction(SIGBUS, &mysigaction, NULL);
-	sigaction(SIGSEGV, &mysigaction, NULL);
+    sigaction(SIGSEGV, &mysigaction, NULL);
     sigaction(SIGSYS, &mysigaction, NULL);
     sigaction(SIGPIPE, &mysigaction, NULL);
     sigaction(SIGALRM, &mysigaction, NULL);
@@ -147,29 +147,29 @@ void dg_setcatchallcatchaddress((void (*)(int, __siginfo*, void*)) address)
 
 void dg_endtrycatchallerrors ()
 {
-    signal(SIGHUP, SIG_DFL); 	// reset handler to default
-    signal(SIGINT, SIG_DFL); 	// reset handler to default
-    signal(SIGQUIT, SIG_DFL); 	// reset handler to default
-    signal(SIGILL, SIG_DFL); 	// reset handler to default
-    signal(SIGTRAP, SIG_DFL); 	// reset handler to default
-    signal(SIGABRT, SIG_DFL); 	// reset handler to default
-    signal(SIGEMT, SIG_DFL); 	// reset handler to default
-    signal(SIGFPE, SIG_DFL); 	// reset handler to default
-    signal(SIGBUS, SIG_DFL); 	// reset handler to default
-    signal(SIGSEGV, SIG_DFL); 	// reset handler to default
-    signal(SIGSYS, SIG_DFL); 	// reset handler to default
-    signal(SIGPIPE, SIG_DFL); 	// reset handler to default
-    signal(SIGALRM, SIG_DFL); 	// reset handler to default
-	signal(SIGTERM, SIG_DFL); 	// reset handler to default
-    signal(SIGTSTP, SIG_DFL); 	// reset handler to default
-    signal(SIGTTIN, SIG_DFL); 	// reset handler to default
-    signal(SIGTTOU, SIG_DFL); 	// reset handler to default
-    signal(SIGXCPU, SIG_DFL); 	// reset handler to default
-    signal(SIGXFSZ, SIG_DFL); 	// reset handler to default
-    signal(SIGVTALRM, SIG_DFL); 	// reset handler to default
-    signal(SIGPROF, SIG_DFL); 	// reset handler to default
-    signal(SIGUSR1, SIG_DFL); 	// reset handler to default
-    signal(SIGUSR2, SIG_DFL); 	// reset handler to default
+    signal(SIGHUP, SIG_DFL);     // reset handler to default
+    signal(SIGINT, SIG_DFL);     // reset handler to default
+    signal(SIGQUIT, SIG_DFL);     // reset handler to default
+    signal(SIGILL, SIG_DFL);     // reset handler to default
+    signal(SIGTRAP, SIG_DFL);     // reset handler to default
+    signal(SIGABRT, SIG_DFL);     // reset handler to default
+    signal(SIGEMT, SIG_DFL);     // reset handler to default
+    signal(SIGFPE, SIG_DFL);     // reset handler to default
+    signal(SIGBUS, SIG_DFL);     // reset handler to default
+    signal(SIGSEGV, SIG_DFL);     // reset handler to default
+    signal(SIGSYS, SIG_DFL);     // reset handler to default
+    signal(SIGPIPE, SIG_DFL);     // reset handler to default
+    signal(SIGALRM, SIG_DFL);     // reset handler to default
+    signal(SIGTERM, SIG_DFL);     // reset handler to default
+    signal(SIGTSTP, SIG_DFL);     // reset handler to default
+    signal(SIGTTIN, SIG_DFL);     // reset handler to default
+    signal(SIGTTOU, SIG_DFL);     // reset handler to default
+    signal(SIGXCPU, SIG_DFL);     // reset handler to default
+    signal(SIGXFSZ, SIG_DFL);     // reset handler to default
+    signal(SIGVTALRM, SIG_DFL);     // reset handler to default
+    signal(SIGPROF, SIG_DFL);     // reset handler to default
+    signal(SIGUSR1, SIG_DFL);     // reset handler to default
+    signal(SIGUSR2, SIG_DFL);     // reset handler to default
 }
 */
 
@@ -184,69 +184,69 @@ void dg_catchbadmemoryerror (int signum, siginfo_t* pinfo, void* pcontext)
     // so what I have to do here is check for addresses to see which subroutine caused the
     //  bad memory error... and return the correct one...
     // syscall(4, 1, (UINT64)"hello\n", 6);
-	((ucontext_t*)(pcontext))->uc_mcontext->__ss.__rip = (UINT64)&dg_catchbadmemoryexit;
+    ((ucontext_t*)(pcontext))->uc_mcontext->__ss.__rip = (UINT64)&dg_catchbadmemoryexit;
 }
 
 void dg_trycatchbadmemoryerror ()
 {
-	struct sigaction mysigaction;
-	
-	// this would run a lot faster if I used a predifined (static?) constant structure
-	mysigaction.sa_sigaction = &dg_catchbadmemoryerror;
+    struct sigaction mysigaction;
+    
+    // this would run a lot faster if I used a predifined (static?) constant structure
+    mysigaction.sa_sigaction = &dg_catchbadmemoryerror;
 
-	// sa_mask on mac os x is UINT32
+    // sa_mask on mac os x is UINT32
     // sigemptyset( &mysigaction.sa_mask );
-	mysigaction.sa_mask = 0;
+    mysigaction.sa_mask = 0;
 
-	mysigaction.sa_flags = SA_RESETHAND | SA_SIGINFO;
+    mysigaction.sa_flags = SA_RESETHAND | SA_SIGINFO;
 
-	sigaction(SIGSEGV, &mysigaction, NULL);
-	sigaction(SIGBUS, &mysigaction, NULL);
+    sigaction(SIGSEGV, &mysigaction, NULL);
+    sigaction(SIGBUS, &mysigaction, NULL);
 }
 
 void dg_endtrycatchbadmemoryerror ()
 {
-	signal(SIGSEGV, SIG_DFL); 	// reset handler to default
-	signal(SIGBUS, SIG_DFL); 	// reset handler to default
+    signal(SIGSEGV, SIG_DFL);     // reset handler to default
+    signal(SIGBUS, SIG_DFL);     // reset handler to default
 }
 
 void dg_catchbadmemoryerror2 (int signum, siginfo_t* pinfo, void* pcontext)
 {
     // syscall(4, 1, (UINT64)"hello\n", 6);
     ((ucontext_t*)(pcontext))->uc_mcontext->__ss.__rdi = ((ucontext_t*)(pcontext))->uc_mcontext->__ss.__rip;
-	((ucontext_t*)(pcontext))->uc_mcontext->__ss.__rip = (UINT64)&dg_catchbadmemoryexit2;
+    ((ucontext_t*)(pcontext))->uc_mcontext->__ss.__rip = (UINT64)&dg_catchbadmemoryexit2;
 }
 
 void dg_trycatchbadmemoryerror2 ()
 {
-	struct sigaction mysigaction;
-	
-	// this would run a lot faster if I used a predifined (static?) constant structure
-	mysigaction.sa_sigaction = &dg_catchbadmemoryerror2;
+    struct sigaction mysigaction;
+    
+    // this would run a lot faster if I used a predifined (static?) constant structure
+    mysigaction.sa_sigaction = &dg_catchbadmemoryerror2;
 
-	// sa_mask on mac os x is UINT32
+    // sa_mask on mac os x is UINT32
     // sigemptyset( &mysigaction.sa_mask );
-	mysigaction.sa_mask = 0;
+    mysigaction.sa_mask = 0;
 
-	mysigaction.sa_flags = SA_RESETHAND | SA_SIGINFO;
+    mysigaction.sa_flags = SA_RESETHAND | SA_SIGINFO;
 
-	sigaction(SIGSEGV, &mysigaction, NULL);
-	sigaction(SIGBUS, &mysigaction, NULL);
+    sigaction(SIGSEGV, &mysigaction, NULL);
+    sigaction(SIGBUS, &mysigaction, NULL);
 }
 
 UINT64 dg_fstat(UINT64 fileid, UINT64 pstat)
 {
-	// 62 old fstat // 189 new fstat
-	// old fstat does not do file length correctly
-	//return (dg_syscall(189, fileid, pstat, 0, 0, 0));
-	return(fstat(fileid, (struct stat*)pstat));
+    // 62 old fstat // 189 new fstat
+    // old fstat does not do file length correctly
+    //return (dg_syscall(189, fileid, pstat, 0, 0, 0));
+    return(fstat(fileid, (struct stat*)pstat));
 }
 
 UINT64 dg_write(UINT64 fileid, UINT64 pbuf, UINT64 length)
 {
-	// return (dg_syscall(4, fileid, pbuf, length, 0, 0));
+    // return (dg_syscall(4, fileid, pbuf, length, 0, 0));
     //  syscall deprecated in OS X 10.11.6
-	//  return(syscall(4, fileid, pbuf, length));
+    //  return(syscall(4, fileid, pbuf, length));
     return write(fileid, (const void *)pbuf, length);
 }
 

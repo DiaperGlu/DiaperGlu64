@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.4.
+//    This file is part of DiaperGlu v5.5.
 //
-//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.4; if not, write to the Free Software
+//    along with DiaperGlu v5.5; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 5, 2022               //
-// version 5.4                //
+// July 2, 2022               //
+// version 5.5                //
 // /////////////////////////////
 
 
@@ -34,7 +34,7 @@ const char* dg_initlstringqueuename =  "dg_initlstringqueue";
 
 void dg_initlstringqueue (
     Bufferhandle *pBHarrayhead,
-	UINT64 growby,
+    UINT64 growby,
     UINT64 maxsize,
     UINT64 switchlength,
     Lstringqueueheader* pLstringqueueheader) //need size too
@@ -75,7 +75,7 @@ void dg_initlstringqueue (
     
     pLstringqueueheader->magic = dg_lstringqueuemagic;
     
-	pLstringqueueheader->lstringoffsetbufferida = dg_newbuffer (
+    pLstringqueueheader->lstringoffsetbufferida = dg_newbuffer (
         pBHarrayhead,
         growby,
         maxsize,
@@ -105,8 +105,8 @@ void dg_initlstringqueue (
         
         // making it so that all the buffers are allocated, or none
         dg_freebuffer (
-		    pBHarrayhead,
-		    pLstringqueueheader->lstringoffsetbufferida);
+            pBHarrayhead,
+            pLstringqueueheader->lstringoffsetbufferida);
       
         pLstringqueueheader->lstringoffsetbufferida = (UINT64)dg_badbufferid;
         return;
@@ -127,14 +127,14 @@ void dg_initlstringqueue (
         
         // making it so that all the buffers are allocated, or none
         dg_freebuffer (
-		    pBHarrayhead,
-		    pLstringqueueheader->lstringoffsetbufferida);
+            pBHarrayhead,
+            pLstringqueueheader->lstringoffsetbufferida);
       
         pLstringqueueheader->lstringoffsetbufferida = (UINT64)dg_badbufferid;
         
         dg_freebuffer (
-		    pBHarrayhead,
-		    pLstringqueueheader->lstringstringbufferida);
+            pBHarrayhead,
+            pLstringqueueheader->lstringstringbufferida);
       
         pLstringqueueheader->lstringstringbufferida = (UINT64)dg_badbufferid;
         return;
@@ -155,20 +155,20 @@ void dg_initlstringqueue (
         
         // making it so that all the buffers are allocated, or none
         dg_freebuffer (
-		    pBHarrayhead,
-		    pLstringqueueheader->lstringoffsetbufferida);
+            pBHarrayhead,
+            pLstringqueueheader->lstringoffsetbufferida);
       
         pLstringqueueheader->lstringoffsetbufferida = (UINT64)dg_badbufferid;
         
         dg_freebuffer (
-		    pBHarrayhead,
-		    pLstringqueueheader->lstringstringbufferida);
+            pBHarrayhead,
+            pLstringqueueheader->lstringstringbufferida);
       
         pLstringqueueheader->lstringstringbufferida = (UINT64)dg_badbufferid;
         
         dg_freebuffer (
-		    pBHarrayhead,
-		    pLstringqueueheader->lstringoffsetbufferidb);
+            pBHarrayhead,
+            pLstringqueueheader->lstringoffsetbufferidb);
       
         pLstringqueueheader->lstringoffsetbufferidb = (UINT64)dg_badbufferid;
         return;
@@ -182,17 +182,17 @@ void dg_initlstringqueue (
 
 /*
 struct Lstringqueueheader
-	{
-		UINT64 magic;                  // 'lstq'
-		UINT64 lstringoffsetbufferida;
-		UINT64 lstringstringbufferida;
+    {
+        UINT64 magic;                  // 'lstq'
+        UINT64 lstringoffsetbufferida;
+        UINT64 lstringstringbufferida;
         UINT64 lstringoffsetbufferidb;
-		UINT64 lstringstringbufferidb;      
-		UINT64 pusharray;              // current push L$array (0 or 1)
+        UINT64 lstringstringbufferidb;      
+        UINT64 pusharray;              // current push L$array (0 or 1)
         UINT64 switchlength;
         UINT64 poparray;               // current pop L$array (0 or 1)
         UINT64 popindex;
-	};
+    };
 */
 
 const char* dg_pushlstringqueueheadname = "dg_pushlstringqueuehead";
@@ -248,7 +248,7 @@ void dg_pushlstringqueuehead (
     
     numberoflstringsonstack = dg_getnumberoflstringsonstack(
         pBHarrayhead,
-	    currentpushoffsetbuffer);
+        currentpushoffsetbuffer);
      
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -263,9 +263,9 @@ void dg_pushlstringqueuehead (
         dg_pushlstring (
             pBHarrayhead,
             currentpushoffsetbuffer,
-		    currentpushstringbuffer,
-		    stringlength,
-		    pstring);
+            currentpushstringbuffer,
+            stringlength,
+            pstring);
       
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
         {
@@ -288,9 +288,9 @@ void dg_pushlstringqueuehead (
         dg_pushlstring (
             pBHarrayhead,
             currentpushoffsetbuffer,
-		    currentpushstringbuffer,
-		    stringlength,
-		    pstring);
+            currentpushstringbuffer,
+            stringlength,
+            pstring);
       
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
         {
@@ -319,9 +319,9 @@ void dg_pushlstringqueuehead (
     
     // empty the other L$array if it isn't empty
     pbuffer = dg_getpbuffer (
-		pBHarrayhead,
-		currentpushoffsetbuffer,
-		&pbufferlength);
+        pBHarrayhead,
+        currentpushoffsetbuffer,
+        &pbufferlength);
   
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -332,9 +332,9 @@ void dg_pushlstringqueuehead (
     *pbufferlength = 0; 
     
     pbuffer = dg_getpbuffer (
-		pBHarrayhead,
-		currentpushstringbuffer,
-		&pbufferlength);
+        pBHarrayhead,
+        currentpushstringbuffer,
+        &pbufferlength);
   
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -429,7 +429,7 @@ unsigned char* dg_poplstringqueuetail (
     
     numberoflstringsonstack = dg_getnumberoflstringsonstack(
         pBHarrayhead,
-	    currentpopoffsetbuffer);
+        currentpopoffsetbuffer);
      
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -446,10 +446,10 @@ unsigned char* dg_poplstringqueuetail (
     {
         plstring = dg_getplstring(
             pBHarrayhead,
-		    currentpopoffsetbuffer,
-		    currentpopstringbuffer,
-		    pLstringqueueheader->popindex,
-		    pstringlength);
+            currentpopoffsetbuffer,
+            currentpopstringbuffer,
+            pLstringqueueheader->popindex,
+            pstringlength);
       
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
         {
@@ -493,7 +493,7 @@ unsigned char* dg_poplstringqueuetail (
     // the other L$ stack should not be empty, but just in case...
     numberoflstringsonstack = dg_getnumberoflstringsonstack(
         pBHarrayhead,
-	    currentpopoffsetbuffer);
+        currentpopoffsetbuffer);
      
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -609,7 +609,7 @@ unsigned char* dg_getslstringqueuetail (
     
     numberoflstringsonstack = dg_getnumberoflstringsonstack(
         pBHarrayhead,
-	    currentpopoffsetbuffer);
+        currentpopoffsetbuffer);
      
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -626,10 +626,10 @@ unsigned char* dg_getslstringqueuetail (
     {
         plstring = dg_getplstring(
             pBHarrayhead,
-		    currentpopoffsetbuffer,
-		    currentpopstringbuffer,
-		    pLstringqueueheader->popindex,
-		    pstringlength);
+            currentpopoffsetbuffer,
+            currentpopstringbuffer,
+            pLstringqueueheader->popindex,
+            pstringlength);
       
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
         {
@@ -673,7 +673,7 @@ unsigned char* dg_getslstringqueuetail (
     // the other L$ stack should not be empty, but just in case...
     numberoflstringsonstack = dg_getnumberoflstringsonstack(
         pBHarrayhead,
-	    currentpopoffsetbuffer);
+        currentpopoffsetbuffer);
      
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -788,7 +788,7 @@ void dg_droplstringqueuetail (
     
     numberoflstringsonstack = dg_getnumberoflstringsonstack(
         pBHarrayhead,
-	    currentpopoffsetbuffer);
+        currentpopoffsetbuffer);
      
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -805,10 +805,10 @@ void dg_droplstringqueuetail (
     {
         // plstring = dg_getplstring(
         //    pBHarrayhead,
-		//    currentpopoffsetbuffer,
-		//    currentpopstringbuffer,
-		//    pLstringqueueheader->popindex,
-		//    pstringlength);
+        //    currentpopoffsetbuffer,
+        //    currentpopstringbuffer,
+        //    pLstringqueueheader->popindex,
+        //    pstringlength);
       
         // if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
         // {
@@ -852,7 +852,7 @@ void dg_droplstringqueuetail (
     // the other L$ stack should not be empty, but just in case...
     numberoflstringsonstack = dg_getnumberoflstringsonstack(
         pBHarrayhead,
-	    currentpopoffsetbuffer);
+        currentpopoffsetbuffer);
      
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -923,11 +923,11 @@ UINT64 dg_newsharedlstringqueue(
     SharedQueueHandleSize = dg_calcnearestpagesize(sizeof(SharedQueueHandleBufferStructs)); 
     
     SharedQueueHandleBufferID = dg_newbuffer (
-		pBHarrayhead,
-		SharedQueueHandleSize,
-		SharedQueueHandleSize,
-		&pError,
-		FORTH_FALSE);
+        pBHarrayhead,
+        SharedQueueHandleSize,
+        SharedQueueHandleSize,
+        &pError,
+        FORTH_FALSE);
   
     if (pError != dg_success)
     {
@@ -936,11 +936,11 @@ UINT64 dg_newsharedlstringqueue(
     }
     
     dg_growbuffer (
-		pBHarrayhead,
-		SharedQueueHandleBufferID,
-		sizeof(SharedQueueHandleBufferStructs), // length,  // in bytes
-		&pError,
-		FORTH_FALSE); // forceoutofmemory);
+        pBHarrayhead,
+        SharedQueueHandleBufferID,
+        sizeof(SharedQueueHandleBufferStructs), // length,  // in bytes
+        &pError,
+        FORTH_FALSE); // forceoutofmemory);
   
     if (pError != dg_success)
     {
@@ -951,9 +951,9 @@ UINT64 dg_newsharedlstringqueue(
     }
     
     psharedqueuebuffer = (SharedQueueHandleBufferStructs*)dg_getpbuffer (
-		pBHarrayhead,
-		SharedQueueHandleBufferID,
-		&psharedqueuebufferlength);
+        pBHarrayhead,
+        SharedQueueHandleBufferID,
+        &psharedqueuebufferlength);
   
     // this shouldn't happen
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
@@ -1027,9 +1027,9 @@ void dg_freesharedlstringqueue(
     }
     
     psharedqueuebuffer = (SharedQueueHandleBufferStructs*)dg_getpbuffer (
-		pBHarrayhead,
-		SharedQueueHandleBufferID,
-		&psharedqueuebufferlength);
+        pBHarrayhead,
+        SharedQueueHandleBufferID,
+        &psharedqueuebufferlength);
   
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {

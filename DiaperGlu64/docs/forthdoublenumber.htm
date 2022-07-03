@@ -1,22 +1,22 @@
-<!--
+<!--
 // //////////////////////////////////////////////////////////////////////////////////////
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.4.
+//    This file is part of DiaperGlu v5.5.
 //
-//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.4; if not, write to the Free Software
+//    along with DiaperGlu v5.5; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 5, 2022               //
-// version 5.4                //
+// July 2, 2022               //
+// version 5.5                //
 // /////////////////////////////
 -->
 
@@ -67,6 +67,7 @@
       <a href=forthdoublenumber.htm#dg_forthtwoliteral        >2LITERAL</a>
       <a href=forthdoublenumber.htm#dg_forthtworot            >2ROT</a>
       <a href=forthdoublenumber.htm#dg_forthtwovariable       >2VARIABLE</a>
+      <a href=forthdoublenumber.htm#dg_forthtwovalue          >2VALUE</a>
       <a href=forthdoublenumber.htm#dg_forthdplus             >D+</a>
       <a href=forthdoublenumber.htm#dg_forthdminus            >D-</a>
       <a href=forthdoublenumber.htm#dg_forthdzeroless         >D0&lt;</a>
@@ -266,7 +267,7 @@
 //   offset and pushes it onto the data stack when the process is in compile mode
 //  the address of the variable used is the address of the next unused byte in the 
 //   current data space buffer
-//  then this routine allocates two cells size worth of memory (8 bytes) in the 
+//  then this routine allocates two cells size worth of memory (16 bytes) in the 
 //   data space buffer (current new variable buffer)
 //
 // Note:
@@ -277,6 +278,72 @@
 //  error getting the current new variable buffer id
 //  error growing the current new variable buffer
 //  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthtwovalue>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthtwovalue ( 2VALUE )
+//
+// C prototype:
+//  void dg_forthtwovalue (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is used 
+//                                 as the bufferhandle for the array where the other 
+//                                 bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//     -currentinputbuffer- &quot;&lt;delimiters&gt;morestuff&quot; )
+//  ( -currentnewvariablebuffer- +sizeofUINT64 )
+//  ( ulo uhi -- )
+//  
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//
+// Current input buffer's current offset out:
+//  &quot;&lt;delimiters&gt;morestuff&quot;          
+// 
+// Current data space buffer in:
+//  previously allocated variables
+// 
+// Current data space buffer out:
+//  previously allocated variables + a new variable of two address cell sizes 
+//   (sizeof UINT128)
+//
+// Stack action of the created word
+//  ( -- ulo uhi )
+//
+// Forth standard:
+//  8.6.2.0435
+//                                                          
+// Action:
+//  moves the current offset pointer for the current input buffer to the character 
+//   after the next word or to the end of the buffer if no word is found
+//  creates a new definition in the current vocabulary that pushes the uint64 value
+//   at an offset in the current data space buffer to the data stack when the process 
+//   is in execute mode
+//  and compiles code that calculates the address from the variable's bufferid and 
+//   offset and pushes the uint128 value at that address when the process is in 
+//   compile mode
+//  the offset the value uses is the offset of the next unused byte in the 
+//   current data space buffer
+//  then this routine allocates two cell sizes worth of memory (16 bytes) in the data 
+//   space buffer (current new variable buffer) and puts uhi ulo into it.
+//
+// Note:
+//  The value is stored in memory in hi lo order. The high 64 bits of the 128 bit
+//   integer goes into the first 64 bit cell.
+//
+// Example:
+//  37 86 2VALUE x
+//  x ( -- 37 86 )
+//
 // //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>

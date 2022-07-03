@@ -1,22 +1,22 @@
-/*
+/*
 // //////////////////////////////////////////////////////////////////////////////////////
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.4.
+//    This file is part of DiaperGlu v5.5.
 //
-//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.4; if not, write to the Free Software
+//    along with DiaperGlu v5.5; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 5, 2022               //
-// version 5.4                //
+// July 2, 2022               //
+// version 5.5                //
 // /////////////////////////////
 */
 
@@ -781,6 +781,11 @@ _dg_invalidhandleerror:
     
     /* assuming flags register on stack */
     popfq
+    ret
+
+.globl _dg_nop
+_dg_nop:
+
     ret
 
 .globl _dg_testasm
@@ -3390,7 +3395,9 @@ _dg_addbyteserroraddress3:
 
     incq %rsi
     incq %rdi
-    loop _dg_addbyteserroraddress2
+    decq %rcx
+    jnz _dg_addbyteserroraddress2
+    // loop _dg_addbyteserroraddress2
     
     jnc L_dg_addbytesthen1
     
@@ -3462,7 +3469,9 @@ _dg_adcbyteserroraddress3:
 
     incq %rsi
     incq %rdi
-    loop _dg_adcbyteserroraddress2
+    decq %rcx
+    jnz _dg_adcbyteserroraddress2
+    // loop _dg_adcbyteserroraddress2
     
     jnc L_dg_adcbytesthen1
     
@@ -3533,7 +3542,9 @@ _dg_sbbbyteserroraddress3:
 
     incq %rsi
     incq %rdi
-    loop _dg_sbbbyteserroraddress2
+    decq %rcx
+    jnz _dg_sbbbyteserroraddress2
+    // loop _dg_sbbbyteserroraddress2
     
     jnc L_dg_sbbbytesthen1
     
@@ -3585,7 +3596,9 @@ _dg_andbyteserroraddress2:
     andb %al, (%rdi)
     incq %rdi
     incq %rsi
-    loop _dg_andbyteserroraddress1
+    decq %rcx
+    jnz _dg_andbyteserroraddress1
+    // loop _dg_andbyteserroraddress1
 
 .ifndef DGLU_NO_DIAPER
     call _dg_endtrycatchbadmemoryerror
@@ -3632,7 +3645,9 @@ _dg_orbyteserroraddress2:
     orb %al, (%rdi)
     incq %rdi
     incq %rsi
-    loop _dg_orbyteserroraddress1
+    decq %rcx
+    jnz _dg_orbyteserroraddress1
+    // loop _dg_orbyteserroraddress1
 
 .ifndef DGLU_NO_DIAPER
     call _dg_endtrycatchbadmemoryerror
@@ -3679,7 +3694,9 @@ _dg_xorbyteserroraddress2:
     xorb %al, (%rdi)
     incq %rdi
     incq %rsi
-    loop _dg_xorbyteserroraddress1
+    decq %rcx
+    jnz _dg_xorbyteserroraddress1
+    // loop _dg_xorbyteserroraddress1
 
 .ifndef DGLU_NO_DIAPER
     call _dg_endtrycatchbadmemoryerror
@@ -3730,7 +3747,9 @@ _dg_nandbyteserroraddress3:
     movb %al, (%rdi)
     incq %rdi
     incq %rsi
-    loop _dg_nandbyteserroraddress1
+    decq %rcx
+    jnz _dg_nandbyteserroraddress1
+    // loop _dg_nandbyteserroraddress1
 
 .ifndef DGLU_NO_DIAPER
     call _dg_endtrycatchbadmemoryerror
@@ -3774,7 +3793,9 @@ _dg_norbyteserroraddress3:
     movb %al, (%rdi)
     incq %rdi
     incq %rsi
-    loop _dg_norbyteserroraddress1
+    decq %rcx
+    jnz _dg_norbyteserroraddress1
+    // loop _dg_norbyteserroraddress1
 
 .ifndef DGLU_NO_DIAPER
     call _dg_endtrycatchbadmemoryerror
@@ -3818,7 +3839,9 @@ _dg_xnorbyteserroraddress3:
     movb %al, (%rdi)
     incq %rdi
     incq %rsi
-    loop _dg_xnorbyteserroraddress1
+    decq %rcx
+    jnz _dg_xnorbyteserroraddress1
+    // loop _dg_xnorbyteserroraddress1
 
 .ifndef DGLU_NO_DIAPER
     call _dg_endtrycatchbadmemoryerror
@@ -3871,7 +3894,9 @@ _dg_shlbyteserroraddress1:
 _dg_shlbyteserroraddress2:
     rclb (%rdi)
     incq %rdi
-    loop _dg_shlbyteserroraddress2
+    decq %rcx
+    jnz _dg_shlbyteserroraddress2
+    // loop _dg_shlbyteserroraddress2
     
     jnc L_dg_shlbytesthen1
     
@@ -3935,7 +3960,9 @@ _dg_shrbyteserroraddress2:
     
     rcrb (%rdi)
     
-    loop L_dg_shrbytesbegin1
+    decq %rcx
+    jnz L_dg_shrbytesbegin1
+    // loop L_dg_shrbytesbegin1
     
     jnc L_dg_shrbytesthen1
     
@@ -3994,7 +4021,9 @@ _dg_rclbyteserroraddress1:
 _dg_rclbyteserroraddress2:
     rclb (%rdi)
     incq %rdi
-    loop _dg_rclbyteserroraddress2
+    decq %rcx
+    jnz _dg_rclbyteserroraddress2
+    // loop _dg_rclbyteserroraddress2
     
     jnc L_dg_rclbytesthen1
     
@@ -4059,7 +4088,9 @@ _dg_rcrbyteserroraddress1:
 _dg_rcrbyteserroraddress2:
     
     rcrb (%rdi)
-    loop L_dg_rcrbytesbegin1
+    decq %rcx
+    jnz L_dg_rcrbytesbegin1
+    // loop L_dg_rcrbytesbegin1
     
     jnc L_dg_rcrbytesthen1
     
@@ -4130,7 +4161,9 @@ _dg_sarbyteserroraddress2:
     
     rcrb (%rdi)
     
-    loop L_dg_sarbytesbegin1
+    decq %rcx
+    jnz L_dg_sarbytesbegin1
+    // loop L_dg_sarbytesbegin1
     
     jnc L_dg_sarbytesthen1
     
@@ -4179,7 +4212,9 @@ _dg_notbytes:
 _dg_notbyteserroraddress1:
     notb (%rdi)
     incq %rdi
-    loop _dg_notbyteserroraddress1
+    decq %rcx
+    jnz _dg_notbyteserroraddress1
+    // loop _dg_notbyteserroraddress1
 
 L_dg_notbytesthen1:
 
@@ -4236,7 +4271,9 @@ _dg_reversebyteserroraddress2:
 _dg_reversebyteserroraddress3:
     movb %al, (%rdi)
     incq %rdi
-    loop _dg_reversebyteserroraddress1
+    decq %rcx
+    jnz _dg_reversebyteserroraddress1
+    // loop _dg_reversebyteserroraddress1
 
 L_dg_reversebytesthen1:
 
@@ -4292,7 +4329,9 @@ _dg_incbyteserroraddress2:
     adcb %al, (%rdi)        /* al should be 0 */
     jnc L_dg_incbytesthen1 /* if no carry, no need to look at the rest */
     incq %rdi
-    loop _dg_incbyteserroraddress2
+    decq %rcx
+    jnz _dg_incbyteserroraddress2
+    // loop _dg_incbyteserroraddress2
     
     incq (%rdx) // set carryout to 1
 
@@ -4350,7 +4389,9 @@ _dg_decbyteserroraddress2:
     sbbb %al, (%rdi)        /* al should be 0 */
     jnc L_dg_decbytesthen1 /* if no borrow, no need to look at the rest */
     incq %rdi
-    loop _dg_decbyteserroraddress2
+    decq %rcx
+    jnz _dg_decbyteserroraddress2
+    // loop _dg_decbyteserroraddress2
     
     incq (%rdx) // set carryout to 1
 
@@ -4422,7 +4463,9 @@ _dg_mulu64tou64serroraddress3:
     adcq %rdx, 8(%rdi)  
     rclq %r9 // to save carry for next time through loop
     addq $8, %rdi
-    loop _dg_mulu64tou64serroraddress1
+    decq %rcx
+    jnz _dg_mulu64tou64serroraddress1
+    // loop _dg_mulu64tou64serroraddress1
 
 L_dg_mulu64tou64sthen1:
 
@@ -4505,7 +4548,9 @@ _dg_divu64sbyu64erroraddress1:
 _dg_divu64sbyu64erroraddress2:
     movq %rax, (%rdi)
     
-    loop _dg_divu64sbyu64begin
+    decq %rcx
+    jnz _dg_divu64sbyu64begin
+    // loop _dg_divu64sbyu64begin
 
 L_dg_divu64sbyu64then1:
 

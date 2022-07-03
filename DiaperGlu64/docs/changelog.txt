@@ -1,4 +1,31 @@
 Changelog for Diaperglu
+
+   02 July 2022
+     Released v5.5
+
+   30 June 2022
+     Replaced LOOP, instructions with RCX DEC, ZS UNTIL, in asm file because
+      I found out LOOP is much slower on many versions of x86 processors
+      (about 1/8 the speed on mine it seems)
+     Added documentation for .R
+     Added { which stores it's local values on the return stack
+      (LOCALS| still uses a separate local stack)
+      (added a variable which keeps track of the return stack depth so that
+        you can use this function twice in the same : routine. This variable is
+        initialized in dg_compileinitlocals)
+     Added VALUE FVALUE 2VALUE
+     Added compile types for VALUE FVALUE and 2VALUE
+     Added dg_compilecallcoreoneuparam and dg_compilecallcoretwouparams
+     Added TO which supports words created with CREATE VARIABLE VALUE FVALUE 2VALUE
+      LOCALS| and {
+     Added Win64MSVC2019\samplescripts\ benchmark.dglu which runs words for a second and 
+      calculates the approximate time it takes to do one pass in picoseconds
+     Added dg_pushbracketobtodatastack dg_pushu128bracketobtodatastack dg_pushbracketobtof64stack
+     Added dg_popdatastacktobracketob dg_popdatastacktou128bracketob dg_popf64stacktobracketob
+     Added dg_compilemovbracketrbpd32toreg dg_compilemovbracketrbpdtoreg
+     Added dg_compilemovregtobracketrbpd32 dg_compilemovregtobracketrbpd
+     Added dg_compiledatastacktobracketrbpd dg_compilebracketrbpdtodatastack
+
    05 June 2022
      Released v5.4
      Added Win64MSVC2019\samplescripts\messagebox.dglu example

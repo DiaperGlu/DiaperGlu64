@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.4.
+//    This file is part of DiaperGlu v5.5.
 //
-//    DiaperGlu v5.4 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.4 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.4; if not, write to the Free Software
+//    along with DiaperGlu v5.5; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 5, 2022               //
-// version 5.4                //
+// July 2, 2022               //
+// version 5.5                //
 // /////////////////////////////
 
 
@@ -1013,17 +1013,17 @@ void dg_compilemovntorax (
     Bufferhandle* pBHarrayhead,
     UINT64 n)
 {
-	// movq nn->rax
-	
-	unsigned char pbuf[11] = "\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x00";
-	
+    // movq nn->rax
+    
+    unsigned char pbuf[11] = "\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x00";
+    
     *(UINT64*)(&(pbuf[2])) = n;
-	
-	dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)pbuf, 
-		10);
-	
+    
+    dg_compilesegment (
+        pBHarrayhead, 
+        (const char*)pbuf, 
+        10);
+    
 }
 
 /*
@@ -1038,9 +1038,9 @@ void dg_compilecpuid(
         n);
     
     dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)pbuf, 
-		2);
+        pBHarrayhead, 
+        (const char*)pbuf, 
+        2);
 }
 */
 
@@ -1048,17 +1048,17 @@ void dg_compilemovntoeax (
     Bufferhandle* pBHarrayhead,
     UINT64 n)
 {
-	// movq nn->rax
-	
-	unsigned char pbuf[6] = "\xB8\x00\x00\x00\x00";
-	
+    // movq nn->rax
+    
+    unsigned char pbuf[6] = "\xB8\x00\x00\x00\x00";
+    
     *(UINT32*)(&(pbuf[1])) = (UINT32)n;
-	
-	dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)pbuf, 
-		5);
-	
+    
+    dg_compilesegment (
+        pBHarrayhead, 
+        (const char*)pbuf, 
+        5);
+    
 }
 
 
@@ -1066,17 +1066,17 @@ void dg_compileaddn32torax (
     Bufferhandle* pBHarrayhead,
     UINT64 n)
 {
-	// movq nn->rax
-	
-	unsigned char pbuf[8] = "\x48\x81\xC0\x00\x00\x00\x00";
-	
+    // movq nn->rax
+    
+    unsigned char pbuf[8] = "\x48\x81\xC0\x00\x00\x00\x00";
+    
     *(INT32*)(&(pbuf[3])) = (INT32)(n & 0xFFFFFFFF);
-	
-	dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)pbuf, 
-		7);
-	
+    
+    dg_compilesegment (
+        pBHarrayhead, 
+        (const char*)pbuf, 
+        7);
+    
 }
 
 void dg_compilemovntoreg(
@@ -1085,7 +1085,7 @@ void dg_compilemovntoreg(
     UINT64 reg)
 {
     unsigned char pbuf[11] = "\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x00";
-	
+    
     *(UINT64*)(&(pbuf[2])) = n;
     pbuf[1] = 0xB8 | (reg & 7);
     
@@ -1093,11 +1093,11 @@ void dg_compilemovntoreg(
     {
         pbuf[0]++;
     }
-	
-	dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)pbuf, 
-		10);
+    
+    dg_compilesegment (
+        pBHarrayhead, 
+        (const char*)pbuf, 
+        10);
 }
 
 void dg_compilemovregtoreg (
@@ -1217,9 +1217,86 @@ void dg_compilemovbracketrbpd8toreg (
     }
     
     dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)pbuf, 
-	    4);
+        pBHarrayhead, 
+        (const char*)pbuf, 
+        4);
+}
+
+
+// for moving frame values, local variables, and parameters to regs
+void dg_compilemovbracketrbpd32toreg (
+    Bufferhandle* pBHarrayhead,
+    UINT64 reg,
+    UINT64 displacement32)
+{
+    // movq [rbp+d32] -> reg    0x48 0x8B 0x85 0x00 0x00 0x00 0x00
+    unsigned char pbuf[8] = "\x48\x8B\x85\x00\x00\x00\x00";
+    
+    *((UINT32*)(&(pbuf[3]))) = (UINT32)(displacement32 & 0xFFFFFFFF);
+    pbuf[2] = pbuf[2] | (unsigned char)((reg & 7) << 3);
+    
+    if (reg < dg_rax)
+    {
+        pbuf[0] = pbuf[0] | 1;
+    }
+    
+    dg_compilesegment (
+        pBHarrayhead, 
+        (const char*)pbuf, 
+        7);
+}
+
+
+// for moving frame values, local variables, and parameters to regs
+const char* dg_compilemovbracketrbpdtoregname = "dg_compilemovbracketrbpdtoreg";
+
+void dg_compilemovbracketrbpdtoreg (
+    Bufferhandle* pBHarrayhead,
+    UINT64 reg,
+    INT64 displacement)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    // if ( (displacement >= -0x80) &&
+    //     (displacement < 0x80 ) )
+    if (((UINT64)displacement + 0x80) < 0x100)
+    {
+        dg_compilemovbracketrbpd8toreg (
+            pBHarrayhead,
+            reg,
+            (UINT64)displacement);
+                
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_compilemovbracketrbpdtoregname);
+            return;
+         }
+    }
+    else
+    {
+        if (((UINT64)displacement + 0x80000000) >= 0x100000000)
+        {
+            dg_pusherror(pBHarrayhead, dg_signedvaluetoobigerror);
+            dg_pusherror(pBHarrayhead, dg_compilemovbracketrbpdtoregname);
+            return;
+        }
+
+        dg_compilemovbracketrbpd32toreg (
+            pBHarrayhead,
+            reg,
+            (UINT64)displacement);
+                
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_compilemovbracketrbpdtoregname);
+            return;
+        }
+    }
 }
 
 
@@ -1240,9 +1317,217 @@ void dg_compilemovregtobracketrbpd8 (
     }
     
     dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)pbuf, 
-	    4);
+        pBHarrayhead, 
+        (const char*)pbuf, 
+        4);
+}
+
+
+// for moving frame values, local variables, and parameters to regs
+void dg_compilemovregtobracketrbpd32 (
+    Bufferhandle* pBHarrayhead,
+    UINT64 reg,
+    UINT64 displacement32)
+{
+    // movq [rbp+d32] -> reg    0x48 0x89 0x85 0x00 0x00 0x00 0x00
+    unsigned char pbuf[8] = "\x48\x89\x85\x00\x00\x00\x00";
+    
+    *((INT32*)(&(pbuf[3]))) = (INT32)(displacement32 & 0xFFFFFFFF);
+    pbuf[2] = pbuf[2] | (unsigned char)((reg & 7) << 3);
+    
+    if (reg < dg_rax)
+    {
+        pbuf[0] = pbuf[0] | 1;
+    }
+    
+    dg_compilesegment (
+        pBHarrayhead, 
+        (const char*)pbuf, 
+        7);
+}
+
+
+// for moving frame values, local variables, and parameters to regs
+const char* dg_compilemovregtobracketrbpdname = "dg_compilemovregtobracketrbpd";
+
+void dg_compilemovregtobracketrbpd (
+    Bufferhandle* pBHarrayhead,
+    UINT64 reg,
+    INT64 displacement)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    // if ( (displacement >= -0x80) &&
+    //      (displacement < 0x80 ) )
+    if (((UINT64)displacement + 0x80) < 0x100)
+    {
+        dg_compilemovregtobracketrbpd8 (
+            pBHarrayhead,
+            reg,
+            (UINT64)displacement);
+                
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_compilemovregtobracketrbpdname);
+            return;
+         }
+    }
+    else
+    {
+        if (((UINT64)displacement + 0x80000000) >= 0x100000000)
+        {
+            dg_pusherror(pBHarrayhead, dg_signedvaluetoobigerror);
+            dg_pusherror(pBHarrayhead, dg_compilemovregtobracketrbpdname);
+            return;
+        }
+
+        dg_compilemovregtobracketrbpd32 (
+            pBHarrayhead,
+            reg,
+            displacement);
+                
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_compilemovregtobracketrbpdname);
+            return;
+        }
+    }
+}
+
+
+const char* dg_compilebracketrbpdtodatastackname = "dg_compilebracketrbpdtodatastack";
+
+void dg_compilebracketrbpdtodatastack (
+    Bufferhandle* pBHarrayhead,
+    INT64 displacement)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_compilealignretstack(
+        pBHarrayhead,
+        2);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilebracketrbpdtodatastackname);
+        return;
+    }
+
+    dg_compilemovbracketrbpdtoreg (
+        pBHarrayhead,
+        dg_param2reg, // reg,
+        displacement);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilebracketrbpdtodatastackname);
+        return;
+    }
+
+    dg_compilepushpBHarrayheadtoret(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilebracketrbpdtodatastackname);
+        return;
+    }
+
+    // for shadow regs
+    dg_compilesubn8fromrsp(
+        pBHarrayhead,
+        0x20);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilebracketrbpdtodatastackname);
+        return;
+    }
+
+    dg_compilecalladdress(
+        pBHarrayhead,
+        (UINT64)&dg_pushdatastack);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilebracketrbpdtodatastackname);
+        return;
+    }
+}
+
+
+const char* dg_compiledatastacktobracketrbpdname = "dg_compiledatastacktobracketrbpd";
+
+void dg_compiledatastacktobracketrbpd (
+    Bufferhandle* pBHarrayhead,
+    INT64 displacement)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_compilealignretstack(
+        pBHarrayhead,
+        1);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktobracketrbpdname);
+        return;
+    }
+
+    dg_compilepushpBHarrayheadtoret(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktobracketrbpdname);
+        return;
+    }
+
+    // for shadow regs
+    dg_compilesubn8fromrsp(
+        pBHarrayhead,
+        0x20);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktobracketrbpdname);
+        return;
+    }
+
+    dg_compilecalladdress(
+        pBHarrayhead,
+        (UINT64)&dg_popdatastack);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktobracketrbpdname);
+        return;
+    }
+
+    dg_compilemovregtobracketrbpd (
+        pBHarrayhead,
+        dg_rax, // reg,
+        displacement);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktobracketrbpdname);
+        return;
+    }
+
 }
 
 
@@ -1257,9 +1542,9 @@ void dg_compilepushbracketrbpd8 (
     pbuf[2] = (unsigned char)(displacement8 & 0xFF);
     
     dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)pbuf, 
-	    3);
+        pBHarrayhead, 
+        (const char*)pbuf, 
+        3);
 }
 
 
@@ -1301,57 +1586,57 @@ void dg_compiledatalink (
     Bufferhandle* pBHarrayhead,
     UINT64 n)
 {
-	unsigned char pbuf[12] = "\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x00\xC3";
-	
+    unsigned char pbuf[12] = "\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x00\xC3";
+    
     *(UINT64*)(&(pbuf[2])) = n;
-	
-	dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)pbuf, 
-		11);
+    
+    dg_compilesegment (
+        pBHarrayhead, 
+        (const char*)pbuf, 
+        11);
 }
 
 const char* dg_fortheaxjumpcommaname = "EAXJMP,";
 const char* dg_forthraxjumpcommaname = "RAXJMP,";
 void dg_compilejumptorax (Bufferhandle* pBHarrayhead)
 {
-	// jump rax      0xFF 0xD0
-	
-	unsigned char pbuf[3] = "\xFF\xE0";
-	
-	dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)pbuf, 
-		2);
+    // jump rax      0xFF 0xD0
+    
+    unsigned char pbuf[3] = "\xFF\xE0";
+    
+    dg_compilesegment (
+        pBHarrayhead, 
+        (const char*)pbuf, 
+        2);
 }
 
 
 void dg_compilecalltorax (Bufferhandle* pBHarrayhead)
 {
-	unsigned char pbuf[3] = "\xFF\xD0";
-	
-	dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)pbuf, 
-		2);
+    unsigned char pbuf[3] = "\xFF\xD0";
+    
+    dg_compilesegment (
+        pBHarrayhead, 
+        (const char*)pbuf, 
+        2);
 }
 
 
 void dg_compilereturn (Bufferhandle* pBHarrayhead)
 {
-	// ret                0xC3
-	dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)"\xC3", 
-		1);	
-	
+    // ret                0xC3
+    dg_compilesegment (
+        pBHarrayhead, 
+        (const char*)"\xC3", 
+        1);    
+    
 }
 
 
 void dg_compileclc (Bufferhandle* pBHarrayhead)
 {
-	// clc                0xF8
-	dg_compilesegment (
+    // clc                0xF8
+    dg_compilesegment (
         pBHarrayhead,
         (const char*)"\xF8",
         1);
@@ -1360,8 +1645,8 @@ void dg_compileclc (Bufferhandle* pBHarrayhead)
 
 void dg_compilestc (Bufferhandle* pBHarrayhead)
 {
-	// sec                0xF9
-	dg_compilesegment (
+    // sec                0xF9
+    dg_compilesegment (
         pBHarrayhead,
         (const char*)"\xF9",
         1);
@@ -1469,8 +1754,8 @@ void dg_compilecalloffset (
     Bufferhandle* pBHarrayhead,
     INT64 offset)
 {
-	unsigned char pbuf[6] = "\xE8\x00\x00\x00\x00";
-	// UINT64 calloffsetcodelength = 5; // this must be the number of bytes in the call
+    unsigned char pbuf[6] = "\xE8\x00\x00\x00\x00";
+    // UINT64 calloffsetcodelength = 5; // this must be the number of bytes in the call
     
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
     
@@ -1478,7 +1763,7 @@ void dg_compilecalloffset (
     {
         return;
     }
-	
+    
     // make sure offset isn't too big
     if ((UINT64)(offset + 0x80000000) >= 0x100000000)
     {
@@ -1489,11 +1774,11 @@ void dg_compilecalloffset (
     }
     
     *(INT32*)(&(pbuf[1])) = offset;
-	
-	dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)pbuf, 
-		5);
+    
+    dg_compilesegment (
+        pBHarrayhead, 
+        (const char*)pbuf, 
+        5);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -1839,41 +2124,41 @@ void dg_compilecalloffsetinsamebuffer (
     Bufferhandle* pBHarrayhead,
     INT64 targetoffset)
 {
-	unsigned char pbuf[6] = "\xE8\x00\x00\x00\x00";
-	UINT64 calloffsetcodelength = 5; // this must be the number of bytes in the call
-	
-	UINT64 sourceoffset = 0;
-	UINT64 compilebufid = 0;
-	
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    unsigned char pbuf[6] = "\xE8\x00\x00\x00\x00";
+    UINT64 calloffsetcodelength = 5; // this must be the number of bytes in the call
+    
+    UINT64 sourceoffset = 0;
+    UINT64 compilebufid = 0;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
     
     if (baderrorcount == olderrorcount)
     {
         return;
     }
-	
-	compilebufid = dg_getbufferuint64(
+    
+    compilebufid = dg_getbufferuint64(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentcompilebuffer);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
-		dg_pusherror(pBHarrayhead, dg_compilecalloffsetinsamebuffername);
-		return;
-	}
-	
-	sourceoffset = calloffsetcodelength + dg_getbufferlength(
+        dg_pusherror(pBHarrayhead, dg_compilecalloffsetinsamebuffername);
+        return;
+    }
+    
+    sourceoffset = calloffsetcodelength + dg_getbufferlength(
         pBHarrayhead,
         compilebufid); // not checking overflow
         // since buffers are limited to 2 gigs in length, overflow can't really happen
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_compilecalloffsetinsamebuffername);
-		return;
-	}
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecalloffsetinsamebuffername);
+        return;
+    }
     
     if (((targetoffset - sourceoffset) + 0x80000000) >= 0x100000000)
     {
@@ -1882,13 +2167,13 @@ void dg_compilecalloffsetinsamebuffer (
         dg_pusherror(pBHarrayhead, dg_compilecalloffsetinsamebuffername);
         return;
     }
-	
+    
     *(INT32*)(&(pbuf[1])) = (INT32)(targetoffset - sourceoffset);
-	
-	dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)pbuf, 
-		5);
+    
+    dg_compilesegment (
+        pBHarrayhead, 
+        (const char*)pbuf, 
+        5);
 }
 
 
@@ -1958,19 +2243,19 @@ void dg_compilejumptoaddress (
     // [RIP+0] 64BIT JMP,   0xFF 0x25 0x00 0x00 0x00 0x00
     // 64BIT address        0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
     
-	// movl nn->rax  0x48 0xB8 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
-	// jump rax      0xFF 0xE0 ( ff /4 )
-	
-	// unsigned char pbuf[13] = "\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x00\xFF\xE0";
+    // movl nn->rax  0x48 0xB8 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+    // jump rax      0xFF 0xE0 ( ff /4 )
+    
+    // unsigned char pbuf[13] = "\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x00\xFF\xE0";
     
     unsigned char pbuf[15] = "\xFF\x25\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
-	
+    
     *(UINT64*)(&(pbuf[4])) = addr;
-	
-	dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)pbuf, 
-		14);
+    
+    dg_compilesegment (
+        pBHarrayhead, 
+        (const char*)pbuf, 
+        14);
 }
 */
 
@@ -1982,19 +2267,19 @@ void dg_compilecalladdress (
     // here+8 always BRANCH,   0xEB 0x08
     // 64BIT address           0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
     
-	// movl nn->rax  0x48 0xB8 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
-	// call rax      0xFF 0xD0  ( ff /2 )
-	
-	unsigned char pbuf[13] = "\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x00\xFF\xD0";
-	
+    // movl nn->rax  0x48 0xB8 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+    // call rax      0xFF 0xD0  ( ff /2 )
+    
+    unsigned char pbuf[13] = "\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x00\xFF\xD0";
+    
     // unsigned char pbuf [17] = "\xFF\x15\x02\x00\x00\x00\xEB\x08\x00\x00\x00\x00\x00\x00\x00\x00";
     
-	*(UINT64*)(&(pbuf[2])) = addr;
-	
-	dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)pbuf, 
-		12);
+    *(UINT64*)(&(pbuf[2])) = addr;
+    
+    dg_compilesegment (
+        pBHarrayhead, 
+        (const char*)pbuf, 
+        12);
 }
 
 /*
@@ -2027,7 +2312,7 @@ void dg_compilecalladdresspreserveregs (
     Bufferhandle* pBHarrayhead,
     UINT64 addr)
 {
-	dg_compilecalladdress(
+    dg_compilecalladdress(
         pBHarrayhead,
         addr);
 }
@@ -2070,9 +2355,9 @@ void dg_compilecallfunctblfunction (
     dg_compilepushpBHarrayheadtoret(pBHarrayhead);
     
     dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)pbuf, 
-		10);
+        pBHarrayhead, 
+        (const char*)pbuf, 
+        10);
 }
 
 
@@ -2086,7 +2371,7 @@ unsigned char dg_packmodrslashm (
     UINT64 reg1orn,
     UINT64 reg2ormem)
 {
-	 return( (unsigned char)( (reg2ormem & 0x7) | ((reg1orn & 0x7)<<3) | ((mode & 0x3)<<6) ) );
+     return( (unsigned char)( (reg2ormem & 0x7) | ((reg1orn & 0x7)<<3) | ((mode & 0x3)<<6) ) );
 }
 
 // SIB scale index base
@@ -2096,7 +2381,7 @@ unsigned char dg_packsib (
     UINT64 indexscalecode,
     UINT64 indexreg)
 {
-	return ( (unsigned char)( (basereg & 0x7) | ((indexreg & 0x7)<<3) | (( indexscalecode & 0x3)<<6) ) );	
+    return ( (unsigned char)( (basereg & 0x7) | ((indexreg & 0x7)<<3) | (( indexscalecode & 0x3)<<6) ) );    
 }
 
 // modR/M  mod R/N R/M
@@ -2525,7 +2810,8 @@ void dg_compileaddnlocalstocallsubsframe(
     offset = (((INT64)n) * sizeof(UINT64));
 
     // offset is guaranteed to be -...
-    if ((offset >= -0x80) && (offset <= 0x7F))
+    // if ((offset >= -0x80) && (offset <= 0x7F))
+    if ((UINT64)(offset + 0x80) < 0x100)
     {
         // if n is in range of n8
         n8string[7] = (UINT8)(((UINT64)offset) & 0xFF);
@@ -2606,16 +2892,16 @@ void dg_compilealignretstack(
     // movq  [rbp-0x20] -> rsp                0x48 0x8B 0x65 0xE0  // seems rex is needed
     // andq  rsp & 0xfffffffffffffff0 -> rsp  0x48 0x83 0xE4 0xF0
     // subq  rsp - 0x0n -> rsp                0x48 0x83 0xEC 0x00
-	unsigned char mycode[13] = "\x48\x8B\x65\xE0\x48\x83\xE4\xF0\x48\x83\xEC\x08";
-	
+    unsigned char mycode[13] = "\x48\x8B\x65\xE0\x48\x83\xE4\xF0\x48\x83\xEC\x08";
+    
     UINT64 length = 8;
     
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	if (baderrorcount == olderrorcount)
-	{
-		return;
-	}
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
     
     if (numberofparameters > 4)
     {
@@ -2624,16 +2910,16 @@ void dg_compilealignretstack(
             length = 12;
         }
     }
-	
-	dg_compilesegment (
+    
+    dg_compilesegment (
         pBHarrayhead,
         (const char*)mycode,
         length);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_compilealignretstackname);
-	}
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilealignretstackname);
+    }
 }
 
 
@@ -2684,9 +2970,9 @@ void dg_compilepushpBHarrayheadtoret (Bufferhandle* pBHarrayhead)
     unsigned char pbuf[5] = "\x48\x8B\x4D\xF0";
     
     dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)pbuf, 
-	    4);
+        pBHarrayhead, 
+        (const char*)pbuf, 
+        4);
     */
 
     dg_compilemovbracketrbpd8toreg(
@@ -2702,28 +2988,28 @@ void dg_compilecallcore (
     Bufferhandle* pBHarrayhead, 
     UINT64 addr)
 {
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
     
     if (baderrorcount == olderrorcount)
     {
         return;
     }
-	
-	dg_compilealignretstack(pBHarrayhead, 1); // align for 1 paramater
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_compilecallcorename);
-		return;
-	}
-	
-	dg_compilepushpBHarrayheadtoret(pBHarrayhead);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_compilecallcorename);
-		return;
-	}
+    
+    dg_compilealignretstack(pBHarrayhead, 1); // align for 1 paramater
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecallcorename);
+        return;
+    }
+    
+    dg_compilepushpBHarrayheadtoret(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecallcorename);
+        return;
+    }
 
     // for the 4 Win64 shadow regs
     dg_compilesubn8fromrsp(
@@ -2735,14 +3021,150 @@ void dg_compilecallcore (
         dg_pusherror(pBHarrayhead, dg_compilecallcorename);
         return;
     }
-	
-	dg_compilecalladdress (pBHarrayhead, addr);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_compilecallcorename);
-		return;
-	}
+    
+    dg_compilecalladdress (pBHarrayhead, addr);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecallcorename);
+        return;
+    }
+}
+
+
+const char* dg_compilecallcoreoneuparamname = "dg_compilecallcoreoneuparam";
+
+void dg_compilecallcoreoneuparam (
+    Bufferhandle* pBHarrayhead, 
+    UINT64 addr,
+    UINT64 uparam1)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    dg_compilealignretstack(pBHarrayhead, 2); // align for 1 paramater
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecallcoreoneuparamname);
+        return;
+    }
+
+    dg_compilemovntoreg(
+        pBHarrayhead,
+        uparam1,
+        dg_param2reg);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecallcoreoneuparamname);
+        return;
+    }
+    
+    dg_compilepushpBHarrayheadtoret(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecallcoreoneuparamname);
+        return;
+    }
+
+    // for the 4 Win64 shadow regs
+    dg_compilesubn8fromrsp(
+        pBHarrayhead,
+        0x20);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecallcoreoneuparamname);
+        return;
+    }
+    
+    dg_compilecalladdress (pBHarrayhead, addr);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecallcoreoneuparamname);
+        return;
+    }
+}
+
+
+const char* dg_compilecallcoretwouparamsname = "dg_compilecallcoretwouparams";
+
+void dg_compilecallcoretwouparams (
+    Bufferhandle* pBHarrayhead, 
+    UINT64 addr,
+    UINT64 uparam1,
+    UINT64 uparam2)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    dg_compilealignretstack(pBHarrayhead, 3); // align for 1 paramater
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecallcoretwouparamsname);
+        return;
+    }
+
+    dg_compilemovntoreg(
+        pBHarrayhead,
+        uparam2,
+        dg_param3reg);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecallcoretwouparamsname);
+        return;
+    }
+
+    dg_compilemovntoreg(
+        pBHarrayhead,
+        uparam1,
+        dg_param2reg);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecallcoretwouparamsname);
+        return;
+    }
+    
+    dg_compilepushpBHarrayheadtoret(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecallcoretwouparamsname);
+        return;
+    }
+
+    // for the 4 Win64 shadow regs
+    dg_compilesubn8fromrsp(
+        pBHarrayhead,
+        0x20);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecallcoretwouparamsname);
+        return;
+    }
+    
+    dg_compilecalladdress (pBHarrayhead, addr);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecallcoretwouparamsname);
+        return;
+    }
 }
 
 
@@ -2752,22 +3174,22 @@ void dg_compilecallftcolon (
     Bufferhandle* pBHarrayhead, 
     UINT64 n)
 {
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
     
     if (baderrorcount == olderrorcount)
     {
         return;
     }
-	
-	dg_compilealignretstack(
+    
+    dg_compilealignretstack(
         pBHarrayhead,
         1); // align for 1 paramater
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_compilecallftcolonname);
-		return;
-	}
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecallftcolonname);
+        return;
+    }
 
     // for the 4 Win64 shadow regs
     dg_compilesubn8fromrsp(
@@ -2776,19 +3198,19 @@ void dg_compilecallftcolon (
 
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
-        dg_pusherror(pBHarrayhead, dg_compilecallcorename);
+        dg_pusherror(pBHarrayhead, dg_compilecallftcolonname);
         return;
     }
-	
-	dg_compilecallfunctblfunction (
+    
+    dg_compilecallfunctblfunction (
         pBHarrayhead,
         n);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_compilecallftcolonname);
-		return;
-	}
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecallftcolonname);
+        return;
+    }
 }
 
 
@@ -2799,49 +3221,49 @@ const char* dg_compilepushdatastackname = "dg_compilepushdatastack";
 
 void dg_compilepushdatastack (Bufferhandle* pBHarrayhead)
 {
-	UINT64 bufferid;
-	
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	bufferid = dg_getbufferuint64(
+    UINT64 bufferid;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    bufferid = dg_getbufferuint64(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentcompilebuffer);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
-		dg_pusherror(pBHarrayhead, dg_compilepushdatastackname);
-		return;
-	}
-	
-	dg_compilepopregfromret(
+        dg_pusherror(pBHarrayhead, dg_compilepushdatastackname);
+        return;
+    }
+    
+    dg_compilepopregfromret(
         pBHarrayhead,
         dg_rdx);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_compilepushdatastackname);
-		return;
-	}
-	
-	dg_compilealignretstack(
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilepushdatastackname);
+        return;
+    }
+    
+    dg_compilealignretstack(
         pBHarrayhead,
         2);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_compilepushdatastackname);
-		return;
-	}
-	
-	dg_compilepushpBHarrayheadtoret(pBHarrayhead);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_compilepushdatastackname);
-		return;
-	}
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilepushdatastackname);
+        return;
+    }
+    
+    dg_compilepushpBHarrayheadtoret(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilepushdatastackname);
+        return;
+    }
 
     dg_compilesubn8fromrsp(
         pBHarrayhead,
@@ -2852,15 +3274,15 @@ void dg_compilepushdatastack (Bufferhandle* pBHarrayhead)
         dg_pusherror(pBHarrayhead, dg_compilepushdatastackname);
         return;
     }
-	
-	dg_compilecalladdress (pBHarrayhead, (UINT64)(&dg_pushdatastack));
+    
+    dg_compilecalladdress (pBHarrayhead, (UINT64)(&dg_pushdatastack));
     // dg_compilecalladdress(pBHarrayhead, (UINT64)(&dg_forthgothere));
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_compilepushdatastackname);
-		return;
-	}
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilepushdatastackname);
+        return;
+    }
 }
 
 
@@ -2870,17 +3292,17 @@ void dg_compilepushntodatastack (
     Bufferhandle* pBHarrayhead,
     UINT64 n)
 {
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	dg_compilealignretstack(
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    dg_compilealignretstack(
         pBHarrayhead,
         2);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_compilepushntodatastackname);
-		return;
-	}
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilepushntodatastackname);
+        return;
+    }
     
     dg_compilemovntoreg(
         pBHarrayhead,
@@ -2888,18 +3310,18 @@ void dg_compilepushntodatastack (
         dg_rdx);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_compilepushntodatastackname);
-		return;
-	}
-	
-	dg_compilepushpBHarrayheadtoret(pBHarrayhead);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_compilepushntodatastackname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_compilepushntodatastackname);
+        return;
+    }
+    
+    dg_compilepushpBHarrayheadtoret(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilepushntodatastackname);
+        return;
+    }
 
     dg_compilesubn8fromrsp(
         pBHarrayhead,
@@ -2910,18 +3332,18 @@ void dg_compilepushntodatastack (
         dg_pusherror(pBHarrayhead, dg_compilepushntodatastackname);
         return;
     }
-	
-	dg_compilecalladdress(
+    
+    dg_compilecalladdress(
         pBHarrayhead,
         (UINT64)(&dg_pushdatastack));
 
     // dg_compilecalladdress(pBHarrayhead, (UINT64)(&dg_forthgothere));
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_compilepushntodatastackname);
-		return;
-	}
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilepushntodatastackname);
+        return;
+    }
 }
 
 
@@ -2987,54 +3409,54 @@ void dg_compilepushntof64stack (
 }
 
 
-const char* dg_compilobtoptodatastackname = "dg_compilobtoptodatastack";
+const char* dg_compileobtoptodatastackname = "dg_compileobtoptodatastack";
 
-void dg_compilobtoptodatastack (
+void dg_compileobtoptodatastack (
     Bufferhandle* pBHarrayhead,
     UINT64 bufferid,
     UINT64 offset)
 {
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	dg_compilealignretstack(
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    dg_compilealignretstack(
         pBHarrayhead,
         3);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_compilobtoptodatastackname);
-		return;
-	}
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileobtoptodatastackname);
+        return;
+    }
     
     dg_compilemovntoreg(
         pBHarrayhead,
         offset,
-        dg_r8);
+        dg_param3reg); // dg_r8);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_compilobtoptodatastackname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_compileobtoptodatastackname);
+        return;
+    }
     
     dg_compilemovntoreg(
         pBHarrayhead,
         bufferid,
-        dg_rdx); // bufferid
+        dg_param2reg); // dg_rdx); // bufferid
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_compilobtoptodatastackname);
-		return;
-	}
-	
-	dg_compilepushpBHarrayheadtoret(pBHarrayhead);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_compilobtoptodatastackname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_compileobtoptodatastackname);
+        return;
+    }
+    
+    dg_compilepushpBHarrayheadtoret(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileobtoptodatastackname);
+        return;
+    }
 
     dg_compilesubn8fromrsp(
         pBHarrayhead,
@@ -3042,48 +3464,48 @@ void dg_compilobtoptodatastack (
 
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
-        dg_pusherror(pBHarrayhead, dg_compilobtoptodatastackname);
+        dg_pusherror(pBHarrayhead, dg_compileobtoptodatastackname);
         return;
     }
-	
-	dg_compilecalladdress(
+    
+    dg_compilecalladdress(
         pBHarrayhead,
         (UINT64)(&dg_getpbufferoffset));
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_compilobtoptodatastackname);
-		return;
-	}
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileobtoptodatastackname);
+        return;
+    }
     
     dg_compilealignretstack(
         pBHarrayhead,
         2);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_compilobtoptodatastackname);
-		return;
-	}
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileobtoptodatastackname);
+        return;
+    }
     
     dg_compilemovregtoreg(
         pBHarrayhead,
         dg_rax,
-        dg_rsi);
+        dg_param2reg); // dg_rsi); // rsi is incorrect 2022 6/23 J.N.
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_compilobtoptodatastackname);
-		return;
-	}
-	
-	dg_compilepushpBHarrayheadtoret(pBHarrayhead);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_compilobtoptodatastackname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_compileobtoptodatastackname);
+        return;
+    }
+    
+    dg_compilepushpBHarrayheadtoret(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileobtoptodatastackname);
+        return;
+    }
 
     dg_compilesubn8fromrsp(
         pBHarrayhead,
@@ -3091,21 +3513,970 @@ void dg_compilobtoptodatastack (
 
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
-        dg_pusherror(pBHarrayhead, dg_compilobtoptodatastackname);
+        dg_pusherror(pBHarrayhead, dg_compileobtoptodatastackname);
         return;
     }
-	
-	dg_compilecalladdress(
+    
+    dg_compilecalladdress(
         pBHarrayhead,
         (UINT64)(&dg_pushdatastack));
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_compilobtoptodatastackname);
-		return;
-	}
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileobtoptodatastackname);
+        return;
+    }
 }
 
+/*
+const char* dg_compilebracketobtodatastackname = "dg_compilebracketobtodatastack";
+
+void dg_compilebracketobtodatastack (
+    Bufferhandle* pBHarrayhead,
+    UINT64 bufferid,
+    UINT64 offset)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    dg_compilealignretstack(
+        pBHarrayhead,
+        3);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilebracketobtodatastackname);
+        return;
+    }
+    
+    dg_compilemovntoreg(
+        pBHarrayhead,
+        offset,
+        dg_param3reg); // dg_r8);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilebracketobtodatastackname);
+        return;
+    }
+    
+    dg_compilemovntoreg(
+        pBHarrayhead,
+        bufferid,
+        dg_param2reg); // dg_rdx); // bufferid
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilebracketobtodatastackname);
+        return;
+    }
+    
+    dg_compilepushpBHarrayheadtoret(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilebracketobtodatastackname);
+        return;
+    }
+
+    dg_compilesubn8fromrsp(
+        pBHarrayhead,
+        0x20);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilebracketobtodatastackname);
+        return;
+    }
+     
+    dg_compilecalladdress(
+        pBHarrayhead,
+        (UINT64)(&dg_getbufferuint64));
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilebracketobtodatastackname);
+        return;
+    }
+    
+    dg_compilealignretstack(
+        pBHarrayhead,
+        2);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilebracketobtodatastackname);
+        return;
+    }
+    
+    dg_compilemovregtoreg(
+        pBHarrayhead,
+        dg_rax,
+        dg_param2reg);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilebracketobtodatastackname);
+        return;
+    }
+    
+    dg_compilepushpBHarrayheadtoret(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilebracketobtodatastackname);
+        return;
+    }
+
+    dg_compilesubn8fromrsp(
+        pBHarrayhead,
+        0x20);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilebracketobtodatastackname);
+        return;
+    }
+    
+    dg_compilecalladdress(
+        pBHarrayhead,
+        (UINT64)(&dg_pushdatastack));
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilebracketobtodatastackname);
+        return;
+    }
+}
+*/
+/*
+const char* dg_compiledatastacktobracketobname = "dg_compiledatastacktobracketob";
+
+void dg_compiledatastacktobracketob (
+    Bufferhandle* pBHarrayhead,
+    UINT64 bufferid,
+    UINT64 offset)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    dg_compilealignretstack(
+        pBHarrayhead,
+        1);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktobracketobname);
+        return;
+    }
+    
+    dg_compilepushpBHarrayheadtoret(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktobracketobname);
+        return;
+    }
+
+    dg_compilesubn8fromrsp(
+        pBHarrayhead,
+        0x20);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktobracketobname);
+        return;
+    }
+    
+    dg_compilecalladdress(
+        pBHarrayhead,
+        (UINT64)(&dg_popdatastack));
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktobracketobname);
+        return;
+    }
+
+    dg_compilemovregtoreg(
+        pBHarrayhead,
+        dg_rax,
+        dg_param4reg);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktobracketobname);
+        return;
+    }
+    
+    dg_compilealignretstack(
+        pBHarrayhead,
+        4);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktobracketobname);
+        return;
+    }
+    
+    dg_compilemovntoreg(
+        pBHarrayhead,
+        offset,
+        dg_param3reg); // dg_r8);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktobracketobname);
+        return;
+    }
+    
+    dg_compilemovntoreg(
+        pBHarrayhead,
+        bufferid,
+        dg_param2reg); // dg_rdx); // bufferid
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktobracketobname);
+        return;
+    }
+    
+    dg_compilepushpBHarrayheadtoret(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktobracketobname);
+        return;
+    }
+
+    dg_compilesubn8fromrsp(
+        pBHarrayhead,
+        0x20);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktobracketobname);
+        return;
+    }
+     
+    dg_compilecalladdress(
+        pBHarrayhead,
+        (UINT64)(&dg_putbufferuint64));
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktobracketobname);
+        return;
+    }
+}
+*/
+/*
+const char* dg_compileu128bracketobtodatastackname = "dg_compileu1218bracketobtodatastack";
+
+void dg_compileu128bracketobtodatastack (
+    Bufferhandle* pBHarrayhead,
+    UINT64 bufferid,
+    UINT64 offset)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    dg_compilealignretstack(
+        pBHarrayhead,
+        3);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileu128bracketobtodatastackname);
+        return;
+    }
+    
+    dg_compilemovntoreg(
+        pBHarrayhead,
+        offset + sizeof(UINT64),
+        dg_param3reg); // dg_r8);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileu128bracketobtodatastackname);
+        return;
+    }
+    
+    dg_compilemovntoreg(
+        pBHarrayhead,
+        bufferid,
+        dg_param2reg); // dg_rdx); // bufferid
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileu128bracketobtodatastackname);
+        return;
+    }
+    
+    dg_compilepushpBHarrayheadtoret(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileu128bracketobtodatastackname);
+        return;
+    }
+
+    dg_compilesubn8fromrsp(
+        pBHarrayhead,
+        0x20);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileu128bracketobtodatastackname);
+        return;
+    }
+
+    dg_compilecalladdress(
+        pBHarrayhead,
+        (UINT64)(&dg_getbufferuint64));
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileu128bracketobtodatastackname);
+        return;
+    }
+
+    dg_compilemovregtoreg(
+        pBHarrayhead,
+        dg_rax,
+        dg_param2reg);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileu128bracketobtodatastackname);
+        return;
+    }
+
+    dg_compilealignretstack(
+        pBHarrayhead,
+        2);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileu128bracketobtodatastackname);
+        return;
+    }
+    
+    dg_compilepushpBHarrayheadtoret(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileu128bracketobtodatastackname);
+        return;
+    }
+
+    dg_compilesubn8fromrsp(
+        pBHarrayhead,
+        0x20);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileu128bracketobtodatastackname);
+        return;
+    }
+    
+    dg_compilecalladdress(
+        pBHarrayhead,
+        (UINT64)(&dg_pushdatastack));
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileu128bracketobtodatastackname);
+        return;
+    }
+
+    dg_compilealignretstack(
+        pBHarrayhead,
+        3);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileu128bracketobtodatastackname);
+        return;
+    }
+    
+    dg_compilemovntoreg(
+        pBHarrayhead,
+        offset,
+        dg_param3reg); // dg_r8);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileu128bracketobtodatastackname);
+        return;
+    }
+    
+    dg_compilemovntoreg(
+        pBHarrayhead,
+        bufferid,
+        dg_param2reg); // dg_rdx); // bufferid
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileu128bracketobtodatastackname);
+        return;
+    }
+    
+    dg_compilepushpBHarrayheadtoret(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileu128bracketobtodatastackname);
+        return;
+    }
+
+    dg_compilesubn8fromrsp(
+        pBHarrayhead,
+        0x20);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileu128bracketobtodatastackname);
+        return;
+    }
+
+    dg_compilecalladdress(
+        pBHarrayhead,
+        (UINT64)(&dg_getbufferuint64));
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileu128bracketobtodatastackname);
+        return;
+    }
+
+    dg_compilemovregtoreg(
+        pBHarrayhead,
+        dg_rax,
+        dg_param2reg);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileu128bracketobtodatastackname);
+        return;
+    }
+
+    dg_compilealignretstack(
+        pBHarrayhead,
+        2);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileu128bracketobtodatastackname);
+        return;
+    }
+    
+    dg_compilepushpBHarrayheadtoret(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileu128bracketobtodatastackname);
+        return;
+    }
+
+    dg_compilesubn8fromrsp(
+        pBHarrayhead,
+        0x20);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileu128bracketobtodatastackname);
+        return;
+    }
+    
+    dg_compilecalladdress(
+        pBHarrayhead,
+        (UINT64)(&dg_pushdatastack));
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileu128bracketobtodatastackname);
+        return;
+    }
+}
+*/
+/*
+const char* dg_compiledatastacktou128bracketobname = "dg_compiledatastacktou128bracketob";
+
+void dg_compiledatastacktou128bracketob (
+    Bufferhandle* pBHarrayhead,
+    UINT64 bufferid,
+    UINT64 offset)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    dg_compilealignretstack(
+        pBHarrayhead,
+        1);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktou128bracketobname);
+        return;
+    }
+    
+    dg_compilepushpBHarrayheadtoret(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktou128bracketobname);
+        return;
+    }
+
+    dg_compilesubn8fromrsp(
+        pBHarrayhead,
+        0x20);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktou128bracketobname);
+        return;
+    }
+    
+    dg_compilecalladdress(
+        pBHarrayhead,
+        (UINT64)(&dg_popdatastack));
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktou128bracketobname);
+        return;
+    }
+
+    dg_compilemovregtoreg(
+        pBHarrayhead,
+        dg_rax,
+        dg_param4reg);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktou128bracketobname);
+        return;
+    }
+    
+    dg_compilealignretstack(
+        pBHarrayhead,
+        4);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktou128bracketobname);
+        return;
+    }
+    
+    dg_compilemovntoreg(
+        pBHarrayhead,
+        offset,
+        dg_param3reg); // dg_r8);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktou128bracketobname);
+        return;
+    }
+    
+    dg_compilemovntoreg(
+        pBHarrayhead,
+        bufferid,
+        dg_param2reg); // dg_rdx); // bufferid
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktou128bracketobname);
+        return;
+    }
+    
+    dg_compilepushpBHarrayheadtoret(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktou128bracketobname);
+        return;
+    }
+
+    dg_compilesubn8fromrsp(
+        pBHarrayhead,
+        0x20);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktou128bracketobname);
+        return;
+    }
+     
+    dg_compilecalladdress(
+        pBHarrayhead,
+        (UINT64)(&dg_putbufferuint64));
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktou128bracketobname);
+        return;
+    }
+
+    dg_compilealignretstack(
+        pBHarrayhead,
+        1);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktou128bracketobname);
+        return;
+    }
+    
+    dg_compilepushpBHarrayheadtoret(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktou128bracketobname);
+        return;
+    }
+
+    dg_compilesubn8fromrsp(
+        pBHarrayhead,
+        0x20);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktou128bracketobname);
+        return;
+    }
+    
+    dg_compilecalladdress(
+        pBHarrayhead,
+        (UINT64)(&dg_popdatastack));
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktou128bracketobname);
+        return;
+    }
+
+    dg_compilemovregtoreg(
+        pBHarrayhead,
+        dg_rax,
+        dg_param4reg);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktou128bracketobname);
+        return;
+    }
+    
+    dg_compilealignretstack(
+        pBHarrayhead,
+        4);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktou128bracketobname);
+        return;
+    }
+    
+    dg_compilemovntoreg(
+        pBHarrayhead,
+        offset + sizeof(UINT64),
+        dg_param3reg); // dg_r8);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktou128bracketobname);
+        return;
+    }
+    
+    dg_compilemovntoreg(
+        pBHarrayhead,
+        bufferid,
+        dg_param2reg); // dg_rdx); // bufferid
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktou128bracketobname);
+        return;
+    }
+    
+    dg_compilepushpBHarrayheadtoret(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktou128bracketobname);
+        return;
+    }
+
+    dg_compilesubn8fromrsp(
+        pBHarrayhead,
+        0x20);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktou128bracketobname);
+        return;
+    }
+     
+    dg_compilecalladdress(
+        pBHarrayhead,
+        (UINT64)(&dg_putbufferuint64));
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledatastacktou128bracketobname);
+        return;
+    }
+}
+*/
+/*
+const char* dg_compilebracketobtof64stackname = "dg_compilebracketobtof64stack";
+
+void dg_compilebracketobtof64stack (
+    Bufferhandle* pBHarrayhead,
+    UINT64 bufferid,
+    UINT64 offset)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    dg_compilealignretstack(
+        pBHarrayhead,
+        3);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilebracketobtof64stackname);
+        return;
+    }
+    
+    dg_compilemovntoreg(
+        pBHarrayhead,
+        offset,
+        dg_param3reg); // dg_r8);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilebracketobtof64stackname);
+        return;
+    }
+    
+    dg_compilemovntoreg(
+        pBHarrayhead,
+        bufferid,
+        dg_param2reg); // dg_rdx); // bufferid
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilebracketobtof64stackname);
+        return;
+    }
+    
+    dg_compilepushpBHarrayheadtoret(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilebracketobtof64stackname);
+        return;
+    }
+
+    dg_compilesubn8fromrsp(
+        pBHarrayhead,
+        0x20);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilebracketobtof64stackname);
+        return;
+    }
+    
+    dg_compilecalladdress(
+        pBHarrayhead,
+        (UINT64)(&dg_getbufferuint64));
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilebracketobtof64stackname);
+        return;
+    }
+    
+    dg_compilealignretstack(
+        pBHarrayhead,
+        2);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilebracketobtof64stackname);
+        return;
+    }
+    
+    dg_compilemovregtoreg(
+        pBHarrayhead,
+        dg_rax,
+        dg_param2reg);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilebracketobtof64stackname);
+        return;
+    }
+    
+    dg_compilepushpBHarrayheadtoret(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilebracketobtof64stackname);
+        return;
+    }
+
+    dg_compilesubn8fromrsp(
+        pBHarrayhead,
+        0x20);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilebracketobtof64stackname);
+        return;
+    }
+    
+    dg_compilecalladdress(
+        pBHarrayhead,
+        (UINT64)(&dg_pushf64tof64stack));
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilebracketobtof64stackname);
+        return;
+    }
+}
+*/
+/*
+const char* dg_compilef64stacktobracketobname = "dg_compilef64stacktobracketob";
+
+void dg_compilef64stacktobracketob (
+    Bufferhandle* pBHarrayhead,
+    UINT64 bufferid,
+    UINT64 offset)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    dg_compilealignretstack(
+        pBHarrayhead,
+        2);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilef64stacktobracketobname);
+        return;
+    }
+
+    dg_compilemovntoreg(
+        pBHarrayhead,
+        DG_F64STACK_BUFFERID,
+        dg_param2reg);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilef64stacktobracketobname);
+        return;
+    }    
+    
+    dg_compilepushpBHarrayheadtoret(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilef64stacktobracketobname);
+        return;
+    }
+
+    dg_compilesubn8fromrsp(
+        pBHarrayhead,
+        0x20);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilef64stacktobracketobname);
+        return;
+    }
+    
+    dg_compilecalladdress(
+        pBHarrayhead,
+        (UINT64)(&dg_popbufferuint64));
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilef64stacktobracketobname);
+        return;
+    }
+
+    dg_compilemovregtoreg(
+        pBHarrayhead,
+        dg_rax,
+        dg_param4reg);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilef64stacktobracketobname);
+        return;
+    }
+    
+    dg_compilealignretstack(
+        pBHarrayhead,
+        4);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilef64stacktobracketobname);
+        return;
+    }
+    
+    dg_compilemovntoreg(
+        pBHarrayhead,
+        offset,
+        dg_param3reg); // dg_r8);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilef64stacktobracketobname);
+        return;
+    }
+    
+    dg_compilemovntoreg(
+        pBHarrayhead,
+        bufferid,
+        dg_param2reg); // dg_rdx); // bufferid
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilef64stacktobracketobname);
+        return;
+    }
+    
+    dg_compilepushpBHarrayheadtoret(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilef64stacktobracketobname);
+        return;
+    }
+
+    dg_compilesubn8fromrsp(
+        pBHarrayhead,
+        0x20);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilef64stacktobracketobname);
+        return;
+    }
+     
+    dg_compilecalladdress(
+        pBHarrayhead,
+        (UINT64)(&dg_putbufferuint64));
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilef64stacktobracketobname);
+        return;
+    }
+}
+*/
 
 // +00 saved rbp
 // -08 saved flags
@@ -3130,8 +4501,8 @@ void dg_compileinitlocals (Bufferhandle* pBHarrayhead)
     
     // rcx = pBHarrayhead
     
-	// pushq rbp;            0x55             (0x50+rd)
-	// movq rbp<-rsp;       ( 0x48 ) 0x8B 0xEC   (0x8B /r)  r/m32 -> r32 = 11 101 100
+    // pushq rbp;            0x55             (0x50+rd)
+    // movq rbp<-rsp;       ( 0x48 ) 0x8B 0xEC   (0x8B /r)  r/m32 -> r32 = 11 101 100
     
     // pushfq                0x9C
     
@@ -3145,25 +4516,36 @@ void dg_compileinitlocals (Bufferhandle* pBHarrayhead)
     // pushq pBHarrayhead
     //  pushq rcx            0x51 // 0x57             (0x50+rd)  // push rdi on mac
     // pushq old error count
-	//  pushq [rcx]          0xFF 0x31 // 0xFF 0x37        (0xff /6) (error count) // 00 110 111  push [rdi] on mac
-	// pushq rcx             0x51 // 0x57             // for end of locals variable // push rcx on mac although it doesn't matter
+    //  pushq [rcx]          0xFF 0x31 // 0xFF 0x37        (0xff /6) (error count) // 00 110 111  push [rdi] on mac
+    // pushq rcx             0x51 // 0x57             // for end of locals variable // push rcx on mac although it doesn't matter
     
     
     // rsp holds end of locals, this is used during alignment code calculations for subroutine calls
-	// movq rsp->[rbp-0x20]  0x48 0x89 0x65 0xE0
+    // movq rsp->[rbp-0x20]  0x48 0x89 0x65 0xE0
 
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	if (baderrorcount == olderrorcount)
-	{
-		return;
-	}
     
-	dg_compilesegment (
-		pBHarrayhead,
-		(const char*)pbuf,
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    dg_compilesegment (
+        pBHarrayhead,
+        (const char*)pbuf,
         23);
     
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcompileentername);
+    }
+
+    dg_putbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_colonreturnstackdepth,
+        4); // for -0x20
+
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
         dg_pusherror(pBHarrayhead, dg_forthcompileentername);
@@ -3180,11 +4562,11 @@ void dg_compileexitlocals (Bufferhandle* pBHarrayhead)
     UINT64 haslocalsflag;
     UINT64 haslocalstringsflag;
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	if (baderrorcount == olderrorcount)
-	{
-		return;
-	}
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
     
     /*
     haslocalsflag = dg_getbufferuint64(
@@ -3236,19 +4618,19 @@ void dg_compileexitlocals (Bufferhandle* pBHarrayhead)
             return;
         }
     }
-	*/
+    */
     //                         not sure if rex is needed for leaq
-	// leaq [rbp-0x8] -> rsp   0x48 0x8D 0x65 0xF8   (0x8D /r = 01 100 101)  (drops everything up to saved flags)
-	// popfq                   0x9D             // -0x08
+    // leaq [rbp-0x8] -> rsp   0x48 0x8D 0x65 0xF8   (0x8D /r = 01 100 101)  (drops everything up to saved flags)
+    // popfq                   0x9D             // -0x08
     // popq rbp;               0x5D             // rbp -0x00
-	// ret                     0xC3
+    // ret                     0xC3
     
     dg_compilesegment (
         pBHarrayhead,
         (const char*)"\x48\x8D\x65\xF8\x9D\x5D\xC3",
         7);
 
-	
+    
     if (olderrorcount != dg_geterrorcount(pBHarrayhead))
     {
         dg_pusherror(pBHarrayhead, dg_forthcompileexitname);
@@ -3266,13 +4648,13 @@ void dg_compileentersubroutineframe (Bufferhandle* pBHarrayhead)
     UINT64 currentcompilebufferid;
     UINT64 currentcompilebufferlength;
  
-	// pushl ebp;            0x55             (0x50+rd)
-	// movl ebp<-esp;        0x8B 0xEC        (0x8B /r)  r/m32 -> r32 = 11 101 100
-	// pushl ebx             0x53
+    // pushl ebp;            0x55             (0x50+rd)
+    // movl ebp<-esp;        0x8B 0xEC        (0x8B /r)  r/m32 -> r32 = 11 101 100
+    // pushl ebx             0x53
     
     // push empty value so frame is same size as colon frame
-	// pushl eax             0x50             // error count in colon frame, not used in this one
-	// pushl eax             0x50             // for end of locals variable
+    // pushl eax             0x50             // error count in colon frame, not used in this one
+    // pushl eax             0x50             // for end of locals variable
     // pushfl                0x9C
     
     // this clears the alignment check flag which disables exceptions 
@@ -3287,14 +4669,14 @@ void dg_compileentersubroutineframe (Bufferhandle* pBHarrayhead)
     // addl [esp]<-offsetto0 0x81 0x04 0x24 0xnn 0xnn 0xnn 0xnn
     
     // esp holds end of locals, this is used during alignment code calculations for subroutine calls
-	// movl esp->[ebp-0x0C]  0x89 0x65 0xF4
+    // movl esp->[ebp-0x0C]  0x89 0x65 0xF4
 
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	if (baderrorcount == olderrorcount)
-	{
-		return;
-	}
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
     
     currentcompilebufferid = dg_getbufferuint64(
         pBHarrayhead,
@@ -3318,17 +4700,17 @@ void dg_compileentersubroutineframe (Bufferhandle* pBHarrayhead)
     }
     
     *(UINT64*)(&(pbuf[24])) = -(currentcompilebufferlength + 21);
-	
+    
     // +24 gets -(currentcompileoffset+21)
-	dg_compilesegment (
-		pBHarrayhead,
-		(const char*)pbuf,
-		31);
+    dg_compilesegment (
+        pBHarrayhead,
+        (const char*)pbuf,
+        31);
     
     // dg_compilesegment (
-	//	pBHarrayhead,
-	//	(const char*)"\x55\x8B\xEC\x53\x8B\x45\x08\xFF\x30\x50\x9C\x9C\x81\x65\xEC\xFF\xFF\xFB\xFF\x9D\x89\x65\xF4",
-	//	23);
+    //    pBHarrayhead,
+    //    (const char*)"\x55\x8B\xEC\x53\x8B\x45\x08\xFF\x30\x50\x9C\x9C\x81\x65\xEC\xFF\xFF\xFB\xFF\x9D\x89\x65\xF4",
+    //    23);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -3384,8 +4766,8 @@ const char* dg_compilepusholderrcnttoretname = "COMPILE-OLDERRORCOUNT>RET";
 
 void dg_compilepusholderrorcounttoret (Bufferhandle* pBHarrayhead)
 {
-	// push [rpb-18]  0xff /6 = 01 110 101 = 0xFF 0x75 0xE8
-	dg_compilesegment (
+    // push [rpb-18]  0xff /6 = 01 110 101 = 0xFF 0x75 0xE8
+    dg_compilesegment (
         pBHarrayhead,
         (const char*)"\xFF\x75\xE8",
         3);
@@ -3395,10 +4777,10 @@ const char* dg_compilequeryerrorname = "COMPILE-QUERYERROR";
 
 void dg_compilequeryerror (Bufferhandle* pBHarrayhead)
 {
-	// movq rax<-[rpb-10]; (pBHarrayhead)
-	// movq rax<-[rax];   (current error count)
-	// cmpq rax<-[rbp-18] (old error count)
-	dg_compilesegment (
+    // movq rax<-[rpb-10]; (pBHarrayhead)
+    // movq rax<-[rax];   (current error count)
+    // cmpq rax<-[rbp-18] (old error count)
+    dg_compilesegment (
         pBHarrayhead,
         (const char*)"\x48\x8B\x45\xF0\x48\x8B\x00\x48\x3B\x45\xE8",
         11);
@@ -3453,10 +4835,10 @@ void dg_compilequeryerror (Bufferhandle* pBHarrayhead)
 void dg_compilesavelocalframestackpointer (Bufferhandle* pBHarrayhead)
 {
     // movl esp->[ebp-0x0C]  0x89 0x65 0xF4   (save frame stack pointer, marks top of local storage)
-	// movq rsp->[ebp-0x20]  0x48 0x89 0x65 0xE0
+    // movq rsp->[ebp-0x20]  0x48 0x89 0x65 0xE0
     dg_compilesegment (
         pBHarrayhead,
-	    (const char*)"\x48\x89\x65\xE0",
+        (const char*)"\x48\x89\x65\xE0",
         4);
 }
 */
@@ -3485,47 +4867,47 @@ void dg_forthcompilealignretfornpf (Bufferhandle* pBHarrayhead)
 void dg_showframe (Bufferhandle* pBHarrayhead)
 {
     UINT64* showframeframepointer = (UINT64*)dg_getframepointer();
-	UINT64* callerframepointer = (UINT64*)(showframeframepointer[0]);
+    UINT64* callerframepointer = (UINT64*)(showframeframepointer[0]);
     
-	UINT64  mystackpointer = (UINT64)dg_getretstackpointer();
-	
-	// dont want to show frame of this subroutine, so need to get frame of routine that called dg_showframe
-	
-	dg_printzerostring(pBHarrayhead, (unsigned char*)"frame pointer of caller's parent = ");
-	dg_writestdoutuint64tohex(pBHarrayhead, callerframepointer[0]);
-	dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+    UINT64  mystackpointer = (UINT64)dg_getretstackpointer();
     
-	dg_printzerostring(pBHarrayhead, (unsigned char*)"\ncaller's frame pointer = ");
-	dg_writestdoutuint64tohex(pBHarrayhead, (UINT64)callerframepointer);
-	dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
-	
-	dg_printzerostring(pBHarrayhead, (unsigned char*)" caller's frame's return address = ");
-	dg_writestdoutuint64tohex(pBHarrayhead, callerframepointer[1]);
-	dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
-	
-	dg_printzerostring(pBHarrayhead, (unsigned char*)" caller's frame's saved flags = ");
-	dg_writestdoutuint64tohex(pBHarrayhead, callerframepointer[-1]);
-	dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+    // dont want to show frame of this subroutine, so need to get frame of routine that called dg_showframe
+    
+    dg_printzerostring(pBHarrayhead, (unsigned char*)"frame pointer of caller's parent = ");
+    dg_writestdoutuint64tohex(pBHarrayhead, callerframepointer[0]);
+    dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+    
+    dg_printzerostring(pBHarrayhead, (unsigned char*)"\ncaller's frame pointer = ");
+    dg_writestdoutuint64tohex(pBHarrayhead, (UINT64)callerframepointer);
+    dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+    
+    dg_printzerostring(pBHarrayhead, (unsigned char*)" caller's frame's return address = ");
+    dg_writestdoutuint64tohex(pBHarrayhead, callerframepointer[1]);
+    dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+    
+    dg_printzerostring(pBHarrayhead, (unsigned char*)" caller's frame's saved flags = ");
+    dg_writestdoutuint64tohex(pBHarrayhead, callerframepointer[-1]);
+    dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
     
     dg_printzerostring(pBHarrayhead, (unsigned char*)" caller's frame's saved pBHarrayhead = ");
-	dg_writestdoutuint64tohex(pBHarrayhead, callerframepointer[-2]);
-	dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+    dg_writestdoutuint64tohex(pBHarrayhead, callerframepointer[-2]);
+    dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
     
-	dg_printzerostring(pBHarrayhead, (unsigned char*)" caller's frame's old error count = ");
-	dg_writestdoutuint64tohex(pBHarrayhead, callerframepointer[-3]);
-	dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
-	
-	dg_printzerostring(pBHarrayhead, (unsigned char*)" caller's frame's bottom of local frame = ");
-	dg_writestdoutuint64tohex(pBHarrayhead, callerframepointer[-4]);
-	dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+    dg_printzerostring(pBHarrayhead, (unsigned char*)" caller's frame's old error count = ");
+    dg_writestdoutuint64tohex(pBHarrayhead, callerframepointer[-3]);
+    dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+    
+    dg_printzerostring(pBHarrayhead, (unsigned char*)" caller's frame's bottom of local frame = ");
+    dg_writestdoutuint64tohex(pBHarrayhead, callerframepointer[-4]);
+    dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
     
     dg_printzerostring(pBHarrayhead, (unsigned char*)"\ndg_showframe's frame pointer = ");
-	dg_writestdoutuint64tohex(pBHarrayhead, (UINT64)showframeframepointer);
-	dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+    dg_writestdoutuint64tohex(pBHarrayhead, (UINT64)showframeframepointer);
+    dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
     
     dg_printzerostring(pBHarrayhead, (unsigned char*)" return address from caller = ");
-	dg_writestdoutuint64tohex(pBHarrayhead, showframeframepointer[1]);
-	dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+    dg_writestdoutuint64tohex(pBHarrayhead, showframeframepointer[1]);
+    dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
 }
 
 
@@ -3538,8 +4920,8 @@ void dg_compilepushregtoret (
     // assumes reg is 64bit
     unsigned char pbuf[3] = "\x41\x50";
     
-	pbuf[1] = ((unsigned char)reg & 0x7) + 0x50;
-	
+    pbuf[1] = ((unsigned char)reg & 0x7) + 0x50;
+    
     if (reg >= dg_rax)
     {
         dg_compilesegment(pBHarrayhead, (const char*)(pbuf + 1), 1);
@@ -3567,18 +4949,18 @@ void dg_compilepushparametertoret (
 {
     // I should push an error here if parameter index is too large
     //  or... make it work...
-	// not checking overflow, trying to use this with negative indexes will not work
-	unsigned char x = (unsigned char)(((parameterindex*4)+8)&0xff); 	
-	
-	// pushl [epb+x]
-	unsigned char pbuf[4] = "\xFF\x75\x00";
-	
+    // not checking overflow, trying to use this with negative indexes will not work
+    unsigned char x = (unsigned char)(((parameterindex*4)+8)&0xff);     
+    
+    // pushl [epb+x]
+    unsigned char pbuf[4] = "\xFF\x75\x00";
+    
     pbuf[2] = x;
-	
-	dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)pbuf, 
-	    3);
+    
+    dg_compilesegment (
+        pBHarrayhead, 
+        (const char*)pbuf, 
+        3);
 }
 */
 
@@ -3590,8 +4972,8 @@ void dg_compilepopregfromret (
     // assumes reg is 64bit
     unsigned char pbuf[3] = "\x41\x58";
     
-	pbuf[1] = ((unsigned char)reg & 0x7) + 0x58;
-	
+    pbuf[1] = ((unsigned char)reg & 0x7) + 0x58;
+    
     if (reg >= dg_rax)
     {
         dg_compilesegment(pBHarrayhead, (const char*)(pbuf + 1), 1);
@@ -3624,97 +5006,97 @@ UINT64 dg_compilebranch (
     Bufferhandle* pBHarrayhead,
     UINT64 branchtype)
 {
-	UINT64 cbufferid;
-	UINT64 afterbranchoffset = (UINT64)dg_badbufferid;
-	
-	unsigned char pbuf[7] = "\x0F\x80\x00\x00\x00\x00";
-	
-	unsigned char x = ((unsigned char)(branchtype & 0x0f)) + 0x80;
-	
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	if (baderrorcount == dg_geterrorcount(pBHarrayhead))
-	{
-		return(afterbranchoffset);
-	}
-	
-	cbufferid = dg_getbufferuint64(
+    UINT64 cbufferid;
+    UINT64 afterbranchoffset = (UINT64)dg_badbufferid;
+    
+    unsigned char pbuf[7] = "\x0F\x80\x00\x00\x00\x00";
+    
+    unsigned char x = ((unsigned char)(branchtype & 0x0f)) + 0x80;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == dg_geterrorcount(pBHarrayhead))
+    {
+        return(afterbranchoffset);
+    }
+    
+    cbufferid = dg_getbufferuint64(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentcompilebuffer);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
-		dg_pusherror(pBHarrayhead, dg_compilebranchname);
-		return (afterbranchoffset);
-	}
-	
-	if (branchtype > DG_BRANCHTYPE_ALWAYS)
-	{
-		//afterbranchoffset = dg_getbufferlength(pBHarrayhead, cbufferid);
-		
-		//if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-		//{
-		//	dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
-		//	dg_pusherror(pBHarrayhead, dg_compilebranchname);
-		//}
-		
-		afterbranchoffset = (UINT64)-1;
+        dg_pusherror(pBHarrayhead, dg_compilebranchname);
+        return (afterbranchoffset);
+    }
+    
+    if (branchtype > DG_BRANCHTYPE_ALWAYS)
+    {
+        //afterbranchoffset = dg_getbufferlength(pBHarrayhead, cbufferid);
         
-		return (afterbranchoffset);
-	}
-	
-	if (branchtype == DG_BRANCHTYPE_ALWAYS)
-	{
-		dg_compilesegment(
+        //if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        //{
+        //    dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
+        //    dg_pusherror(pBHarrayhead, dg_compilebranchname);
+        //}
+        
+        afterbranchoffset = (UINT64)-1;
+        
+        return (afterbranchoffset);
+    }
+    
+    if (branchtype == DG_BRANCHTYPE_ALWAYS)
+    {
+        dg_compilesegment(
             pBHarrayhead,
             (const char*)"\xE9\x00\x00\x00\x00", // branch always nowhere
             5);
-		
-		if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-		{
-			dg_pusherror(pBHarrayhead, dg_compilebranchname);
-			return (afterbranchoffset);
-		}
-		
-		afterbranchoffset = dg_getbufferlength(
+        
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_compilebranchname);
+            return (afterbranchoffset);
+        }
+        
+        afterbranchoffset = dg_getbufferlength(
             pBHarrayhead,
             cbufferid);
-		
-		if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-		{
-			dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
-			dg_pusherror(pBHarrayhead, dg_compilebranchname);
-		}
-		
-		return (afterbranchoffset);
-	}
-	
-	pbuf[1] = x;
-	
-	dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)pbuf, 
-		6);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
-		dg_pusherror(pBHarrayhead, dg_compilebranchname);
-	}
-	
-	afterbranchoffset = dg_getbufferlength(
+        
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
+            dg_pusherror(pBHarrayhead, dg_compilebranchname);
+        }
+        
+        return (afterbranchoffset);
+    }
+    
+    pbuf[1] = x;
+    
+    dg_compilesegment (
+        pBHarrayhead, 
+        (const char*)pbuf, 
+        6);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
+        dg_pusherror(pBHarrayhead, dg_compilebranchname);
+    }
+    
+    afterbranchoffset = dg_getbufferlength(
         pBHarrayhead,
         cbufferid);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
-		dg_pusherror(pBHarrayhead, dg_compilebranchname);
-	}
-	
-	return (afterbranchoffset);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
+        dg_pusherror(pBHarrayhead, dg_compilebranchname);
+    }
+    
+    return (afterbranchoffset);
 }
 
 
@@ -3742,24 +5124,24 @@ void dg_resolvecompiledbranch(
         DG_DATASPACE_BUFFERID,
         currentcompilebuffer);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
-		dg_pusherror(pBHarrayhead, dg_resolvecompiledbranchname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_resolvecompiledbranchname);
+        return;
+    }
 
     pcompilebuf = dg_getpbuffer(
         pBHarrayhead,
         compilebufid,
         &pcompilebuflength);
 
-	if (pcompilebuf == (unsigned char*)badbufferhandle)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
-		dg_pusherror(pBHarrayhead, dg_resolvecompiledbranchname);
-		return;
-	}
+    if (pcompilebuf == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
+        dg_pusherror(pBHarrayhead, dg_resolvecompiledbranchname);
+        return;
+    }
     
     // Someone compiled a branch never. This is not an error.
     //  Nothing to resovle so just return.
@@ -3768,7 +5150,7 @@ void dg_resolvecompiledbranch(
         return;
     }
 
-	// afterbranchoffset = to current compile buffer length should be allowed
+    // afterbranchoffset = to current compile buffer length should be allowed
     if (afterbranchoffset > *pcompilebuflength)
     {
         dg_pusherror(pBHarrayhead, dg_branchsourcepastenderror);
@@ -3794,9 +5176,9 @@ void dg_resolvecompiledbranch(
     }
     
     if ( ((*(pcompilebuf + afterbranchoffset - 5)) & 0xF0) != 0x80 )  // the parenthesis are needed here for correct calculation
-	{
-		if ( (*(pcompilebuf + afterbranchoffset - 5)) != 0xE9)
-		{
+    {
+        if ( (*(pcompilebuf + afterbranchoffset - 5)) != 0xE9)
+        {
             if (afterbranchoffset < 6) // for XBEGINBRANCH,
             {
                 // branch off beginning of buffer
@@ -3808,11 +5190,11 @@ void dg_resolvecompiledbranch(
                  ( (*(pcompilebuf + afterbranchoffset - 5)) != 0xF8 ) )
             {
                 dg_pusherror(pBHarrayhead, dg_branchopcodemissingerror);
-			    dg_pusherror(pBHarrayhead, dg_resolvecompiledbranchname);
-			    return;
+                dg_pusherror(pBHarrayhead, dg_resolvecompiledbranchname);
+                return;
             }
-		}
-	}
+        }
+    }
     
     if (*((UINT32*)(pcompilebuf + (afterbranchoffset - 4))) != 0)
     {
@@ -3847,26 +5229,26 @@ void dg_resolvecompiled8bitbranch(
         DG_DATASPACE_BUFFERID,
         currentcompilebuffer);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
-		dg_pusherror(pBHarrayhead, dg_resolvecompiled8bitbranchname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_resolvecompiled8bitbranchname);
+        return;
+    }
 
     pcompilebuf = dg_getpbuffer(
         pBHarrayhead,
         compilebufid,
         &pcompilebuflength);
 
-	if (pcompilebuf == (unsigned char*)badbufferhandle)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
-		dg_pusherror(pBHarrayhead, dg_resolvecompiled8bitbranchname);
-		return;
-	}
+    if (pcompilebuf == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
+        dg_pusherror(pBHarrayhead, dg_resolvecompiled8bitbranchname);
+        return;
+    }
 
-	// afterbranchoffset = to current compile buffer length should be allowed
+    // afterbranchoffset = to current compile buffer length should be allowed
     if (afterbranchoffset > *pcompilebuflength)
     {
         dg_pusherror(pBHarrayhead, dg_branchsourcepastenderror);
@@ -3950,10 +5332,10 @@ void dg_compilecompare(
     Bufferhandle* pBHarrayhead,
     UINT64 n)
 {
-	// cmp eax - nnnnnnnn 
+    // cmp eax - nnnnnnnn 
     unsigned char pbuf[7] = "\x48\x3D\x00\x00\x00\x00";
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
     // could check and compile smaller opcodes for n=0
     
@@ -3971,10 +5353,10 @@ void dg_compilecompare(
     dg_compilesegment(pBHarrayhead, (const char*)pbuf, 6);
 
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    {
         dg_pusherror(pBHarrayhead, dg_compilecomparename);
-		return;
-	}
+        return;
+    }
 }
 
 /*
@@ -3990,8 +5372,8 @@ void dg_compileundoalignretstack (Bufferhandle* pBHarrayhead)
 // n is the number of parameters
 void dg_compiledropparametersfromret (Bufferhandle* pBHarrayhead, UINT64 n)
 {
-	// dont need to do this because align code drops paramaters
-	// and exit automatically drops everything
+    // dont need to do this because align code drops paramaters
+    // and exit automatically drops everything
 }
 */
 
@@ -4009,46 +5391,46 @@ UINT64 dg_compilepushntoret (
     Bufferhandle* pBHarrayhead,
     UINT64 n)
 {
-	UINT64 ccbufferid;
-	UINT64 targetoffset = (UINT64)-1;
-	
+    UINT64 ccbufferid;
+    UINT64 targetoffset = (UINT64)-1;
+    
     // n N PUSH, ( 64BIT )
     unsigned char pbuf[6] = "\x68\x00\x00\x00\x00";
     
     // n N RSP 4 [R+N] 32BIT MOV,
     unsigned char pbuf2[9] = "\xC7\x44\x24\x04\x00\x00\x00\x00";
-	
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	if (baderrorcount == olderrorcount)
-	{
-		return(targetoffset);
-	}
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return(targetoffset);
+    }
     
     *(UINT32*)(&(pbuf[1])) = (UINT32)(n & 0xFFFFFFFF);
-	
-	ccbufferid = dg_getbufferuint64(
+    
+    ccbufferid = dg_getbufferuint64(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentcompilebuffer);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
-		dg_pusherror(pBHarrayhead, dg_compilepushntoretname);
-		return(targetoffset);
-	}
-	
+        dg_pusherror(pBHarrayhead, dg_compilepushntoretname);
+        return(targetoffset);
+    }
+    
     dg_compilesegment(
         pBHarrayhead,
         (const char*)pbuf,
         5);
-	
+    
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    {
         dg_pusherror(pBHarrayhead, dg_compilepushntoretname);
-		return(targetoffset);
-	}
+        return(targetoffset);
+    }
     
     // in 32 bit mode... probably want -80000000 to 180000000
     if ((n + 0x80000000) >= 0x100000000)
@@ -4059,29 +5441,29 @@ UINT64 dg_compilepushntoret (
             pBHarrayhead,
             (const char*)pbuf2,
             8);
-	
+    
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
         {
             dg_pusherror(pBHarrayhead, dg_compilepushntoretname);
             return(targetoffset);
         }
     }
-	
-	// bufferlength can't be less than 5 if dg_compilesegment worked so no need to check
-	//   subtraction underflow
-	// also dg_getbufferlength can't really fail either
-	targetoffset = dg_getbufferlength(
+    
+    // bufferlength can't be less than 5 if dg_compilesegment worked so no need to check
+    //   subtraction underflow
+    // also dg_getbufferlength can't really fail either
+    targetoffset = dg_getbufferlength(
         pBHarrayhead,
         ccbufferid) - sizeof(UINT64);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
-		dg_pusherror(pBHarrayhead, dg_compilepushntoretname);
-		return(targetoffset);
-	}
-	
-	return (targetoffset);
+        dg_pusherror(pBHarrayhead, dg_compilepushntoretname);
+        return(targetoffset);
+    }
+    
+    return (targetoffset);
 }
 
 const char* dg_compilentoparametername = "dg_compilentoparameter";
@@ -4120,54 +5502,54 @@ void dg_compilentoparameter (
 void dg_forthcompilesafecallbuffer (Bufferhandle* pBHarrayhead)
 //     ( bufferoffset bufferid -- )
 {
-	UINT64* pbuflength;
-	unsigned char* pdatastack;
-	
-	UINT64* pints;
-	
-	UINT64 compilebufid;
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+    
+    UINT64* pints;
+    
+    UINT64 compilebufid;
     
     UINT64 ccbuflength;
     UINT64 finalccbuflength;
     
     UINT64 x;
-	
+    
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	pdatastack = dg_getpbuffer(
+    
+    pdatastack = dg_getpbuffer(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         &pbuflength);
-	
-	if (pdatastack == (unsigned char*)badbufferhandle)
-	{
+    
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthcompilesafecallbuffername);
-		return;
-	}
-	
-	if (*pbuflength < (2 * sizeof(UINT64)) )
-	{
+        dg_pusherror(pBHarrayhead, dg_forthcompilesafecallbuffername);
+        return;
+    }
+    
+    if (*pbuflength < (2 * sizeof(UINT64)) )
+    {
         dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
-		dg_pusherror(pBHarrayhead, dg_forthcompilesafecallbuffername);
-		return;
-	}
-	
-	// could check for misaligned data stack here
-	
-	pints = (UINT64*)(pdatastack + *pbuflength - (2 * sizeof(UINT64)));
-	
-	compilebufid = dg_getbufferuint64(
+        dg_pusherror(pBHarrayhead, dg_forthcompilesafecallbuffername);
+        return;
+    }
+    
+    // could check for misaligned data stack here
+    
+    pints = (UINT64*)(pdatastack + *pbuflength - (2 * sizeof(UINT64)));
+    
+    compilebufid = dg_getbufferuint64(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentcompilebuffer);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
         dg_pusherror(pBHarrayhead, dg_forthcompilesafecallbuffername);
-		return;
-	}
+        return;
+    }
     
     // safe call to forth routine
 //  rcx <- pBHarrayhead    0x48 0x8B 0x7D 0xF0
@@ -4349,10 +5731,10 @@ void dg_forthcompilesafecallbuffer (Bufferhandle* pBHarrayhead)
         compilebufid);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    {
         dg_pusherror(pBHarrayhead, dg_forthcompilesafecallbuffername);
-		return;
-	}
+        return;
+    }
     
     dg_putbufferuint64(
         pBHarrayhead,
@@ -4361,10 +5743,10 @@ void dg_forthcompilesafecallbuffer (Bufferhandle* pBHarrayhead)
         finalccbuflength);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    {
         dg_pusherror(pBHarrayhead, dg_forthcompilesafecallbuffername);
-		return;
-	}
+        return;
+    }
     
     (*pbuflength) -= (2 * sizeof(UINT64));
 }
@@ -4400,14 +5782,14 @@ void jmpbuffer (void)
 //  just pBHarrayhead, bufferid, and offset
 //  to get this, you JUMP to this routine, or return to it.
 {
-	__asm
-	{
-		call dg_getpbufferoffset
-		pop ecx
-		pop ecx
-		pop ecx
-		jmp eax		
-	}
+    __asm
+    {
+        call dg_getpbufferoffset
+        pop ecx
+        pop ecx
+        pop ecx
+        jmp eax        
+    }
 }
 */
 
@@ -4462,58 +5844,58 @@ void dg_initjumpbuffer (Bufferhandle* pBHarrayhead)
 //  need to call dg_forthregsfrom from dglu
 void dg_forthshowcapturedregs (Bufferhandle* pBHarrayhead)
 {
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	UINT64 x = 0;
-	
-	if (baderrorcount == olderrorcount)
-	{
-		return;
-	}
-		
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"eflags = ");		
-		x = dg_popdatastack(pBHarrayhead);
-		dg_writestdoutuint64tohex(pBHarrayhead, x);
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
-		
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"eax = ");		
-		x = dg_popdatastack(pBHarrayhead);
-		dg_writestdoutuint64tohex(pBHarrayhead, x);
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
-		
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"ebx = ");		
-		x = dg_popdatastack(pBHarrayhead);
-		dg_writestdoutuint64tohex(pBHarrayhead, x);
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
-		
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"ecx = ");		
-		x = dg_popdatastack(pBHarrayhead);
-		dg_writestdoutuint64tohex(pBHarrayhead, x);
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
-		
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"edx = ");		
-		x = dg_popdatastack(pBHarrayhead);
-		dg_writestdoutuint64tohex(pBHarrayhead, x);
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
-		
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"esi = ");		
-		x = dg_popdatastack(pBHarrayhead);
-		dg_writestdoutuint64tohex(pBHarrayhead, x);
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
-		
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"edi = ");		
-		x = dg_popdatastack(pBHarrayhead);
-		dg_writestdoutuint64tohex(pBHarrayhead, x);
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
-		
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"esp = ");		
-		x = dg_popdatastack(pBHarrayhead);
-		dg_writestdoutuint64tohex(pBHarrayhead, x);
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
-		
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"ebp = ");		
-		x = dg_popdatastack(pBHarrayhead);
-		dg_writestdoutuint64tohex(pBHarrayhead, x);
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 x = 0;
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+        
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"eflags = ");        
+        x = dg_popdatastack(pBHarrayhead);
+        dg_writestdoutuint64tohex(pBHarrayhead, x);
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+        
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"eax = ");        
+        x = dg_popdatastack(pBHarrayhead);
+        dg_writestdoutuint64tohex(pBHarrayhead, x);
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+        
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"ebx = ");        
+        x = dg_popdatastack(pBHarrayhead);
+        dg_writestdoutuint64tohex(pBHarrayhead, x);
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+        
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"ecx = ");        
+        x = dg_popdatastack(pBHarrayhead);
+        dg_writestdoutuint64tohex(pBHarrayhead, x);
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+        
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"edx = ");        
+        x = dg_popdatastack(pBHarrayhead);
+        dg_writestdoutuint64tohex(pBHarrayhead, x);
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+        
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"esi = ");        
+        x = dg_popdatastack(pBHarrayhead);
+        dg_writestdoutuint64tohex(pBHarrayhead, x);
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+        
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"edi = ");        
+        x = dg_popdatastack(pBHarrayhead);
+        dg_writestdoutuint64tohex(pBHarrayhead, x);
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+        
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"esp = ");        
+        x = dg_popdatastack(pBHarrayhead);
+        dg_writestdoutuint64tohex(pBHarrayhead, x);
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+        
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"ebp = ");        
+        x = dg_popdatastack(pBHarrayhead);
+        dg_writestdoutuint64tohex(pBHarrayhead, x);
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
 }
 */
 
@@ -6109,7 +7491,7 @@ void dg_compiledisplacement (
             pBHarrayhead,
             DG_DATASPACE_BUFFERID,
             currentcompilebuffer);
-	
+    
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
         {
             dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
@@ -7292,14 +8674,14 @@ void dg_compilen8tom32 (
             popcodes,
             pimmediatepsf,
             pmempsf);
-		
-		if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-		{
-			dg_pusherror(pBHarrayhead, dg_compilen8tom32name);
-			return;
-		}
-		
-		return;
+        
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_compilen8tom32name);
+            return;
+        }
+        
+        return;
     }
     
     dg_formatpsf(
@@ -7407,14 +8789,14 @@ void dg_compilen8tom16 (
             popcodes,
             pimmediatepsf,
             pmempsf);
-		
-		if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-		{
-			dg_pusherror(pBHarrayhead, dg_compilen8tom16name);
-			return;
-		}
-		
-		return;
+        
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_compilen8tom16name);
+            return;
+        }
+        
+        return;
     }
     
     // compile 16 bit instruction prefix
@@ -7831,7 +9213,7 @@ void dg_compilereg8 (
     dg_compileopcodeplusropstr (
         pBHarrayhead,
         (const char*)popcodes->r8.popcodestring,
-		popcodes->r8.opcodestringlength,
+        popcodes->r8.opcodestringlength,
         ptargetsf->basereg);
             
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
@@ -7874,9 +9256,9 @@ void dg_compilerega8 (
     }
     
     dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)popcodes->a8.popcodestring,
-		popcodes->a8.opcodestringlength);
+        pBHarrayhead, 
+        (const char*)popcodes->a8.popcodestring,
+        popcodes->a8.opcodestringlength);
         
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -7907,9 +9289,9 @@ void dg_compilen8 (
     }
     
     dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)popcodes->n8.popcodestring,
-		popcodes->n8.opcodestringlength);
+        pBHarrayhead, 
+        (const char*)popcodes->n8.popcodestring,
+        popcodes->n8.opcodestringlength);
         
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -7954,9 +9336,9 @@ void dg_compilen16 (
     }
     
     dg_compilesegment (
-		pBHarrayhead, 
-		&c,
-		1);
+        pBHarrayhead, 
+        &c,
+        1);
         
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -7965,9 +9347,9 @@ void dg_compilen16 (
     }
     
     dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)popcodes->n32.popcodestring,
-		popcodes->n32.opcodestringlength);
+        pBHarrayhead, 
+        (const char*)popcodes->n32.popcodestring,
+        popcodes->n32.opcodestringlength);
         
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -8016,9 +9398,9 @@ void dg_compilen16signextended (
     }
     
     dg_compilesegment (
-		pBHarrayhead, 
-		&c,
-		1);
+        pBHarrayhead, 
+        &c,
+        1);
         
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -8027,9 +9409,9 @@ void dg_compilen16signextended (
     }
     
     dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)popcodes->n32signextended.popcodestring,
-		popcodes->n32signextended.opcodestringlength);
+        pBHarrayhead, 
+        (const char*)popcodes->n32signextended.popcodestring,
+        popcodes->n32signextended.opcodestringlength);
         
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -8073,9 +9455,9 @@ void dg_compilen32 (
     }
     
     dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)popcodes->n32.popcodestring,
-		popcodes->n32.opcodestringlength);
+        pBHarrayhead, 
+        (const char*)popcodes->n32.popcodestring,
+        popcodes->n32.opcodestringlength);
         
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -8122,9 +9504,9 @@ void dg_compilen32signextended (
     }
     
     dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)popcodes->n32signextended.popcodestring,
-		popcodes->n32signextended.opcodestringlength);
+        pBHarrayhead, 
+        (const char*)popcodes->n32signextended.popcodestring,
+        popcodes->n32signextended.opcodestringlength);
         
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -8187,9 +9569,9 @@ void dg_compilemem16 (
     }
     
     dg_compilesegment (
-		pBHarrayhead, 
-		&c,
-		1);
+        pBHarrayhead, 
+        &c,
+        1);
         
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -8276,9 +9658,9 @@ void dg_compilereg16 (
     }
     
     dg_compilesegment (
-		pBHarrayhead, 
-		&c,
-		1);
+        pBHarrayhead, 
+        &c,
+        1);
         
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -8289,7 +9671,7 @@ void dg_compilereg16 (
     dg_compileopcodeplusropstr (
         pBHarrayhead,
         (const char*)popcodes->r32.popcodestring,
-		popcodes->r32.opcodestringlength,
+        popcodes->r32.opcodestringlength,
         ptargetsf->basereg);
             
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
@@ -8334,9 +9716,9 @@ void dg_compilerega16 (
     }
     
     dg_compilesegment (
-		pBHarrayhead, 
-		&c,
-		1);
+        pBHarrayhead, 
+        &c,
+        1);
         
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -8345,9 +9727,9 @@ void dg_compilerega16 (
     }
     
     dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)popcodes->a32.popcodestring,
-		popcodes->a32.opcodestringlength);
+        pBHarrayhead, 
+        (const char*)popcodes->a32.popcodestring,
+        popcodes->a32.opcodestringlength);
         
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -8748,7 +10130,7 @@ void dg_compilereg32 (
     dg_compileopcodeplusropstr (
         pBHarrayhead,
         (const char*)popcodes->r32.popcodestring,
-		popcodes->r32.opcodestringlength,
+        popcodes->r32.opcodestringlength,
         ptargetsf->basereg);
             
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
@@ -8826,9 +10208,9 @@ void dg_compilerega32 (
     }
     
     dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)popcodes->a32.popcodestring,
-		popcodes->a32.opcodestringlength);
+        pBHarrayhead, 
+        (const char*)popcodes->a32.popcodestring,
+        popcodes->a32.opcodestringlength);
         
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -12008,9 +13390,9 @@ void dg_compilen8tor8 (
     c = (unsigned char)(pimmediatepsf->immediatevalue & 0xFF);
      
     dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)&c, 
-		1);
+        pBHarrayhead, 
+        (const char*)&c, 
+        1);
 }
 
 
@@ -58395,46 +59777,46 @@ void dg_forthcode (Bufferhandle* pBHarrayhead)
 {
     UINT64 assemblerwordlist;
     
-	UINT64 olderrorcount = 0;
+    UINT64 olderrorcount = 0;
 
-	unsigned char c = 0;
+    unsigned char c = 0;
 
-	UINT64 definition = 0;
+    UINT64 definition = 0;
 
-	UINT64 namelength = 0;
-	unsigned char* pname = NULL;
+    UINT64 namelength = 0;
+    unsigned char* pname = NULL;
     
     UINT64 ccbufid;
     unsigned char* pccbuf;
     UINT64* pccbuflength;
 
-	olderrorcount = dg_geterrorcount(pBHarrayhead);
+    olderrorcount = dg_geterrorcount(pBHarrayhead);
     
     ccbufid = dg_getbufferuint64(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentcompilebuffer);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
-		dg_pusherror(pBHarrayhead, dg_forthcodename);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthcodename);
+        return;
+    }
     
     pccbuf = dg_getpbuffer(
         pBHarrayhead,
         ccbufid,
         &pccbuflength);
 
-	if (pccbuf == (unsigned char*)badbufferhandle)
-	{
+    if (pccbuf == (unsigned char*)badbufferhandle)
+    {
         dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
-		dg_pusherror(pBHarrayhead, dg_forthcodename);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthcodename);
+        return;
+    }
 
-	pname = dg_parseword(
+    pname = dg_parseword(
        pBHarrayhead,
        &namelength); 
 
@@ -58444,15 +59826,15 @@ void dg_forthcode (Bufferhandle* pBHarrayhead)
         return;
     }
 
-	if (namelength == 0)
-	{
-		dg_pusherror(pBHarrayhead, dg_wordlength0error);
+    if (namelength == 0)
+    {
+        dg_pusherror(pBHarrayhead, dg_wordlength0error);
         dg_pusherror(pBHarrayhead, dg_forthcodename);
-		return;
-	}
+        return;
+    }
     
     // changed this to compile type cdecl 5/3/2017
-	definition = dg_newwordcopyname(
+    definition = dg_newwordcopyname(
         pBHarrayhead, 
         (UINT64)DG_CORE_BUFFERID,         // compile type routine buffer
         (UINT64)&dg_forthdocompiletypecall, // (UINT64)&dg_forthdocompiletypecdecl,  // compile type routine offset
@@ -58462,43 +59844,43 @@ void dg_forthcode (Bufferhandle* pBHarrayhead)
         (UINT64)pname, 
         namelength);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthcodename);
-		return;
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodename);
+        return;
+    }
 
-	dg_forthleftbracket(pBHarrayhead);
+    dg_forthleftbracket(pBHarrayhead);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthcodename);
-		return;
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodename);
+        return;
+    }
 
-	dg_pushbufferuint64(
+    dg_pushbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         definition);
 
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthcodename);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthcodename);
+        return;
+    }
 
-	dg_pushbufferuint64(
+    dg_pushbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         dg_codesysmarker);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthcodename);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthcodename);
+        return;
+    }
 
     dg_putbufferuint64(
         pBHarrayhead,
@@ -58539,46 +59921,46 @@ void dg_forthocode (Bufferhandle* pBHarrayhead)
 {
     UINT64 assemblerwordlist;
     
-	UINT64 olderrorcount = 0;
+    UINT64 olderrorcount = 0;
 
-	unsigned char c = 0;
+    unsigned char c = 0;
 
-	UINT64 definition = 0;
+    UINT64 definition = 0;
 
-	UINT64 namelength = 0;
-	unsigned char* pname = NULL;
+    UINT64 namelength = 0;
+    unsigned char* pname = NULL;
 
-	Bufferhandle* pBH = NULL;
+    Bufferhandle* pBH = NULL;
     
     UINT64 ccbufid;
     unsigned char* pccbuf;
     UINT64* pccbuflength;
 
-	olderrorcount = dg_geterrorcount(pBHarrayhead);
+    olderrorcount = dg_geterrorcount(pBHarrayhead);
     
     ccbufid = dg_getbufferuint64(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentcompilebuffer);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
-		dg_pusherror(pBHarrayhead, dg_forthocodename);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthocodename);
+        return;
+    }
     
     pccbuf = dg_getpbuffer(
         pBHarrayhead,
         ccbufid,
         &pccbuflength);
 
-	if (pccbuf == (unsigned char*)badbufferhandle)
-	{
+    if (pccbuf == (unsigned char*)badbufferhandle)
+    {
         dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
-		dg_pusherror(pBHarrayhead, dg_forthocodename);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthocodename);
+        return;
+    }
  
     pname = dg_parseword(
        pBHarrayhead,
@@ -58590,14 +59972,14 @@ void dg_forthocode (Bufferhandle* pBHarrayhead)
         return;
     }
 
-	if (namelength == 0)
-	{
-		dg_pusherror(pBHarrayhead, dg_wordlength0error);
+    if (namelength == 0)
+    {
+        dg_pusherror(pBHarrayhead, dg_wordlength0error);
         dg_pusherror(pBHarrayhead, dg_forthocodename);
-		return;
-	}
+        return;
+    }
     
-	definition = dg_newwordcopyname(
+    definition = dg_newwordcopyname(
         pBHarrayhead, 
         (UINT64)DG_CORE_BUFFERID,         // compile type routine buffer
         (UINT64)&dg_forthdocompiletypedpushn, // (UINT64)&dg_forthdocompiletypecdecl,  // compile type routine offset
@@ -58607,43 +59989,43 @@ void dg_forthocode (Bufferhandle* pBHarrayhead)
         (UINT64)pname, 
         namelength);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthocodename);
-		return;
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthocodename);
+        return;
+    }
 
-	dg_forthleftbracket(pBHarrayhead);
+    dg_forthleftbracket(pBHarrayhead);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthocodename);
-		return;
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthocodename);
+        return;
+    }
 
-	dg_pushbufferuint64(
+    dg_pushbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         definition);
 
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthocodename);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthocodename);
+        return;
+    }
 
-	dg_pushbufferuint64(
+    dg_pushbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         dg_codesysmarker);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthocodename);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthocodename);
+        return;
+    }
 
     dg_putbufferuint64(
         pBHarrayhead,
@@ -58683,90 +60065,90 @@ const char* dg_forthendcodename = "END-CODE";
 void dg_forthendcode (Bufferhandle* pBHarrayhead)
 {
     UINT64* pbuflength;
-	unsigned char* pdatastack;
+    unsigned char* pdatastack;
 
     UINT64 isdefaultsafe;
 
-	INT64* pints;
+    INT64* pints;
 
-	UINT64 ccwordlist;
+    UINT64 ccwordlist;
     UINT64 assemblerwordlist;
 
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
     dg_forthqueryclearlocals(pBHarrayhead);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthendcodename);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_forthendcodename);
+        return;
+    }
 
-	dg_forthleftbracket(pBHarrayhead);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthendcodename);
-		return;
-	}
+    dg_forthleftbracket(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthendcodename);
+        return;
+    }
 
-	pdatastack = dg_getpbuffer(
+    pdatastack = dg_getpbuffer(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         &pbuflength);
 
-	if (pdatastack == (unsigned char*)badbufferhandle)
-	{
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthendcodename);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthendcodename);
+        return;
+    }
 
-	if (*pbuflength < (2 * sizeof(UINT64)) )
-	{
+    if (*pbuflength < (2 * sizeof(UINT64)) )
+    {
         dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
-		dg_pusherror(pBHarrayhead, dg_forthendcodename);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthendcodename);
+        return;
+    }
 
-	// could check for misaligned data stack here
+    // could check for misaligned data stack here
 
-	pints = (INT64*)(pdatastack + *pbuflength - (2 * sizeof(UINT64)));
+    pints = (INT64*)(pdatastack + *pbuflength - (2 * sizeof(UINT64)));
 
-	if (pints[1] != (INT64)dg_codesysmarker)
-	{
+    if (pints[1] != (INT64)dg_codesysmarker)
+    {
         dg_pusherror(pBHarrayhead, dg_colonsysmissingerror);
-		dg_pusherror(pBHarrayhead, dg_forthendcodename);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthendcodename);
+        return;
+    }
 
-	// not checking the definition?
+    // not checking the definition?
 
-	ccwordlist = dg_getbufferuint64(
+    ccwordlist = dg_getbufferuint64(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentcompilewordlist);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthpcurrentcreatewordlistname);
-		dg_pusherror(pBHarrayhead, dg_forthendcodename);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthendcodename);
+        return;
+    }
 
-	dg_linkdefinition(
+    dg_linkdefinition(
         pBHarrayhead,
         ccwordlist,
         pints[0]);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthendcodename);
-		return;
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthendcodename);
+        return;
+    }
 
-	*pbuflength -= 2* sizeof(UINT64);
+    *pbuflength -= 2* sizeof(UINT64);
 
     isdefaultsafe = dg_getbufferuint64(
         pBHarrayhead,
@@ -58774,21 +60156,21 @@ void dg_forthendcode (Bufferhandle* pBHarrayhead)
         coloncallssafeflag);
 
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    {
         dg_pusherror(pBHarrayhead, dg_forthpcoloncallssafeflagname);
-		dg_pusherror(pBHarrayhead, dg_forthendcodename);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthendcodename);
+        return;
+    }
 
     if (FORTH_FALSE != isdefaultsafe)
     {
         dg_forthsafe(pBHarrayhead);
 
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	    {
-		    dg_pusherror(pBHarrayhead, dg_forthendcodename);
-		    return;
-	    }
+        {
+            dg_pusherror(pBHarrayhead, dg_forthendcodename);
+            return;
+        }
     }
     
     assemblerwordlist = dg_popbufferuint64(
@@ -58796,11 +60178,11 @@ void dg_forthendcode (Bufferhandle* pBHarrayhead)
         DG_SEARCHORDERSTACK_BUFFERID);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    {
         dg_pusherror(pBHarrayhead, dg_forthpcoloncallssafeflagname);
-		dg_pusherror(pBHarrayhead, dg_forthendcodename);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthendcodename);
+        return;
+    }
 }
 
 
@@ -58885,12 +60267,12 @@ void dg_compileloopwhilecomma (
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentcompilebuffer);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
-		dg_pusherror(pBHarrayhead, dg_compileloopwhilecommaname);
-	}
+        dg_pusherror(pBHarrayhead, dg_compileloopwhilecommaname);
+    }
     
     mybuf[0] = (unsigned char)(baseopcode & 0xff);
     mybuf[1] = 5;
@@ -59007,12 +60389,12 @@ void dg_compileloopuntilcomma(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentcompilebuffer);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
-		dg_pusherror(pBHarrayhead, dg_compileloopuntilcommaname);
-	}
+        dg_pusherror(pBHarrayhead, dg_compileloopuntilcommaname);
+    }
     
     // gonna assume no overflow... should be ok since bufferlengths are limited to 2gig
     afterbranchoffset = 2 + dg_getbufferlength(
@@ -59762,9 +61144,9 @@ void dg_compilebitopnofr (
     }
     
     dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)"\x0F\xBA",
-		2);
+        pBHarrayhead, 
+        (const char*)"\x0F\xBA",
+        2);
         
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -59776,9 +61158,9 @@ void dg_compilebitopnofr (
     c = dg_packmodrslashm(3, opcodeextension, pregtarget->basereg & 7);
     
     dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)&c,
-		1);
+        pBHarrayhead, 
+        (const char*)&c,
+        1);
         
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -59789,9 +61171,9 @@ void dg_compilebitopnofr (
     c = (unsigned char)(pimmediatetarget->immediatevalue & 0xff);
     
     dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)&c,
-		1);
+        pBHarrayhead, 
+        (const char*)&c,
+        1);
         
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -59872,9 +61254,9 @@ void dg_compilebitopnofm (
     }
     
     dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)"\x0F\xBA",
-		2);
+        pBHarrayhead, 
+        (const char*)"\x0F\xBA",
+        2);
         
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -59893,9 +61275,9 @@ void dg_compilebitopnofm (
     }
     
     dg_compilesegment (
-		pBHarrayhead, 
-		(const char*)&c,
-		1);
+        pBHarrayhead, 
+        (const char*)&c,
+        1);
         
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -61783,7 +63165,7 @@ void dg_forthcallcomma (Bufferhandle* pBHarrayhead)
         return;
     }
     
-	mycurrentcompilebufferid = dg_getbufferuint64(
+    mycurrentcompilebufferid = dg_getbufferuint64(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentcompilebuffer);
@@ -61804,7 +63186,7 @@ void dg_forthcallcomma (Bufferhandle* pBHarrayhead)
         return;
     }
 
-	if ( (myfirstsf.memmode == dg_memmodeimmediate) ||
+    if ( (myfirstsf.memmode == dg_memmodeimmediate) ||
          (mycurrentcompilebufferid == DG_CORE_BUFFERID) )
     {
         dg_pusherror(pBHarrayhead, (const char*)"Calls to absolute addresses not supported on x86. Need to move address to a register or memory first.");
@@ -63965,41 +65347,41 @@ void dg_forthstrtopstrpushcomma (Bufferhandle* pBHarrayhead)
         DG_STRINGOFFSETSTACK_BUFFERID);
         
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthstrtopstrpushcommaname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_forthstrtopstrpushcommaname);
+        return;
+    }
 
-	pstring = (unsigned char*)dg_getplstring(
-		pBHarrayhead, 
-		DG_STRINGOFFSETSTACK_BUFFERID, 
-		DG_STRINGSTRINGSTACK_BUFFERID,
-		stringstackdepth - 1,
-		&stringlength);
-	
-	dg_compilecalloffset(pBHarrayhead, stringlength);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthstrtopstrpushcommaname);
-		return;
-	}
-	
-	dg_compilesegment(pBHarrayhead, (const char*)pstring, stringlength);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthstrtopstrpushcommaname);
-		return;
-	}
+    pstring = (unsigned char*)dg_getplstring(
+        pBHarrayhead, 
+        DG_STRINGOFFSETSTACK_BUFFERID, 
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 1,
+        &stringlength);
+    
+    dg_compilecalloffset(pBHarrayhead, stringlength);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthstrtopstrpushcommaname);
+        return;
+    }
+    
+    dg_compilesegment(pBHarrayhead, (const char*)pstring, stringlength);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthstrtopstrpushcommaname);
+        return;
+    }
     
     dg_forthdropstring(pBHarrayhead);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthstrtopstrpushcommaname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_forthstrtopstrpushcommaname);
+        return;
+    }
 }
 
 UINT64 cparameterslookuptable[6] = 
