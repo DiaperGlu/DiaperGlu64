@@ -3,20 +3,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.5.
+//    This file is part of DiaperGlu v5.6.
 //
-//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.6 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.6 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.5; if not, write to the Free Software
+//    along with DiaperGlu v5.6; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// July 2, 2022               //
-// version 5.5                //
+// August 1, 2022             //
+// version 5.6                //
 // /////////////////////////////
 -->
 
@@ -116,8 +116,7 @@
 
       <div class=word id=dg_getbharrayheadsize>
 <pre>
-////////////////////////////////////////////////////////////////////////
-//
+// //////////////////////////////////////////////////////////////////////////////////////
 // dg_getbharrayheadsize
 //
 // C prototype:
@@ -138,14 +137,14 @@
 //   the size of the Bufferhandle structure may change in a different versions
 //   of Diaperglu.
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_getnearesthighestmultiple>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_getnearesthighestmultiple
 //
@@ -170,14 +169,14 @@
 //   function is used for rounding up requested buffer sizes to match system
 //   page sizes.
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
 
       <div class=word id=dg_calcnearestpagesize>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_calcnearestpagesize
 //
@@ -198,15 +197,16 @@
 //   I've checked use 8 bytes. Some versions of Linux are 1K bytes. This 
 //   function is used for rounding up requested buffer sizes to match system
 //   page sizes.
+//  64 bit versions of Windows and Mac OS X use page sizes that are multiples of 4k.
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_getlocalpath>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_getlocalpath
 //
@@ -251,14 +251,14 @@
 //  
 // IIS:
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_pushenvtobuf>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_pushenvtobuf
 //
@@ -270,8 +270,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 //  UINT64 bufferid               id of destination buffer
 //
@@ -285,14 +285,14 @@
 //
 // Failure cases:
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
 
       <div class=word id=dg_getevalstdinfileid>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_getevalstdinfileid
 //
@@ -301,8 +301,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //  
 // Outputs:
 //  Success: Returns the UINT64 stdin file id. This is 0 in Linux
@@ -316,14 +316,14 @@
 //  Can't get hstdin
 //  Can't push to script file name buffer
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
       
      <div class=word id=dg_getevalfilenamefileid>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_getevalfilenamefileid
 //
@@ -335,8 +335,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //  
 // Outputs:
 //  Success: Returns the UINT64 stdin file id. This is 0 in Linux
@@ -350,14 +350,14 @@
 //  Can't get hstdin
 //  Can't push to script file name buffer
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_getevalargsfileid>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_getevalargsfileid
 //
@@ -366,8 +366,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //  
 // Outputs:
 //  Success: Returns a UINT64 file id.
@@ -390,19 +390,20 @@
 //  pBHarrayhead bad
 //  Can't get a pointer to the DG_ARGS_BUFFERID buffer
 //  There are no C program arguments
-//  Can't push a copy of DG_ARGS_BUFFERID buffer to the DG_SCRIPTFILENAME_BUFFERID buffer
+//  Can't push a copy of DG_ARGS_BUFFERID buffer to the DG_SCRIPTFILENAME_BUFFERID 
+//   buffer
 //  Can't append a null terminator to the end of the DG_SCRIPTFILENAME_BUFFERID buffer
 //  Can't get a pointer to the DG_SCRIPTFILENAME_BUFFERID buffer
 //  Can't open file
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_getnoscriptfileid>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_getnoscriptfileid
 //
@@ -411,8 +412,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //  
 // Outputs:
 //  Success: Returns a UINT64 file id.
@@ -432,14 +433,14 @@
 //  pBHarrayhead bad
 //  Can't open file "noscript.dglu"
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 <!--
       <div class=word id=dg_getscriptnotfoundfileid>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_getscriptnotfoundfileid
 //
@@ -448,8 +449,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //  
 // Outputs:
 //  Success: Returns a UINT64 file id.
@@ -469,7 +470,7 @@
 //  pBHarrayhead bad
 //  Can't open file "scriptnotfound.dglu"
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 -->      
@@ -477,7 +478,7 @@
 
       <div class=word id=dg_getiisquerystringfileid>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_getiisquerystringfileid
 //
@@ -489,8 +490,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 //  unsigned char* pname          pointer to file name
 //
@@ -515,17 +516,18 @@
 //  Error scanning the DG_SCRIPTFILENAME_BUFFERID buffer for the null terminator
 //   of the pushed PATH_TRANSLATED value.
 //  Error pushing the file name to the end of the DG_SCRIPTFILENAME_BUFFERID buffer
-//  Error appending a null terminator to the end of the DG_SCRIPTFILENAME_BUFFERID buffer
+//  Error appending a null terminator to the end of the DG_SCRIPTFILENAME_BUFFERID 
+//   buffer
 //  Error opening file for read
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
 
       <div class=word id=dg_getapachequerystrfileid>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_getapachequerystrfileid
 //
@@ -537,8 +539,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 //  unsigned char* pname          pointer to file name
 //
@@ -561,17 +563,18 @@
 //  Error getting a pointer to the DG_SCRIPTFILENAME_BUFFERID buffer
 //  Error finding the null terminator in the buffer.
 //  Error pushing the file name onto the end of the DG_SCRIPTFILENAME_BUFFERID buffer
-//  Error pushing a null terminator onto the end of the DG_SCRIPTFILENAME_BUFFERID buffer
+//  Error pushing a null terminator onto the end of the DG_SCRIPTFILENAME_BUFFERID 
+//   buffer
 //  Error opening the file
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
 
       <div class=word id=dg_getquerystringfileid>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_getquerystringfileid
 //
@@ -580,8 +583,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Outputs:
 //  return UINT64                 buffer id of open file
@@ -602,19 +605,20 @@
 //  Error scanning the DG_SCRIPTFILENAME_BUFFERID buffer for the null terminator
 //   of the pushed QUERY_STRING value.
 //  Error pushing the file name to the end of the DG_SCRIPTFILENAME_BUFFERID buffer
-//  Error appending a null terminator to the end of the DG_SCRIPTFILENAME_BUFFERID buffer
+//  Error appending a null terminator to the end of the DG_SCRIPTFILENAME_BUFFERID 
+//   buffer
 //  Error opening file for read
 //
 // Failure cases:
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
 
       <div class=word id=dg_checkformatchafterslash>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_checkformatchafterslash
 //
@@ -627,8 +631,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Outputs:
 //  return UINT64                 FORTH_TRUE if there is a match
@@ -645,14 +649,14 @@
 //
 // Failure cases:
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_getevaluatefileid>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_getevaluatefileid
 //
@@ -661,8 +665,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //  
 // Outputs:
 //  Success: Returns a UINT64 file id.
@@ -678,31 +682,35 @@
 //  If no SERVER_NAME and no command line arguments, this routine uses 'stdin' as the
 //   filename, and returns the file id for stdin
 //  If there is a SERVER_NAME and there are command line arguments, this routine uses
-//   the command line argumetns as a filename, opens the file and returns the file handle.
+//   the command line argumetns as a filename, opens the file and returns the file
+//   handle.
 //  If there is a SERVER_NAME and no command line arguments, this routine tries to use
 //   "scriptnotfound.dglu" as the filename, opens the file and returns the file handle.
 //
 // Note:
-//  No errors with a badfilehandle returned means it could not open "scriptnotfound.dglu".
-//  This also means there was a SERVER_NAME defined and Diaperglu is running in CGI/ISAPI
-//   mode.
+//  No errors with a badfilehandle returned means it could not open 
+//   "scriptnotfound.dglu".
+//  This also means there was a SERVER_NAME defined and Diaperglu is running in 
+//   CGI/ISAPI mode.
 //
 // Failure cases:
 //  pBHarrayhead bad
 //  could not clear DG_SCRIPTFILENAME_BUFFERID buffer
-//  trying to look up an environment variable failed (an undefined variable is not an error)
-//  had trouble trying to use the arguments as a filename (file not exist is not an error)
+//  trying to look up an environment variable failed 
+//   (an undefined variable is not an error)
+//  had trouble trying to use the arguments as a filename 
+//   (file not exist is not an error)
 //  had trouble using stdin as the source file (this shouldn't happen)
 //  could not use "scriptnotfound.dglu" as the source file
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_querygetpost>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_querygetpost
 //
@@ -711,8 +719,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //  UINT64 firsttimethrough       whether or not first time through main loop
 //                                 stuff was not done yet flag
 //  
@@ -735,18 +743,19 @@
 //  
 // Failure cases:
 //  pBHarrayhead bad
-//  error getting value of an environment variable (variable not defined is not an error)
+//  error getting value of an environment variable 
+//   (variable not defined is not an error)
 //  error comparing bytes (should not happen since this routine owns the memory)
 //  error reading available bytes from stdin to DG_POST_BUFFERID buffer
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_closeevalfileid>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_closeevalfileid
 //
@@ -755,8 +764,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //  UINT64 fileid                 file id of an open file              
 //  
 // Outputs:
@@ -770,14 +779,14 @@
 //  error getting stdin file id
 //  error closing the file
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_getline>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_getline
 //
@@ -790,8 +799,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
-//                               used as the bufferhandle for the array where the other 
-//                               bufferhandles are stored.
+//                               used as the bufferhandle for the array where the 
+//                               other bufferhandles are stored.
 //  UINT64  fileid              file id of a file open for reading
 //  UINT64  bufferid            index of the bufferhandle in the BHarray of the buffer 
 //                               where the line is put
@@ -802,7 +811,8 @@
 //  returns FORTH_TRUE if eof reached
 //
 // Action:
-//  gets characters from the OS until an error occurs or until a line feed and puts them into a buffer
+//  gets characters from the OS until an error occurs or until a line feed and puts 
+//   them into a buffer
 //
 // Failure cases:
 //  unforseen problem in the OS
@@ -811,13 +821,13 @@
 // Assumptions:
 //  assumes dg_getline2 returns EOF or a character between 0 and 0xFF
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
       <div class=word id=dg_captureerrorline>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_captureerrorline
 //
@@ -840,14 +850,14 @@
 //  Copies everything up the first line terminator or the first 0x100 characters
 //   from the bufferid buffer to the DG_ERRORLINE_BUFFERID buffer.
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
 
       <div class=word id=dg_evaluatefileid>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_evaluatefileid
 //
@@ -859,8 +869,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
-//                               used as the bufferhandle for the array where the other 
-//                               bufferhandles are stored.
+//                               used as the bufferhandle for the array where the 
+//                               other bufferhandles are stored.
 //  UINT64 fileid               file id of a file open for reading
 //  UINT64* pfirsttimethrough   pointer to the first time through main loop flag 
 //  
@@ -882,7 +892,8 @@
 //   DG_TERMINALINPUT_BUFFERID buffer until an exit flag becomes FORTH_TRUE.
 //
 // Note:
-//  The script command BYE ( dg_forthbye ) will cause the exit flag to become FORTH_TRUE
+//  The script command BYE ( dg_forthbye ) will cause the exit flag to become 
+//   FORTH_TRUE
 //
 // Failure cases:
 //  pBHarrayhead bad
@@ -897,14 +908,14 @@
 //   was the file's length (yes I have actually seen this happen under ISAPI)
 //  error getting a line from the file (usually stdin in this case)
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_sendnoscriptfilepage>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_sendnoscriptfilepage
 //
@@ -913,8 +924,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
-//                               used as the bufferhandle for the array where the other 
-//                               bufferhandles are stored.
+//                               used as the bufferhandle for the array where the 
+//                               other bufferhandles are stored.
 //  
 // Outputs:
 //  none
@@ -925,14 +936,14 @@
 // Failure cases:
 //  none
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_sendfilenotfoundpage>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_sendfilenotfoundpage
 //
@@ -941,8 +952,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
-//                               used as the bufferhandle for the array where the other 
-//                               bufferhandles are stored.
+//                               used as the bufferhandle for the array where the 
+//                               other bufferhandles are stored.
 //  UINT64 olderrorcount        the error depth at the time the file load failed
 //  
 // Outputs:
@@ -958,14 +969,14 @@
 // Failure cases:
 //  errors ignored
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_showinputmode>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_showinputmode
 //
@@ -976,8 +987,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
-//                               used as the bufferhandle for the array where the other 
-//                               bufferhandles are stored.
+//                               used as the bufferhandle for the array where the 
+//                               other bufferhandles are stored.
 //  UINT64 filed                a file id of an open source file
 //  
 // Outputs:
@@ -991,14 +1002,14 @@
 // Failure cases:
 //  errors ignored
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_showerrorspage>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_showerrorspage
 //
@@ -1007,8 +1018,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
-//                               used as the bufferhandle for the array where the other 
-//                               bufferhandles are stored.
+//                               used as the bufferhandle for the array where the 
+//                               other bufferhandles are stored.
 //  
 // Outputs:
 //  none
@@ -1025,14 +1036,14 @@
 // Failure cases:
 //  errors ignored
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
       
       <div class=word id=dg_showinputmodepage>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_showinputmodepage
 //
@@ -1043,8 +1054,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
-//                               used as the bufferhandle for the array where the other 
-//                               bufferhandles are stored.
+//                               used as the bufferhandle for the array where the 
+//                               other bufferhandles are stored.
 //
 //  UINT64 fileid               input fileid to show
 //
@@ -1054,14 +1065,14 @@
 // Action:
 //  Shows input mode html page.
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
       
       <div class=word id=dg_sendgetenvvarerrorpage>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_sendgetenvvarerrorpage
 //
@@ -1070,8 +1081,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
-//                               used as the bufferhandle for the array where the other 
-//                               bufferhandles are stored.
+//                               used as the bufferhandle for the array where the 
+//                               other bufferhandles are stored.
 //
 // Outputs:
 //  none
@@ -1080,14 +1091,14 @@
 //  Shows error stack for an error that occurred while trying to retrieve
 //   an environment variable.
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_doinputstuff>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_doinputstuff
 //
@@ -1098,8 +1109,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead  pointer to a Bufferhandle structure which is 
-//                               used as the bufferhandle for the array where the other 
-//                               bufferhandles are stored.
+//                               used as the bufferhandle for the array where the 
+//                               other bufferhandles are stored.
 //  UINT64* pfirsttimethrough   pointer to first time through main loop flag
 //  
 // Outputs:
@@ -1121,14 +1132,14 @@
 //  Except in the case of a bad pBHarrayhead, errors are handled or ignored in 
 //   this routine as needed, none are passed out.
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_evaluatebuffer>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_evaluatebuffer
 //
@@ -1137,17 +1148,17 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored
 //  UINT64   bufferid          buffer containing text to evaluate          
 //
 // Outputs:
 //  none
 //
 // Action:
-//  starts at the beginning of the buffer then gets each word in the buffer, looks it up
-//   in the current search order, then does the action for the word based on the current 
-//   script processing state  
+//  starts at the beginning of the buffer then gets each word in the buffer, looks it
+//   up in the current search order, then does the action for the word based on the 
+//   current script processing state  
 //  If it runs across a word it can't find, it stops
 //
 // Failure cases:
@@ -1163,14 +1174,14 @@
 //  input buffer deleted during use ( what did you do??? %-O )
 //  input buffer's length changed during use
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_argstoargsbuffer>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_argstoargsbuffer
 //
@@ -1182,10 +1193,11 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored 
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored 
 //  int            argc              the number of arguments passed in to the process
-//  char*          argv              array of pointers to zero strings containing the arguments         
+//  char*          argv              array of pointers to zero strings containing the 
+//                                    arguments         
 //
 // Outputs:
 //  none
@@ -1210,14 +1222,14 @@
 //  error pushing the argument to the argsbuffer
 //  error pushing a space to the argsbuffer
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_readstdinavailabletobuffer>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_readstdinavailabletobuffer 
 //
@@ -1228,8 +1240,8 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored 
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored 
 //  UINT64         bufferid          buffer id of the destination buffer
 //                                                              
 // Action:
@@ -1241,14 +1253,14 @@
 //  buffer is full
 //  not enough memory to grow buffer
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_compilesegment>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_compilesegment
 //
@@ -1257,8 +1269,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 //  const char*   psrc            pointer to source segment
 //  UINT64        length          length of source segment
@@ -1271,14 +1283,14 @@
 //
 // Failure cases:
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
       
       <div class=word id=dg_compilecallcore>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_compilecallcore
 //
@@ -1289,8 +1301,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 //  const char*   psrc            pointer to source segment
 //  UINT64        length          length of source segment
@@ -1302,14 +1314,14 @@
 //
 // Failure cases:
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
       
       <div class=word id=dg_compilecallcorepreserveregs>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_compilecallcorepreserveregs
 //
@@ -1320,8 +1332,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 //  const char*   psrc            pointer to source segment
 //  UINT64        length          length of source segment
@@ -1335,14 +1347,14 @@
 //
 // Failure cases:
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
       
      <div class=word id=dg_compilepushdatastack>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_compilepushdatastack
 //
@@ -1351,8 +1363,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //                                                          
 // Action:
 //  Compiles a call to dg_pushdatastack.
@@ -1361,14 +1373,14 @@
 //
 // Failure cases:
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
      
      
      <div class=word id=dg_isnegative>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_isnegative
 //
@@ -1383,18 +1395,18 @@
 //                                -1 if negative
 //
 // Action:
-//  Returns 0 if x is less than 0x80000000, otherwise returns -1.
+//  Returns 0 if x is less than 0x8000000000000000, otherwise returns -1.
 //
 // Failure cases:
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
      <div class=word id=dg_smslashrem>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_smslashrem
 //
@@ -1423,14 +1435,14 @@
 //
 // Failure cases:
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
      <div class=word id=dg_fmslashmod>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_fmslashmod
 //
@@ -1459,14 +1471,14 @@
 //
 // Failure cases:
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
      <div class=word id=dg_checkbharrayhead>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_checkbharrayhead
 //
@@ -1475,8 +1487,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //                                                          
 // Outputs:
 //  const char*   return    pointer to dg_success message if everything worked
@@ -1495,14 +1507,14 @@
 //
 // Failure cases:
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
      
      
      <div class=word id=dg_checkbharray>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_checkbharray
 //
@@ -1511,8 +1523,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //                                                          
 // Outputs:
 //  const char*   return    pointer to dg_success message if everything worked
@@ -1524,14 +1536,14 @@
 //
 // Failure cases:
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
      
 
      <div class=word id=dg_stonewstring>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_stonewstring
 //
@@ -1543,8 +1555,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 //  unsigned char* pstring        pointer to byte array to push to string stack.
 //
@@ -1558,14 +1570,14 @@
 //
 // Failure cases:
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
      
 
      <div class=word id=dg_pzerostringtonewstring>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_pzerostringtonewstring
 //
@@ -1576,8 +1588,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 //  unsigned char* pzerostring    pointer to null terminated byte array.
 //
@@ -1590,20 +1602,20 @@
 //
 // Failure cases:
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
      <div class=word id=dg_checkargs>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_checkargs
 //
 // C prototype:
 //  const char* dg_checkargs (
-//    int argc,              // assumes argc is at least one less than largest signed int
+//    int argc,           // assumes argc is at least one less than largest signed int
 //    char* argv[])
 //
 // Inputs:
@@ -1629,14 +1641,14 @@
 //
 // Failure cases:
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
      
 
      <div class=word id=dg_parseword>
 <pre>
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_parseword
 //
@@ -1666,14 +1678,14 @@
 //
 // Failure cases:
 //  
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
      
 
      <div class=word id=dg_parsewords>
 <pre>
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_parsewords
 //
@@ -1717,14 +1729,14 @@
 //
 // Failure cases:
 //  
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
      <div class=word id=dg_f32tof64>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_f32tof64
 //
@@ -1742,14 +1754,14 @@
 //
 // Failure cases:
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
      <div class=word id=dg_f64tof32>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_f64tof32
 //
@@ -1767,14 +1779,14 @@
 //
 // Failure cases:
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
      
 
      <div class=word id=dg_ftod>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_ftod
 //
@@ -1792,14 +1804,14 @@
 //
 // Failure cases:
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
      
      
      <div class=word id=dg_dftod>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_dftod
 //
@@ -1817,14 +1829,14 @@
 //
 // Failure cases:
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
      
      
      <div class=word id=dg_dtodf>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_dtodf
 //
@@ -1842,7 +1854,7 @@
 //
 // Failure cases:
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 

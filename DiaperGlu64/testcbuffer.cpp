@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.5.
+//    This file is part of DiaperGlu v5.6.
 //
-//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.6 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.6 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.5; if not, write to the Free Software
+//    along with DiaperGlu v5.6; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// July 2, 2022               //
-// version 5.5                //
+// August 1, 2022             //
+// version 5.6                //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -7756,7 +7756,7 @@ void testdg_parsewords()
         &BHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentinterpretbuffer,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
         if (dg_geterrorcount(&BHarrayhead) != 0)
         {
@@ -7771,7 +7771,7 @@ void testdg_parsewords()
     // dg_success case
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)"um   did this work?\"more");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -8001,7 +8001,7 @@ void testdg_parseword()
         &BHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentinterpretbuffer,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
         if (dg_geterrorcount(&BHarrayhead) != 0)
         {
@@ -8016,7 +8016,7 @@ void testdg_parseword()
     // dg_success case
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)"  um did this work?");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -8200,7 +8200,7 @@ void testdg_parse()
         &BHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentinterpretbuffer,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
         if (dg_geterrorcount(&BHarrayhead) != 0)
         {
@@ -8213,7 +8213,7 @@ void testdg_parse()
 
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" boo :) \"");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -8278,7 +8278,7 @@ void testdg_parse()
         &BHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentinterpretbuffer,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -8291,7 +8291,7 @@ void testdg_parse()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" pickle");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -8355,7 +8355,7 @@ void testdg_parse()
         &BHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentinterpretbuffer,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -8368,7 +8368,7 @@ void testdg_parse()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" pick\nle)");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -8449,7 +8449,7 @@ void testdg_parsemultiline()
         &BHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentinterpretbuffer,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
         if (dg_geterrorcount(&BHarrayhead) != 0)
         {
@@ -8462,7 +8462,7 @@ void testdg_parsemultiline()
 
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" boo :) \"");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -8517,7 +8517,7 @@ void testdg_parsemultiline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     
     if (pBH->currentoffset != 9)
     {
@@ -8537,7 +8537,7 @@ void testdg_parsemultiline()
         &BHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentinterpretbuffer,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -8550,7 +8550,7 @@ void testdg_parsemultiline()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" pickle");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -8604,7 +8604,7 @@ void testdg_parsemultiline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     
     if (pBH->currentoffset != 7)
     {
@@ -8624,7 +8624,7 @@ void testdg_parsemultiline()
         &BHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentinterpretbuffer,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -8637,7 +8637,7 @@ void testdg_parsemultiline()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" pick\nle)more");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -8692,7 +8692,7 @@ void testdg_parsemultiline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     
     if (pBH->currentoffset != 9)
     {
@@ -9123,7 +9123,7 @@ void testdg_noparseentirecurrentline()
 
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" boo :) \n hoo");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -9138,7 +9138,7 @@ void testdg_noparseentirecurrentline()
     pstring = dg_noparseentirecurrentline(
         &BHarrayhead,
         &stringlength,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -9186,7 +9186,7 @@ void testdg_noparseentirecurrentline()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" pickle");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -9201,7 +9201,7 @@ void testdg_noparseentirecurrentline()
     pstring = dg_noparseentirecurrentline(
         &BHarrayhead,
         &stringlength,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -9248,7 +9248,7 @@ void testdg_noparseentirecurrentline()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" pick\nle)");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -9263,7 +9263,7 @@ void testdg_noparseentirecurrentline()
     pstring = dg_noparseentirecurrentline(
         &BHarrayhead,
         &stringlength,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -9313,7 +9313,7 @@ void testdg_noparseentirecurrentline()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" pick\nle)");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -9325,13 +9325,13 @@ void testdg_noparseentirecurrentline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     pBH->currentoffset = pBH->currentoffset + 2;
     
     pstring = dg_noparseentirecurrentline(
         &BHarrayhead,
         &stringlength,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -9381,7 +9381,7 @@ void testdg_noparseentirecurrentline()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" \n pick\nle)");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -9393,13 +9393,13 @@ void testdg_noparseentirecurrentline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     pBH->currentoffset = pBH->currentoffset + 5;
     
     pstring = dg_noparseentirecurrentline(
         &BHarrayhead,
         &stringlength,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -9449,7 +9449,7 @@ void testdg_noparseentirecurrentline()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" \n pick\n\nle)");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -9461,13 +9461,13 @@ void testdg_noparseentirecurrentline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     pBH->currentoffset = 8;
     
     pstring = dg_noparseentirecurrentline(
         &BHarrayhead,
         &stringlength,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -9517,7 +9517,7 @@ void testdg_noparseentirecurrentline()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" \n pick\n\n");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -9529,13 +9529,13 @@ void testdg_noparseentirecurrentline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     pBH->currentoffset = 9;
     
     pstring = dg_noparseentirecurrentline(
         &BHarrayhead,
         &stringlength,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -9585,7 +9585,7 @@ void testdg_noparseentirecurrentline()
 
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" \n pick\nshoe\ntomato");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -9597,13 +9597,13 @@ void testdg_noparseentirecurrentline()
         return;
     }
 
-    pBH = &(((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID]);
+    pBH = &(((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID]);
     pBH->currentoffset = 12;
 
     pstring = dg_noparseentirecurrentline(
         &BHarrayhead,
         &stringlength,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -9652,7 +9652,7 @@ void testdg_noparseentirecurrentline()
 
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" \n pick\nshoe\ntomato");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -9664,13 +9664,13 @@ void testdg_noparseentirecurrentline()
         return;
     }
 
-    pBH = &(((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID]);
+    pBH = &(((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID]);
     pBH->currentoffset = 11;
 
     pstring = dg_noparseentirecurrentline(
         &BHarrayhead,
         &stringlength,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -9719,7 +9719,7 @@ void testdg_noparseentirecurrentline()
 
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" \n pick\nshoe\ntomato");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -9731,13 +9731,13 @@ void testdg_noparseentirecurrentline()
         return;
     }
 
-    pBH = &(((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID]);
+    pBH = &(((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID]);
     pBH->currentoffset = 9;
 
     pstring = dg_noparseentirecurrentline(
         &BHarrayhead,
         &stringlength,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -9786,7 +9786,7 @@ void testdg_noparseentirecurrentline()
 
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" \n pick\nshoe\ntomato");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -9798,13 +9798,13 @@ void testdg_noparseentirecurrentline()
         return;
     }
 
-    pBH = &(((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID]);
+    pBH = &(((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID]);
     pBH->currentoffset = 8;
 
     pstring = dg_noparseentirecurrentline(
         &BHarrayhead,
         &stringlength,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -9870,7 +9870,7 @@ void testdg_parseline()
 
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" boo :) \n hoo");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -9886,7 +9886,7 @@ void testdg_parseline()
         &BHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentinterpretbuffer,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -9939,7 +9939,7 @@ void testdg_parseline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     
     if (pBH->currentoffset != 9)
     {
@@ -9957,7 +9957,7 @@ void testdg_parseline()
 
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" boo :) \r hoo");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -9973,7 +9973,7 @@ void testdg_parseline()
         &BHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentinterpretbuffer,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -10026,7 +10026,7 @@ void testdg_parseline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     
     if (pBH->currentoffset != 9)
     {
@@ -10044,7 +10044,7 @@ void testdg_parseline()
 
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" boo :) \r\nhoo");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -10060,7 +10060,7 @@ void testdg_parseline()
         &BHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentinterpretbuffer,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -10113,7 +10113,7 @@ void testdg_parseline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     
     if (pBH->currentoffset != 10)
     {
@@ -10131,7 +10131,7 @@ void testdg_parseline()
 
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" boo :) \n\rhoo");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -10147,7 +10147,7 @@ void testdg_parseline()
         &BHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentinterpretbuffer,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -10200,7 +10200,7 @@ void testdg_parseline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     
     if (pBH->currentoffset != 9)
     {
@@ -10218,7 +10218,7 @@ void testdg_parseline()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" pickle");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -10234,7 +10234,7 @@ void testdg_parseline()
         &BHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentinterpretbuffer,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -10286,7 +10286,7 @@ void testdg_parseline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     
     if (pBH->currentoffset != 7)
     {
@@ -10304,7 +10304,7 @@ void testdg_parseline()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" pick\nle)");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -10320,7 +10320,7 @@ void testdg_parseline()
         &BHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentinterpretbuffer,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -10370,7 +10370,7 @@ void testdg_parseline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     
     if (pBH->currentoffset != 6)
     {
@@ -10393,7 +10393,7 @@ void testdg_parseline()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" pick\nle)");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -10409,7 +10409,7 @@ void testdg_parseline()
         &BHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentinterpretbuffer,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -10420,7 +10420,7 @@ void testdg_parseline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     pBH->currentoffset = pBH->currentoffset + 2;
     
     pstring = dg_parseline(
@@ -10460,7 +10460,7 @@ void testdg_parseline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     
     if (pBH->currentoffset != 6)
     {
@@ -10483,7 +10483,7 @@ void testdg_parseline()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" \n pick\nle)");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -10499,7 +10499,7 @@ void testdg_parseline()
         &BHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentinterpretbuffer,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -10510,7 +10510,7 @@ void testdg_parseline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     pBH->currentoffset = pBH->currentoffset + 5;
     
     pstring = dg_parseline(
@@ -10549,7 +10549,7 @@ void testdg_parseline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     
     if (pBH->currentoffset != 8)
     {
@@ -10572,7 +10572,7 @@ void testdg_parseline()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" \n pick\n\nle)");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -10588,7 +10588,7 @@ void testdg_parseline()
         &BHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentinterpretbuffer,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -10599,7 +10599,7 @@ void testdg_parseline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     pBH->currentoffset = 8;
     
     pstring = dg_parseline(
@@ -10626,7 +10626,7 @@ void testdg_parseline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     
     if (pBH->currentoffset != 9)
     {
@@ -10649,7 +10649,7 @@ void testdg_parseline()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" \n pick\n\n");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -10665,7 +10665,7 @@ void testdg_parseline()
         &BHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentinterpretbuffer,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -10676,7 +10676,7 @@ void testdg_parseline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     pBH->currentoffset = 9;
     
     pstring = dg_parseline(
@@ -10703,7 +10703,7 @@ void testdg_parseline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     
     if (pBH->currentoffset != 9)
     {
@@ -10721,7 +10721,7 @@ void testdg_parseline()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" \n pick\n\n");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -10737,7 +10737,7 @@ void testdg_parseline()
         &BHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentinterpretbuffer,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -10748,7 +10748,7 @@ void testdg_parseline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     pBH->currentoffset = 8;
     
     pstring = dg_parseline(
@@ -10775,7 +10775,7 @@ void testdg_parseline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     
     if (pBH->currentoffset != 9)
     {
@@ -10793,7 +10793,7 @@ void testdg_parseline()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" \n pick\n\n");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -10809,7 +10809,7 @@ void testdg_parseline()
         &BHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentinterpretbuffer,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -10820,7 +10820,7 @@ void testdg_parseline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     pBH->currentoffset = 7;
     
     pstring = dg_parseline(
@@ -10847,7 +10847,7 @@ void testdg_parseline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     
     if (pBH->currentoffset != 8)
     {
@@ -10865,7 +10865,7 @@ void testdg_parseline()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" \n pick\r\n");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -10881,7 +10881,7 @@ void testdg_parseline()
         &BHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentinterpretbuffer,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -10892,7 +10892,7 @@ void testdg_parseline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     pBH->currentoffset = 7;
     
     pstring = dg_parseline(
@@ -10919,7 +10919,7 @@ void testdg_parseline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     
     if (pBH->currentoffset != 9)
     {
@@ -10942,7 +10942,7 @@ void testdg_parseline()
 
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" \n pick\nshoe\ntomato");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -10958,7 +10958,7 @@ void testdg_parseline()
         &BHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentinterpretbuffer,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -10969,7 +10969,7 @@ void testdg_parseline()
         return;
     }
 
-    pBH = &(((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID]);
+    pBH = &(((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID]);
     pBH->currentoffset = 13;
 
     pstring = dg_parseline(
@@ -11012,7 +11012,7 @@ void testdg_parseline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     
     if (pBH->currentoffset != 19)
     {
@@ -11035,7 +11035,7 @@ void testdg_parseline()
 
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" \n pick\nshoe\ntomato");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11051,7 +11051,7 @@ void testdg_parseline()
         &BHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentinterpretbuffer,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -11062,7 +11062,7 @@ void testdg_parseline()
         return;
     }
 
-    pBH = &(((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID]);
+    pBH = &(((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID]);
     pBH->currentoffset = 12;
 
     pstring = dg_parseline(
@@ -11089,7 +11089,7 @@ void testdg_parseline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     
     if (pBH->currentoffset != 13)
     {
@@ -11112,7 +11112,7 @@ void testdg_parseline()
 
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" \n pick\nshoe\ntomato");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11128,7 +11128,7 @@ void testdg_parseline()
         &BHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentinterpretbuffer,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -11139,7 +11139,7 @@ void testdg_parseline()
         return;
     }
 
-    pBH = &(((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID]);
+    pBH = &(((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID]);
     pBH->currentoffset = 8;
 
     pstring = dg_parseline(
@@ -11180,7 +11180,7 @@ void testdg_parseline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     
     if (pBH->currentoffset != 13)
     {
@@ -11203,7 +11203,7 @@ void testdg_parseline()
 
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" \n pick\nshoe\ntomato");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11219,7 +11219,7 @@ void testdg_parseline()
         &BHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentinterpretbuffer,
-        DG_TERMINALINPUT_BUFFERID);
+        DG_PAD_BUFFERID);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
     {
@@ -11230,7 +11230,7 @@ void testdg_parseline()
         return;
     }
 
-    pBH = &(((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID]);
+    pBH = &(((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID]);
     pBH->currentoffset = 7;
 
     pstring = dg_parseline(
@@ -11257,7 +11257,7 @@ void testdg_parseline()
         return;
     }
     
-    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_TERMINALINPUT_BUFFERID] );
+    pBH = &( ((Bufferhandle*)(BHarrayhead.pbuf))[DG_PAD_BUFFERID] );
     
     if (pBH->currentoffset != 8)
     {
@@ -11295,7 +11295,7 @@ void testdg_noparselineatoffset()
 
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" boo :) \n hoo");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11309,7 +11309,7 @@ void testdg_noparselineatoffset()
         
     linenumber = dg_noparselineatoffset(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         0);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11340,7 +11340,7 @@ void testdg_noparselineatoffset()
 
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" boo :) \r hoo");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11354,7 +11354,7 @@ void testdg_noparselineatoffset()
     
     linenumber = dg_noparselineatoffset(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         0);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11385,7 +11385,7 @@ void testdg_noparselineatoffset()
 
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" boo :) \r\nhoo");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11399,7 +11399,7 @@ void testdg_noparselineatoffset()
     
     linenumber = dg_noparselineatoffset(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         0);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11430,7 +11430,7 @@ void testdg_noparselineatoffset()
 
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" boo :) \n\rhoo");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11444,7 +11444,7 @@ void testdg_noparselineatoffset()
     
     linenumber = dg_noparselineatoffset(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         0);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11475,7 +11475,7 @@ void testdg_noparselineatoffset()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" pickle");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11489,7 +11489,7 @@ void testdg_noparselineatoffset()
     
     linenumber = dg_noparselineatoffset(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         0);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11520,7 +11520,7 @@ void testdg_noparselineatoffset()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" pick\nle)");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11534,7 +11534,7 @@ void testdg_noparselineatoffset()
     
     linenumber = dg_noparselineatoffset(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         0);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11570,7 +11570,7 @@ void testdg_noparselineatoffset()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" pick\nle)");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11584,7 +11584,7 @@ void testdg_noparselineatoffset()
     
     linenumber = dg_noparselineatoffset(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         2);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11620,7 +11620,7 @@ void testdg_noparselineatoffset()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" pick\nle)");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11634,7 +11634,7 @@ void testdg_noparselineatoffset()
     
     linenumber = dg_noparselineatoffset(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         5);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11670,7 +11670,7 @@ void testdg_noparselineatoffset()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" \n pick\nle)");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11684,7 +11684,7 @@ void testdg_noparselineatoffset()
     
     linenumber = dg_noparselineatoffset(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         5);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11720,7 +11720,7 @@ void testdg_noparselineatoffset()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" \n pick\n\nle)");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11734,7 +11734,7 @@ void testdg_noparselineatoffset()
     
     linenumber = dg_noparselineatoffset(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         8);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11772,7 +11772,7 @@ void testdg_noparselineatoffset()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" \n pick\n\n");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11786,7 +11786,7 @@ void testdg_noparselineatoffset()
     
     linenumber = dg_noparselineatoffset(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         9);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11817,7 +11817,7 @@ void testdg_noparselineatoffset()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" \n pick\n\n");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11831,7 +11831,7 @@ void testdg_noparselineatoffset()
     
     linenumber = dg_noparselineatoffset(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         8);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11862,7 +11862,7 @@ void testdg_noparselineatoffset()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" \n pick\n\n");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11876,7 +11876,7 @@ void testdg_noparselineatoffset()
     
     linenumber = dg_noparselineatoffset(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         7);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11907,7 +11907,7 @@ void testdg_noparselineatoffset()
         
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" \n pick\r\n");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11921,7 +11921,7 @@ void testdg_noparselineatoffset()
     
     linenumber = dg_noparselineatoffset(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         6);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11957,7 +11957,7 @@ void testdg_noparselineatoffset()
 
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" \n pick\nshoe\ntomato");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -11971,7 +11971,7 @@ void testdg_noparselineatoffset()
 
     linenumber = dg_noparselineatoffset(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         13);
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -12007,7 +12007,7 @@ void testdg_noparselineatoffset()
 
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" \n pick\nshoe\ntomato");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -12021,7 +12021,7 @@ void testdg_noparselineatoffset()
 
     linenumber = dg_noparselineatoffset(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         12);
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -12057,7 +12057,7 @@ void testdg_noparselineatoffset()
 
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" \n pick\nshoe\ntomato");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -12071,7 +12071,7 @@ void testdg_noparselineatoffset()
 
     linenumber = dg_noparselineatoffset(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         8);
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -12107,7 +12107,7 @@ void testdg_noparselineatoffset()
 
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" \n pick\nshoe\ntomato");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -12121,7 +12121,7 @@ void testdg_noparselineatoffset()
 
     linenumber = dg_noparselineatoffset(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         7);
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -12172,7 +12172,7 @@ void testdg_replacebuffersegment()
 
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" boo :) \n hoo");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -12186,7 +12186,7 @@ void testdg_replacebuffersegment()
     
     dg_replacebuffersegment (
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         3, // destoffset,
         2, // destlength,
         (unsigned char*)"xz", // psrc,
@@ -12206,7 +12206,7 @@ void testdg_replacebuffersegment()
     
     pstring = dg_getpbuffer(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         &pstringlength);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -12255,7 +12255,7 @@ void testdg_replacebuffersegment()
 
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" boo :) \n hoo");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -12269,7 +12269,7 @@ void testdg_replacebuffersegment()
     
     dg_replacebuffersegment (
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         3, // destoffset,
         2, // destlength,
         (unsigned char*)"xzwt", // psrc,
@@ -12289,7 +12289,7 @@ void testdg_replacebuffersegment()
     
     pstring = dg_getpbuffer(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         &pstringlength);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -12338,7 +12338,7 @@ void testdg_replacebuffersegment()
 
     dg_push0stringtobuffersegment(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         (unsigned char*)" boo :) \n hoo");
 
     if (dg_geterrorcount(&BHarrayhead) != 0)
@@ -12352,7 +12352,7 @@ void testdg_replacebuffersegment()
     
     dg_replacebuffersegment (
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         3, // destoffset,
         2, // destlength,
         (unsigned char*)"x", // psrc,
@@ -12372,7 +12372,7 @@ void testdg_replacebuffersegment()
     
     pstring = dg_getpbuffer(
         &BHarrayhead,
-        DG_TERMINALINPUT_BUFFERID,
+        DG_PAD_BUFFERID,
         &pstringlength);
         
     if (dg_geterrorcount(&BHarrayhead) != 0)

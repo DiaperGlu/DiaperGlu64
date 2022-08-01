@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.5.
+//    This file is part of DiaperGlu v5.6.
 //
-//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.6 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.6 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.5; if not, write to the Free Software
+//    along with DiaperGlu v5.6; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// July 2, 2022               //
-// version 5.5                //
+// August 1, 2022             //
+// version 5.6                //
 // /////////////////////////////
 
 #if !defined(_INC_diapergluforth)
@@ -365,11 +365,11 @@ extern "C" {
     // presorted wordlist sizes  //
     // ////////////////////////////
 
-#define dg_presortedcorewordlistsize (297)
+#define dg_presortedcorewordlistsize (298)
 #define dg_presortedenvwordlistsize (21)
 // #define dg_presortedstringwordlistsize (0)
 // #define dg_presortederrorwordlistsize (0)
-#define dg_prestoredbufferwordlistsize (643)
+#define dg_prestoredbufferwordlistsize (649)
 // #define dg_presortedoswordlistsize (0)
 #define dg_presortedx86wordlistsize (1250)
 
@@ -1389,6 +1389,9 @@ extern "C" {
     DGLU_API extern const char dg_forthdfstarname[];
     DGLU_API extern const char dg_forthdfslashname[];
     DGLU_API extern const char dg_showframename[];
+    DGLU_API extern const char dg_forthn8tocellname[];
+    DGLU_API extern const char dg_forthn16tocellname[];
+    DGLU_API extern const char dg_forthn32tocellname[];
     
     DGLU_API extern const char dg_forthhexname[];
     DGLU_API extern const char dg_forthnipname[];
@@ -1739,6 +1742,8 @@ extern "C" {
     DGLU_API extern const char dg_forthcatstringndname[];
     DGLU_API extern const char dg_forthurldecodestringname[];
     DGLU_API extern const char dg_forthurlencodestringname[];
+    DGLU_API extern const char dg_forthbackslashstringtostringname[];
+    DGLU_API extern const char dg_forthstringtobackslashstringname[];
     DGLU_API extern const char dg_forthstripstringname[];
     DGLU_API extern const char dg_forthstrippathfromfilenamestringname[];
     DGLU_API extern const char dg_forthvariableflstringname[];
@@ -1785,6 +1790,9 @@ extern "C" {
     DGLU_API extern const char dg_forthulestringtonumberstringname[];
     DGLU_API extern const char dg_forthrunfileandwaitnoenvquotesname[];
     DGLU_API extern const char dg_forthrunfileandwaitnoenvstringname[];
+
+    DGLU_API extern const char dg_forthsbackslashquotesname[];
+    DGLU_API extern const char dg_forthsetlengthstringname[];
     
     
     // forth operating system word names
@@ -2345,14 +2353,6 @@ extern "C" {
     DGLU_API UINT64 dg_isdelimiter (char c);
     
     DGLU_API UINT64 dg_islineterminator (char c);
-    
-/*
-    DGLU_API extern const char* dg_getlinename;
-    DGLU_API void dg_getline(
-        Bufferhandle* pBHarrayhead, 
-        UINT64 bufferid,
-        UINT64 forceerror);
-*/
 
     DGLU_API UINT64 dg_returntestuint128(); // really returns a UINT128 in RDX:RAX
 
@@ -2837,6 +2837,12 @@ extern "C" {
     DGLU_API FLOAT32 dg_f64tof32 (FLOAT64 x);
     
     DGLU_API FLOAT64 dg_f32tof64 (FLOAT32 x);
+
+    DGLU_API INT64 dg_n8ton64 (UINT64 x);
+
+    DGLU_API INT64 dg_n16ton64 (UINT64 x);
+
+    DGLU_API INT64 dg_n32ton64 (UINT64 x);
 
 
     // ///////////////////////////////////////
@@ -3910,6 +3916,10 @@ extern "C" {
     DGLU_API void dg_closeevalfileid (
         Bufferhandle* pBHarrayhead,
         UINT64 fileid);
+
+    DGLU_API extern const char* dg_getonemorestdinlinename;
+
+    DGLU_API void dg_getonemorestdinline(Bufferhandle* pBHarrayhead);
     
     DGLU_API extern const char* dg_getlinename;
     DGLU_API UINT64 dg_getline(
@@ -4284,6 +4294,18 @@ extern "C" {
     
     DGLU_API extern const char dg_urldecodelstringname[];
     DGLU_API void dg_urldecodelstring (
+        Bufferhandle* pBHarrayhead,
+        UINT64 lstringoffsetbufferid,
+        UINT64 lstringstringbufferid);
+
+    DGLU_API extern const char dg_fescencodelstringname[];
+    DGLU_API void dg_fescencodelstring(
+        Bufferhandle* pBHarrayhead,
+        UINT64 lstringoffsetbufferid,
+        UINT64 lstringstringbufferid);
+
+    DGLU_API extern const char dg_fescdecodelstringname[];
+    DGLU_API void dg_fescdecodelstring (
         Bufferhandle* pBHarrayhead,
         UINT64 lstringoffsetbufferid,
         UINT64 lstringstringbufferid);
@@ -4886,6 +4908,12 @@ extern "C" {
     DGLU_API extern const char* dg_forthdopromptgetstateerror;
     
     DGLU_API void dg_forthdoprompt (Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthn8tocell (Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthn16tocell (Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthn32tocell (Bufferhandle* pBHarrayhead);
     
     /////////////////////////////////////////
     // End of Some Buffer Parsing Routines //
@@ -6995,6 +7023,10 @@ extern "C" {
     DGLU_API void dg_forthrunfileandwaitnoenvquotes(Bufferhandle* pBHarrayhead);
 
     DGLU_API void dg_forthrunfileandwaitnoenvstring(Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthsbackslashquotes(Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthsetlengthstring (Bufferhandle* pBHarrayhead);
     
     
     // //////////////////////////////
@@ -7669,6 +7701,12 @@ extern "C" {
     
     
     DGLU_API void dg_forthurldecodestring (Bufferhandle* pBHarrayhead);
+
+
+    DGLU_API void dg_forthbackslashstringtostring (Bufferhandle* pBHarrayhead);
+    
+    
+    DGLU_API void dg_forthstringtobackslashstring (Bufferhandle* pBHarrayhead);
     
     
     // fileio stuff
@@ -7693,6 +7731,8 @@ extern "C" {
     DGLU_API void dg_forthqueryincludefilestring (Bufferhandle* pBHarrayhead);
     //                      ( filename$ -$- )
     //                      ( flag -- )
+
+    DGLU_API void dg_forthsblackslashquotes (Bufferhandle* pBHarrayhead);
     
     // library stuff
     DGLU_API void dg_forthopenlibstring (Bufferhandle* pBHarrayhead);

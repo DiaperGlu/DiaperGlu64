@@ -253,7 +253,7 @@ testwin64specific.obj: ./testwin64specific.cpp ../diapergluforth.h
 
 .PHONY : clean
 clean : cleantestosapi
-	del $(objects) $(testobjects) diaperglu.exp libdiaperglu.exp diaperglu.lib libdiaperglu.lib dgluconsole.obj dgluconsolelinked.obj
+	del $(objects) $(testobjects) diaperglu.exp libdiaperglu.exp dgluconsole.obj dgluconsolelinked.obj
 
 .PHONY : cleantestosapi
 cleantestosapi :
@@ -265,5 +265,5 @@ superclean :
 
 .PHONY : releaseclean
 releaseclean :
-	del libdiaperglu.dll libdiaperglu.lib diapergluosapi.dll diapergluosapi.lib testdiaperglulinked.exe testosapi.exe diaperglulinked.exe 
+	del libdiaperglu.dll libdiaperglu.lib diaperglu.lib diapergluosapi.dll diapergluosapi.lib testdiaperglulinked.exe testosapi.exe diaperglulinked.exe 
 

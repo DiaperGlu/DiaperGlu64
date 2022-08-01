@@ -3,20 +3,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.5.
+//    This file is part of DiaperGlu v5.6.
 //
-//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.6 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.6 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.5; if not, write to the Free Software
+//    along with DiaperGlu v5.6; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// July 2, 2022               //
-// version 5.5                //
+// August 1, 2022             //
+// version 5.6                //
 // /////////////////////////////
 -->
 
@@ -2284,10 +2284,28 @@
 //   parsed. 
 //
 // Note:
-//  Parsemultiline works over multiple lines. Line terminators are not treated as
-//   delimiters. If the end of the current input buffer is reached, the parse ends
-//   and this function returns the string found as if the end delimiter was found. 
-//   The end delimiter is not included in the string length returned.
+//  Parsemultiline works over multiple lines. 
+//  Line terminators are not treated as delimiters.
+//   (This parses a string of characters, not words.)
+//  If the end of the current input buffer is reached and this is not parsing from 
+//   the terminal input buffer, the parse ends and this function returns the 
+//   string found as if the end delimiter was found.
+//  If the end of the current input buffer is reached and this is parsing from
+//   the terminal input buffer, then a prompt is displayed to stdout to indicate
+//   the multiline parse state and end character to the user, and this gets waits
+//   for the user to enter another line from stdin. The line is pushed onto the
+//   end of the current input buffer so that the address and length returned
+//   represents the whole parsed string. 
+//  The end delimiter is not included in the string length returned.
+//
+// Note:
+//  This function assumes that if the current input buffer is the terminal input 
+//   buffer then the buffer's data is coming from stdin.
+//  This function breaks with the Forth standard when using the terminal input
+//   buffer in that the terminal input buffer is NOT emptied when another line
+//   is retrieved from stdin. But since the standard is ambiguous on what to do
+//   when using the terminal input buffer with a multi line word like ( it's 
+//   probably not too much of a break... 2022 July 10. 
 //
 // For the future:
 //  Change this function to accept a set of delimiters... that way someone can choose
@@ -2384,16 +2402,24 @@
 // Action:
 //  If lineterminatorsareendflag is FORTH_FALSE, end of line delimiters are
 //   treated the same as white space delimiters. Otherwise, end of line
-//   delimiters are treated the same as the enddelimiter and end of buffer.
+//   delimiters and end of buffer are treated the same as the enddelimiter.
+//  If lineterminatorsareendflag is FORTH_FALSE and this is parsing from
+//   the terminal input buffer and the end of buffer is reached, then this
+//   will empty the terminal input buffer and then wait for another line from stdin 
+//   and put it into the terminal input buffer. 
 //  This routine parses one word from the current input buffer and lets you know
-//   if the end delimiter, or end of buffer was found.
+//   if the end delimiter was found, or if not parsing from the terminal input
+//   buffer in single line mode if the end of buffer was found.
 //  Moves current input pointer to the first non white space delimiter, end
 //   delimiter, or to the end of the buffer, whichever comes first. 
 //   The address of the current input pointer's location in the current input buffer
 //   at this point is what is returned. Then moves the current input pointer to the 
 //   first white space delimiter, end delimiter, or to the end of the buffer, 
 //   whichever comes first. The number of characters skipped during this
-//   second move is the wordlength returned. 
+//   second move is the wordlength returned.
+//  If parsing from the terminal input buffer in multi line mode and the end of
+//   buffer is reached, this waits for another line from stdin and pushes it
+//   onto the end of the terminal input buffer. 
 //  If the first move ends on an end delimiter or the end of the buffer,
 //   the wordlength returned is 0.
 //  If an end delimiter or the end of buffer is found, the found end flag is

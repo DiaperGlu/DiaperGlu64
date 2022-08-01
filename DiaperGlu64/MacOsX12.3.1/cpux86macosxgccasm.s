@@ -3,20 +3,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.5.
+//    This file is part of DiaperGlu v5.6.
 //
-//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.6 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.6 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.5; if not, write to the Free Software
+//    along with DiaperGlu v5.6; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// July 2, 2022               //
-// version 5.5                //
+// August 1, 2022             //
+// version 5.6                //
 // /////////////////////////////
 */
 
@@ -2690,6 +2690,19 @@ _dg_f64infinity:
 .quad 0x7FF0000000000000  
 
 
+// y = 10^x
+
+// if you split x into it's bits x0 through x63...
+// y = 10^((2^0)x0 + (2^1)x1 + (2^2)x2 + (2^3)x3 + (2^4)x4 + ... (2^63)x63)
+
+// since a^(b+c) = (a^b)(a^c)
+// y = (10^x0)(10^(2x1))(10^(4x2))(10^(8x3))(10^(16x4))...(10 ^ ((2^63)x63))
+
+// so if you start with 1 then if x0 is 1 you multiply by 10 (10 ^ 1)
+//  if x1 is 1 you multiply by 100 (10 ^ 2)
+//  if x2 is 1 you multiply by 10000 (10 ^ 4)
+//  if x3 is 1 you multiply by 100000000 (10 ^ 8)
+
 .globl _dg_tentothex
 _dg_tentothex:
 
@@ -4566,3 +4579,26 @@ _dg_divu64sbyu64erroraddress3:
     popfq
     ret    
 
+.globl _dg_n8ton64
+_dg_n8ton64:
+
+    mov %dil, %al // mov al, cl
+    cbw
+    cwde
+    cdqe
+    ret
+
+.globl _dg_n16ton64
+_dg_n16ton64:
+
+    mov %di, %ax // mov ax, cx
+    cwde
+    cdqe
+    ret
+
+.globl _dg_n32ton64
+_dg_n32ton64:
+
+    mov %edi, %eax // mov eax, ecx
+    cdqe
+    ret

@@ -3,20 +3,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.5.
+//    This file is part of DiaperGlu v5.6.
 //
-//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.6 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.6 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.5; if not, write to the Free Software
+//    along with DiaperGlu v5.6; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// July 2, 2022               //
-// version 5.5                //
+// August 1, 2022             //
+// version 5.6                //
 // /////////////////////////////
 -->
 
@@ -119,7 +119,7 @@
 
       <div class=word id=dg_forthnewdefinition>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthnewdefinition ( NEWDEFINITION NEWWORD )
 //
@@ -128,17 +128,20 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored         
+//                                    used as the bufferhandle for the array where the  
+//                                    other bufferhandles are stored         
 //
 // Stack action shorthand:
-//  ( compilebufoffset compilebufid databufoffset databufid pname namelength -- executiontoken )
+//  ( compilebufoffset compilebufid databufoffset databufid pname namelength -- 
+//     executiontoken )
 //
 // Data stack in:
 //  compilebufoffset                 compile type routine's buffer offset
 //  compilebufid                     compile type routine's buffer id
-//  databufoffset                    data's buffer offset (or in some cases, the data low 64 bits)
-//  databufid                        data's buffer id     (or in some cases, the data hi 64 bits)
+//  databufoffset                    data's buffer offset 
+//                                    (or in some cases, the data low 64 bits)
+//  databufid                        data's buffer id     
+//                                    (or in some cases, the data hi 64 bits)
 //  pname                            pointer to the name string
 //  namelength                       length of the name string in characters (bytes)
 //
@@ -156,14 +159,14 @@
 //  data stack underflow
 //  error creating the new definition (the subroutine pushes an error)
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthgetswordhead>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthgetswordhead ( GETPDEFINITION GETSWORDHEAD )
 //
@@ -172,8 +175,8 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored         
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored         
 //
 // Stack action shorthand:
 //  ( xt -- addr u )
@@ -193,14 +196,14 @@
 //  data stack underflow
 //  error creating the pointer to the definition (subroutine returns an error)
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthtohead>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthtohead ( &gt;HEAD )
 //
@@ -209,8 +212,8 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored         
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored         
 //
 // Stack action shorthand:
 //  ( xt -- addr )
@@ -228,14 +231,14 @@
 //  error calling dg_forthgetpdefinition
 //  calling dg_forthdrop
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthlinkdefinition>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthlinkdefinition ( LINKDEFINITION LINKWORD )
 //
@@ -244,8 +247,8 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored         
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored         
 //
 // Stack action shorthand:
 //  ( executiontoken wordlistid -- )
@@ -262,14 +265,14 @@
 //  data stack underflow
 //  error linking the definition into the word list (subroutine returns an error)
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthnewsubroutinedefinition>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthnewsubroutinedefinition ( NEWSUBROUTINEDEFINITION )
 //
@@ -278,14 +281,15 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored         
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored         
 //
 // Stack action shorthand:
 //  ( pname namelength -- executiontoken )
 //
 // Data stack in:
-//  pname                            pointer to character string containing name for new subroutine
+//  pname                            pointer to character string containing name for the 
+//                                    new subroutine
 //  namelength                       length of the name in characters (bytes)
 //
 // Data stack out:
@@ -295,26 +299,27 @@
 //  Creates a new subroutine threaded definition with the name. 
 //  The compile type routine is call subroutine in execute mode and
 //   compile call subroutine in compile mode.
-//  The data pointer is set to point to the next unused byte in the current compile buffer.
+//  The data pointer is set to point to the next unused byte in the current compile 
+//   buffer.
 //
 // Note: 
 //   A subroutine definition does NOT get linked into a word list at time of creation
-//   This is to allow you to make a new definition with the same name that calls the old
-//    definition, among other things.
+//   This is to allow you to make a new definition with the same name that calls the 
+//    old definition, among other things.
 //
 // Failure cases:
 //  error getting a pointer to the data stack
 //  data stack underflow
 //  error creating the definition (subroutine returns an error)
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthnewvariabledefinition>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthnewvariabledefinition ( NEWVARIABLEDEFINITION )
 //
@@ -323,14 +328,15 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored         
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored         
 //
 // Stack action shorthand:
 //  ( pname namelength -- executiontoken )
 //
 // Data stack in:
-//  pname                            pointer to character string containing name for new variable
+//  pname                            pointer to character string containing name for the 
+//                                    new variable
 //  namelength                       length of the name in characters (bytes)
 //
 // Data stack out:
@@ -340,7 +346,8 @@
 //  Creates a new variable definition with the name. 
 //  The compile type routine is calculate and push address in execute mode and
 //   compile calculate and push address in compile mode.
-//  The data pointer is set to point to the next unused byte in the current new variable buffer.
+//  The data pointer is set to point to the next unused byte in the current new 
+//   variable buffer.
 //  Links the definition to the current new definition word list.
 //
 // Failure cases:
@@ -348,14 +355,14 @@
 //  data stack underflow
 //  error creating the definition (subroutine returns an error)
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthnewconstantdefinition>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthnewconstantdefinition ( NEWCONSTANTDEFINITION )
 //
@@ -364,15 +371,16 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored         
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored         
 //
 // Stack action shorthand:
 //  ( constant pname namelength -- executiontoken )
 //
 // Data stack in:
 //  constant                         integer (64 bits)
-//  pname                            pointer to character string containing name for new variable
+//  pname                            pointer to character string containing name for the 
+//                                    new variable
 //  namelength                       length of the name in characters (bytes)
 //
 // Data stack out:
@@ -380,10 +388,10 @@
 //
 // Action:
 //  Creates a new constant definition with the name. 
-//  The compile type routine is push integer (32 bit) to data stack in execute mode and
-//   compile push integer (32 bit) to data stack in compile mode.
-//  The data pointer's offset is set to the value of the intger and the data pointer's buffer id
-//   is set to 0 and not used.
+//  The compile type routine is push integer (32 bit) to data stack in execute mode 
+//   and compile push integer (32 bit) to data stack in compile mode.
+//  The data pointer's offset is set to the value of the intger and the data 
+//   pointer's buffer id is set to 0 and not used.
 //  Links the definition to the current new definition word list.
 //
 // Failure cases:
@@ -391,14 +399,14 @@
 //  data stack underflow
 //  error creating the definition (subroutine returns an error)
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthgetnewestdefinitioninwordlist>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthgetnewestdefinitioninwordlist ( GETNEWESTDEFINITIONINWORDLIST )
 //
@@ -407,8 +415,8 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored         
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored         
 //
 // Stack action shorthand:
 //  ( wordlistid -- executiontoken )
@@ -420,22 +428,22 @@
 //  executiontoken                   unique identifier for the definition                     
 //
 // Action:
-//  Removes wordlistid from the data stack and pushes the executiontoken of the last created
-//   definition in the word list to the data stack.
+//  Removes wordlistid from the data stack and pushes the executiontoken of the 
+//   last created definition in the word list to the data stack.
 //
 // Failure cases:
 //  error getting a pointer to the data stack
 //  data stack underflow
 //  error getting the latest definition (subroutine returns an error)
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthgetnextdefinition>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthgetnextdefinition ( GETNEXTDEFINITION )
 //
@@ -444,8 +452,8 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored         
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored         
 //
 // Stack action shorthand:
 //  ( executiontoken -- nextexecutiontoken )
@@ -454,26 +462,27 @@
 //  executiontoken                   unique identifier for the definition
 //
 // Data stack out:
-//  nextexecutiontoken               unique identifier for the next definition in the word list's
-//                                    linked list of definitions                    
+//  nextexecutiontoken               unique identifier for the next definition in the 
+//                                    word list's linked list of definitions                    
 //
 // Action:
-//  Execution tokens get linked into a word list's linked list. This routine removes the execution token
-//   from the data stack and pushes the next execution token in the linked list to the data stack.
+//  Execution tokens get linked into a word list's linked list. This routine removes  
+//   the execution token from the data stack and pushes the next execution token in 
+//   the linked list to the data stack.
 //
 // Failure cases:
 //  error getting a pointer to the data stack
 //  data stack underflow
 //  error getting the next definition (subroutine returns an error)
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthfinddefinitioninwordlist>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthfinddefinitioninwordlist ( FINDDEFINITIONINWORDLIST )
 //
@@ -482,8 +491,8 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored         
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored         
 //
 // Stack action shorthand:
 //  ( wordlistid pname namelength -- executiontoken )
@@ -494,7 +503,8 @@
 //  namelength                       number of characters (bytes) in name
 //  
 // Data stack out:
-//  executiontoken                   unique identifier for the definition or ENDOFWORDLIST if not found
+//  executiontoken                   unique identifier for the definition or 
+//                                    ENDOFWORDLIST  if not found
 //
 // Action:
 //  Removes parameters from the data stack.
@@ -507,14 +517,14 @@
 //  data stack underflow
 //  error finding the definition in the word list (subroutine returns an error)
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthfinddefinitioninsearchorder>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthfinddefinitioninsearchorder ( FINDDEFINITIONINSEARCHORDER )
 //
@@ -523,8 +533,8 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored         
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored         
 //
 // Stack action shorthand:
 //  ( pname namelength -- executiontoken )
@@ -534,7 +544,8 @@
 //  namelength                       number of characters (bytes) in name
 //  
 // Data stack out:
-//  executiontoken                   unique identifier for the definition or ENDOFWORDLIST if not found
+//  executiontoken                   unique identifier for the definition or 
+//                                    ENDOFWORDLIST if not found
 //
 // Action:
 //  Removes parameters from the data stack.
@@ -547,14 +558,14 @@
 //  data stack underflow
 //  error finding the definition in the search order (subroutine returns an error)
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthputnewestdefinitioncompiletype>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthputnewestdefinitioncompiletype ( PUTNEWESTDEFINITIONCOMPILETYPE )
 //
@@ -563,32 +574,36 @@
 //
 // Inputs:
 //  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the other 
-//                                    bufferhandles are stored         
+//                                    used as the bufferhandle for the array where the  
+//                                    other bufferhandles are stored         
 //
 // Stack action shorthand:
 //  ( compilebuffoffset compilebufid -- )
 //
 // Data stack in:
-//  compilebufoffset                 offset of compile type routine in its buffer (or its address if it's not in a buffer)
-//  compilebufid                     the buffer id of the compile type routine (or DG_CORE_BUFFERID if it's not in a buffer)
+//  compilebufoffset                 offset of compile type routine in its buffer 
+//                                    (or its address if it's not in a buffer)
+//  compilebufid                     the buffer id of the compile type routine 
+//                                    (or DG_CORE_BUFFERID if it's not in a buffer)
 //
 // Action:
-//  Replaces the pointer to the compile type routine of the last created definition with this.
+//  Replaces the pointer to the compile type routine of the last created definition 
+//   with this.
 //
 // Failure cases:
 //  error getting a pointer to the data stack
 //  data stack underflow
-//  error changing the compile routine of the last created definition (subroutine returns an error)
+//  error changing the compile routine of the last created definition 
+//   (subroutine returns an error)
 //   
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthcreateov>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthcreateov ( CREATEOV )
 //
@@ -597,8 +612,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //  
 // Stack action shorthand:
 //  ( "&lt;delimiters&gt;word&lt;delimiters&gt;morestuff" -currentinputbuffer-
@@ -613,45 +628,52 @@
 //  "&lt;delimiters&gt;morestuff"           
 //                                                            
 // Action:
-//  Moves the current offset pointer for the current input buffer to the character after the next word or to
-//   the end of the current input buffer if no word is found
+//  Moves the current offset pointer for the current input buffer to the character after 
+//   the next word or to the end of the current input buffer if no word is found
 //  Then creates a new definition in the current wordlist that:
-//   in execute mode, pushes the offset and bufferid of the current new variable buffer's current length
-//   in compile mode, compiles code to push the offset and bufferid of the current compile new variable buffer's
-//     current length
-//     the current length used is the length at the time CREATEOV is called, and is the length from the user's pointer
-//     of view... so in other words, the definition created will contain the offset and buffer id of the next stuff
-//     reserved with ALLOT C, or , in the current new variable buffer.
+//   in execute mode, pushes the offset and bufferid of the current new variable 
+//    buffer's current length
+//   in compile mode, compiles code to push the offset and bufferid of the current 
+//    compile new variable buffer's current length
+//    the current length used is the length at the time CREATEOV is called, and 
+//    is the length from the user's pointer of view... so in other words, the 
+//    definition created will contain the offset and buffer id of the next stuff 
+//    reserved with ALLOT C, or , in the current new variable buffer.
 //
 // Note:
 //
-//  When Diaperglu first starts, the current compile buffer and current new variable buffer point to the same buffer
-//   and this buffer's' size is locked to not grow so you don't have to worry
-//   about it moving. This is so Diaperglu will be compatible with older Forth programs which may keep pointers around
-//   for a long time. If you change PCURRENTNEWVARIABLEBUFFER or PCURRENTCOMPILEBUFFER,
-//   then you have to worry about the life of the pointers from variables you CREATE in the new buffer.
-//   Using CREATEOC and CREATEOV is one way to get around the problem of your pointers going bad when the
-//   current compile buffer or current new variable buffer moves while growing.
+//  When Diaperglu first starts, the current compile buffer and current new variable 
+//   buffer point to the same buffer and this buffer's' size is locked to not grow 
+//   so you don't have to worry about it moving. This is so Diaperglu will be 
+//   compatible with older Forth programs which may keep pointers around for a long 
+//   time. If you change PCURRENTNEWVARIABLEBUFFER or PCURRENTCOMPILEBUFFER,
+//   then you have to worry about the life of the pointers from variables you CREATE 
+//   in the new buffer.
+//   Using CREATEOC and CREATEOV is one way to get around the problem of your 
+//   pointers going bad when the current compile buffer or current new variable 
+//   buffer moves while growing.
 //  
-//   This routine and it's partner CREATEOV are more generic versions of CREATE and let you specify which
-//   buffer the new definition is for. NEWDEFINITION can give you even more control.
+//   This routine and it's partner CREATEOV are more generic versions of CREATE and 
+//   let you specify which buffer the new definition is for. NEWDEFINITION can give 
+//   you even more control.
 //
 // Failure cases:
 //  error getting current input buffer id
 //  error gettint a pointer to the current input buffer
 //  error getting the current data space buffer id
 //  error getting a pointer to the current data space buffer
-//  next word in input buffer wasn't found (no more non delimiters before the end of the input buffer)
+//  next word in input buffer wasn't found 
+//   (no more non delimiters before the end of the input buffer)
 //  error creating the new constant definition
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthcreateoc>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthcreateoc ( CREATEOC )
 //
@@ -660,8 +682,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //  
 // Stack action shorthand:
 //  ( "&lt;delimiters&gt;word&lt;delimiters&gt;morestuff" -currentinputbuffer-
@@ -676,45 +698,51 @@
 //  "&lt;delimiters&gt;morestuff"           
 //                                                            
 // Action:
-//  Moves the current offset pointer for the current input buffer to the character after the next word or to
-//   the end of the current input buffer if no word is found
+//  Moves the current offset pointer for the current input buffer to the character after 
+//   the next word or to the end of the current input buffer if no word is found
 //  Then creates a new definition in the current wordlist that:
-//   in execute mode, pushes the offset and bufferid of the current compile buffer's current length 
-//   in compile mode, compiles code to push the offset and bufferid of the current compile buffer's current length
-//     the current length used is the length at the time CREATEOC is called, and is the length from the user's pointer
-//     of view... so in other words, the definition created will contain the offset and buffer id of the next stuff
-//     that will be compiled to the current compile buffer.
+//   in execute mode, pushes the offset and bufferid of the current compile buffer's
+//    current length 
+//   in compile mode, compiles code to push the offset and bufferid of the current 
+//    compile buffer's current length. The current length used is the length at the 
+//    time CREATEOC is called, and is the length from the user's pointer of view... 
+//    so in other words, the definition created will contain the offset and buffer id 
+//    of the next stuffthat will be compiled to the current compile buffer.
 //
 //
 // Note:
 //
-//  When Diaperglu first starts, the current compile buffer and current new variable buffer point to the same buffer
-//   and this buffer's' size is locked to not grow so you don't have to worry
-//   about it moving. This is so Diaperglu will be compatible with older Forth programs which may keep pointers around
-//   for a long time. If you change PCURRENTNEWVARIABLEBUFFER or PCURRENTCOMPILEBUFFER,
-//   then you have to worry about the life of the pointers from variables you CREATE in the new buffer.
-//   Using CREATEOC and CREATEOV is one way to get around the problem of your pointers going bad when the
-//   current compile buffer or current new variable buffer moves while growing.
+//  When Diaperglu first starts, the current compile buffer and current new variable 
+//   buffer point to the same buffer and this buffer's' size is locked to not grow so 
+//   you don't have to worry about it moving. This is so Diaperglu will be compatible
+//   with older Forth programs which may keep pointers around for a long time. If you
+//   change PCURRENTNEWVARIABLEBUFFER or PCURRENTCOMPILEBUFFER, then you have to worry
+//   about the life of the pointers from variables you CREATE in the new buffer.
+//   Using CREATEOC and CREATEOV is one way to get around the problem of your pointers 
+//   going bad when the current compile buffer or current new variable buffer moves 
+//   while growing.
 //  
-//   This routine and it's partner CREATEOV are more generic versions of CREATE and let you specify which
-//   buffer the new definition is for. NEWDEFINITION can give you even more control.
+//   This routine and it's partner CREATEOV are more generic versions of CREATE and 
+//    let you specify which buffer the new definition is for. NEWDEFINITION can give 
+//    you even more control.
 //
 // Failure cases:
 //  error getting current input buffer id
 //  error gettint a pointer to the current input buffer
 //  error getting the current data space buffer id
 //  error getting a pointer to the current data space buffer
-//  next word in input buffer wasn't found (no more non delimiters before the end of the input buffer)
+//  next word in input buffer wasn't found 
+//   (no more non delimiters before the end of the input buffer)
 //  error creating the new constant definition
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 <!--
       <div class=word id=dg_forthtooname>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthtooname ( &gt;ONAME )  
 //
@@ -723,8 +751,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( executiontoken -- nameoffset namebufferid )
@@ -743,14 +771,14 @@
 // Failure cases:
 //  not checked
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 -->
 
       <div class=word id=dg_forthlatest>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthlatest ( LATEST )  
 //
@@ -759,8 +787,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -- executiontoken )
@@ -774,14 +802,14 @@
 // Failure cases:
 //  not checked
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthbracketlatest>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthbracketlatest ( [LATEST] )  
 //
@@ -790,8 +818,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -- )
@@ -803,19 +831,20 @@
 //  executiontoken                unique identifier for a word
 //                                                            
 // Action:
-//  Compiles code that pushes the execution token of the last defined word onto the data stack.
+//  Compiles code that pushes the execution token of the last defined word onto the
+//   data stack.
 //
 // Failure cases:
 //  not checked
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 <!--
       <div class=word id=dg_forthbracketcolononame>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthbracketcolononame ( [:ONAME] [OLATESTNAME] )  
 //
@@ -824,8 +853,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -- )
@@ -844,14 +873,14 @@
 // Failure cases:
 //  not checked
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 -->
 
       <div class=word id=dg_forthgetcompileroutine>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthgetcompileroutine ( GETOCR )
 //
@@ -860,8 +889,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the
+//                                 other bufferhandles are stored.
 //  
 // Stack action shorthand:
 //  ( executiontoken -- compileroutineoffset compileroutinebufferid )
@@ -874,18 +903,19 @@
 //  compileroutinebufferid        bufferid of compile routine           
 //                                                            
 // Action:
-//  Gets the compile routine for the word having executiontoken as it's unique identifier. 
-//  The compile routine is the action the script interpreter takes when the word with this 
-//   execute token is parsed. 
+//  Gets the compile routine for the word having executiontoken as it's unique
+//   identifier. 
+//  The compile routine is the action the script interpreter takes when the word with  
+//   this execute token is parsed. 
 // 
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthsetcompileroutine>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthsetcompileroutine ( SETOCR )
 //
@@ -894,8 +924,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( offset bufferid executetoken -- )
@@ -906,17 +936,17 @@
 //  executetoken                  execution token of word to change           
 //                                                            
 // Action:
-//  Changes the compile routine for the word with executetoken. This is the action the script
-//    interpreter takes when the word with this execute token is parsed. 
+//  Changes the compile routine for the word with executetoken. This is the action the 
+//   script interpreter takes when the word with this execute token is parsed. 
 // 
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthgetodf>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthgetodf ( GETODF )
 //
@@ -925,8 +955,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //  
 // Stack action shorthand:
 //  ( executiontoken -- datafieldoffset datafieldbufferid )
@@ -946,14 +976,14 @@
 //   when the script interpreter parses the word associated with this
 //   execute token.
 // 
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthsetodf>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthsetodf ( SETODF )
 //
@@ -962,8 +992,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( offset bufferid executetoken -- )
@@ -981,15 +1011,14 @@
 //   when the script interpreter parses the word associated with this
 //   execute token.
 // 
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
 
       <div class=word id=dg_forthtoorder>
 <pre>
-////////////////////////////////////////////////////////////////////////
-//
+// //////////////////////////////////////////////////////////////////////////////////////
 // dg_forthtoorder ( &gt;SEARCH-ORDER )
 //
 // C prototype:
@@ -997,8 +1026,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( wid -- )
@@ -1008,20 +1037,21 @@
 //  wid                           word list id 
 //                     
 // Action:
-//  Pops a word list id off the data stack and pushes it onto the end of the search order stack.
+//  Pops a word list id off the data stack and pushes it onto the end of the search 
+//   order stack.
 //
 // Failure cases:
 //  error popping the data stack
 //  error pushing to the search order stack
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
 
       <div class=word id=dg_forthorderfrom>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthorderfrom ( SEARCH-ORDER&gt; )
 //
@@ -1030,8 +1060,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( wid ... -order- ... )
@@ -1041,20 +1071,21 @@
 //  wid                           word list id 
 //                     
 // Action:
-//  Pops a word list id off the end of the search order stack and pushes it onto the data stack.
+//  Pops a word list id off the end of the search order stack and pushes it onto the 
+//   data stack.
 //
 // Failure cases:
 //  error popping the search order stack 
 //  error pushing to the data stack
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthdotwordname>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthdotwordname ( .NAME )  
 //
@@ -1063,8 +1094,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( executiontoken -- )
@@ -1078,14 +1109,14 @@
 // Failure cases:
 //  not checked
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
     
 
       <div class=word id=dg_forthshowwordlist>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthshowwordlist ( SHOW-WORDLIST )  
 //
@@ -1094,8 +1125,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( wordlistid -- )
@@ -1109,14 +1140,14 @@
 // Failure cases:
 //  not checked
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
       
       <div class=word id=dg_forthshowsortedwordlist>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthshowsortedwordlist ( SHOW-SORTED-WORDLIST )
 //
@@ -1126,7 +1157,7 @@
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
 //                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( wordlistid -- )
@@ -1139,17 +1170,25 @@
 //  This routine also shows a message after words that are out of order or that
 //   are duplicates.
 //
+// Note:
+//  Duplicates are ok. The last added one, (which is the last one shown) will be the
+//   one found during a FIND.
+//  If you see an out of order message, that means your word list is corrupt. This will
+//   break how FIND works and some words will not be able to be found. You'll need to
+//   fix it in order to use that wordlist... (you'll probably need to fix the source
+//   code that created the wordlist and recompile.)
+//
 // Failure cases:
 //  not checked
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
       
       <div class=word id=dg_forthshowallwords>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthshowallwords ( SHOW-ALL-WORDS )
 //
@@ -1158,8 +1197,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -- )
@@ -1173,14 +1212,14 @@
 // Failure cases:
 //  not checked
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
     
 
       <div class=word id=dg_forthforthwords>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthforthwords ( FORTH-WORDS )  
 //
@@ -1189,8 +1228,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -- )
@@ -1201,14 +1240,14 @@
 // Failure cases:
 //  not checked
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
     
 
       <div class=word id=dg_fortherrorwords>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_fortherrorwords ( ERROR-WORDS )  
 //
@@ -1217,8 +1256,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -- )
@@ -1229,14 +1268,14 @@
 // Failure cases:
 //  not checked
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
     
 
       <div class=word id=dg_forthenvironmentwords>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthenvironmentwords ( ENVIRONMENT-WORDS )  
 //
@@ -1245,8 +1284,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -- )
@@ -1257,14 +1296,14 @@
 // Failure cases:
 //  not checked
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
     
 
       <div class=word id=dg_forthbufferwords>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthbufferwords ( BUFFER-WORDS )  
 //
@@ -1273,8 +1312,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -- )
@@ -1285,14 +1324,14 @@
 // Failure cases:
 //  not checked
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
     
 
       <div class=word id=dg_forthstringwords>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthstringwords ( $-WORDS )  
 //
@@ -1301,8 +1340,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -- )
@@ -1313,14 +1352,14 @@
 // Failure cases:
 //  not checked
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
     
 
       <div class=word id=dg_forthlibrarywords>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthlibrarywords ( OS-WORDS )  
 //
@@ -1329,8 +1368,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -- )
@@ -1341,14 +1380,14 @@
 // Failure cases:
 //  not checked
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
     
 
       <div class=word id=dg_forthuserwords>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthuserwords ( USER-WORDS )  
 //
@@ -1357,8 +1396,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -- )
@@ -1369,14 +1408,14 @@
 // Failure cases:
 //  not checked
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthsafe>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthsafe ( SAFE )
 //
@@ -1385,32 +1424,33 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -- )
 //                                                              
 // Action:
-//   If the compile type of the last defined word in the current create wordlist was 
-//     dg_forthdocompiletypesubroutine, it is changed to dg_forthdocompiletypesafesubroutine. 
-//     When a call to this last defined word is compiled, it uses this word's offset and bufferid 
-//     for a return address instead of the actual address in case the buffer moves
-//     during this last defined word's execution.
+//  If the compile type of the last defined word in the current create wordlist was 
+//   dg_forthdocompiletypesubroutine, it is changed to 
+//   dg_forthdocompiletypesafesubroutine. 
+//  When a call to this last defined word is compiled, it uses this word's offset and 
+//   bufferid for a return address instead of the actual address in case the buffer 
+//   moves during this last defined word's execution.
 //
 // Failure cases:
 //  error getting current vocabulary id
 //  error getting latest definition execute token
 //  error getting pointer to the latest definition 
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
 
       <div class=word id=dg_forthiscolon>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthiscolon ( IS-: )
 //
@@ -1419,8 +1459,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -- )
@@ -1434,14 +1474,14 @@
 //  error getting latest definition execute token
 //  error getting pointer to the latest definition 
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
 
       <div class=word id=dg_forthisoto>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthisoto ( IS-O&gt; )
 //
@@ -1450,8 +1490,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -- )
@@ -1465,14 +1505,14 @@
 //  error getting latest definition execute token
 //  error getting pointer to the latest definition 
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthisobto>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthisobto ( IS-OB&gt; )
 //
@@ -1481,8 +1521,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -- )
@@ -1496,14 +1536,14 @@
 //  error getting latest definition execute token
 //  error getting pointer to the latest definition 
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthispto>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthispto ( IS-P&gt; )
 //
@@ -1512,8 +1552,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -- )
@@ -1527,14 +1567,14 @@
 //  error getting latest definition execute token
 //  error getting pointer to the latest definition 
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthiscallproc>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthiscallproc ( IS-CALL-PROC )
 //
@@ -1543,8 +1583,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -- )
@@ -1558,14 +1598,14 @@
 //  error getting latest definition execute token
 //  error getting pointer to the latest definition 
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthiscallprocretuint64>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthiscallprocretuint64 ( IS-CALL-PROC-RET-UINT64 )
 //
@@ -1574,8 +1614,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -- )
@@ -1589,14 +1629,14 @@
 //  error getting latest definition execute token
 //  error getting pointer to the latest definition 
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthiscompilecall>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthiscompilecall ( IS-COMPILE-CALL )
 //
@@ -1605,8 +1645,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the  
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -- )
@@ -1620,14 +1660,14 @@
 //  error getting latest definition execute token
 //  error getting pointer to the latest definition 
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthstringtonewprocword>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthstringtonewprocword ( $&gt;NEW-PROC-WORD )
 //
@@ -1636,8 +1676,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -- )
@@ -1652,14 +1692,14 @@
 //  error getting latest definition execute token
 //  error getting pointer to the latest definition 
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthstringtonewobword>
 <pre>
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthstringtonewobword ( $&gt;NEW-OB-WORD )
 //
@@ -1668,8 +1708,8 @@
 //
 // Inputs:
 //  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
-//                                 used as the bufferhandle for the array where the other 
-//                                 bufferhandles are stored.
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -- )
@@ -1684,14 +1724,14 @@
 //  error getting latest definition execute token
 //  error getting pointer to the latest definition 
 //  
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthemptywordlist>
 <pre>
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthemptywordlist ( EMPTY-WORDLIST )
 //
@@ -1715,14 +1755,14 @@
 //
 // Failure cases:
 //  
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
       
       <div class=word id=dg_forthtosetcurrent>
 <pre>
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthtosetcurrent ( &gt;SET-CURRENT )
 //
@@ -1747,16 +1787,16 @@
 //   wordlist identifier stack.
 //  Pops word list identifier from the data stack.
 //  Sets the current new word word list to this identifier.
-//    (This is the word list where newly created words go.)
+//   (This is the word list where newly created words go.)
 //  
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthgetcurrentfrom>
 <pre>
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthgetcurrentfrom ( GET-CURRENT&gt; )
 //
@@ -1783,14 +1823,14 @@
 //  Then pops the latest current new word wordlist from the current new word
 //   wordlist stack and sets the current new word wordlist to this wordlist.
 //
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 
 
       <div class=word id=dg_forthwordlistdot>
 <pre>
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthwordlistdot ( WORDLIST. )
 //
@@ -1818,14 +1858,14 @@
 //  If the wordname is found, this executes the word.
 //  If the wordname is not found, this pushes an error to the error stack.  
 //
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
       
       
       <div class=word id=dg_forthcreatebracketwordlistdot>
 <pre>
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 //
 // dg_forthcreatebracketwordlistdot ( CREATE-[WORDLIST.] )
 //
@@ -1858,7 +1898,7 @@
 //  You can use this word to make things that have name spaces, like structures,
 //   easier to use. 
 //
-////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>
 

@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.5.
+//    This file is part of DiaperGlu v5.6.
 //
-//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.6 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.6 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.5; if not, write to the Free Software
+//    along with DiaperGlu v5.6; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// July 2, 2022               //
-// version 5.5                //
+// August 1, 2022             //
+// version 5.6                //
 // /////////////////////////////
 
 
@@ -34,228 +34,228 @@
 void dg_forthevaluatebuffer (Bufferhandle* pBHarrayhead)
 //      ( bufferid -- )
 {
-	UINT64* pbuflength;
-	unsigned char* pdatastack;
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
 
-	UINT64* pints;
+    UINT64* pints;
 
-	pdatastack = dg_getpbuffer(
+    pdatastack = dg_getpbuffer(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         &pbuflength);
 
-	if (pdatastack == (unsigned char*)badbufferhandle)
-	{
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthevaluatebuffername);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthevaluatebuffername);
+        return;
+    }
 
-	if (*pbuflength < sizeof(UINT64) )
-	{
+    if (*pbuflength < sizeof(UINT64) )
+    {
         dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
-		dg_pusherror(pBHarrayhead, dg_forthevaluatebuffername);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthevaluatebuffername);
+        return;
+    }
 
-	// could check for misaligned data stack here
+    // could check for misaligned data stack here
 
-	pints = (UINT64*)(pdatastack + *pbuflength - sizeof(UINT64));
+    pints = (UINT64*)(pdatastack + *pbuflength - sizeof(UINT64));
 
-	dg_evaluatebuffer(
+    dg_evaluatebuffer(
         pBHarrayhead,
         pints[0]);
 
-	// not returning error here on purpose
+    // not returning error here on purpose
 
-	*pbuflength = *pbuflength - sizeof(UINT64);
+    *pbuflength = *pbuflength - sizeof(UINT64);
 }
 
 
 void dg_forthqueryendevaluate (Bufferhandle* pBHarrayhead)
 //                     (  flag -- )
 {
-	UINT64 flag;
+    UINT64 flag;
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
-	flag = dg_popbufferuint64(
+    flag = dg_popbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthqueryendevaluatename);
-		return;
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthqueryendevaluatename);
+        return;
+    }
 
-	if (flag != FORTH_FALSE)
-	{
-		dg_forthsource(pBHarrayhead);
+    if (flag != FORTH_FALSE)
+    {
+        dg_forthsource(pBHarrayhead);
 
-		if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-		{
-			dg_pusherror(pBHarrayhead, dg_forthqueryendevaluatename);
-			return;
-		}
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthqueryendevaluatename);
+            return;
+        }
 
-		dg_forthtoin(pBHarrayhead);
+        dg_forthtoin(pBHarrayhead);
 
-		if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-		{
-			dg_pusherror(pBHarrayhead, dg_forthqueryendevaluatename);
-			return;
-		} 
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthqueryendevaluatename);
+            return;
+        } 
 
-		dg_forthstore(pBHarrayhead);
+        dg_forthstore(pBHarrayhead);
 
-		if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-		{
-			dg_pusherror(pBHarrayhead, dg_forthqueryendevaluatename);
-			return;
-		}
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthqueryendevaluatename);
+            return;
+        }
 
-		dg_forthdrop(pBHarrayhead);
+        dg_forthdrop(pBHarrayhead);
 
-		if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-		{
-			dg_pusherror(pBHarrayhead, dg_forthqueryendevaluatename);
-			return;
-		}
-	}
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthqueryendevaluatename);
+            return;
+        }
+    }
 }
 
 
 void dg_forthtype0string (Bufferhandle* pBHarrayhead)
 //             ( c-addr -- )
 {
-	UINT64* pbuflength;
-	unsigned char* pdatastack;
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
 
-	UINT64* pints;
+    UINT64* pints;
 
-	unsigned char* caddr;
+    unsigned char* caddr;
 
-	pdatastack = dg_getpbuffer(
+    pdatastack = dg_getpbuffer(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         &pbuflength);
 
-	if (pdatastack == (unsigned char*)badbufferhandle)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthtype0stringname);
-		return;
-	}
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthtype0stringname);
+        return;
+    }
 
-	if (*pbuflength < sizeof(UINT64) )
-	{
-		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
-		dg_pusherror(pBHarrayhead, dg_forthtype0stringname);
-		return;
-	}
+    if (*pbuflength < sizeof(UINT64) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthtype0stringname);
+        return;
+    }
 
-	// could check for misaligned data stack here
+    // could check for misaligned data stack here
 
-	pints = (UINT64*)(pdatastack + *pbuflength - 1* sizeof(UINT64));
+    pints = (UINT64*)(pdatastack + *pbuflength - 1* sizeof(UINT64));
 
-	caddr = (unsigned char*)(pints[0]);
+    caddr = (unsigned char*)(pints[0]);
 
-	dg_printzerostring(
+    dg_printzerostring(
         pBHarrayhead,
         caddr);
-	// does not return an error
-	
-	*pbuflength -= sizeof(UINT64);
+    // does not return an error
+    
+    *pbuflength -= sizeof(UINT64);
 }
 
 
 void dg_forthshowlicense (Bufferhandle* pBHarrayhead)
 //               ( -- )
 {
-	UINT64 bufferid;
-	unsigned char* pbuf;
-	UINT64* plength;
+    UINT64 bufferid;
+    unsigned char* pbuf;
+    UINT64* plength;
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
-	dg_pushlstring(
+    dg_pushlstring(
         pBHarrayhead,
         DG_STRINGOFFSETSTACK_BUFFERID,
         DG_STRINGSTRINGSTACK_BUFFERID,
         8,
         (unsigned char*)"gpl.doc");
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthshowlicensename);
-		return;
-	}
-	
-	dg_forthloadfilestring(pBHarrayhead);
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthshowlicensename);
+        return;
+    }
+    
+    dg_forthloadfilestring(pBHarrayhead);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthshowlicensename);
-		return;
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthshowlicensename);
+        return;
+    }
 
-	bufferid = dg_popbufferuint64(
+    bufferid = dg_popbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID);
 
-	if (bufferid == 0)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthshowlicensename);
-		return;
-	}
+    if (bufferid == 0)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthshowlicensename);
+        return;
+    }
 
-	pbuf = dg_getpbuffer(
+    pbuf = dg_getpbuffer(
         pBHarrayhead,
         bufferid,
         &plength);
 
-	if (pbuf == (unsigned char*)badbufferhandle)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthshowlicensename);
-		dg_freebuffer(pBHarrayhead, bufferid);
-		return;
-	}
+    if (pbuf == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthshowlicensename);
+        dg_freebuffer(pBHarrayhead, bufferid);
+        return;
+    }
 
-	dg_pushbufferuint64(
+    dg_pushbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         (UINT64)pbuf);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthshowlicensename);
-		dg_freebuffer(pBHarrayhead, bufferid);
-		return;
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthshowlicensename);
+        dg_freebuffer(pBHarrayhead, bufferid);
+        return;
+    }
 
-	dg_pushbufferuint64(
+    dg_pushbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         *plength);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthshowlicensename);
-		dg_freebuffer(pBHarrayhead, bufferid);
-		return;
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthshowlicensename);
+        dg_freebuffer(pBHarrayhead, bufferid);
+        return;
+    }
 
-	dg_forthtype(pBHarrayhead);
+    dg_forthtype(pBHarrayhead);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthshowlicensename);
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthshowlicensename);
+    }
 
-	dg_freebuffer(
+    dg_freebuffer(
         pBHarrayhead,
         bufferid);
 }
@@ -263,7 +263,7 @@ void dg_forthshowlicense (Bufferhandle* pBHarrayhead)
 
 void dg_forthcrlf (Bufferhandle* pBHarrayhead)
 {
-	dg_printzerostring(
+    dg_printzerostring(
         pBHarrayhead,
         (unsigned char*)"\r\n");
 }
@@ -271,139 +271,139 @@ void dg_forthcrlf (Bufferhandle* pBHarrayhead)
 
 void dg_forthgethstdin (Bufferhandle* pBHarrayhead)
 {
-	UINT64 myfileid;
-	const char* flag;
+    UINT64 myfileid;
+    const char* flag;
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
-	flag = dg_gethstdin(
+    flag = dg_gethstdin(
         pBHarrayhead,
         &myfileid, 
         dg_success);
 
-	if (flag != dg_success)
-	{
-		dg_pusherror(pBHarrayhead, flag);
-		dg_pusherror(pBHarrayhead, dg_forthgethstdinname);
-		return;
-	}
+    if (flag != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, flag);
+        dg_pusherror(pBHarrayhead, dg_forthgethstdinname);
+        return;
+    }
 
-	dg_pushbufferuint64(
+    dg_pushbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         myfileid);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthgethstdinname);
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthgethstdinname);
+    }
 }
 
 
 void dg_forthgethstdout (Bufferhandle* pBHarrayhead)
 {
-	UINT64 fileid;
-	const char* flag;
+    UINT64 fileid;
+    const char* flag;
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
-	flag = dg_gethstdout(
+    flag = dg_gethstdout(
         pBHarrayhead,
         &fileid, 
         dg_success);
 
-	if (flag != dg_success)
-	{
-		dg_pusherror(pBHarrayhead, flag);
-		dg_pusherror(pBHarrayhead, dg_forthgethstdoutname);
-		return;
-	}
+    if (flag != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, flag);
+        dg_pusherror(pBHarrayhead, dg_forthgethstdoutname);
+        return;
+    }
 
-	dg_pushbufferuint64(
+    dg_pushbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         (UINT64)fileid);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthgethstdoutname);
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthgethstdoutname);
+    }
 }
 
 void dg_forthgethstderror (Bufferhandle* pBHarrayhead)
 {
-	UINT64 myfileid;
-	const char* flag;
+    UINT64 myfileid;
+    const char* flag;
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
-	flag = dg_gethstderror(
+    flag = dg_gethstderror(
         pBHarrayhead,
         &myfileid, 
         dg_success);
 
-	if (flag != dg_success)
-	{
-		dg_pusherror(pBHarrayhead, flag);
-		dg_pusherror(pBHarrayhead, dg_forthgethstderrorname);
-		return;
-	}
+    if (flag != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, flag);
+        dg_pusherror(pBHarrayhead, dg_forthgethstderrorname);
+        return;
+    }
 
-	dg_pushbufferuint64(
+    dg_pushbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         myfileid);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthgethstderrorname);
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthgethstderrorname);
+    }
 }
 
 
 void dg_forthgetfilelength (Bufferhandle* pBHarrayhead)
 //     ( handle -- filelength )
 {
-	UINT64 myhandle;
-	UINT64 filelength;
-	const char* flag;
+    UINT64 myhandle;
+    UINT64 filelength;
+    const char* flag;
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
-	myhandle = dg_popbufferuint64(
+    myhandle = dg_popbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID);
 
-	if (olderrorcount != dg_geterrorcount(pBHarrayhead))
-	{
-		dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthgetfilelengthname);
-		return;
-	}
+    if (olderrorcount != dg_geterrorcount(pBHarrayhead))
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthgetfilelengthname);
+        return;
+    }
 
-	flag = dg_getfilelength(
+    flag = dg_getfilelength(
         pBHarrayhead,
         myhandle, 
         &filelength, 
         dg_success);
 
-	if (flag != dg_success)
-	{
-		dg_pusherror(pBHarrayhead, flag);
-		dg_pusherror(pBHarrayhead, dg_forthgetfilelengthname);
-		return;
-	}
+    if (flag != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, flag);
+        dg_pusherror(pBHarrayhead, dg_forthgetfilelengthname);
+        return;
+    }
 
-	dg_pushbufferuint64(
+    dg_pushbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         filelength);
 
-	if (olderrorcount != dg_geterrorcount(pBHarrayhead))
-	{
-		dg_pusherror(pBHarrayhead, dg_forthgetfilelengthname);
-		return;
-	}
+    if (olderrorcount != dg_geterrorcount(pBHarrayhead))
+    {
+        dg_pusherror(pBHarrayhead, dg_forthgetfilelengthname);
+        return;
+    }
 }
 
 
@@ -412,76 +412,76 @@ void dg_forthreadavailabletobuffer (Bufferhandle* pBHarrayhead)
 //     ( filehandle bufferid -- )
 //     ( -bufferid- availabledata )
 {
-	UINT64 myhandle;
-	UINT64 bufferid;
-	UINT64 filelength;
-	const char* flag;
-	UINT64 oldlength;
-	unsigned char* pbuf;
+    UINT64 myhandle;
+    UINT64 bufferid;
+    UINT64 filelength;
+    const char* flag;
+    UINT64 oldlength;
+    unsigned char* pbuf;
     UINT64 numread;
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
-	bufferid = dg_popbufferuint64(
+    bufferid = dg_popbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID);
 
-	if (olderrorcount != dg_geterrorcount(pBHarrayhead))
-	{
-		dg_pusherror(pBHarrayhead, dg_forthreadavailabletobuffername);
-		return;
-	}
+    if (olderrorcount != dg_geterrorcount(pBHarrayhead))
+    {
+        dg_pusherror(pBHarrayhead, dg_forthreadavailabletobuffername);
+        return;
+    }
 
-	myhandle = dg_popbufferuint64(
+    myhandle = dg_popbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID);
 
-	if (olderrorcount != dg_geterrorcount(pBHarrayhead))
-	{
-		dg_pusherror(pBHarrayhead, dg_forthreadavailabletobuffername);
-		return;
-	}
+    if (olderrorcount != dg_geterrorcount(pBHarrayhead))
+    {
+        dg_pusherror(pBHarrayhead, dg_forthreadavailabletobuffername);
+        return;
+    }
 
-	flag = dg_getfilelength(
+    flag = dg_getfilelength(
         pBHarrayhead,
         myhandle, 
         &filelength, 
         dg_success);
 
-	if (flag != dg_success)
-	{
-		dg_pusherror(pBHarrayhead, flag);
-		dg_pusherror(pBHarrayhead, dg_forthreadavailabletobuffername);
-		return;
-	}
+    if (flag != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, flag);
+        dg_pusherror(pBHarrayhead, dg_forthreadavailabletobuffername);
+        return;
+    }
 
-	oldlength = dg_growbuffer(
+    oldlength = dg_growbuffer(
         pBHarrayhead,
         bufferid,
         filelength,
         &flag,
         FORTH_FALSE);
 
-	if (flag != dg_success)
-	{
-		dg_pusherror(pBHarrayhead, flag);
-		dg_pusherror(pBHarrayhead, dg_forthreadavailabletobuffername);
-		return;
-	}
+    if (flag != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, flag);
+        dg_pusherror(pBHarrayhead, dg_forthreadavailabletobuffername);
+        return;
+    }
 
-	pbuf = dg_getpbuffersegment(
+    pbuf = dg_getpbuffersegment(
         pBHarrayhead,
         bufferid,
         oldlength,
         filelength);
 
-	if (olderrorcount != dg_geterrorcount(pBHarrayhead))
-	{
-		dg_pusherror(pBHarrayhead, dg_forthreadavailabletobuffername);
-		return;
-	}
+    if (olderrorcount != dg_geterrorcount(pBHarrayhead))
+    {
+        dg_pusherror(pBHarrayhead, dg_forthreadavailabletobuffername);
+        return;
+    }
 
-	flag = dg_readfile(
+    flag = dg_readfile(
         pBHarrayhead,
         myhandle, 
         pbuf, 
@@ -490,12 +490,12 @@ void dg_forthreadavailabletobuffer (Bufferhandle* pBHarrayhead)
         &numread, 
         dg_success);
 
-	if (flag != dg_success)
-	{
-		dg_pusherror(pBHarrayhead, flag);
-		dg_pusherror(pBHarrayhead, dg_forthreadavailabletobuffername);
-		return;
-	}
+    if (flag != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, flag);
+        dg_pusherror(pBHarrayhead, dg_forthreadavailabletobuffername);
+        return;
+    }
 }
 
 
@@ -504,85 +504,85 @@ void dg_forthreadwaitforntobuffer(Bufferhandle* pBHarrayhead)
 //     ( filehandle n timeout bufferid -- )
 //     ( -bufferid- uptondata )
 {
-	UINT64 myhandle;
-	UINT64 bufferid;
-	UINT64 timeout;
-	UINT64 n;
-	const char* flag;
-	UINT64 oldlength;
-	unsigned char* pbuf;
+    UINT64 myhandle;
+    UINT64 bufferid;
+    UINT64 timeout;
+    UINT64 n;
+    const char* flag;
+    UINT64 oldlength;
+    unsigned char* pbuf;
     UINT64 numread;
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
-	bufferid = dg_popbufferuint64(
+    bufferid = dg_popbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID);
 
-	if (olderrorcount != dg_geterrorcount(pBHarrayhead))
-	{
-		dg_pusherror(pBHarrayhead, dg_forthreadwaitforntobuffername);
-		return;
-	}
+    if (olderrorcount != dg_geterrorcount(pBHarrayhead))
+    {
+        dg_pusherror(pBHarrayhead, dg_forthreadwaitforntobuffername);
+        return;
+    }
 
-	timeout = dg_popbufferuint64(
+    timeout = dg_popbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID);
 
-	if (olderrorcount != dg_geterrorcount(pBHarrayhead))
-	{
-		dg_pusherror(pBHarrayhead, dg_forthreadwaitforntobuffername);
-		return;
-	}
+    if (olderrorcount != dg_geterrorcount(pBHarrayhead))
+    {
+        dg_pusherror(pBHarrayhead, dg_forthreadwaitforntobuffername);
+        return;
+    }
 
-	n = dg_popbufferuint64(
+    n = dg_popbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID);
 
-	if (olderrorcount != dg_geterrorcount(pBHarrayhead))
-	{
-		dg_pusherror(pBHarrayhead, dg_forthreadwaitforntobuffername);
-		return;
-	}
+    if (olderrorcount != dg_geterrorcount(pBHarrayhead))
+    {
+        dg_pusherror(pBHarrayhead, dg_forthreadwaitforntobuffername);
+        return;
+    }
 
-	myhandle = dg_popbufferuint64(
+    myhandle = dg_popbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID);
 
-	if (olderrorcount != dg_geterrorcount(pBHarrayhead))
-	{
-		dg_pusherror(pBHarrayhead, dg_forthreadwaitforntobuffername);
-		return;
-	}
+    if (olderrorcount != dg_geterrorcount(pBHarrayhead))
+    {
+        dg_pusherror(pBHarrayhead, dg_forthreadwaitforntobuffername);
+        return;
+    }
 
-	oldlength = dg_growbuffer(
+    oldlength = dg_growbuffer(
         pBHarrayhead,
         bufferid,
         n,
         &flag,
         FORTH_FALSE);
 
-	if (flag != dg_success)
-	{
-		dg_pusherror(pBHarrayhead, flag);
+    if (flag != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, flag);
         dg_pusherror(pBHarrayhead, dg_growbuffername);
-		dg_pusherror(pBHarrayhead, dg_forthreadwaitforntobuffername);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthreadwaitforntobuffername);
+        return;
+    }
 
-	pbuf = dg_getpbuffersegment(
+    pbuf = dg_getpbuffersegment(
         pBHarrayhead,
         bufferid,
         oldlength,
         n);
 
-	if (olderrorcount != dg_geterrorcount(pBHarrayhead))
-	{
-		dg_pusherror(pBHarrayhead, dg_forthreadwaitforntobuffername);
-		return;
-	}
+    if (olderrorcount != dg_geterrorcount(pBHarrayhead))
+    {
+        dg_pusherror(pBHarrayhead, dg_forthreadwaitforntobuffername);
+        return;
+    }
 
-	flag = dg_readfile(
+    flag = dg_readfile(
         pBHarrayhead,
         myhandle, 
         pbuf, 
@@ -591,13 +591,13 @@ void dg_forthreadwaitforntobuffer(Bufferhandle* pBHarrayhead)
         &numread, 
         dg_success);
 
-	if (flag != dg_success)
-	{
-		dg_pusherror(pBHarrayhead, flag);
+    if (flag != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, flag);
         dg_pusherror(pBHarrayhead, dg_readfilename);
-		dg_pusherror(pBHarrayhead, dg_forthreadwaitforntobuffername);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthreadwaitforntobuffername);
+        return;
+    }
 
     // In this routine numread could very well be less than what you asked for
     //  If you asked for more than 0 and got nothing back it means whatever
@@ -608,8 +608,8 @@ void dg_forthreadwaitforntobuffer(Bufferhandle* pBHarrayhead)
         // os just over ran the buffer and has serious issues
         dg_pusherror(pBHarrayhead, dg_oserror);
         dg_pusherror(pBHarrayhead, dg_readfilename);
-		dg_pusherror(pBHarrayhead, dg_forthreadwaitforntobuffername);
-		return;
+        dg_pusherror(pBHarrayhead, dg_forthreadwaitforntobuffername);
+        return;
     }
 
     // need to shrink buffer down to actual amount read
@@ -623,20 +623,20 @@ void dg_forthreadwaitforntobuffer(Bufferhandle* pBHarrayhead)
     {
         dg_pusherror(pBHarrayhead, flag);
         dg_pusherror(pBHarrayhead, dg_shrinkbuffername);
-		dg_pusherror(pBHarrayhead, dg_forthreadwaitforntobuffername);
-		return;
+        dg_pusherror(pBHarrayhead, dg_forthreadwaitforntobuffername);
+        return;
     }
 
-	dg_pushbufferuint64(
+    dg_pushbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         numread);
 
-	if (olderrorcount != dg_geterrorcount(pBHarrayhead))
-	{
-		dg_pusherror(pBHarrayhead, dg_forthreadwaitforntobuffername);
-		return;
-	}
+    if (olderrorcount != dg_geterrorcount(pBHarrayhead))
+    {
+        dg_pusherror(pBHarrayhead, dg_forthreadwaitforntobuffername);
+        return;
+    }
 }
 
 
@@ -648,292 +648,292 @@ void dg_forthreadwaitforntobuffer(Bufferhandle* pBHarrayhead)
 void dg_forthcscan (Bufferhandle* pBHarrayhead)
 //                 ( caddr1 u1 value -- index )
 {
-	UINT64* pbuflength = NULL;
-	unsigned char* pdatastack = NULL;
+    UINT64* pbuflength = NULL;
+    unsigned char* pdatastack = NULL;
 
-	UINT64* pints = NULL;
+    UINT64* pints = NULL;
 
-	unsigned char* caddr1 = NULL;
-	UINT64 u1 = 0;
-	UINT64 value = 0;
+    unsigned char* caddr1 = NULL;
+    UINT64 u1 = 0;
+    UINT64 value = 0;
 
-	const char* flag;
+    const char* flag;
 
-	pdatastack = dg_getpbuffer(
+    pdatastack = dg_getpbuffer(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         &pbuflength);
 
-	if (pdatastack == (unsigned char*)badbufferhandle)
-	{
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthcscanname);
-		return;
-	}
-
-	if (*pbuflength < (3 * sizeof(UINT64)) )
-	{
-		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
         dg_pusherror(pBHarrayhead, dg_forthcscanname);
-		return;
-	}
+        return;
+    }
 
-	// could check for misaligned data stack here
+    if (*pbuflength < (3 * sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthcscanname);
+        return;
+    }
 
-	pints = (UINT64*)(pdatastack + *pbuflength - (3 * sizeof(UINT64)));
+    // could check for misaligned data stack here
 
-	caddr1 = (unsigned char*)(pints[0]);
-	u1 =     (UINT64)(pints[1]);
-	value =  (UINT64)(pints[2]);
+    pints = (UINT64*)(pdatastack + *pbuflength - (3 * sizeof(UINT64)));
 
-	flag = dg_scanforbyte(
+    caddr1 = (unsigned char*)(pints[0]);
+    u1 =     (UINT64)(pints[1]);
+    value =  (UINT64)(pints[2]);
+
+    flag = dg_scanforbyte(
         (void*)caddr1,
         &u1,
         value);
 
-	if (flag != dg_success)
-	{
-		dg_pusherror(pBHarrayhead, flag);
+    if (flag != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, flag);
         dg_pusherror(pBHarrayhead, dg_scanforbytename);
-		dg_pusherror(pBHarrayhead, dg_forthcscanname);
-	}
+        dg_pusherror(pBHarrayhead, dg_forthcscanname);
+    }
 
-	pints[0] = (UINT64)u1;
+    pints[0] = (UINT64)u1;
 
-	*pbuflength -= (2 * sizeof(UINT64));
+    *pbuflength -= (2 * sizeof(UINT64));
 }
 
 
 void dg_forthscan (Bufferhandle* pBHarrayhead)
 //                ( caddr1 u1 value -- index )
 {
-	UINT64* pbuflength = NULL;
-	unsigned char* pdatastack = NULL;
+    UINT64* pbuflength = NULL;
+    unsigned char* pdatastack = NULL;
 
-	UINT64* pints = NULL;
+    UINT64* pints = NULL;
 
-	unsigned char* caddr1 = NULL;
-	UINT64 u1 = 0;
-	UINT64 value = 0;
+    unsigned char* caddr1 = NULL;
+    UINT64 u1 = 0;
+    UINT64 value = 0;
 
-	const char* flag;
+    const char* flag;
 
-	pdatastack = dg_getpbuffer(
+    pdatastack = dg_getpbuffer(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         &pbuflength);
 
-	if (pdatastack == (unsigned char*)badbufferhandle)
-	{
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthscanname);
-		return;
-	}
-
-	if (*pbuflength < (3 * sizeof(UINT64)) )
-	{
-		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
         dg_pusherror(pBHarrayhead, dg_forthscanname);
-		return;
-	}
+        return;
+    }
 
-	// could check for misaligned data stack here
+    if (*pbuflength < (3 * sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthscanname);
+        return;
+    }
 
-	pints = (UINT64*)(pdatastack + *pbuflength - (3 * sizeof(UINT64)));
+    // could check for misaligned data stack here
 
-	caddr1 = (unsigned char*)(pints[0]);
-	u1 =     (UINT64)(pints[1]);
-	value =  (UINT64)(pints[2]);
+    pints = (UINT64*)(pdatastack + *pbuflength - (3 * sizeof(UINT64)));
 
-	flag = dg_scanforuint64(
+    caddr1 = (unsigned char*)(pints[0]);
+    u1 =     (UINT64)(pints[1]);
+    value =  (UINT64)(pints[2]);
+
+    flag = dg_scanforuint64(
         (void*)caddr1,
         &u1,
         value);
 
-	if (flag != dg_success)
-	{
-		dg_pusherror(pBHarrayhead, flag);
+    if (flag != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, flag);
         dg_pusherror(pBHarrayhead, dg_scanforuint64name);
-		dg_pusherror(pBHarrayhead, dg_forthscanname);
-	}
+        dg_pusherror(pBHarrayhead, dg_forthscanname);
+    }
 
-	pints[0] = (UINT64)u1;
+    pints[0] = (UINT64)u1;
 
-	*pbuflength -= (2 * sizeof(UINT64));
+    *pbuflength -= (2 * sizeof(UINT64));
 }
 
 
 void dg_forthdoprompt (Bufferhandle* pBHarrayhead)
 {
-	unsigned char* pok = (unsigned char*)"\nOK>"; 
+    unsigned char* pok = (unsigned char*)"\nOK>"; 
 
-	unsigned char* perrorsok = (unsigned char*)"items on error stack, error(s) with trace.\n use SHOW-ERRORS or .ES to see\n use EMPTY-ERRORS or EES to clear\n use .ERRORLINE or .EL to see the line that caused the error\n\nOK>"; 
+    unsigned char* perrorsok = (unsigned char*)"items on error stack, error(s) with trace.\n use SHOW-ERRORS or .ES to see\n use EMPTY-ERRORS or EES to clear\n use .ERRORLINE or .EL to see the line that caused the error\n\nOK>"; 
 
-	const char* pstate;
-	
+    const char* pstate;
+    
 
-	if (dg_geterrorcount(pBHarrayhead) != 0)
-	{
-		// got an error - force interpret state and display error prompt
-		dg_putbufferuint64(
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        // got an error - force interpret state and display error prompt
+        dg_putbufferuint64(
             pBHarrayhead,
             DG_DATASPACE_BUFFERID,
             statevariable,
             (UINT64)dg_stateexecute);
 
-		dg_pushbufferuint64(
+        dg_pushbufferuint64(
             pBHarrayhead,
             DG_DATASTACK_BUFFERID,
             dg_geterrorcount(pBHarrayhead));
 
-		dg_forthcr(pBHarrayhead);
+        dg_forthcr(pBHarrayhead);
 
-		dg_forthudot(pBHarrayhead); 
+        dg_forthudot(pBHarrayhead); 
 
-		dg_printzerostring(
+        dg_printzerostring(
             pBHarrayhead,
             perrorsok);
-	}
-	else
-	{
-		pstate = (const char*)dg_getbufferuint64(
+    }
+    else
+    {
+        pstate = (const char*)dg_getbufferuint64(
             pBHarrayhead,
             DG_DATASPACE_BUFFERID,
             statevariable);
-	
-		if (dg_geterrorcount(pBHarrayhead) != 0)
-		{
+    
+        if (dg_geterrorcount(pBHarrayhead) != 0)
+        {
             dg_pusherror(pBHarrayhead, dg_forthstatename);
-			dg_pusherror(pBHarrayhead, dg_forthdopromptname);
-			return;
-		}
+            dg_pusherror(pBHarrayhead, dg_forthdopromptname);
+            return;
+        }
 
-		// if in interpret state, need to display OK>
-		if (pstate == dg_stateexecute)
-		{
+        // if in interpret state, need to display OK>
+        if (pstate == dg_stateexecute)
+        {
             dg_printzerostring(
                 pBHarrayhead,
                 pok);
-		}
-	}
+        }
+    }
 }
 
 
 void dg_forthbswap (Bufferhandle* pBHarrayhead)
 //         ( u -- u' )
 {
-	UINT64 u = 0;
-	
-	UINT64* plength = NULL;
-	unsigned char* pbuffer = NULL;
-	
-	pbuffer = dg_getpbuffer(
+    UINT64 u = 0;
+    
+    UINT64* plength = NULL;
+    unsigned char* pbuffer = NULL;
+    
+    pbuffer = dg_getpbuffer(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         &plength);
-	
-	if (pbuffer == (unsigned char*)badbufferhandle)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthbswapname);
-		return;
-	}
-	
-	if (*plength < sizeof(UINT64))
-	{
-		*plength = 0;
+    
+    if (pbuffer == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthbswapname);
+        return;
+    }
+    
+    if (*plength < sizeof(UINT64))
+    {
+        *plength = 0;
         dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
-		dg_pusherror(pBHarrayhead, dg_forthbswapname);
-		return;
-	}
-	
-	u = *((UINT64*)(pbuffer + *plength - sizeof(UINT64)));
+        dg_pusherror(pBHarrayhead, dg_forthbswapname);
+        return;
+    }
+    
+    u = *((UINT64*)(pbuffer + *plength - sizeof(UINT64)));
 
-	*((UINT64*)(pbuffer + *plength - sizeof(UINT64))) = dg_bswap(u);
+    *((UINT64*)(pbuffer + *plength - sizeof(UINT64))) = dg_bswap(u);
 }
 
 
 void dg_forthcompilebranch (Bufferhandle* pBHarrayhead)
 //      ( branchtype -- afterbranchoffset )
 {
-	UINT64 branchtype;
-	UINT64 afterbranchoffset;
-	
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	if (baderrorcount == olderrorcount)
-	{
-		return;
-	}
-	
-	branchtype = dg_popdatastack(pBHarrayhead);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthcompilebranchname);
-		return;
-	}
-	
-	afterbranchoffset = dg_compilebranch(
+    UINT64 branchtype;
+    UINT64 afterbranchoffset;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    branchtype = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcompilebranchname);
+        return;
+    }
+    
+    afterbranchoffset = dg_compilebranch(
         pBHarrayhead,
         branchtype);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthcompilebranchname);
-		return;
-	}
-	
-	dg_pushdatastack(
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcompilebranchname);
+        return;
+    }
+    
+    dg_pushdatastack(
         pBHarrayhead,
         afterbranchoffset);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthcompilebranchname);
-		return;
-	}
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcompilebranchname);
+        return;
+    }
 }
 
 
 void dg_forthresolvecompiledbranch(Bufferhandle* pBHarrayhead)
 //   ( targetoffset afterbranchoffset -- )
 {
-	UINT64 afterbranchoffset;
-	UINT64 targetoffset;
-	
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	if (olderrorcount == baderrorcount)
-	{
-		return;
-	}
-	
-	afterbranchoffset = dg_popdatastack(pBHarrayhead);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthresolvecompiledbranchname);
-		return;
-	}
-	
-	targetoffset = dg_popdatastack(pBHarrayhead);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthresolvecompiledbranchname);
-		return;
-	}
-	
-	dg_resolvecompiledbranch(
+    UINT64 afterbranchoffset;
+    UINT64 targetoffset;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (olderrorcount == baderrorcount)
+    {
+        return;
+    }
+    
+    afterbranchoffset = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthresolvecompiledbranchname);
+        return;
+    }
+    
+    targetoffset = dg_popdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthresolvecompiledbranchname);
+        return;
+    }
+    
+    dg_resolvecompiledbranch(
         pBHarrayhead,
         afterbranchoffset,
         targetoffset);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthresolvecompiledbranchname);
-		return;
-	}
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthresolvecompiledbranchname);
+        return;
+    }
 }
 
 
@@ -942,25 +942,25 @@ void dg_forthosquotes (Bufferhandle* pBHarrayhead) // ( OS" )
 //     ( compiletime: -- )
 //     ( runtime: -- offset bufferid length )
 {
-	
-	
-	UINT64 bufferid;
-	
+    
+    
+    UINT64 bufferid;
+    
     unsigned char* psqstr;   
-	UINT64 sqstrlen;
-	
-	const char* state;
-	
-	UINT64 afterbranchoffset;
-	
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	if (baderrorcount == olderrorcount)
-	{
-		return;
-	}
-	
-	psqstr = dg_parse(
+    UINT64 sqstrlen;
+    
+    const char* state;
+    
+    UINT64 afterbranchoffset;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    psqstr = dg_parse(
         pBHarrayhead,
         &sqstrlen,
         '"');
@@ -970,165 +970,165 @@ void dg_forthosquotes (Bufferhandle* pBHarrayhead) // ( OS" )
         dg_pusherror(pBHarrayhead, dg_forthosquotesname);
         return;
     }
-	
-	// now have beginoffset and length, time to compile code to push addr u for string
-	bufferid = dg_getbufferuint64(
+    
+    // now have beginoffset and length, time to compile code to push addr u for string
+    bufferid = dg_getbufferuint64(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentcompilebuffer);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
-		dg_pusherror(pBHarrayhead, dg_forthosquotesname);
-		return;
-	}
-	
-	afterbranchoffset = dg_compilebranch(
+        dg_pusherror(pBHarrayhead, dg_forthosquotesname);
+        return;
+    }
+    
+    afterbranchoffset = dg_compilebranch(
         pBHarrayhead,
         DG_BRANCHTYPE_ALWAYS);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthosquotesname);
-		return;
-	}
-	
-	dg_compilesegment(
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthosquotesname);
+        return;
+    }
+    
+    dg_compilesegment(
         pBHarrayhead,
         (const char*)psqstr,
         sqstrlen);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthosquotesname);
-		return;
-	}
-	
-	dg_resolvecompiledbranch(
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthosquotesname);
+        return;
+    }
+    
+    dg_resolvecompiledbranch(
         pBHarrayhead,
         afterbranchoffset,
         afterbranchoffset + sqstrlen);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthosquotesname);
-		return;
-	}
-	
-	state = (const char*)dg_getbufferuint64(
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthosquotesname);
+        return;
+    }
+    
+    state = (const char*)dg_getbufferuint64(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
         statevariable);
-	
+    
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthstatename);
-		dg_pusherror(pBHarrayhead, dg_forthosquotesname);
-		return;
-	}
-	
-	if (state == dg_statecompile)
-	{
-		dg_pushbufferuint64(
+    {
+        dg_pusherror(pBHarrayhead, dg_forthstatename);
+        dg_pusherror(pBHarrayhead, dg_forthosquotesname);
+        return;
+    }
+    
+    if (state == dg_statecompile)
+    {
+        dg_pushbufferuint64(
             pBHarrayhead,
             DG_DATASTACK_BUFFERID,
             afterbranchoffset);
-		
+        
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	    {
-		    dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		    dg_pusherror(pBHarrayhead, dg_forthosquotesname);
-		    return;
-	    }
-		
-		dg_forthliteral(pBHarrayhead);
-		
+        {
+            dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+            dg_pusherror(pBHarrayhead, dg_forthosquotesname);
+            return;
+        }
+        
+        dg_forthliteral(pBHarrayhead);
+        
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	    {
-		    dg_pusherror(pBHarrayhead, dg_forthosquotesname);
-		    return;
-	    }
-		
-		dg_pushbufferuint64(
+        {
+            dg_pusherror(pBHarrayhead, dg_forthosquotesname);
+            return;
+        }
+        
+        dg_pushbufferuint64(
             pBHarrayhead,
             DG_DATASTACK_BUFFERID,
             bufferid);
-		
+        
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	    {
-		    dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		    dg_pusherror(pBHarrayhead, dg_forthosquotesname);
-		    return;
-	    }
-		
-		dg_forthliteral(pBHarrayhead);
-		
+        {
+            dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+            dg_pusherror(pBHarrayhead, dg_forthosquotesname);
+            return;
+        }
+        
+        dg_forthliteral(pBHarrayhead);
+        
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	    {
-		    dg_pusherror(pBHarrayhead, dg_forthosquotesname);
-		    return;
-	    }
-		
-		dg_pushbufferuint64(
+        {
+            dg_pusherror(pBHarrayhead, dg_forthosquotesname);
+            return;
+        }
+        
+        dg_pushbufferuint64(
             pBHarrayhead,
             DG_DATASTACK_BUFFERID,
             sqstrlen);
-		
+        
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	    {
-		    dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		    dg_pusherror(pBHarrayhead, dg_forthosquotesname);
-		    return;
-	    }
-		
-		dg_forthliteral(pBHarrayhead);
-		
+        {
+            dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+            dg_pusherror(pBHarrayhead, dg_forthosquotesname);
+            return;
+        }
+        
+        dg_forthliteral(pBHarrayhead);
+        
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	    {
-		    dg_pusherror(pBHarrayhead, dg_forthosquotesname);
-		    return;
-	    }
-	}
-	else
-	{
-		dg_pushbufferuint64(
+        {
+            dg_pusherror(pBHarrayhead, dg_forthosquotesname);
+            return;
+        }
+    }
+    else
+    {
+        dg_pushbufferuint64(
             pBHarrayhead,
             DG_DATASTACK_BUFFERID,
             afterbranchoffset);
-		
+        
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	    {
-		    dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		    dg_pusherror(pBHarrayhead, dg_forthosquotesname);
-		    return;
-	    }
-		
-		dg_pushbufferuint64(
+        {
+            dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+            dg_pusherror(pBHarrayhead, dg_forthosquotesname);
+            return;
+        }
+        
+        dg_pushbufferuint64(
             pBHarrayhead,
             DG_DATASTACK_BUFFERID,
             bufferid);
-		
+        
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	    {
-		    dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		    dg_pusherror(pBHarrayhead, dg_forthosquotesname);
-		    return;
-	    }
-		
-		dg_pushbufferuint64(
+        {
+            dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+            dg_pusherror(pBHarrayhead, dg_forthosquotesname);
+            return;
+        }
+        
+        dg_pushbufferuint64(
             pBHarrayhead,
             DG_DATASTACK_BUFFERID,
             sqstrlen);
-		
+        
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	    {
-		    dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		    dg_pusherror(pBHarrayhead, dg_forthosquotesname);
-		    return;
-	    }
-	}
-	// could compile check for errors here
+        {
+            dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+            dg_pusherror(pBHarrayhead, dg_forthosquotesname);
+            return;
+        }
+    }
+    // could compile check for errors here
 }
 
 
@@ -1137,21 +1137,21 @@ void dg_fortho0quotes (Bufferhandle* pBHarrayhead) // ( O0" )
 //     ( compiletime: -- )
 //     ( runtime: -- offset bufferid )
 {
-	UINT64 bufferid;
-	
+    UINT64 bufferid;
+    
     unsigned char* psqstr;   
-	UINT64 sqstrlen;
-	
-	const char* state;
-	
-	UINT64 afterbranchoffset;
-	
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	if (baderrorcount == olderrorcount)
-	{
-		return;
-	}
+    UINT64 sqstrlen;
+    
+    const char* state;
+    
+    UINT64 afterbranchoffset;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
  
     psqstr = dg_parse(
         pBHarrayhead,
@@ -1163,136 +1163,136 @@ void dg_fortho0quotes (Bufferhandle* pBHarrayhead) // ( O0" )
         dg_pusherror(pBHarrayhead, dg_fortho0quotesname);
         return;
     }
-	
-	// now have beginoffset and length, time to compile code to push addr u for string
-	bufferid = dg_getbufferuint64(
+    
+    // now have beginoffset and length, time to compile code to push addr u for string
+    bufferid = dg_getbufferuint64(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentcompilebuffer);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
-		dg_pusherror(pBHarrayhead, dg_fortho0quotesname);
-		return;
-	}
-	
-	afterbranchoffset = dg_compilebranch(
+        dg_pusherror(pBHarrayhead, dg_fortho0quotesname);
+        return;
+    }
+    
+    afterbranchoffset = dg_compilebranch(
         pBHarrayhead,
         DG_BRANCHTYPE_ALWAYS);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_fortho0quotesname);
-		return;
-	}
-	
-	dg_compilesegment(
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_fortho0quotesname);
+        return;
+    }
+    
+    dg_compilesegment(
         pBHarrayhead,
         (const char*)psqstr,
         sqstrlen);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_fortho0quotesname);
-		return;
-	}
-	
-	dg_pushbufferbyte(
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_fortho0quotesname);
+        return;
+    }
+    
+    dg_pushbufferbyte(
         pBHarrayhead,
         bufferid,
         0);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_fortho0quotesname);
-		return;
-	}
-	
-	dg_resolvecompiledbranch(
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_fortho0quotesname);
+        return;
+    }
+    
+    dg_resolvecompiledbranch(
         pBHarrayhead,
         afterbranchoffset,
         afterbranchoffset + sqstrlen + 1);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_fortho0quotesname);
-		return;
-	}
-	
-	state = (const char*)dg_getbufferuint64(
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_fortho0quotesname);
+        return;
+    }
+    
+    state = (const char*)dg_getbufferuint64(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
         statevariable);
-	
-	if (state == dg_statecompile)
-	{
-		dg_pushbufferuint64(
+    
+    if (state == dg_statecompile)
+    {
+        dg_pushbufferuint64(
             pBHarrayhead,
             DG_DATASTACK_BUFFERID,
             afterbranchoffset);
-		
+        
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	    {
+        {
             dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		    dg_pusherror(pBHarrayhead, dg_fortho0quotesname);
-		    return;
-	    }
-		
-		dg_forthliteral(pBHarrayhead);
-		
+            dg_pusherror(pBHarrayhead, dg_fortho0quotesname);
+            return;
+        }
+        
+        dg_forthliteral(pBHarrayhead);
+        
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	    {
-		    dg_pusherror(pBHarrayhead, dg_fortho0quotesname);
-		    return;
-	    }
-		
-		dg_pushbufferuint64(
+        {
+            dg_pusherror(pBHarrayhead, dg_fortho0quotesname);
+            return;
+        }
+        
+        dg_pushbufferuint64(
             pBHarrayhead,
             DG_DATASTACK_BUFFERID,
             bufferid);
-		
+        
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	    {
+        {
             dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		    dg_pusherror(pBHarrayhead, dg_fortho0quotesname);
-		    return;
-	    }
-		
-		dg_forthliteral(pBHarrayhead);
-		
+            dg_pusherror(pBHarrayhead, dg_fortho0quotesname);
+            return;
+        }
+        
+        dg_forthliteral(pBHarrayhead);
+        
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	    {
-		    dg_pusherror(pBHarrayhead, dg_fortho0quotesname);
-		    return;
-	    }
-	}
-	else
-	{
-		dg_pushbufferuint64(
+        {
+            dg_pusherror(pBHarrayhead, dg_fortho0quotesname);
+            return;
+        }
+    }
+    else
+    {
+        dg_pushbufferuint64(
             pBHarrayhead,
             DG_DATASTACK_BUFFERID,
             afterbranchoffset);
-		
+        
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	    {
+        {
             dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		    dg_pusherror(pBHarrayhead, dg_fortho0quotesname);
-		    return;
-	    }
+            dg_pusherror(pBHarrayhead, dg_fortho0quotesname);
+            return;
+        }
 
-		dg_pushbufferuint64(
+        dg_pushbufferuint64(
             pBHarrayhead,
             DG_DATASTACK_BUFFERID,
             bufferid);
 
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	    {
+        {
             dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		    dg_pusherror(pBHarrayhead, dg_fortho0quotesname);
-		    return;
-	    }
-	}
+            dg_pusherror(pBHarrayhead, dg_fortho0quotesname);
+            return;
+        }
+    }
 }
 
 
@@ -1320,48 +1320,48 @@ void dg_forthpagesize(Bufferhandle* pBHarrayhead)
 void dg_forthroundup (Bufferhandle* pBHarrayhead)
 //      ( n unitsize -- )
 {
-	UINT64* pbuflength;
-	unsigned char* pdatastack;
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
 
-	UINT64* pints;
+    UINT64* pints;
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
     
     if (baderrorcount == olderrorcount)
     {
         return;
     }
 
-	pdatastack = dg_getpbuffer(
+    pdatastack = dg_getpbuffer(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         &pbuflength);
 
-	if (pdatastack == (unsigned char*)badbufferhandle)
-	{
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthroundupname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthroundupname);
+        return;
+    }
 
-	if (*pbuflength < (2 * sizeof(UINT64)) )
-	{
+    if (*pbuflength < (2 * sizeof(UINT64)) )
+    {
         dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
-		dg_pusherror(pBHarrayhead, dg_forthroundupname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthroundupname);
+        return;
+    }
 
-	// could check for misaligned data stack here
+    // could check for misaligned data stack here
 
-	pints = (UINT64*)(pdatastack + *pbuflength - (2 * sizeof(UINT64)));
+    pints = (UINT64*)(pdatastack + *pbuflength - (2 * sizeof(UINT64)));
 
-	pints[0] = dg_getnearesthighestmultiple(
+    pints[0] = dg_getnearesthighestmultiple(
         pints[0],
         pints[1]);
 
-	// dg_calcnearesthighestmultiple does not generate errors
+    // dg_calcnearesthighestmultiple does not generate errors
 
-	*pbuflength = *pbuflength - sizeof(UINT64);
+    *pbuflength = *pbuflength - sizeof(UINT64);
 }
 
 
@@ -1376,32 +1376,32 @@ void dg_forthroundup (Bufferhandle* pBHarrayhead)
 void dg_forthudmslashmod (Bufferhandle* pBHarrayhead)
 //     ( ud u1 -- ud2 rem )
 {
-	UINT64* pbuflength;         // -0x04
-	unsigned char* pdatastack;  // -0x08
-	UINT64* pints;              // -0x0C
+    UINT64* pbuflength;         // -0x04
+    unsigned char* pdatastack;  // -0x08
+    UINT64* pints;              // -0x0C
 
-	pdatastack = dg_getpbuffer(
+    pdatastack = dg_getpbuffer(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         &pbuflength);
 
-	if (pdatastack == (unsigned char*)badbufferhandle)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthudmslashmodname);
-		return;
-	}
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthudmslashmodname);
+        return;
+    }
 
-	if (*pbuflength < (3 * sizeof(UINT64)) )
-	{
-		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
-		dg_pusherror(pBHarrayhead, dg_forthudmslashmodname);
-		return;
-	}
+    if (*pbuflength < (3 * sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthudmslashmodname);
+        return;
+    }
 
-	// could check for misaligned datastack here
+    // could check for misaligned datastack here
 
-	pints = (UINT64*)(pdatastack + *pbuflength - (3 * sizeof(UINT64)));
+    pints = (UINT64*)(pdatastack + *pbuflength - (3 * sizeof(UINT64)));
     
     dg_udmslashmod(pints);
 }
@@ -1410,120 +1410,120 @@ void dg_forthudmslashmod (Bufferhandle* pBHarrayhead)
 
 void dg_forthodoes (Bufferhandle* pBHarrayhead)
 {
-	UINT64 bufferid;
-	
-	UINT64 mytargetoffset = 0;
-	
-	UINT64 myendofbufferoffset = 0;
+    UINT64 bufferid;
+    
+    UINT64 mytargetoffset = 0;
+    
+    UINT64 myendofbufferoffset = 0;
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
     if (baderrorcount == olderrorcount)
     {
         return;
     }
 
-	bufferid = dg_getbufferuint64(
+    bufferid = dg_getbufferuint64(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentcompilebuffer);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
-		dg_pusherror(pBHarrayhead, dg_forthdoesname);
-		return;
-	}
-	
-	dg_compilealignretstack(
+        dg_pusherror(pBHarrayhead, dg_forthdoesname);
+        return;
+    }
+    
+    dg_compilealignretstack(
         pBHarrayhead,
         3);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthdoesname);
-		return;
-	}
-	
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdoesname);
+        return;
+    }
+    
     dg_compilentoparameter (
         pBHarrayhead,
         0, // need offset of compile buffer after this is compiled
         2);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthdoesname);
-		return;
-	}
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdoesname);
+        return;
+    }
     
     dg_compilentoparameter (
         pBHarrayhead,
         bufferid,
         1);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthdoesname);
-		return;
-	}
-	
-	dg_compilepushpBHarrayheadtoret(pBHarrayhead);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthdoesname);
-		return;
-	}
-	
-	dg_compilecalladdress(
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdoesname);
+        return;
+    }
+    
+    dg_compilepushpBHarrayheadtoret(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdoesname);
+        return;
+    }
+    
+    dg_compilecalladdress(
         pBHarrayhead,
         (UINT64)&dg_changelatestcompileroutine);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthdoesname);
-		return;
-	}
-	
-	dg_compileexitlocals(pBHarrayhead);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthdoesname);
-		return;
-	}
-	
-	myendofbufferoffset = dg_getbufferlength(
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdoesname);
+        return;
+    }
+    
+    dg_compileexitlocals(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdoesname);
+        return;
+    }
+    
+    myendofbufferoffset = dg_getbufferlength(
         pBHarrayhead,
         bufferid);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
-		dg_pusherror(pBHarrayhead, dg_forthdoesname);
-		return;
-	}
-	
-	dg_putbufferuint64(
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
+        dg_pusherror(pBHarrayhead, dg_forthdoesname);
+        return;
+    }
+    
+    dg_putbufferuint64(
         pBHarrayhead,
         bufferid,
         mytargetoffset,
         myendofbufferoffset);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthdoesname);
-		return;
-	}
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdoesname);
+        return;
+    }
 
-	// ODOES compile type routine uses standard dglu frame and must end with standard dglu exit
-	dg_compileinitlocals(pBHarrayhead);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthdoesname);
-		return;
-	}
+    // ODOES compile type routine uses standard dglu frame and must end with standard dglu exit
+    dg_compileinitlocals(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdoesname);
+        return;
+    }
 }
 
 
@@ -1612,37 +1612,37 @@ void dg_forthunpackdf (Bufferhandle* pBHarrayhead)
 void dg_forthdfplus (Bufferhandle* pBHarrayhead)
 //     ( df1 df2 -- df1+df2 )
 {
-	UINT64* pbuflength;
-	unsigned char* pdatastack;
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
 
-	UINT64* pints;
+    UINT64* pints;
     
     double x1;
     double x2;
     double x3;
 
-	pdatastack = dg_getpbuffer(
+    pdatastack = dg_getpbuffer(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         &pbuflength);
 
-	if (pdatastack == (unsigned char*)badbufferhandle)
-	{
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthdfplusname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthdfplusname);
+        return;
+    }
 
-	if ( *pbuflength < (2 * sizeof(UINT64)) )
-	{
+    if ( *pbuflength < (2 * sizeof(UINT64)) )
+    {
         dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
-		dg_pusherror(pBHarrayhead, dg_forthdfplusname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthdfplusname);
+        return;
+    }
 
-	// could check for misaligned data stack here
+    // could check for misaligned data stack here
 
-	pints = (UINT64*)(pdatastack + *pbuflength - (2 * sizeof(UINT64)));
+    pints = (UINT64*)(pdatastack + *pbuflength - (2 * sizeof(UINT64)));
     
     x1 = *((double*)&pints[0]);
     x2 = *((double*)&pints[1]);
@@ -1651,85 +1651,85 @@ void dg_forthdfplus (Bufferhandle* pBHarrayhead)
     
     *((double*)&pints[0]) = x3;
 
-	*pbuflength = *pbuflength - sizeof(UINT64);
+    *pbuflength = *pbuflength - sizeof(UINT64);
 }
 
 
 void dg_forthdfminus (Bufferhandle* pBHarrayhead)
 //     ( df1 df2 -- df1-df2 )
 {
-	UINT64* pbuflength;
-	unsigned char* pdatastack;
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
 
-	UINT64* pints;
+    UINT64* pints;
     double * pdoubles;
 
-	pdatastack = dg_getpbuffer(
+    pdatastack = dg_getpbuffer(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         &pbuflength);
 
-	if (pdatastack == (unsigned char*)badbufferhandle)
-	{
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthdfminusname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthdfminusname);
+        return;
+    }
 
-	if (*pbuflength < (2 * sizeof(UINT64)) )
-	{
+    if (*pbuflength < (2 * sizeof(UINT64)) )
+    {
         dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
-		dg_pusherror(pBHarrayhead, dg_forthdfminusname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthdfminusname);
+        return;
+    }
 
-	// could check for misaligned data stack here
+    // could check for misaligned data stack here
 
-	pints = (UINT64*)(pdatastack + *pbuflength - (2 * sizeof(UINT64)));
+    pints = (UINT64*)(pdatastack + *pbuflength - (2 * sizeof(UINT64)));
     pdoubles = (double*)pints;
     
     pdoubles[0] = pdoubles[0] - pdoubles[1];
 
-	*pbuflength = *pbuflength - sizeof(UINT64);
+    *pbuflength = *pbuflength - sizeof(UINT64);
 }
 
 
 void dg_forthdfstar (Bufferhandle* pBHarrayhead)
 //     ( df1 df2 -- df1*df2 )
 {
-	UINT64* pbuflength;
-	unsigned char* pdatastack;
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
 
-	UINT64* pints;
+    UINT64* pints;
     double* pdoubles;
 
-	pdatastack = dg_getpbuffer(
+    pdatastack = dg_getpbuffer(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         &pbuflength);
 
-	if (pdatastack == (unsigned char*)badbufferhandle)
-	{
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthdfstarname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthdfstarname);
+        return;
+    }
 
-	if (*pbuflength < (2 * sizeof(UINT64)) )
-	{
+    if (*pbuflength < (2 * sizeof(UINT64)) )
+    {
         dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
-		dg_pusherror(pBHarrayhead, dg_forthdfstarname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthdfstarname);
+        return;
+    }
 
-	// could check for misaligned data stack here
+    // could check for misaligned data stack here
 
-	pints = (UINT64*)(pdatastack + *pbuflength - (2 * sizeof(UINT64)));
+    pints = (UINT64*)(pdatastack + *pbuflength - (2 * sizeof(UINT64)));
     pdoubles = (double*)pints;
     
     pdoubles[0] = pdoubles[0] * pdoubles[1];
 
-	*pbuflength = *pbuflength - sizeof(UINT64);
+    *pbuflength = *pbuflength - sizeof(UINT64);
 }
 
 
@@ -1737,39 +1737,39 @@ void dg_forthdfstar (Bufferhandle* pBHarrayhead)
 void dg_forthdfslash (Bufferhandle* pBHarrayhead)
 //     ( df1 df2 -- df1/df2 )
 {
-	UINT64* pbuflength;
-	unsigned char* pdatastack;
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
 
-	UINT64* pints;
+    UINT64* pints;
     double* pdoubles;
 
-	pdatastack = dg_getpbuffer(
+    pdatastack = dg_getpbuffer(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         &pbuflength);
 
-	if (pdatastack == (unsigned char*)badbufferhandle)
-	{
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthdfslashname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthdfslashname);
+        return;
+    }
 
-	if (*pbuflength < (2 * sizeof(UINT64)) )
-	{
+    if (*pbuflength < (2 * sizeof(UINT64)) )
+    {
         dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
-		dg_pusherror(pBHarrayhead, dg_forthdfslashname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthdfslashname);
+        return;
+    }
 
-	// could check for misaligned data stack here
+    // could check for misaligned data stack here
 
-	pints = (UINT64*)(pdatastack + *pbuflength - (2 * sizeof(UINT64)));
+    pints = (UINT64*)(pdatastack + *pbuflength - (2 * sizeof(UINT64)));
     pdoubles = (double*)pints;
     
     pdoubles[0] = pdoubles[0] / pdoubles[1];
 
-	*pbuflength = *pbuflength - sizeof(UINT64);
+    *pbuflength = *pbuflength - sizeof(UINT64);
 }
 */
 
@@ -1777,9 +1777,9 @@ void dg_forthcodescomma (Bufferhandle* pBHarrayhead)
 //     ( addr length -- )
 {
     UINT64* pbuflength;
-	unsigned char* pdatastack;
+    unsigned char* pdatastack;
 
-	UINT64* pints;
+    UINT64* pints;
     
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
@@ -1788,28 +1788,28 @@ void dg_forthcodescomma (Bufferhandle* pBHarrayhead)
         return;
     }
 
-	pdatastack = dg_getpbuffer(
+    pdatastack = dg_getpbuffer(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         &pbuflength);
 
-	if (pdatastack == (unsigned char*)badbufferhandle)
-	{
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthcodescommaname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthcodescommaname);
+        return;
+    }
 
-	if (*pbuflength < (2 * sizeof(UINT64)) )
-	{
+    if (*pbuflength < (2 * sizeof(UINT64)) )
+    {
         dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
-		dg_pusherror(pBHarrayhead, dg_forthcodescommaname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthcodescommaname);
+        return;
+    }
 
-	// could check for misaligned data stack here
+    // could check for misaligned data stack here
 
-	pints = (UINT64*)(pdatastack + *pbuflength - (2 * sizeof(UINT64)));
+    pints = (UINT64*)(pdatastack + *pbuflength - (2 * sizeof(UINT64)));
     
     dg_compilesegment(
         pBHarrayhead,
@@ -1819,10 +1819,10 @@ void dg_forthcodescomma (Bufferhandle* pBHarrayhead)
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
         dg_pusherror(pBHarrayhead, dg_forthcodescommaname);
-		return;
+        return;
     }
 
-	*pbuflength = *pbuflength - (2 * sizeof(UINT64));
+    *pbuflength = *pbuflength - (2 * sizeof(UINT64));
 }
 
 
@@ -1839,12 +1839,12 @@ void dg_forthcodeu8comma (Bufferhandle* pBHarrayhead)
         return;
     }
 
-	u = dg_popdatastack(pBHarrayhead);
+    u = dg_popdatastack(pBHarrayhead);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
         dg_pusherror(pBHarrayhead, dg_forthcodeu8commaname);
-		return;
+        return;
     }
     
     // doing it this way to make porting to big endian platform easier
@@ -1859,7 +1859,7 @@ void dg_forthcodeu8comma (Bufferhandle* pBHarrayhead)
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
         dg_pusherror(pBHarrayhead, dg_forthcodeu8commaname);
-		return;
+        return;
     }
 }
 
@@ -1877,12 +1877,12 @@ void dg_forthcodeu16comma (Bufferhandle* pBHarrayhead)
         return;
     }
 
-	u = dg_popdatastack(pBHarrayhead);
+    u = dg_popdatastack(pBHarrayhead);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
         dg_pusherror(pBHarrayhead, dg_forthcodeu16commaname);
-		return;
+        return;
     }
     
     // doing it this way to make porting to big endian platform easier
@@ -1897,7 +1897,7 @@ void dg_forthcodeu16comma (Bufferhandle* pBHarrayhead)
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
         dg_pusherror(pBHarrayhead, dg_forthcodeu16commaname);
-		return;
+        return;
     }
 }
 
@@ -1914,12 +1914,12 @@ void dg_forthcodeu32comma (Bufferhandle* pBHarrayhead)
         return;
     }
 
-	u = dg_popdatastack(pBHarrayhead);
+    u = dg_popdatastack(pBHarrayhead);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
         dg_pusherror(pBHarrayhead, dg_forthcodeu32commaname);
-		return;
+        return;
     }
     
     // doing it this way to make porting to big endian platform easier
@@ -1933,7 +1933,7 @@ void dg_forthcodeu32comma (Bufferhandle* pBHarrayhead)
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
         dg_pusherror(pBHarrayhead, dg_forthcodeu32commaname);
-		return;
+        return;
     }
 }
 
@@ -1950,12 +1950,12 @@ void dg_forthcodeu64comma (Bufferhandle* pBHarrayhead)
         return;
     }
 
-	u = dg_popdatastack(pBHarrayhead);
+    u = dg_popdatastack(pBHarrayhead);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
         dg_pusherror(pBHarrayhead, dg_forthcodeu64commaname);
-		return;
+        return;
     }
     
     dg_compilesegment(
@@ -1966,7 +1966,7 @@ void dg_forthcodeu64comma (Bufferhandle* pBHarrayhead)
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
         dg_pusherror(pBHarrayhead, dg_forthcodeu64commaname);
-		return;
+        return;
     }
 }
 
@@ -1975,100 +1975,100 @@ void dg_forthcodeallot (Bufferhandle* pBHarrayhead)
 //     ( n1 -- )
 //     ( -currentcompilebuffer- +n1bytes )
 {
-	unsigned char* pdatastack = NULL;
-	UINT64* pdatastacklength = NULL;
+    unsigned char* pdatastack = NULL;
+    UINT64* pdatastacklength = NULL;
 
-	const char* pError = NULL;
+    const char* pError = NULL;
 
-	INT64 n1 = 0;
-	UINT64 dsbufid = 0;
+    INT64 n1 = 0;
+    UINT64 dsbufid = 0;
     
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
     
     if (baderrorcount == olderrorcount)
     {
         return;
     }
 
-	pdatastack = dg_getpbuffer(
+    pdatastack = dg_getpbuffer(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         &pdatastacklength);
 
-	if (pdatastack == (unsigned char*)badbufferhandle)
-	{
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthcodeallotname);
-		return;
-	}
-
-	if (*pdatastacklength < sizeof(UINT64) )
-	{
-		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
         dg_pusherror(pBHarrayhead, dg_forthcodeallotname);
-		return;
-	}
+        return;
+    }
 
-	n1 = *((INT64*)(pdatastack + *pdatastacklength - sizeof(UINT64)));
+    if (*pdatastacklength < sizeof(UINT64) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthcodeallotname);
+        return;
+    }
 
-	dsbufid = dg_getbufferuint64(
+    n1 = *((INT64*)(pdatastack + *pdatastacklength - sizeof(UINT64)));
+
+    dsbufid = dg_getbufferuint64(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentcompilebuffer);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
         dg_pusherror(pBHarrayhead, dg_forthcodeallotname);
-		return;
-	}
+        return;
+    }
 
-	if (n1 > 0)
-	{
-		dg_growbuffer(
+    if (n1 > 0)
+    {
+        dg_growbuffer(
             pBHarrayhead,
             dsbufid,
             n1,
             &pError,
             FORTH_FALSE);
 
-		if (pError != dg_success)
-		{
+        if (pError != dg_success)
+        {
             dg_pusherror(pBHarrayhead, pError);
             dg_pusherror(pBHarrayhead, dg_growbuffername);
             dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
-			dg_pusherror(pBHarrayhead, dg_forthcodeallotname);
-			return;
-		}
-	}
-	else
-	{
-		n1 = 0 - n1;
+            dg_pusherror(pBHarrayhead, dg_forthcodeallotname);
+            return;
+        }
+    }
+    else
+    {
+        n1 = 0 - n1;
 
-		dg_shrinkbuffer(
+        dg_shrinkbuffer(
             pBHarrayhead,
             dsbufid,
             n1,
             &pError);
 
-		if (pError != dg_success)
-		{
+        if (pError != dg_success)
+        {
             dg_pusherror(pBHarrayhead, pError);
             dg_pusherror(pBHarrayhead, dg_shrinkbuffername);
             dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
-			dg_pusherror(pBHarrayhead, dg_forthcodeallotname);
-			return;
-		}
-	}
+            dg_pusherror(pBHarrayhead, dg_forthcodeallotname);
+            return;
+        }
+    }
 
-	*pdatastacklength = *pdatastacklength - sizeof(UINT64);
+    *pdatastacklength = *pdatastacklength - sizeof(UINT64);
 }
 
 /*
 void dg_forthsftodf (Bufferhandle* pBHarrayhead)
 {
     unsigned char* pdatastack = NULL;
-	UINT64* pdatastacklength = NULL;
+    UINT64* pdatastacklength = NULL;
     
     UINT64* pints;
     
@@ -2081,24 +2081,24 @@ void dg_forthsftodf (Bufferhandle* pBHarrayhead)
         return;
     }
 
-	pdatastack = dg_getpbuffer(
+    pdatastack = dg_getpbuffer(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         &pdatastacklength);
 
-	if (pdatastack == (unsigned char*)badbufferhandle)
-	{
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthsftodfname);
-		return;
-	}
-
-	if ( *pdatastacklength < sizeof(UINT64) )
-	{
-		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
         dg_pusherror(pBHarrayhead, dg_forthsftodfname);
-		return;
-	}
+        return;
+    }
+
+    if ( *pdatastacklength < sizeof(UINT64) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthsftodfname);
+        return;
+    }
     
     pints = (UINT64*)(pdatastack + *pdatastacklength - sizeof(UINT64));
     
@@ -2111,7 +2111,7 @@ void dg_forthsftodf (Bufferhandle* pBHarrayhead)
 void dg_forthdftosf (Bufferhandle* pBHarrayhead)
 {
     unsigned char* pdatastack = NULL;
-	UINT64* pdatastacklength = NULL;
+    UINT64* pdatastacklength = NULL;
     
     UINT64* pints;
     
@@ -2124,24 +2124,24 @@ void dg_forthdftosf (Bufferhandle* pBHarrayhead)
         return;
     }
 
-	pdatastack = dg_getpbuffer(
+    pdatastack = dg_getpbuffer(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         &pdatastacklength);
 
-	if (pdatastack == (unsigned char*)badbufferhandle)
-	{
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthdftosfname);
-		return;
-	}
-
-	if ( *pdatastacklength < sizeof(UINT64) )
-	{
-		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
         dg_pusherror(pBHarrayhead, dg_forthdftosfname);
-		return;
-	}
+        return;
+    }
+
+    if ( *pdatastacklength < sizeof(UINT64) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthdftosfname);
+        return;
+    }
     
     pints = (UINT64*)(pdatastack + *pdatastacklength - sizeof(UINT64));
     
@@ -2159,7 +2159,7 @@ void dg_forthftod (Bufferhandle* pBHarrayhead)
     INT64 y;
     
     unsigned char* pdatastack = NULL;
-	UINT64* pdatastacklength = NULL;
+    UINT64* pdatastacklength = NULL;
     
     UINT64* pints;
     
@@ -2171,24 +2171,24 @@ void dg_forthftod (Bufferhandle* pBHarrayhead)
         return;
     }
 
-	pdatastack = dg_getpbuffer(
+    pdatastack = dg_getpbuffer(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         &pdatastacklength);
 
-	if (pdatastack == (unsigned char*)badbufferhandle)
-	{
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthdftosfname);
-		return;
-	}
-
-	if ( *pdatastacklength < sizeof(UINT64) )
-	{
-		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
         dg_pusherror(pBHarrayhead, dg_forthdftosfname);
-		return;
-	}
+        return;
+    }
+
+    if ( *pdatastacklength < sizeof(UINT64) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthdftosfname);
+        return;
+    }
     
     pints = (UINT64*)(pdatastack + *pdatastacklength - sizeof(UINT64));
     
@@ -2202,7 +2202,7 @@ void dg_forthdftod (Bufferhandle* pBHarrayhead)
     INT64 y;
     
     unsigned char* pdatastack = NULL;
-	UINT64* pdatastacklength = NULL;
+    UINT64* pdatastacklength = NULL;
     
     UINT64* pints;
     
@@ -2214,24 +2214,24 @@ void dg_forthdftod (Bufferhandle* pBHarrayhead)
         return;
     }
 
-	pdatastack = dg_getpbuffer(
+    pdatastack = dg_getpbuffer(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         &pdatastacklength);
 
-	if (pdatastack == (unsigned char*)badbufferhandle)
-	{
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthdftodname);
-		return;
-	}
-
-	if ( *pdatastacklength < sizeof(UINT64) )
-	{
-		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
         dg_pusherror(pBHarrayhead, dg_forthdftodname);
-		return;
-	}
+        return;
+    }
+
+    if ( *pdatastacklength < sizeof(UINT64) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthdftodname);
+        return;
+    }
     
     pints = (UINT64*)(pdatastack + *pdatastacklength - sizeof(UINT64));
     
@@ -2248,7 +2248,7 @@ void dg_forthdtodf (Bufferhandle* pBHarrayhead)
     INT64 y;
     
     unsigned char* pdatastack = NULL;
-	UINT64* pdatastacklength = NULL;
+    UINT64* pdatastacklength = NULL;
     
     UINT64* pints;
     
@@ -2260,24 +2260,24 @@ void dg_forthdtodf (Bufferhandle* pBHarrayhead)
         return;
     }
 
-	pdatastack = dg_getpbuffer(
+    pdatastack = dg_getpbuffer(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         &pdatastacklength);
 
-	if (pdatastack == (unsigned char*)badbufferhandle)
-	{
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthdftodname);
-		return;
-	}
-
-	if ( *pdatastacklength < sizeof(UINT64) )
-	{
-		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
         dg_pusherror(pBHarrayhead, dg_forthdftodname);
-		return;
-	}
+        return;
+    }
+
+    if ( *pdatastacklength < sizeof(UINT64) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthdftodname);
+        return;
+    }
     
     pints = (UINT64*)(pdatastack + *pdatastacklength - sizeof(UINT64));
     
@@ -2415,31 +2415,31 @@ void dg_forthfunctblofn (Bufferhandle* pBHarrayhead)
 {
     UINT64 n = NULL;
 
-	UINT64* plength = NULL;
-	unsigned char* pbuffer = NULL;
+    UINT64* plength = NULL;
+    unsigned char* pbuffer = NULL;
 
     const char* perror;
 
 
-	pbuffer = dg_getpbuffer(
+    pbuffer = dg_getpbuffer(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         &plength);
 
-	if (pbuffer == (unsigned char*)badbufferhandle)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthfunctblofnname);
-		return;
-	}
+    if (pbuffer == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthfunctblofnname);
+        return;
+    }
 
-	if (*plength < sizeof(UINT64))
-	{
+    if (*plength < sizeof(UINT64))
+    {
         dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
-		dg_pusherror(pBHarrayhead, dg_forthfunctblofnname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthfunctblofnname);
+        return;
+    }
 
-	n = *((UINT64*)(pbuffer + *plength - (sizeof(UINT64))));
+    n = *((UINT64*)(pbuffer + *plength - (sizeof(UINT64))));
     
     if (n >= DG_NUMBEROFFUNCTIONTABLEIDS)
     {
@@ -2455,74 +2455,74 @@ void dg_forthu32comma (Bufferhandle* pBHarrayhead)
 //         ( n1 -- )
 //         ( -currentdataspacebuffer- n1 )
 {
-	UINT64* pbuflength = NULL;
-	unsigned char* pdatastack = NULL;
+    UINT64* pbuflength = NULL;
+    unsigned char* pdatastack = NULL;
 
-	UINT64* pints = NULL;
+    UINT64* pints = NULL;
 
-	UINT64 n1 = 0;
-	UINT64 olderrorcount = 0;
-	UINT64 dsbufid = 0;
+    UINT64 n1 = 0;
+    UINT64 olderrorcount = 0;
+    UINT64 dsbufid = 0;
 
-	pdatastack = dg_getpbuffer(
+    pdatastack = dg_getpbuffer(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         &pbuflength);
 
-	if (pdatastack == (unsigned char*)badbufferhandle)
-	{
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthu32commaname);
-		return;
-	}
-
-	if (*pbuflength < (1 * sizeof(UINT64)) )
-	{
-		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
         dg_pusherror(pBHarrayhead, dg_forthu32commaname);
-		return;
-	}
+        return;
+    }
 
-	// could check for misaligned data stack here
+    if (*pbuflength < (1 * sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthu32commaname);
+        return;
+    }
 
-	pints = (UINT64*)(pdatastack + *pbuflength - sizeof(UINT64));
+    // could check for misaligned data stack here
 
-	n1 = pints[0];
+    pints = (UINT64*)(pdatastack + *pbuflength - sizeof(UINT64));
 
-	olderrorcount = dg_geterrorcount(pBHarrayhead);
+    n1 = pints[0];
 
-	dsbufid = dg_getbufferuint64(
+    olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    dsbufid = dg_getbufferuint64(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentvariablebuffer);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthpcurrentnewvariablebuffername);
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthpcurrentnewvariablebuffername);
         dg_pusherror(pBHarrayhead, dg_forthu32commaname);
-		return;
-	}
+        return;
+    }
 
-	dg_pushbufferuint32(
+    dg_pushbufferuint32(
         pBHarrayhead,
         dsbufid,
         (UINT32)(n1 & 0xFFFFFFFF));
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		// error pushing to current new variable buffer
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        // error pushing to current new variable buffer
         dg_pusherror(pBHarrayhead, dg_forthu32commaname);
-		return;
-	}
+        return;
+    }
 
-	*pbuflength = *pbuflength - sizeof(UINT64);
+    *pbuflength = *pbuflength - sizeof(UINT64);
 }
 
 
 void dg_forthlobit (Bufferhandle* pBHarrayhead)
 {
     unsigned char* pdatastack = NULL;
-	UINT64* pdatastacklength = NULL;
+    UINT64* pdatastacklength = NULL;
     
     UINT64* pints;
     
@@ -2533,24 +2533,24 @@ void dg_forthlobit (Bufferhandle* pBHarrayhead)
         return;
     }
 
-	pdatastack = dg_getpbuffer(
+    pdatastack = dg_getpbuffer(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         &pdatastacklength);
 
-	if (pdatastack == (unsigned char*)badbufferhandle)
-	{
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthlobitname);
-		return;
-	}
-
-	if ( *pdatastacklength < sizeof(UINT64) )
-	{
-		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
         dg_pusherror(pBHarrayhead, dg_forthlobitname);
-		return;
-	}
+        return;
+    }
+
+    if ( *pdatastacklength < sizeof(UINT64) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthlobitname);
+        return;
+    }
     
     pints = (UINT64*)(pdatastack + *pdatastacklength - sizeof(UINT64));
     
@@ -2562,7 +2562,7 @@ void dg_forthlobit (Bufferhandle* pBHarrayhead)
 void dg_forthhibit (Bufferhandle* pBHarrayhead)
 {
     unsigned char* pdatastack = NULL;
-	UINT64* pdatastacklength = NULL;
+    UINT64* pdatastacklength = NULL;
     
     UINT64* pints;
     
@@ -2573,24 +2573,24 @@ void dg_forthhibit (Bufferhandle* pBHarrayhead)
         return;
     }
 
-	pdatastack = dg_getpbuffer(
+    pdatastack = dg_getpbuffer(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         &pdatastacklength);
 
-	if (pdatastack == (unsigned char*)badbufferhandle)
-	{
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthhibitname);
-		return;
-	}
-
-	if ( *pdatastacklength < sizeof(UINT64) )
-	{
-		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
         dg_pusherror(pBHarrayhead, dg_forthhibitname);
-		return;
-	}
+        return;
+    }
+
+    if ( *pdatastacklength < sizeof(UINT64) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthhibitname);
+        return;
+    }
     
     pints = (UINT64*)(pdatastack + *pdatastacklength - sizeof(UINT64));
     
@@ -2669,30 +2669,30 @@ void dg_forthtouleb128 (Bufferhandle* pBHarrayhead)
     }
 
     u = dg_popdatastack(pBHarrayhead);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthtouleb128name);
-		return;
-	}
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtouleb128name);
+        return;
+    }
     
     dg_touleb128(u, pconverteduleb128);
     
     dg_pushdatastack(pBHarrayhead, pconverteduleb128[0]);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthtouleb128name);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtouleb128name);
+        return;
+    }
     
     dg_pushdatastack(pBHarrayhead, pconverteduleb128[1]);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthtouleb128name);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtouleb128name);
+        return;
+    }
 }
 
 
@@ -4556,25 +4556,25 @@ void dg_forthbrackettoorderconstant (Bufferhandle* pBHarrayhead)
 //                 ( "<spaces>word<spaces>morestuff" -currentinputbuffer- "<spaces>morestuff" )
 //                 ( n1 -- )
 {
-	UINT64 data = 0;
+    UINT64 data = 0;
 
     unsigned char* pname;
-	UINT64 namelength = 0;
+    UINT64 namelength = 0;
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
-	data = dg_popbufferuint64(
+    data = dg_popbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthbrackettoorderconstantname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthbrackettoorderconstantname);
+        return;
+    }
 
-	pname = dg_parseword(
+    pname = dg_parseword(
         pBHarrayhead,
         &namelength);
         
@@ -4584,24 +4584,24 @@ void dg_forthbrackettoorderconstant (Bufferhandle* pBHarrayhead)
         return;
     }
 
-	if (namelength == 0)
-	{
+    if (namelength == 0)
+    {
         dg_pusherror(pBHarrayhead, dg_wordlength0error);
-		dg_pusherror(pBHarrayhead, dg_forthbrackettoorderconstantname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthbrackettoorderconstantname);
+        return;
+    }
 
-	dg_createbrackettoorderconstantdef(
+    dg_createbrackettoorderconstantdef(
         pBHarrayhead,
         data,
         pname,
         namelength);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthbrackettoorderconstantname);
-		return;
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthbrackettoorderconstantname);
+        return;
+    }
 }
 
 
@@ -5564,4 +5564,115 @@ void dg_forthbenchmark(Bufferhandle* pBHarrayhead)
         dg_pusherror(pBHarrayhead, dg_forthbenchmarkname);
         return;
     }
+}
+
+
+void dg_forthn8tocell (Bufferhandle* pBHarrayhead)
+//      ( n8 -- n64 )
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    UINT64* pints;
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthn8tocellname);
+        return;
+    }
+
+    if (*pbuflength < sizeof(UINT64) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthn8tocellname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+
+    pints = (UINT64*)(pdatastack + *pbuflength - sizeof(UINT64));
+
+    pints[0] = (UINT64)dg_n8ton64(pints[0]);
+
+    // no error possible
+}
+
+
+void dg_forthn16tocell (Bufferhandle* pBHarrayhead)
+//      ( n16 -- n64 )
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    UINT64* pints;
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthn16tocellname);
+        return;
+    }
+
+    if (*pbuflength < sizeof(UINT64) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthn16tocellname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+
+    pints = (UINT64*)(pdatastack + *pbuflength - sizeof(UINT64));
+
+    pints[0] = (UINT64)dg_n16ton64(pints[0]);
+
+    // no error possible
+}
+
+
+void dg_forthn32tocell (Bufferhandle* pBHarrayhead)
+//      ( n32 -- n64 )
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    UINT64* pints;
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthn32tocellname);
+        return;
+    }
+
+    if (*pbuflength < sizeof(UINT64) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthn32tocellname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+
+    pints = (UINT64*)(pdatastack + *pbuflength - sizeof(UINT64));
+
+    pints[0] = (UINT64)dg_n32ton64(pints[0]);
+
+    // no error possible
 }

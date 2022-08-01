@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.5.
+//    This file is part of DiaperGlu v5.6.
 //
-//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.6 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.6 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.5; if not, write to the Free Software
+//    along with DiaperGlu v5.6; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// July 2, 2022               //
-// version 5.5                //
+// August 1, 2022             //
+// version 5.6                //
 // /////////////////////////////
 
 
@@ -157,37 +157,37 @@ void dg_forthslashstring (Bufferhandle* pBHarrayhead)
 void dg_forthsearch (Bufferhandle* pBHarrayhead)
 //     ( caddr1 u1 caddr2 u2 -- caddr3 u3 flag )
 {
-	UINT64* pbuflength;
-	unsigned char* pdatastack;
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
 
-	UINT64* pints;
+    UINT64* pints;
 
     unsigned char* caddrout;
     
     const char* pError;
 
-	pdatastack = dg_getpbuffer(
+    pdatastack = dg_getpbuffer(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         &pbuflength);
 
-	if (pdatastack == (unsigned char*)badbufferhandle)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthsearchname);
-		return;
-	}
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthsearchname);
+        return;
+    }
 
-	if (*pbuflength < (4 * sizeof(UINT64)) )
-	{
-		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
-		dg_pusherror(pBHarrayhead, dg_forthsearchname);
-		return;
-	}
+    if (*pbuflength < (4 * sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthsearchname);
+        return;
+    }
 
-	// could check for misaligned data stack here
+    // could check for misaligned data stack here
 
-	pints = (UINT64*)(pdatastack + *pbuflength - (4 * sizeof(UINT64)));
+    pints = (UINT64*)(pdatastack + *pbuflength - (4 * sizeof(UINT64)));
 
     // would it be better to just pass a pointer to the data stack?
     pError = dg_search(
@@ -205,19 +205,19 @@ void dg_forthsearch (Bufferhandle* pBHarrayhead)
         return;
     }
          
-	if (caddrout != NULL)
-	{
-		pints[1] = pints[1]  - (UINT64)(caddrout - pints[0]);
-		pints[0] = (UINT64)caddrout;
-		pints[2] = FORTH_TRUE;
-	}
-	else
-	{
-		pints[2] = FORTH_FALSE;
-	}
+    if (caddrout != NULL)
+    {
+        pints[1] = pints[1]  - (UINT64)(caddrout - pints[0]);
+        pints[0] = (UINT64)caddrout;
+        pints[2] = FORTH_TRUE;
+    }
+    else
+    {
+        pints[2] = FORTH_FALSE;
+    }
 
 
-	*pbuflength -= sizeof(UINT64);
+    *pbuflength -= sizeof(UINT64);
 }
 
 
@@ -225,100 +225,100 @@ void dg_forthcompiles (Bufferhandle* pBHarrayhead)
 //            ( addr u -- )
 //            ( compiles copy of string at addr u and code that does: ( -- addr' u ) 
 {
-	UINT64* pbuflength = NULL;
-	unsigned char* pdatastack = NULL;
-	
-	UINT64* pints = NULL;
-	
-	UINT64 sqstrlen = 0;
-	unsigned char* pstring = NULL;
-	
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	if (baderrorcount == olderrorcount)
-	{
-		return;
-	}
-	
-	
-	// get source addr and length from data stack
-	pdatastack = dg_getpbuffer(
+    UINT64* pbuflength = NULL;
+    unsigned char* pdatastack = NULL;
+    
+    UINT64* pints = NULL;
+    
+    UINT64 sqstrlen = 0;
+    unsigned char* pstring = NULL;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    
+    // get source addr and length from data stack
+    pdatastack = dg_getpbuffer(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         &pbuflength);
-	
-	if (pdatastack == (unsigned char*)badbufferhandle)
-	{
+    
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthcompilesname);
-		return;
-	}
-	
-	if (*pbuflength < (2 * sizeof(UINT64)))
-	{
-		dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
         dg_pusherror(pBHarrayhead, dg_forthcompilesname);
-		return;
-	}
-	
-	// could check for misaligned data stack here
-	
-	pints = (UINT64*)(pdatastack + *pbuflength - 2* sizeof(UINT64));
-	
-	sqstrlen = pints[1];
-	pstring = (unsigned char*)pints[0];
-	
-	*pbuflength -= (2 * sizeof(UINT64));
-	
+        return;
+    }
+    
+    if (*pbuflength < (2 * sizeof(UINT64)))
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthcompilesname);
+        return;
+    }
+    
+    // could check for misaligned data stack here
+    
+    pints = (UINT64*)(pdatastack + *pbuflength - 2* sizeof(UINT64));
+    
+    sqstrlen = pints[1];
+    pstring = (unsigned char*)pints[0];
+    
+    *pbuflength -= (2 * sizeof(UINT64));
+    
     // compile string and code to push addr and length of copy to data stack
-	
-	// getting the address of the string by using a call calculates the address at run time and allows for the case
-	//  where the buffer containing the string moves. You just need to use the pointer to the string before the buffer moves again.
-	dg_compilecalloffset (pBHarrayhead, sqstrlen);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    
+    // getting the address of the string by using a call calculates the address at run time and allows for the case
+    //  where the buffer containing the string moves. You just need to use the pointer to the string before the buffer moves again.
+    dg_compilecalloffset (pBHarrayhead, sqstrlen);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthcompilesname);
-		return;
-	}	
-	
-	dg_compilesegment (
+        return;
+    }    
+    
+    dg_compilesegment (
         pBHarrayhead,
         (const char*)pstring,
         sqstrlen);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthcompilesname);
-		return;
-	}	
-	
-	// address of string is now on return stack	
-	dg_compilepushdatastack(pBHarrayhead);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+        return;
+    }    
+    
+    // address of string is now on return stack    
+    dg_compilepushdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthcompilesname);
-		return;
-	}
-	
-	dg_compilepushntoret(
+        return;
+    }
+    
+    dg_compilepushntoret(
         pBHarrayhead,
         sqstrlen);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthcompilesname);
-		return;
-	}
-	
-	dg_compilepushdatastack(pBHarrayhead);
-	
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+        return;
+    }
+    
+    dg_compilepushdatastack(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthcompilesname);
-		return;
-	}
+        return;
+    }
 }
 
 

@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.5.
+//    This file is part of DiaperGlu v5.6.
 //
-//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.6 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.6 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.5; if not, write to the Free Software
+//    along with DiaperGlu v5.6; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// July 2, 2022               //
-// version 5.5                //
+// August 1, 2022             //
+// version 5.6                //
 // /////////////////////////////
 
 
@@ -36,18 +36,18 @@ void dg_forthpushoerror (Bufferhandle* pBHarrayhead)
 //     ( offset bufferid -- )
 //     ( -error- offset bufferid )
 {
-	UINT64 offset = 0;
-	UINT64 bufferid = 0;
+    UINT64 offset = 0;
+    UINT64 bufferid = 0;
 
-	bufferid = dg_popbufferuint64(
+    bufferid = dg_popbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID);
     
-	offset = dg_popbufferuint64(
+    offset = dg_popbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID);
 
-	dg_pushbuffererror(
+    dg_pushbuffererror(
         pBHarrayhead,
         bufferid,
         offset);
@@ -58,20 +58,20 @@ void dg_forthpopoerror (Bufferhandle* pBHarrayhead)
 //             ( offset bufferid -error- )
 //             ( -- offset bufferid )
 {
-	UINT64 offset;
-	UINT64 bufid;
+    UINT64 offset;
+    UINT64 bufid;
 
-	dg_popbuffererror(
+    dg_popbuffererror(
         pBHarrayhead,
         &offset,
         &bufid);
 
-	dg_pushbufferuint64(
+    dg_pushbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         offset);
     
-	dg_pushbufferuint64(
+    dg_pushbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         bufid);
@@ -81,26 +81,26 @@ void dg_forthpopoerror (Bufferhandle* pBHarrayhead)
 void dg_forthgetoerror (Bufferhandle* pBHarrayhead) // GETOERROR0$
 //     ( errorstackindex -- offset bufferid )
 {
-	UINT64 bufferid;
-	UINT64 offset;
-	UINT64 errorindex;
+    UINT64 bufferid;
+    UINT64 offset;
+    UINT64 errorindex;
 
-	errorindex = dg_popbufferuint64(
+    errorindex = dg_popbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID);
 
-	dg_getbuffererror(
+    dg_getbuffererror(
         pBHarrayhead,
         errorindex,
         &offset,
         &bufferid);
 
-	dg_pushbufferuint64(
+    dg_pushbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         offset);
     
-	dg_pushbufferuint64(
+    dg_pushbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         bufferid);
@@ -110,11 +110,11 @@ void dg_forthgetoerror (Bufferhandle* pBHarrayhead) // GETOERROR0$
 void dg_forthgeterrorcount (Bufferhandle* pBHarrayhead) // GETERRORCOUNT
 //     ( -- errorcount )
 {
-	UINT64 errorcount = 0;
+    UINT64 errorcount = 0;
 
-	errorcount = dg_geterrorcount(pBHarrayhead);
+    errorcount = dg_geterrorcount(pBHarrayhead);
 
-	dg_pushbufferuint64(
+    dg_pushbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         errorcount);
@@ -124,9 +124,9 @@ void dg_forthgeterrorcount (Bufferhandle* pBHarrayhead) // GETERRORCOUNT
 void dg_forthcheckerrordepth (Bufferhandle* pBHarrayhead) // GETERRORDEPTH
 //     ( -- errorstackdepth )
 {
-	UINT64 errorstackdepth = dg_checkerrorsonstack(pBHarrayhead);
+    UINT64 errorstackdepth = dg_checkerrorsonstack(pBHarrayhead);
 
-	dg_pushbufferuint64(
+    dg_pushbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         errorstackdepth);
@@ -136,22 +136,22 @@ void dg_forthcheckerrordepth (Bufferhandle* pBHarrayhead) // GETERRORDEPTH
 void dg_forthcompilegetolderrorcount (Bufferhandle* pBHarrayhead)
 {
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	if (baderrorcount == olderrorcount)
-	{
-		return;
-	}
-	
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
     // could make something more direct...
-	dg_compilepusholderrorcounttoret(pBHarrayhead);
-	
+    dg_compilepusholderrorcounttoret(pBHarrayhead);
+    
     if (olderrorcount != dg_geterrorcount(pBHarrayhead))
     {
         dg_pusherror(pBHarrayhead, dg_forthcplgetolderrorcountname);
     }
-	
-	dg_compilepushdatastack(pBHarrayhead);
-	
+    
+    dg_compilepushdatastack(pBHarrayhead);
+    
     if (olderrorcount != dg_geterrorcount(pBHarrayhead))
     {
         dg_pusherror(pBHarrayhead, dg_forthcplgetolderrorcountname);
@@ -161,11 +161,11 @@ void dg_forthcompilegetolderrorcount (Bufferhandle* pBHarrayhead)
 
 void dg_forthdroptoerrorcount (Bufferhandle* pBHarrayhead)
 {
-	UINT64 newerrorcount = dg_popbufferuint64(
+    UINT64 newerrorcount = dg_popbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID);
 
-	dg_droptoerrorcount(
+    dg_droptoerrorcount(
         pBHarrayhead,
         newerrorcount);
 }
@@ -299,20 +299,20 @@ void dg_getserrormessage (
 /*
 void dg_forthdoterrors (Bufferhandle* pBHarrayhead)
 {
-	UINT64 errorcount;
-	unsigned char* perror;
+    UINT64 errorcount;
+    unsigned char* perror;
     UINT64 errorlength;
-	UINT64 i;
+    UINT64 i;
     UINT64 errorbufferid;
     UINT64 erroroffset;
 
-	unsigned char c = '\n';
-	unsigned char* punknownword;
+    unsigned char c = '\n';
+    unsigned char* punknownword;
 
-	errorcount = dg_checkerrorsonstack(pBHarrayhead);
+    errorcount = dg_checkerrorsonstack(pBHarrayhead);
 
     if (errorcount == 0)
-	{
+    {
         if (dg_geterrorcount(pBHarrayhead) == 0)
         {
             dg_printzerostring(pBHarrayhead, (unsigned char*)"no errors\n");
@@ -323,11 +323,11 @@ void dg_forthdoterrors (Bufferhandle* pBHarrayhead)
         }
 
         return;
-	}
+    }
 
-	for (i = errorcount; i > 0; i--)
-	{
-		//error = dg_geterror(pBHarrayhead, i-1);
+    for (i = errorcount; i > 0; i--)
+    {
+        //error = dg_geterror(pBHarrayhead, i-1);
         
         dg_getbuffererror (
             pBHarrayhead, 
@@ -335,12 +335,12 @@ void dg_forthdoterrors (Bufferhandle* pBHarrayhead)
             &erroroffset, 
             &errorbufferid);
 
-		if (
+        if (
             ((dg_evaluatebufferwordnotfounderror == (const char*)erroroffset) ||
             (dg_symbolnotfounderror == (const char*)erroroffset))
              && (DG_CORE_BUFFERID == errorbufferid))
-		{
-			punknownword = dg_getpbufferoffset(
+        {
+            punknownword = dg_getpbufferoffset(
                 pBHarrayhead,
                 DG_DATASPACE_BUFFERID,
                 lastnotfoundword);
@@ -352,9 +352,9 @@ void dg_forthdoterrors (Bufferhandle* pBHarrayhead)
             //    &perror,
             //    &errorlength);
 
-			if (punknownword != NULL)
-			{
-				dg_printzerostring(
+            if (punknownword != NULL)
+            {
+                dg_printzerostring(
                     pBHarrayhead,
                     (unsigned char*)" - word/symbol not found error (showing last word/symbol not found) >>>");
                 
@@ -366,10 +366,10 @@ void dg_forthdoterrors (Bufferhandle* pBHarrayhead)
                     pBHarrayhead,
                     (unsigned char*)"<<<\n");
                 //dg_writestdout(pBHarrayhead, perror, errorlength);
-			}
-		}
-		else
-		{
+            }
+        }
+        else
+        {
             dg_getserrormessage (
                 pBHarrayhead,
                 errorbufferid,
@@ -377,17 +377,17 @@ void dg_forthdoterrors (Bufferhandle* pBHarrayhead)
                 &perror,
                 &errorlength);
     
-			//dg_printzerostring(pBHarrayhead, (unsigned char*)error);
+            //dg_printzerostring(pBHarrayhead, (unsigned char*)error);
             dg_writestdout(
                 pBHarrayhead,
                 perror,
                 errorlength);
 
-			dg_writestdout(
+            dg_writestdout(
                 pBHarrayhead,
                 &c,
                 1);
-		}
+        }
 
         // just in case
         //if (error == dg_errornotthatmanyerrors)
@@ -395,7 +395,7 @@ void dg_forthdoterrors (Bufferhandle* pBHarrayhead)
         {
             break;
         }
-	}
+    }
 
     if (dg_geterrorcount(pBHarrayhead) > errorcount)
     {
@@ -486,40 +486,40 @@ void dg_forthnametoe (Bufferhandle* pBHarrayhead)
 
 void dg_fortherrorquotes( Bufferhandle* pBHarrayhead)
 {
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
     
     if (baderrorcount == olderrorcount)
     {
         return;
     }
 
-	dg_fortho0quotes(pBHarrayhead);
+    dg_fortho0quotes(pBHarrayhead);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_fortherrorquotesname);
-		return;
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_fortherrorquotesname);
+        return;
+    }
 
-	dg_pushbufferuint64(
+    dg_pushbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         (UINT64)(&dg_forthpushoerror));
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_fortherrorquotesname);
-		return;
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_fortherrorquotesname);
+        return;
+    }
 
-	dg_forthcompilecallcore(pBHarrayhead);
+    dg_forthcompilecallcore(pBHarrayhead);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_fortherrorquotesname);
-		return;
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_fortherrorquotesname);
+        return;
+    }
 }
 
 
@@ -528,40 +528,40 @@ void dg_forthqueryerrorif (Bufferhandle* pBHarrayhead)
 {
     UINT64 afterbranchoffset;
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-	
-	if (baderrorcount == olderrorcount)
-	{
-		return;
-	}
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
 
-	dg_compilequeryerror (pBHarrayhead);
+    dg_compilequeryerror (pBHarrayhead);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthqueryerrorifname);
-		return;
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthqueryerrorifname);
+        return;
+    }
 
     afterbranchoffset = dg_compilebranch(
         pBHarrayhead,
         DG_BRANCHTYPE_EQUAL);
 
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthqueryerrorifname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_forthqueryerrorifname);
+        return;
+    }
 
     dg_pushbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         afterbranchoffset);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthqueryerrorifname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthqueryerrorifname);
+        return;
+    }
 }

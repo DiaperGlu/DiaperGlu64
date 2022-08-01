@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.5.
+//    This file is part of DiaperGlu v5.6.
 //
-//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.6 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.6 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.5; if not, write to the Free Software
+//    along with DiaperGlu v5.6; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// July 2, 2022               //
-// version 5.5                //
+// August 1, 2022             //
+// version 5.6                //
 // /////////////////////////////
 
 
@@ -88,6 +88,7 @@ const char dg_putuint32name[]              = "dg_putuint32";
 const char dg_hctwostorename[]             = "dg_hctwostore";
 const char dg_tentothexname[]              = "dg_tentothex";
 const char dg_randomname[]                 = "dg_random";
+
 const char dg_addbytesname[]               = "dg_addbytes";
 const char dg_adcbytesname[]               = "dg_adcbytes";
 const char dg_sbbbytesname[]               = "dg_sbbbytes";
@@ -5712,13 +5713,139 @@ void dg_closeevalfileid (
 }
 
 
+// this tries to add another line to the terminal input buffer from the input source
+const char* dg_getonemorestdinlinename = "dg_getonemorestdinline";
+
+void dg_getonemorestdinline(Bufferhandle* pBHarrayhead)
+{
+    unsigned char c = ' ';
+    UINT64 numread;
+    const char* perror;
+    UINT64 length;
+    UINT64 fileid;
+    UINT64 bufferid = DG_TERMINALINPUT_BUFFERID;
+    const char* pError;
+   
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    pError = dg_gethstdin(
+        pBHarrayhead,
+        &fileid,
+        dg_success);
+
+    // get all characters from input until cr, lf, or connection closed
+    while(c != 10)
+    {
+        perror = dg_readfile(
+            pBHarrayhead,
+            fileid,
+            &c,
+            1,
+            0,
+            &numread,
+            dg_success); // pforceerror);
+
+        if (perror != dg_success)
+        {
+            dg_pusherror(pBHarrayhead, perror);
+            dg_pusherror(pBHarrayhead, dg_readfilename);
+            dg_pusherror(pBHarrayhead, dg_getonemorestdinlinename);
+            return;
+        }
+
+        if (numread < 1)
+        {
+            // connection was closed
+            // this is not an error
+            //c = 10;
+            return;
+        }
+
+        // ignoring crs. Windows uses CRLF
+        //if (c == 13)
+        //{
+        //    c = 10;
+        //}
+
+        // convert delete to bs
+        if (c == 127)
+        {
+            c = 8;
+        }
+
+        if (10 == c) // end of buffer is a delimiter so we don't need to push the end of line character
+                     //  but going to do it anyways
+        {
+            dg_pushbufferbyte(pBHarrayhead, bufferid, c);
+            // check for push error
+
+            if (pBHarrayhead->errorcount != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_getonemorestdinlinename);
+                return;
+            }
+
+            // need to check if there is more stuff in terminal input buffer...
+            //  if there is... need to stay in loop...
+            //  so... getfilelength(cib)  // don't really like windows implementation of this...
+                                          //  since it's throwing away a couple of events...
+        }
+        else
+        {
+            if (c != 8)
+            {
+                // throw away non text characters - would like to support unicode someday
+                if ((c >= 0x20)
+                    && (c <= 126))
+                {
+                    dg_pushbufferbyte(pBHarrayhead, bufferid, c);
+                    // check for push error
+
+                    if (pBHarrayhead->errorcount != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_getonemorestdinlinename);
+                        return;
+                    }
+                }
+            }
+            else 
+            {
+                length = dg_getbufferlength(pBHarrayhead, bufferid);
+
+                if (pBHarrayhead->errorcount != olderrorcount)
+                {
+                    dg_pusherror(pBHarrayhead, dg_getonemorestdinlinename);
+                    return;
+                }
+
+                // handle backspace
+                if (length > 0)
+                {
+                    dg_popbufferbyte(pBHarrayhead, bufferid);
+
+                    // this should never happen
+                    if (pBHarrayhead->errorcount != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_getonemorestdinlinename);
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    return;
+}
+
+
+// this blocking waits for one line from the terminal
 const char* dg_getlinename = "dg_getline";
 
 UINT64 dg_getline(
-       Bufferhandle* pBHarrayhead,
-       UINT64 fileid,
-       UINT64 bufferid, 
-       const char* pforceerror)
+    Bufferhandle* pBHarrayhead,
+    UINT64 fileid,
+    UINT64 bufferid, 
+    const char* pforceerror)
 {
     unsigned char c = ' ';
     UINT64 numread;
@@ -5775,7 +5902,24 @@ UINT64 dg_getline(
             c = 8;
         }
 
-        if (c != 10) // end of buffer is a delimiter so we don't need to push the end of line character
+        if (10 == c) // end of buffer is a delimiter so we don't need to push the end of line character
+                     //  but going to do it anyways
+        {
+            dg_pushbufferbyte(pBHarrayhead, bufferid, c);
+            // check for push error
+
+            if (pBHarrayhead->errorcount != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_getlinename);
+                return (FORTH_FALSE);
+            }
+
+            // need to check if there is more stuff in terminal input buffer...
+            //  if there is... need to stay in loop...
+            //  so... getfilelength(cib)  // don't really like windows implementation of this...
+                                          //  since it's throwing away a couple of events...
+        }
+        else
         {
             if (c != 8)
             {
@@ -6202,10 +6346,14 @@ unsigned char* dg_parsemultiline(
     UINT64 endoffset = 0;
 
     UINT64 cibid = 0;
+  
     const char* perror;
 
     unsigned char c = 0;
 
+    UINT64 fileid;
+
+    UINT64 oldbufferlength;
 
     Bufferhandle* pBH = NULL;
 
@@ -6258,11 +6406,90 @@ unsigned char* dg_parsemultiline(
     beginoffset = *pcibcurrentoffset;
     endoffset = beginoffset;
 
-    while(*pcibcurrentoffset < *pciblength)
+    // begin
+    //   if (at end and parsing from terminal_input_bufferid) then 
+    //    wait for more from stdin (if stdin is closed you get nothing)
+    //    if terminal input buffer can grow, may need to get the pointers again...
+    // while (not at end of buffer or did not parse terminator)
+    //   parse one character 
+    // repeat
+
+    while(true)
     {
+        if ((*pcibcurrentoffset >= *pciblength) &&
+            (DG_TERMINALINPUT_BUFFERID == cibid))
+        {
+            // need to print out what endchar you are waiting for
+            dg_printzerostring(pBHarrayhead, (unsigned char*)"\nParsing characters over multiple lines until ");
+            c = endchar;
+
+            perror = dg_gethstdout(
+                pBHarrayhead,
+                &fileid,
+                dg_success);
+
+            if (perror != dg_success)
+            {
+                dg_pusherror(pBHarrayhead, perror);
+                dg_pusherror(pBHarrayhead, dg_gethstdinname);
+                dg_pusherror(pBHarrayhead, dg_parsemultilinename);
+                return((unsigned char*)badbufferhandle);
+            }
+
+            perror = dg_writefile(
+                pBHarrayhead,
+                fileid,
+                (unsigned char*)&c,
+                1, // length,
+                dg_success);
+
+            if (perror != dg_success)
+            {
+                dg_pusherror(pBHarrayhead, perror);
+                dg_pusherror(pBHarrayhead, dg_writefilename);
+                dg_pusherror(pBHarrayhead, dg_parsemultilinename);
+                return((unsigned char*)badbufferhandle);
+            }
+            
+            dg_forthdoprompt(pBHarrayhead);
+
+            // pushes another line onto end of cib
+            dg_getonemorestdinline(pBHarrayhead);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_parsemultilinename);
+                return((unsigned char*)badbufferhandle);
+            }
+
+            // it will probably never happen, but just in case the buffer moved
+            //  need to get the pointer to the buffer again
+            pcib = dg_getpbuffer(
+                pBHarrayhead,
+                cibid,
+                &pciblength);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthpcurrentinputbuffername);
+                dg_pusherror(pBHarrayhead, dg_parsemultilinename);
+                return((unsigned char*)badbufferhandle);
+            }
+
+            // because dg_getpbuffer worked, I know the buf header for pcib is there
+            // pBH = &( ((Bufferhandle*)(pBHarrayhead->pbuf))[cibid] ); // shouldn't change....
+            pcibcurrentoffset = &pBH->currentoffset;
+
+        }
+
+        if (*pcibcurrentoffset >= *pciblength)
+        {
+            break;
+        }
+
         c = *(pcib + (*pcibcurrentoffset));
 
-        if (c == endchar)
+        if (endchar == c)
         {
             (*pcibcurrentoffset)++; // to get off end delimeter - forth standard for parsing
             break;
@@ -6270,8 +6497,24 @@ unsigned char* dg_parsemultiline(
 
         (*pcibcurrentoffset)++;
         endoffset = *pcibcurrentoffset;
+                 
     }
-    
+
+    //    while(*pcibcurrentoffset < *pciblength)
+    //    {
+    //        c = *(pcib + (*pcibcurrentoffset));
+
+    //        if (c == endchar)
+    //        {
+    //            (*pcibcurrentoffset)++; // to get off end delimeter - forth standard for parsing
+    //            break;
+    //        }
+
+    //        (*pcibcurrentoffset)++;
+    //        endoffset = *pcibcurrentoffset;
+    //    }
+
+  
     *pwordlength = endoffset - beginoffset;
     
     return (pcib + beginoffset);
@@ -6417,6 +6660,7 @@ unsigned char* dg_parsewords(
     Bufferhandle* pBH = NULL;
     
     const char* pError;
+    UINT64 fileid;
     
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
     
@@ -6471,6 +6715,111 @@ unsigned char* dg_parsewords(
     pBH = &( ((Bufferhandle*)(pBHarrayhead->pbuf))[cibid] );
     pcibcurrentoffset = &pBH->currentoffset;
 
+    // begin
+    //   if (at end and parsing from terminal_input_bufferid and multiline) then 
+    //    wait for more from stdin (if stdin is closed you get nothing)
+    //    if terminal input buffer can grow, may need to get the pointers again...
+    // while (not at end of buffer or did not parse terminator or will parse non delimiter)
+    //   parse one character 
+    // repeat
+
+    while (true)
+    {
+        if ((*pcibcurrentoffset >= *pciblength) &&
+            (DG_TERMINALINPUT_BUFFERID == cibid) &&
+            (FORTH_FALSE == lineterminatorsareendflag))
+        {
+            // hopefully don't need anything that is already in the buffer...
+            //  this reduces the chances of the need for a grow...    
+            *pciblength = 0;
+            *pcibcurrentoffset = 0;
+
+            // need to print out what endchar you are waiting for
+            dg_printzerostring(pBHarrayhead, (unsigned char*)"\nParsing word names over multiple lines until ");
+            c = enddelimiter;
+
+            pError = dg_gethstdout(
+                pBHarrayhead,
+                &fileid,
+                dg_success);
+
+            if (pError != dg_success)
+            {
+                dg_pusherror(pBHarrayhead, pError);
+                dg_pusherror(pBHarrayhead, dg_gethstdinname);
+                dg_pusherror(pBHarrayhead, dg_parsemultilinename);
+                return((unsigned char*)badbufferhandle);
+            }
+
+            pError = dg_writefile(
+                pBHarrayhead,
+                fileid,
+                (unsigned char*)&c,
+                1, // length,
+                dg_success);
+
+            if (pError != dg_success)
+            {
+                dg_pusherror(pBHarrayhead, pError);
+                dg_pusherror(pBHarrayhead, dg_writefilename);
+                dg_pusherror(pBHarrayhead, dg_parsemultilinename);
+                return((unsigned char*)badbufferhandle);
+            }
+            
+            dg_forthdoprompt(pBHarrayhead);
+
+            // pushes another line onto end of cib
+            dg_getonemorestdinline(pBHarrayhead);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_parsemultilinename);
+                return((unsigned char*)badbufferhandle);
+            }
+
+            // it will probably never happen, but just in case the buffer moved
+            //  need to get the pointer to the buffer again
+            pcib = dg_getpbuffer(
+                pBHarrayhead,
+                cibid,
+                &pciblength);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthpcurrentinputbuffername);
+                dg_pusherror(pBHarrayhead, dg_parsemultilinename);
+                return((unsigned char*)badbufferhandle);
+            }
+
+            // because dg_getpbuffer worked, I know the buf header for pcib is there
+            // pBH = &( ((Bufferhandle*)(pBHarrayhead->pbuf))[cibid] ); // shouldn't change....
+            pcibcurrentoffset = &pBH->currentoffset;
+        }
+
+        if (*pcibcurrentoffset >= *pciblength)
+        {
+            break;
+        }
+
+        c = *(pcib + *pcibcurrentoffset);
+        
+        if  ( (enddelimiter == c) || 
+              ( dg_islineterminator(c) && (lineterminatorsareendflag != FORTH_FALSE) ) )
+        {
+            *pfoundendflag = FORTH_TRUE;
+            (*pcibcurrentoffset)++; // moving past end delimiter
+            return (pcib + *pcibcurrentoffset - 1);
+        }
+        
+        if (dg_isdelimiter(c) == FORTH_FALSE)
+        {
+            break;
+        }
+
+        (*pcibcurrentoffset)++;
+    }
+
+/*
     //getting off the delimiters
     while(*pcibcurrentoffset < *pciblength)
     {
@@ -6491,7 +6840,7 @@ unsigned char* dg_parsewords(
 
         (*pcibcurrentoffset)++;
     }
-
+*/
     ciboldoffset = *pcibcurrentoffset;
 
     //getting to the next delimiter after the word

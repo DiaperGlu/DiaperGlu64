@@ -1,0 +1,416 @@
+
+// source document of the example being converted:
+// https://docs.microsoft.com/en-us/windows/win32/winmsg/using-window-classes
+
+// winmain instance handle is a module handle:
+// https://docs.microsoft.com/en-us/windows/win32/psapi/module-information
+
+// wndproc
+// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
+
+// source documents for constants
+// WS_OVERLAPPED source: https://docs.microsoft.com/en-us/windows/win32/winmsg/window-styles
+0 CONSTANT WS_OVERLAPPED
+
+// CS_VREDRAW source: https://docs.microsoft.com/en-us/windows/win32/winmsg/window-class-styles
+1 CONSTANT CS_VREDRAW
+2 CONSTANT CS_HREDRAW
+
+// IDI_APPLICATION source: https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadicona
+DECIMAL 32512 CONSTANT IDI_APPLICATION
+
+// IDC_ARROW source: https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadcursora
+DECIMAL 32512 CONSTANT IDC_ARROW
+
+// WHITE_BRUSH source: https://github.com/ldarren/tge-152-fork/blob/master/lib/MSPlatformSDK/Include/WinGDI.h
+0 CONSTANT WHITE_BRUSH
+
+// IMAGE_ICON source: https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadimagea
+1 CONSTANT IMAGE_ICON
+0 CONSTANT LR_DEFAULTCOLOR
+HEX 8000 CONSTANT LR_SHARED
+
+// SM_CXSMICON source: https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getsystemmetrics
+49 CONSTANT SM_CXSMICON
+50 CONSTANT SM_CYSMICON
+
+// CW_USEDEFAULT source: https://github.com/tpn/winsdk-10/blob/master/Include/10.0.10240.0/um/WinUser.h
+HEX 80000000 CONSTANT CW_USEDEFAULT ( may get sign extended... but I don't think it does... )
+
+// WS_EX_WINDOWEDGE source: https://docs.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
+HEX 100 CONSTANT WS_EX_WINDOWEDGE
+HEX 200 CONSTANT WS_EX_CLIENTEDGE
+WS_EX_CLIENTEDGE WS_EX_WINDOWEDGE OR CONSTANT WS_EX_OVERLAPPEDWINDOW
+
+// https://docs.microsoft.com/en-us/windows/win32/winmsg/window-styles
+0 CONSTANT WS_OVERLAPPED
+HEX C00000 CONSTANT WS_CAPTION
+HEX 80000 CONSTANT WS_SYSMENU
+HEX 40000 CONSTANT WS_THICKFRAME
+HEX 20000 CONSTANT WS_MINIMIZEBOX
+HEX 10000 CONSTANT WS_MAXIMIZEBOX
+WS_OVERLAPPED WS_CAPTION OR 
+  WS_SYSMENU OR 
+  WS_THICKFRAME OR 
+  WS_MINIMIZEBOX OR 
+  WS_MAXIMIZEBOX OR CONSTANT WS_OVERLAPPEDWINDOW
+
+// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow
+1 CONSTANT SW_NORMAL
+
+// imported function documentation
+// https://docs.microsoft.com/en-us/windows/console/setconsoletitle
+// https://docs.microsoft.com/en-us/windows/console/getconsoletitle
+// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexa
+// https://docs.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-sleep
+// https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getprocessid
+// https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-getlasterror
+// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getsystemmetrics
+
+// WNDCLASSEX source: https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexa
+WORDLIST DUP [>ORDER]CONSTANT [WNDCLASSEX.] >CURRENT 
+SIZED-CONSTANTS< 
+    4 cbSize
+    4 style
+    8 lpfnWndProc
+    4 cbClsExtra
+    4 cbWndExtra
+    8 hInstance
+    8 hIcon
+    8 hCursor
+    8 hbrBackground
+    8 lpszMenuName
+    8 lpszClassName
+    8 hIconSm
+    0 size >
+CURRENT> DROP
+
+// Windows class structure probably has to go into a locked down buffer.
+//  The default Forth data space buffer is locked down
+
+HEX 1000 1000 NEWBUFFER CONSTANT mylockeddownbufferid
+
+mylockeddownbufferid GETSBUFFER DROP CONSTANT plockeddownbuffer
+
+mylockeddownbufferid GETBUFFERLENGTH plockeddownbuffer + CONSTANT pdefaultwndclassex
+[WNDCLASSEX.] size DROP mylockeddownbufferid GROWBUFFER 
+
+$" MainMenu" $>0$
+mylockeddownbufferid GETBUFFERLENGTH plockeddownbuffer + CONSTANT pDefaultMainMenuName0$
+mylockeddownbufferid $>BUF
+
+$" MainWClass" $>0$
+mylockeddownbufferid GETBUFFERLENGTH plockeddownbuffer + CONSTANT pDGDefaultWClassName0$
+mylockeddownbufferid $>BUF
+
+$" Default Window Title" $>0$
+mylockeddownbufferid GETBUFFERLENGTH plockeddownbuffer + CONSTANT pDGDefaultWTitleName0$
+mylockeddownbufferid $>BUF
+
+// ALIGN
+// HERE 8 AND ALLOT // align to 16  
+// HERE CONSTANT pdefaultwndclassex [WNDCLASSEX.] size DROP ALLOT
+
+// The strings probably don't get copied so they also have to go into a locked down buffer.
+//  The default Forth data space buffer is locked down.
+// $" MainMenu" $>0$
+// HERE CONSTANT pDefaultMainMenuName0$ PCURRENTNEWVARIABLEBUFFER @ $>BUF
+
+// $" MainWClass" $>0$
+// HERE CONSTANT pDGDefaultWClassName0$ PCURRENTNEWVARIABLEBUFFER @ $>BUF
+
+// $" Default Window Title" $>0$
+// HERE CONSTANT pDGDefaultWTitleName0$ PCURRENTNEWVARIABLEBUFFER @ $>BUF
+
+ALIGN
+VARIABLE pDefaultWndClassAtom
+VARIABLE pHConsoleWindow
+VARIABLE pThisModule
+VARIABLE pHDefaultWindow
+VARIABLE pHDefaultAppIcon
+VARIABLE pHArrowCursor
+VARIABLE pHDefaulthbrBackground
+VARIABLE pHDefaultSmallIcon
+
+
+
+
+$" User32.dll" OPENLIBRARY$ CONSTANT huser32lib DROP
+$" CreateWindowExA" huser32lib FINDLIBRARYSYMBOL CONSTANT pCreateWindowExA
+$" FindWindowA" huser32lib FINDLIBRARYSYMBOL CONSTANT pFindWindowA
+$" LoadIconA" huser32lib FINDLIBRARYSYMBOL CONSTANT pLoadIconA
+$" LoadCursorA" huser32lib FINDLIBRARYSYMBOL CONSTANT pLoadCursorA
+$" LoadImageA" huser32lib FINDLIBRARYSYMBOL CONSTANT pLoadImageA
+$" GetSystemMetrics" huser32lib FINDLIBRARYSYMBOL CONSTANT pGetSystemMetricsA
+$" RegisterClassExA" huser32lib FINDLIBRARYSYMBOL CONSTANT pRegisterClassExA
+$" DefWindowProcA" huser32lib FINDLIBRARYSYMBOL CONSTANT pDefWindowProcA
+$" ShowWindow" huser32lib FINDLIBRARYSYMBOL CONSTANT pShowWindow
+$" UpdateWindow" huser32lib FINDLIBRARYSYMBOL CONSTANT pUpdateWindow
+
+CRLF ." RegisterClassExA address = " pRegisterClassExA HEX U. CRLF
+CRLF ." CreateWindowExA address = " pCreateWindowExA HEX U. CRLF
+
+$" Gdi32.dll" OPENLIBRARY$ CONSTANT hgdi32lib DROP
+$" GetStockObject" hgdi32lib FINDLIBRARYSYMBOL CONSTANT pGetStockObject
+
+// HWND FindWindowA ( pclassname0str pwindowname0str )
+
+
+$" Kernel32.dll" OPENLIBRARY$ CONSTANT hkernel32lib DROP
+
+$" GetConsoleTitleA" hkernel32lib FINDLIBRARYSYMBOL CONSTANT pGetConsoleTitleA
+// $" Sleep"            hkernel32lib FINDLIBRARYSYMBOL CONSTANT pSleep
+
+// length GetConsoleTitleA (pdest, maxdestlength)
+// maxdestlength                     returned length    pdest
+//  0                                 0                  unchanged
+//  0 < maxdestlength < titlelength   0                  pdest[0] = null terminator
+//  titlelength = maxdestlength       titlelength        copy of title not including null terminator
+//  titlelength < maxdestlength       titlelength        copy of title including null terminator
+// note: return titlelength does not include null terminator
+
+
+$" SetConsoleTitleA" hkernel32lib FINDLIBRARYSYMBOL CONSTANT pSetConsoleTitleA
+
+//  flag SetConsoleTitleA ( ptitle )
+
+
+$" Sleep" hkernel32lib FINDLIBRARYSYMBOL CONSTANT pSleep
+
+// void Sleep ( nmilliseconds )
+
+ 
+$" GetCurrentProcessId" hkernel32lib FINDLIBRARYSYMBOL CONSTANT pGetCurrentProcessId
+
+// processid GetCurrentProcessId ()
+
+
+$" GetLastError" hkernel32lib FINDLIBRARYSYMBOL CONSTANT pGetLastError
+
+// lastError GetLastError ()
+
+$" GetModuleHandleA" hkernel32lib FINDLIBRARYSYMBOL CONSTANT pGetModuleHandleA
+
+
+// UINT64 dg_getmicrosecondssince1970Jan01()
+
+HEX
+: GetConsoleTitleA0$ ( maxlength -- ) ( -$- title$ )
+  
+   NEW$ GROW$
+   0 GETS$[ND] SWAP 2 pGetConsoleTitleA CALLPROC
+   DUP SETLENGTH$ $>0$ // add the null
+   0= IF ERROR" string too small to hold title" NAME>E EXIT THEN
+;
+
+
+: SetConsoleTitleA0$ ( -- ) ( title$ -$- )
+   0 GETS$[ND] DROP 1 pSetConsoleTitleA CALLPROC
+   DROP$
+   0= IF NAME>E EXIT THEN
+;
+
+HEX
+: GetHConsoleWindow ( -- HWND )
+   1000 GetConsoleTitleA0$ ?ERRORIF NAME>E EXIT THEN
+
+   $" MyUniqueTitle"
+   0 pGetCurrentProcessId CALLPROC 
+   >NEW$ ULE$>NUMBER$ $>$
+   MICROSECONDSSINCE1970JAN01 >NEW$ ULE$>NUMBER$ $>$ $>0$
+   DUP$
+   SetConsoleTitleA0$ ?ERRORIF NAME>E EXIT THEN
+
+   28 1 pSleep CALLPROC DROP
+   
+   0 GETS$[ND] DROP  0  2  pFindWindowA CALLPROC DUP
+   0= IF NAME>E EXIT THEN
+
+   DROP$
+   
+   SetConsoleTitleA0$ ?ERRORIF NAME>E EXIT THEN
+;
+
+: GetHDefaultAppIcon ( -- hIcon )
+    IDI_APPLICATION 0 2 pLoadIconA CALLPROC
+;
+
+: GetHArrowCursor ( -- hCursor )
+    IDC_ARROW 0 2 pLoadCursorA CALLPROC
+;
+
+: GetHDefaulthbrBackground ( -- hbrBackground )
+    WHITE_BRUSH  1 pGetStockObject CALLPROC
+;
+
+DECIMAL
+: GetHDefaultSmallIcon ( -- hSmallIcon )
+    LR_DEFAULTCOLOR LR_SHARED OR
+    SM_CYSMICON 1 pGetSystemMetricsA CALLPROC
+    SM_CXSMICON 1 pGetSystemMetricsA CALLPROC
+    IMAGE_ICON
+    32517 ( N16>CELL ) // winlogo icon
+    ( pThisModule @ ) 0
+    6
+    pLoadImageA
+    CALLPROC
+;
+
+: GetHThisModule ( -- hModule )
+    0 1 pGetModuleHandleA CALLPROC
+;
+
+: initDefaultWNDCLASSEX { | pmywndclassex -- }
+    [WNDCLASSEX.] size DROP       pmywndclassex [WNDCLASSEX.] cbSize         DROP + U32!
+    CS_VREDRAW CS_HREDRAW OR      pmywndclassex [WNDCLASSEX.] style          DROP + U32!
+    pDefWindowProcA               pmywndclassex [WNDCLASSEX.] lpfnWndProc    DROP + !  // defaut window processing
+    0                             pmywndclassex [WNDCLASSEX.] cbClsExtra     DROP + U32!
+    0                             pmywndclassex [WNDCLASSEX.] cbWndExtra     DROP + U32!
+    pThisModule @                 pmywndclassex [WNDCLASSEX.] hInstance      DROP + !
+    pHDefaultAppIcon @            pmywndclassex [WNDCLASSEX.] hIcon          DROP + !
+    pHArrowCursor @               pmywndclassex [WNDCLASSEX.] hCursor        DROP + !
+    pHDefaulthbrBackground @      pmywndclassex [WNDCLASSEX.] hbrBackground  DROP + !  
+    pDefaultMainMenuName0$        pmywndclassex [WNDCLASSEX.] lpszMenuName   DROP + !
+    pDGDefaultWClassName0$        pmywndclassex [WNDCLASSEX.] lpszClassName  DROP + !
+    pHDefaultSmallIcon @          pmywndclassex [WNDCLASSEX.] hIconSm        DROP + ! 
+;
+
+HEX
+: showWNDCLASSEX { | pmywndclassex -- }
+    CRLF CRLF
+    ." cbSize =      "  pmywndclassex [WNDCLASSEX.] cbSize         DROP DUP U. + U32@ U.  CRLF
+    ." style =       "  pmywndclassex [WNDCLASSEX.] style          DROP DUP U. + U32@ U.  CRLF
+    ." lpfnWndProc   "  pmywndclassex [WNDCLASSEX.] lpfnWndProc    DROP DUP U. + @ U.     CRLF
+    ." cbClsExtra    "  pmywndclassex [WNDCLASSEX.] cbClsExtra     DROP DUP U. + U32@ U.  CRLF
+    ." cbWndExtra    "  pmywndclassex [WNDCLASSEX.] cbWndExtra     DROP DUP U. + U32@ U.  CRLF
+    ." hInstance     "  pmywndclassex [WNDCLASSEX.] hInstance      DROP DUP U. + @ U.     CRLF
+    ." hIcon         "  pmywndclassex [WNDCLASSEX.] hIcon          DROP DUP U. + @ U.     CRLF
+    ." hCursor       "  pmywndclassex [WNDCLASSEX.] hCursor        DROP DUP U. + @ U.     CRLF
+    ." hbrBackground "  pmywndclassex [WNDCLASSEX.] hbrBackground  DROP DUP U. + @ U.     CRLF
+    ." lpszMenuName  "  pmywndclassex [WNDCLASSEX.] lpszMenuName   DROP DUP U. + @ U.     CRLF
+    ." lpszClassName "  pmywndclassex [WNDCLASSEX.] lpszClassName  DROP DUP U. + @ U.     CRLF
+    ." hIconSm       "  pmywndclassex [WNDCLASSEX.] hIconSm        DROP DUP U. + @ U.     CRLF
+
+    ." MenuName =    "  pmywndclassex [WNDCLASSEX.] lpszMenuName   DROP DUP U. + @ TYPE0$ CRLF
+    ." ClassName =   "  pmywndclassex [WNDCLASSEX.] lpszClassName  DROP DUP U. + @ TYPE0$ CRLF
+;
+
+: RegisterWNDCLASSEX ( pmywindclassex -- 0|ATOM )
+    1 pRegisterClassExA CALLPROC
+    DUP 0= IF NAME>E THEN
+;
+
+CODE RegisterWNDCLASSEXb 
+  ENTER-CALL-SUBS-FRAME,
+  // just in case
+  HEX -10 N RSP AND,
+  plockeddownbuffer N  RCX  MOV,
+  pRegisterClassExA N  RAX  MOV,  RAX CALL,  
+  EXIT-CALL-SUBS-FRAME,
+  RET,
+END-CODE
+
+DECIMAL
+: CreateDefaultWindow ( -- hwnd )
+    0
+    pThisModule @
+    0 // use class menu
+    0 // pHConsoleWindow @ does not close window // 0 = no owner which was the value in the example 0 does not close window either
+    CW_USEDEFAULT
+    CW_USEDEFAULT
+    CW_USEDEFAULT
+    CW_USEDEFAULT
+    WS_OVERLAPPEDWINDOW
+    pDGDefaultWTitleName0$
+    pDGDefaultWClassName0$
+    0
+    12
+    pCreateWindowExA CALLPROC
+    DUP 0= IF NAME>E EXIT THEN
+    pHDefaultWindow !
+
+    SW_NORMAL
+    pHDefaultWindow @
+    2
+    pShowWindow CALLPROC DROP
+
+    pHDefaultWindow @
+    1
+    pUpdateWindow CALLPROC
+    0= IF 
+      0 pGetLastError CALLPROC CRLF ." Got Error " DECIMAL U.  
+      ERROR" UpdateWindow" NAME>E EXIT 
+    THEN
+;
+
+: doit 
+    GetHConsoleWindow pHConsoleWindow !        
+    ?ERRORIF 
+      0 pGetLastError CALLPROC CRLF ." Got Error " DECIMAL U. 
+      NAME>E EXIT 
+    THEN
+    CRLF ." HConsoleWindow = " pHConsoleWindow @ HEX U.
+
+    GetHThisModule pThisModule !               
+    ?ERRORIF 
+      0 pGetLastError CALLPROC CRLF ." Got Error " DECIMAL U. 
+      NAME>E EXIT 
+    THEN
+    CRLF ." HThisModule = " pThisModule @ HEX U.
+
+    GetHDefaultAppIcon pHDefaultAppIcon !               
+    ?ERRORIF 
+      0 pGetLastError CALLPROC CRLF ." Got Error " DECIMAL U. 
+      NAME>E EXIT 
+    THEN
+    CRLF ." HDefaultAppIcon = " pHDefaultAppIcon @ HEX U.
+
+    GetHArrowCursor pHArrowCursor !               
+    ?ERRORIF 
+      0 pGetLastError CALLPROC CRLF ." Got Error " DECIMAL U. 
+      NAME>E EXIT 
+    THEN
+    CRLF ." HArrowCursor = " pHArrowCursor @ HEX U.
+
+    GetHDefaulthbrBackground pHDefaulthbrBackground !
+    ?ERRORIF 
+      0 pGetLastError CALLPROC CRLF ." Got Error " DECIMAL U. 
+      NAME>E EXIT 
+    THEN
+    CRLF ." HDefaulthbrBackground = " pHDefaulthbrBackground @ HEX U.
+    
+    ( GetHDefaultSmallIcon ) 0 pHDefaultSmallIcon !
+    // ?ERRORIF 
+    //  0 pGetLastError CALLPROC CRLF ." Got Error " DECIMAL U. 
+    //  NAME>E EXIT 
+    // THEN
+    CRLF ." HDefaultSmallIcon = " pHDefaultSmallIcon @ HEX U.
+
+    pdefaultwndclassex initDefaultWNDCLASSEX
+
+    pdefaultwndclassex showWNDCLASSEX
+
+    CRLF ." pdefaultwndclassex = " pdefaultwndclassex HEX U.
+
+    CRLF pdefaultwndclassex [WNDCLASSEX.] size DROP DUMP CRLF
+    // pdefaultwndclassex RegisterWNDCLASSEX pDefaultWndClassAtom ! 
+    // 1 1 pSleep CALLPROC DROP
+    CRLF ." about to register class "
+    // 0 ['] RegisterWNDCLASSEXb >BODY CALLPROC pDefaultWndClassAtom !
+    pdefaultwndclassex 1 pRegisterClassExA CALLPROC pDefaultWndClassAtom !
+    ?ERRORIF
+       0 pGetLastError CALLPROC CRLF ." Got Error " DECIMAL U. 
+       NAME>E EXIT 
+    THEN
+    CRLF ." DefaultWndClassAtom = " pDefaultWndClassAtom @ HEX U.
+
+    CreateDefaultWindow ?ERRORIF NAME>E EXIT THEN 
+    CRLF ." Default Window Handle = " pHDefaultWindow @ HEX U.   
+;
+
+doit
+
+TRUE ?END-EVALUATE
+
+// DiaperGlu closes library automatically when DiaperGlu exits.
+

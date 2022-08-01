@@ -1,4 +1,31 @@
 Changelog for Diaperglu
+   01 August 2022
+     Released v5.6
+
+   30 July 2022
+     Made dg_testalignment return result in xmm0 in addition to rax
+
+     Fixed alignment calculation for dg_callprocaddress on Win64 so that CALLPROC will
+      work for Win64 OS functions requiring correct return stack alignment. 
+      (It seems functions that pass pointers to structures require correct alignment.)
+
+   24 July 2022
+     Added dg_n8ton64 dg_n16ton64 dg_n32ton64
+     Added N8>CELL N16>CELL N32>CELL
+
+   12 July 2022
+     Fixed and updated usingcgi.html. Example code html tags not displaying
+      correctly because they weren't in &lt; &gt; form.
+
+   11 July 2022
+     Changed WORD to be current line only.
+     Changed dg_parsemultiline and dg_parsewords to get more lines from stdin
+      when parsing from the terminal input buffer instead of stopping at the
+      end of the line. This is so parsing for ( and other multiline words will
+      work the same for all sources. (both stdin and files.)
+      I also added a prompt to tell the user when multiline parsing from stdin
+      is taking place which tells the user what character ends the parse.
+     Documentation fixes including detabbing many of the files.
 
    02 July 2022
      Released v5.5

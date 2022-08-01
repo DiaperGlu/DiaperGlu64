@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.5.
+//    This file is part of DiaperGlu v5.6.
 //
-//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.6 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.6 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.5; if not, write to the Free Software
+//    along with DiaperGlu v5.6; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// July 2, 2022               //
-// version 5.5                //
+// August 1, 2022             //
+// version 5.6                //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -14467,6 +14467,550 @@ void testdg_divlstringnbyu64()
     if (pError != dg_noerrors)
     {
         dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_divlstringnbyu64 success case two uint64s already aligned - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+        
+    // cleanup
+    dg_freeallbuffers(&BHarrayhead);
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = badbufferhandle;
+}
+
+
+void testdg_fescdecodelstring()
+{
+    const char* pError = NULL;
+    
+    unsigned char* plstring;
+    UINT64 lstringlength;
+
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_fescdecodelstring\n");
+
+    dg_initbuffers(&BHarrayhead); // gonna use the string stack for testing
+
+
+    // success case
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\\z\\a\\b\\t\\l\\v\\f\\r\\e\\q\\\\\\m\\0\\n\\'\\?abc\\x98\\wz\\",
+        43);
+
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - got error pushing encoded string to string stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    dg_fescdecodelstring (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID);
+      
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - got error doing dg_fescencodelstring, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+        &lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - got error getting pointer to 1st lstring, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+    
+    if (plstring[0] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 1st character of 1st string wrong\n");
+    }
+
+    if (plstring[1] != 7)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 2nd character of 1st string wrong\n");
+    }
+
+    if (plstring[2] != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 3rd character of 1st string wrong\n");
+    }
+
+    if (plstring[3] != 9)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 4th character of 1st string wrong\n");
+    }
+
+    if (plstring[4] != 0x0a)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 5th character of 1st string wrong\n");
+    }
+
+    if (plstring[5] != 0x0b)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 6th character of 1st string wrong\n");
+    }
+
+    if (plstring[6] != 0x0c)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 7th character of 1st string wrong\n");
+    }
+
+    if (plstring[7] != 0x0d)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 8th character of 1st string wrong\n");
+    }
+
+    if (plstring[8] != 0x1b)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 9th character of 1st string wrong\n");
+    }
+
+    if (plstring[9] != 0x22)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 10th character of 1st string wrong\n");
+    }
+
+    if (plstring[10] != 0x5c)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 11th character of 1st string wrong\n");
+    }
+
+    if (plstring[11] != 0x0d)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 12th character of 1st string wrong\n");
+    }
+
+    if (plstring[12] != 0x0a)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 13th character of 1st string wrong\n");
+    }
+
+    if (plstring[13] != 0x00)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 14th character of 1st string wrong\n");
+    }
+
+    if (plstring[14] != 0x0a)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 15th character of 1st string wrong\n");
+    }
+
+    if (plstring[15] != 0x27)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 16th character of 1st string wrong\n");
+    }
+
+    if (plstring[16] != 0x3f)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 17th character of 1st string wrong\n");
+    }
+
+    if (plstring[17] != 'a')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 18th character of 1st string wrong\n");
+    }
+
+    if (plstring[18] != 'b')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 19th character of 1st string wrong\n");
+    }
+
+    if (plstring[19] != 'c')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 20th character of 1st string wrong\n");
+    }
+
+    if (plstring[20] != 0x98)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 21th character of 1st string wrong\n");
+    }
+
+    if (plstring[21] != '-')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 22th character of 1st string wrong\n");
+    }
+
+    if (plstring[22] != 'z')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 23th character of 1st string wrong\n");
+    }
+
+    if (plstring[23] != '-')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 24th character of 1st string wrong\n");
+    }
+    
+    if (lstringlength != 24)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - length wrong\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - got error clearing string stack \n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+        
+    // cleanup
+    dg_freeallbuffers(&BHarrayhead);
+    dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
+    BHarrayhead.pbuf = badbufferhandle;
+}
+
+
+void testdg_fescencodelstring()
+{
+    const char* pError = NULL;
+    
+    unsigned char* plstring;
+    UINT64 lstringlength;
+
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_fescencodelstring\n");
+
+    dg_initbuffers(&BHarrayhead); // gonna use the string stack for testing
+
+
+    // success case
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"\x07\x07\x08\x09\x08\x0b\x0c\x0d\x1b\x22\x5c\x61\x01\x62\x7F\xFF\x00\x0a",
+        18);
+
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstringsuccess case - got error pushing encoded string to string stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    dg_fescencodelstring (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID);
+      
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - got error doing dg_fescencodelstring, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+        &lstringlength);
+  
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - got error getting pointer to 1st lstring, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+    
+    if (plstring[0] != '\\')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - 1st character of 1st string wrong\n");
+    }
+
+    if (plstring[1] != 'a')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - 2nd character of 1st string wrong\n");
+    }
+
+    if (plstring[2] != '\\')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - 3rd character of 1st string wrong, expected \\, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, plstring[2]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    if (plstring[3] != 'a')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - 4th character of 1st string wrong\n");
+    }
+
+    if (plstring[4] != '\\')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - 5th character of 1st string wrong\n");
+    }
+
+    if (plstring[5] != 'b')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - 6th character of 1st string wrong\n");
+    }
+
+    if (plstring[6] != '\\')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - 7th character of 1st string wrong\n");
+    }
+
+    if (plstring[7] != 't')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - 8th character of 1st string wrong\n");
+    }
+
+    if (plstring[8] != '\\')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - 9th character of 1st string wrong\n");
+    }
+
+    if (plstring[9] != 'b')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - 10th character of 1st string wrong\n");
+    }
+
+    if (plstring[10] != '\\')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - 11th character of 1st string wrong\n");
+    }
+
+    if (plstring[11] != 'v')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - 12th character of 1st string wrong\n");
+    }
+
+    if (plstring[12] != '\\')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - 13th character of 1st string wrong\n");
+    }
+
+    if (plstring[13] != 'f')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - 14th character of 1st string wrong\n");
+    }
+
+    if (plstring[14] != '\\')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - 15th character of 1st string wrong\n");
+    }
+
+    if (plstring[15] != 'r')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - 16th character of 1st string wrong\n");
+    }
+
+    if (plstring[16] != '\\')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - 17th character of 1st string wrong\n");
+    }
+
+    if (plstring[17] != 'e')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - 18th character of 1st string wrong\n");
+    }
+
+    if (plstring[18] != '\\')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - 19th character of 1st string wrong\n");
+    }
+
+    if (plstring[19] != '"')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - 20th character of 1st string wrong\n");
+    }
+
+    if (plstring[20] != '\\')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - 21th character of 1st string wrong\n");
+    }
+
+    if (plstring[21] != '\\')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - 22th character of 1st string wrong\n");
+    }
+
+    if (plstring[22] != 'a')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - 23th character of 1st string wrong\n");
+    }
+
+    if (plstring[23] != '\\')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 24th character of 1st string wrong\n");
+    }
+
+    if (plstring[24] != 'x')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 25th character of 1st string wrong\n");
+    }
+
+    if (plstring[25] != '0')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 26th character of 1st string wrong\n");
+    }
+
+    if (plstring[26] != '1')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 27th character of 1st string wrong\n");
+    }
+
+    if (plstring[27] != 'b')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 28th character of 1st string wrong\n");
+    }
+
+    if (plstring[28] != '\\')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 29th character of 1st string wrong\n");
+    }
+
+    if (plstring[29] != 'x')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 30th character of 1st string wrong\n");
+    }
+
+    if (plstring[30] != '7')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 31th character of 1st string wrong\n");
+    }
+
+    if (plstring[31] != 'F')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - 32rd character of 1st string wrong, expected \\, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, plstring[31]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    if (plstring[32] != '\\')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 33th character of 1st string wrong\n");
+    }
+
+    if (plstring[33] != 'x')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 34th character of 1st string wrong\n");
+    }
+
+    if (plstring[34] != 'F')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 35th character of 1st string wrong\n");
+    }
+
+    if (plstring[35] != 'F')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - 36rd character of 1st string wrong, expected \\, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, plstring[35]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    if (plstring[36] != '\\')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - 37rd character of 1st string wrong, expected \\, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, plstring[36]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    if (plstring[37] != 'x')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 38th character of 1st string wrong\n");
+    }
+
+    if (plstring[38] != '0')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 39th character of 1st string wrong\n");
+    }
+
+    if (plstring[39] != '0')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 40th character of 1st string wrong\n");
+    }
+
+    if (plstring[40] != '\\')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - 41rd character of 1st string wrong, expected \\, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, plstring[40]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    if (plstring[41] != 'x')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 42th character of 1st string wrong\n");
+    }
+
+    if (plstring[42] != '0')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescdecodelstring success case - 43th character of 1st string wrong\n");
+    }
+
+    if (plstring[43] != 'A')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - 44rd character of 1st string wrong, expected 0x0A, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, plstring[43]);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (lstringlength != 44)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - got wrong length\n");
+    }
+    
+    dg_dropnlstrings(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1);
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_fescencodelstring success case - got error clearing string stack \n");
     }
 
     dg_clearerrors(&BHarrayhead);

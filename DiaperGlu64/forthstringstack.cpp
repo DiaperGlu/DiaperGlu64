@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.5.
+//    This file is part of DiaperGlu v5.6.
 //
-//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.6 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.6 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.5; if not, write to the Free Software
+//    along with DiaperGlu v5.6; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// July 2, 2022               //
-// version 5.5                //
+// August 1, 2022             //
+// version 5.6                //
 // /////////////////////////////
 
 
@@ -4074,6 +4074,50 @@ void dg_forthurldecodestring (Bufferhandle* pBHarrayhead)
     }
 }
 
+
+void dg_forthbackslashstringtostring (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_fescdecodelstring(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthbackslashstringtostringname);
+    }
+}
+
+
+void dg_forthstringtobackslashstring (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    dg_fescencodelstring(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthstringtobackslashstringname);
+        return;
+    }
+}
+
+
 /*
 const char* dg_forthformdecodestringname = "FORMDECODE$";
 
@@ -6795,4 +6839,82 @@ void dg_forthopenlibstring (Bufferhandle* pBHarrayhead)
     // dg_forthdropstring(pBHarrayhead);
     return;
 }
+
+
+void dg_forthsetlengthstring (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    UINT64 stringstackdepth;
+
+    UINT64* pints;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthsetlengthstringname);
+        return;
+    }
+    
+    if (stringstackdepth < 1)
+    {
+        // underflow error
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthsetlengthstringname);
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthsetlengthstringname);
+        return;
+    }
+
+    if (*pbuflength < (1 * sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthsetlengthstringname);
+        return;
+    }
+
+    // could check for misaligned data stack pointer here
+
+    pints = (UINT64*)(pdatastack + *pbuflength - (1 * sizeof(UINT64)));
+
+    dg_setlengthlstringn (
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 1,
+        pints[0]);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthsetlengthstringname);
+        return;
+    }
+
+    *pbuflength = *pbuflength - (1 * sizeof(UINT64));
+}
+
+
+
+
 

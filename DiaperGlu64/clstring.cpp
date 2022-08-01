@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.5.
+//    This file is part of DiaperGlu v5.6.
 //
-//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.6 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.6 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.5; if not, write to the Free Software
+//    along with DiaperGlu v5.6; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// July 2, 2022               //
-// version 5.5                //
+// August 1, 2022             //
+// version 5.6                //
 // /////////////////////////////
 
 
@@ -3776,6 +3776,533 @@ void dg_urldecodelstring (
                 src = src + 3;
                 dest = dest + 1;
 
+            }
+        }
+    }
+
+    if (dest < stringlength)
+    {
+        // dg_pushbufferdword(
+        //    pBHarrayhead,
+        //    DG_DATASTACK_BUFFERID,
+        //    stringlength - dest);
+        
+        // dg_forthshortenstring(pBHarrayhead);
+        
+        dg_setlengthlstringn (
+            pBHarrayhead,
+            lstringoffsetbufferid,
+            lstringstringbufferid,
+            stringstackdepth - 1,
+            dest);
+        
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            //dg_pusherror(pBHarrayhead, dg_urldecodelstringname);
+            return;
+        }
+    }
+}
+
+
+const char dg_fescencodelstringname[] = "dg_fescencodelstring";
+
+void dg_fescencodelstring(
+    Bufferhandle* pBHarrayhead,
+    UINT64 lstringoffsetbufferid,
+    UINT64 lstringstringbufferid)
+// ( decodedescape$ -l$- escape$ )
+// everything that is not in the reserved set is changed to \xXX where XX is the hex ascii code
+// reserved set is alpha, numeric, and - _ ~ .  changed 4/16/2020 J.N.
+
+{
+    UINT64 src;
+    // UINT64 dest;
+    unsigned char* pstring = NULL;
+
+    UINT64 stringlength = 0;
+    UINT64 stringstackdepth;
+    UINT64 n;
+    unsigned char c, rc1, rc2;
+
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    // need to get depth of string stack first
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        lstringoffsetbufferid);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_fescencodelstringname);
+        return;
+    }
+
+    if (stringstackdepth < 1)
+    {
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_fescencodelstringname);
+        return;
+    }
+
+    pstring = (unsigned char*)dg_getplstring(
+        pBHarrayhead, 
+        lstringoffsetbufferid,
+        lstringstringbufferid,
+        stringstackdepth - 1,
+        &stringlength);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_fescencodelstringname);
+        return;
+    }
+
+    // using the ones in both C and Forth for encoding 
+
+    // ( both C and Forth )
+    // 0x07 -> \a
+    // 0x08 -> \b
+    // 0x0d -> \r
+    // 0x1b -> \e
+    // 0x0c -> \f
+    // 0x09 -> \t
+    // 0x0b -> \v
+    // 0x5C -> \\
+    // 0x22 -> \"
+    // \xXX where XX is the hex ascii code...
+
+    // Forth only standard conversions
+    // 0x00 -> \z  
+    // 0x0a -> \l   
+    // 0x0d0a -> \m 
+    // 0x22 -> \q 
+   
+    // ( C escape conversions - not using these )
+    // ( 0x00 -> \0  part of the octal one... which is nondeterministic )
+    // ( 0x0a -> \n )
+    // ( 0x27 -> \' )
+    // ( 0x3F -> \? )
+    // ( \nnn octal )
+    // ( \uXXXX )
+    // ( \nXXXXXXXX )
+
+    if (0 == stringlength)
+    {
+        return;
+    }
+
+    src=0; 
+    // dest=0;
+
+    while (src < stringlength)
+    {
+        n = 1;
+        c = pstring[src];
+
+        // if (0 == c) {
+        //    n = 2;
+        //    rc1 = 'z';
+        // }
+
+        if (7 == c) {
+            n = 2;
+            rc1 = 'a';
+        }
+
+        if (8 == c) {
+            n = 2;
+            rc1 = 'b';
+        }
+
+        if (9 == c) {
+            n = 2;
+            rc1 = 't';
+        }
+
+        // if (0x0a == c) {
+        //    n = 2;
+        //    rc1 = 'l';
+        // }
+
+        if (0x0b == c) {
+            n = 2;
+            rc1 = 'v';
+        }
+
+        if (0x0c == c) {
+            n = 2;
+            rc1 = 'f';
+        }
+
+        if (0x0d == c) {
+            n = 2;
+            rc1 = 'r';
+        }
+
+        if (0x1b == c) {
+            n = 2;
+            rc1 = 'e';
+        }
+
+        if (0x22 == c) {
+            n = 2;
+            rc1 = '"';
+        }
+
+        if (0x5C == c) {
+            n = 2;
+            rc1 = '\\';
+        }
+
+        if (2 == n)
+        {
+            dg_insertinlstring (
+                pBHarrayhead,
+                lstringoffsetbufferid,
+                lstringstringbufferid,
+                stringstackdepth - 1,
+                src+1,
+                1);
+                    
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_fescencodelstringname);
+                return;
+            }
+
+            pstring = (unsigned char*)dg_getplstring(
+                pBHarrayhead, 
+                lstringoffsetbufferid,
+                lstringstringbufferid,
+                stringstackdepth - 1,
+                &stringlength);
+                
+            pstring[src]   = '\\';
+            pstring[src+1] = rc1;
+            
+            src = src + 2;
+            // dest = dest + 2;        
+        }
+
+        if (1 == n)
+        {
+            if (
+                (c < 0x20) ||
+                (c > 0x7E)
+            )
+            {
+                dg_insertinlstring (
+                    pBHarrayhead,
+                    lstringoffsetbufferid,
+                    lstringstringbufferid,
+                    stringstackdepth - 1,
+                    src+1,
+                    3);
+                    
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {
+                    dg_pusherror(pBHarrayhead, dg_urlencodelstringname);
+                    return;
+                }
+                
+                pstring = (unsigned char*)dg_getplstring(
+                    pBHarrayhead, 
+                    lstringoffsetbufferid,
+                    lstringstringbufferid,
+                    stringstackdepth - 1,
+                    &stringlength);
+                
+                pstring[src]='\\';
+                pstring[src+1]='x';
+                pstring[src+2]= dg_digittochar(c >> 4);
+                pstring[src+3]= dg_digittochar(c & 0x0F);
+                src = src + 4;
+                // dest = dest + 4;
+            }
+            else
+            {
+                src++;
+                // dest++;
+            }
+        }
+    }
+}
+
+
+const char dg_fescdecodelstringname[] = "dg_fescdecodelstring";
+
+void dg_fescdecodelstring (
+    Bufferhandle* pBHarrayhead,
+    UINT64 lstringoffsetbufferid,
+    UINT64 lstringstringbufferid)
+//                           ( fesc$ -l$- decodedfesc$ )
+{
+    UINT64 src;
+    UINT64 dest;
+    unsigned char* pstring = NULL;
+
+    UINT64 stringlength = 0;
+    UINT64 stringstackdepth;
+
+    UINT64 t1;
+    UINT64 t2;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    unsigned char c;
+
+    // need to get depth of string stack first
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        lstringoffsetbufferid);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        //dg_pusherror(pBHarrayhead, dg_fescdecodelstringname);
+        return;
+    }
+
+    if (stringstackdepth < 1)
+    {
+        // underflowerror...
+        dg_pusherror(pBHarrayhead, dg_fescdecodelstringname);
+        return;
+    }
+
+    pstring = (unsigned char*)dg_getplstring(
+        pBHarrayhead, 
+        lstringoffsetbufferid,
+        lstringstringbufferid,
+        stringstackdepth - 1,
+        &stringlength);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_fescdecodelstringname);
+        return;
+    }
+
+    // Forth standard conversions
+    // \z -> 0x00 
+    // \a -> 0x07 
+    // \b -> 0x08 
+    // \t -> 0x09 
+    // \l -> 0x0a 
+    // \v -> 0x0b 
+    // \f -> 0x0c
+    // \r -> 0x0d 
+    // \m -> 0x0d0a 
+    // \e -> 0x1b 
+    // \" -> 0x22 
+    // \q -> 0x22
+    // \\ -> 0x5C 
+    // \xXX -> 0xXX
+
+    // C escape conversions 
+    // \0 -> 0x00
+    // \n -> 0x0a 
+    // \' -> 0x27
+    // \? -> 0x3F
+
+    // \ anything else -> '-'
+
+    // when src hits end of string, shrink string to dest
+
+    if (stringlength == 0)
+    {
+        return;
+    }
+
+    src=0; 
+    dest=0;
+
+    while (src < stringlength)
+    {
+        c = pstring[src];
+
+        if (c != '\\')
+        {
+            pstring[dest]=c;
+            src++;
+            dest++;
+        }
+        else
+        {
+            if ((src + 1) >= stringlength)
+            {
+                // missing escape sequence character at end of string
+                pstring[dest]='-';
+                dest++;
+                src++;
+                break;
+                // dg_pusherror(pBHarrayhead, dg_fescdecodelstringname);
+                // return;
+            }
+            else
+            {
+                // it's an escape sequence
+                switch(pstring[src+1])
+                {
+                    case 'z':
+                        pstring[dest] = 0;
+                        src = src + 2;
+                        dest++;
+                        break;
+
+                    case 'a':
+                        pstring[dest] = 7;
+                        src = src + 2;
+                        dest++;
+                        break;
+
+                    case 'b':
+                        pstring[dest] = 8;
+                        src = src + 2;
+                        dest++;
+                        break;
+
+                    case 't':
+                        pstring[dest] = 9;
+                        src = src + 2;
+                        dest++;
+                        break;
+
+                    case 'l':
+                        pstring[dest] = 0x0a;
+                        src = src + 2;
+                        dest++;
+                        break;
+
+                    case 'v':
+                        pstring[dest] = 0x0b;
+                        src = src + 2;
+                        dest++;
+                        break;
+
+                    case 'f':
+                        pstring[dest] = 0x0c;
+                        src = src + 2;
+                        dest++;
+                        break;
+
+                    case 'r':
+                        pstring[dest] = 0x0d;
+                        src = src + 2;
+                        dest++;
+                        break;
+
+                    case 'e':
+                        pstring[dest] = 0x1b;
+                        src = src + 2;
+                        dest++;
+                        break;
+
+                    case '"':
+                        pstring[dest] = 0x22;
+                        src = src + 2;
+                        dest++;
+                        break;
+
+                    case 'q':
+                        pstring[dest] = 0x22;
+                        src = src + 2;
+                        dest++;
+                        break;
+
+                    case '\\':
+                        pstring[dest] = 0x5c;
+                        src = src + 2;
+                        dest++;
+                        break;
+
+                    case '0': 
+                        pstring[dest] = 0;
+                        src = src + 2;
+                        dest++;
+                        break;
+
+                    case 'n':
+                        pstring[dest] = 0x0a;
+                        src = src + 2;
+                        dest++;
+                        break;
+
+                    case 0x27:
+                        pstring[dest] = 0x27;
+                        src = src + 2;
+                        dest++;
+                        break;
+
+                    case '?':
+                        pstring[dest] = 0x3f;
+                        src = src + 2;
+                        dest++;
+                        break;
+
+                    case 'm':
+                        if ((src + 2) >= stringlength)
+                        {
+                            // missing escape sequence character at end of string
+                            dg_pusherror(pBHarrayhead, dg_fescdecodelstringname);
+                            return;
+                        }
+
+                        pstring[dest] = 0x0d;
+                        pstring[dest + 1] = 0x0a;
+                        src = src + 2;
+                        dest = dest + 2;
+                        break;
+
+                    case 'x':
+                        if ((src + 4) >= stringlength)
+                        {
+                            // missing escape sequence character at end of string
+                            pstring[dest] = '-';
+                            dest = dest + 1;
+                            break;
+                            // dg_pusherror(pBHarrayhead, dg_fescdecodelstringname);
+                            // return;
+                        }
+
+                        t1 = dg_chartodigitlowertoo(pstring[src+2]);
+                        t2 = dg_chartodigitlowertoo(pstring[src+3]);
+
+                        if ((t1 == (UINT64)largestunsignedint) || ( t2 == (UINT64)largestunsignedint))
+                        {
+                            // bad characters in sequence
+                            pstring[dest] = '-';
+                            // dg_pusherror(pBHarrayhead, dg_fescdecodelstringname);
+                            // return;
+                        }
+                        else
+                        {
+                            pstring[dest] = t1 * 0x10 + t2;
+                        }
+
+                        src = src + 4;
+                        dest = dest + 1;
+                        break;
+
+                   default:
+                       // unknown escape character
+                       pstring[dest] = '-';
+                       src = src + 2;
+                       dest++;
+                       // dg_pusherror(pBHarrayhead, dg_fescdecodelstringname);
+                       break;
+                }
             }
         }
     }

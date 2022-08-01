@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.5.
+//    This file is part of DiaperGlu v5.6.
 //
-//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.6 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.6 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.5; if not, write to the Free Software
+//    along with DiaperGlu v5.6; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// July 2, 2022               //
-// version 5.5                //
+// August 1, 2022             //
+// version 5.6                //
 // /////////////////////////////
 
 
@@ -36,37 +36,37 @@ void dg_forthtwoconstant (Bufferhandle* pBHarrayhead)
 //     ( "<spaces>word<spaces>morestuff" -currentinputbuffer- "<spaces>morestuff" )
 //     ( nlo nhi -- )
 {
-	UINT64 nlo;
+    UINT64 nlo;
     UINT64 nhi;
 
     unsigned char* pname;
-	UINT64 namelength;
+    UINT64 namelength;
 
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
-	nhi = dg_popbufferuint64(
+    nhi = dg_popbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthtwoconstantname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthtwoconstantname);
+        return;
+    }
     
     nlo = dg_popbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthtwoconstantname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthtwoconstantname);
+        return;
+    }
 
-	pname = dg_parseword(
+    pname = dg_parseword(
         pBHarrayhead,
         &namelength);
         
@@ -76,25 +76,25 @@ void dg_forthtwoconstant (Bufferhandle* pBHarrayhead)
         return;
     }
 
-	if (namelength == 0)
-	{
+    if (namelength == 0)
+    {
         dg_pusherror(pBHarrayhead, dg_wordlength0error);
-		dg_pusherror(pBHarrayhead, dg_forthtwoconstantname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthtwoconstantname);
+        return;
+    }
 
-	dg_createdconstantdef(
+    dg_createdconstantdef(
         pBHarrayhead,
         nlo,
         nhi,
         pname,
         namelength);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthtwoconstantname);
-		return;
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtwoconstantname);
+        return;
+    }
 }
 
 
@@ -137,52 +137,52 @@ void dg_forthtwovariable (Bufferhandle* pBHarrayhead)
 //     ( "<spaces>word<spaces>morestuff" -currentinputbuffer- "<spaces>morestuff" )
 //     ( -currentnewvariablebuffer- +2*sizeofunsignedint )
 {
-	const char* pError;
+    const char* pError;
 
-	UINT64 dsbufid;
+    UINT64 dsbufid;
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
     
     if (baderrorcount == olderrorcount)
     {
         return;
     }
 
-	dg_forthcreate(pBHarrayhead);
+    dg_forthcreate(pBHarrayhead);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthtwovariablename);
-		return;
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthtwovariablename);
+        return;
+    }
 
-	dsbufid = dg_getbufferuint64(
+    dsbufid = dg_getbufferuint64(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentvariablebuffer);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthpcurrentnewvariablebuffername);
-		dg_pusherror(pBHarrayhead, dg_forthtwovariablename);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthtwovariablename);
+        return;
+    }
 
-	dg_growbuffer(
+    dg_growbuffer(
         pBHarrayhead,
         dsbufid,
         2 * sizeof(UINT64),
         &pError,
         FORTH_FALSE);
 
-	if (pError != dg_success)
-	{
+    if (pError != dg_success)
+    {
         dg_pusherror(pBHarrayhead, pError);
         dg_pusherror(pBHarrayhead, dg_growbuffername);
         dg_pusherror(pBHarrayhead, dg_forthpcurrentnewvariablebuffername);
-		dg_pusherror(pBHarrayhead, dg_forthtwovariablename);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthtwovariablename);
+        return;
+    }
 }
 
 
@@ -226,46 +226,46 @@ void dg_forthdlessthan (Bufferhandle* pBHarrayhead)
 void dg_forthdequals (Bufferhandle* pBHarrayhead)        
 //          ( xd1 xd2 -- flag )
 {
-	UINT64* pbuflength;
-	unsigned char* pdatastack;
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
 
-	UINT64* pints;
+    UINT64* pints;
     
-	pdatastack = dg_getpbuffer(
+    pdatastack = dg_getpbuffer(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
         &pbuflength);
 
-	if (pdatastack == (unsigned char*)badbufferhandle)
-	{
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
         dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthdequalsname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthdequalsname);
+        return;
+    }
 
-	if (*pbuflength < (4 * sizeof(UINT64)))
-	{
+    if (*pbuflength < (4 * sizeof(UINT64)))
+    {
         dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
-		dg_pusherror(pBHarrayhead, dg_forthdequalsname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthdequalsname);
+        return;
+    }
 
-	// could check for misaligned data stack
+    // could check for misaligned data stack
 
-	pints = (UINT64*)(pdatastack + *pbuflength - (4 * sizeof(UINT64)));
+    pints = (UINT64*)(pdatastack + *pbuflength - (4 * sizeof(UINT64)));
 
-	// if (pints[0] == pints[1]) doing it this way requires 128 bit alignment
+    // if (pints[0] == pints[1]) doing it this way requires 128 bit alignment
     if ( (pints[0] == pints[2])   && 
          (pints[1]) == (pints[3]) )   
-	{
-		*((UINT64*)pints) = FORTH_TRUE;
-	}
-	else
-	{
-		*((UINT64*)pints) = FORTH_FALSE;
-	}
+    {
+        *((UINT64*)pints) = FORTH_TRUE;
+    }
+    else
+    {
+        *((UINT64*)pints) = FORTH_FALSE;
+    }
 
-	*pbuflength = *pbuflength - (3 * sizeof(UINT64));
+    *pbuflength = *pbuflength - (3 * sizeof(UINT64));
 }
 
 void dg_forthdtos (Bufferhandle* pBHarrayhead)        

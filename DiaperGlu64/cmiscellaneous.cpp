@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.5.
+//    This file is part of DiaperGlu v5.6.
 //
-//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.6 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.6 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.5; if not, write to the Free Software
+//    along with DiaperGlu v5.6; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// July 2, 2022               //
-// version 5.5                //
+// August 1, 2022             //
+// version 5.6                //
 // /////////////////////////////
 
 
@@ -205,9 +205,16 @@ void dg_evaluatebuffersub (
                 
                 if (*pbufferlength != u)
                 {
-                    dg_pusherror(pBHarrayhead, dg_inputbufferlengthchangederror);
-                    dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
-                    return;
+                    if (bufferid != DG_TERMINALINPUT_BUFFERID)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_inputbufferlengthchangederror);
+                        dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
+                        return;
+                    }
+                    else
+                    {
+                        u = *pbufferlength;
+                    }
                 }
             }
             else
@@ -706,7 +713,23 @@ UINT64 dg_getscriptnotfoundfileid (Bufferhandle* pBHarrayhead)
 }
 
 
+// if it's a file
+//   assume it's fixed length
+//   load file to new buf
+//   evaluate buffer (stream file source = none; parse execute loop)
+//   free buffer
+// if it's not a file
+//   assume it's a stream
+//   evaluate buffer (stream file source = file; parse execute loop)
+//     parse loads line from stream file to stream buffer 
+//     (if I want to support nesting stream buffers, I have to make a new stream buffer)
+//     (it has to be at least a line so user can edit the line with backspace before sending)
+//     (it's possible to support sending multiple lines... like having more advanced editing...)
 
+// simple solution is if it's terminal_input_bufferid then it's a stream file
+//  otherwise it's not
+
+// then just change parse to get more if you are parsing from terminal_input_bufferid
 
 
 const char* dg_evaluatefileidname = "dg_evaluatefileid";

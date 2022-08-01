@@ -2,20 +2,20 @@
 ; //
 ; //    Copyright 2022 James Patrick Norris
 ; // 
-; //    This file is part of Diaperglu v5.5.
+; //    This file is part of Diaperglu v5.6.
 ; //
-; //    Diaperglu v5.5 is free software; you can redistribute it and/or modify 
+; //    Diaperglu v5.6 is free software; you can redistribute it and/or modify 
 ; //    it under the terms of the GNU General PUBLIC License as published by
 ; //    the Free Software Foundation; either version 2 of the License, or
 ; //    (at your option) any later version.
 ; //
-; //    Diaperglu v5.5 is distributed in the hope that it will be useful,
+; //    Diaperglu v5.6 is distributed in the hope that it will be useful,
 ; //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ; //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ; //    GNU General PUBLIC License for more details.
 ; //
 ; //    You should have received a copy of the GNU General PUBLIC License
-; //    along with Diaperglu v5.5; if not, write to the Free Software
+; //    along with Diaperglu v5.6; if not, write to the Free Software
 ; //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ; //
 ; ////////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 ; ///////////////////////////////
 ; // James Patrick Norris      //
 ; // www.rainbarrel.com        //
-; // July 2, 2022              //
-; // version 5.5               //
+; // August 1, 2022            //
+; // version 5.6               //
 ; ///////////////////////////////
 
 ; MS x86-64 calling convention
@@ -119,6 +119,7 @@ dg_testasm ENDP
 dg_testalignment PROC EXPORT
 
     mov rax, rsp
+    movd xmm0, rax
     ret
 
 dg_testalignment ENDP
@@ -1007,11 +1008,13 @@ dg_callprocaddress PROC EXPORT
 
     ; // if number of parameters is <= 4 or even, then do not need adjust rsp by 8
     ; // if number of parameters is > 4 and odd, then you do need to adjust rsp by 8
-    test rdx, 1       ; testq $1, %rsi
-    jnz dg_callprocaddressthen1    ; // branch if even to rsp<-rsp-8  
+    
     cmp rdx, 5        ; cmpq $7, %rsi
-    jc dg_callprocaddressthen2     ; // branch if <5 to don't adjust rsp... 
-dg_callprocaddressthen1:
+    jc dg_callprocaddressthen2     ; // if < 5 do not need to adjust rsp
+    test rdx, 1       ; testq $1, %rsi
+    jz dg_callprocaddressthen2    ; // if even do not need to adjust rsp
+    
+; dg_callprocaddressthen1:
     sub rsp, 8        ; subq $8, %rsp
 dg_callprocaddressthen2:
 
@@ -3435,6 +3438,33 @@ dg_divu64sbyu64sub PROC EXPORT FRAME
     ret   
 
 dg_divu64sbyu64sub ENDP
+
+dg_n8ton64 PROC EXPORT
+
+    mov al, cl
+    cbw
+    cwde
+    cdqe
+    ret
+
+dg_n8ton64 ENDP
+
+dg_n16ton64 PROC EXPORT
+
+    mov ax, cx
+    cwde
+    cdqe
+    ret
+
+dg_n16ton64 ENDP
+
+dg_n32ton64 PROC EXPORT
+
+    mov eax, ecx
+    cdqe
+    ret
+
+dg_n32ton64 ENDP
 
 END
 

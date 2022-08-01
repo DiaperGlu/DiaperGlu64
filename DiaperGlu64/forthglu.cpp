@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.5.
+//    This file is part of DiaperGlu v5.6.
 //
-//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.6 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.6 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.5; if not, write to the Free Software
+//    along with DiaperGlu v5.6; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// July 2, 2022               //
-// version 5.5                //
+// August 1, 2022             //
+// version 5.6                //
 // /////////////////////////////
 
 
@@ -329,7 +329,7 @@ void dg_createlinkcomma(
     UINT64 compiletyperoutine,
     UINT64 linktype) // 0 = data, 1 = code, 2 = none, 3 = raw
 {
-	UINT64 namelength = 0;
+    UINT64 namelength = 0;
     
     UINT64 ccwordlist;
     UINT64 definition;
@@ -340,7 +340,7 @@ void dg_createlinkcomma(
     UINT64 mycurrentcompilebufferid;
     
     UINT64* phstacklength;
-	unsigned char* phstack;
+    unsigned char* phstack;
     
     unsigned char* pname;
     
@@ -362,31 +362,31 @@ void dg_createlinkcomma(
         pBHarrayhead,
         &namelength);
     
-	if (namelength == 0)
-	{
+    if (namelength == 0)
+    {
         dg_pusherror(pBHarrayhead, dg_wordlength0error);
-		dg_pusherror(pBHarrayhead, dg_createlinkcommaname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_createlinkcommaname);
+        return;
+    }
 
     phstack = dg_getpbuffer(
         pBHarrayhead,
         DG_EHSTACK_BUFFERID,
         &phstacklength);
 
-	if (phstack == (unsigned char*)badbufferhandle)
-	{
+    if (phstack == (unsigned char*)badbufferhandle)
+    {
         dg_pusherror(pBHarrayhead, dg_forthhstackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_createlinkcommaname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_createlinkcommaname);
+        return;
+    }
 
     if (*phstacklength < (2 * sizeof(UINT64)))
-	{
-		dg_pusherror(pBHarrayhead, dg_underflowerror);
-		dg_pusherror(pBHarrayhead, dg_createlinkcommaname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_underflowerror);
+        dg_pusherror(pBHarrayhead, dg_createlinkcommaname);
+        return;
+    }
     
     myhlistid = *((UINT64*)(phstack + ((*phstacklength) - sizeof(UINT64))));
     
@@ -483,34 +483,34 @@ void dg_createlinkcomma(
         (UINT64)pname, // (pcib + ciboldoffset),
         namelength);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_createlinkcommaname);
-		return;
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_createlinkcommaname);
+        return;
+    }
     
     ccwordlist = dg_getbufferuint64(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
         currentcompilewordlist);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthpcurrentcreatewordlistname);
-		dg_pusherror(pBHarrayhead, dg_createlinkcommaname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_createlinkcommaname);
+        return;
+    }
 
-	dg_linkdefinition(
+    dg_linkdefinition(
         pBHarrayhead,
         ccwordlist,
         definition);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_createlinkcommaname);
-		return;
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_createlinkcommaname);
+        return;
+    }
 }
 
 
@@ -555,10 +555,10 @@ void dg_forthcreatecodelinkcomma(Bufferhandle* pBHarrayhead)
         1);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthcreatecodelinkcommaname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcreatecodelinkcommaname);
+        return;
+    }
 }
 
 void dg_forthcreateocodelinkcomma(Bufferhandle* pBHarrayhead)
@@ -578,10 +578,10 @@ void dg_forthcreateocodelinkcomma(Bufferhandle* pBHarrayhead)
         0);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthcreateocodelinkcommaname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcreateocodelinkcommaname);
+        return;
+    }
 }
 
 void dg_forthcreateobcodelinkcomma(Bufferhandle* pBHarrayhead)
@@ -601,10 +601,10 @@ void dg_forthcreateobcodelinkcomma(Bufferhandle* pBHarrayhead)
         0);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthcreateobcodelinkcommaname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcreateobcodelinkcommaname);
+        return;
+    }
 }
 
 void dg_forthcreatecdecllinkcomma(Bufferhandle* pBHarrayhead)
@@ -622,10 +622,10 @@ void dg_forthcreatecdecllinkcomma(Bufferhandle* pBHarrayhead)
         1);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthcreatecdecllinkcommaname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcreatecdecllinkcommaname);
+        return;
+    }
 }
 
 void dg_forthcreatecolonlinkcomma(Bufferhandle* pBHarrayhead)
@@ -643,10 +643,10 @@ void dg_forthcreatecolonlinkcomma(Bufferhandle* pBHarrayhead)
         1);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthcreatecolonlinkcommaname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcreatecolonlinkcommaname);
+        return;
+    }
 }
 
 void dg_forthcreateodatalinkcomma(Bufferhandle* pBHarrayhead)
@@ -664,10 +664,10 @@ void dg_forthcreateodatalinkcomma(Bufferhandle* pBHarrayhead)
         0);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthcreateodatalinkcommaname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcreateodatalinkcommaname);
+        return;
+    }
 }
 
 void dg_forthcreateobdatalinkcomma(Bufferhandle* pBHarrayhead)
@@ -685,10 +685,10 @@ void dg_forthcreateobdatalinkcomma(Bufferhandle* pBHarrayhead)
         0);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthcreateobdatalinkcommaname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcreateobdatalinkcommaname);
+        return;
+    }
 }
 
 
@@ -805,7 +805,7 @@ void dg_forthwtolinkcomma(Bufferhandle* pBHarrayhead)
     // ( "<spaces>symbolname<spaces>morestuff" -currentinputbuffer- "<spaces>morestuff" )
 
     unsigned char* pname;
-	UINT64 namelength = 0;
+    UINT64 namelength = 0;
     
     UINT64 myhlistid;
     UINT64 mylinklistelementid;
@@ -824,31 +824,31 @@ void dg_forthwtolinkcomma(Bufferhandle* pBHarrayhead)
     
     pname = dg_parseword(pBHarrayhead, &namelength);
     
-	if (namelength == 0)
-	{
+    if (namelength == 0)
+    {
         dg_pusherror(pBHarrayhead, dg_wordlength0error);
-		dg_pusherror(pBHarrayhead, dg_forthwtolinkcommaname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthwtolinkcommaname);
+        return;
+    }
     
     phstack = dg_getpbuffer(
         pBHarrayhead,
         DG_EHSTACK_BUFFERID,
         &phstacklength);
 
-	if (phstack == (unsigned char*)badbufferhandle)
-	{
+    if (phstack == (unsigned char*)badbufferhandle)
+    {
         dg_pusherror(pBHarrayhead, dg_forthhstackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_forthwtolinkcommaname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_forthwtolinkcommaname);
+        return;
+    }
 
     if (*phstacklength < (2 * sizeof(UINT64)))
-	{
-		dg_pusherror(pBHarrayhead, dg_underflowerror);
-		dg_pusherror(pBHarrayhead, dg_forthwtolinkcommaname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_underflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthwtolinkcommaname);
+        return;
+    }
     
     myhlistid = *((UINT64*)(phstack + ((*phstacklength) - sizeof(UINT64))));
     
@@ -990,31 +990,31 @@ void dg_forthnewnglubufnamedstr(Bufferhandle* pBHarrayhead)
         pBHarrayhead,
         DG_STRINGOFFSETSTACK_BUFFERID);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthnewnglubufnamedstrname);
-		return;
-	}
+        return;
+    }
 
-	if (mystringstackdepth < 1)
-	{
-		// not enough strings to do compare, will push error and push not equal
-		dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+    if (mystringstackdepth < 1)
+    {
+        // not enough strings to do compare, will push error and push not equal
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
         dg_pusherror(pBHarrayhead, dg_forthnewnglubufnamedstrname);
-		return;
-	}
+        return;
+    }
 
-	pnamestring = dg_getplstring(pBHarrayhead,
-		DG_STRINGOFFSETSTACK_BUFFERID, 
-		DG_STRINGSTRINGSTACK_BUFFERID, 
-		string2id - 1,
-		&namestringlength);
+    pnamestring = dg_getplstring(pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID, 
+        DG_STRINGSTRINGSTACK_BUFFERID, 
+        string2id - 1,
+        &namestringlength);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthnewnglubufnamedstrname);
-		return;
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthnewnglubufnamedstrname);
+        return;
+    }
     
     // make new named buffer
     mynewbufferid = dg_newbuffer (
@@ -1160,7 +1160,7 @@ void dg_stringtoglulinkcomma(
     UINT64 mycurrentcompilebufferid;
     
     UINT64* phstacklength;
-	unsigned char* phstack;
+    unsigned char* phstack;
     
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
     
@@ -1180,50 +1180,50 @@ void dg_stringtoglulinkcomma(
         pBHarrayhead,
         DG_STRINGOFFSETSTACK_BUFFERID);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_stringtoglulinkcommaname);
-		return;
-	}
+        return;
+    }
 
-	if (mystringstackdepth < 1)
-	{
-		// not enough strings to do compare, will push error and push not equal
-		dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+    if (mystringstackdepth < 1)
+    {
+        // not enough strings to do compare, will push error and push not equal
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
         dg_pusherror(pBHarrayhead, dg_stringtoglulinkcommaname);
-		return;
-	}
+        return;
+    }
 
-	pname = dg_getplstring(pBHarrayhead,
-		DG_STRINGOFFSETSTACK_BUFFERID, 
-		DG_STRINGSTRINGSTACK_BUFFERID, 
-		mystringstackdepth - 1,
-		&namelength);
+    pname = dg_getplstring(pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID, 
+        DG_STRINGSTRINGSTACK_BUFFERID, 
+        mystringstackdepth - 1,
+        &namelength);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_stringtoglulinkcommaname);
-		return;
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_stringtoglulinkcommaname);
+        return;
+    }
     
     phstack = dg_getpbuffer(
         pBHarrayhead,
         DG_EHSTACK_BUFFERID,
         &phstacklength);
 
-	if (phstack == (unsigned char*)badbufferhandle)
-	{
+    if (phstack == (unsigned char*)badbufferhandle)
+    {
         dg_pusherror(pBHarrayhead, dg_forthhstackbufferidname);
-		dg_pusherror(pBHarrayhead, dg_stringtoglulinkcommaname);
-		return;
-	}
+        dg_pusherror(pBHarrayhead, dg_stringtoglulinkcommaname);
+        return;
+    }
 
     if (*phstacklength < (2 * sizeof(UINT64)))
-	{
-		dg_pusherror(pBHarrayhead, dg_underflowerror);
-		dg_pusherror(pBHarrayhead, dg_stringtoglulinkcommaname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_underflowerror);
+        dg_pusherror(pBHarrayhead, dg_stringtoglulinkcommaname);
+        return;
+    }
     
     myhlistid = *((UINT64*)(phstack + ((*phstacklength) - sizeof(UINT64))));
     
@@ -1422,31 +1422,31 @@ void dg_forthsymbolsstringtoeh (Bufferhandle* pBHarrayhead)
         pBHarrayhead,
         DG_STRINGOFFSETSTACK_BUFFERID);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthsymbolsstringtoehname);
-		return;
-	}
+        return;
+    }
 
-	if (mystringstackdepth < 1)
-	{
-		// not enough strings to do compare, will push error and push not equal
-		dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+    if (mystringstackdepth < 1)
+    {
+        // not enough strings to do compare, will push error and push not equal
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
         dg_pusherror(pBHarrayhead, dg_forthsymbolsstringtoehname);
-		return;
-	}
+        return;
+    }
 
-	pnamestring = dg_getplstring(pBHarrayhead,
-		DG_STRINGOFFSETSTACK_BUFFERID, 
-		DG_STRINGSTRINGSTACK_BUFFERID, 
-		mystringstackdepth - 1,
-		&namestringlength);
+    pnamestring = dg_getplstring(pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID, 
+        DG_STRINGSTRINGSTACK_BUFFERID, 
+        mystringstackdepth - 1,
+        &namestringlength);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthsymbolsstringtoehname);
-		return;
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthsymbolsstringtoehname);
+        return;
+    }
     
     myelementid = dg_getnamedsymbollisthideid (
         pBHarrayhead,
@@ -1455,10 +1455,10 @@ void dg_forthsymbolsstringtoeh (Bufferhandle* pBHarrayhead)
         &myhlistid);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthsymbolsstringtoehname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_forthsymbolsstringtoehname);
+        return;
+    }
     
     dg_pushbufferuint64(
         pBHarrayhead,
@@ -1466,10 +1466,10 @@ void dg_forthsymbolsstringtoeh (Bufferhandle* pBHarrayhead)
         myelementid);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthsymbolsstringtoehname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_forthsymbolsstringtoehname);
+        return;
+    }
     
     dg_pushbufferuint64(
         pBHarrayhead,
@@ -1477,10 +1477,10 @@ void dg_forthsymbolsstringtoeh (Bufferhandle* pBHarrayhead)
         myhlistid);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthsymbolsstringtoehname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_forthsymbolsstringtoehname);
+        return;
+    }
     
     dg_forthdropstring(pBHarrayhead);
 }
@@ -1506,31 +1506,31 @@ void dg_forthnamedbufstringtoe (Bufferhandle* pBHarrayhead)
         pBHarrayhead,
         DG_STRINGOFFSETSTACK_BUFFERID);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthnamedbufstringtoename);
-		return;
-	}
+        return;
+    }
 
-	if (mystringstackdepth < 1)
-	{
-		// not enough strings to do compare, will push error and push not equal
-		dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+    if (mystringstackdepth < 1)
+    {
+        // not enough strings to do compare, will push error and push not equal
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
         dg_pusherror(pBHarrayhead, dg_forthnamedbufstringtoename);
-		return;
-	}
+        return;
+    }
 
-	pnamestring = dg_getplstring(pBHarrayhead,
-		DG_STRINGOFFSETSTACK_BUFFERID, 
-		DG_STRINGSTRINGSTACK_BUFFERID, 
-		mystringstackdepth - 1,
-		&namestringlength);
+    pnamestring = dg_getplstring(pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID, 
+        DG_STRINGSTRINGSTACK_BUFFERID, 
+        mystringstackdepth - 1,
+        &namestringlength);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthnamedbufstringtoename);
-		return;
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthnamedbufstringtoename);
+        return;
+    }
     
     myelementid = dg_namedbufnametoeid (
         pBHarrayhead,
@@ -1538,10 +1538,10 @@ void dg_forthnamedbufstringtoe (Bufferhandle* pBHarrayhead)
         namestringlength);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthnamedbufstringtoename);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_forthnamedbufstringtoename);
+        return;
+    }
     
     dg_pushbufferuint64(
         pBHarrayhead,
@@ -1549,10 +1549,10 @@ void dg_forthnamedbufstringtoe (Bufferhandle* pBHarrayhead)
         myelementid);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthnamedbufstringtoename);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_forthnamedbufstringtoename);
+        return;
+    }
     
     dg_forthdropstring(pBHarrayhead);
 }
@@ -1578,31 +1578,31 @@ void dg_forthnamedbufstrtobufid (Bufferhandle* pBHarrayhead)
         pBHarrayhead,
         DG_STRINGOFFSETSTACK_BUFFERID);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthnamedbufstrtobufidname);
-		return;
-	}
+        return;
+    }
 
-	if (mystringstackdepth < 1)
-	{
-		// not enough strings to do compare, will push error and push not equal
-		dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+    if (mystringstackdepth < 1)
+    {
+        // not enough strings to do compare, will push error and push not equal
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
         dg_pusherror(pBHarrayhead, dg_forthnamedbufstrtobufidname);
-		return;
-	}
+        return;
+    }
 
-	pnamestring = dg_getplstring(pBHarrayhead,
-		DG_STRINGOFFSETSTACK_BUFFERID, 
-		DG_STRINGSTRINGSTACK_BUFFERID, 
-		mystringstackdepth - 1,
-		&namestringlength);
+    pnamestring = dg_getplstring(pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID, 
+        DG_STRINGSTRINGSTACK_BUFFERID, 
+        mystringstackdepth - 1,
+        &namestringlength);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthnamedbufstrtobufidname);
-		return;
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthnamedbufstrtobufidname);
+        return;
+    }
     
     mybufferid = dg_namedbufnametobufid (
         pBHarrayhead,
@@ -1610,10 +1610,10 @@ void dg_forthnamedbufstrtobufid (Bufferhandle* pBHarrayhead)
         namestringlength);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthnamedbufstrtobufidname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_forthnamedbufstrtobufidname);
+        return;
+    }
     
     dg_pushbufferuint64(
         pBHarrayhead,
@@ -1621,10 +1621,10 @@ void dg_forthnamedbufstrtobufid (Bufferhandle* pBHarrayhead)
         mybufferid);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthnamedbufstrtobufidname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_forthnamedbufstrtobufidname);
+        return;
+    }
     
     dg_forthdropstring(pBHarrayhead);
 }
@@ -1650,31 +1650,31 @@ void dg_forthnamedbufstrtop (Bufferhandle* pBHarrayhead)
         pBHarrayhead,
         DG_STRINGOFFSETSTACK_BUFFERID);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthnamedbufstrtopname);
-		return;
-	}
+        return;
+    }
 
-	if (mystringstackdepth < 1)
-	{
-		// not enough strings to do compare, will push error and push not equal
-		dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+    if (mystringstackdepth < 1)
+    {
+        // not enough strings to do compare, will push error and push not equal
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
         dg_pusherror(pBHarrayhead, dg_forthnamedbufstrtopname);
-		return;
-	}
+        return;
+    }
 
-	pnamestring = dg_getplstring(pBHarrayhead,
-		DG_STRINGOFFSETSTACK_BUFFERID, 
-		DG_STRINGSTRINGSTACK_BUFFERID, 
-		mystringstackdepth - 1,
-		&namestringlength);
+    pnamestring = dg_getplstring(pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID, 
+        DG_STRINGSTRINGSTACK_BUFFERID, 
+        mystringstackdepth - 1,
+        &namestringlength);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthnamedbufstrtopname);
-		return;
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthnamedbufstrtopname);
+        return;
+    }
     
     pbuffer = dg_namedbufnametoaddr (
         pBHarrayhead,
@@ -1682,10 +1682,10 @@ void dg_forthnamedbufstrtop (Bufferhandle* pBHarrayhead)
         namestringlength);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthnamedbufstrtopname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_forthnamedbufstrtopname);
+        return;
+    }
     
     dg_pushbufferuint64(
         pBHarrayhead,
@@ -1693,10 +1693,10 @@ void dg_forthnamedbufstrtop (Bufferhandle* pBHarrayhead)
         (UINT64)pbuffer);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthnamedbufstrtopname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_forthnamedbufstrtopname);
+        return;
+    }
     
     dg_forthdropstring(pBHarrayhead);
 }
@@ -1725,50 +1725,50 @@ void dg_forthhsymbolstrto (Bufferhandle* pBHarrayhead)
         DG_DATASTACK_BUFFERID);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    {
         dg_pusherror(pBHarrayhead, dg_forthhsymbolstrtoname);
-		return;
-	}
+        return;
+    }
     
     namedsymbollistelementid = dg_popbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    {
         dg_pusherror(pBHarrayhead, dg_forthhsymbolstrtoname);
-		return;
-	}
+        return;
+    }
     
     mystringstackdepth = dg_getnumberoflstringsonstack(
         pBHarrayhead,
         DG_STRINGOFFSETSTACK_BUFFERID);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
         dg_pusherror(pBHarrayhead, dg_forthhsymbolstrtoname);
-		return;
-	}
+        return;
+    }
 
-	if (mystringstackdepth < 1)
-	{
-		// not enough strings to do compare, will push error and push not equal
-		dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+    if (mystringstackdepth < 1)
+    {
+        // not enough strings to do compare, will push error and push not equal
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
         dg_pusherror(pBHarrayhead, dg_forthhsymbolstrtoname);
-		return;
-	}
+        return;
+    }
 
-	pnamestring = dg_getplstring(pBHarrayhead,
-		DG_STRINGOFFSETSTACK_BUFFERID, 
-		DG_STRINGSTRINGSTACK_BUFFERID, 
-		mystringstackdepth - 1,
-		&namestringlength);
+    pnamestring = dg_getplstring(pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID, 
+        DG_STRINGSTRINGSTACK_BUFFERID, 
+        mystringstackdepth - 1,
+        &namestringlength);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthhsymbolstrtoname);
-		return;
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthhsymbolstrtoname);
+        return;
+    }
     
     value = dg_hsymbolnametovalue (
         pBHarrayhead,
@@ -1778,10 +1778,10 @@ void dg_forthhsymbolstrto (Bufferhandle* pBHarrayhead)
         namedsymbollistelementid);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthhsymbolstrtoname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_forthhsymbolstrtoname);
+        return;
+    }
     
     dg_pushbufferuint64(
         pBHarrayhead,
@@ -1789,10 +1789,10 @@ void dg_forthhsymbolstrto (Bufferhandle* pBHarrayhead)
         value);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_forthhsymbolstrtoname);
-		return;
-	}
+    {
+        dg_pusherror(pBHarrayhead, dg_forthhsymbolstrtoname);
+        return;
+    }
     
     dg_forthdropstring(pBHarrayhead);
 }

@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.5.
+//    This file is part of DiaperGlu v5.6.
 //
-//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.6 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.6 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.5; if not, write to the Free Software
+//    along with DiaperGlu v5.6; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// July 2, 2022               //
-// version 5.5                //
+// August 1, 2022             //
+// version 5.6                //
 // /////////////////////////////
 
 
@@ -471,7 +471,7 @@ UINT64 dg_newhlist (Bufferhandle* pBHarrayhead)
     myhlist.sortedchildidslstroffsetbufid = (UINT64)dg_badbufferid;
     myhlist.sortedchildidslstrstringbufid = (UINT64)dg_badbufferid;
     
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
     
     if (baderrorcount == olderrorcount)
     {
@@ -542,9 +542,9 @@ UINT64 dg_newhlist (Bufferhandle* pBHarrayhead)
     
     dg_insertinlstring (
         pBHarrayhead,
-		myflstringarrayheader.lstringoffsetbufferid,
+        myflstringarrayheader.lstringoffsetbufferid,
         myflstringarrayheader.lstringstringbufferid,
-		hlistheaderid,
+        hlistheaderid,
         0,
         sizeof(Hlistheader));
 
@@ -564,8 +564,8 @@ UINT64 dg_newhlist (Bufferhandle* pBHarrayhead)
     dg_copystolstringn (
         pBHarrayhead,
         myflstringarrayheader.lstringoffsetbufferid,
-		myflstringarrayheader.lstringstringbufferid,
-		hlistheaderid,
+        myflstringarrayheader.lstringstringbufferid,
+        hlistheaderid,
         0,
         (unsigned char*)(&myhlist),
         sizeof(Hlistheader));
@@ -597,7 +597,7 @@ void dg_freehlist (
     Hlistheader myhlistheader;
     UINT64 hlistheaderarraybufferid;
     
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
     
     if (baderrorcount == olderrorcount)
     {
@@ -844,7 +844,7 @@ void dg_unlinkhlistchildelement (
     
     Freeablelstringarrayheader myelementheaderflstrah;
     
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
     
     if (baderrorcount == olderrorcount)
     {

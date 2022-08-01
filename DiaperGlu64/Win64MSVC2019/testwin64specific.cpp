@@ -1387,12 +1387,18 @@ void testdg_forthcallprocaddress()
     UINT64 hlibrary;
     UINT64 x;
     UINT64 symboladdress;
+    unsigned char* caddr1;
+    unsigned char* caddr2;
+    unsigned char* caddrout;
+    UINT64 u1, u2;
+    UINT64 dg_successaddress;
+
 
     dg_initpbharrayhead(&BHarrayhead);
 
     dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthcallprocaddress\n");
 
-    // sucess case
+    // success case
     dg_initbuffers(&BHarrayhead);
     dg_initvariables(&BHarrayhead);
 
@@ -1507,6 +1513,1246 @@ void testdg_forthcallprocaddress()
         dg_success);
 
     dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // checking 0 param alignment success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    perror = dg_loadlibrary(
+        (const char*)DG_DIAPERGLU_LIB_NAME, // (const char*)"libdiaperglu.dll",
+        &hlibrary,
+        dg_success);
+
+    if (perror != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 0 param alignment success case - got error opening libdiaperglu.dll, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    if (0 == hlibrary)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 0 param alignment success case - libdiaperglu.dll library not loaded.\n ");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        hlibrary);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 0 param alignment success case - got error pushing library handle to data stack.\n ");
+
+    }
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        16,
+        (unsigned char*)"dg_testalignment");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 0 param alignment success case - got error pushing symbol name to string stack.\n ");
+
+    }
+
+    dg_forthfindlibrarysymbol(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 0 param alignment success case - got error doing dg_forthfindlibrarysymbol.\n ");
+
+    }
+
+    symboladdress = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 0 param alignment success case - got error popping symbol address off data stack.\n ");
+    }
+
+    if (0 == symboladdress)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 0 param alignment success case - symbol address for dg_testalignment not found.\n ");
+        return;
+    }
+
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        0);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 0 param alignment success case - got error pushing number of parameters to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        symboladdress);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 0 param alignment success case - got error pushing number of parameters to data stack.\n ");
+    }
+
+    dg_forthcallprocaddress(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 0 param alignment success case - got error doing dg_forthcallprocaddress.\n ");
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if ((x & 8) != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 0 param alignment success case - got wrong result.\n ");
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 0 param alignment success case - got error getting data stack buffer length.\n ");
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 0 param alignment success case - data stack not empty after test.\n ");
+    }
+
+    dg_freelibrary(
+        hlibrary,
+        dg_success);
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+    // checking 1 param alignment success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    perror = dg_loadlibrary(
+        (const char*)DG_DIAPERGLU_LIB_NAME, // (const char*)"libdiaperglu.dll",
+        &hlibrary,
+        dg_success);
+
+    if (perror != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 1 param alignment success case - got error opening libdiaperglu.dll, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        hlibrary);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 1 param alignment success case - got error pushing library handle to data stack.\n ");
+
+    }
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        16,
+        (unsigned char*)"dg_testalignment");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 1 param alignment success case - got error pushing symbol name to string stack.\n ");
+
+    }
+
+    dg_forthfindlibrarysymbol(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 1 param alignment success case - got error doing dg_forthfindlibrarysymbol.\n ");
+
+    }
+
+    symboladdress = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 1 param alignment success case - got error popping symbol address off data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        1);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 1 param alignment success case - got error pushing number of parameters to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        1);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 1 param alignment success case - got error pushing number of parameters to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        symboladdress);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 1 param alignment success case - got error pushing number of parameters to data stack.\n ");
+    }
+
+    dg_forthcallprocaddress(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 1 param alignment success case - got error doing dg_forthcallprocaddress.\n ");
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if ((x & 8) != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 1 param alignment success case - got wrong result.\n ");
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 1 param alignment success case - got error getting data stack buffer length.\n ");
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 1 param alignment success case - data stack not empty after test.\n ");
+    }
+
+    dg_freelibrary(
+        hlibrary,
+        dg_success);
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+    // checking 2 param alignment success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    perror = dg_loadlibrary(
+        (const char*)DG_DIAPERGLU_LIB_NAME, // (const char*)"libdiaperglu.dll",
+        &hlibrary,
+        dg_success);
+
+    if (perror != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 2 param alignment success case - got error opening libdiaperglu.dll, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    if (0 == hlibrary)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 2 param alignment success case - libdiaperglu.dll library not loaded.\n ");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        hlibrary);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 2 param alignment success case - got error pushing library handle to data stack.\n ");
+
+    }
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        16,
+        (unsigned char*)"dg_testalignment");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 2 param alignment success case - got error pushing symbol name to string stack.\n ");
+
+    }
+
+    dg_forthfindlibrarysymbol(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 2 param alignment success case - got error doing dg_forthfindlibrarysymbol.\n ");
+
+    }
+
+    symboladdress = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 2 param alignment success case - got error popping symbol address off data stack.\n ");
+    }
+
+    if (0 == symboladdress)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 2 param alignment success case - symbol address for dg_testalignment not found.\n ");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        2);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 2 param alignment success case - got error pushing parameter to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        2);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 2 param alignment success case - got error pushing parameter to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        2);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 2 param alignment success case - got error pushing number of parameters to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        symboladdress);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 2 param alignment success case - got error pushing number of parameters to data stack.\n ");
+    }
+
+    dg_forthcallprocaddress(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 2 param alignment success case - got error doing dg_forthcallprocaddress.\n ");
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if ((x & 8) != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 2 param alignment success case - got wrong result.\n ");
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 2 param alignment success case - got error getting data stack buffer length.\n ");
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 2 param alignment success case - data stack not empty after test.\n ");
+    }
+
+    dg_freelibrary(
+        hlibrary,
+        dg_success);
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+    // checking 3 param alignment success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    perror = dg_loadlibrary(
+        (const char*)DG_DIAPERGLU_LIB_NAME, // (const char*)"libdiaperglu.dll",
+        &hlibrary,
+        dg_success);
+
+    if (perror != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 3 param alignment success case - got error opening libdiaperglu.dll, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    if (0 == hlibrary)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 3 param alignment success case - libdiaperglu.dll library not loaded.\n ");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        hlibrary);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 3 param alignment success case - got error pushing library handle to data stack.\n ");
+
+    }
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        16,
+        (unsigned char*)"dg_testalignment");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 3 param alignment success case - got error pushing symbol name to string stack.\n ");
+
+    }
+
+    dg_forthfindlibrarysymbol(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 3 param alignment success case - got error doing dg_forthfindlibrarysymbol.\n ");
+
+    }
+
+    symboladdress = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 3 param alignment success case - got error popping symbol address off data stack.\n ");
+    }
+
+    if (0 == symboladdress)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 3 param alignment success case - symbol address for dg_testalignment not found.\n ");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        3);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 3 param alignment success case - got error pushing parameter to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        3);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 3 param alignment success case - got error pushing parameter to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        3);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 3 param alignment success case - got error pushing parameter to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        3);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 3 param alignment success case - got error pushing number of parameters to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        symboladdress);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 3 param alignment success case - got error pushing number of parameters to data stack.\n ");
+    }
+
+    dg_forthcallprocaddress(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 3 param alignment success case - got error doing dg_forthcallprocaddress.\n ");
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if ((x & 8) != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 3 param alignment success case - got wrong result.\n ");
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 3 param alignment success case - got error getting data stack buffer length.\n ");
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 3 param alignment success case - data stack not empty after test.\n ");
+    }
+
+    dg_freelibrary(
+        hlibrary,
+        dg_success);
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+    // checking 4 param alignment success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    perror = dg_loadlibrary(
+        (const char*)DG_DIAPERGLU_LIB_NAME, // (const char*)"libdiaperglu.dll",
+        &hlibrary,
+        dg_success);
+
+    if (perror != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 4 param alignment success case - got error opening libdiaperglu.dll, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    if (0 == hlibrary)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 4 param alignment success case - libdiaperglu.dll library not loaded.\n ");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        hlibrary);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 4 param alignment success case - got error pushing library handle to data stack.\n ");
+
+    }
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        16,
+        (unsigned char*)"dg_testalignment");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 4 param alignment success case - got error pushing symbol name to string stack.\n ");
+
+    }
+
+    dg_forthfindlibrarysymbol(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 4 param alignment success case - got error doing dg_forthfindlibrarysymbol.\n ");
+
+    }
+
+    symboladdress = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 4 param alignment success case - got error popping symbol address off data stack.\n ");
+    }
+
+    if (0 == symboladdress)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 4 param alignment success case - symbol address for dg_testalignment not found.\n ");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        4);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 4 param alignment success case - got error pushing parameter to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        4);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 4 param alignment success case - got error pushing parameter to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        4);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 4 param alignment success case - got error pushing parameter to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        4);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 4 param alignment success case - got error pushing parameter to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        4);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 4 param alignment success case - got error pushing number of parameters to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        symboladdress);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 4 param alignment success case - got error pushing number of parameters to data stack.\n ");
+    }
+
+    dg_forthcallprocaddress(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 4 param alignment success case - got error doing dg_forthcallprocaddress.\n ");
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if ((x & 8) != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 4 param alignment success case - got wrong result.\n ");
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 4 param alignment success case - got error getting data stack buffer length.\n ");
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 4 param alignment success case - data stack not empty after test.\n ");
+    }
+
+    dg_freelibrary(
+        hlibrary,
+        dg_success);
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // checking 5 param alignment success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    perror = dg_loadlibrary(
+        (const char*)DG_DIAPERGLU_LIB_NAME, // (const char*)"libdiaperglu.dll",
+        &hlibrary,
+        dg_success);
+
+    if (perror != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param alignment success case - got error opening libdiaperglu.dll, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    if (0 == hlibrary)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param alignment success case - libdiaperglu.dll library not loaded.\n ");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        hlibrary);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param alignment success case - got error pushing library handle to data stack.\n ");
+
+    }
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        16,
+        (unsigned char*)"dg_testalignment");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param alignment success case - got error pushing symbol name to string stack.\n ");
+
+    }
+
+    dg_forthfindlibrarysymbol(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param alignment success case - got error doing dg_forthfindlibrarysymbol.\n ");
+
+    }
+
+    symboladdress = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param alignment success case - got error popping symbol address off data stack.\n ");
+    }
+
+    if (0 == symboladdress)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param alignment success case - symbol address for dg_testalignment not found.\n ");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        5);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param alignment success case - got error pushing parameter to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        5);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param alignment success case - got error pushing parameter to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        5);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param alignment success case - got error pushing parameter to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        5);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param alignment success case - got error pushing parameter to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        5);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param alignment success case - got error pushing parameter to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        5);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param alignment success case - got error pushing number of parameters to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        symboladdress);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param alignment success case - got error pushing number of parameters to data stack.\n ");
+    }
+
+    dg_forthcallprocaddress(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param alignment success case - got error doing dg_forthcallprocaddress.\n ");
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if ((x & 8) != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param alignment success case - got wrong result.\n ");
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param alignment success case - got error getting data stack buffer length.\n ");
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param alignment success case - data stack not empty after test.\n ");
+    }
+
+    dg_freelibrary(
+        hlibrary,
+        dg_success);
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // checking 6 param alignment success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    perror = dg_loadlibrary(
+        (const char*)DG_DIAPERGLU_LIB_NAME, // (const char*)"libdiaperglu.dll",
+        &hlibrary,
+        dg_success);
+
+    if (perror != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 6 param alignment success case - got error opening libdiaperglu.dll, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    if (0 == hlibrary)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 6 param alignment success case - libdiaperglu.dll library not loaded.\n ");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        hlibrary);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 6 param alignment success case - got error pushing library handle to data stack.\n ");
+
+    }
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        16,
+        (unsigned char*)"dg_testalignment");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 6 param alignment success case - got error pushing symbol name to string stack.\n ");
+
+    }
+
+    dg_forthfindlibrarysymbol(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 6 param alignment success case - got error doing dg_forthfindlibrarysymbol.\n ");
+
+    }
+
+    symboladdress = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 6 param alignment success case - got error popping symbol address off data stack.\n ");
+    }
+
+    if (0 == symboladdress)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 6 param alignment success case - symbol address for dg_testalignment not found.\n ");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        6);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 6 param alignment success case - got error pushing parameter to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        6);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 6 param alignment success case - got error pushing parameter to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        6);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 6 param alignment success case - got error pushing parameter to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        6);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 6 param alignment success case - got error pushing parameter to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        6);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 6 param alignment success case - got error pushing parameter to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        6);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 6 param alignment success case - got error pushing parameter to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        6);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 6 param alignment success case - got error pushing number of parameters to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        symboladdress);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 6 param alignment success case - got error pushing number of parameters to data stack.\n ");
+    }
+
+    dg_forthcallprocaddress(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 6 param alignment success case - got error doing dg_forthcallprocaddress.\n ");
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if ((x & 8) != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 6 param alignment success case - got wrong result.\n ");
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 6 param alignment success case - got error getting data stack buffer length.\n ");
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 6 param alignment success case - data stack not empty after test.\n ");
+    }
+
+    dg_freelibrary(
+        hlibrary,
+        dg_success);
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // checking 5 param success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    perror = dg_loadlibrary(
+        (const char*)DG_DIAPERGLU_LIB_NAME, // (const char*)"libdiaperglu.dll",
+        &hlibrary,
+        dg_success);
+
+    if (perror != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param success case - got error opening libdiaperglu.dll, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    if (0 == hlibrary)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param success case - libdiaperglu.dll library not loaded.\n ");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        hlibrary);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param success case - got error pushing library handle to data stack.\n ");
+
+    }
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        9,
+        (unsigned char*)"dg_search");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param success case - got error pushing symbol name to string stack.\n ");
+
+    }
+
+    dg_forthfindlibrarysymbol(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param success case - got error doing dg_forthfindlibrarysymbol.\n ");
+
+    }
+
+    symboladdress = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param success case - got error popping symbol address off data stack.\n ");
+    }
+
+    if (0 == symboladdress)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param success case - symbol address for dg_testalignment not found.\n ");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        hlibrary);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param success case - got error pushing library handle to data stack.\n ");
+
+    }
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        10,
+        (unsigned char*)"dg_success");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param success case - got error pushing symbol name to string stack.\n ");
+
+    }
+
+    dg_forthfindlibrarysymbol(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param success case - got error doing dg_forthfindlibrarysymbol.\n ");
+
+    }
+
+    dg_successaddress = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param success case - got error popping symbol address off data stack.\n ");
+    }
+
+    if (0 == dg_successaddress)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param success case - dg_success address for dg_testalignment not found.\n ");
+        return;
+    }
+
+    caddr1 = (unsigned char*)"abcdefghijklmnopqrstuvwxyz";
+    u1 = 26;
+    caddr2 = (unsigned char*)"defg";
+    u2 = 4;
+    caddrout = NULL;
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        (UINT64)&caddrout);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param success case - got error pushing parameter to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        u2);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param success case - got error pushing parameter to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        (UINT64)caddr2);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param success case - got error pushing parameter to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        u1);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param success case - got error pushing parameter to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        (UINT64)caddr1);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param success case - got error pushing parameter to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        5);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param success case - got error pushing parameter to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        symboladdress);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param success case - got error pushing number of parameters to data stack.\n ");
+    }
+
+    dg_forthcallprocaddress(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param success case - got error doing dg_forthcallprocaddress.\n ");
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (x != dg_successaddress)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param success case - dg_search did not return dg_success.\n ");
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param success case - got error getting data stack buffer length.\n ");
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcallprocaddress checking 5 param success case - data stack not empty after test.\n ");
+    }
+
+    if (caddrout != caddr1 + 3)
+    {
+        x = (UINT64)(caddrout - (caddr1 + 3));
+       dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcallprocaddress checking 5 param success case dg_search returned wrong caddrout, caddrout off by ");
+       dg_writestdoutuinttodec(&BHarrayhead, x);
+       dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    dg_freelibrary(
+        hlibrary,
+        dg_success);
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+    
+
 }
 
 void testdg_forthcallprocaddressretuint128()
@@ -1663,7 +2909,7 @@ void testdg_forthcalldfpprocaddress()
 
     dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthcalldfpprocaddress\n");
 
-    // sucess case
+    // success case
     dg_initbuffers(&BHarrayhead);
     dg_initvariables(&BHarrayhead);
 
@@ -1782,6 +3028,1430 @@ void testdg_forthcalldfpprocaddress()
     if (x != 0)
     {
         dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress success case - data stack not empty after test.\n ");
+    }
+
+    dg_freelibrary(
+        hlibrary,
+        dg_success);
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // check 0 param alignment success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    perror = dg_loadlibrary(
+        (const char*)DG_DIAPERGLU_LIB_NAME, // (const char*)"libdiaperglu.dll",
+        &hlibrary,
+        dg_success);
+
+    if (perror != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 0 param alignment success case - got error opening libdiaperglu.dll, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        hlibrary);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 0 param alignment success case - got error pushing library handle to data stack.\n ");
+
+    }
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        16,
+        (unsigned char*)"dg_testalignment");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 0 param alignment success case - got error pushing symbol name to string stack.\n ");
+
+    }
+
+    dg_forthfindlibrarysymbol(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 0 param alignment success case - got error doing dg_forthfindlibrarysymbol.\n ");
+
+    }
+
+    symboladdress = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 0 param alignment success case - got error popping symbol address off data stack.\n ");
+    }
+
+    if (0 == symboladdress)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 0 param alignment success case - symbol name not found.\n ");
+        return;
+    }
+
+    // *((FLOAT64*)(&x)) = 16.0;
+    // push 4.0 to floating point stack
+    // dg_pushdatastack(
+    //    &BHarrayhead,
+    //    x);
+
+    // if (dg_geterrorcount(&BHarrayhead) != 0)
+    // {
+    //    dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 0 param alignment success case - got error pushing 16.0 to data stack.\n ");
+    // }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        0);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 0 param alignment success case - got error pushing number of floating point parameters to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        0);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 0 param alignment success case - got error pushing number of integer parameters to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        symboladdress);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 0 param alignment success case - got error pushing number of parameters to data stack.\n ");
+    }
+
+    dg_forthcalldfpprocaddress(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 0 param alignment success case - got error doing dg_forthcallprocaddress.\n ");
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if ((x & 8) != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 0 param alignment success case - got wrong result.\n ");
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 0 param alignment success case - got error getting data stack buffer length.\n ");
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 0 param alignment success case - data stack not empty after test.\n ");
+    }
+
+    dg_freelibrary(
+        hlibrary,
+        dg_success);
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // check 1 float param alignment success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    perror = dg_loadlibrary(
+        (const char*)DG_DIAPERGLU_LIB_NAME, // (const char*)"libdiaperglu.dll",
+        &hlibrary,
+        dg_success);
+
+    if (perror != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 float param alignment success case - got error opening libdiaperglu.dll, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        hlibrary);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 float param alignment success case - got error pushing library handle to data stack.\n ");
+
+    }
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        16,
+        (unsigned char*)"dg_testalignment");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 float param alignment success case - got error pushing symbol name to string stack.\n ");
+
+    }
+
+    dg_forthfindlibrarysymbol(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 float param alignment success case - got error doing dg_forthfindlibrarysymbol.\n ");
+
+    }
+
+    symboladdress = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 float param alignment success case - got error popping symbol address off data stack.\n ");
+    }
+
+    if (0 == symboladdress)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 float param alignment success case - symbol name not found.\n ");
+        return;
+    }
+
+    *((FLOAT64*)(&x)) = 16.0;
+    // push 4.0 to floating point stack
+    dg_pushdatastack(
+        &BHarrayhead,
+        x);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 float param alignment success case - got error pushing 16.0 to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        1);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 float param alignment success case - got error pushing number of floating point parameters to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        0);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 float param alignment success case - got error pushing number of integer parameters to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        symboladdress);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 float param alignment success case - got error pushing number of parameters to data stack.\n ");
+    }
+
+    dg_forthcalldfpprocaddress(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 float param alignment success case - got error doing dg_forthcallprocaddress.\n ");
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if ((x & 8) != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 float param alignment success case - got wrong result.\n ");
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 float param alignment success case - got error getting data stack buffer length.\n ");
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 float param alignment success case - data stack not empty after test.\n ");
+    }
+
+    dg_freelibrary(
+        hlibrary,
+        dg_success);
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // check 2 float param alignment success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    perror = dg_loadlibrary(
+        (const char*)DG_DIAPERGLU_LIB_NAME, // (const char*)"libdiaperglu.dll",
+        &hlibrary,
+        dg_success);
+
+    if (perror != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 float param alignment success case - got error opening libdiaperglu.dll, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        hlibrary);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 float param alignment success case - got error pushing library handle to data stack.\n ");
+
+    }
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        16,
+        (unsigned char*)"dg_testalignment");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 float param alignment success case - got error pushing symbol name to string stack.\n ");
+
+    }
+
+    dg_forthfindlibrarysymbol(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 float param alignment success case - got error doing dg_forthfindlibrarysymbol.\n ");
+
+    }
+
+    symboladdress = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 float param alignment success case - got error popping symbol address off data stack.\n ");
+    }
+
+    if (0 == symboladdress)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 float param alignment success case - symbol name not found.\n ");
+        return;
+    }
+
+    *((FLOAT64*)(&x)) = 16.0;
+    // push 4.0 to floating point stack
+    dg_pushdatastack(
+        &BHarrayhead,
+        x);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 float param alignment success case - got error pushing 16.0 to data stack.\n ");
+    }
+
+    *((FLOAT64*)(&x)) = 16.0;
+    // push 4.0 to floating point stack
+    dg_pushdatastack(
+        &BHarrayhead,
+        x);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 float param alignment success case - got error pushing 16.0 to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        2);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 float param alignment success case - got error pushing number of floating point parameters to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        0);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 float param alignment success case - got error pushing number of integer parameters to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        symboladdress);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 float param alignment success case - got error pushing number of parameters to data stack.\n ");
+    }
+
+    dg_forthcalldfpprocaddress(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 float param alignment success case - got error doing dg_forthcallprocaddress.\n ");
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if ((x & 8) != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 float param alignment success case - got wrong result.\n ");
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 float param alignment success case - got error getting data stack buffer length.\n ");
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 float param alignment success case - data stack not empty after test.\n ");
+    }
+
+    dg_freelibrary(
+        hlibrary,
+        dg_success);
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // check 3 float param alignment success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    perror = dg_loadlibrary(
+        (const char*)DG_DIAPERGLU_LIB_NAME, // (const char*)"libdiaperglu.dll",
+        &hlibrary,
+        dg_success);
+
+    if (perror != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 3 float param alignment success case - got error opening libdiaperglu.dll, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        hlibrary);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 3 float param alignment success case - got error pushing library handle to data stack.\n ");
+
+    }
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        16,
+        (unsigned char*)"dg_testalignment");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 3 float param alignment success case - got error pushing symbol name to string stack.\n ");
+
+    }
+
+    dg_forthfindlibrarysymbol(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 3 float param alignment success case - got error doing dg_forthfindlibrarysymbol.\n ");
+
+    }
+
+    symboladdress = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 3 float param alignment success case - got error popping symbol address off data stack.\n ");
+    }
+
+    if (0 == symboladdress)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 3 float param alignment success case - symbol name not found.\n ");
+        return;
+    }
+
+    *((FLOAT64*)(&x)) = 16.0;
+    // push 4.0 to floating point stack
+    dg_pushdatastack(
+        &BHarrayhead,
+        x);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 3 float param alignment success case - got error pushing 16.0 to data stack.\n ");
+    }
+
+    *((FLOAT64*)(&x)) = 16.0;
+    // push 4.0 to floating point stack
+    dg_pushdatastack(
+        &BHarrayhead,
+        x);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 3 float param alignment success case - got error pushing 16.0 to data stack.\n ");
+    }
+
+    *((FLOAT64*)(&x)) = 16.0;
+    // push 4.0 to floating point stack
+    dg_pushdatastack(
+        &BHarrayhead,
+        x);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 3 float param alignment success case - got error pushing 16.0 to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        3);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 3 float param alignment success case - got error pushing number of floating point parameters to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        0);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 3 float param alignment success case - got error pushing number of integer parameters to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        symboladdress);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 3 float param alignment success case - got error pushing number of parameters to data stack.\n ");
+    }
+
+    dg_forthcalldfpprocaddress(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 3 float param alignment success case - got error doing dg_forthcallprocaddress.\n ");
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if ((x & 8) != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 3 float param alignment success case - got wrong result.\n ");
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 3 float param alignment success case - got error getting data stack buffer length.\n ");
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 3 float param alignment success case - data stack not empty after test.\n ");
+    }
+
+    dg_freelibrary(
+        hlibrary,
+        dg_success);
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+    
+    // check 4 float param alignment success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    perror = dg_loadlibrary(
+        (const char*)DG_DIAPERGLU_LIB_NAME, // (const char*)"libdiaperglu.dll",
+        &hlibrary,
+        dg_success);
+
+    if (perror != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 4 float param alignment success case - got error opening libdiaperglu.dll, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        hlibrary);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 4 float param alignment success case - got error pushing library handle to data stack.\n ");
+
+    }
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        16,
+        (unsigned char*)"dg_testalignment");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 4 float param alignment success case - got error pushing symbol name to string stack.\n ");
+
+    }
+
+    dg_forthfindlibrarysymbol(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 4 float param alignment success case - got error doing dg_forthfindlibrarysymbol.\n ");
+
+    }
+
+    symboladdress = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 4 float param alignment success case - got error popping symbol address off data stack.\n ");
+    }
+
+    if (0 == symboladdress)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 4 float param alignment success case - symbol name not found.\n ");
+        return;
+    }
+
+    *((FLOAT64*)(&x)) = 16.0;
+    // push 4.0 to floating point stack
+    dg_pushdatastack(
+        &BHarrayhead,
+        x);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 4 float param alignment success case - got error pushing 16.0 to data stack.\n ");
+    }
+
+    *((FLOAT64*)(&x)) = 16.0;
+    // push 4.0 to floating point stack
+    dg_pushdatastack(
+        &BHarrayhead,
+        x);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 4 float param alignment success case - got error pushing 16.0 to data stack.\n ");
+    }
+
+    *((FLOAT64*)(&x)) = 16.0;
+    // push 4.0 to floating point stack
+    dg_pushdatastack(
+        &BHarrayhead,
+        x);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 4 float param alignment success case - got error pushing 16.0 to data stack.\n ");
+    }
+
+    *((FLOAT64*)(&x)) = 16.0;
+    // push 4.0 to floating point stack
+    dg_pushdatastack(
+        &BHarrayhead,
+        x);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 4 float param alignment success case - got error pushing 16.0 to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        4);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 4 float param alignment success case - got error pushing number of floating point parameters to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        0);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 4 float param alignment success case - got error pushing number of integer parameters to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        symboladdress);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 4 float param alignment success case - got error pushing number of parameters to data stack.\n ");
+    }
+
+    dg_forthcalldfpprocaddress(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 4 float param alignment success case - got error doing dg_forthcallprocaddress.\n ");
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if ((x & 8) != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 4 float param alignment success case - got wrong result.\n ");
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 4 float param alignment success case - got error getting data stack buffer length.\n ");
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 4 float param alignment success case - data stack not empty after test.\n ");
+    }
+
+    dg_freelibrary(
+        hlibrary,
+        dg_success);
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // check 5 float param alignment success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    perror = dg_loadlibrary(
+        (const char*)DG_DIAPERGLU_LIB_NAME, // (const char*)"libdiaperglu.dll",
+        &hlibrary,
+        dg_success);
+
+    if (perror != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 5 float param alignment success case - got error opening libdiaperglu.dll, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        hlibrary);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 5 float param alignment success case - got error pushing library handle to data stack.\n ");
+
+    }
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        16,
+        (unsigned char*)"dg_testalignment");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 5 float param alignment success case - got error pushing symbol name to string stack.\n ");
+
+    }
+
+    dg_forthfindlibrarysymbol(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 5 float param alignment success case - got error doing dg_forthfindlibrarysymbol.\n ");
+
+    }
+
+    symboladdress = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 5 float param alignment success case - got error popping symbol address off data stack.\n ");
+    }
+
+    if (0 == symboladdress)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 5 float param alignment success case - symbol name not found.\n ");
+        return;
+    }
+
+    *((FLOAT64*)(&x)) = 16.0;
+    // push 4.0 to floating point stack
+    dg_pushdatastack(
+        &BHarrayhead,
+        x);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 5 float param alignment success case - got error pushing 16.0 to data stack.\n ");
+    }
+
+    *((FLOAT64*)(&x)) = 16.0;
+    // push 4.0 to floating point stack
+    dg_pushdatastack(
+        &BHarrayhead,
+        x);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 5 float param alignment success case - got error pushing 16.0 to data stack.\n ");
+    }
+
+    *((FLOAT64*)(&x)) = 16.0;
+    // push 4.0 to floating point stack
+    dg_pushdatastack(
+        &BHarrayhead,
+        x);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 5 float param alignment success case - got error pushing 16.0 to data stack.\n ");
+    }
+
+    *((FLOAT64*)(&x)) = 16.0;
+    // push 4.0 to floating point stack
+    dg_pushdatastack(
+        &BHarrayhead,
+        x);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 5 float param alignment success case - got error pushing 16.0 to data stack.\n ");
+    }
+
+    *((FLOAT64*)(&x)) = 16.0;
+    // push 4.0 to floating point stack
+    dg_pushdatastack(
+        &BHarrayhead,
+        x);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 5 float param alignment success case - got error pushing 16.0 to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        5);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 5 float param alignment success case - got error pushing number of floating point parameters to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        0);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 5 float param alignment success case - got error pushing number of integer parameters to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        symboladdress);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 5 float param alignment success case - got error pushing number of parameters to data stack.\n ");
+    }
+
+    dg_forthcalldfpprocaddress(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 5 float param alignment success case - got error doing dg_forthcallprocaddress.\n ");
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if ((x & 8) != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 5 float param alignment success case - got wrong result.\n ");
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 5 float param alignment success case - got error getting data stack buffer length.\n ");
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 5 float param alignment success case - data stack not empty after test.\n ");
+    }
+
+    dg_freelibrary(
+        hlibrary,
+        dg_success);
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+
+    // check 6 float param alignment success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    perror = dg_loadlibrary(
+        (const char*)DG_DIAPERGLU_LIB_NAME, // (const char*)"libdiaperglu.dll",
+        &hlibrary,
+        dg_success);
+
+    if (perror != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 6 float param alignment success case - got error opening libdiaperglu.dll, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        hlibrary);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 6 float param alignment success case - got error pushing library handle to data stack.\n ");
+
+    }
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        16,
+        (unsigned char*)"dg_testalignment");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 6 float param alignment success case - got error pushing symbol name to string stack.\n ");
+
+    }
+
+    dg_forthfindlibrarysymbol(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 6 float param alignment success case - got error doing dg_forthfindlibrarysymbol.\n ");
+
+    }
+
+    symboladdress = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 6 float param alignment success case - got error popping symbol address off data stack.\n ");
+    }
+
+    if (0 == symboladdress)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 6 float param alignment success case - symbol name not found.\n ");
+        return;
+    }
+
+    *((FLOAT64*)(&x)) = 16.0;
+    // push 4.0 to floating point stack
+    dg_pushdatastack(
+        &BHarrayhead,
+        x);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 6 float param alignment success case - got error pushing 16.0 to data stack.\n ");
+    }
+
+    *((FLOAT64*)(&x)) = 16.0;
+    // push 4.0 to floating point stack
+    dg_pushdatastack(
+        &BHarrayhead,
+        x);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 6 float param alignment success case - got error pushing 16.0 to data stack.\n ");
+    }
+
+    *((FLOAT64*)(&x)) = 16.0;
+    // push 4.0 to floating point stack
+    dg_pushdatastack(
+        &BHarrayhead,
+        x);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 6 float param alignment success case - got error pushing 16.0 to data stack.\n ");
+    }
+
+    *((FLOAT64*)(&x)) = 16.0;
+    // push 4.0 to floating point stack
+    dg_pushdatastack(
+        &BHarrayhead,
+        x);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 6 float param alignment success case - got error pushing 16.0 to data stack.\n ");
+    }
+
+    *((FLOAT64*)(&x)) = 16.0;
+    // push 4.0 to floating point stack
+    dg_pushdatastack(
+        &BHarrayhead,
+        x);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 6 float param alignment success case - got error pushing 16.0 to data stack.\n ");
+    }
+
+    *((FLOAT64*)(&x)) = 16.0;
+    // push 4.0 to floating point stack
+    dg_pushdatastack(
+        &BHarrayhead,
+        x);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 6 float param alignment success case - got error pushing 16.0 to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        6);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 6 float param alignment success case - got error pushing number of floating point parameters to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        0);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 6 float param alignment success case - got error pushing number of integer parameters to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        symboladdress);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 6 float param alignment success case - got error pushing number of parameters to data stack.\n ");
+    }
+
+    dg_forthcalldfpprocaddress(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 6 float param alignment success case - got error doing dg_forthcallprocaddress.\n ");
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if ((x & 8) != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 6 float param alignment success case - got wrong result.\n ");
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 6 float param alignment success case - got error getting data stack buffer length.\n ");
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 6 float param alignment success case - data stack not empty after test.\n ");
+    }
+
+    dg_freelibrary(
+        hlibrary,
+        dg_success);
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // check 2 int 2 float param alignment success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    perror = dg_loadlibrary(
+        (const char*)DG_DIAPERGLU_LIB_NAME, // (const char*)"libdiaperglu.dll",
+        &hlibrary,
+        dg_success);
+
+    if (perror != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 int 2 float param alignment success case - got error opening libdiaperglu.dll, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        hlibrary);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 int 2 float param alignment success case - got error pushing library handle to data stack.\n ");
+
+    }
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        16,
+        (unsigned char*)"dg_testalignment");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 int 2 float param alignment success case - got error pushing symbol name to string stack.\n ");
+
+    }
+
+    dg_forthfindlibrarysymbol(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 int 2 float param alignment success case - got error doing dg_forthfindlibrarysymbol.\n ");
+
+    }
+
+    symboladdress = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 int 2 float param alignment success case - got error popping symbol address off data stack.\n ");
+    }
+
+    if (0 == symboladdress)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 int 2 float param alignment success case - symbol name not found.\n ");
+        return;
+    }
+
+    *((FLOAT64*)(&x)) = 16.0;
+    // push 4.0 to floating point stack
+    dg_pushdatastack(
+        &BHarrayhead,
+        x);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 int 2 float param alignment success case - got error pushing 16.0 to data stack.\n ");
+    }
+
+    *((FLOAT64*)(&x)) = 16.0;
+    // push 4.0 to floating point stack
+    dg_pushdatastack(
+        &BHarrayhead,
+        x);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 int 2 float param alignment success case - got error pushing 16.0 to data stack.\n ");
+    }
+
+    x = 3;
+    dg_pushdatastack(
+        &BHarrayhead,
+        x);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 int 2 float param alignment success case - got error pushing 3 to data stack.\n ");
+    }
+
+    x = 3;
+    dg_pushdatastack(
+        &BHarrayhead,
+        x);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 int 2 float param alignment success case - got error pushing 3 to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        2);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 int 2 float param alignment success case - got error pushing number of floating point parameters to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        2);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 int 2 float param alignment success case - got error pushing number of integer parameters to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        symboladdress);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 int 2 float param alignment success case - got error pushing number of parameters to data stack.\n ");
+    }
+
+    dg_forthcalldfpprocaddress(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 int 2 float param alignment success case - got error doing dg_forthcallprocaddress.\n ");
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if ((x & 8) != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 int 2 float param alignment success case - got wrong result.\n ");
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 int 2 float param alignment success case - got error getting data stack buffer length.\n ");
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 2 int 2 float param alignment success case - data stack not empty after test.\n ");
+    }
+
+    dg_freelibrary(
+        hlibrary,
+        dg_success);
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // check 1 int 2 float param alignment success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    perror = dg_loadlibrary(
+        (const char*)DG_DIAPERGLU_LIB_NAME, // (const char*)"libdiaperglu.dll",
+        &hlibrary,
+        dg_success);
+
+    if (perror != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 int 2 float param alignment success case - got error opening libdiaperglu.dll, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)perror);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        hlibrary);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 int 2 float param alignment success case - got error pushing library handle to data stack.\n ");
+
+    }
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        16,
+        (unsigned char*)"dg_testalignment");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 int 2 float param alignment success case - got error pushing symbol name to string stack.\n ");
+
+    }
+
+    dg_forthfindlibrarysymbol(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 int 2 float param alignment success case - got error doing dg_forthfindlibrarysymbol.\n ");
+
+    }
+
+    symboladdress = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 int 2 float param alignment success case - got error popping symbol address off data stack.\n ");
+    }
+
+    if (0 == symboladdress)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 int 2 float param alignment success case - symbol name not found.\n ");
+        return;
+    }
+
+    *((FLOAT64*)(&x)) = 16.0;
+    // push 4.0 to floating point stack
+    dg_pushdatastack(
+        &BHarrayhead,
+        x);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 int 2 float param alignment success case - got error pushing 16.0 to data stack.\n ");
+    }
+
+    *((FLOAT64*)(&x)) = 16.0;
+    // push 4.0 to floating point stack
+    dg_pushdatastack(
+        &BHarrayhead,
+        x);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 int 2 float param alignment success case - got error pushing 16.0 to data stack.\n ");
+    }
+
+    x = 3;
+    dg_pushdatastack(
+        &BHarrayhead,
+        x);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 int 2 float param alignment success case - got error pushing 3 to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        2);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 int 2 float param alignment success case - got error pushing number of floating point parameters to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        1);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 int 2 float param alignment success case - got error pushing number of integer parameters to data stack.\n ");
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        symboladdress);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 int 2 float param alignment success case - got error pushing number of parameters to data stack.\n ");
+    }
+
+    dg_forthcalldfpprocaddress(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 int 2 float param alignment success case - got error doing dg_forthcallprocaddress.\n ");
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if ((x & 8) != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 int 2 float param alignment success case - got wrong result.\n ");
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 int 2 float param alignment success case - got error getting data stack buffer length.\n ");
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_forthcalldfpprocaddress check 1 int 2 float param alignment success case - data stack not empty after test.\n ");
     }
 
     dg_freelibrary(

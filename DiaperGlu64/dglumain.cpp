@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.5.
+//    This file is part of DiaperGlu v5.6.
 //
-//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.6 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.6 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.5; if not, write to the Free Software
+//    along with DiaperGlu v5.6; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// July 2, 2022               //
-// version 5.5                //
+// August 1, 2022             //
+// version 5.6                //
 // /////////////////////////////
 
 
@@ -204,45 +204,45 @@ void dg_inithlists (Bufferhandle* pBHarrayhead)
 //  ignoring errors in this routine because script is attempting to exit
 void dg_cleanup (Bufferhandle* pBHarrayhead)
 {
-	UINT64 bufferlength = 0;
-	UINT64 executiontoken = 0;
-	UINT64 dllhandle = 0;
-	const char* perror;
+    UINT64 bufferlength = 0;
+    UINT64 executiontoken = 0;
+    UINT64 dllhandle = 0;
+    const char* perror;
 
     UINT64 desiredsize = sizeof(Bufferhandle) + jumpbufferlength;
-	UINT64 pagesize = dg_getpagesize();
-	UINT64 truesize;
+    UINT64 pagesize = dg_getpagesize();
+    UINT64 truesize;
 
-	truesize = ((UINT64)((desiredsize-1) / pagesize) + 1) * pagesize;
+    truesize = ((UINT64)((desiredsize-1) / pagesize) + 1) * pagesize;
 
-	bufferlength = dg_getbufferlength(
+    bufferlength = dg_getbufferlength(
         pBHarrayhead,
         DG_CLEANUP_BUFFERID);
 
-	while (bufferlength >= sizeof(UINT64))
-	{
-		executiontoken = dg_popbufferuint64(
+    while (bufferlength >= sizeof(UINT64))
+    {
+        executiontoken = dg_popbufferuint64(
             pBHarrayhead,
             DG_CLEANUP_BUFFERID);
 
-		dg_executedefinition(
+        dg_executedefinition(
             pBHarrayhead,
             executiontoken);
 
-		// don't care about errors because we are exiting
+        // don't care about errors because we are exiting
 
-		bufferlength = dg_getbufferlength(
+        bufferlength = dg_getbufferlength(
             pBHarrayhead,
             DG_CLEANUP_BUFFERID);
-	}
+    }
 
-	bufferlength = dg_getbufferlength(
+    bufferlength = dg_getbufferlength(
         pBHarrayhead,
         DG_LIBHANDLE_BUFFERID);
 
-	while (bufferlength >= sizeof(UINT64))
-	{
-		dllhandle = dg_popbufferuint64(
+    while (bufferlength >= sizeof(UINT64))
+    {
+        dllhandle = dg_popbufferuint64(
             pBHarrayhead,
             DG_LIBHANDLE_BUFFERID);
 
@@ -250,16 +250,16 @@ void dg_cleanup (Bufferhandle* pBHarrayhead)
             dllhandle,
             dg_success);
 
-		// don't care about errors because we are exiting
+        // don't care about errors because we are exiting
 
-		bufferlength = dg_getbufferlength(
+        bufferlength = dg_getbufferlength(
             pBHarrayhead,
             DG_LIBHANDLE_BUFFERID);
-	}
+    }
 
-	dg_freeallbuffers(pBHarrayhead);
+    dg_freeallbuffers(pBHarrayhead);
 
-	dg_free(
+    dg_free(
         pBHarrayhead,
         truesize,
         dg_success);
@@ -306,7 +306,7 @@ Bufferhandle* dg_initwithoutwordlists(int argc, char* argv[])
     pBHarrayhead->argv = argv;
  
     // pjumpbuffer = (char*)((unsigned char*)pBHarrayhead + sizeof(Bufferhandle));
-	
+    
     dg_initpbharrayhead(pBHarrayhead);
     
     // checking for bad memory in arguments list and environment variables
@@ -437,35 +437,35 @@ void dg_donglu (int argc, char* argv[])
 
 void dg_main (int argc, char* argv[])
 {
-	Bufferhandle* pBHarrayhead;
+    Bufferhandle* pBHarrayhead;
     // UINT64 myrsp;
 
-	pBHarrayhead = dg_init(argc, argv);
+    pBHarrayhead = dg_init(argc, argv);
     
     // dg_forthshowbuffers(pBHarrayhead);
 
-	if (pBHarrayhead != (Bufferhandle*)badbufferhandle)
-	{
-		if (0 == dg_geterrorcount(pBHarrayhead))
-		{
+    if (pBHarrayhead != (Bufferhandle*)badbufferhandle)
+    {
+        if (0 == dg_geterrorcount(pBHarrayhead))
+        {
             // myrsp = (UINT64)dg_getretstackpointer();
 
             // dg_printzerostring(pBHarrayhead, (unsigned char*)"Return stack pointer just before calling a subroutine = ");
             // dg_writestdoutuint64tohex(pBHarrayhead, myrsp);
             // dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
-			
+            
             dg_forthquit(pBHarrayhead);
-		}
+        }
 
-		dg_cleanup(pBHarrayhead);
-	}
+        dg_cleanup(pBHarrayhead);
+    }
 }
 /*
 int main(int argc, char* argv[])
 {
-	dg_main(argc, argv);
+    dg_main(argc, argv);
 
-	return(0);
+    return(0);
 }
 */
 

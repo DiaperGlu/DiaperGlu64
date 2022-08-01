@@ -1,0 +1,151 @@
+( //////////////////////////////////////////////////////////////////////////////////////// )
+( //                                                                                       )
+( //    Copyright 2022 James Patrick Norris                                                )
+( //                                                                                       )
+( //    This file is part of Diaperglu 5.5.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.5 is free software; you can redistribute it and/or modify              )
+( //    it under the terms of the GNU General Public License as published by               )
+( //    the Free Software Foundation; either version 2 of the License, or                  )
+( //    {at your option} any later version.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.5 is distributed in the hope that it will be useful,                   )
+( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
+( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
+( //    GNU General Public License for more details.                                       )
+( //                                                                                       )
+( //    You should have received a copy of the GNU General Public License                  )
+( //    along with Diaperglu 5.5; if not, write to the Free Software                       )
+( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
+( //                                                                                       )
+( //////////////////////////////////////////////////////////////////////////////////////// )
+
+( /////////////////////////////// )
+( // James Patrick Norris      // )
+( // www.rainbarrel.com        // )
+( // July 2, 2022              // )
+( // version 5.5               // )
+( /////////////////////////////// )
+
+// last changed: June 5, 2022
+
+// documentation for the message box function is here:
+// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messageboxa
+// link checked June 5, 2022
+
+// the document explains the parameters and says which shared library this function is in
+
+
+NEW-FLAT-OSYMBOL-BUF ( -r- oldcompilebuf )
+
+  // current compile buf is set to a new buffer
+  // new hlist created with two parent elements
+  //  one element is for the export symbol list
+  //  the other element is for the import symbol list
+
+X86-WORDLIST >SEARCH-ORDER
+
+
+HEX
+OSYMBOL dg_callgetsysteminfowithzerostack
+  ENTER-CALL-SUBS-FRAME,
+  CALL-SUBS-FRAME-LOCALS,< 
+    dwAllocationGranularityandLevelandRevision
+    dwNumberOfProcessorsandType
+    pdwActiveProcessorMask
+    lpMaximumApplicationAddress
+    lpMinimumApplicationAddress
+    dwOemIdAnddwPageSize
+    extra 
+  >
+
+  RAX RAX XOR,
+
+  RAX   dwOemIdAnddwPageSize  MOV,
+  
+  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,
+  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,
+  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,
+  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,
+  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,
+  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,
+  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,
+  
+  // automatic function caller will drop the stuff I just pushed
+  (( 
+       dwOemIdAnddwPageSize P>IPARAM   // hparentwindow  > RDI
+  )),
+
+  IMP CALL,  OSYMBOL-IMPORT GetSystemInfo
+
+  dwOemIdAnddwPageSize  RAX  MOV,
+  20 N RAX SHR, 
+  
+  EXIT-CALL-SUBS-FRAME,
+  RET,
+  
+  ?CLEAR-LOCALS
+
+
+HEX
+OSYMBOL dg_callgetsysteminfowithnonzerostack
+  ENTER-CALL-SUBS-FRAME,
+  CALL-SUBS-FRAME-LOCALS,< 
+    dwAllocationGranularityandLevelandRevision
+    dwNumberOfProcessorsandType
+    pdwActiveProcessorMask
+    lpMaximumApplicationAddress
+    lpMinimumApplicationAddress
+    dwOemIdAnddwPageSize
+    extra 
+  >
+
+  RAX RAX XOR,
+
+  RAX   dwOemIdAnddwPageSize  MOV,
+
+  RAX DEC,
+  
+  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,
+  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,
+  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,
+  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,
+  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,
+  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,
+  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,  RAX PUSH,
+  
+  // automatic function caller will drop the stuff I just pushed
+  (( 
+       dwOemIdAnddwPageSize P>IPARAM   // hparentwindow  > RDI
+  )),
+
+  IMP CALL,  OSYMBOL-IMPORT GetSystemInfo
+
+  dwOemIdAnddwPageSize  RAX  MOV,
+  20 N RAX SHR, 
+  
+  EXIT-CALL-SUBS-FRAME,
+  RET,
+   
+  ?CLEAR-LOCALS
+
+  SEARCH-ORDER> DROP
+
+
+// saving the compiled buffer in the mach-o .o format
+
+PCURRENTCOMPILEBUFFER @ 
+EH 
+1 EH[ND]
+BUF>NEWEXPORTIMPORT.OBUF
+
+$" osymbolimport.obj" SAVEFILE$
+
+( oldcompilebuf -r- )
+FREE-FLAT-OSYMBOL-BUF 
+
+
+
+
+     
+

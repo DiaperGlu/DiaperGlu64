@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.5.
+//    This file is part of DiaperGlu v5.6.
 //
-//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.6 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.6 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.5; if not, write to the Free Software
+//    along with DiaperGlu v5.6; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// July 2, 2022               //
-// version 5.5                //
+// August 1, 2022             //
+// version 5.6                //
 // /////////////////////////////
 
 #include <stdio.h>
@@ -36,6 +36,99 @@
 #endif
 
 unsigned char megabuf[0x10000]; // a test does not need to be re-entrant
+
+void testdg_n8ton64 ()
+{
+    INT64 x;
+    UINT32 xlo, xhi;
+    printf("testing dg_n8ton64\n");
+    
+    x = dg_n8ton64(0);
+
+    if (x != 0)
+    {
+        printf(" - FAIL! 0x00 sign extended did not give 0\n");
+    }
+
+    x = dg_n8ton64(0x80);
+
+    if (x != (INT64)((UINT64)0xffffffffffffff80))
+    {
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf(" - FAIL! 0x80 sign extended did not give 0xffffffffffffff80, got %08x%08x\n", xhi, xlo);        
+    }
+
+    x = dg_n8ton64(0xff);
+
+    if (x != 0xffffffffffffffff)
+    {
+        printf(" - FAIL! 0xff sign extended did not give 0xffffffffffffffff\n");
+    }
+}
+
+
+void testdg_n16ton64 ()
+{
+    INT64 x;
+    UINT32 xlo, xhi;
+    printf("testing dg_n16ton64\n");
+    
+    x = dg_n16ton64(0);
+
+    if (x != 0)
+    {
+        printf(" - FAIL! 0x0000 sign extended did not give 0\n");
+    }
+
+    x = dg_n16ton64(0x8000);
+
+    if (x != (INT64)0xffffffffffff8000)
+    {
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf(" - FAIL! 0x8000 sign extended did not give 0xffffffffffff8000, got %08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_n16ton64(0xffff);
+
+    if (x != 0xffffffffffffffff)
+    {
+        printf(" - FAIL! 0xffff sign extended did not give 0xffffffffffffffff\n");
+    }
+}
+
+
+void testdg_n32ton64 ()
+{
+    INT64 x;
+    UINT32 xlo, xhi;
+    printf("testing dg_n32ton64\n");
+    
+    x = dg_n32ton64(0);
+
+    if (x != 0)
+    {
+        printf(" - FAIL! 0x00000000 sign extended did not give 0\n");
+    }
+
+    x = dg_n32ton64(0x80000000);
+
+    if (x != (INT64)((UINT64)0xffffffff80000000))
+    {
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf(" - FAIL! 0x80000000 sign extended did not give 0xffffffff80000000, got %08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_n32ton64(0xffffffff);
+
+    if (x != 0xffffffffffffffff)
+    {
+        printf(" - FAIL! 0xffffffff sign extended did not give 0xffffffffffffffff\n");
+    }
+}
+
 
 void testmaxu32comparecompilation()
 {
@@ -13428,6 +13521,10 @@ testmaxu32comparecompilation();
 testu64constantcompilation();
 testneg1constantcompilation();
 // testmaxnegi32constantcompilation();
+
+testdg_n8ton64();
+testdg_n16ton64();
+testdg_n32ton64();
 
 
 

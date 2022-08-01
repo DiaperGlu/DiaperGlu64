@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.5.
+//    This file is part of DiaperGlu v5.6.
 //
-//    DiaperGlu v5.5 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.6 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.5 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.6 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.5; if not, write to the Free Software
+//    along with DiaperGlu v5.6; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// July 2, 2022               //
-// version 5.5                //
+// August 1, 2022             //
+// version 5.6                //
 // /////////////////////////////
 
 
@@ -6305,6 +6305,13 @@ void dg_forthsquotes (Bufferhandle* pBHarrayhead) // ( S" )
         psqstr,
         sqstrlen);
 
+    // This wasn't in but it probably should be 2022 July 14
+    // if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    // {
+    //    dg_pusherror(pBHarrayhead, dg_forthsquotesname);
+    //    return;
+    // }
+
     /*
     
     dg_compilecalloffset(
@@ -7276,7 +7283,7 @@ void dg_forthword (Bufferhandle* pBHarrayhead)
     {
         c = *(pcib + *pcibcurrentoffset);
         
-        if (c == delimiter)
+        if ((c == delimiter) || dg_islineterminator(c)) // word is current line only 2022 July 11
         {
             break;
         }
@@ -9043,13 +9050,14 @@ void dg_forthlinecomment (Bufferhandle* pBHarrayhead)
 //              ( "string<char>morestuff" -currentinputbuffer- "morestuff" )
 //              ( char -- addr length )
 {
-    unsigned char* pcib = NULL;
-    UINT64* pciblength = NULL;
-    UINT64* pcibcurrentoffset = NULL;
+    // unsigned char* pcib = NULL;
+    // UINT64* pciblength = NULL;
+    // UINT64* pcibcurrentoffset = NULL;
 
-    UINT64 cibid = 0;
+    // UINT64 cibid = 0;
 
-    unsigned char c = 0;
+    // unsigned char c = 0;
+    UINT64 linelength;
 
 
     Bufferhandle* pBH = NULL;
@@ -9062,7 +9070,20 @@ void dg_forthlinecomment (Bufferhandle* pBHarrayhead)
         return;
     }
 
+    dg_parse(
+        pBHarrayhead,
+        &linelength,
+        '\n'); // this or a character that can't be in the line...
+               //  dg_parse also checks for all line terminators in addition to the endchar
 
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthlinecommentname);
+        return;
+    }
+
+
+/*
     cibid = dg_getbufferuint64(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
@@ -9102,6 +9123,7 @@ void dg_forthlinecomment (Bufferhandle* pBHarrayhead)
 
         (*pcibcurrentoffset)++;
     }
+*/
 }
 
 
@@ -9276,5 +9298,89 @@ void dg_forthquerydo (Bufferhandle* pBHarrayhead)
 }
 
 
+// This word does not return caddr u in the execute state like OS" because if it did,
+//   the caddr pointer would become invalid the next time anything else is compiled
+void dg_forthsbackslashquotes (Bufferhandle* pBHarrayhead) // ( S\" )
+//           ( "somestuff<quotes>morestuff" -currentinputbuffer- "morestuff" )
+//           ( compiletime: -- )
+//           ( runtime: -- caddr u  )
+{
+    unsigned char* psqstr;
+    UINT64 sqstrlen;
+    UINT64 topstringid;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    psqstr = dg_parse(
+        pBHarrayhead,
+        &sqstrlen,
+        '"');
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthsbackslashquotesname);
+        return;
+    }
+
+    dg_stonewstring(
+        pBHarrayhead,
+        psqstr,
+        sqstrlen);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthsbackslashquotesname);
+        return;
+    }
+
+    dg_fescdecodelstring (
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID, 
+        DG_STRINGSTRINGSTACK_BUFFERID);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthsbackslashquotesname);
+        return;
+    }
+
+    topstringid = dg_getnumberoflstringsonstack(
+        pBHarrayhead, 
+        DG_STRINGOFFSETSTACK_BUFFERID);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthsbackslashquotesname);
+        return;
+    }
+
+    psqstr = dg_getplstring(pBHarrayhead, 
+        DG_STRINGOFFSETSTACK_BUFFERID, 
+        DG_STRINGSTRINGSTACK_BUFFERID, 
+        topstringid - 1,
+        &sqstrlen);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthsbackslashquotesname);
+        return;
+    }
+
+    dg_compileacopyofsscopyto(
+        pBHarrayhead,
+        psqstr,
+        sqstrlen);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthsbackslashquotesname);
+        return;
+    }
+}
 
 
