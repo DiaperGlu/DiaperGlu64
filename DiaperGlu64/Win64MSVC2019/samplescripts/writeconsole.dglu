@@ -1,0 +1,103 @@
+
+// https://docs.microsoft.com/en-us/windows/console/getstdhandle
+HEX FFFFFFF6 CONSTANT STD_INPUT_HANDLE
+HEX FFFFFFF5 CONSTANT STD_OUTPUT_HANDLE
+// HEX FFFFFFF4 CONSTANT STD_ERROR_HANDLE
+
+
+$" Kernel32.dll" OPENLIBRARY$ CONSTANT hkernel32lib DROP
+
+$" GetStdHandle" hkernel32lib FINDLIBRARYSYMBOL CONSTANT pGetStdHandle
+$" WriteConsoleA" hkernel32lib FINDLIBRARYSYMBOL CONSTANT pWriteConsoleA
+$" CreateFileA" hkernel32lib FINDLIBRARYSYMBOL CONSTANT pCreateFileA
+$" GetLastError" hkernel32lib FINDLIBRARYSYMBOL CONSTANT pGetLastError
+$" WriteFile" hkernel32lib FINDLIBRARYSYMBOL CONSTANT pWriteFile
+
+CRLF ." GetStdHandle address =    " pGetStdHandle HEX U. CRLF
+CRLF ." WriteConsoleA address =   " pWriteConsoleA HEX U. CRLF
+CRLF ." CreateFileA address =     " pCreateFileA HEX U. CRLF
+CRLF ." GetLastError address =    " pGetLastError HEX U. CRLF
+
+
+// gonna assume stdin and stdout are the console
+STD_INPUT_HANDLE 1 pGetStdHandle CONSTANT hStdIn
+STD_OUTPUT_HANDLE 1 pGetStdHandle CONSTANT hStdOut
+
+CRLF ." StdIn Handle = " hStdIn HEX U.
+CRLF ." StdOut Handle = " hStdOut HEX U.
+
+// https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea
+HEX 1 CONSTANT FILE_SHARE_READ
+HEX 2 CONSTANT FILE_SHARE_WRITE
+HEX 3 CONSTANT OPEN_EXISTING
+
+// https://docs.microsoft.com/en-us/windows/win32/secauthz/access-mask-format
+HEX 80000000 CONSTANT GENERIC_READ
+HEX 40000000 CONSTANT GENERIC_WRITE
+
+
+0
+0
+OPEN_EXISTING
+0
+FILE_SHARE_WRITE
+GENERIC_READ GENERIC_WRITE OR
+$" CONOUT$" $>0$  0 GETS$[ND] DROP
+7
+pCreateFileA CALLPROC CONSTANT hConOut
+
+DROP$
+
+
+// CRLF ." ConIn Handle = " hConIn HEX U.
+CRLF ." ConOut Handle = " hConOut HEX U.
+
+
+VARIABLE pNumWritten
+VARIABLE pMyChar
+: charToConsole ( char -- )
+    pMyChar !
+    0 pNumWritten !
+    BEGIN
+      pNumWritten @ 0=
+    WHILE
+      0
+      pNumWritten
+      1
+      pMyChar
+      hConOut
+      5
+      pWriteFile
+      CALLPROC 
+      0= IF 
+        0 pGetLastError CALLPROC
+        CRLF ." Got Error " DECIMAL U.
+        NAME>E EXIT 
+      THEN
+    REPEAT 
+;
+
+
+: charToStdOut ( char -- )
+    pMyChar !
+    0 pNumWritten !
+    BEGIN
+      pNumWritten @ 0=
+    WHILE
+      0
+      pNumWritten
+      1
+      pMyChar
+      hStdOut
+      5
+      pWriteFile
+      CALLPROC 
+      0= IF 
+        0 pGetLastError CALLPROC
+        CRLF ." Got Error " DECIMAL U.
+        NAME>E EXIT 
+      THEN
+    REPEAT 
+;
+
+

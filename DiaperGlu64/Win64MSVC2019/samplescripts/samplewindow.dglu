@@ -1,16 +1,38 @@
 
+
+// This example creates a standard top level window that draws a bitmap to it's client area.
+//  Then the example drops into a loop that pumps the windows message queue while still getting
+//  lines from the console and evaluating them.
+// This example also shows a way to double buffer the bitmap. Down left clicking on the window 
+//  switches to the other bitmap.
+// This example using polling to check both queues. It would probably be more efficient to wait
+//  on both queues simultaneously when they are empty. I think there is a way to do that but I
+//  do'nt have it in here yet.
+
+DECIMAL
+: 16BUFALIGN 16 SWAP UBUFALIGN ;
+
+
 // source document of the example being converted:
 // https://docs.microsoft.com/en-us/windows/win32/winmsg/using-window-classes
+
 
 // winmain instance handle is a module handle:
 // https://docs.microsoft.com/en-us/windows/win32/psapi/module-information
 
+
 // wndproc
 // https://docs.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
+// WM_PAINT using fill
+// https://docs.microsoft.com/en-us/windows/win32/gdi/wm-paint
+// WM_PAINT image
+// https://docs.microsoft.com/en-us/windows/win32/directshow/step-4--draw-the-bitmap-on-the-client-area
+
+
+// drawing an image in WM_PAINT message
+// https://docs.microsoft.com/en-us/windows/win32/directshow/step-4--draw-the-bitmap-on-the-client-area
 
 // source documents for constants
-// WS_OVERLAPPED source: https://docs.microsoft.com/en-us/windows/win32/winmsg/window-styles
-0 CONSTANT WS_OVERLAPPED
 
 // CS_VREDRAW source: https://docs.microsoft.com/en-us/windows/win32/winmsg/window-class-styles
 1 CONSTANT CS_VREDRAW
@@ -49,14 +71,52 @@ HEX 80000 CONSTANT WS_SYSMENU
 HEX 40000 CONSTANT WS_THICKFRAME
 HEX 20000 CONSTANT WS_MINIMIZEBOX
 HEX 10000 CONSTANT WS_MAXIMIZEBOX
-WS_OVERLAPPED WS_CAPTION OR 
+HEX 800000 CONSTANT WS_BORDER
+HEX 40000000 CONSTANT WS_CHILD
+WS_OVERLAPPED 
+  WS_CAPTION OR 
   WS_SYSMENU OR 
   WS_THICKFRAME OR 
   WS_MINIMIZEBOX OR 
-  WS_MAXIMIZEBOX OR CONSTANT WS_OVERLAPPEDWINDOW
+  WS_MAXIMIZEBOX OR 
+  CONSTANT WS_OVERLAPPEDWINDOW
+
+// https://docs.microsoft.com/en-us/windows/win32/winmsg/wm-quit
+// https://docs.microsoft.com/en-us/windows/win32/winmsg/wm-destroy
+// https://docs.microsoft.com/en-us/windows/win32/gdi/wm-paint
+// https://docs.microsoft.com/en-us/windows/win32/inputdev/wm-lbuttondown
+// https://github.com/tpn/winsdk-10/blob/master/Include/10.0.10240.0/um/WinUser.h
+
+HEX 12 CONSTANT WM_QUIT
+HEX 02 CONSTANT WM_DESTROY
+HEX 10 CONSTANT WM_CLOSE
+HEX 0F CONSTANT WM_PAINT
+HEX 201 CONSTANT WM_LBUTTONDOWN
 
 // https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow
 1 CONSTANT SW_NORMAL
+5 CONSTANT SW_SHOW
+
+// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-peekmessagea
+1 CONSTANT PM_REMOVE
+
+// https://docs.microsoft.com/en-us/windows/console/getstdhandle
+HEX FFFFFFF6 CONSTANT STD_INPUT_HANDLE
+HEX FFFFFFF5 CONSTANT STD_OUTPUT_HANDLE
+// HEX FFFFFFF4 CONSTANT STD_ERROR_HANDLE
+
+// https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-emf/a5e722e3-891a-4a67-be1a-ed5a48a7fda1
+0 CONSTANT DIB_RGB_COLORS
+
+// https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea
+HEX 1 CONSTANT FILE_SHARE_READ
+HEX 2 CONSTANT FILE_SHARE_WRITE
+HEX 3 CONSTANT OPEN_EXISTING
+
+// https://docs.microsoft.com/en-us/windows/win32/secauthz/access-mask-format
+HEX 80000000 CONSTANT GENERIC_READ
+HEX 40000000 CONSTANT GENERIC_WRITE 
+
 
 // imported function documentation
 // https://docs.microsoft.com/en-us/windows/console/setconsoletitle
@@ -66,9 +126,13 @@ WS_OVERLAPPED WS_CAPTION OR
 // https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getprocessid
 // https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-getlasterror
 // https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getsystemmetrics
+// https://docs.microsoft.com/en-us/windows/console/peekconsoleinput
+
+
+// Declaring structures using [>ORDER]CONSTANT and SIZED-CONSTANTS
 
 // WNDCLASSEX source: https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexa
-WORDLIST DUP [>ORDER]CONSTANT [WNDCLASSEX.] >CURRENT 
+WORDLIST DUP CREATE-[WORDLIST.] [WNDCLASSEX.] >CURRENT 
 SIZED-CONSTANTS< 
     4 cbSize
     4 style
@@ -85,15 +149,130 @@ SIZED-CONSTANTS<
     0 size >
 CURRENT> DROP
 
-// Windows class structure probably has to go into a locked down buffer.
-//  The default Forth data space buffer is locked down
 
+// https://docs.microsoft.com/en-us/windows/win32/winprog/windows-data-types
+// https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-msg
+WORDLIST DUP CREATE-[WORDLIST.] [MSG.] >CURRENT 
+SIZED-CONSTANTS< 
+    8 hwnd
+    4 message
+    4 wParam
+    4 lParam
+    4 time
+    4 pt.x
+    4 pt.y
+    4 lPrivate
+    0 size >
+CURRENT> DROP
+
+// https://docs.microsoft.com/en-us/windows/console/key-event-record-str
+WORDLIST DUP CREATE-[WORDLIST.] [KEY_EVENT_RECORD.] >CURRENT 
+SIZED-CONSTANTS< 
+    4 bKeyDown
+    2 wRepeatCount
+    2 wVirtualKeyCode
+    2 wVirtualScanCode
+    2 uChar
+    4 dwConstrolKeyState 
+    0 size >
+CURRENT> DROP
+
+// https://docs.microsoft.com/en-us/windows/console/input-record-str
+WORDLIST DUP CREATE-[WORDLIST.] [INPUT_RECORD.] >CURRENT 
+SIZED-CONSTANTS< 
+    4 EventType
+    16 Event
+    0 size >
+CURRENT> DROP
+
+HEX
+// https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-paintstruct
+WORDLIST DUP CREATE-[WORDLIST.] [PAINTSTRUCT.] >CURRENT 
+SIZED-CONSTANTS< 
+    8 hdc
+    4 fErase
+    4 rcPaint.left
+    4 rcPaint.top
+    4 rcPaint.right
+    4 rcPaint.bottom
+    4 fRestore
+    4 fIncUpdate
+    20 rgbReserved
+    0 size >
+CURRENT> DROP
+
+WORDLIST DUP CREATE-[WORDLIST.] [RECT.] >CURRENT 
+SIZED-CONSTANTS< 
+    4 left
+    4 top
+    4 right
+    4 bottom
+    0 size >
+CURRENT> DROP
+
+// https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-bitmapinfo
+WORDLIST DUP CREATE-[WORDLIST.] [BITMAPINFO.] >CURRENT 
+SIZED-CONSTANTS< 
+    4 biSize
+    4 biWidth
+    4 biHeight
+    2 biPlanes
+    2 biBitCount
+    4 biCompression
+    4 biSizeImage
+    4 biXPelsPerMeter
+    4 biYPelsPerMeter
+    4 biClrUsed
+    4 biClrImportant
+    0 size 
+    4 biColors >
+CURRENT> DROP
+
+
+HEX 1 CONSTANT KEY_EVENT
+
+
+// Allocating memory for structures and initializing them
+
+HEX 100 CONSTANT myBitMapWidth
+HEX 100 CONSTANT myBitMapHeight
+HEX 2 CONSTANT myNumberOfBitMaps
+HEX 4 CONSTANT myBytesPerPixel
+HEX 20 CONSTANT myBitsPerPixel
+
+myBitMapWidth myBitMapHeight * myBytesPerPixel * CONSTANT myBitMapSize
+myBitMapSize myNumberOfBitMaps * CONSTANT myBitMapArraySize
+
+HEX 1000 -1 NEWBUFFER CONSTANT myconsoleinputbufferid
 HEX 1000 1000 NEWBUFFER CONSTANT mylockeddownbufferid
+myBitMapArraySize myBitMapArraySize NEWBUFFER CONSTANT MyBitMapArrayBufferID
+myBitMapArraySize MyBitMapArrayBufferID GROWBUFFER
 
 mylockeddownbufferid GETSBUFFER DROP CONSTANT plockeddownbuffer
+MyBitMapArrayBufferID GETSBUFFER DROP CONSTANT pMyBitMapArray0
+pMyBitMapArray0 myBitMapSize + CONSTANT pMyBitMapArray1
 
-mylockeddownbufferid GETBUFFERLENGTH plockeddownbuffer + CONSTANT pdefaultwndclassex
+HEX
+: myFillBitmap { | green pbitmap -- }
+    myBitMapHeight 0 DO
+      myBitMapWidth 0 DO
+        I FF AND J FF AND 100 * OR green 10000 * OR FF000000 OR // assumes 4 bytes per pixel
+        J myBitMapWidth * I + myBytesPerPixel * pbitmap + U32!
+      LOOP
+    LOOP 
+;
+
+// init bitmaps
+
+HEX 40 pMyBitMapArray0 myFillBitmap
+HEX C0 pMyBitMapArray1 myFillBitmap
+
+// pMyBitMapArray0 myBitMapSize DUMP
+
+mylockeddownbufferid 16BUFALIGN ( is 0 )
+mylockeddownbufferid GETBUFFERLENGTH ( is 0 ) plockeddownbuffer + CONSTANT pdefaultwndclassex
 [WNDCLASSEX.] size DROP mylockeddownbufferid GROWBUFFER 
+HEX CRLF ." pdefaultwndclassex = " pdefaultwndclassex U.
 
 $" MainMenu" $>0$
 mylockeddownbufferid GETBUFFERLENGTH plockeddownbuffer + CONSTANT pDefaultMainMenuName0$
@@ -107,12 +286,65 @@ $" Default Window Title" $>0$
 mylockeddownbufferid GETBUFFERLENGTH plockeddownbuffer + CONSTANT pDGDefaultWTitleName0$
 mylockeddownbufferid $>BUF
 
-// ALIGN
-// HERE 8 AND ALLOT // align to 16  
-// HERE CONSTANT pdefaultwndclassex [WNDCLASSEX.] size DROP ALLOT
+mylockeddownbufferid 16BUFALIGN
+mylockeddownbufferid GETBUFFERLENGTH plockeddownbuffer + CONSTANT pmsg
+[MSG.] size DROP mylockeddownbufferid GROWBUFFER
+HEX CRLF ." pmsg = " pmsg U.
 
-// The strings probably don't get copied so they also have to go into a locked down buffer.
-//  The default Forth data space buffer is locked down.
+mylockeddownbufferid 16BUFALIGN
+mylockeddownbufferid GETBUFFERLENGTH plockeddownbuffer + CONSTANT pMyInputRecord
+[INPUT_RECORD.] size DROP mylockeddownbufferid GROWBUFFER
+HEX CRLF ." pMyInputRecord = " pMyInputRecord U. 
+
+[INPUT_RECORD.] size DROP DROP
+
+mylockeddownbufferid 16BUFALIGN
+mylockeddownbufferid GETBUFFERLENGTH plockeddownbuffer + CONSTANT pMyPaintStruct
+[PAINTSTRUCT.] size DROP mylockeddownbufferid GROWBUFFER
+HEX CRLF ." pMyPaintStruct = " pMyPaintStruct U.
+
+mylockeddownbufferid 16BUFALIGN
+mylockeddownbufferid GETBUFFERLENGTH plockeddownbuffer + CONSTANT pMyBitMapInfo
+[BITMAPINFO.] size DROP 4 + ( for biColors) mylockeddownbufferid GROWBUFFER
+HEX CRLF ." pMyBitMapInfo = " pMyBitMapInfo U. 
+
+// init pMyBitMapInfo
+DECIMAL
+[BITMAPINFO.] size DROP
+               pMyBitMapInfo [BITMAPINFO.] biSize           DROP + U32! // size of structure in bytes... must be base structure size
+myBitMapWidth  pMyBitMapInfo [BITMAPINFO.] biWidth          DROP + U32! // width in pixels
+myBitMapHeight pMyBitMapInfo [BITMAPINFO.] biHeight         DROP + U32! // width in pixels
+1              pMyBitMapInfo [BITMAPINFO.] biPlanes         DROP + U16! // 1 plane
+myBitsPerPixel pMyBitMapInfo [BITMAPINFO.] biBitCount       DROP + U16! // bits per pixel, 8r8g8b8u 24 encoded in 32 bits
+0              pMyBitMapInfo [BITMAPINFO.] biCompression    DROP + U32! // 0 = uncompressed
+myBitMapSize   pMyBitMapInfo [BITMAPINFO.] biSizeImage      DROP + U32! // image size
+0              pMyBitMapInfo [BITMAPINFO.] biXPelsPerMeter  DROP + U32! // dpi... probably not used (for app use)
+0              pMyBitMapInfo [BITMAPINFO.] biYPelsPerMeter  DROP + U32! // dpi... probably not used (for app use)
+0              pMyBitMapInfo [BITMAPINFO.] biClrUsed        DROP + U32! // 0 = use all colors
+0              pMyBitMapInfo [BITMAPINFO.] biClrImportant   DROP + U32! // 0 = all colors important
+0              pMyBitMapInfo [BITMAPINFO.] biColors         DROP + U32! // must be 0 for 24 bits per pixel map?
+
+HEX
+: showBitMapInfoHeader { | pbmih -- }
+    CRLF CRLF
+    ." biSize =          "  pbmih [BITMAPINFO.] biSize          DROP DUP U. + U32@ U.  CRLF
+    ." biWidth =         "  pbmih [BITMAPINFO.] biWidth         DROP DUP U. + U32@ U.  CRLF
+    ." biHeight =        "  pbmih [BITMAPINFO.] biHeight        DROP DUP U. + U32@ U.  CRLF
+    ." biPlanes =        "  pbmih [BITMAPINFO.] biPlanes        DROP DUP U. + U16@ U.  CRLF
+    ." biBitCount =      "  pbmih [BITMAPINFO.] biBitCount      DROP DUP U. + U16@ U.  CRLF
+    ." biCompression =   "  pbmih [BITMAPINFO.] biCompression   DROP DUP U. + U32@ U.  CRLF
+    ." biSizeImage =     "  pbmih [BITMAPINFO.] biSizeImage     DROP DUP U. + U32@ U.  CRLF
+    ." biXPelsPerMeter = "  pbmih [BITMAPINFO.] biXPelsPerMeter DROP DUP U. + U32@ U.  CRLF
+    ." biYPelsPerMeter = "  pbmih [BITMAPINFO.] biYPelsPerMeter DROP DUP U. + U32@ U.  CRLF
+    ." biClrUsed =       "  pbmih [BITMAPINFO.] biClrUsed       DROP DUP U. + U32@ U.  CRLF
+    ." biClrImportant =  "  pbmih [BITMAPINFO.] biClrImportant  DROP DUP U. + U32@ U.  CRLF
+    ." structure size =  "        [BITMAPINFO.] size            DROP U.                CRLF
+    ." biColors =        "  pbmih [BITMAPINFO.] biColors        DROP DUP U. + U32@ U.  CRLF  
+;
+
+
+// The strings do get copied so do not have to go into a locked down buffer.
+//  But the default Forth data space buffer is locked down so it wouldn't be a problem.
 // $" MainMenu" $>0$
 // HERE CONSTANT pDefaultMainMenuName0$ PCURRENTNEWVARIABLEBUFFER @ $>BUF
 
@@ -121,6 +353,11 @@ mylockeddownbufferid $>BUF
 
 // $" Default Window Title" $>0$
 // HERE CONSTANT pDGDefaultWTitleName0$ PCURRENTNEWVARIABLEBUFFER @ $>BUF
+
+// I think if the buffer moves after their addresses are compiled it might cause a problem...
+//  The default Forth data space buffer is locked down. If you change the data space buffer to
+//  a buffer that can move, then you need to worry about the pointer address changing after you
+//  you compile a reference to it...
 
 ALIGN
 VARIABLE pDefaultWndClassAtom
@@ -131,9 +368,19 @@ VARIABLE pHDefaultAppIcon
 VARIABLE pHArrowCursor
 VARIABLE pHDefaulthbrBackground
 VARIABLE pHDefaultSmallIcon
+VARIABLE pConsoleHDC
+VARIABLE pWindowHDC
+VARIABLE pScreenHDC
+VARIABLE pCurrentBitmapBuffer  pMyBitMapArray0  pCurrentBitmapBuffer !  
 
 
+// Loading user lib and user lib functions
 
+// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-destroywindow
+// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-postquitmessage
+// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-beginpaint
+// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-endpaint
+// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-invalidatergn
 
 $" User32.dll" OPENLIBRARY$ CONSTANT huser32lib DROP
 $" CreateWindowExA" huser32lib FINDLIBRARYSYMBOL CONSTANT pCreateWindowExA
@@ -146,54 +393,109 @@ $" RegisterClassExA" huser32lib FINDLIBRARYSYMBOL CONSTANT pRegisterClassExA
 $" DefWindowProcA" huser32lib FINDLIBRARYSYMBOL CONSTANT pDefWindowProcA
 $" ShowWindow" huser32lib FINDLIBRARYSYMBOL CONSTANT pShowWindow
 $" UpdateWindow" huser32lib FINDLIBRARYSYMBOL CONSTANT pUpdateWindow
+$" TranslateMessage" huser32lib FINDLIBRARYSYMBOL CONSTANT pTranslateMessage
+$" DispatchMessageA" huser32lib FINDLIBRARYSYMBOL CONSTANT pDispatchMessageA
+$" GetMessageA" huser32lib FINDLIBRARYSYMBOL CONSTANT pGetMessageA
+$" PeekMessageA" huser32lib FINDLIBRARYSYMBOL CONSTANT pPeekMessageA
+$" DestroyWindow" huser32lib FINDLIBRARYSYMBOL CONSTANT pDestroyWindow
+$" PostQuitMessage" huser32lib FINDLIBRARYSYMBOL CONSTANT pPostQuitMessage
+$" BeginPaint" huser32lib FINDLIBRARYSYMBOL CONSTANT pBeginPaint
+$" EndPaint" huser32lib FINDLIBRARYSYMBOL CONSTANT pEndPaint
+$" GetDC" huser32lib FINDLIBRARYSYMBOL CONSTANT pGetDC
+$" ReleaseDC" huser32lib FINDLIBRARYSYMBOL CONSTANT pReleaseDC
+$" FillRect" huser32lib FINDLIBRARYSYMBOL CONSTANT pFillRect
+$" InvalidateRgn" huser32lib FINDLIBRARYSYMBOL CONSTANT pInvalidateRgn
 
-CRLF ." RegisterClassExA address = " pRegisterClassExA HEX U. CRLF
-CRLF ." CreateWindowExA address = " pCreateWindowExA HEX U. CRLF
+
+// CRLF ." RegisterClassExA address = " pRegisterClassExA HEX U. CRLF
+// CRLF ." CreateWindowExA address =  " pCreateWindowExA HEX U. CRLF
+// CRLF ." DefWindowProcA address =   " pDefWindowProcA HEX U. CRLF
+// CRLF ." TranslateMessage address = " pTranslateMessage HEX U. CRLF
+// CRLF ." DispatchMessageA address = " pDispatchMessageA HEX U. CRLF
+// CRLF ." GetMessageA address =      " pGetMessageA HEX U. CRLF
+// CRLF ." PeekMessageA address =     " pPeekMessageA HEX U. CRLF
+// CRLF ." InvalidateRegion address =     " pInvalidateRgn HEX U. CRLF
+
+
+// loading dgi lib and gdi lib functions
+
+// https://docs.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-setdibitstodevice
 
 $" Gdi32.dll" OPENLIBRARY$ CONSTANT hgdi32lib DROP
 $" GetStockObject" hgdi32lib FINDLIBRARYSYMBOL CONSTANT pGetStockObject
+$" SetDIBitsToDevice" hgdi32lib FINDLIBRARYSYMBOL CONSTANT pSetDIBitsToDevice
+$" CreateDIBSection" hgdi32lib FINDLIBRARYSYMBOL CONSTANT pCreateDIBSection
+$" CreateCompatibleDC" hgdi32lib FINDLIBRARYSYMBOL CONSTANT pCreateCompatibleDC
+$" CreateBitmap" hgdi32lib FINDLIBRARYSYMBOL CONSTANT pCreateBitmap
 
-// HWND FindWindowA ( pclassname0str pwindowname0str )
 
+// loading kernel lib and kernel lib functions
 
 $" Kernel32.dll" OPENLIBRARY$ CONSTANT hkernel32lib DROP
 
 $" GetConsoleTitleA" hkernel32lib FINDLIBRARYSYMBOL CONSTANT pGetConsoleTitleA
-// $" Sleep"            hkernel32lib FINDLIBRARYSYMBOL CONSTANT pSleep
-
-// length GetConsoleTitleA (pdest, maxdestlength)
-// maxdestlength                     returned length    pdest
-//  0                                 0                  unchanged
-//  0 < maxdestlength < titlelength   0                  pdest[0] = null terminator
-//  titlelength = maxdestlength       titlelength        copy of title not including null terminator
-//  titlelength < maxdestlength       titlelength        copy of title including null terminator
-// note: return titlelength does not include null terminator
-
-
 $" SetConsoleTitleA" hkernel32lib FINDLIBRARYSYMBOL CONSTANT pSetConsoleTitleA
-
-//  flag SetConsoleTitleA ( ptitle )
-
-
 $" Sleep" hkernel32lib FINDLIBRARYSYMBOL CONSTANT pSleep
-
-// void Sleep ( nmilliseconds )
-
- 
 $" GetCurrentProcessId" hkernel32lib FINDLIBRARYSYMBOL CONSTANT pGetCurrentProcessId
-
-// processid GetCurrentProcessId ()
-
-
 $" GetLastError" hkernel32lib FINDLIBRARYSYMBOL CONSTANT pGetLastError
-
-// lastError GetLastError ()
-
 $" GetModuleHandleA" hkernel32lib FINDLIBRARYSYMBOL CONSTANT pGetModuleHandleA
+$" PeekConsoleInputA" hkernel32lib FINDLIBRARYSYMBOL CONSTANT pPeekConsoleInputA
+$" ReadConsoleInputA" hkernel32lib FINDLIBRARYSYMBOL CONSTANT pReadConsoleInputA
+$" GetStdHandle" hkernel32lib FINDLIBRARYSYMBOL CONSTANT pGetStdHandle
+$" WriteConsoleA" hkernel32lib FINDLIBRARYSYMBOL CONSTANT pWriteConsoleA
+$" CreateFileA" hkernel32lib FINDLIBRARYSYMBOL CONSTANT pCreateFileA
 
 
-// UINT64 dg_getmicrosecondssince1970Jan01()
+// getting stdin and stdout handle... usually these are the console but can be redirected
 
+STD_INPUT_HANDLE 1 pGetStdHandle CALLPROC CONSTANT hStdIn
+STD_OUTPUT_HANDLE 1 pGetStdHandle CALLPROC CONSTANT hStdOut
+
+
+// getting the console handles directly
+
+HEX
+0
+0
+OPEN_EXISTING
+0
+FILE_SHARE_WRITE
+GENERIC_READ GENERIC_WRITE OR
+$" CONOUT$" $>0$  0 GETS$[ND] DROP
+7
+pCreateFileA CALLPROC CONSTANT hConOut
+
+DROP$
+
+0
+0
+OPEN_EXISTING
+0
+FILE_SHARE_READ
+GENERIC_READ GENERIC_WRITE OR
+$" CONIN$" $>0$ 0 GETS$[ND] DROP
+7
+pCreateFileA CALLPROC CONSTANT hConIn
+
+DROP$
+
+CRLF ." ConIn Handle = " hConIn HEX U.
+CRLF ." ConOut Handle = " hConOut HEX U.
+
+
+: ?showlasterror ( flag -- )
+   0= IF
+     0 pGetLastError CALLPROC
+     CRLF ." Last Error = " HEX U.
+   THEN 
+;
+
+
+// getting the console window handle... windows documentation says you have to
+//  get it this way... but there is no way to get the console title length before
+//  you try to get the string... so you have to guess at how big of a buffer you need
+//  the example windows provides uses 2 1k buffers... which are allocated on the
+//  return stack... this seems like a bad idea to me...
 HEX
 : GetConsoleTitleA0$ ( maxlength -- ) ( -$- title$ )
   
@@ -260,10 +562,160 @@ DECIMAL
     0 1 pGetModuleHandleA CALLPROC
 ;
 
+
+DECIMAL
+CODE myMainWndProc
+  ENTER-CALL-SUBS-FRAME,
+  FRAME-PARAMS< INT hWnd INT uMsg INT wParam INT lParam >
+  CALL-SUBS-FRAME-LOCALS,< localhWnd localhdc localpbitmap localpbitmapinfo localpMyPaintStruct localpMyRect x y w h >
+
+  hWnd localhWnd MOV,
+
+  // N >IPARAM does not support 64 bits yet so moving 64 bit pointer to local first
+  pCurrentBitmapBuffer N  RAX  MOV,
+  RAX [R]  RAX  MOV,
+  RAX  RAX  OR,
+  ZS IF,
+    pMyBitMapArray0 N  RAX  MOV,
+  ELSE,
+    pMyBitMapArray1 N  RAX  MOV,
+  THEN,
+  RAX  localpbitmap  MOV,
+
+  pMyBitMapInfo N  RAX  MOV,
+  RAX  localpbitmapinfo  MOV,
+
+  pMyPaintStruct N  RAX  MOV,
+  RAX  localpMyPaintStruct  MOV,
+
+  pMyPaintStruct [PAINTSTRUCT.] rcPaint.left DROP + N  RAX  MOV,
+  RAX  localpMyRect  MOV,
+
+  localpMyRect  RAX  MOV,
+  RAX [R]  EAX  MOV,  CDQE,
+  RAX  x  MOV,
+
+  localpMyRect  RAX  MOV,
+  RAX [RECT.] top DROP [R+N]  EAX  MOV,  CDQE,
+  RAX  y  MOV,
+
+  localpMyRect  RAX  MOV,
+  RAX [RECT.] right DROP [R+N]  EAX  MOV,  CDQE,
+  x  RAX  SUB,
+  RAX  w  MOV,
+
+  localpMyRect  RAX  MOV,
+  RAX [RECT.] bottom DROP [R+N]  EAX  MOV,  CDQE,
+  y  RAX  SUB,
+  RAX  h  MOV,
+  
+  WM_CLOSE N  uMsg  CMP,
+  ZS IF,
+    ( hWnd parameter already in correct register but just in case... )
+    // 1 COMPILE-ALIGN-RET-FOR-N
+    ((
+      localhWnd >IPARAM
+    )),
+    pDestroyWindow N  RAX  MOV,  RAX CALL,
+    EXIT-CALL-SUBS-FRAME,
+    RET,
+  THEN,
+
+  WM_DESTROY N  uMsg  CMP,
+  ZS IF,
+    (( 0 N >IPARAM )), 
+    pPostQuitMessage N  RAX  MOV,  RAX CALL,
+    EXIT-CALL-SUBS-FRAME,
+    RET,
+  THEN,
+
+  WM_PAINT N uMsg  CMP,
+  ZS IF,
+    // hWnd  localhWnd  MOV,
+    
+    ((
+      localhWnd >IPARAM 
+      localpMyPaintStruct >IPARAM
+    )),
+    pBeginPaint N  RAX  MOV,  RAX CALL,
+    RAX  localhdc  MOV,
+
+    ((
+       localhdc          >IPARAM
+       localpMyRect      >IPARAM
+       27 N              >IPARAM
+    )),
+    pFillRect N  RAX  MOV,  RAX CALL,
+
+    ((
+       localhdc          >IPARAM // hdc
+       0 N               >IPARAM // xDest
+       0 N               >IPARAM // yDest
+       myBitMapWidth N   >IPARAM // probably copy width
+       myBitMapHeight N  >IPARAM // probably copy height
+       0 N               >IPARAM // srcx
+       0 N               >IPARAM // srcy
+       0 N               >IPARAM // start scan line
+       myBitMapHeight N  >IPARAM // number of scan lines to draw
+       localpbitmap      >IPARAM // pbitmap
+       localpbitmapinfo  >IPARAM // pbitmapinfo
+       DIB_RGB_COLORS N  >IPARAM // type of color table
+    )),
+    pSetDIBitsToDevice N  RAX  MOV,  RAX CALL,
+
+    ((
+      localhWnd >IPARAM 
+      localpMyPaintStruct >IPARAM
+    )),
+    pEndPaint N  RAX  MOV,  RAX CALL,
+
+    EXIT-CALL-SUBS-FRAME,
+    RET,
+  THEN, 
+
+  WM_LBUTTONDOWN N  uMsg  CMP,
+  ZS IF,
+    pCurrentBitmapBuffer N  RCX  MOV,
+    RCX [R]  RAX  MOV,
+    RAX  RAX  OR,
+    ZS IF,
+      RAX  DEC,
+    ELSE,
+      RAX  RAX  XOR,
+    THEN,
+    RAX  RCX [R]  MOV,
+
+    ((
+      localhWnd >IPARAM  
+      0 N       >IPARAM  // hRgn NULL = invalidate entire client area
+      0 N       >IPARAM  // bErase FALSE = don't erase background during BeginPaint
+    )),
+    pInvalidateRgn N  RAX  MOV,  RAX CALL,
+
+    ((
+      localhWnd >IPARAM 
+    )),
+    pUpdateWindow N  RAX  MOV,  RAX CALL,
+
+    EXIT-CALL-SUBS-FRAME,
+    RET,
+  THEN,
+
+  ( Default case - parameters already in correct registers )
+  4 COMPILE-ALIGN-RET-FOR-N
+  pDefWindowProcA N  RAX  MOV,  RAX CALL,
+  EXIT-CALL-SUBS-FRAME,
+  RET,
+END-CODE
+
+// can run the terminal if you push keypresses to stdin and call evaluate buffer if cr is pressed
+
+
 : initDefaultWNDCLASSEX { | pmywndclassex -- }
     [WNDCLASSEX.] size DROP       pmywndclassex [WNDCLASSEX.] cbSize         DROP + U32!
     CS_VREDRAW CS_HREDRAW OR      pmywndclassex [WNDCLASSEX.] style          DROP + U32!
-    pDefWindowProcA               pmywndclassex [WNDCLASSEX.] lpfnWndProc    DROP + !  // defaut window processing
+    ['] myMainWndProc >BODY       pmywndclassex [WNDCLASSEX.] lpfnWndProc    DROP + !
+    // ( pDefWindowProcA )        pmywndclassex [WNDCLASSEX.] lpfnWndProc    DROP + !  // defaut window processing
     0                             pmywndclassex [WNDCLASSEX.] cbClsExtra     DROP + U32!
     0                             pmywndclassex [WNDCLASSEX.] cbWndExtra     DROP + U32!
     pThisModule @                 pmywndclassex [WNDCLASSEX.] hInstance      DROP + !
@@ -315,7 +767,7 @@ DECIMAL
     0
     pThisModule @
     0 // use class menu
-    0 // pHConsoleWindow @ does not close window // 0 = no owner which was the value in the example 0 does not close window either
+    0 // pHConsoleWindow @ // does not close window // 0 = no owner which was the value in the example 0 does not close window either
     CW_USEDEFAULT
     CW_USEDEFAULT
     CW_USEDEFAULT
@@ -342,6 +794,266 @@ DECIMAL
       ERROR" UpdateWindow" NAME>E EXIT 
     THEN
 ;
+
+DECIMAL
+: CreateDefaultChildWindow ( -- hwnd )
+    0
+    pThisModule @
+    0 // use class menu
+    pHConsoleWindow @ // does not close window // 0 = no owner which was the value in the example 0 does not close window either
+    0
+    0
+    0
+    0
+    WS_CHILD WS_BORDER OR
+    0
+    pDGDefaultWClassName0$
+    0
+    12
+    pCreateWindowExA CALLPROC
+    DUP 0= IF NAME>E EXIT THEN
+    pHDefaultWindow !
+
+    SW_SHOW
+    pHDefaultWindow @
+    2
+    pShowWindow CALLPROC DROP
+
+    // pHDefaultWindow @
+    // 1
+    // pUpdateWindow CALLPROC
+    // 0= IF 
+    //  0 pGetLastError CALLPROC CRLF ." Got Error " DECIMAL U.  
+    //  ERROR" UpdateWindow" NAME>E EXIT 
+    // THEN
+;
+
+VARIABLE pMsgFlag
+
+
+VARIABLE pNumWritten
+VARIABLE pMyChar
+: charToConsole ( char -- )
+    pMyChar !
+    0 pNumWritten !
+    BEGIN
+      pNumWritten @ 0=
+    WHILE
+      0
+      pNumWritten
+      1
+      pMyChar
+      hConOut
+      5
+      pWriteConsoleA
+      CALLPROC 
+      0= IF 
+        0 pGetLastError CALLPROC
+        CRLF ." Got Error " DECIMAL U.
+        NAME>E EXIT 
+      THEN
+    REPEAT 
+;
+
+: doInputBufferBackSpace ( -- flag ) // true if backspace was done
+    myconsoleinputbufferid GETBUFFERLENGTH
+    0> IF 1 myconsoleinputbufferid SHRINKBUFFER TRUE ELSE FALSE THEN
+;
+
+HEX
+: doConsoleBackSpace
+    // write space backspace space
+    8 charToConsole ?ERRORIF NAME>E EXIT THEN
+    20 charToConsole ?ERRORIF NAME>E EXIT THEN
+    8 charToConsole ?ERRORIF NAME>E EXIT THEN 
+;
+
+// Does all the current messages in the windows message queue
+//  Returns true if WM_QUIT was received
+VARIABLE pWindowQuitFlag
+: pumpWindowsMessageQueue ( -- )  
+
+      // Pump window message queue
+      BEGIN
+
+        PM_REMOVE
+        0
+        0
+        0
+        pmsg
+        5
+        pPeekMessageA CALLPROC // 0 means no messages <>0 means messages are available
+      
+        0 <> 
+        pmsg [MSG.] message DROP + U32@ WM_QUIT <> AND // if message is WM_QUIT then exit loop
+      
+      WHILE
+
+        // CRLF ." Got message " pmsg [MSG.] message DROP + U32@ HEX U. ."  flag " pMsgFlag @ .
+ 
+        pmsg 1 pTranslateMessage CALLPROC DROP
+
+        // look for global messages...  like the quit message... which should have been caught above...
+        // pmsg [MSG.] message DROP + U32@ WM_QUIT = IF 
+        //  CRLF ." Quit message not caught by loop exit condition" EXIT 
+        // ELSE
+
+        pmsg [MSG.] message DROP + U32@ WM_DESTROY = IF
+          CRLF ." Got destroy message" 
+          0 1 pPostQuitMessage CALLPROC DROP
+      
+        ELSE
+          // dispatch message
+          pmsg 1 pDispatchMessageA CALLPROC DROP
+        THEN 
+      
+      REPEAT
+
+      pmsg [MSG.] message DROP + U32@ WM_QUIT = pWindowQuitFlag !
+;
+
+VARIABLE pNumRead  0 pNumRead !  // need to initialize NumRead since it's a 32 bit value stored in 64 bits
+VARIABLE pKeyCode  0 pKeyCode !
+: pumpConsoleQueue ( -- )  // KeyCode returned in pKeyCode  if KeyCode != 0 a key was gotten
+
+      pNumRead
+      1
+      pMyInputRecord
+      hStdIn
+      4
+      pPeekConsoleInputA CALLPROC
+      0= IF E" PeekConsoleInputA" NAME>E EXIT THEN
+      
+      0 pKeyCode !
+
+      pNumRead U32@ 0> IF
+        pMyInputRecord [INPUT_RECORD.] EventType DROP + U16@  KEY_EVENT =  IF
+          // CRLF ." got key event"
+          pMyInputRecord [INPUT_RECORD.] Event DROP + [KEY_EVENT_RECORD.] bKeyDown DROP + U32@  0 <> IF
+            // CRLF ." got key down = "
+            pMyInputRecord [INPUT_RECORD.] Event DROP + [KEY_EVENT_RECORD.] uChar DROP + U16@ pKeyCode !
+            // pKeyCode @ U.
+          THEN
+        THEN
+
+        pNumRead
+        1
+        pMyInputRecord
+        hStdIn
+        4
+        pReadConsoleInputA CALLPROC
+        0= IF E" ReadConsoleInputA" NAME>E EXIT THEN
+
+      THEN
+
+      // pKeyCode @ 0 <> IF CRLF ." got key " pKeyCode @ U. THEN
+;
+
+HEX
+: getLineFromConsole ( -- )
+
+    0 pWindowQuitFlag !
+    0 pKeyCode !
+ 
+    BEGIN
+
+      pumpWindowsMessageQueue
+
+      pumpConsoleQueue
+
+      // Sleep if console queue was empty
+      pKeyCode @ 0= IF
+        10 1 pSleep CALLPROC DROP
+      THEN
+
+      // change keycode to printable characters
+      pKeyCode @ 7F = IF
+        8 pKeyCode !
+      THEN
+
+      pKeyCode @ 20 < IF
+
+        pKeyCode @ 0D = IF
+          0A pKeyCode !
+        THEN
+
+        pKeyCode @ 8 = IF 
+          doInputBufferBackSpace 
+          ?ERRORIF NAME>E EXIT THEN
+          IF
+            doConsoleBackSpace
+            ?ERRORIF NAME>E EXIT THEN
+          THEN
+        THEN
+
+        pKeyCode @ 0A <> IF
+          0 pKeyCode !
+        THEN
+
+      THEN
+
+      pKeyCode @ 80 > IF
+        0 pKeyCode !
+      THEN
+
+      // at this point, character is either 0 for none, 0A for exit loop, or a printable character
+      pKeyCode @ 0 <> IF
+        pKeyCode @ DUP charToConsole
+        myconsoleinputbufferid C>BUF
+      THEN
+
+      pKeyCode @ 0A =
+      pWindowQuitFlag @ 0 <> OR
+
+    UNTIL
+;
+
+HEX
+: WinConsoleLoop ( -- )
+    BEGIN
+      myconsoleinputbufferid EMPTYBUFFER
+      // send windows prompt WIN-OK>
+      ?ERRORIF CRLF ." Errors on error stack. Use .ES to see. Use EES to clear. Use .EL to see line that caused error" THEN
+      CRLF ." WIN-OK> "
+      // get console line
+      getLineFromConsole
+      // evaluate win console buffer
+      myconsoleinputbufferid EVALUATEBUFFER
+      pWindowQuitFlag @ 0 <>
+      PBYEFLAG @ 0 <> OR
+    UNTIL
+;
+
+: myGetDC ( hWnd -- hDC )
+    1 pGetDC CALLPROC
+;
+
+VARIABLE pTestCreatedBitmap
+: myCreateBitMap { | hDC -- hBitMap }    
+    0
+    0
+    pTestCreatedBitmap
+    DIB_RGB_COLORS
+    pMyBitMapInfo
+    hDC
+    6
+    pCreateDIBSection CALLPROC 
+    DUP 0= IF
+      0 pGetLastError CALLPROC CRLF ." Got Error " DECIMAL U. 
+    THEN
+;
+
+DECIMAL
+: myCreateBitmap2 ( -- hBitmap )
+    pMyBitMapArray0
+    24
+    1
+    40
+    40
+    5
+    pCreateBitmap CALLPROC
+;
+
 
 : doit 
     GetHConsoleWindow pHConsoleWindow !        
@@ -392,7 +1104,7 @@ DECIMAL
 
     CRLF ." pdefaultwndclassex = " pdefaultwndclassex HEX U.
 
-    CRLF pdefaultwndclassex [WNDCLASSEX.] size DROP DUMP CRLF
+    // CRLF pdefaultwndclassex [WNDCLASSEX.] size DROP DUMP CRLF
     // pdefaultwndclassex RegisterWNDCLASSEX pDefaultWndClassAtom ! 
     // 1 1 pSleep CALLPROC DROP
     CRLF ." about to register class "
@@ -404,13 +1116,48 @@ DECIMAL
     THEN
     CRLF ." DefaultWndClassAtom = " pDefaultWndClassAtom @ HEX U.
 
+    // CreateDefaultChildWindow ?ERRORIF NAME>E EXIT THEN 
     CreateDefaultWindow ?ERRORIF NAME>E EXIT THEN 
-    CRLF ." Default Window Handle = " pHDefaultWindow @ HEX U.   
+    CRLF ." Default Window Handle = " pHDefaultWindow @ HEX U. 
+  
+    // pMyBitMapInfo showBitMapInfoHeader
+    
+    WinConsoleLoop
 ;
 
 doit
 
+
 TRUE ?END-EVALUATE
 
-// DiaperGlu closes library automatically when DiaperGlu exits.
+
+// DiaperGlu closes libraries automatically when DiaperGlu exits.
+
+// using child windows
+// https://docs.microsoft.com/en-us/windows/win32/winmsg/using-windows
+
+// win64 game programming
+// https://docs.microsoft.com/en-us/windows/win32/dxtecharts/sixty-four-bit-programming-for-game-developers
+
+// creating a window (bare minimum)
+// https://docs.microsoft.com/en-us/windows/win32/learnwin32/creating-a-window
+
+// passing messages to another (parent?) window
+// https://docs.microsoft.com/en-us/windows/win32/controls/subclassing-overview
+
+// windows messaging
+// https://docs.microsoft.com/en-us/windows/win32/learnwin32/window-messages
+
+// messaging in console applications
+// https://docs.microsoft.com/en-us/archive/msdn-magazine/2007/june/net-matters-handling-messages-in-console-apps
+
+// Why terminating messages are ignored in some console applications
+// https://docs.microsoft.com/en-us/windows/console/setconsolectrlhandler
+// https://docs.microsoft.com/en-us/windows/console/registering-a-control-handler-function
+
+// other
+// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-translatemessage
+// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getmessagea
+// https://docs.microsoft.com/en-us/windows/win32/learnwin32/closing-the-window
+
 

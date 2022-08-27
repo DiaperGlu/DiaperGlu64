@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.6.
+//    This file is part of DiaperGlu v5.7.
 //
-//    DiaperGlu v5.6 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.7 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.6 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.7 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.6; if not, write to the Free Software
+//    along with DiaperGlu v5.7; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// August 1, 2022             //
-// version 5.6                //
+// August 26, 2022            //
+// version 5.7                //
 // /////////////////////////////
 
 
@@ -5839,9 +5839,9 @@ void dg_getonemorestdinline(Bufferhandle* pBHarrayhead)
 
 
 // this blocking waits for one line from the terminal
-const char* dg_getlinename = "dg_getline";
+const char* dg_getanotherlinename = "dg_getanotherline";
 
-UINT64 dg_getline(
+UINT64 dg_getanotherline(
     Bufferhandle* pBHarrayhead,
     UINT64 fileid,
     UINT64 bufferid, 
@@ -5878,7 +5878,7 @@ UINT64 dg_getline(
         {
             dg_pusherror(pBHarrayhead, perror);
             dg_pusherror(pBHarrayhead, dg_readfilename);
-            dg_pusherror(pBHarrayhead, dg_getlinename);
+            dg_pusherror(pBHarrayhead, dg_getanotherlinename);
             return (FORTH_TRUE);
         }
 
@@ -5910,7 +5910,7 @@ UINT64 dg_getline(
 
             if (pBHarrayhead->errorcount != olderrorcount)
             {
-                dg_pusherror(pBHarrayhead, dg_getlinename);
+                dg_pusherror(pBHarrayhead, dg_getanotherlinename);
                 return (FORTH_FALSE);
             }
 
@@ -5932,7 +5932,7 @@ UINT64 dg_getline(
 
                     if (pBHarrayhead->errorcount != olderrorcount)
                     {
-                        dg_pusherror(pBHarrayhead, dg_getlinename);
+                        dg_pusherror(pBHarrayhead, dg_getanotherlinename);
                         return (FORTH_FALSE);
                     }
                 }
@@ -5943,7 +5943,7 @@ UINT64 dg_getline(
 
                 if (pBHarrayhead->errorcount != olderrorcount)
                 {
-                    dg_pusherror(pBHarrayhead, dg_getlinename);
+                    dg_pusherror(pBHarrayhead, dg_getanotherlinename);
                     return (FORTH_FALSE);
                 }
 
@@ -5955,7 +5955,7 @@ UINT64 dg_getline(
                     // this should never happen
                     if (pBHarrayhead->errorcount != olderrorcount)
                     {
-                        dg_pusherror(pBHarrayhead, dg_getlinename);
+                        dg_pusherror(pBHarrayhead, dg_getanotherlinename);
                         return (FORTH_FALSE);
                     }
                 }
@@ -5964,6 +5964,34 @@ UINT64 dg_getline(
     }
 
     return (FORTH_FALSE);
+}
+
+
+// this clears the current input buffer then 
+//  blocking waits for one line from the terminal
+const char* dg_getlinename = "dg_getline";
+
+UINT64 dg_getline(
+    Bufferhandle* pBHarrayhead,
+    UINT64 fileid,
+    UINT64 bufferid, 
+    const char* pforceerror)
+{  
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    dg_clearbuffer(pBHarrayhead, bufferid);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_getlinename);
+        return (FORTH_TRUE);
+    }
+
+    return(dg_getanotherline(
+        pBHarrayhead,
+        fileid,
+        bufferid, 
+        pforceerror));
 }
 
 
@@ -7808,4 +7836,58 @@ UINT64 dg_noparselineatoffset(
     
     return (linenumber);
 }
+
+
+const char dg_ubufferalignname[] = "dg_ubufferalign";
+
+UINT64 dg_ubufferalign(
+    Bufferhandle* pBHarrayhead,
+    UINT64 bufferid,
+    UINT64 u) 
+{
+    UINT64 bufferlength, x;
+    const char* pError;
+  
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return(largestunsignedint);
+    }
+
+    bufferlength = dg_getbufferlength(
+        pBHarrayhead,
+        bufferid);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_ubufferalignname);
+        return(largestunsignedint);
+    }
+
+    x = bufferlength % u;
+
+    if (x > 0)
+    {
+        dg_growbuffer (
+            pBHarrayhead,
+            bufferid,
+            u - x,
+            &pError,
+            FORTH_FALSE);
+
+        if (pError != dg_success)
+        {
+            dg_pusherror(pBHarrayhead, pError);
+            dg_pusherror(pBHarrayhead, dg_growbuffername);
+            dg_pusherror(pBHarrayhead, dg_ubufferalignname);
+            return(largestunsignedint);
+        }
+
+        return(bufferlength + (u-x));
+    }
+
+    return(bufferlength);
+}
+
 

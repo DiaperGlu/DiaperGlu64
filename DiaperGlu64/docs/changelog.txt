@@ -1,4 +1,18 @@
 Changelog for Diaperglu
+   26 August 2022
+     Released v5.7
+
+   25 August 2022
+     Added UBUFALIGN
+     Added dg_ubufferalign
+     Added win64 samplewindow.dglu example
+
+   18 August 2022
+     Fixed name of functions in documentation for >CURRENT and CURRENT>. They were incorrectly
+      labeled >SET-CURRENT and GET-CURRENT>
+     Fixed EVALUATEBUFFER to take the bufferid off the data stack before evaluating the buffer
+      so that you can pass values on the data stack to and from the script being evaluated
+
    01 August 2022
      Released v5.6
 

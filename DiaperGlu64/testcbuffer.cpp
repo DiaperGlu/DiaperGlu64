@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.6.
+//    This file is part of DiaperGlu v5.7.
 //
-//    DiaperGlu v5.6 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.7 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.6 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.7 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.6; if not, write to the Free Software
+//    along with DiaperGlu v5.7; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// August 1, 2022             //
-// version 5.6                //
+// August 26, 2022            //
+// version 5.7                //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -13100,6 +13100,342 @@ void testdg_popdatastacktou128bracketob()
     if (x != 0x7823918)
     {
         dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_popdatastacktou128bracketob success case - expected 0x7823918, got ");
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+     
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_ubufferalign()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 x, i;
+    const char* pError;
+    
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_ubufferalign\n");
+    
+    // success case 0 align 4
+    dg_initbuffers(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 0 align 4 - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    i = dg_newbuffer(&BHarrayhead, 0x1000, 0x1000, &pError, FORTH_FALSE);
+   
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 0 align 4  - got an error trying to make a new buffer, got:\n ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    x = dg_ubufferalign(
+        &BHarrayhead,
+        i,
+        4);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 0 align 4 - got an error trying to grow buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+        
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 0 align 4 - expected 0, got ");
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    // success case 1 align 4
+    dg_initbuffers(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 1 align 4 - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    i = dg_newbuffer(&BHarrayhead, 0x1000, 0x1000, &pError, FORTH_FALSE);
+   
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 1 align 4  - got an error trying to make a new buffer, got:\n ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    dg_growbuffer(&BHarrayhead, i, 1, &pError, FORTH_FALSE);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 1 align 4  - got an error trying to grow buffer, got:\n ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+
+    x = dg_ubufferalign(
+        &BHarrayhead,
+        i,
+        4);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 1 align 4 - got an error trying to grow buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+        
+    if (x != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 1 align 4 - expected 4, got ");
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+     
+    dg_freeallbuffers(&BHarrayhead);
+
+    // success case 2 align 4
+    dg_initbuffers(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 2 align 4 - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    i = dg_newbuffer(&BHarrayhead, 0x1000, 0x1000, &pError, FORTH_FALSE);
+   
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 2 align 4  - got an error trying to make a new buffer, got:\n ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    dg_growbuffer(&BHarrayhead, i, 2, &pError, FORTH_FALSE);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 2 align 4  - got an error trying to grow buffer, got:\n ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+
+    x = dg_ubufferalign(
+        &BHarrayhead,
+        i,
+        4);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 2 align 4 - got an error trying to grow buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+        
+    if (x != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 2 align 4 - expected 4, got ");
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+     
+    dg_freeallbuffers(&BHarrayhead);
+
+    // success case 3 align 4
+    dg_initbuffers(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 3 align 4 - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    i = dg_newbuffer(&BHarrayhead, 0x1000, 0x1000, &pError, FORTH_FALSE);
+   
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 3 align 4  - got an error trying to make a new buffer, got:\n ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    dg_growbuffer(&BHarrayhead, i, 3, &pError, FORTH_FALSE);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 3 align 4  - got an error trying to grow buffer, got:\n ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+
+    x = dg_ubufferalign(
+        &BHarrayhead,
+        i,
+        4);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 3 align 4 - got an error trying to grow buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+        
+    if (x != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 3 align 4 - expected 4, got ");
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+     
+    dg_freeallbuffers(&BHarrayhead);
+
+    // success case 4 align 4
+    dg_initbuffers(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 4 align 4 - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    i = dg_newbuffer(&BHarrayhead, 0x1000, 0x1000, &pError, FORTH_FALSE);
+   
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 4 align 4  - got an error trying to make a new buffer, got:\n ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    dg_growbuffer(&BHarrayhead, i, 4, &pError, FORTH_FALSE);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 4 align 4  - got an error trying to grow buffer, got:\n ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+
+    x = dg_ubufferalign(
+        &BHarrayhead,
+        i,
+        4);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 4 align 4 - got an error trying to grow buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+        
+    if (x != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 4 align 4 - expected 4, got ");
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+     
+    dg_freeallbuffers(&BHarrayhead);
+
+    // success case 5 align 4
+    dg_initbuffers(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 5 align 4 - got an error trying to push test string to buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    i = dg_newbuffer(&BHarrayhead, 0x1000, 0x1000, &pError, FORTH_FALSE);
+   
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 5 align 4  - got an error trying to make a new buffer, got:\n ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    dg_growbuffer(&BHarrayhead, i, 5, &pError, FORTH_FALSE);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 5 align 4  - got an error trying to grow buffer, got:\n ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+
+    x = dg_ubufferalign(
+        &BHarrayhead,
+        i,
+        4);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 5 align 4 - got an error trying to grow buffer, got:\n ");
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+        
+    if (x != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubufferalign success case 5 align 4 - expected 8, got ");
         dg_writestdoutuint64tohex(
             &BHarrayhead,
             x);

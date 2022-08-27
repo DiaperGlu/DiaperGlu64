@@ -2,20 +2,20 @@
 //
 //    Copyright 2022 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.6.
+//    This file is part of DiaperGlu v5.7.
 //
-//    DiaperGlu v5.6 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.7 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.6 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.7 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.6; if not, write to the Free Software
+//    along with DiaperGlu v5.7; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// August 1, 2022             //
-// version 5.6                //
+// August 26, 2022            //
+// version 5.7                //
 // /////////////////////////////
 
 // #include "../stdafx.h"
@@ -1894,6 +1894,216 @@ const char* dg_readisapi(
 }
 
 
+INT64 dg_getch() 
+{
+
+    int fgotcharacter = 0;
+
+    MSG mymsg;
+
+    INPUT_RECORD myinputrecord;
+    
+    int c = 0;
+
+    unsigned long mynumread = 0;
+
+    HANDLE myhstdin = NULL;
+
+    myhstdin = GetStdHandle(STD_INPUT_HANDLE);
+
+    while (fgotcharacter == 0)
+    {
+        // Clear app message que
+        while(PeekMessage(&mymsg, NULL, 0, 0, PM_REMOVE) != 0)
+        {
+            TranslateMessage(&mymsg);
+
+            DispatchMessage(&mymsg);
+        }
+
+        // Check console message que
+        PeekConsoleInput(myhstdin, &myinputrecord, 1, &mynumread);
+
+        // check for error
+
+        if (mynumread != 0)
+        {
+            // if its a key message, extract key and exit loop
+            if (myinputrecord.EventType == KEY_EVENT)
+            {
+                if (myinputrecord.Event.KeyEvent.bKeyDown != 0)
+                {
+                    c = (int)myinputrecord.Event.KeyEvent.uChar.AsciiChar;
+
+                    if (c != 0)
+                    {
+                        fgotcharacter = -1;
+                        Sleep(0);
+                    }                
+                }
+            }
+            
+            // remove message from the console message que
+            ReadConsoleInput(myhstdin, &myinputrecord, 1, &mynumread);      
+        }
+        else
+        {
+            Sleep(10);
+            // WaitMessage();
+        }
+    }
+
+    return((INT64)c);
+}
+
+/*
+unsigned char dg_limitchartosimpleedit (unsigned char c)
+{
+    if ((8 == c) || (0x7f == c) ) 
+    { 
+        return (8);  // keep backspace delete ( and eventually escape ) 
+    } 
+
+    if (dg_islineterminator (c) != FORTH_FALSE) 
+    { 
+        return(0x0a); 
+    }
+   
+    if (dg_isdelimiter(c) != FORTH_FALSE) 
+    { 
+        return(0x20);  // changing tab and others to space 
+    } 
+
+    if ((c < 0x20) || (c > 0x7f)) 
+    { 
+        return(0); // accepting only text
+    }
+
+    return(c);
+}
+
+UINT64 dg_getlinefromconsolewithecho(
+    unsigned char* pbuf,
+    UINT64 maxlength) 
+{
+
+    INT32 fgotcharacter = 0;
+
+    MSG mymsg;
+
+    INPUT_RECORD myinputrecord;
+    
+    unsigned char c = 0;
+
+    DWORD mynumread = 0;
+    DWORD mynumwritten = 0;
+
+    HANDLE myhstdin = NULL;
+
+    HANDLE myhstdout = NULL;
+
+    UINT64 bufpos = 0;
+
+    if (0 == maxlength)
+    {
+        return(0);
+    }
+
+    myhstdin = GetStdHandle(STD_INPUT_HANDLE);
+
+    myhstdout = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    while (c != 0x0a)
+    {
+        fgotcharacter = 0;
+
+        while (fgotcharacter == 0)
+        {
+            // Clear app message que
+            while(PeekMessage(&mymsg, NULL, 0, 0, PM_REMOVE) != 0)
+            {
+                TranslateMessage(&mymsg);
+
+                DispatchMessage(&mymsg);
+            }
+
+            // Check console message que
+            PeekConsoleInput(myhstdin, &myinputrecord, 1, &mynumread);
+
+            // check for error
+
+            if (mynumread != 0)
+            {
+                // if its a key message, extract key and exit loop
+                if (myinputrecord.EventType == KEY_EVENT)
+                {
+                    if (myinputrecord.Event.KeyEvent.bKeyDown != 0)
+                    {
+                        c = myinputrecord.Event.KeyEvent.uChar.AsciiChar;
+
+                        c = dg_limitchartosimpleedit(c);
+
+                        if (c != 0)
+                        {
+                            fgotcharacter = -1;
+
+                            Sleep(0);
+                        }                  
+                    }
+                }
+            
+                // remove message from the console message que
+                ReadConsoleInput(myhstdin, &myinputrecord, 1, &mynumread);      
+            }
+            else
+            {
+                Sleep(10);
+                // WaitMessage();
+            }
+        }
+
+        if (8 == c) // got backspace
+        {
+            if (bufpos > 0)
+            {
+                bufpos--
+                pbuf[bufpos] = 0;
+
+                // need to write backspace space backspace
+            }
+        }
+        else 
+        {
+             if (bufpos < maxlength)
+             {
+                 pbuf[bufpos] = c;
+                 bufpos++;
+             }
+
+             // need to write character
+        }
+
+    }
+
+    return(bufpos);
+}
+*/
+
+// option1: ptr to buf and max length
+//   routine puts characters into buf until cr is found
+//   if user tries to backspace off start, just stop at the start
+//   if user tries to enter characters past the end... ignore or change last character
+
+// option2: use a bufferid
+//   routine pushes or pops characters to/from buffer... can get errors..
+
+// option1 is better I think... since it's just getting characters from a user
+
+
+// https://docs.microsoft.com/en-us/windows/console/console-handles
+// https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea
+
+// if reading from the console... use a message pump...
 
 const char* dg_readfilename =   "dg_readfile";
 
@@ -1909,6 +2119,9 @@ const char* dg_readfile(
     int flag = 0;
     DWORD oserror;
     const char* result = dg_success;
+    const char* filetype;
+    INT64 c;
+    const char* perror;
 
     if (forceerrorflag != dg_success)
     {
@@ -1927,7 +2140,34 @@ const char* dg_readfile(
     {
         return(dg_filelengthtoobigerror);
     }
+/*
+    perror = dg_getfiletype(
+        pBHarrayhead,
+        fileid,
+        &filetype,
+        dg_success);
 
+    // if filetype = console, length = 1 then do dg_getch to use windows message pump
+    if ((dg_filetypeconsole == filetype) && (1 == length)) 
+    {
+        c = dg_getkeywithsimpleecho();
+
+        perror = dg_putuint64(
+            pnumread,
+            1);
+
+        if (perror != dg_success)
+        {
+            return(perror);
+        }
+
+        perror = dg_putbyte(
+            pbuf,
+            (unsigned char)c);
+
+        return(perror);
+    }
+*/
     __try
     {
         flag = ::ReadFile(
@@ -1936,17 +2176,6 @@ const char* dg_readfile(
            length, 
            (LPDWORD)pnumread, 
            NULL);
-            
-        // 64bit code IS getting called somehow and diaperglu compiled code confuses alignment. This
-            //   realigns the stack for 64bit code.
-        // flag = dg_callprocaddressalign16(
-        //    (UINT32*)&ReadFile, 
-        //    5, 
-        //    fileid, 
-        //    pbuf, 
-        //    length, 
-        //    pnumread, 
-        //    NULL);
     }
     __except(EXCEPTION_EXECUTE_HANDLER)
     {
@@ -3006,129 +3235,6 @@ const char* dg_getfilelength(
 
     return (dg_success);
 }
-
-
-
-INT64 dg_getch() 
-{
-
-    int fgotcharacter = 0;
-
-    MSG mymsg;
-
-    INPUT_RECORD myinputrecord;
-    
-    int c = 0;
-
-
-    unsigned long mynumread = 0;
-    
-
-    
-    HANDLE myhstdin = NULL;
-
-    myhstdin = GetStdHandle(STD_INPUT_HANDLE);
-
-    // 64bit code IS getting called somehow and diaperglu compiled code confuses alignment. This
-    //   realigns the stack for 64bit code.
-    // myhstdin = (HANDLE)dg_callprocaddressalign16(
-    //    (UINT32*)&GetStdHandle, 
-    //    1, 
-    //    STD_INPUT_HANDLE);
-
-    while (fgotcharacter == 0)
-    {
-        // Clear app message que
-        while(PeekMessage(&mymsg, NULL, 0, 0, PM_REMOVE) != 0)
-        // while(
-        //    dg_callprocaddressalign16(
-        //        (UINT32*)&PeekMessage, 
-        //        5, 
-        //        &mymsg, 
-        //        NULL, 
-        //        0, 
-        //        0, 
-        //        PM_REMOVE) != 0)
-        {
-            TranslateMessage(&mymsg);
-
-            // 64bit code IS getting called somehow and diaperglu compiled code confuses alignment. This
-            //   realigns the stack for 64bit code.
-            // dg_callprocaddressalign16(
-            //    (UINT32*)&TranslateMessage, 
-            //    1, 
-            //    &mymsg);
-
-            DispatchMessage(&mymsg);
-
-            // 64bit code IS getting called somehow and diaperglu compiled code confuses alignment. This
-            //   realigns the stack for 64bit code.
-            // dg_callprocaddressalign16(
-            //    (UINT32*)&DispatchMessage, 
-            //    1, 
-            //    &mymsg);
-        }
-
-        // Check console message que
-        PeekConsoleInput(myhstdin, &myinputrecord, 1, &mynumread);
-
-        // 64bit code IS getting called somehow and diaperglu compiled code confuses alignment. This
-        //   realigns the stack for 64bit code.
-        // dg_callprocaddressalign16(
-        //    (UINT32*)&PeekConsoleInput, 
-        //    4, 
-        //    myhstdin, 
-        //    &myinputrecord, 
-        //    1, 
-        //    &mynumread);
-
-        // check for error
-
-        if (mynumread != 0)
-        {
-            // if its a key message, extract key and exit loop
-            if (myinputrecord.EventType == KEY_EVENT)
-            {
-                if (myinputrecord.Event.KeyEvent.bKeyDown != 0)
-                {
-                    c = (int)myinputrecord.Event.KeyEvent.uChar.AsciiChar;
-
-                    if (c != 0)
-                    {
-                        fgotcharacter = -1;
-                        Sleep(0);
-                    }                
-                }
-            }
-            
-            // remove message from the console message que
-            ReadConsoleInput(myhstdin, &myinputrecord, 1, &mynumread);
-
-            // 64bit code IS getting called somehow and diaperglu compiled code confuses alignment. This
-            //   realigns the stack for 64bit code.
-            // dg_callprocaddressalign16(
-            //    (UINT32*)&ReadConsoleInput, 
-            //    4, 
-            //    myhstdin, 
-            //    &myinputrecord, 
-            //    1, 
-            //    &mynumread);
-
-            
-        }
-        else
-        {
-            Sleep(10);
-            // dg_callprocaddressalign16(
-            //    (UINT32*)&Sleep, 
-            //    1, 
-            //    10);
-        }
-    }
-
-    return((INT64)c);
-}
-
 
 
 const char* dg_freelibraryname = "dg_freelibrary";
