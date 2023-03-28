@@ -1,22 +1,22 @@
 <!--
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2022 James Patrick Norris
+//    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.7.
+//    This file is part of DiaperGlu v5.8.
 //
-//    DiaperGlu v5.7 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.8 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.7 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.8 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.7; if not, write to the Free Software
+//    along with DiaperGlu v5.8; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// August 26, 2022            //
-// version 5.7                //
+// March 27, 2023             //
+// version 5.8                //
 // /////////////////////////////
 -->
 
@@ -82,7 +82,7 @@
       <div class=pagestuffsection id=runningfromconsole>
         <h3>Running DiaperGlu From the Console</h3>
         <p>If needed, change to the directory containing the compiled diaperglu executable. Initially this is the directory where you did 
-          <span class=command>sudo make</span> or <span class=command>sudo make</span>.
+          <span class=command>nmake</span> or <span class=command>sudo make</span>.
         <p>On Mac OS X do <span class=command>./diaperglu</span></p>
         <p>On Windows do <span class=command>diaperglu</span></p>
         <p>If there are no arguments on the command line, DiaperGlu will drop into the standard interactive command prompt mode.
@@ -224,8 +224,8 @@ you can use the $&quot; command to put it on the string stack. Try this. You nee
         <p class=command>EMPTY-ERRORS</p>
         <p>If you don't want to type the long commands, I have included shorter versions based on the Forth style:
         <ul>
-          <li><span class=command>O@</span> is short for <span class=command>GETBUFFERUINT32</span></li>
-          <li><span class=command>O!</span> is short for <span class=command>PUTBUFFERUINT32</span></li>
+          <li><span class=command>O@</span> is short for <span class=command>GETBUFFERUINT64</span></li>
+          <li><span class=command>O!</span> is short for <span class=command>PUTBUFFERUINT64</span></li>
           <li><span class=command>OC@</span> is short for <span class=command>GETBUFFERBYTE</span></li>
           <li><span class=command>OC!</span> is short for <span class=command>PUTBUFFERBYTE</span></li>
         </ul>
@@ -246,12 +246,12 @@ you can use the $&quot; command to put it on the string stack. Try this. You nee
         <p class=command>HEX 1000 FFFFFFFF NEWBUFFER</p>
         <h3>Notes on Buffers</h3>
         <p>At this time there is no way to make a buffer release unused memory back to the operating system other than freeing it with <span class=command>FREEBUFFER</span>. Also, when a buffer gets more memory from the operating system to grow, it will likely be relocated to a different address in memory. This makes any pointers you have into the buffer invalid. In other words, if you get a pointer into the buffer, use it immediately. If you use <span class=command>GROWBUFFER</span> or any of the words that push to the buffer, you should assume the pointer is no longer valid.</p>
-        <h3>Using a buffer as a UINT32 stack</h3>
+        <h3>Using a buffer as a UINT64 stack</h3>
         <p>Try this:</p>
         <p class=command>1000 10000 NEWBUFFER CONSTANT mybuf</p>
         <p>Then this:</p>
         <p class=command>12345 mybuf &gt;BUF 6789 &gt;BUF</p>
-        <p>Now the two numbers have been pushed onto the end of the buffer as UINT32s, taking up 4 bytes each. Now check out how long the buffer is in bytes:</p>
+        <p>Now the two numbers have been pushed onto the end of the buffer as UINT64s, taking up 8 bytes each. Now check out how long the buffer is in bytes:</p>
         <p class=command>mybuf LENGTHBUF U.</p>
         <p>DiaperGlu should report 8. Ok, lets pop the first one off:</p>
         <p class=command>mybuf BUF&gt; U.</p>
@@ -265,7 +265,7 @@ you can use the $&quot; command to put it on the string stack. Try this. You nee
         into how the C malloc functions works, and if you allocate things of a size equal to or larger than one page (4k), it will also allocate a page using
         a page handle. In short, it's probably a good idea to keep the number of buffers you allocate in your program to a minimum. If you need memory for a lot
         of small things, you could probably use an lstring array. If you are going to be freeing them a lot, then a freeable lstring array might work. Some day
-        I'll add something to make using freeable lstrings more efficient. (J.N. 4/13/2020)</p>
+        I'll add something to make using freeable lstrings more efficient. (J.N. 4/13/2020). It's possible there are enough page handles to cover the memory in the computer at 4k per handle... If so, you might not need to worry about page handles.... I'll need to do more research. (J.N. 3/22/2023)</p>
       </div>
       
       <div class=pagestuffsection id=usingerrorstack>
@@ -758,8 +758,8 @@ stack. &gt;R goes to the rstack.</p>
 commands, the Forth standard requires it. You dont have to use
 caps for the commands you define if you don't want to.</p>
 
-<p>@ is short for get qword. ! is short for
-put qword. C@ is short for get byte. C! is short for put byte.
+<p>@ is short for get UINT64. ! is short for
+put UINT64. C@ is short for get byte. C! is short for put byte.
 &gt;something is usually short for push to something or convert
 to something. Something&gt; is usually short for pop from
 something. O is short for offset bufferid. I'm thinking about
@@ -778,6 +778,28 @@ execute mode but don't seem to like PARSE and PARSE-WORD.</p>
 <p>If you want to look like a really cool
 Forth programmer, put on a pair of dark shades and refer to the
 commands as &quot;words&quot; :-)</p>
+
+<p>Just a note about modifying DiaperGlu. I just found out (v5.8) 
+nmake may have trouble if the line endings of the source files are not 
+consistent or not standard, like if you end them with lf maybe? I
+had an issue where it wasn't reading one of the files correctly 
+until I pulled it into Visual Studio and made all the line endings
+the standard Windows line endings. Mac's TextEdit was also having
+trouble with the same file. So I do edit the source files using
+tools on both platforms and the line endings are not consistent
+in most of the files at this time. If you are seeing weird issues
+with nmake or TextEdit where it's crashing or reporting errors with
+line numbers that don't make any sense, it may be this issue.</p>
+
+<p>Another v5.8 issue: I just found out about Mac's new Gatekeeper
+security program. It won't allow things to run on a computer unless
+it came from the App store, it was 'notarized' by Apple, or unless
+you built it from source on your computer. I can't afford the App
+store or notarization at this time. Windows may also have
+similar issues. For these reasons I am no longer distribruting
+executables in the release and you will have to build DiaperGlu from
+source.</p>
+ 
       </div>
       
     </div>

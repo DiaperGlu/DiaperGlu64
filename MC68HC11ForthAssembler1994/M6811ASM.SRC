@@ -1,0 +1,198 @@
+
+( ----------------------------------------------------------- )
+( ---==<<   Motorola 68HC11 Assembler for Max-Forth   >>==--- )
+( ----------------------------------------------------------- )
+
+( Copyright <c> 1992, Brian Mathewson.  All rights reserved.  )
+
+( This is a Forth-based assembler for the Motorola MC68HC11   )
+( family of microprocessors.  It was designed to run on a     )
+( version of Forth running on a 68HC11 microprocessor, namely )
+( Max-Forth from New Micros, Inc.  It allows you to easily    )
+( create code words which can be called either from other code)
+( words, by colon definitions, or as interrupt routines.      )
+
+( This assembler was designed and written by James Norris     )
+( and Brian Mathewson.                                        )
+
+( Comments and suggestions are welcome.  Please also report   )
+( any problems or errors in this program.  Let us know if you )
+( have found this code valuable and how you are using it.     )
+
+(   Brian Mathewson               James P. Norris             )
+(   21576 Kenwood Avenue          1909 Lakeview Avenue        )
+(   Rocky River, OH 44116-1232    Rocky River, OH 44116       )
+
+( Internet                                                    )
+(    bbm@cleveland.freenet.edu    bo511@cleveland.freenet.edu )
+
+
+(            68HC11 Assembler License Agreement               )
+
+( This program or any portion thereof may not be sold or      )
+( incorporated into a product in any form without the written )
+( consent of the authors.  However it may be freely           )
+( distributed in its complete, un-altered form.               )
+
+( There is no charge for using this program for private, non- )
+( commercial use.  If any portion of this code is used or     )
+( adapted to be used in a commercial, military, or otherwise  )
+( for-profit environment, a fee of $15 (US) is required, to:  )
+(   Brian Mathewson, 21576 Kenwood Ave, Rocky River, OH 44116 )
+( While an effort has been made to make this program error-   )
+( free, this program is presented without guarantees of any   )
+( kind.  No responsibility will be taken for any losses or    )
+( damages due to use of this program.                         )
+
+( 68HC11 Assembler Version 1.0 )          HEX   ( 11/23/92 BBM)
+ASSEMBLER DEFINITIONS
+-1 CONSTANT #    -2 CONSTANT ,X   -3 CONSTANT ,Y
+: ?1AOR18  DUP 200 AND IF DUP 100 AND IF  1A ELSE 18 THEN C,
+           THEN ;   : ?1A,  DUP 200 AND IF 1A C, THEN ;
+: ?CDOR18  DUP 100 AND IF  CD  ELSE  18  THEN C, ;
+: CPLIMM   DUP 80 < ABORT" Immediate mode unavailable"
+           ?1AOR18  DUP 30 - C, 400 AND IF , ELSE C, THEN ;
+: CPLEXT   OVER FF00 AND  OVER 80 < ( direct NA? )  OR
+           IF  C, ,  ELSE  20 - C, C,  THEN ;
+: CPL,X    ?1A,  10 - C, C, ;   : CPL,Y  ?CDOR18  10 - C, C, ;
+: =COND    OVER = IF  DROP -1  ELSE  0  THEN ;
+: IND      <BUILDS  , DOES> @  SWAP  ,X =COND IF  CPL,X   ELSE
+           ,Y =COND IF  CPL,Y  ELSE   # =COND IF  CPLIMM  ELSE
+           SWAP ?1AOR18 CPLEXT  THEN THEN THEN ;
+: INH  <BUILDS  C, DOES> C@ C, ;   : IN2  <BUILDS , DOES> @ , ;
+
+( 68HC11 Opcodes - Part 1 )               HEX   ( 11/23/92 BBM)
+  1B INH ABA     3A INH ABX    183A IN2 ABY     B9 IND ADCA
+  F9 IND ADCB    BB IND ADDA     FB IND ADDB   4F3 IND ADDD
+  B4 IND ANDA    F4 IND ANDB     78 IND ASL     48 INH ASLA
+  58 INH ASLB    05 INH ASLD     77 IND ASR     47 INH ASRA
+  57 INH ASRB         ( BCLR and BSET optional, defined later.)
+
+  B5 IND BITA    F5 IND BITB   ( BRCLR, BRSET, BSR come later.)
+  11 INH CBA     0C INH CLC      0E INH CLI
+  7F IND CLR     4F INH CLRA     5F INH CLRB    0A INH CLV
+  B1 IND CMPA    F1 IND CMPB     73 IND COM
+  43 INH COMA    53 INH COMB
+ 7B3 IND CPD    5BC IND CPX     6BC IND CPY
+
+  19 INH DAA     7A IND DEC      4A INH DECA    5A INH DECB
+  34 INH DES     09 INH DEX    1809 IN2 DEY
+
+( 68HC11 Opcodes - Part 2 )               HEX   ( 11/23/92 BBM)
+  B8 IND EORA    F8 IND EORB     03 INH FDIV    02 INH IDIV
+  7C IND INC     4C INH INCA     5C INH INCB
+  31 INH INS     08 INH INX    1808 IN2 INY
+  7E IND JMP     BD IND JSR
+
+  B6 IND LDA     F6 IND LDB     4FC IND LDD     BE IND LDS
+ 5FE IND LDX    6FE IND LDY
+
+  78 IND LSL     48 INH LSLA     58 INH LSLB    05 INH LSLD
+  74 IND LSR     44 INH LSRA     54 INH LSRB    04 INH LSRD
+  3D INH MUL     70 IND NEG      40 INH NEGA    50 INH NEGB
+  01 INH NOP     BA IND ORA      FA IND ORB
+
+  36 INH PSHA    37 INH PSHB     3C INH PSHX  183C IN2 PSHY
+  32 INH PULA    33 INH PULB     38 INH PULX  1838 IN2 PULY
+
+( 68HC11 Opcodes - Part 3 )               HEX   ( 11/23/92 BBM)
+  79 IND ROL     49 INH ROLA     59 INH ROLB    76 IND ROR
+  46 INH RORA    56 INH RORB     3B INH RTI     39 INH RTS
+
+  10 INH SBA     B2 IND SBCA     F2 IND SBCB    0D INH SEC
+  0F INH SEI     0B INH SEV      CF INH STOP
+
+  B7 IND STA     F7 IND STB      FD IND STD     BF IND STS
+ 5FF IND STX    6FF IND STY      B0 IND SUBA    F0 IND SUBB
+ 4B3 IND SUBD    3F INH SWI      16 INH TAB     06 INH TAP
+  17 INH TBA     07 INH TPA
+
+  7D IND TST     4D INH TSTA     5D INH TSTB    30 INH TSX
+1830 IN2 TSY     35 INH TXS    1835 IN2 TYS     3E INH WAI
+  8F INH XGDX  188F IN2 XGDY
+
+( Assembler Words- IF, THEN, ELSE, etc. ) HEX   (  7/26/90 BBM)
+: ?BR      DUP -80 < OVER 7F > OR ABORT" Branch too far" ;
+ 3 CONSTANT U>    4 CONSTANT U<    6 CONSTANT 0=  7 CONSTANT ~0
+ B CONSTANT PLUS  C CONSTANT <     F CONSTANT >
+: NOT      1 XOR ;             ( use after conditionals above )
+: IF,      20 + C, 0 C, HERE ;       ( condition IF, ... THEN,)
+: THEN,    HERE OVER - ?BR SWAP 1- C! ;
+: ELSE,    20 C, 0 C,  THEN,  HERE ; ( cond IF,.. ELSE,..THEN,)
+: BEGIN,   HERE ;                    ( BEGIN, ...  cond UNTIL,)
+: UNTIL,   20 + C, HERE 1+ - ?BR C, ;
+: WHILE,   IF, ;          ( BEGIN, ... cond WHILE, ... REPEAT,)
+: REPEAT,  >R  20 C, HERE 1+ - ?BR C,  R> THEN, ;
+( Usage:   0 ,Y LDD  0= IF,  -1 # LDD  ELSE,  CLRA CLRB  THEN,)
+(       0 # CMPD  > NOT IF,  -1 # LDD  ELSE,  CLRA CLRB  THEN,)
+(          CNTR LDB  BEGIN,  0 ,X STA  INX    DECB   0= UNTIL,)
+( CNTR LDB BEGIN, 0 # CMPB  ~0 WHILE 0 ,X STA INX DECB REPEAT,)
+
+
+( BCLR BSET BSR Optional opcodes )        HEX   ( 11/23/92 BBM)
+: ?DIR   DUP FF00 AND ABORT" Direct or indexed only" ;
+
+: BCLR   ,X =COND IF  1D C,   ELSE  ,Y =COND IF  18 C, 1D C,
+         ELSE  ?DIR   15 C,   THEN THEN  C,  ( mask ) C, ;
+
+: BSET   ,X =COND IF  1C C,   ELSE  ,Y =COND IF  18 C, 1C C,
+         ELSE  ?DIR   14 C,   THEN THEN  C,  ( mask ) C, ;
+
+: BSR    8D C, HERE 1+ - ?BR C, ;               ( address BSR )
+
+( Usage:   mask   28 BCLR   direct addressing )
+(          mask 0 ,X BCLR   indexed, also ,Y  )
+(                    BSET   same as BCLR      )
+( ' code_word CFA 2+ BSR                      )
+
+( BRCLR BRSET Optional opcodes )          HEX   ( 11/23/92 BBM)
+: BCLR? ,X =COND IF  1E C,   ELSE  ,Y =COND IF  18 C, 1E C,
+         ELSE  ?DIR  12 C,   THEN THEN  C,  ( mask ) 20 - ;
+
+: BSET? ,X =COND IF  1F C,   ELSE  ,Y =COND IF  18 C, 1F C,
+         ELSE  ?DIR  13 C,   THEN THEN  C,  ( mask ) 20 - ;
+
+( Usage: mask   28 BCLR? IF,                direct addressing )
+(        mask 0 ,X BCLR? IF,                indexed, also ,Y  )
+( BEGIN, .. m   28 BCLR? UNTIL,           loop until bit clear)
+( BEGIN, .. m 4 ,X BSET? WHILE,...REPEAT, loop while bit set  )
+(                  BSET?  same as BCLR?                       )
+
+( Optional branching words )              HEX   ( 11/23/92 BBM)
+
+: BSR'     ' CFA 2+ BSR ;                  ( BSR' <code-word> )
+: BRANCH,  NOT UNTIL, ;           ( address condition BRANCH, )
+
+( Optional Conditions.  Use before IF, WHILE, UNTIL, BRANCH,  )
+ 5 CONSTANT CC   4 CONSTANT CS   6 CONSTANT EQ  D CONSTANT GE
+ F CONSTANT GT   3 CONSTANT HI   5 CONSTANT HS  E CONSTANT LE
+ 4 CONSTANT LO   2 CONSTANT LS   C CONSTANT LT  A CONSTANT MI
+ 7 CONSTANT NE   B CONSTANT PL   9 CONSTANT VC  8 CONSTANT VS
+ 1 CONSTANT ALWAYS               0 CONSTANT NEVER
+
+( These words are to help convert old assembly routines       )
+( written with regular conditional branch instructions such as)
+( BEQ, BHI, etc.  Use EQ BRANCH, or HI BRANCH,                )
+
+
+( CODE-SUB and macros )                   HEX   ( 11/23/92 BBM)
+( Some useful macros  )
+: DROP,   1808 , 1808 , ;                 ( INY INY           )
+: 2DROP,  C604 , 183A , ;  ( **WARNING** 2DROP, affects reg B )
+: PSHD    1809 , 1809 , 18ED , 00 C, ;    ( DEY DEY  0 ,Y STD )
+: PULD    18EC , 00 C, 1808 , 1808 , ;    ( 0 ,Y LDD  INY INY )
+: JSR' BD C, ' CFA 2+ , ;            ( Usage:  JSR' CODE_WORD )
+
+FORTH DEFINITIONS
+: CODE-SUB  [COMPILE] CODE-SUB  [COMPILE] ASSEMBLER ;
+( Ex: CODE-SUB DUP  0 ,Y LDD  DEY DEY  0 ,Y STD  RTS END-CODE )
+(   Examples             Description           Addressing Mode)
+(   23 # LDD  loads D with number 23;                immediate)
+(     28 LDD  loads D with contents of address 28;   direct   )
+(   4 ,X LDA  loads A with contents of address X+4;  indexed  )
+(     XA LDX  loads X with contents of VARIABLE XA;  extended )
+
+( Copyright <c> 1992, Brian Mathewson.  All rights reserved.  )
+( ** END OF 68HC11 ASSEMBLER VERSION 1.0  BBM JPN 11/23/92 ** )
+
+

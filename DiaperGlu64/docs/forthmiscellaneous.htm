@@ -1,22 +1,22 @@
 <!--
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2022 James Patrick Norris
+//    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.7.
+//    This file is part of DiaperGlu v5.8.
 //
-//    DiaperGlu v5.7 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.8 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.7 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.8 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.7; if not, write to the Free Software
+//    along with DiaperGlu v5.8; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// August 26, 2022            //
-// version 5.7                //
+// March 27, 2023             //
+// version 5.8                //
 // /////////////////////////////
 -->
 
@@ -109,6 +109,10 @@
       <a href=forthmiscellaneous.htm#dg_forthlobit               >dg_forthlobit</a>
       <a href=forthmiscellaneous.htm#dg_forthhibit               >dg_forthhibit</a>
       <a href=forthmiscellaneous.htm#dg_forthcountbits           >dg_forthcountbits</a>
+      <a href=forthmiscellaneous.htm#dg_forthulo1bits            >dg_forthulo1bits</a>
+      <a href=forthmiscellaneous.htm#dg_forthulobits             >dg_forthulobits</a>
+      <a href=forthmiscellaneous.htm#dg_forthulomask             >dg_forthulomask</a>
+      <a href=forthmiscellaneous.htm#dg_forthtwototheu           >dg_forthtwototheu</a>
       <a href=forthmiscellaneous.htm#dg_forthtouleb128           >dg_forthtouleb128</a>
       <a href=forthmiscellaneous.htm#dg_forthhctwostore          >dg_forthhctwostore</a>
       <a href=forthmiscellaneous.htm#dg_forthdrshift             >dg_forthdrshift</a>
@@ -1903,6 +1907,180 @@
 </pre>
       </div>
       
+
+      <div class=word id=dg_forthulo1bitpos>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthulo1bitpos ( ULO1BITPOS )
+//
+// C prototype:
+//  void dg_forthulo1bitpos (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( uvaluein uth -- bitposition )
+//
+//   uvaluein                     unsigned 64 bit integer
+//   uth                          which set bit to look for
+//   bitposition                  index of uth set bit from 0 to 63 in uvaluein
+//
+// Action:
+//   Scans uvaluein from bit position 0 to bit position 63 for the uth set bit.
+//   The 0 based index of the uth set bit in uvaluein is returned. 
+//   If uth is greater than 63, or if uth is 0, or if there are not enough set bits
+//    then DECIMAL 64 ( HEX 40 ) is returned.
+//
+//   For example:
+//    HEX 9 2 ULO1BITPOS returns 3
+//    HEX 5 2 ULO1BITPOS returns 2
+//    HEX A 2 ULO1BITPOS returns 3
+//    HEX A 1 ULO1BITPOS returns 1
+//    HEX 5 1 ULO1BITPOS returns 0
+//    HEX 5 0 ULO1BITPOS returns 40
+//    HEX 5 3 ULO1BITPOS returns 40
+// 
+// Failure cases:
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthulo1bits>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthulo1bits ( ULO1BITS )
+//
+// C prototype:
+//  void dg_forthulo1bits (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( uvaluein usetbitstoget -- uvalueout )
+//
+//   uvaluein                     unsigned 64 bit integer
+//   usetbitstoget                number of set bits to get
+//   uvalueout                    uvaluein containing lowest usetbitstoget set bits
+//
+// Action:
+//   Clears all bits of uvaluein except for the lowest usetbitstoget set bits.
+//   For example, if you do HEX F51 3 ULOBITS, you will get the 3 lowest set bits back
+//    which gives 51
+//
+// Failure cases:
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthulobits>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthulobits ( ULOBITS )
+//
+// C prototype:
+//  void dg_forthulobits (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( uvaluein ubitstoget -- uvalueout )
+//
+//   uvaluein                     unsigned 64 bit integer
+//   ubitstoget                   number of set bits to get
+//   uvalueout                    uvaluein containing lowest usetbitstoget set bits
+//
+// Action:
+//   Clears all bits of uvaluein except for the lowest ubitstoget bits.
+//   For example, if you do HEX F51 5 ULOBITS, you will get the 5 lowest bits back
+//    which gives 11
+//
+// Failure cases:
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthulomask>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthulomask ( ULOMASK )
+//
+// C prototype:
+//  void dg_forthulomask (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( ubits -- mask )
+//
+//   ubits                        number of bits in mask
+//   mask                         a value with the lowest ubits bits set
+//
+// Action:
+//   Returns a value with the number of chosen bits set. Bit positions 0 through 
+//    ubits-1 are set, all other bit positions are clear.
+//
+// Failure cases:
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthtwototheu>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthtwototheu ( 2^U )
+//
+// C prototype:
+//  void dg_forthtwototheu (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( u -- 2^u )
+//
+//   u                            64 bit unsigned integer
+//   2^u                          2 raised to the u power 
+//
+// Action:
+//   Returns 2 multiplied by itself u times. If u is 0, 1 is returned. If u is greater
+//    than 63, the largest unsigned integer possible is returned. 
+//
+// Note:
+//   Largest unsigned integer possible has all bits set. This is also -1.
+//
+// Failure cases:
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
       
       <div class=word id=dg_forthhibit>
 <pre>
@@ -2336,11 +2514,6 @@
 // C prototype:
 //  none (it's a FLOAT64 constant)
 //
-// Inputs:
-//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
-//                                 used as the bufferhandle for the array where the
-//                                 other bufferhandles are stored.
-//
 // Stack action shorthand:
 //  ( -f64- df1 )
 //
@@ -2366,11 +2539,6 @@
 // C prototype:
 //  none (it's a FLOAT64 constant)
 //
-// Inputs:
-//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
-//                                 used as the bufferhandle for the array where the
-//                                 other bufferhandles are stored.
-//
 // Stack action shorthand:
 //  ( -f64- df1 )
 //
@@ -2395,11 +2563,6 @@
 //
 // C prototype:
 //  none (it's a FLOAT64 constant)
-//
-// Inputs:
-//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
-//                                 used as the bufferhandle for the array where the
-//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -f64- df1 )
@@ -2427,11 +2590,6 @@
 // C prototype:
 //  none (it's a FLOAT64 constant)
 //
-// Inputs:
-//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
-//                                 used as the bufferhandle for the array where the
-//                                 other bufferhandles are stored.
-//
 // Stack action shorthand:
 //  ( -f64- df1 )
 //
@@ -2457,11 +2615,6 @@
 //
 // C prototype:
 //  none (it's a FLOAT64 constant)
-//
-// Inputs:
-//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
-//                                 used as the bufferhandle for the array where the
-//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -f64- df1 )
@@ -2489,11 +2642,6 @@
 // C prototype:
 //  none (it's a FLOAT64 constant)
 //
-// Inputs:
-//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
-//                                 used as the bufferhandle for the array where the
-//                                 other bufferhandles are stored.
-//
 // Stack action shorthand:
 //  ( -f64- df1 )
 //
@@ -2520,11 +2668,6 @@
 // C prototype:
 //  none (it's a FLOAT64 constant)
 //
-// Inputs:
-//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
-//                                 used as the bufferhandle for the array where the
-//                                 other bufferhandles are stored.
-//
 // Stack action shorthand:
 //  ( -f64- df1 )
 //
@@ -2550,11 +2693,6 @@
 //
 // C prototype:
 //  none (it's a FLOAT64 constant)
-//
-// Inputs:
-//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is
-//                                 used as the bufferhandle for the array where the
-//                                 other bufferhandles are stored.
 //
 // Stack action shorthand:
 //  ( -f64- df1 )

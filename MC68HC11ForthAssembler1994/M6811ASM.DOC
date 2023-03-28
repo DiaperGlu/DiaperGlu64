@@ -1,0 +1,412 @@
+
+                 68HC11 Assembler Documentation
+                      Version 1.0  11/23/92
+
+
+Copyright (c) 1992, Brian Mathewson.  All rights reserved.
+
+This is a Forth-based assembler for the Motorola MC68HC11 family
+of microprocessors.  It was designed to run on a version of
+Forth running on a 68HC11 microprocessor, namely Max-Forth from
+New Micros, Inc.  It allows you to easily create code words which
+can be called either from other code words, by colon
+definitions, or as interrupt routines.
+
+Some features of this assembler are:
+  * Support for all 68HC11 opcodes.
+  * Small size.
+  * Supports all addressing modes.
+  * Senses direct addresses (0-FF) and compiles accordingly.
+  * Simple, standard op-code format.
+  * Supports assembly-based IF, ELSE, THEN, BEGIN, UNTIL, etc.
+  * Supports use of the bit test branches with IF, WHILE, UNTIL,
+  * Branch offset range checking.
+
+This assembler was designed and written by James Norris
+and Brian Mathewson.
+
+Comments and suggestions are welcome.  Please also report any
+problems or errors in this program.  Let us know if you have
+found this code valuable and how you are using it.
+
+    Brian Mathewson                 James P. Norris
+    21576 Kenwood Avenue            1909 Lakeview Avenue
+    Rocky River, OH 44116-1232      Rocky River, OH 44116
+
+Internet
+    bbm@cleveland.freenet.edu       bo511@cleveland.freenet.edu
+
+
+                68HC11 Assembler License Agreement
+
+This program or any portion thereof may not be sold or incorporated
+into a product in any form without the written consent of the
+authors.  However it may be freely distributed in its complete,
+un-altered form.
+
+There is no charge for using this program for private, non-
+commercial use.  If any portion of this code is used or adapted
+to be used in a commercial, military, or otherwise for-profit
+environment, a license fee of $15 (US) is required, payable to:
+
+    Brian Mathewson
+    21576 Kenwood Avenue
+    Rocky River, OH  44116-1232
+
+While an effort has been made to make this program error-free,
+this program is presented without guarantees of any kind.  No
+responsibility will be taken for any losses or damages due to
+use of this program.
+
+
+                       About Max-Forth
+
+New Micros, Inc. makes a line of single-board computers and
+peripherals for them.  They sell an MC68HC11 with their Max-Forth
+installed in internal ROM, either as a separate chip or in one
+of their boards.  Contact them for more information at:
+
+    New Micros, Inc.
+    1601 Chalk Hill Road
+    Dallas, Texas 75212
+    Tel: (214) 339-2204
+
+Note:  The authors have no affiliation with New Micros other than
+       being contented users of their products.
+
+
+                      Using the Assembler
+
+You will need to use a terminal program to download the assembler
+and your source files to the 68HC11 board.  I use a Forth word
+called TERMINT on my DOS-based Forth which acts as a dumb terminal
+emulator to work in Max-Forth.  I can easily break out of it,
+edit my source files, then use a word called CRAM which crams the
+source file screens into Max-Forth as if I were madly typing it
+all in.  -bbm
+
+
+                        -=< EXAMPLES >=-
+
+I. General
+
+Code words are defined as follows:
+
+   CODE-SUB <code-word-name>  <instructions>  END-CODE
+
+For CODE-SUB words you will always need an RTS before the END-CODE
+
+   CODE-SUB <code-word-name>  <instructions>  RTS END-CODE
+
+For interrupt routines, use an RTI
+
+   CODE-SUB <irq-code-word>   <instructions>  RTI END-CODE
+
+An example of a typical Forth word is below.  Note that the Y 
+register is used as the stack pointer in Max-Forth.
+
+   CODE-SUB DUP   0 ,Y LDD   DEY DEY  0 ,Y STD  RTS END-CODE
+
+
+The opcode format for using each of the 68HC11's addressing modes is
+as follows:
+
+   Examples             Description                Addressing Mode
+   --------  ------------------------------------- ---------------
+   23 # LDD  loads D with number 23;                  immediate
+     28 LDD  loads D with contents of address 28;     direct
+    CTR LDD  loads D with contents of VARIABLE CTR;   extended
+   4 ,X LDD  loads D with contents of address X+4;    indexed
+   0 ,Y LDD  loads D with contents of address Y+0;    indexed
+
+For indexed addressing, the offset can be from 0 to FFh, positive
+offsets only.
+
+The compiler will detect extended address that are between 0 and FFh
+and compile the instructions with the faster direct addressing mode.
+
+
+Notice that some of the instructions are named differently from the way
+they are typically spelled.  This makes the words more consistent
+and more compact.  For example, dropping the extra A in instructions
+like LDAB and LDAA, cuts them to just LDA or LDB.  You could also change
+CPX, CPY and CPS to CMPX, CMPY, and CMPS to make them more consistent
+with CMPA and CMPB, for example.
+
+You can create macros which combine several instructions.  (A few
+are included.)  For example, defining the macro below:
+
+    : PSHD  DEY    DEY  0 ,Y STD ;       ( both do the same thing, but )
+or  : PSHD  1809 , 1809 , 18ED , 0 C, ;  (  the second form is faster. )
+
+turns
+       CODE-SUB DUP   0 ,Y LDD   DEY DEY  0 ,Y STD  RTS END-CODE
+into
+       CODE-SUB DUP   0 ,Y LDD   PSHD  RTS END-CODE
+
+
+Here are some more examples.
+
+   CODE-SUB 0!   CLRA CLRB  0 ,Y LDX  0 ,X STD  INY INY  RTS END-CODE
+
+      where  0!  does  : 0! ( addr -- ) 0 SWAP ! ;
+
+   CODE-SUB 1+!  0 ,Y LDX INY INY  0 ,X LDD  1 # ADDD
+                 0 ,X STD  RTS END-CODE
+
+
+II. Conditionals, Branches, Loops
+
+The assembler supports use of structured programming constructs such
+as IF, ELSE, THEN, BEGIN, WHILE, UNTIL, REPEAT, with meaningful
+conditionals like in Forth.
+
+First, you can create  condition IF, ... ELSE, ... THEN,  structures
+like the following:
+
+   CODE-SUB LF?   0 ,Y LDD  10 # CPD      0= IF,  -1 # LDD
+                                           ELSE,   0 # LDD  THEN,
+                  0 ,Y STD  RTS END-CODE
+
+The following conditions can be used before IF, WHILE, and UNTIL,
+
+   0=  >  <  U>  U<  PLUS
+
+Use NOT after any of the conditionals above results in the opposite
+condition.  So,  > NOT  is the same as  <=.  The following are also
+equivalent:
+
+     0= NOT   not=0
+      > NOT   <=
+      < NOT   >=
+     U> NOT   U<=
+     U< NOT   U>=
+   PLUS NOT   MINUS (i.e. negative)
+ 
+NOT just toggles bit 0 of the number on the stack.  If you examine the
+opcodes for the branch instructions, you will notice that toggling this
+bit will give you the opposite branch.
+
+   CODE-SUB ~LF?  0 ,Y LDD  10 # CPD  0= NOT IF,  -1 # LDD
+                                           ELSE,   0 # LDD  THEN,
+                  0 ,Y STD  RTS END-CODE
+
+
+You may also use BSET? and BCLR? before an IF,  These check if bits
+are set or clear at a memory location and branch accordingly, such 
+as in ODD?, which returns a 1 if bit 0 at address addr is set:
+
+   CODE-SUB ODD? ( addr -- f ) 0 ,Y LDX  1 0 ,X BSET? IF,  1 # LDD
+                 ELSE,  CLRA CLRB  THEN,  0 ,Y STD  RTS END-CODE
+
+The formats for BCLR? and BSET? are:
+
+           mask      addr BCLR? IF,                direct addressing
+           mask offset ,X BCLR? IF,                indexed addressing
+           mask offset ,Y BCLR? IF,                indexed addressing
+
+
+WHILE, and UNTIL, also take conditions such as  0=, >, or BCLR?  just
+as the IF, statement does.  Here are two examples of an ERASE command.
+
+   CODE-SUB ERASE ( addr len -- ) 0 ,Y LDD  2 ,Y LDX
+                  BEGIN,  0 ,X CLR  INX  1 # SUBD  0= UNTIL,
+                  DROP, DROP,  RTS END-CODE
+
+   CODE-SUB ERASE ( addr len -- ) 0 ,Y LDD  2 ,Y LDX
+                  BEGIN,   1 # SUBD  0= NOT WHILE,  0 ,X CLR  INX
+                  REPEAT,  DROP, DROP,  RTS END-CODE
+
+Both accomplish essentially the same thing, although the second will
+clear one less byte (the last) than the first one.  However, given a
+length of 0 both will try to clear all of memory.  To limit them to
+clearing 32767 bytes (a reasonable limit for a 64K address space), add
+an IF, ... THEN, as follows:
+
+   CODE-SUB ERASE ( addr len -- ) 0 ,Y LDD  2 ,Y LDX
+                  0 # CPD > IF,
+                    BEGIN,   1 # SUBD  0= NOT WHILE,  0 ,X CLR  INX
+                    REPEAT,
+                  THEN,  DROP, DROP,  RTS END-CODE
+
+
+You can use BCLR? and BSET? with UNTIL, and WHILE, also:
+
+BEGIN, ... mask      addr BCLR? UNTIL,             loop until bit clear
+BEGIN, ... mask offset ,X BSET? WHILE, .. REPEAT,  loop while bit set
+
+
+One last example is a neat algorithm for finding an integer SQRT:
+
+   VARIABLE CNT
+   CODE-SUB SQRT  1 # LDX  CNT STX  0 ,Y LDD
+                  BEGIN,  CNT SUBD  PLUS WHILE,  INX INX  CNT STX
+                  REPEAT, XGDX  LSRD 0 ,Y STD  RTS END-CODE
+
+
+For creating code words which do not have straight IF, .. ELSE, .. THEN,
+structures, you can combine multiple IF,'s ELSE,'s and THEN,'s and use
+use SWAP or OVER or something to get it right.
+
+For example, if you have a word that should jump around like this:
+
+                                                  __________3_________
+                          _____________1_________/___                 \
+                         /                      /    \                 \
+CODE-SUB FROG  part1  IF,-->part2 IF,-->part3->/  ELSE,-->part4  part5  THEN,
+                                     \_____________2____________/
+
+you can code it like this:
+                                        Branches on stack
+CODE-SUB FROG   part1  condition IF,         ( 1 )
+                part2  condition IF,         ( 1 2 )
+                part3     SWAP ELSE,         ( 2 3 )
+                part4     SWAP THEN,         ( 3 )
+                part5          THEN,
+         RTS END-CODE
+
+Notice that IF, puts a branch on the stack, THEN, resolves a branch,
+and ELSE, resolves one branch but adds a new one.
+
+
+Two more useful words are JSR' and BSR.  JSR' <code-word> will execute
+any <code-word> that was defined with an RTS before END-CODE.  So, you
+can do this:
+
+   CODE-SUB HOP     0 ,Y LDX   10 # LDA  0 ,X STA  INY INY RTS END-CODE
+
+   CODE-SUB RIBBIT  JSR' FROG   ' HOP CFA 2+ BSR  RTS END-CODE
+
+The word RIBBIT compiles a long JSR to frog, then compiles a short JSR
+to HOP.  If you want, define a BSR' just like JSR'
+
+The JMP and JSR instructions are also defined.  JSR' is just a shortcut
+for writing  ' <code-word> CFA 2+ JSR  (i.e. JSR to extended address.)
+
+The BSR instruction is limited to just a relative jump, while you can
+use direct, extended and indexed addressing modes with JSR and JMP.
+The only reason to use BSR is for smaller code size or for relocatable
+code (they take the same number of cycles to execute.)
+
+
+
+III.  Bit Instructions
+
+The bit instructions BCLR and BSET either set or clear bits at a memory
+location.  Their form is:
+
+     mask  dir_addr  BCLR   direct addressing  (dir_addr=direct address)
+     mask  offset ,X BCLR   indexed addressing
+     mask  offset ,Y BCLR   indexed addressing
+
+BSET works the same way.
+
+Some examples are:
+
+     40    28 BCLR   clears bit 6 (of 0-7) of memory location 28.
+      3  8 ,X BSET   sets bits 0 and 1 at memory location X+8.
+
+
+The opcodes BRCLR and BRSET are implemented as BCLR? and BSET?
+
+For BCLR? and BSET? (branch on bit clear or bit set) the opcodes are
+defined in reverse so that they work logically with IF, WHILE, and
+UNTIL, words.
+
+           mask      addr BCLR? IF,                direct addressing
+           mask offset ,X BCLR? IF,                indexed addressing
+           mask offset ,Y BCLR? IF,                indexed addressing
+
+Again, BSET? works the same way.  Use them with UNTIL, and WHILE, also:
+
+BEGIN, ... mask      addr BCLR? UNTIL,             loop until bit clear
+BEGIN, ... mask offset ,X BSET? WHILE, .. REPEAT,  loop while bit set
+
+Some examples are:
+
+ODD sets bit 0 of the byte at addr to a 1.
+
+   CODE-SUB ODD ( addr -- ) 0 ,Y LDX  INY INY  1 0 ,X BSET
+            RTS END-CODE
+
+
+SCAN scans from addr1 until it finds a byte with the MSB bit 7 set
+and returns with the address of that byte.
+
+   CODE-SUB SCAN ( addr1 -- addr2 )  0 ,Y LDX
+                 BEGIN,  80 0 ,X BCLR? WHILE,  INX REPEAT,
+                 0 ,Y STX  RTS END-CODE
+
+
+IV.  Design Notes
+
+This assembler will not correctly compile extended addresses which
+refer to locations FFFD-FFFF (-3 to -1) as these are reserved for the
+addressing mode switches #, ,X and ,Y.
+
+IF, adds 20h to the number on the stack and compiles it into memory
+and then compiles the branch offset.  For condition codes the number
+on the stack +20h becomes the branch opcode.  For the BCLR? and BSET?
+IF, instead compiles the mask byte and then the branch offset.  The
+BCLR? and BSET? compile the opcode and address/offset of the BRSET 
+and BRCLR instructions.
+
+For conditionals IF, statements take a number, 0-15 which specifies
+which branch instruction gets compiled at the IF,.  Notice that you
+should specify the OPPOSITE branch for each condition.  If you want
+to do a 0= IF, then 0= must be defined as a 6 CONSTANT 0= for the 
+opcode 26h = BNE (branch on not=Zero)  Then, if the condition is =0,
+it will not branch and will execute the instructions after the IF,
+
+So, if you want a specific branch at the IF, then just put the number
+of the branch opcode minus 20h in front of the IF,  To compile the
+equivalent of specific branch instructions such as BMI, use the
+following conditionals before IF, WHILE, or UNTIL,
+
+   5 CONSTANT CC   4 CONSTANT CS   6 CONSTANT EQ  D CONSTANT GE
+   F CONSTANT GT   3 CONSTANT HI   5 CONSTANT HS  E CONSTANT LE
+   4 CONSTANT LO   2 CONSTANT LS   C CONSTANT LT  A CONSTANT MI
+   7 CONSTANT NE   B CONSTANT PL   9 CONSTANT VC  8 CONSTANT VS
+   1 CONSTANT ALWAYS               0 CONSTANT NEVER
+
+Then, to have the equivalent of BMI, use  MI IF,  which actually
+compiles a BPL (the opposite of BMI).
+
+This assembler will not catch errors such as 5 # STX but will catch an
+error in 5 # CLR and similar instructions.  This is because an easy way
+to check if immediate or direct addressing is allowed is to see if the
+opcode is <80h.
+
+Although automatic direct mode addressing is used, the compiler
+correctly senses when direct addressing is not available and uses
+extended addressing instead, such as in 28 CLR.
+
+The following instructions are named differently than in the Motorola
+literature (in order to make them simpler and more consistent):
+
+ LDA = LDAA, LDB = LDAB, ORA = ORAA, ORB = ORAB, STA = STAB, STB = STAB.
+
+You could also change CPX, CPY and CPS to CMPX, CMPY, and CMPS to make
+them more consistent with CMPA and CMPB, for example, or vice versa.
+
+The only instruction not included is 00 INH TEST because it may only be
+used in test modes, which is rarely needed.
+
+If this assembler is used with any other Forth than Max-Forth, it must:
+  - have TRUE=FFFF ( and not =1 ) after > (see CPLEXT).
+  - give an error if the stack changed between CODE-SUB and END-CODE
+    (or the equivalents to CODE-SUB and END-CODE.)
+
+Although it is obvious, remove anything you do not use (including
+comments) to reduce the size of the assembler and the loading time.
+You can also eliminate much of the error checking and error messages
+if you are comfortable with this (or keep two versions around.)
+Or, save the assembler into EPROM for fast startup times.
+
+
+Enjoy.
+
+Copyright (c) 1992, Brian Mathewson.  All rights reserved.
+End of 68HC11 Assembler Version 1.0 Documentation  BBM JPN 11/23/92
+
+

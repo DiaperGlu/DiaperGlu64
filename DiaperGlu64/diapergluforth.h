@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2022 James Patrick Norris
+//    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.7.
+//    This file is part of DiaperGlu v5.8.
 //
-//    DiaperGlu v5.7 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.8 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.7 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.8 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.7; if not, write to the Free Software
+//    along with DiaperGlu v5.8; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// August 26, 2022            //
-// version 5.7                //
+// March 27, 2023             //
+// version 5.8                //
 // /////////////////////////////
 
 #if !defined(_INC_diapergluforth)
@@ -37,9 +37,170 @@ extern "C" {
 #define FLOAT32 float
 #define FLOAT64 double
 
-    // /////////////////////
-    // MinGW Win32 stuff  //
-    // /////////////////////
+enum dg_cpux86regs {
+    dg_al = 0,
+    dg_cl,
+    dg_dl,
+    dg_bl,
+    dg_ah,
+    dg_ch,
+    dg_dh,
+    dg_bh,
+    dg_ax,
+    dg_cx,
+    dg_dx,
+    dg_bx,
+    dg_sp,
+    dg_bp,
+    dg_si,
+    dg_di,
+    dg_eax, // 0x10
+    dg_ecx,
+    dg_edx,
+    dg_ebx,
+    dg_esp,
+    dg_ebp,
+    dg_esi,
+    dg_edi,
+    // first rex reg is r8l
+    dg_r8l,
+    dg_r9l,
+    dg_r10l,
+    dg_r11l,
+    dg_r12l,
+    dg_r13l,
+    dg_r14l,
+    dg_r15l,
+    dg_r8w, // 0x20
+    dg_r9w,
+    dg_r10w,
+    dg_r11w,
+    dg_r12w,
+    dg_r13w,
+    dg_r14w,
+    dg_r15w,
+    dg_r8d,
+    dg_r9d,
+    dg_r10d,
+    dg_r11d,
+    dg_r12d,
+    dg_r13d,
+    dg_r14d,
+    dg_r15d,
+    dg_r8, // 0x30
+    dg_r9,
+    dg_r10,
+    dg_r11,
+    dg_r12,
+    dg_r13,
+    dg_r14,
+    dg_r15,
+    dg_rax,
+    dg_rcx,
+    dg_rdx,
+    dg_rbx,
+    dg_rsp,
+    dg_rbp,
+    dg_rsi,
+    dg_rdi,
+    // need to add 4 to dg_spl, dg_bpl, dg_sil, dg_dil so gonna add some dummy regs
+    dg_fakereg0, // 0x40
+    dg_fakereg1,
+    dg_fakereg2,
+    dg_fakereg3,
+    dg_spl,
+    dg_bpl,
+    dg_sil,
+    dg_dil,
+    dg_st0,
+    dg_st1,
+    dg_st2,
+    dg_st3,
+    dg_st4,
+    dg_st5,
+    dg_st6,
+    dg_st7,
+    dg_xmm0, // 0x50
+    dg_xmm1,
+    dg_xmm2,
+    dg_xmm3,
+    dg_xmm4,
+    dg_xmm5,
+    dg_xmm6,
+    dg_xmm7,
+    dg_xmm8,
+    dg_xmm9,
+    dg_xmm10,
+    dg_xmm11,
+    dg_xmm12,
+    dg_xmm13,
+    dg_xmm14,
+    dg_xmm15,
+    dg_ymm0, // 0x60
+    dg_ymm1,
+    dg_ymm2,
+    dg_ymm3,
+    dg_ymm4,
+    dg_ymm5,
+    dg_ymm6,
+    dg_ymm7,
+    dg_ymm8,
+    dg_ymm9,
+    dg_ymm10,
+    dg_ymm11,
+    dg_ymm12,
+    dg_ymm13,
+    dg_ymm14,
+    dg_ymm15,
+    dg_cr0, // 0x70
+    dg_cr1,
+    dg_cr2,
+    dg_cr3,
+    dg_cr4,
+    dg_cr5,
+    dg_cr6,
+    dg_cr7,
+    dg_cr8,
+    dg_cr9,
+    dg_cr10,
+    dg_cr11,
+    dg_cr12,
+    dg_cr13,
+    dg_cr14,
+    dg_cr15,
+    dg_dr0, // 0x80
+    dg_dr1,
+    dg_dr2,
+    dg_dr3,
+    dg_dr4,
+    dg_dr5,
+    dg_dr6,
+    dg_dr7,
+    dg_segregcs,
+    dg_segregds,
+    dg_segregss,
+    dg_segreges,
+    dg_segregfs,
+    dg_segreggs,
+    dg_segregfake1,
+    dg_segregfake2,
+    dg_gdtr, // 0x90
+    dg_ldtr,
+    dg_idtr,
+    dg_crx,
+    dg_fakereg4,
+    dg_fakereg5,
+    dg_fakereg6,
+    dg_fakereg7,
+    // last rex reg is dil
+    dg_eip = 0xFFFF0000,
+    dg_rip = 0xFFFF0001,
+    dg_noreg = 0xFFFFFFFF
+};
+
+    // //////////////
+    // Win64 stuff //
+    // //////////////
 
 
 #ifdef DGLU_OS_WIN64
@@ -65,14 +226,65 @@ extern "C" {
 
 #endif
 
+#ifdef DGLU_EXPORTS
+
+#define DGLU_API __declspec(dllexport)
+//#define DGLU_API __attribute__ ((__dllexport__))
+
+#endif
+
+#ifdef DGLU_IMPORTS
+
+#define DGLU_API __declspec(dllimport)
+//#define DGLU_API __attribute__ ((__dllimport__))
+    
+#endif
+
+#define dg_numberofallocatableintregs (13)
+#define dg_numberofallocatablefloatregs (16)
+
 #define DG_PATH_SLASH_SYMBOL ((unsigned char)'\\')
 
 #define DG_WIN64_FILETIME_1970_JAN_1 (0x019DB1DED53E8000)
 
-#define dg_param1reg dg_rcx
-#define dg_param2reg dg_rdx
-#define dg_param3reg dg_r8
-#define dg_param4reg dg_r9
+#define dg_mustbepreservedregsmask ( dg_localsrbpmask | dg_localsrbxmask | dg_localsrdimask | dg_localsrsimask | dg_localsr12mask | dg_localsr13mask | dg_localsr14mask | dg_localsr15mask | dg_localsxmm6mask | dg_localsxmm7mask | dg_localsxmm8mask |  dg_localsxmm9mask | dg_localsxmm10mask | dg_localsxmm11mask | dg_localsxmm12mask | dg_localsxmm13mask | dg_localsxmm14mask | dg_localsxmm15mask )
+#define dg_imustbepreservedregsmask ( dg_localsrbpmask | dg_localsrbxmask | dg_localsrdimask | dg_localsrsimask | dg_localsr12mask | dg_localsr13mask | dg_localsr14mask | dg_localsr15mask )
+#define dg_fmustbepreservedregsmask ( dg_localsxmm6mask | dg_localsxmm7mask | dg_localsxmm8mask |  dg_localsxmm9mask | dg_localsxmm10mask | dg_localsxmm11mask | dg_localsxmm12mask | dg_localsxmm13mask | dg_localsxmm14mask | dg_localsxmm15mask ) 
+//  leaving dg_localsrspmask | out since preserving and unpreserving it in the middle of a subroutine might cause issues...
+
+#define dg_allocatableintregsmask ( dg_localsr11mask | dg_localsr10mask | dg_localsr9mask | dg_localsr8mask | dg_localsrdxmask | dg_localsrcxmask | dg_localsrdimask | dg_localsrsimask | dg_localsrbxmask | dg_localsr15mask | dg_localsr14mask | dg_localsr13mask | dg_localsr12mask )
+#define dg_allocatablefloatregsmask ( dg_localsxmm0mask | dg_localsxmm1mask | dg_localsxmm2mask | dg_localsxmm3mask | dg_localsxmm4mask | dg_localsxmm5mask | dg_localsxmm6mask | dg_localsxmm7mask | dg_localsxmm8mask | dg_localsxmm8mask | dg_localsxmm9mask | dg_localsxmm10mask | dg_localsxmm11mask | dg_localsxmm12mask | dg_localsxmm13mask | dg_localsxmm14mask | dg_localsxmm15mask )
+#define dg_allocatableregsmask ( dg_allocatableintregsmask | dg_allocatablefloatregsmask )
+
+#define dg_stringregsmask     ( dg_localsrsimask | dg_localsrdimask | dg_localsrcxmask )
+#define dg_stringsrcregsmask  ( dg_localsrsimask )
+#define dg_stringdestregsmask ( dg_localsrdimask )
+#define dg_stringctrregsmask  ( dg_localsrcxmask )
+#define dg_mathhiregsmask     ( dg_localsrdxmask )
+
+#define dg_iparam0regsmask ( dg_localsrcxmask )
+#define dg_iparam1regsmask ( dg_localsrdxmask )
+#define dg_iparam2regsmask ( dg_localsr8mask )
+#define dg_iparam3regsmask ( dg_localsr9mask )
+#define dg_iparam4regsmask ( 0 )
+#define dg_iparam5regsmask ( 0 )
+#define dg_iparam6regsmask ( 0 )
+#define dg_iparam7regsmask ( 0 )
+
+#define dg_fparam0regsmask ( dg_localsxmm0mask )
+#define dg_fparam1regsmask ( dg_localsxmm1mask )
+#define dg_fparam2regsmask ( dg_localsxmm2mask )
+#define dg_fparam3regsmask ( dg_localsxmm3mask )
+#define dg_fparam4regsmask ( 0 )
+#define dg_fparam5regsmask ( 0 )
+#define dg_fparam6regsmask ( 0 )
+#define dg_fparam7regsmask ( 0 )
+
+#define dg_iparamsregsmask ( dg_localsrcxmask | dg_localsrdxmask | dg_localsr8mask | dg_localsr9mask )
+#define dg_fparamsregsmask ( dg_localsxmm0mask | dg_localsxmm1mask | dg_localsxmm2mask | dg_localsxmm3mask )
+#define dg_paramsregsmask  ( dg_iparamsregsmask | dg_fparamsregsmask )
+
+
     
     typedef __int16 INT16;
     typedef unsigned __int16 UINT16;
@@ -114,19 +326,22 @@ extern "C" {
         UINT64* pnumberofsymbols,
         const char* forceerrorflag);
 
-#ifdef DGLU_EXPORTS
+#define dg_numberofparamintregs 4
+#define dg_numberofparamfloatregs 4
 
-#define DGLU_API __declspec(dllexport)
-//#define DGLU_API __attribute__ ((__dllexport__))
+#define dg_param1reg dg_rcx
+#define dg_param2reg dg_rdx
+#define dg_param3reg dg_r8
+#define dg_param4reg dg_r9
 
-#endif
+    DGLU_API extern const UINT64 dg_localsregs[];
+    DGLU_API extern const UINT64 dg_paramintregs[];
+    DGLU_API extern const UINT64 dg_paramfloatregs[];
+    DGLU_API extern const UINT64 dg_paramintregslocalsindex[];
+    DGLU_API extern const UINT64 dg_paramfloatregslocalsindex[];
+    DGLU_API extern const unsigned char dg_localsintregallocationorder[];
+    DGLU_API extern const unsigned char dg_localsfloatregallocationorder[];
 
-#ifdef DGLU_IMPORTS
-
-#define DGLU_API __declspec(dllimport)
-//#define DGLU_API __attribute__ ((__dllimport__))
-    
-#endif
     
     // declared in httpext.h
     // doing it here because we need to export these three functions
@@ -226,6 +441,13 @@ extern "C" {
 
 #define dg_paramusingframeoffset        (0x6)   // in UINT64s   // savedrbp retaddress 4 shadow params
 #define dg_defaultnoframerstackdepth    (0x5)   // in UINT64s  retaddress and 4 shadow params
+
+#define dg_shadowsize (4 * sizeof(UINT64))
+
+    DGLU_API extern UINT64 intparameterslookuptable[4];
+    DGLU_API extern UINT64 floatparameterslookuptable[4];
+    DGLU_API extern UINT64 intreturnparameterstable[1];
+    DGLU_API extern UINT64 floatreturnparameterstable[1];
     
 #endif
 
@@ -248,11 +470,54 @@ extern "C" {
     
 #define DGLU_API 
 
+#define dg_numberofallocatableintregs (13)
+#define dg_numberofallocatablefloatregs (16)
+
+#define dg_mustbepreservedregsmask ( dg_localsrbpmask | dg_localsrbxmask |  dg_localsr12mask | dg_localsr13mask | dg_localsr14mask | dg_localsr15mask ) 
+#define dg_imustbepreservedregsmask ( dg_localsrbpmask | dg_localsrbxmask | dg_localsr12mask | dg_localsr13mask | dg_localsr14mask | dg_localsr15mask )
+#define dg_fmustbepreservedregsmask ( 0 )
+//  leaving dg_localsrspmask | out since preserving and unpreserving it in the middle of a subroutine might cause issues...
+
+#define dg_allocatableintregsmask ( dg_localsr11mask | dg_localsr10mask | dg_localsr9mask | dg_localsr8mask | dg_localsrdxmask | dg_localsrcxmask | dg_localsrdimask | dg_localsrsimask | dg_localsrbxmask | dg_localsr15mask | dg_localsr14mask | dg_localsr13mask | dg_localsr12mask )
+#define dg_allocatablefloatregsmask ( dg_localsxmm0mask | dg_localsxmm1mask | dg_localsxmm2mask | dg_localsxmm3mask | dg_localsxmm4mask | dg_localsxmm5mask | dg_localsxmm6mask | dg_localsxmm7mask | dg_localsxmm8mask | dg_localsxmm8mask | dg_localsxmm9mask | dg_localsxmm10mask | dg_localsxmm11mask | dg_localsxmm12mask | dg_localsxmm13mask | dg_localsxmm14mask | dg_localsxmm15mask )
+#define dg_allocatableregsmask ( dg_allocatableintregsmask | dg_allocatablefloatregsmask )
+
+#define dg_stringregsmask     ( dg_localsrsimask | dg_localsrdimask | dg_localsrcxmask )
+#define dg_stringsrcregsmask  ( dg_localsrsimask )
+#define dg_stringdestregsmask ( dg_localsrdimask )
+#define dg_stringctrregsmask  ( dg_localsrcxmask )
+#define dg_mathhiregsmask     ( dg_localsrdxmask )
+
+#define dg_iparam0regsmask ( dg_localsrdimask )
+#define dg_iparam1regsmask ( dg_localsrsimask )
+#define dg_iparam2regsmask ( dg_localsrdxmask )
+#define dg_iparam3regsmask ( dg_localsrcxmask )
+#define dg_iparam4regsmask ( dg_localsr8mask )
+#define dg_iparam5regsmask ( dg_localsr9mask )
+#define dg_iparam6regsmask ( 0 )
+#define dg_iparam7regsmask ( 0 )
+
+#define dg_fparam0regsmask ( dg_localsxmm0mask )
+#define dg_fparam1regsmask ( dg_localsxmm1mask )
+#define dg_fparam2regsmask ( dg_localsxmm2mask )
+#define dg_fparam3regsmask ( dg_localsxmm3mask )
+#define dg_fparam4regsmask ( dg_localsxmm4mask )
+#define dg_fparam5regsmask ( dg_localsxmm5mask )
+#define dg_fparam6regsmask ( dg_localsxmm6mask )
+#define dg_fparam7regsmask ( dg_localsxmm7mask )
+
+#define dg_iparamsregsmask ( dg_localsrdimask | dg_localsrsimask | dg_localsrdxmask | dg_localsrcxmask | dg_localsr8mask | dg_localsr9mask )
+#define dg_fparamsregsmask ( dg_localsxmm0mask | dg_localsxmm1mask | dg_localsxmm2mask | dg_localsxmm3mask | dg_localsxmm4mask | dg_localsxmm5mask | dg_localsxmm6mask | dg_localsxmm7mask )
+#define dg_paramsregsmask  ( dg_iparamsregsmask | dg_fparamsregsmask )
+
+#define dg_numberofparamintregs 6
+#define dg_numberofparamfloatregs 8
+
 #define dg_param1reg dg_rdi
 #define dg_param2reg dg_rsi
 #define dg_param3reg dg_rdx
 #define dg_param4reg dg_rcx
-    
+
 #if !defined(NULL)
 #define NULL (0)
 #endif
@@ -328,6 +593,19 @@ extern "C" {
 
 #define dg_paramusingframeoffset        (0x2)   // in UINT64s  savedrbp retaddress
 #define dg_defaultnoframerstackdepth    (0x1)   // in UINT64s  retaddress
+
+#define dg_shadowsize (0)
+
+    DGLU_API extern const UINT64 dg_localsregs[];
+    DGLU_API extern const UINT64 dg_paramintregs[];
+    DGLU_API extern const UINT64 dg_paramfloatregs[];
+    DGLU_API extern const UINT64 dg_paramintregslocalsindex[];
+    DGLU_API extern const UINT64 dg_paramfloatregslocalsindex[];
+    DGLU_API extern const unsigned char dg_localsintregallocationorder[];
+    DGLU_API extern const unsigned char dg_localsfloatregallocationorder[];
+
+    // DGLU_API UINT64 dg_paramintregs[6];
+    // DGLU_API UINT64 dg_paramfloatregs[8];
     
 #endif
     
@@ -349,7 +627,7 @@ extern "C" {
     };
 
     
-
+#define dg_callsubsframesize            (0x4)   // in UINT64s
     
 #define badbufferhandle ((void*)0xFFFFFFFFFFFFFFFF)
 #define badlibraryhandle ((UINT64)0xFFFFFFFFFFFFFFFF)
@@ -369,9 +647,9 @@ extern "C" {
 #define dg_presortedenvwordlistsize (21)
 // #define dg_presortedstringwordlistsize (0)
 // #define dg_presortederrorwordlistsize (0)
-#define dg_prestoredbufferwordlistsize (650)
+#define dg_prestoredbufferwordlistsize (656)
 // #define dg_presortedoswordlistsize (0)
-#define dg_presortedx86wordlistsize (1250)
+#define dg_presortedx86wordlistsize (1308)
 
     // gcc inline assembly doesn't take 'FORTH_TRUE', so 0xFFFFFFFF was hardcoded in some places
     //  gcc inline assembly was buggy so stopped using it a long time ago JN 7/16/2013
@@ -825,20 +1103,24 @@ extern "C" {
 #define dg_whichintparameter         (0x150)
 #define dg_whichfloatparameter       (0x158)
 #define dg_extraparametersfloatsflag (0x160)
-#define dg_noframereturnstackdepth   (0x168) // in UINT64s
-#define dg_cparameterregisters       (0x170) // room for 4 parameters...
+#define dg_available                 (0x168) 
+#define dg_cparameterregisters       (0x170) // room for 4 parameter types... 0 = int, 1 = float (could use bits instead)
 
 #define dg_callsubnumberofints       (0x190)
 #define dg_callsubnumberoffloats     (0x198)
-#define dg_callsubreturnstackdepth   (0x1A0)
+#define dg_returnstackdepth          (0x1A0)
 #define dg_colonreturnstackdepth     (0x1A8)
 #define dg_errorlinenumber           (0x1B0)
-#define lastnotfoundword             (0x1B8) // this is 256 characters (bytes) long.. needs to be maxwordlength long which is 255.. I added 1
+#define dg_localsregsused            (0x1B8) // 1 bit per reg marks which regs are used for anything
+#define dg_paramregsused             (0x1C0) // 1 bit per reg marks which regs are used as parameters
+#define dg_subroutineregspreserved   (0x1C8) // 1 bit per reg marks which regs are saved on entry and restored on exit
+#define dg_regspreserveddepth        (0x1D0) // depth of first subroutine reg preserved
+#define lastnotfoundword             (0x1D8) // this is 256 characters (bytes) long.. needs to be maxwordlength long which is 255.. I added 1
 
-#define dg_quitsavedstate            (0x2B8) // this is 9*4 = 36 bytes long, rounding up to 0x30  ... looks like it is only 0x18...
+#define dg_quitsavedstate            (0x2D8) // this is 9*4 = 36 bytes long, rounding up to 0x30  ... looks like it is only 0x18...
  
 // put more variables here and increase initialsizeofvariablebuffer
-#define initialsizeofvariablebuffer  (0x2E8)
+#define initialsizeofvariablebuffer  (0x308)
 
 #define dg_cparameterregisterslength    (0x4)   // in number of parameters, Windows needs 4
 #define dg_cparameteronstackflag        (0x0100000000000000)
@@ -846,10 +1128,6 @@ extern "C" {
 #define dg_cparameterpassinbothflag     (0x0300000000000000)
 #define dg_cparameteronstackmask        (0xFF00000000000000)
 
-
-#define dg_dgluframelocaloffset         (0x5)   // in UINT64s - offset from rbp to address of local 0
-                                                //   need to add one here because you have to include saved RBP
-                                                //   so it's the 4 dglu frame items + saved RBP
 // #define dg_laststuffbeforeerrorsize     (0xA0) // has to be less than true size of dg_laststuffbeforeerror
 
 #define dg_quitsavedstatelength     (0x30) // 11/22/2017 - will figure out actual size later  
@@ -1456,6 +1734,11 @@ extern "C" {
     DGLU_API extern const char dg_forthlobitname[];
     DGLU_API extern const char dg_forthhibitname[];
     DGLU_API extern const char dg_forthcountbitsname[];
+    DGLU_API extern const char dg_forthulo1bitsname[];
+    DGLU_API extern const char dg_forthulo1bitposname[];
+    DGLU_API extern const char dg_forthulobitsname[];
+    DGLU_API extern const char dg_forthulomaskname[];
+    DGLU_API extern const char dg_forthtwototheuname[];
     
     DGLU_API extern const char dg_forthmicrosecondssince1970jan01name[];
     
@@ -2442,13 +2725,17 @@ extern "C" {
         unsigned char* psrc, 
         unsigned char* pdest,
         UINT64 stringlength);
-        
-        
+            
+    const char* dg_moveuint64ssub (
+        UINT64* psrc, 
+        UINT64* pdest,
+        UINT64  length);
+    
     DGLU_API extern const char dg_moveuint64sname[];
     DGLU_API const char* dg_moveuint64s (
         UINT64* psrc, 
         UINT64* pdest,
-        UINT64 stringlength);
+        UINT64  length);
     
     const char* dg_comparebytessub (
         unsigned char* pstring1, 
@@ -2845,6 +3132,23 @@ extern "C" {
 
     DGLU_API INT64 dg_n32ton64 (UINT64 x);
 
+    DGLU_API UINT64 dg_setbit (UINT64 uvalue, UINT64 ubitindex);
+
+    DGLU_API UINT64 dg_clrbit (UINT64 uvalue, UINT64 ubitindex);
+
+    DGLU_API UINT64 dg_notbit (UINT64 uvalue, UINT64 ubitindex);
+
+    DGLU_API UINT64 dg_twototheu (UINT64 ubitindex);
+
+    DGLU_API UINT64 dg_scanforuthsetbit (UINT64 uvalue, UINT64 uth);
+
+    DGLU_API UINT64 dg_getulowestsetbits (UINT64 uvalue, UINT64 ucount);
+
+    DGLU_API UINT64 dg_getulowestbits (UINT64 uvalue, UINT64 ucount);
+
+    DGLU_API UINT64 dg_getulowestbitsmask (UINT64 ucount);
+
+
 
     // ///////////////////////////////////////
     // End of Operating System API routines //
@@ -3055,6 +3359,8 @@ extern "C" {
     DGLU_API UINT64 dg_hibitd(
         UINT64 ulo,
         UINT64 uhi);
+
+    DGLU_API UINT64 dg_ubitsmask(UINT64 numberofbits);
     
     DGLU_API void dg_forthprintstring(Bufferhandle* pBHarrayhead);
     //              ( $1 -$- )
@@ -3062,6 +3368,24 @@ extern "C" {
     // ////////////////////////
     //  C Compiling Routines //
     // ////////////////////////
+
+    DGLU_API UINT64 dg_regtolocalsregindex (UINT64 reg);
+
+    DGLU_API UINT64 dg_localsregindextoreg (UINT64 localsregindex);
+
+    DGLU_API UINT64 dg_paramregsindextolocalsregindex (
+        UINT64 paramregsindex,
+        UINT64 paramregstype);
+
+    DGLU_API void dg_marklocalsregasused (
+        Bufferhandle* pBHarrayhead,
+        UINT64 localsregindex);
+
+    DGLU_API void dg_forthallrmaskunuse (Bufferhandle* pBHarrayhead);
+
+    DGLU_API UINT64 dg_usenextunusedlocalsintreg(Bufferhandle* pBHarrayhead);
+
+    DGLU_API UINT64 dg_usenextunusedlocalsfloatreg(Bufferhandle* pBHarrayhead);
     
     DGLU_API void dg_bumpdisplacementsizeifneeded (struct dg_Sibformatter* psf);
     
@@ -3089,6 +3413,11 @@ extern "C" {
         Bufferhandle* pBHarrayhead,
         UINT64 srcreg,
         UINT64 destreg);
+
+    DGLU_API void dg_compilemovfregtofreg (
+        Bufferhandle* pBHarrayhead,
+        UINT64 srcreg,
+        UINT64 destreg);
     
     DGLU_API void dg_compileaddregtoreg (
         Bufferhandle* pBHarrayhead,
@@ -3099,51 +3428,180 @@ extern "C" {
         Bufferhandle* pBHarrayhead,
         UINT64 n);
 
+    DGLU_API void dg_compilesubnfromrsp (
+        Bufferhandle* pBHarrayhead,
+        UINT64 n);
+
     DGLU_API void dg_compileaddn8torsp(
         Bufferhandle* pBHarrayhead,
         UINT64 n);
+
+    DGLU_API void dg_compileaddntorsp (
+        Bufferhandle* pBHarrayhead,
+        UINT64 n);
+
+    DGLU_API void dg_compilemovbracketrsptoreg (
+        Bufferhandle* pBHarrayhead,
+        UINT64 reg);
+
+    DGLU_API void dg_compilemovbracketrsptofreg (
+        Bufferhandle* pBHarrayhead,
+        UINT64 reg);
     
     DGLU_API void dg_compilemovbracketrbpd8toreg (
         Bufferhandle* pBHarrayhead,
         UINT64 reg,
-        UINT64 displacement8);
+        INT64 displacement8);
+
+    DGLU_API void dg_compilemovbracketrbpd8tofreg (
+        Bufferhandle* pBHarrayhead,
+        UINT64 reg,
+        INT64 displacement8);
+
+    DGLU_API void dg_compilemovbracketrspd8toreg (
+        Bufferhandle* pBHarrayhead,
+        UINT64 reg,
+        INT64 displacement8);
+
+    DGLU_API void dg_compilemovbracketrspd8tofreg (
+        Bufferhandle* pBHarrayhead,
+        UINT64 reg,
+        INT64 displacement8);
 
     DGLU_API void dg_compilemovbracketrbpd32toreg (
         Bufferhandle* pBHarrayhead,
         UINT64 reg,
-        UINT64 displacement32);
+        INT64 displacement32);
+
+    DGLU_API void dg_compilemovbracketrbpd32tofreg (
+        Bufferhandle* pBHarrayhead,
+        UINT64 reg,
+        INT64 displacement32);
+
+    DGLU_API void dg_compilemovbracketrspd32toreg (
+        Bufferhandle* pBHarrayhead,
+        UINT64 reg,
+        INT64 displacement32);
+
+    DGLU_API void dg_compilemovbracketrspd32tofreg (
+        Bufferhandle* pBHarrayhead,
+        UINT64 reg,
+        INT64 displacement32);
 
     DGLU_API void dg_compilemovbracketrbpdtoreg (
+        Bufferhandle* pBHarrayhead,
+        UINT64 reg,
+        INT64 displacement);
+
+    DGLU_API void dg_compilemovbracketrspdtoreg (
         Bufferhandle* pBHarrayhead,
         UINT64 reg,
         INT64 displacement);
     
     DGLU_API void dg_compilepushbracketrbpd8 (
         Bufferhandle* pBHarrayhead,
-        UINT64 displacement8);
+        INT64 displacement8);
     
     DGLU_API void dg_compilemovbracketripd32torax (
         Bufferhandle* pBHarrayhead,
-        UINT64 displacement32);
+        INT64 displacement32);
     
     DGLU_API void dg_compilecallbracketripd32 (
         Bufferhandle* pBHarrayhead,
-        UINT64 displacement32);
+        INT64 displacement32);
+
+    DGLU_API void dg_compileopreg64tobracketrsp (
+        Bufferhandle* pBHarrayhead,
+        UINT64 reg,
+        UINT64 opcode);
+
+    DGLU_API void dg_compilemovregtobracketrsp (
+        Bufferhandle* pBHarrayhead,
+        UINT64 reg);
+
+    DGLU_API void dg_compilemovfregtobracketrsp (
+        Bufferhandle* pBHarrayhead,
+        UINT64 reg);
 
     DGLU_API void dg_compilemovregtobracketrbpd8 (
         Bufferhandle* pBHarrayhead,
         UINT64 reg,
-        UINT64 displacement8);
+        INT64 displacement8);
+
+    DGLU_API void dg_compilemovfregtobracketrbpd8 (
+        Bufferhandle* pBHarrayhead,
+        UINT64 reg,
+        INT64 displacement8);
+
+    DGLU_API void dg_compilemovregtobracketrspd8 (
+        Bufferhandle* pBHarrayhead,
+        UINT64 reg,
+        INT64 displacement8);
+
+    DGLU_API void dg_compilemovfregtobracketrspd8 (
+        Bufferhandle* pBHarrayhead,
+        UINT64 reg,
+        INT64 displacement8);
 
     DGLU_API void dg_compilemovregtobracketrbpd32 (
         Bufferhandle* pBHarrayhead,
         UINT64 reg,
-        UINT64 displacement32);
+        INT64 displacement32);
+
+    DGLU_API void dg_compilemovfregtobracketrbpd32 (
+        Bufferhandle* pBHarrayhead,
+        UINT64 reg,
+        INT64 displacement32);
+
+    DGLU_API void dg_compilemovregtobracketrspd32 (
+        Bufferhandle* pBHarrayhead,
+        UINT64 reg,
+        INT64 displacement32);
+
+    DGLU_API void dg_compilemovfregtobracketrspd32 (
+        Bufferhandle* pBHarrayhead,
+        UINT64 reg,
+        INT64 displacement32);
 
     DGLU_API void dg_compilemovregtobracketrbpd (
         Bufferhandle* pBHarrayhead,
         UINT64 reg,
         INT64 displacement);
+
+    DGLU_API void dg_compilemovregtobracketrspd (
+        Bufferhandle* pBHarrayhead,
+        UINT64 reg,
+        INT64 displacement);
+
+    DGLU_API void dg_compilepreservelocalsregstoret (
+        Bufferhandle*pBHarrayhead,
+        UINT64 localsregsmasktopreserve,
+        UINT64 localsregsmaskallocated,
+        UINT64 offsetinlocals);
+
+    DGLU_API void dg_compilepreservenoframeregs (
+        Bufferhandle* pBHarrayhead,
+        UINT64 localsregsmask);
+
+    DGLU_API void dg_compileunpreservelocalsregsfromret (
+        Bufferhandle*pBHarrayhead,
+        UINT64 localsregsmasktorestore,
+        UINT64 localsregsmaskallocated,
+        UINT64 offsetinlocals);
+
+    DGLU_API void dg_compileunpreservelocalsregsfromframe (
+        Bufferhandle*pBHarrayhead,
+        UINT64 localsregsmasktorestore,
+        UINT64 localsregsmaskallocated,
+        INT64 offsetinlocals);  // usually negative
+
+    DGLU_API void dg_compileunpreservenoframeregs (
+        Bufferhandle* pBHarrayhead,
+        UINT64 localsregsmask);
+
+    DGLU_API void dg_compileunpreservecallsubsframeregs (
+        Bufferhandle* pBHarrayhead,
+        UINT64 localsregsmask);
 
     DGLU_API void dg_compilebracketrbpdtodatastack (
         Bufferhandle* pBHarrayhead,
@@ -3174,9 +3632,9 @@ extern "C" {
         UINT64 stringlength);
         
     DGLU_API void dg_compilecopystonew0string (
-    Bufferhandle* pBHarrayhead,
-    const char* pstring,
-    UINT64 stringlength);
+        Bufferhandle* pBHarrayhead,
+        const char* pstring,
+        UINT64 stringlength);
     
     DGLU_API void dg_compilecalloffset (
         Bufferhandle* pBHarrayhead,
@@ -3266,6 +3724,12 @@ extern "C" {
     DGLU_API void dg_compilealignretstack(
         Bufferhandle* pBHarrayhead,
         UINT64 numberofparameters);
+
+    DGLU_API void dg_compilealignretstackb(
+        Bufferhandle* pBHarrayhead,
+        UINT64 numberofintparameters,
+        UINT64 numberoffloatparameters);
+
 /*
     DGLU_API void dg_compilealignretstackpreserveregs(
         Bufferhandle* pBHarrayhead,
@@ -3277,7 +3741,11 @@ extern "C" {
         Bufferhandle* pBHarrayhead,
         UINT32 n);
 */
+
     DGLU_API void dg_compilepushpBHarrayheadtoret (Bufferhandle* pBHarrayhead);
+
+    DGLU_API extern const char dg_forthshadowcommaname[];
+    DGLU_API void dg_forthshadowcomma (Bufferhandle* pBHarrayhead);
     
     DGLU_API extern const char* dg_compilecallcorename;
     DGLU_API void dg_compilecallcore (
@@ -3411,6 +3879,26 @@ extern "C" {
         Bufferhandle* pBHarrayhead,
         UINT64 bufferid,
         UINT64 offset);
+
+    DGLU_API extern const char dg_compilepreservecallsubsregsname[];
+    DGLU_API void dg_compilepreservecallsubsregs (
+        Bufferhandle* pBHarrayhead,
+        UINT64 localsregsmask);
+
+    DGLU_API extern const char dg_forthendsubparamscommaname[];
+    DGLU_API void dg_forthendsubparamscomma(Bufferhandle* pBHarrayhead);
+
+    DGLU_API extern const char dg_forthimpname[];
+    DGLU_API void dg_forthimp(Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthmovcomma(Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthbracketrplusd(Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthleacomma(Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthmovqcomma(Bufferhandle* pBHarrayhead);
+
     
     DGLU_API void dg_pushf64tof64stack(
         Bufferhandle* pBHarrayhead,
@@ -7106,8 +7594,6 @@ extern "C" {
     
     DGLU_API void dg_initjumpbuffer (Bufferhandle* pBHarrayhead);
     
-    
-    
     DGLU_API extern const char* dg_stateexecute;  // setting the state variable to this puts script interpreter into execute mode
     
     DGLU_API extern const char dg_statecompile[];  // setting the state variable to this puts script interpreter into compile mode
@@ -7660,6 +8146,12 @@ extern "C" {
     DGLU_API void dg_forthhibit (Bufferhandle* pBHarrayhead);
     
     DGLU_API void dg_forthcountbits (Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthulo1bits (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthulo1bitpos (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthulobits (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthulomask (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthtwototheu (Bufferhandle* pBHarrayhead);
     
     DGLU_API void dg_forthmicrosecondssince1970jan01(Bufferhandle* pBHarrayhead);
     
@@ -7877,7 +8369,7 @@ extern "C" {
         
     DGLU_API void dg_compilevex ( // need to add way to force promotion to 3 byte vex...
         Bufferhandle* pBHarrayhead,
-        struct dg_Sibformatter* psf, // moo
+        struct dg_Sibformatter* psf, 
         UINT64 addresssize,
         UINT64 simdprefixcode,  // 0 = none, 1 = 0x66, 2 = 0xF3, 3 = 0xF2
         UINT64 leadingopcodebytescode,  // 1 = 0x0F, 2 = 0x0F 0x38, 3 = 0x0F 0x3A
@@ -8297,7 +8789,7 @@ extern "C" {
 #define dg_isfromintsubparam             ((UINT64)0xFFFFFFFFFFFFFFE6) // for unloading return params after subroutine call
 #define dg_isfromfloatsubparam           ((UINT64)0xFFFFFFFFFFFFFFE5) // for unloading return params after subroutine call
 #define dg_isptointsubparam              ((UINT64)0xFFFFFFFFFFFFFFE4) // for setting up params for subroutine call
-
+#define dg_isdgluforthnoframelocal       ((UINT64)0xFFFFFFFFFFFFFFE3) // for no frame rsp relative local variables
 
 #define dg_memmodeimmediate    (0)
 #define dg_memmodedefaultreg   (1)
@@ -8381,167 +8873,81 @@ enum dg_branchtypes {
 #define dg_ccnever  (0x11)
 
 
-enum dg_cpux86regs {
-    dg_al = 0,
-    dg_cl,
-    dg_dl,
-    dg_bl,
-    dg_ah,
-    dg_ch,
-    dg_dh,
-    dg_bh,
-    dg_ax,
-    dg_cx,
-    dg_dx,
-    dg_bx,
-    dg_sp,
-    dg_bp,
-    dg_si,
-    dg_di,
-    dg_eax, // 0x10
-    dg_ecx,
-    dg_edx,
-    dg_ebx,
-    dg_esp,
-    dg_ebp,
-    dg_esi,
-    dg_edi,
-    // first rex reg is r8l
-    dg_r8l,
-    dg_r9l,
-    dg_r10l,
-    dg_r11l,
-    dg_r12l,
-    dg_r13l,
-    dg_r14l,
-    dg_r15l,
-    dg_r8w, // 0x20
-    dg_r9w,
-    dg_r10w,
-    dg_r11w,
-    dg_r12w,
-    dg_r13w,
-    dg_r14w,
-    dg_r15w,
-    dg_r8d,
-    dg_r9d,
-    dg_r10d,
-    dg_r11d,
-    dg_r12d,
-    dg_r13d,
-    dg_r14d,
-    dg_r15d,
-    dg_r8, // 0x30
-    dg_r9,
-    dg_r10,
-    dg_r11,
-    dg_r12,
-    dg_r13,
-    dg_r14,
-    dg_r15,
-    dg_rax,
-    dg_rcx,
-    dg_rdx,
-    dg_rbx,
-    dg_rsp,
-    dg_rbp,
-    dg_rsi,
-    dg_rdi,
-    // need to add 4 to dg_spl, dg_bpl, dg_sil, dg_dil so gonna add some dummy regs
-    dg_fakereg0, // 0x40
-    dg_fakereg1,
-    dg_fakereg2,
-    dg_fakereg3,
-    dg_spl,
-    dg_bpl,
-    dg_sil,
-    dg_dil,
-    dg_st0,
-    dg_st1,
-    dg_st2,
-    dg_st3,
-    dg_st4,
-    dg_st5,
-    dg_st6,
-    dg_st7,
-    dg_xmm0, // 0x50
-    dg_xmm1,
-    dg_xmm2,
-    dg_xmm3,
-    dg_xmm4,
-    dg_xmm5,
-    dg_xmm6,
-    dg_xmm7,
-    dg_xmm8,
-    dg_xmm9,
-    dg_xmm10,
-    dg_xmm11,
-    dg_xmm12,
-    dg_xmm13,
-    dg_xmm14,
-    dg_xmm15,
-    dg_ymm0, // 0x60
-    dg_ymm1,
-    dg_ymm2,
-    dg_ymm3,
-    dg_ymm4,
-    dg_ymm5,
-    dg_ymm6,
-    dg_ymm7,
-    dg_ymm8,
-    dg_ymm9,
-    dg_ymm10,
-    dg_ymm11,
-    dg_ymm12,
-    dg_ymm13,
-    dg_ymm14,
-    dg_ymm15,
-    dg_cr0, // 0x70
-    dg_cr1,
-    dg_cr2,
-    dg_cr3,
-    dg_cr4,
-    dg_cr5,
-    dg_cr6,
-    dg_cr7,
-    dg_cr8,
-    dg_cr9,
-    dg_cr10,
-    dg_cr11,
-    dg_cr12,
-    dg_cr13,
-    dg_cr14,
-    dg_cr15,
-    dg_dr0, // 0x80
-    dg_dr1,
-    dg_dr2,
-    dg_dr3,
-    dg_dr4,
-    dg_dr5,
-    dg_dr6,
-    dg_dr7,
-    dg_segregcs,
-    dg_segregds,
-    dg_segregss,
-    dg_segreges,
-    dg_segregfs,
-    dg_segreggs,
-    dg_segregfake1,
-    dg_segregfake2,
-    dg_gdtr, // 0x90
-    dg_ldtr,
-    dg_idtr,
-    dg_crx,
-    dg_fakereg4,
-    dg_fakereg5,
-    dg_fakereg6,
-    dg_fakereg7,
-    // last rex reg is dil
-    dg_eip = 0xFFFF0000,
-    dg_rip = 0xFFFF0001,
-    dg_noreg = 0xFFFFFFFF
+enum dg_localscpux86regmask {
+    dg_localsr8mask    = 0x00000001,
+    dg_localsr9mask    = 0x00000002,
+    dg_localsr10mask   = 0x00000004,
+    dg_localsr11mask   = 0x00000008,
+    dg_localsr12mask   = 0x00000010,
+    dg_localsr13mask   = 0x00000020,
+    dg_localsr14mask   = 0x00000040,
+    dg_localsr15mask   = 0x00000080,
+    dg_localsraxmask   = 0x00000100,
+    dg_localsrcxmask   = 0x00000200,
+    dg_localsrdxmask   = 0x00000400,
+    dg_localsrbxmask   = 0x00000800,
+    dg_localsrspmask   = 0x00001000,
+    dg_localsrbpmask   = 0x00002000,
+    dg_localsrsimask   = 0x00004000,
+    dg_localsrdimask   = 0x00008000,
+    dg_localsxmm0mask  = 0x00010000, 
+    dg_localsxmm1mask  = 0x00020000,
+    dg_localsxmm2mask  = 0x00040000,
+    dg_localsxmm3mask  = 0x00080000,
+    dg_localsxmm4mask  = 0x00100000,
+    dg_localsxmm5mask  = 0x00200000,
+    dg_localsxmm6mask  = 0x00400000,
+    dg_localsxmm7mask  = 0x00800000,
+    dg_localsxmm8mask  = 0x01000000,
+    dg_localsxmm9mask  = 0x02000000,
+    dg_localsxmm10mask = 0x04000000,
+    dg_localsxmm11mask = 0x08000000,
+    dg_localsxmm12mask = 0x10000000,
+    dg_localsxmm13mask = 0x20000000,
+    dg_localsxmm14mask = 0x40000000
 };
 
+// putting dg_localsxmm15mask in the enum doesn't work for VS 2019, it gets
+//   sign extended from 32 to 64 bits. It could be the 32 bit signed constant c compiler issue...
+//   J.N. 2/23/2023
+#define dg_localsxmm15mask (0x80000000)
+
+// order must match dg_localsregs[32] array in compilecpux86.cpp
+enum dg_localscpux86regindex {
+    dg_localsr8index = 0,   
+    dg_localsr9index,   
+    dg_localsr10index, 
+    dg_localsr11index, 
+    dg_localsr12index, 
+    dg_localsr13index, 
+    dg_localsr14index, 
+    dg_localsr15index, 
+    dg_localsraxindex, 
+    dg_localsrcxindex, 
+    dg_localsrdxindex, 
+    dg_localsrbxindex, 
+    dg_localsrspindex, 
+    dg_localsrbpindex, 
+    dg_localsrsiindex, 
+    dg_localsrdiindex, 
+    dg_localsxmm0index, 
+    dg_localsxmm1index, 
+    dg_localsxmm2index, 
+    dg_localsxmm3index, 
+    dg_localsxmm4index, 
+    dg_localsxmm5index, 
+    dg_localsxmm6index, 
+    dg_localsxmm7index, 
+    dg_localsxmm8index, 
+    dg_localsxmm9index, 
+    dg_localsxmm10index, 
+    dg_localsxmm11index, 
+    dg_localsxmm12index, 
+    dg_localsxmm13index, 
+    dg_localsxmm14index, 
+    dg_localsxmm15index,
+    dg_localscpux86regsmaxindex
+};
 
 const UINT64 dg_sizenone = 0;
 const UINT64 dg_sizebyte = 1;
@@ -8770,6 +9176,31 @@ struct dg_Sibformatter {
 
 DGLU_API void dg_initSibformatter (struct dg_Sibformatter* psf);
 
+DGLU_API void dg_checkbasereg (
+    Bufferhandle* pBHarrayhead,
+    UINT64 reg);
+
+DGLU_API void dg_checkindexreg (
+    Bufferhandle* pBHarrayhead,
+    UINT64 reg);
+
+DGLU_API void dg_checkvindexreg (
+    Bufferhandle* pBHarrayhead,
+    UINT64 reg);
+
+DGLU_API void dg_pullmemusingsib (
+    Bufferhandle* pBHarrayhead,
+    dg_Sibformatter* psf);
+
+DGLU_API void dg_pullmemusingvsib (
+    Bufferhandle* pBHarrayhead,
+    dg_Sibformatter* psf);
+
+DGLU_API void dg_pullmemusingrslashm (
+    Bufferhandle* pBHarrayhead,
+    dg_Sibformatter* psf);
+
+DGLU_API UINT64 dg_getsizefromreg (UINT64 reg);
 
 DGLU_API extern const char* dg_pulloneaddressingmodename;
 DGLU_API void dg_pulloneaddressingmode(
@@ -8862,7 +9293,14 @@ DGLU_API extern const char* dg_determineparameterregisternoframename;
 DGLU_API UINT64 dg_determineparameterregisternoframe (
     Bufferhandle* pBHarrayhead,
     UINT64 parameterindex);
-    
+
+DGLU_API extern const char dg_forthframeparamscurlyname[];
+DGLU_API void dg_forthframeparamscurly(Bufferhandle* pBHarrayhead);
+
+DGLU_API extern const char dg_forthnoframeparamscurlyname[];
+DGLU_API void dg_forthnoframeparamscurly(Bufferhandle* pBHarrayhead);
+ 
+DGLU_API void dg_forthimp(Bufferhandle* pBHarrayhead);   
     
 // DGLU_API void dg_initcpux86wordlist (
 //    Bufferhandle* pBHarrayhead);
@@ -9357,6 +9795,12 @@ DGLU_API UINT64 dg_pushimportsymbolstowin64coffbuffers(
     UINT64 oversizesymbolnamebufferid,
     UINT64 relocationtablebufferid);
 #endif
+
+// for win64 x86 assembler 
+// for win64 x86 assembler
+DGLU_API void dg_forthmovq2comma (Bufferhandle* pBHarrayhead); // for )), both int and float param case
+DGLU_API void dg_forthoimportcodelink (Bufferhandle* pBHarrayhead);
+DGLU_API extern const char dg_isoimportcodelinkname[];
 
 #ifdef  __cplusplus
 }

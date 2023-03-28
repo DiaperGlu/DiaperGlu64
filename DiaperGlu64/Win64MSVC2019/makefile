@@ -179,8 +179,8 @@ forthstringstack.obj : ../forthstringstack.cpp ../diapergluforth.h
 forthwordlist.obj : ../forthwordlist.cpp ../diapergluforth.h
 	cl /c /Fo /DDGLU_OS_WIN64 /DDGLU_EXPORTS ../forthwordlist.cpp
 
-compilecpux86.obj : ./compilecpux86.cpp ../diapergluforth.h
-	cl /c /Fo /DDGLU_OS_WIN64 /DDGLU_EXPORTS ./compilecpux86.cpp
+compilecpux86.obj : ../compilecpux86.cpp ../diapergluforth.h
+	cl /c /Fo /DDGLU_OS_WIN64 /DDGLU_EXPORTS ../compilecpux86.cpp
 
 win64specific.obj : ./win64specific.cpp ../diapergluforth.h
 	cl /c /Fo /DDGLU_OS_WIN64 /DDGLU_EXPORTS ./win64specific.cpp

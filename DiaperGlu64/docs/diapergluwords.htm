@@ -1,22 +1,22 @@
 <!--
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2022 James Patrick Norris
+//    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.7.
+//    This file is part of DiaperGlu v5.8.
 //
-//    DiaperGlu v5.7 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.8 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.7 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.8 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.7; if not, write to the Free Software
+//    along with DiaperGlu v5.8; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// August 26, 2022            //
-// version 5.7                //
+// March 27, 2023             //
+// version 5.8                //
 // /////////////////////////////
 -->
 
@@ -5485,6 +5485,48 @@
           <td>calls x</td> 
           <td>compiles a call to x</td>
           <td><a href=forthmiscellaneous.htm#dg_forthhibit>dg_forthhibit</a></td>
+        </tr>
+
+        <tr>
+          <td>COUNTBITS</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcountbits>dg_forthcountbits</a></td>
+        </tr>
+
+        <tr>
+          <td>ULO1BITS</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthulo1bits>dg_forthulo1bits</a></td>
+        </tr>
+
+        <tr>
+          <td>ULO1BITPOS</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthulo1bitpos>dg_forthulo1bitpos</a></td>
+        </tr>
+
+        <tr>
+          <td>ULOBITS</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthulobits>dg_forthulobits</a></td>
+        </tr>
+
+        <tr>
+          <td>ULOMASK</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthulomask>dg_forthulomask</a></td>
+        </tr>
+
+        <tr>
+          <td>2^U</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthtwototheu>dg_forthtwototheu</a></td>
         </tr>
         
         <tr>
@@ -13777,6 +13819,391 @@
           <td>calls x</td> 
           <td>compiles a safe call to x</td>
           <td><a href=cpux86.htm#dg_compileexitlocals>dg_compileexitlocals</a></td>
+        </tr>
+
+        <tr>
+          <td>REGS&lt;</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=cpux86.htm#dg_forthregscurly>dg_forthregscurly</a></td>
+        </tr>
+
+        <tr>
+          <td>$-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthstringrmask>dg_forthstringrmask</a></td>
+        </tr>
+
+        <tr>
+          <td>$SRC-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthstringsrcrmask>dg_forthstringsrcrmask</a></td>
+        </tr>
+
+        <tr>
+          <td>$DEST-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthstringdestrmask>dg_forthstringdestrmask</a></td>
+        </tr>
+
+        <tr>
+          <td>$CTR-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthstringctrrmask>dg_forthstringctrrmask</a></td>
+        </tr>
+
+        <tr>
+          <td>MATH-HI-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthmathhirmask>dg_forthmathhirmask</a></td>
+        </tr>
+
+        <tr>
+          <td>MUST-BE-PRESERVED-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthmustbepreservedrmask>dg_forthmustbepreservedrmask</a></td>
+        </tr>
+
+        <tr>
+          <td>IMUST-BE-PRESERVED-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthimustbepreservedrmask>dg_forthimustbepreservedrmask</a></td>
+        </tr>
+
+        <tr>
+          <td>FMUST-BE-PRESERVED-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthfmustbepreservedrmask>dg_forthfmustbepreservedrmask</a></td>
+        </tr>
+
+        <tr>
+          <td>U-IMUST-BE-PRESERVED-RMASK</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=cpux86.htm#dg_forthuimustbepreservedrmask>dg_forthuimustbepreservedrmask</a></td>
+        </tr>
+
+        <tr>
+          <td>U-FMUST-BE-PRESERVED-RMASK</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=cpux86.htm#dg_forthufmustbepreservedrmask>dg_forthufmustbepreservedrmask</a></td>
+        </tr>
+
+        <tr>
+          <td>IPARAMS-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthiparamsrmask>dg_forthiparamsrmask</a></td>
+        </tr>
+
+        <tr>
+          <td>FPARAMS-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthfparamsrmask>dg_forthfparamsrmask</a></td>
+        </tr>
+
+        <tr>
+          <td>PARAMS-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthparamsrmask>dg_forthparamsrmask</a></td>
+        </tr>
+
+        <tr>
+          <td>ALLOCATABLE-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthallocatablermask>dg_forthallocatablermask</a></td>
+        </tr>
+
+        <tr>
+          <td>IALLOCATABLE-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthiallocatablermask>dg_forthiallocatablermask</a></td>
+        </tr>
+
+        <tr>
+          <td>FALLOCATABLE-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthfallocatablermask>dg_forthfallocatablermask</a></td>
+        </tr>
+
+        <tr>
+          <td>IPARAM0-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthiparam0rmask>dg_forthiparam0rmask</a></td>
+        </tr>
+
+        <tr>
+          <td>IPARAM1-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthiparam1rmask>dg_forthiparam1rmask</a></td>
+        </tr>
+
+        <tr>
+          <td>IPARAM2-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthiparam2rmask>dg_forthiparam2rmask</a></td>
+        </tr>
+
+        <tr>
+          <td>IPARAM3-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthiparam3rmask>dg_forthiparam3rmask</a></td>
+        </tr>
+
+        <tr>
+          <td>IPARAM4-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthiparam4rmask>dg_forthiparam4rmask</a></td>
+        </tr>
+
+        <tr>
+          <td>IPARAM5-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthiparam5rmask>dg_forthiparam5rmask</a></td>
+        </tr>
+
+        <tr>
+          <td>IPARAM6-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthiparam6rmask>dg_forthiparam6rmask</a></td>
+        </tr>
+
+        <tr>
+          <td>IPARAM7-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthiparam7rmask>dg_forthiparam7rmask</a></td>
+        </tr>
+
+        <tr>
+          <td>FPARAM0-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthfparam0rmask>dg_forthfparam0rmask</a></td>
+        </tr>
+
+        <tr>
+          <td>FPARAM1-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthfparam1rmask>dg_forthfparam1rmask</a></td>
+        </tr>
+
+        <tr>
+          <td>FPARAM2-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthfparam2rmask>dg_forthfparam2rmask</a></td>
+        </tr>
+
+        <tr>
+          <td>FPARAM3-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthfparam3rmask>dg_forthfparam3rmask</a></td>
+        </tr>
+
+        <tr>
+          <td>FPARAM4-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthfparam4rmask>dg_forthfparam4rmask</a></td>
+        </tr>
+
+        <tr>
+          <td>FPARAM5-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthfparam5rmask>dg_forthfparam5rmask</a></td>
+        </tr>
+
+        <tr>
+          <td>FPARAM6-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthfparam6rmask>dg_forthfparam6rmask</a></td>
+        </tr>
+
+        <tr>
+          <td>FPARAM7-RMASK</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthfparam7rmask>dg_forthfparam7rmask</a></td>
+        </tr>
+
+        <tr>
+          <td>AVAILABLE-RMASK</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=cpux86.htm#dg_forthavailablermask>dg_forthavailablermask</a></td>
+        </tr>
+
+        <tr>
+          <td>PRSDEPTH</td>
+          <td>pushes address of offset in buffer to datastack</td> 
+          <td>compiles push address of offset in buffer to datastack</td>
+          <td><a href=cpux86.htm#dg_forthprsdepth>dg_forthprsdepth</a></td>
+        </tr>
+
+        <tr>
+          <td>PPRESERVED-DEPTH</td>
+          <td>pushes address of offset in buffer to datastack</td> 
+          <td>compiles push address of offset in buffer to datastack</td>
+          <td><a href=cpux86.htm#dg_forthppreserveddepth>dg_forthppreserveddepth</a></td>
+        </tr>
+
+        <tr>
+          <td>PPRESERVED-RMASK</td>
+          <td>pushes address of offset in buffer to datastack</td> 
+          <td>compiles push address of offset in buffer to datastack</td>
+          <td><a href=cpux86.htm#dg_forthppreservedmask>dg_forthppreservedmask</a></td>
+        </tr>
+
+        <tr>
+          <td>PUSED-RMASK</td>
+          <td>pushes address of offset in buffer to datastack</td> 
+          <td>compiles push address of offset in buffer to datastack</td>
+          <td><a href=cpux86.htm#dg_forthpusedrmask>dg_forthpusedrmask</a></td>
+        </tr>
+
+        <tr>
+          <td>R&gt;RMASKPOS</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=cpux86.htm#dg_forthrtormaskpos>dg_forthrtormaskpos</a></td>
+        </tr>
+
+        <tr>
+          <td>RMASKPOS&gt;R</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=cpux86.htm#dg_forthrmaskpostor>dg_forthrmaskpostor</a></td>
+        </tr>
+
+        <tr>
+          <td>R&gt;RMASK</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=cpux86.htm#dg_forthrtormask>dg_forthrtormask</a></td>
+        </tr>
+
+        <tr>
+          <td>RMASK-NO-FRAME-PRESERVE,</td>
+          <td>calls x</td> 
+          <td>compiles a safe call to x</td>
+          <td><a href=cpux86.htm#dg_forthrmasknoframepreservecomma>dg_forthrmasknoframepreservecomma</a></td>
+        </tr>
+
+        <tr>
+          <td>RMASK-NO-FRAME-UNPRESERVE,</td>
+          <td>calls x</td> 
+          <td>compiles a safe call to x</td>
+          <td><a href=cpux86.htm#dg_forthrmasknoframeunpreservecomma>dg_forthrmasknoframeunpreservecomma</a></td>
+        </tr>
+
+        <tr>
+          <td>RMASK-CALL-SUBS-FRAME-PRESERVE,</td>
+          <td>calls x</td> 
+          <td>compiles a safe call to x</td>
+          <td><a href=cpux86.htm#dg_forthrmaskcallsubsframepreservecomma>dg_forthrmaskcallsubsframepreservecomma</a></td>
+        </tr>
+
+        <tr>
+          <td>RMASK-CALL-SUBS-FRAME-UNPRESERVE,</td>
+          <td>calls x</td> 
+          <td>compiles a safe call to x</td>
+          <td><a href=cpux86.htm#dg_forthrmaskcallsubsframeunpreservecomma>dg_forthrmaskcallsubsframeunpreservecomma</a></td>
+        </tr>
+
+        <tr>
+          <td>RMASK-USE</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=cpux86.htm#dg_forthrmaskuse>dg_forthrmaskuse</a></td>
+        </tr>
+
+        <tr>
+          <td>RMASK-UNUSE</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=cpux86.htm#dg_forthrmaskunuse>dg_forthrmaskunuse</a></td>
+        </tr>
+
+        <tr>
+          <td>R-USE</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=cpux86.htm#dg_forthruse>dg_forthruse</a></td>
+        </tr>
+
+        <tr>
+          <td>UNUSED-IR-USE</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=cpux86.htm#dg_forthunusediruse>dg_forthunusediruse</a></td>
+        </tr>
+
+        <tr>
+          <td>UNUSED-FR-USE</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=cpux86.htm#dg_forthunusedfruse>dg_forthunusedfruse</a></td>
+        </tr>
+
+        <tr>
+          <td>IPARAM0</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthiparam0>dg_forthiparam0</a></td>
+        </tr>
+
+        <tr>
+          <td>IPARAM1</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthiparam1>dg_forthiparam1</a></td>
+        </tr>
+
+        <tr>
+          <td>IPARAM2</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthiparam2>dg_forthiparam2</a></td>
+        </tr>
+
+        <tr>
+          <td>IPARAM3</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthiparam3>dg_forthiparam3</a></td>
+        </tr>
+
+        <tr>
+          <td>SHADOWSIZE</td>
+          <td>pushes U to datastack</td> 
+          <td>compiles push U to datastack</td>
+          <td><a href=cpux86.htm#dg_forthshadowsize>dg_forthshadowsize</a></td>
         </tr>
 
       </table>

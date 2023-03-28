@@ -1,0 +1,296 @@
+( //////////////////////////////////////////////////////////////////////////////////////// )
+( //                                                                                       )
+( //    Copyright 2022 James Patrick Norris                                                )
+( //                                                                                       )
+( //    This file is part of Diaperglu 5.5.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.5 is free software; you can redistribute it and/or modify              )
+( //    it under the terms of the GNU General Public License as published by               )
+( //    the Free Software Foundation; either version 2 of the License, or                  )
+( //    {at your option} any later version.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.5 is distributed in the hope that it will be useful,                   )
+( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
+( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
+( //    GNU General Public License for more details.                                       )
+( //                                                                                       )
+( //    You should have received a copy of the GNU General Public License                  )
+( //    along with Diaperglu 5.5; if not, write to the Free Software                       )
+( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
+( //                                                                                       )
+( //////////////////////////////////////////////////////////////////////////////////////// )
+
+( /////////////////////////////// )
+( // James Patrick Norris      // )
+( // www.rainbarrel.com        // )
+( // July 2, 2022              // )
+( // version 5.5               // )
+( /////////////////////////////// )
+
+( replaces tabs in a file with 4 spaces )
+
+VARIABLE SRCBUFID
+VARIABLE DESTBUFID
+
+DECIMAL
+: changelinenedingstocrlffile$ ( filename$ -$- )
+    CRLF ." Changing line endings for " DUP$ .$
+    DUP$ LOADFILE$ SRCBUFID !
+    ?ERRORIF CRLF ." Could not open file" CRLF EXIT THEN
+    10000 -1 NEWBUFFER DESTBUFID !
+ 
+    SRCBUFID @ LENGTHBUF 0= IF EXIT THEN
+
+    // set current interpret buffer to input buffer
+    // PARSE-LINE ( -- addr length )
+    // GETBUFFERCURRENTOFFSET ( bufferid -- currentoffset )
+    PCURRENTINPUTBUFFER @ >R
+
+    SRCBUFID @ PCURRENTINPUTBUFFER !
+    // 0 SRCBUFID @ PUTBUFFERCURRENTOFFSET  ( not necessary since it's a new buffer )
+
+    BEGIN
+      SRCBUFID @ GETBUFFERCURRENTOFFSET
+      SRCBUFID @ LENGTHBUF U<
+    WHILE
+      PARSE-LINE
+      DESTBUFID @ S>BUF
+      13 DESTBUFID @ C>BUF
+      10 DESTBUFID @ C>BUF
+    REPEAT
+    
+    // $" new" $>$ ( appending new to filename just in case )
+    DESTBUFID @ SAVEFILE$
+    SRCBUFID @ FREEBUFFER
+    DESTBUFID @ FREEBUFFER
+
+    R> PCURRENTINPUTBUFFER !
+;
+
+: changelinenedingstocrfile$ ( filename$ -$- )
+    CRLF ." Changing line endings for " DUP$ .$
+    DUP$ LOADFILE$ SRCBUFID !
+    ?ERRORIF CRLF ." Could not open file" CRLF EXIT THEN
+    10000 -1 NEWBUFFER DESTBUFID !
+ 
+    SRCBUFID @ LENGTHBUF 0= IF EXIT THEN
+
+    PCURRENTINPUTBUFFER @ >R
+
+    SRCBUFID @ PCURRENTINPUTBUFFER !
+    // 0 SRCBUFID @ PUTBUFFERCURRENTOFFSET ( not necessary since it's a new buffer )
+
+    // set current interpret buffer to input buffer
+    // PARSE-LINE ( -- addr length )
+    // GETBUFFERCURRENTOFFSET ( bufferid -- currentoffset )
+
+    BEGIN
+      SRCBUFID @ GETBUFFERCURRENTOFFSET
+      SRCBUFID @ LENGTHBUF U<
+    WHILE
+      PARSE-LINE
+      DESTBUFID @ S>BUF
+      13 DESTBUFID @ C>BUF
+    REPEAT
+    
+    // $" new" $>$ ( appending new to filename just in case )
+    DESTBUFID @ SAVEFILE$
+    SRCBUFID @ FREEBUFFER
+    DESTBUFID @ FREEBUFFER
+
+    R> PCURRENTINPUTBUFFER !
+;
+
+
+: replacecpplineendings ( -- )
+    
+    $" ../../casyncfunction.cpp" changelinenedingstocrlffile$
+    $" ../../cerror.cpp" changelinenedingstocrlffile$
+    $" ../../cglu.cpp" changelinenedingstocrlffile$
+    $" ../../chierarchicallist.cpp" changelinenedingstocrlffile$
+    $" ../../cinitwordlist.cpp" changelinenedingstocrlffile$
+    $" ../../clstring.cpp" changelinenedingstocrlffile$
+    $" ../../clstringqueue.cpp" changelinenedingstocrlffile$
+    $" ../../cmiscellaneous.cpp" changelinenedingstocrlffile$
+    $" ../../cwordlist.cpp" changelinenedingstocrlffile$
+    $" ../../dgluconsole.cpp" changelinenedingstocrlffile$
+    $" ../../dgluconsolelinked.cpp" changelinenedingstocrlffile$
+    $" ../../dglumain.cpp" changelinenedingstocrlffile$
+    $" ../../diapergluforth.h" changelinenedingstocrlffile$
+
+    $" ../../forthbuffer.cpp" changelinenedingstocrlffile$
+    $" ../../forthcompiletype.cpp" changelinenedingstocrlffile$
+    $" ../../forthcore.cpp" changelinenedingstocrlffile$
+    $" ../../forthdoublenumber.cpp" changelinenedingstocrlffile$
+    $" ../../fortherror.cpp" changelinenedingstocrlffile$
+    $" ../../forthfloatingpoint.cpp" changelinenedingstocrlffile$
+    $" ../../forthglu.cpp" changelinenedingstocrlffile$
+    $" ../../forthhierarchicallist.cpp" changelinenedingstocrlffile$
+    $" ../../forthlocals.cpp" changelinenedingstocrlffile$
+    $" ../../forthlocalslstring.cpp" changelinenedingstocrlffile$
+    $" ../../forthlstringstack.cpp" changelinenedingstocrlffile$
+    $" ../../forthmiscellaneous.cpp" changelinenedingstocrlffile$
+    $" ../../forthnames.cpp" changelinenedingstocrlffile$
+    $" ../../forthprogrammingtools.cpp" changelinenedingstocrlffile$
+    $" ../../forthsearchorder.cpp" changelinenedingstocrlffile$
+    $" ../../forthstring.cpp" changelinenedingstocrlffile$
+    $" ../../forthstringstack.cpp" changelinenedingstocrlffile$
+    $" ../../forthwordlist.cpp" changelinenedingstocrlffile$
+
+    $" ../../testcbuffer.cpp" changelinenedingstocrlffile$
+    $" ../../testcerror.cpp" changelinenedingstocrlffile$
+    $" ../../testcglu.cpp" changelinenedingstocrlffile$
+    $" ../../testchierarchicallist.cpp" changelinenedingstocrlffile$
+    $" ../../testclstring.cpp" changelinenedingstocrlffile$
+    $" ../../testclstringqueue.cpp" changelinenedingstocrlffile$
+    $" ../../testcmiscellaneous.cpp" changelinenedingstocrlffile$
+    $" ../../testcompilecpux86.cpp" changelinenedingstocrlffile$
+    $" ../../testcwordlist.cpp" changelinenedingstocrlffile$
+    $" ../../testdglu.cpp" changelinenedingstocrlffile$
+    $" ../../testdglu.h" changelinenedingstocrlffile$
+    $" ../../testdglumain.cpp" changelinenedingstocrlffile$
+    $" ../../testforthbuffer.cpp" changelinenedingstocrlffile$
+    $" ../../testforthcore.cpp" changelinenedingstocrlffile$
+    $" ../../testforthdoublenumber.cpp" changelinenedingstocrlffile$
+    $" ../../testforthfloatingpoint.cpp" changelinenedingstocrlffile$
+    $" ../../testforthhierarchicallist.cpp" changelinenedingstocrlffile$
+    $" ../../testforthlocals.cpp" changelinenedingstocrlffile$
+    $" ../../testforthlstring.cpp" changelinenedingstocrlffile$
+    $" ../../testforthsearchorder.cpp" changelinenedingstocrlffile$
+    $" ../../testforthstring.cpp" changelinenedingstocrlffile$
+
+    $" ../../testosapi.cpp" changelinenedingstocrlffile$
+
+    $" ../../compilecpux86.cpp" changelinenedingstocrlffile$
+    $" ../cpux86macosxgccsignalcatch.cpp" changelinenedingstocrlffile$
+    $" ../osapimacosxgcc.cpp" changelinenedingstocrlffile$
+    $" ../mac64specific.cpp" changelinenedingstocrlffile$
+
+    $" ../../Win64MSVC2019/osapiwin64.cpp" changelinenedingstocrlffile$
+    $" ../../Win64MSVC2019/win64specific.cpp" changelinenedingstocrlffile$
+
+    $" ./calculatepi/testcalculatepidylib.cpp" changelinenedingstocrlffile$
+    $" ./dg2dgraphicsdylib/cdg2dgraphics.cpp" changelinenedingstocrlffile$
+    $" ./dg2dgraphicsdylib/dg2dgraphics.h" changelinenedingstocrlffile$
+    $" ./dg2dgraphicsdylib/testdg2dgraphicsmain.cpp" changelinenedingstocrlffile$
+    $" ./sampleasmdylib/testsampleasmdylib.cpp" changelinenedingstocrlffile$
+    $" ./testmakedoto/testmakedotomain.cpp" changelinenedingstocrlffile$
+
+    
+;
+
+: replacehtmllineendings ( -- )
+    
+    $" ../../docs/about.htm" changelinenedingstocrlffile$
+    $" ../../docs/assembly.htm" changelinenedingstocrlffile$
+    $" ../../docs/building.htm" changelinenedingstocrlffile$
+    $" ../../docs/cbuffer.htm" changelinenedingstocrlffile$
+    $" ../../docs/cerror.htm" changelinenedingstocrlffile$
+    $" ../../docs/cfunctions.htm" changelinenedingstocrlffile$
+    $" ../../docs/cglu.htm" changelinenedingstocrlffile$
+    $" ../../docs/chierarchicallist.htm" changelinenedingstocrlffile$
+    $" ../../docs/cinitwordlist.htm" changelinenedingstocrlffile$
+    $" ../../docs/clstring.htm" changelinenedingstocrlffile$
+    $" ../../docs/cmiscellaneous.htm" changelinenedingstocrlffile$
+    $" ../../docs/contact.htm" changelinenedingstocrlffile$
+    $" ../../docs/cpux86.htm" changelinenedingstocrlffile$
+    $" ../../docs/cwordlist.htm" changelinenedingstocrlffile$
+    $" ../../docs/dglumain.htm" changelinenedingstocrlffile$
+    $" ../../docs/diapergluwords.htm" changelinenedingstocrlffile$
+    $" ../../docs/documentationkey.htm" changelinenedingstocrlffile$
+    $" ../../docs/forthbuffer.htm" changelinenedingstocrlffile$
+    $" ../../docs/forthcompiletype.htm" changelinenedingstocrlffile$
+    $" ../../docs/forthcore.htm" changelinenedingstocrlffile$
+    $" ../../docs/forthdoublenumber.htm" changelinenedingstocrlffile$
+    $" ../../docs/forthdraftstandard.htm" changelinenedingstocrlffile$
+    $" ../../docs/fortherror.htm" changelinenedingstocrlffile$
+    $" ../../docs/forthfloatingpoint.htm" changelinenedingstocrlffile$
+    $" ../../docs/forthglu.htm" changelinenedingstocrlffile$
+    $" ../../docs/forthhierarchicallist.htm" changelinenedingstocrlffile$
+    $" ../../docs/forthlocals.htm" changelinenedingstocrlffile$
+    $" ../../docs/forthlocalslstring.htm" changelinenedingstocrlffile$
+    $" ../../docs/forthlstringstack.htm" changelinenedingstocrlffile$
+    $" ../../docs/forthmiscellaneous.htm" changelinenedingstocrlffile$
+    $" ../../docs/forthprogrammingtools.htm" changelinenedingstocrlffile$
+    $" ../../docs/forthsearchorder.htm" changelinenedingstocrlffile$
+    $" ../../docs/forthstring.htm" changelinenedingstocrlffile$
+    $" ../../docs/forthstringstack.htm" changelinenedingstocrlffile$
+    $" ../../docs/forthwordlist.htm" changelinenedingstocrlffile$
+    $" ../../docs/index.htm" changelinenedingstocrlffile$
+    $" ../../docs/license.htm" changelinenedingstocrlffile$
+    $" ../../docs/osapi.htm" changelinenedingstocrlffile$
+    $" ../../docs/reference.htm" changelinenedingstocrlffile$
+    $" ../../docs/requirements.htm" changelinenedingstocrlffile$
+    $" ../../docs/signalcatch.htm" changelinenedingstocrlffile$
+    $" ../../docs/usingcgi.htm" changelinenedingstocrlffile$
+    $" ../../docs/usingdiaperglu.htm" changelinenedingstocrlffile$
+;
+
+: replacecommentlineendings ( -- )
+    
+    $" ../../MacOsX12.6.3/cpux86macosxgccasm.s" changelinenedingstocrlffile$
+    $" ../../MacOsX12.6.3/cpux86macosxgccasmnodiaper.s" changelinenedingstocrlffile$
+    $" ../../docs/diaperglu.css" changelinenedingstocrlffile$
+;
+
+
+: replacedglulineendings ( -- )
+    
+    $" ../../MacOsX12.6.3/samplescripts/detab.dglu" changelinenedingstocrlffile$
+    $" ../../MacOsX12.6.3/samplescripts/testcodex86.dglu" changelinenedingstocrlffile$
+    $" ../../MacOsX12.6.3/samplescripts/testcodex86b.dglu" changelinenedingstocrlffile$
+    $" ../../MacOsX12.6.3/samplescripts/testcodex86vex.dglu" changelinenedingstocrlffile$
+    $" ../../MacOsX12.6.3/samplescripts/testdiaperglu.dglu" changelinenedingstocrlffile$
+    $" ../../MacOsX12.6.3/samplescripts/testglulinking.dglu" changelinenedingstocrlffile$
+    $" ../../MacOsX12.6.3/samplescripts/testmakeexportglulist.dglu" changelinenedingstocrlffile$
+    $" ../../MacOsX12.6.3/samplescripts/TestMath.dglu" changelinenedingstocrlffile$
+
+    $" ../../MacOsX12.6.3/samplescripts/asmimportusingld/asmimportusingld.dglu" changelinenedingstocrlffile$
+
+    $" ../../MacOsX12.6.3/samplescripts/calculatepi/calculatepi.dglu" changelinenedingstocrlffile$
+    $" ../../MacOsX12.6.3/samplescripts/calculatepi/calculatepi2.dglu" changelinenedingstocrlffile$
+    $" ../../MacOsX12.6.3/samplescripts/calculatepi/makecalculatepi.dglu" changelinenedingstocrlffile$
+
+    $" ../../MacOsX12.6.3/samplescripts/dg2dgraphicsdylib/makedg2dgraphicsdylib.dglu" changelinenedingstocrlffile$
+    $" ../../MacOsX12.6.3/samplescripts/dg2dgraphicsdylib/testdg2dgraphicsdylib.dglu" changelinenedingstocrlffile$
+
+    $" ../../MacOsX12.6.3/samplescripts/helloworld64exe/makehelloworld64doto.dglu" changelinenedingstocrlffile$
+
+    $" ../../MacOsX12.6.3/samplescripts/lifenglulib/lifedglib.dglu" changelinenedingstocrlffile$
+    $" ../../MacOsX12.6.3/samplescripts/lifenglulib/testlifedglib.dglu" changelinenedingstocrlffile$
+
+    $" ../../MacOsX12.6.3/samplescripts/sampleasmdylib/makesampleasmdylibusingld.dglu" changelinenedingstocrlffile$
+    $" ../../MacOsX12.6.3/samplescripts/sampleasmdylib/testsampleasmdylib.dglu" changelinenedingstocrlffile$
+
+    $" ../../MacOsX12.6.3/samplescripts/testmakedoto/testmakedoto.dglu" changelinenedingstocrlffile$
+
+    $" ../../MacOsX12.6.3/samplescripts/testmakedylib/testmakedylib.dglu" changelinenedingstocrlffile$
+
+    $" ../../MacOsX12.6.3/samplescripts/testosymbolbuf/makeosymbolexportbufdoto.dglu" changelinenedingstocrlffile$
+    $" ../../MacOsX12.6.3/samplescripts/testosymbolbuf/makeosymbolimportbufdoto.dglu" changelinenedingstocrlffile$
+    $" ../../MacOsX12.6.3/samplescripts/testosymbolbuf/testosymboldylibs.dglu" changelinenedingstocrlffile$
+
+    $" ../../Win64MSVC2019/samplescripts/asmimportusingld/asmimportusingld.dglu" changelinenedingstocrlffile$
+
+    $" ../../Win64MSVC2019/samplescripts/helloworld64exe/makehelloworld64doto.dglu" changelinenedingstocrlffile$
+
+    $" ../../Win64MSVC2019/samplescripts/testmakedoto/testmakedoto.dglu" changelinenedingstocrlffile$
+
+    $" ../../Win64MSVC2019/samplescripts/testmessagebox/makeosymbolimportbufdoto.dglu" changelinenedingstocrlffile$
+    $" ../../Win64MSVC2019/samplescripts/testmessagebox/testosymboldylibs.dglu" changelinenedingstocrlffile$
+
+    $" ../../Win64MSVC2019/samplescripts/helloworld64exe/makehelloworld64doto.dglu" changelinenedingstocrlffile$
+
+    $" ../../Win64MSVC2019/samplescripts/testosymbolbuf/makeosymbolexportbufdoto.dglu" changelinenedingstocrlffile$
+    $" ../../Win64MSVC2019/samplescripts/testosymbolbuf/makeosymbolimportbufdoto.dglu" changelinenedingstocrlffile$
+    $" ../../Win64MSVC2019/samplescripts/testosymbolbuf/testosymboldylibs.dglu" changelinenedingstocrlffile$
+    
+;
+
+: replacealllineendings
+    replacecpplineendings
+    replacehtmllineendings
+    replacecommentlineendings
+    replacedglulineendings
+;
+         

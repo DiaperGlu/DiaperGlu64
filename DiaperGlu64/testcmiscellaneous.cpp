@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2022 James Patrick Norris
+//    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.7.
+//    This file is part of DiaperGlu v5.8.
 //
-//    DiaperGlu v5.7 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.8 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.7 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.8 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.7; if not, write to the Free Software
+//    along with DiaperGlu v5.8; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// August 26, 2022            //
-// version 5.7                //
+// March 27, 2023             //
+// version 5.8                //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -525,3 +525,76 @@ void testdg_hibit()
         dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
 	}      
 }
+
+
+void testdg_ubitsmask()
+{
+    UINT64 mask;
+    
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_ubitsmask\n");
+
+    // 0 bits mask case
+    mask = dg_ubitsmask(0);
+
+    if (mask != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubitsmask 0 case, got wrong mask, expected 0, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, mask);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    // 1 bits mask case
+    mask = dg_ubitsmask(1);
+
+    if (mask != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubitsmask 1 case, got wrong mask, expected 1, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, mask);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    // 2 bits mask case
+    mask = dg_ubitsmask(2);
+
+    if (mask != 3)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubitsmask 2 case, got wrong mask, expected 3, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, mask);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    // 3 bits mask case
+    mask = dg_ubitsmask(3);
+
+    if (mask != 7)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubitsmask 3 case, got wrong mask, expected 7, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, mask);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    // 4 bits mask case
+    mask = dg_ubitsmask(4);
+
+    if (mask != 0x0f)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubitsmask 4 case, got wrong mask, expected 0x0f, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, mask);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    // 0x40 bits mask case
+    mask = dg_ubitsmask(0x40);
+
+    if (mask != largestunsignedint)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_ubitsmask 0x40 case, got wrong mask, expected largestunsignedint, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, mask);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+}
+

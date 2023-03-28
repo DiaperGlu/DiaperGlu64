@@ -1,21 +1,21 @@
 ; ////////////////////////////////////////////////////////////////////////////////////////
 ; //
-; //    Copyright 2022 James Patrick Norris
+; //    Copyright 2023 James Patrick Norris
 ; // 
-; //    This file is part of Diaperglu v5.7.
+; //    This file is part of Diaperglu v5.8.
 ; //
-; //    Diaperglu v5.7 is free software; you can redistribute it and/or modify 
+; //    Diaperglu v5.8 is free software; you can redistribute it and/or modify 
 ; //    it under the terms of the GNU General PUBLIC License as published by
 ; //    the Free Software Foundation; either version 2 of the License, or
 ; //    (at your option) any later version.
 ; //
-; //    Diaperglu v5.7 is distributed in the hope that it will be useful,
+; //    Diaperglu v5.8 is distributed in the hope that it will be useful,
 ; //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ; //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ; //    GNU General PUBLIC License for more details.
 ; //
 ; //    You should have received a copy of the GNU General PUBLIC License
-; //    along with Diaperglu v5.7; if not, write to the Free Software
+; //    along with Diaperglu v5.8; if not, write to the Free Software
 ; //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ; //
 ; ////////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 ; ///////////////////////////////
 ; // James Patrick Norris      //
 ; // www.rainbarrel.com        //
-; // August 26, 2022           //
-; // version 5.7               //
+; // March 27, 2023            //
+; // version 5.8               //
 ; ///////////////////////////////
 
 ; MS x86-64 calling convention
@@ -689,6 +689,46 @@ dg_movebytesthen1:
     ret
 
 dg_movebytessub ENDP
+
+
+; const char* dg_moveuint64s (
+;     UINT64* psrc,    // rcx 
+;     UINT64* pdest,   // rdx
+;     UINT64  length); // r8
+
+dg_moveuint64ssub PROC EXPORT FRAME
+    
+    push rdi
+    .pushreg rdi
+    push rsi
+    .pushreg rsi
+    
+    pushfq          ; /* -0x10  save direction flag, required under win32, just in case for others */
+    .allocstack 8   ; /* mac os requires direction flag set to forward */
+    .endprolog
+    mov rsi, rcx
+    mov rdi, rdx
+    mov rcx, r8  ; /* length->rcx */
+    cld 
+    cmp rdi, rsi
+    jc dg_moveuint64sthen1
+
+      shl r8, 3
+      add rdi, r8    ; addq %rcx, %rdi
+      add rsi, r8    ; addq %rcx, %rsi
+      sub rdi, 8 ; /* post decrement with std need this */
+      sub rsi, 8 ; /* post decrement with std need this */
+      std
+
+dg_moveuint64sthen1:
+    rep movsq
+
+    popfq
+    pop rsi
+    pop rdi
+    ret
+
+dg_moveuint64ssub ENDP
 
 
 ;    const char* dg_movebytesreverse (
@@ -3465,6 +3505,162 @@ dg_n32ton64 PROC EXPORT
     ret
 
 dg_n32ton64 ENDP
+
+dg_setbit PROC EXPORT
+
+    mov rax, rcx
+    bts rax, rdx
+    ret
+
+dg_setbit ENDP
+
+dg_clrbit PROC EXPORT
+
+    mov rax, rcx
+    btr rax, rdx
+    ret
+
+dg_clrbit ENDP
+
+dg_notbit PROC EXPORT
+
+    mov rax, rcx
+    btc rax, rdx
+    ret
+
+dg_notbit ENDP
+
+dg_twototheu PROC EXPORT
+
+    xor rax, rax
+    inc rax
+    shl rax, cl
+    ret
+
+dg_twototheu ENDP
+
+; rcx = u
+; rdx = which set bit to find from lo to hi (1 = first set  bit)
+dg_scanforuthsetbit PROC EXPORT
+    mov rax, rcx
+    mov rcx, 40h
+
+    or rdx, rdx      ; /* testing for 0 */
+    jnz dg_scanforbitthen1
+      mov rax, 40h   ; not found
+      ret
+    dg_scanforbitthen1:
+
+    dg_scanforbitbegin:
+      shr rax, 1
+      jnc dg_scanforbitthen2
+        dec rdx
+        jz dg_scanforbitthen3        
+      dg_scanforbitthen2:
+      dec rcx
+    jnz dg_scanforbitbegin
+
+    dg_scanforbitthen3:
+    mov rax, 40h
+    sub rax, rcx
+    ret
+     
+dg_scanforuthsetbit ENDP
+
+
+dg_getulowestsetbits PROC EXPORT
+    mov rax, rcx
+    mov r8, rax
+    mov rcx, 40h
+
+    or rdx, rdx      ; /* testing for 0 */
+    jnz dg_getulowestsetbitsthen1
+      mov rax, rdx   ; /* if getting no bits, return 0 */
+      ret
+    dg_getulowestsetbitsthen1:
+
+    dg_getulowestsetbitsbegin:
+      shr rax, 1
+      jnc dg_getulowestsetbitsthen2
+        dec rdx
+        jz dg_getulowestsetbitsthen3        
+      dg_getulowestsetbitsthen2:
+      dec rcx
+    jnz dg_getulowestsetbitsbegin
+
+    ; if you got here, there were not enough set bits to fill the amount requested
+    ; want an all bits set mask... sooo gonna inc rcx to get it
+    inc rcx
+
+    dg_getulowestsetbitsthen3:
+    mov rax, 40h
+    sub rax, rcx
+    inc rax
+    mov rcx, rax 
+    xor rax, rax
+    inc rax
+    cmp rcx, 40h
+    jc dg_getulowestsetbitsthen4
+      dec rax
+      dec rax
+      and rax, r8
+      ret
+    dg_getulowestsetbitsthen4:
+    shl rax, cl
+    dec rax
+    and rax, r8
+    ret
+     
+dg_getulowestsetbits ENDP
+
+; rcx = uvalue
+; rdx = ucount = number of bits to get
+dg_getulowestbits PROC EXPORT
+    
+    xchg rcx, rdx
+
+    ; might not need to do this if overshifting gives 0
+    cmp rcx, 40h
+    jc dg_getulowestbitsthen2
+      mov rax, rdx
+      ret
+    dg_getulowestbitsthen2:
+
+    ; does uvalue & ((2^(count+1)) - 1)
+    ;   also handles ucount = 0 case correctly
+    ;   this ands uvalue with a mask, mask has lowest ucount bits set 
+    xor rax, rax
+    inc rax
+    shl rax, cl
+    
+    dec rax
+    and rax, rdx
+    ret
+     
+dg_getulowestbits ENDP
+
+; rcx = ucount = number of set bits in mask
+dg_getulowestbitsmask PROC EXPORT
+
+    ; might not need to do this if overshifting gives 0
+    cmp rcx, 40h
+    jc dg_getulowestbitsmaskthen2
+      xor rax, rax
+      dec rax
+      ret
+    dg_getulowestbitsmaskthen2:
+
+    ; does ((2^(count+1)) - 1)
+    ;   also handles ucount = 0 case correctly
+    ;   mask has lowest ucount bits set 
+    xor rax, rax
+    inc rax
+    shl rax, cl
+    
+    dec rax
+    ret
+     
+dg_getulowestbitsmask ENDP
 
 END
 

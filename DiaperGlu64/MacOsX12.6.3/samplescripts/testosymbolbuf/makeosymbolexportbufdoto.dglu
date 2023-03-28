@@ -1,0 +1,406 @@
+( //////////////////////////////////////////////////////////////////////////////////////// )
+( //                                                                                       )
+( //    Copyright 2023 James Patrick Norris                                                )
+( //                                                                                       )
+( //    This file is part of Diaperglu 5.8.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.8 is free software; you can redistribute it and/or modify              )
+( //    it under the terms of the GNU General Public License as published by               )
+( //    the Free Software Foundation; either version 2 of the License, or                  )
+( //    {at your option} any later version.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.8 is distributed in the hope that it will be useful,                   )
+( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
+( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
+( //    GNU General Public License for more details.                                       )
+( //                                                                                       )
+( //    You should have received a copy of the GNU General Public License                  )
+( //    along with Diaperglu 5.8; if not, write to the Free Software                       )
+( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
+( //                                                                                       )
+( //////////////////////////////////////////////////////////////////////////////////////// )
+
+( /////////////////////////////// )
+( // James Patrick Norris      // )
+( // www.rainbarrel.com        // )
+( // March 27, 2023            // )
+( // version 5.8               // )
+( /////////////////////////////// )
+
+
+NEW-FLAT-OSYMBOL-BUF ( -r- oldcompilebuf )
+
+  // current compile buf is set to a new buffer
+  // new hlist created with two parent elements
+  //  one element is for the export symbol list
+  //  the other element is for the import symbol list
+
+
+X86-WORDLIST >SEARCH-ORDER
+
+HEX
+OSYMBOL dg_firstfunction
+  1122334455667788 N RAX MOV,
+  RET,
+
+OSYMBOL dg_secondfunction
+  1213141516171819 N RAX MOV,
+  RET,
+
+OHERE CONSTANT dg_mytestoffset
+OSYMBOL dg_myexportvalue
+  88776655 CODE-U64,
+
+OSYMBOL dg_testbracketomovcommma
+  EH. dg_myexportvalue [O]  RAX  MOV,
+  RET,
+
+OSYMBOL dg_thirdfunction
+  NO-FRAME-PARAMS< INT x INT y >
+  x RAX MOV, y RAX ADD,
+  RET,
+
+  ?CLEAR-LOCALS
+
+OSYMBOL dg_fourthfunction
+  NO-FRAME-PARAMS< INT x INT y INT z >
+  x RAX MOV, y RAX ADD, z RAX ADD,
+  RET,
+
+  ?CLEAR-LOCALS
+
+OSYMBOL dg_fifthfunction
+  NO-FRAME-PARAMS< INT w INT x INT y INT z >
+  w RAX MOV, x RAX ADD, y RAX ADD, z RAX ADD,
+  RET,
+
+  ?CLEAR-LOCALS
+
+OSYMBOL dg_sixthfunction
+  NO-FRAME-PARAMS< INT w INT x INT y INT z INT v >
+  w RAX MOV, x RAX ADD, y RAX ADD, z RAX ADD, v RAX ADD,
+  RET,
+
+  ?CLEAR-LOCALS
+
+OSYMBOL dg_seventhfunction
+  NO-FRAME-PARAMS< INT w INT x INT y INT z INT v INT u >
+  w RAX MOV, x RAX ADD, y RAX ADD, z RAX ADD, v RAX ADD, u RAX ADD,
+  RET,
+
+  ?CLEAR-LOCALS
+
+OSYMBOL dg_eighthfunction
+  ENTER-FRAME, 
+  FRAME-PARAMS< INT w INT x INT y INT z INT v INT u INT t >
+  w RAX MOV, x RAX ADD, y RAX ADD, z RAX ADD, v RAX ADD, u RAX ADD, t RAX ADD,
+  EXIT-FRAME,
+  RET,
+
+  ?CLEAR-LOCALS
+
+OSYMBOL dg_ninthfunction
+  ENTER-CALL-SUBS-FRAME,
+  FRAME-PARAMS< INT w INT x INT y INT z >
+  (( y >IPARAM z >IPARAM )), EH. dg_thirdfunction O CALL,
+  EXIT-CALL-SUBS-FRAME,
+  RET,
+
+  ?CLEAR-LOCALS
+
+OSYMBOL dg_stuffapointerfunction
+  // ( int px )
+  HEX 298365982 N  RAX  MOV,
+  RAX RDI [R] MOV,
+  RAX RAX XOR,
+  RET,
+
+
+OSYMBOL dg_testptoiparam
+  ENTER-CALL-SUBS-FRAME,
+  CALL-SUBS-FRAME-LOCALS,< x >
+  RAX RAX XOR,
+  RAX x MOV,
+  (( x P>IPARAM )), EH. dg_stuffapointerfunction O CALL,
+  x RAX MOV,
+  EXIT-CALL-SUBS-FRAME,
+
+  ?CLEAR-LOCALS
+
+HEX
+OSYMBOL dg_testonelocalretuint128
+  ENTER-CALL-SUBS-FRAME,
+  CALL-SUBS-FRAME-LOCALS,< local1 >
+  5 N RAX MOV,
+  RAX local1 MOV,
+  RSP RAX MOV,
+  RBP -20 [R+N]  RAX  SUB,
+  RBP -28 [R+N]  RDX  MOV,
+  EXIT-CALL-SUBS-FRAME,
+
+  ?CLEAR-LOCALS
+
+OSYMBOL dg_testfourlocals
+  ENTER-CALL-SUBS-FRAME,
+  FRAME-PARAMS< INT w INT x INT y INT z >
+  CALL-SUBS-FRAME-LOCALS,< aa bb cc dd >
+  w RAX MOV,  RAX aa MOV,
+  x RAX MOV,  RAX bb MOV,
+  y RAX MOV,  RAX cc MOV,
+  z RAX MOV,  RAX dd MOV,
+  aa RAX MOV,
+  bb RAX ADD,
+  cc RAX ADD,
+  dd RAX ADD,
+  EXIT-CALL-SUBS-FRAME,
+
+  ?CLEAR-LOCALS
+
+HEX
+OSYMBOL dg_testtwentylocals
+  ENTER-CALL-SUBS-FRAME,
+  CALL-SUBS-FRAME-LOCALS,< 
+    a0 a1 a2 a3 a4 a5 a6 a7
+    a8 a9 a10 a11 a12 a13 a14 a15
+    a16 a17 a18 a19 
+  >
+  RAX RAX XOR,  RCX  RCX  XOR,
+
+  RAX INC,  RAX a0 MOV,  RAX  RCX  ADD,
+  RAX INC,  RAX a1 MOV,  RAX  RCX  ADD,
+  RAX INC,  RAX a2 MOV,  RAX  RCX  ADD,
+  RAX INC,  RAX a3 MOV,  RAX  RCX  ADD,
+  RAX INC,  RAX a4 MOV,  RAX  RCX  ADD,
+  RAX INC,  RAX a5 MOV,  RAX  RCX  ADD,
+  RAX INC,  RAX a6 MOV,  RAX  RCX  ADD,
+  RAX INC,  RAX a7 MOV,  RAX  RCX  ADD,
+  RAX INC,  RAX a8 MOV,  RAX  RCX  ADD,
+  RAX INC,  RAX a9 MOV,  RAX  RCX  ADD,
+  RAX INC,  RAX a10 MOV,  RAX  RCX  ADD,
+  RAX INC,  RAX a11 MOV,  RAX  RCX  ADD,
+  RAX INC,  RAX a12 MOV,  RAX  RCX  ADD,
+  RAX INC,  RAX a13 MOV,  RAX  RCX  ADD,
+  RAX INC,  RAX a14 MOV,  RAX  RCX  ADD,
+  RAX INC,  RAX a15 MOV,  RAX  RCX  ADD,
+  RAX INC,  RAX a16 MOV,  RAX  RCX  ADD,
+  RAX INC,  RAX a17 MOV,  RAX  RCX  ADD,
+  RAX INC,  RAX a18 MOV,  RAX  RCX  ADD,
+  RAX INC,  RAX a19 MOV,  RAX  RCX  ADD,
+
+  RSP [R]  RAX  MOV,  // should be 0x14
+  RSP  8 [R+N]  RAX  ADD,
+  RSP 10 [R+N]  RAX  ADD,
+  RSP 18 [R+N]  RAX  ADD,
+  RSP 20 [R+N]  RAX  ADD,
+  RSP 28 [R+N]  RAX  ADD,
+  RSP 30 [R+N]  RAX  ADD,
+  RSP 38 [R+N]  RAX  ADD,
+  RSP 40 [R+N]  RAX  ADD,
+  RSP 48 [R+N]  RAX  ADD,
+  RSP 50 [R+N]  RAX  ADD,
+  RSP 58 [R+N]  RAX  ADD,
+  RSP 60 [R+N]  RAX  ADD,
+  RSP 68 [R+N]  RAX  ADD,
+  RSP 70 [R+N]  RAX  ADD,
+  RSP 78 [R+N]  RAX  ADD,
+  RSP 80 [R+N]  RAX  ADD,
+  RSP 88 [R+N]  RAX  ADD,
+  RSP 90 [R+N]  RAX  ADD,
+  RSP 98 [R+N]  RAX  ADD,
+
+  RCX RAX SUB,
+
+  EXIT-CALL-SUBS-FRAME,
+
+  ?CLEAR-LOCALS
+
+OSYMBOL dg_testnoframeparamsretf10
+  NO-FRAME-PARAMS< 
+    INT i0    INT i1    INT i2    INT i3
+    FLOAT f0  FLOAT f1  FLOAT f2  FLOAT f3
+    INT i4    INT i5    INT i6    INT i7
+    FLOAT f4  FLOAT f5  FLOAT f6  FLOAT f7
+    INT i8    INT i9    INT i10   INT i11
+    FLOAT f8  FLOAT f9  FLOAT f10 FLOAT f11 
+  >
+  
+  f10 XMM0  MOVQ,
+  RET,
+
+  ?CLEAR-LOCALS
+
+
+OSYMBOL dg_testnoframeparamsretf3
+  NO-FRAME-PARAMS< 
+    INT i0    INT i1    INT i2    INT i3
+    FLOAT f0  FLOAT f1  FLOAT f2  FLOAT f3
+    INT i4    INT i5    INT i6    INT i7
+    FLOAT f4  FLOAT f5  FLOAT f6  FLOAT f7
+    INT i8    INT i9    INT i10   INT i11
+    FLOAT f8  FLOAT f9  FLOAT f10 FLOAT f11 
+  >
+  
+  f3 XMM0  MOVQ,
+  RET,
+
+  ?CLEAR-LOCALS
+
+
+HEX
+OSYMBOL dg_pickparamn
+  NO-FRAME-PARAMS< 
+    INT i0    INT i1    INT i2    INT i3
+    FLOAT f0  FLOAT f1  FLOAT f2  FLOAT f3
+    INT i4    INT i5    INT i6    INT i7
+    FLOAT f4  FLOAT f5  FLOAT f6  FLOAT f7
+    INT i8    INT i9    INT i10   INT i11
+    FLOAT f8  FLOAT f9  FLOAT f10 FLOAT f11 
+  >
+
+  0 N  i0  CMP,  EQ IF,
+    i0 RAX MOV, RAX PUSH,
+    RSP [R] XMM0  MOVQ,
+    RAX POP,  
+    RET,
+  THEN,
+  1 N  i0  CMP,  EQ IF,
+    i1 RAX MOV, RAX PUSH,
+    RSP [R] XMM0  MOVQ,
+    RAX POP,   
+    RET,
+  THEN,
+  2 N  i0  CMP,  EQ IF,
+    i2 RAX MOV, RAX PUSH, 
+    RSP [R] XMM0  MOVQ,
+    RAX POP,  
+    RET,
+  THEN,
+  3 N  i0  CMP,  EQ IF,
+    i3 RAX MOV, RAX PUSH, 
+    RSP [R] XMM0  MOVQ,
+    RAX POP,  
+    RET,
+  THEN,
+  4 N  i0  CMP,  EQ IF,
+    i4 RAX MOV, RAX PUSH, 
+    RSP [R] XMM0  MOVQ,
+    RAX POP,
+    RET,
+  THEN,
+  5 N  i0  CMP,  EQ IF,
+    i5 RAX MOV, RAX PUSH,
+    RSP [R] XMM0  MOVQ,
+    RAX POP,
+    RET,
+  THEN,
+  6 N  i0  CMP,  EQ IF,
+    i6 RAX MOV, RAX PUSH,
+    RSP [R] XMM0  MOVQ,
+    RAX POP,
+    RET,
+  THEN,
+  7 N  i0  CMP,  EQ IF,
+    i7 RAX MOV, RAX PUSH,
+    RSP [R] XMM0  MOVQ,
+    RAX POP,
+    RET,
+  THEN,
+  8 N  i0  CMP,  EQ IF,
+    i8 RAX MOV, RAX PUSH,
+    RSP [R] XMM0  MOVQ,
+    RAX POP,
+    RET,
+  THEN,
+  9 N  i0  CMP,  EQ IF,
+    i9 RAX MOV, RAX PUSH, 
+    RSP [R] XMM0  MOVQ,
+    RAX POP,
+    RET,
+  THEN,
+  0A N  i0  CMP,  EQ IF,
+    i10 RAX MOV, RAX PUSH,
+    RSP [R] XMM0  MOVQ,
+    RAX POP,
+    RET,
+  THEN,
+  0B N  i0  CMP,  EQ IF,
+    i11 RAX MOV, RAX PUSH, 
+    RSP [R] XMM0  MOVQ,
+    RAX POP,
+    RET,
+  THEN,
+
+  0C N  i0  CMP,  EQ IF,
+    f0  XMM0  MOVQ,   
+    RET,
+  THEN,
+
+  0D N  i0  CMP,  EQ IF,
+    f1  XMM0  MOVQ,
+    RET,
+  THEN,
+
+  0E N  i0  CMP,  EQ IF,
+    f2  XMM0  MOVQ, 
+    RET,
+  THEN,
+
+  0F N  i0  CMP,  EQ IF,
+    f3  XMM0  MOVQ, 
+    RET,
+  THEN,
+
+  10 N  i0  CMP,  EQ IF,
+    f4  XMM0  MOVQ, 
+    RET,
+  THEN,
+
+  11 N  i0  CMP,  EQ IF,
+    f5  XMM0  MOVQ, 
+    RET,
+  THEN,
+
+  12 N  i0  CMP,  EQ IF,
+    f6  XMM0  MOVQ, 
+    RET,
+  THEN,
+
+  13 N  i0  CMP,  EQ IF,
+    f7  XMM0  MOVQ, 
+    RET,
+  THEN,
+
+  14 N  i0  CMP,  EQ IF,
+    f8  XMM0  MOVQ, 
+    RET,
+  THEN,
+
+  15 N  i0  CMP,  EQ IF,
+    f9  XMM0  MOVQ, 
+    RET,
+  THEN,
+
+  16 N  i0  CMP,  EQ IF,
+    f10  XMM0  MOVQ, 
+    RET,
+  THEN,
+
+  f11 XMM0  MOVQ, 
+  RET,
+
+  ?CLEAR-LOCALS
+
+SEARCH-ORDER> DROP
+
+// saving the compiled buffer in the mach-o .o format
+
+PCURRENTCOMPILEBUFFER @ EH $" osymbolexport.o" BUF>.OFILE$
+
+( oldcompilebuf -r- )
+FREE-FLAT-OSYMBOL-BUF 
+
+
+
+
+     
+

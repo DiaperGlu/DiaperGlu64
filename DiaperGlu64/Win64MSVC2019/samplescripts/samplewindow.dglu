@@ -1,4 +1,12 @@
 
+// To run this example, change to the directory this sample is in.
+// Assuming DiaperGlu is in the parent directory, do this: ..\diaperglu
+// Then do: $" samplewindow.dglu" INCLUDEFILE$
+// A window pops up and will likely cover the console. If you move the windows around you will see
+//  the console and should be able to use it inside a special forth shell. 
+//  Clicking on the pop up window should switch to
+//  the other bitmap. Clicking the x close icon in the popup window
+//  should close the popup window and exit to the standard forth shell.
 
 // This example creates a standard top level window that draws a bitmap to it's client area.
 //  Then the example drops into a loop that pumps the windows message queue while still getting
@@ -7,7 +15,7 @@
 //  switches to the other bitmap.
 // This example using polling to check both queues. It would probably be more efficient to wait
 //  on both queues simultaneously when they are empty. I think there is a way to do that but I
-//  do'nt have it in here yet.
+//  don't have it in here yet.
 
 DECIMAL
 : 16BUFALIGN 16 SWAP UBUFALIGN ;
@@ -263,7 +271,6 @@ HEX
 ;
 
 // init bitmaps
-
 HEX 40 pMyBitMapArray0 myFillBitmap
 HEX C0 pMyBitMapArray1 myFillBitmap
 

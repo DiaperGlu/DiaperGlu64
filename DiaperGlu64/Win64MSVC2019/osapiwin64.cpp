@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2022 James Patrick Norris
+//    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.7.
+//    This file is part of DiaperGlu v5.8.
 //
-//    DiaperGlu v5.7 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.8 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.7 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.8 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.7; if not, write to the Free Software
+//    along with DiaperGlu v5.8; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// August 26, 2022            //
-// version 5.7                //
+// March 27, 2023             //
+// version 5.8                //
 // /////////////////////////////
 
 // #include "../stdafx.h"
@@ -807,15 +807,34 @@ const char* dg_getuint64(UINT64* paddr, UINT64* pvalue)
 }
 
 const char* dg_movebytes(
-    unsigned char* psrc,    // 0x08 
-    unsigned char* pdest,   // 0x0C
-    UINT64 stringlength)    // 0x10
+    unsigned char* psrc,    
+    unsigned char* pdest,   
+    UINT64 stringlength)    
 {
     const char* pError = dg_success;
 
     __try
     {
         dg_movebytessub(psrc, pdest, stringlength);
+    }
+    __except (EXCEPTION_EXECUTE_HANDLER)
+    {
+        pError = dg_badmemoryerror;
+    }
+
+    return (pError);
+}
+
+const char* dg_moveuint64s(
+    UINT64* psrc,     
+    UINT64* pdest,   
+    UINT64  length)    
+{
+    const char* pError = dg_success;
+
+    __try
+    {
+        dg_moveuint64ssub(psrc, pdest, length);
     }
     __except (EXCEPTION_EXECUTE_HANDLER)
     {

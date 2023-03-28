@@ -1,4 +1,166 @@
 Changelog for Diaperglu
+   27 Mar 2023
+     Released v5.8
+     Added function to updateLineEndings.dglu mac sample to automatically convert
+      all DiaperGlu project source and document files to use crlf line endings.
+      I found out Win command line tools can't handle cr only line endings, and
+      Mac Text edit gets confused with mixed line endings. Changed project line
+      endings to CRLF.
+     Added IMUST-BE-PRESERVED-RMASK
+     Added FMUST-BE-PRESERVED-RMASK
+     Added U-IMUST-BE-PRESERVED-RMASK
+     Added U-FMUST-BE-PRESERVED-RMASK
+
+   23 Mar 2023
+     Added SHADOWSIZE (you can use this to determine if you are on Mac or Win)
+     Updated testcodex86.dglu to be mostly platform independent 
+       (RDI and RSI may be getting trashed which is a no no in Windows...)
+     Added IPARAM0 IPARAM1 IPARAM2 IPARAM3
+
+     Fixed dg_domorxmmtorinstruction (used by CVTSD2SI, CVTSS2SI, CVTTSD2SI, CVTTSS2SI,)
+      It was doing some error checking on parameter type before getting the type and
+       part of the error checking was partially on the wrong parameters which could
+       cause these instructions to error out when there wasn't an error. The
+       uninitialized variable could cause inconsistent behavior... but most of the
+       time it looks like you'd get the incorrect error for that case.
+
+   22 Mar 2023
+     Updated some stuff in usingdiaperglu.htm that was from the 32 bit version to be
+      for the current 64 bit version of DiaperGlu
+     Updated ENTER-CALL-SUBS-FRAME, to set the frame's return stack depth to the size
+      of the initial call subs frame because existing sample code used call subs frame 
+      locals without declaring params
+ 
+   21 Mar 2023
+     Added dg_compilemovfregtofreg
+     Updated dg_compilemovbracketrbpdtoreg to support floating point regs.
+
+   20 Mar 2023... 
+     Added REGS<
+     Added $-RMASK
+     Added $SRC-RMASK
+     Added $DEST-RMASK
+     Added $CTR-RMASK
+     Added MATH-HI-RMASK
+     Added MUST-BE-PRESERVED-RMASK
+     Added IPARAMS-RMASK
+     Added FPARAMS-RMASK
+     Added ALLOCATABLE-RMASK
+     Added IALLOCATABLE-RMASK
+     Added FALLOCATABLE-RMASK
+     Added IPARAM0-RMASK IPARAM1-RMASK IPARAM2-RMASK IPARAM3-RMASK
+     Added IPARAM4-RMASK IPARAM5-RMASK IPARAM6-RMASK IPARAM7-RMASK
+     Added FPARAM0-RMASK FPARAM1-RMASK FPARAM2-RMASK FPARAM3-RMASK
+     Added FPARAM4-RMASK FPARAM5-RMASK FPARAM6-RMASK FPARAM7-RMASK
+     Added AVAILABLE-RMASK
+     Added PRSDEPTH
+     Added PPRESERVED-RMASK
+     Added PPRESERVED-DEPTH
+     Added PUSED-RMASK
+     Added R>RMASKPOS
+     Added RMASKPOS>R
+     Added RMASK-NO-FRAME-PRESERVE, RMASK-NO-FRAME-UNPRESERVE,
+     Added RMASK-CALL-SUBS-FRAME-PRESERVE, RMASK-CALL-SUBS-FRAME-UNPRESERVE,
+     Added RMASK-USE RMASK-UNUSE R-USE
+     Added UNUSED-IR-USE
+     Added UNUSED-FR-USE
+     Added EXIT-FRAME-NO-RET,
+
+     Added dg_compilepreservelocalsregstoret
+     Added dg_compilepreservenoframeregs
+     Added dg_compilepreservecallsubsregs
+     Added dg_compileunpreservelocalsregsfromret
+     Added dg_compileunpreservelocalsregsfromframe
+     Added dg_compileunpreservenoframeregs
+     Added dg_compileunpreservecallsubsframeregs
+
+     I think I added/modified dg_compilemovregtobracketrbpd dg_compilemovregtobracketrspd 
+      dg_compilemovbracketrbpdtoreg dg_compilemovbracketrspdtoreg to use the smallest possible 
+      displacement when possible. dg_compilemovregtobracketrspd and dg_compilemovbracketrspdtoreg 
+      handle both integer and floating point registers. 
+
+     Moved compilecpux86.cpp to the common area so that the x86-64 assembler
+      is using one source file for common things on Mac and Windows
+      and put the platform specific things into macspecific.cpp and winspecific.cpp
+
+   12 Mar 2023
+     Added support to two target instructions that already supported immediate sources 
+      that use dg_compiletwotargets for 64 bit immediate values using multiple 
+      instructions. This includes ADC, ADD, CMP, OR, TEST, SBB, SUB, XOR, and adds 
+      support for immediate to non register destinations to MOV, using multiple instructions. 
+      (MOV, already supported 64bit immediate to register destinations.) 
+   10 Mar 2023
+     Added support to PUSH, for 64 bit immediate values using multiple instructions.
+       It currently does RAX PUSH,  n64 N  RAX  MOV,  RAX  RSP [R]  XCHG,
+       It currently does not support using size specifiers to support larger encodings...
+
+   1 Mar 2023
+     Added dg_compileaddntorsp
+     Added documentation and added/updated tests for dg_subn8fromrsp, dg_subnfromrsp, dg_compileaddn8torsp
+
+   25 Feb 2023
+     Added 2^U
+
+   23 Feb 2023
+     Added ULOBITS
+
+   9 Feb 2023
+     Added dg_subroutineregspreserved assembler compile time variable
+       - modified FRAME-PARAMS< and NO-FRAME-PARAMS< to initialize this variable to 0
+       - modified dg_pulloneaddressingmode dg_isparamusingnoframe case to handle regs that were preserved
+       - modified dg_pulloneaddressingmode dg_isparamusingframe case to handle regs that were preserved
+
+     Added dg_regspreserveddepth assembler compile time variable
+       - modified FRAME-PARAMS< and NO-FRAME-PARAMS< to initialize this variable to 0
+       - modified dg_pulloneaddressingmode dg_isparamusingnoframe case to use this to calculate offset of preserved regs
+       - modified dg_pulloneaddressingmode dg_isparamusingframe case to use this to calculate offset of preserved regs
+
+     Added (technically renamed and started using) dg_returnstackdepth assembler compile time variable
+       - modified NO-FRAME-PARAMS< to initialize this variable to 0
+       - modified FRAME-PARAMS<  to initialize this variable to the initial call subs frame depth
+       - modified dg_pulloneaddressingmode dg_isparamusingnoframe case to use this to calculate offset of preserved parameter regs
+           and calculate offset of regular parameter regs
+       
+
+   8 Feb 2023
+     Added dg_scanforuthsetbit
+     Added dg_getulowestsetbits
+     Added dg_getulowestbits
+     Added dg_getulowestbitsmask
+
+   31 Jan 2023
+     Added dg_compilemovbracketrsptoreg
+     Added dg_compilemovbracketrsptofreg
+     Added dg_compilemovbracketrspd8toreg
+     Added dg_compilemovbracketrspd8tofreg
+     Fixed documentation for dg_compilemovbracketrbpd8toreg
+     Fixed dg_compilemovbracketrbpd8toreg handling of rex case
+       (was using wrong rex prefix... it was using rex register for rbp)
+     Added dg_compilemovbracketrspd32toreg
+     Added dg_compilemovbracketrspd32tofreg
+     Fixed documentation for dg_compilemovbracketrbpd32toreg
+     Fixed dg_compilemovbracketrbpd32toreg handling of rex case
+     Added dg_compilemovbracketrspdtoreg
+     Added dg_compilemovregtobracketrsp
+     Added dg_compilemovfregtobracketrsp
+     Added dg_compilemovregtobracketrspd8
+     Added dg_compilemovfregtobracketrspd8
+     Fixed documentation for dg_compilemovregtobracketrbpd8
+     Fixed dg_compilemovregtobracketrbpd8 handling of rex case
+     Added dg_compilemovregtobracketrspd32
+     Added dg_compilemovregtobracketrspd32
+     Fixed documentation for dg_compilemovregtobracketrbpd32
+     Fixed dg_compilemovregtobracketrbpd32 handling of rex case
+     Added dg_compilemovregtobracketrspd
+
+   24 October 2022
+     Added dg_twototheu
+
+   3 September 2022
+     Added dg_moveuint64s
+     Added support for 64 bit immediate to memory operations in the assembler for win64
+       (it compiles 2 32 bit immediate to memory operations)
+
    26 August 2022
      Released v5.7
 

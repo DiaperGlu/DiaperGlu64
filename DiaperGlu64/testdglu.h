@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2022 James Patrick Norris
+//    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.7.
+//    This file is part of DiaperGlu v5.8.
 //
-//    DiaperGlu v5.7 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.8 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.7 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.8 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.7; if not, write to the Free Software
+//    along with DiaperGlu v5.8; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// August 26, 2022            //
-// version 5.7                //
+// March 27, 2023             //
+// version 5.8                //
 // /////////////////////////////
 
 #if !defined(_INC_testdglu)
@@ -62,10 +62,14 @@ void testdg_movebytesskipdestination();
 // compiling and processor dependent routines
 void testdg_bumpdisplacementsizeifneeded();
 void testdg_compilemovregtoreg();
+void testdg_compilemovfregtofreg();
 void testdg_compilenegatereg();
 void testdg_compileaddregtoreg();
 void testdg_compilesubn8fromrsp();
+void testdg_compilesubnfromrsp();
 void testdg_compileaddn8torsp();
+void testdg_compileaddntorsp();
+void testdg_compileaddntorsp();
 void testdg_compilepushntoret();
 void testdg_compilepopregfromret();
 void testdg_compilepushregtoret();
@@ -102,17 +106,41 @@ void testdg_packthreebytevex();
 void testdg_compilevex();
 void testdg_compileaddnlocalstocallsubsframe();
 void testdg_compileobtoptodatastack();
+void testdg_compilemovbracketrsptoreg();
 void testdg_compilemovbracketrbpd8toreg();
+void testdg_compilemovbracketrbpd8tofreg();
+void testdg_compilemovbracketrspd8toreg();
 void testdg_compilemovbracketrbpd32toreg();
+void testdg_compilemovbracketrbpd32tofreg();
+void testdg_compilemovbracketrspd32toreg();
 void testdg_compilemovbracketrbpdtoreg();
+void testdg_compilemovbracketrspdtoreg();
 void testdg_compilemovregtobracketrbpd8();
+void testdg_compilemovfregtobracketrbpd8();
+void testdg_compilemovfregtobracketrbpd32();
+void testdg_compilemovregtobracketrsp();
+void testdg_compilemovregtobracketrspd8();
 void testdg_compilemovregtobracketrbpd32();
+void testdg_compilemovregtobracketrspd32();
 void testdg_compilemovregtobracketrbpd();
+void testdg_compilemovregtobracketrspd();
+
+void testdg_compilepreservelocalsregstoret();
+void testdg_compilepreservenoframeregs();
+void testdg_compilepreservecallsubsregs();
+
+void testdg_compileunpreservelocalsregsfromret();
+void testdg_compileunpreservelocalsregsfromframe();
+void testdg_compileunpreservenoframeregs();
+void testdg_compileunpreservecallsubsframeregs();
+
 void testdg_compilebracketrbpdtodatastack();
 void testdg_compiledatastacktobracketrbpd();
 void testdg_compilecallcoreoneuparam();
 void testdg_compilecallcoretwouparams();
 // void testdg_compilebracketobtoptodatastack();
+void testdg_compileopreg64tobracketrsp();
+
 
 // c buffer routines
 void testdg_newbuffer ();
@@ -365,6 +393,8 @@ void testdg_namedbufnametoaddr ();
 
 void testdg_packhlist();
 void testdg_namestringtovaluestring();
+
+void testdg_ubitsmask();
 
 // Forth core routines
 void testdg_forthstore();
@@ -822,6 +852,15 @@ void testdg_forthcallprocaddress();
 void testdg_forthcallprocaddressretuint128();
 void testdg_forthcalldfpprocaddress();
 void testdg_forthopenlibrarystring();
+
+void testdg_regtolocalsregindex();
+void testdg_localsregindextoreg();
+void testdg_paramregsindextolocalsregindex();
+void testdg_marklocalsregasused();
+void testdg_forthallrmaskunuse();
+void testdg_usenextunusedlocalsintreg();
+void testdg_usenextunusedlocalsfloatreg();
+void testdg_forthregscurly();
     
 #ifdef  __cplusplus
 }

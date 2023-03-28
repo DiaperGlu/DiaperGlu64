@@ -1,22 +1,22 @@
 <!--
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2022 James Patrick Norris
+//    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.7.
+//    This file is part of DiaperGlu v5.8.
 //
-//    DiaperGlu v5.7 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.8 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.7 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.8 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.7; if not, write to the Free Software
+//    along with DiaperGlu v5.8; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// August 26, 2022            //
-// version 5.7                //
+// March 27, 2023             //
+// version 5.8                //
 // /////////////////////////////
 -->
 
@@ -154,6 +154,15 @@
       <a href=assembly.htm#dg_n8ton64                               >dg_n8ton64</a>
       <a href=assembly.htm#dg_n16ton64                              >dg_n16ton64</a>
       <a href=assembly.htm#dg_n32ton64                              >dg_n32ton64</a>
+      <a href=assembly.htm#dg_setbit                                >dg_setbit</a>
+      <a href=assembly.htm#dg_clrbit                                >dg_clrbit</a>
+      <a href=assembly.htm#dg_notbit                                >dg_notbit</a>
+      <a href=assembly.htm#dg_twototheu                             >dg_twototheu</a>
+      <a href=assembly.htm#dg_scanforuthsetbit                      >dg_scanforuthsetbit</a>
+      <a href=assembly.htm#dg_getulowestsetbits                     >dg_getulowestsetbits</a>
+      <a href=assembly.htm#dg_getulowestbits                        >dg_getulowestbits</a>
+      <a href=assembly.htm#dg_getulowestbitsmask                    >dg_getulowestbitsmask</a>
+
     </div>
     
     <div id=pagestuff>
@@ -3291,6 +3300,231 @@
 // Action:
 //  Sign extends the 32 bit value to 64 bits. (The upper 32 bits get the value of bit 
 //   31.)
+// 
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_setbit>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_setbit
+//
+// C prototype: 
+//  UINT64 dg_setbit(
+//      UINT64 uvalue,
+//      UINT64 ubitindex)
+//
+// Inputs:
+//  UINT64 uvalue                 unsigned 64 bit value
+//  UINT64 ubitindex              which bit gets set (0 - 63)
+//
+// Return:
+//  UINT64                       uvalue after setting bit at ubitindex
+//  cflag                        previous value of bit at ubitindex in uvalue
+//
+// Action:
+//  Sets the bit at index ubitindex in uvalue. If ubitindex is greater than 63, only 
+//   the lowest 6 bits of ubitindex are used.
+//  The carry flag contains the value of the bit at ubitindex in uvalue at subroutine 
+//   entry.
+// 
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_clrbitn>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_clrbitn
+//
+// C prototype: 
+//  UINT64 dg_clrbitn(
+//      UINT64 uvalue,
+//      UINT64 ubitindex)
+//
+// Inputs:
+//  UINT64 uvalue                unsigned 64 bit value
+//  UINT64 ubitindex             which bit gets cleared (0 - 63)
+//
+// Return:
+//  UINT64                       uvalue after clearing bit at ubitindex
+//  cflag                        previous value of bit at ubitindex in uvalue
+//
+// Action:
+//  Clears the bit at index ubitindex in uvalue. If ubitindex is greater than 63, only  
+//   the lowest 6 bits of ubitindex are used.
+//  The carry flag contains the value of the bit at ubitindex in uvalue at subroutine 
+//   entry.
+// 
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_notbit>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_notbit
+//
+// C prototype: 
+//  UINT64 dg_notbit(
+//      UINT64 uvalue,
+//      UINT64 ubitindex)
+//
+// Inputs:
+//  UINT64 uvalue                unsigned 64 bit value
+//  UINT64 ubitindex             which bit gets toggled (0 - 63)
+//
+// Return:
+//  UINT64                       uvalue after complementing bit at ubitindex
+//  cflag                        previous value of bit at bitindex in uvalue
+//
+// Action:
+//  Inverts the bit at index ubitindex in uvalue. If bitindex is greater than 63, only 
+//   the lowest 6 bits of ubitindex are used. (If the bit at ubitindex was set, it 
+//   gets cleared. If the bit at ubitindex was cleared, it gets set.)
+//  The carry flag contains the value of the bit at ubitindex in uvalue at subroutine 
+//   entry.
+// 
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_twototheu>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_twototheu
+//
+// C prototype: 
+//  UINT64 dg_twototheu(UINT64 u)
+//
+// Inputs:
+//  UINT64 u                     unsigned power of 2 less than 64
+//
+// Return:
+//  UINT64                       2 ^ u
+//
+// Action:
+//  Returns 2 ^ u. This is the same as returning a value where the only bit set is bit
+//   u where bit 0 is the lowest bit and bit 63 is the highest bit.
+// 
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_scanforuthsetbit>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_scanforuthsetbit
+//
+// C prototype: 
+//  UINT64 dg_scanforuthsetbit(UINT64 uvalue, UINT64 uth)
+//
+// Inputs:
+//  UINT64 uvalue                64 bit integer
+//  UINT64 uth                   set bit to find
+//
+// Return:
+//  UINT64                       0 based bit index of uth set bit
+//
+// Action:
+//  Returns 0 based index of uth set bit. If no bits are set then 0x40 is returned.
+//   If there are less than uth set bits in uvalue then 0x40 is returned.
+//   For example, if uvalue is 0x0a (0...01010) and uth is 2, then 3 is returned.
+// 
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getulowestsetbits>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getulowestsetbits
+//
+// C prototype: 
+//  UINT64 dg_getulowestsetbits(UINT64 uvalue, UINT64 ucount)
+//
+// Inputs:
+//  UINT64 uvalue                64 bit integer
+//  UINT64 ucount                number of set bits of uvalue to get
+//
+// Return:
+//  UINT64                       lowest part of uvalue that contains ucount set bits
+//
+// Action:
+//  Returns lowest part of uvalue that contains ucount set bits. If uvalue does not
+//   have ucount set bits in it, then all of uvalue is returned. If ucount is 0, then
+//   0 is returned. For example, if uvalue is 0xfa (0...011111010) and ucount is 2, then
+//   0x0a (0...01010) is returned.
+// 
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getulowestbits>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getulowestbits
+//
+// C prototype: 
+//  UINT64 dg_getulowestbits(UINT64 uvalue, UINT64 ucount)
+//
+// Inputs:
+//  UINT64 uvalue                64 bit integer
+//  UINT64 ucount                number of bits of uvalue to get
+//
+// Return:
+//  UINT64                       lowest ucount bits of uvalue
+//
+// Action:
+//  Returns lowest ucount bits of uvalue. The upper bits are cleared to 0. 
+//   If ucount is 0, then 0 is returned. 
+//   If ucount is 40h or greater, uvalue is returned.
+//
+// Note:
+//  Does uvalue & ((2^(ucount + 1)) - 1) for ucount < 0x40
+// 
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_getulowestbitsmask>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_getulowestbitsmask
+//
+// C prototype: 
+//  UINT64 dg_getulowestbitsmask(UINT64 ucount)
+//
+// Inputs:
+//  UINT64 ucount                number of bits in mask
+//
+// Return:
+//  UINT64                       mask with lowest ucount bits set
+//
+// Action:
+//  Returns a value with lowest ucount bits set. The upper bits are cleared to 0. 
+//   If ucount is 0, then 0 is returned. 
+//   If ucount is 40h or greater, largestunsignedint is returned.
+//
+// Note:
+//  Does ((2^(ucount + 1)) - 1) for ucount < 0x40
 // 
 // //////////////////////////////////////////////////////////////////////////////////////
 </pre>

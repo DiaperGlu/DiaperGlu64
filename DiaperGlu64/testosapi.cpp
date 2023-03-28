@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2022 James Patrick Norris
+//    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.7.
+//    This file is part of DiaperGlu v5.8.
 //
-//    DiaperGlu v5.7 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.8 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.7 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.8 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.7; if not, write to the Free Software
+//    along with DiaperGlu v5.8; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// August 26, 2022            //
-// version 5.7                //
+// March 27, 2023             //
+// version 5.8                //
 // /////////////////////////////
 
 #include <stdio.h>
@@ -36,6 +36,947 @@
 #endif
 
 unsigned char megabuf[0x10000]; // a test does not need to be re-entrant
+
+void testdg_getulowestbitsmask ()
+{
+    INT64 x;
+    UINT32 xlo, xhi;
+    printf("testing dg_getulowestbitsmask\n");
+    
+    x = dg_getulowestbitsmask(0); 
+
+    if (x != 0)
+    {
+        printf(" - FAIL! dg_getulowestbitsmask(0) did not give 0, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbitsmask(1);   
+
+    if (x != 1)
+    {
+        printf(" - FAIL! dg_getulowestbitsmask(1) did not give 1, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbitsmask(2);   
+
+    if (x != 3)
+    {
+        printf(" - FAIL! dg_getulowestbitsmask(3) did not give 3, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbitsmask(3);   
+
+    if (x != 7)
+    {
+        printf(" - FAIL! dg_getulowestbitsmask(3) did not give 7, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbitsmask(0x3f); 
+
+    if (x != 0x7FFFFFFFFFFFFFFF)
+    {
+        printf(" - FAIL! dg_getulowestbitsmask(0x3F) did not give 0x7FFFFFFFFFFFFFFF, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbitsmask(0x3e); 
+
+    if (x != 0x3FFFFFFFFFFFFFFF)
+    {
+        printf(" - FAIL! dg_getulowestbitsmask(0x3E) did not give 0x3FFFFFFFFFFFFFFF, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbitsmask(0x40); 
+
+    if (x != 0xFFFFFFFFFFFFFFFF)
+    {
+        printf(" - FAIL! dg_getulowestbitsmask(0x40) did not give 0xFFFFFFFFFFFFFFFF, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbitsmask(0x41); 
+
+    if (x != 0xFFFFFFFFFFFFFFFF)
+    {
+        printf(" - FAIL! dg_getulowestbitsmask(0x41) did not give 0xFFFFFFFFFFFFFFFF, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbitsmask(0x42); 
+
+    if (x != 0xFFFFFFFFFFFFFFFF)
+    {
+        printf(" - FAIL! dg_getulowestbitsmask(0x42) did not give 0xFFFFFFFFFFFFFFFF, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+}
+
+void testdg_getulowestbits ()
+{
+    INT64 x;
+    UINT32 xlo, xhi;
+    printf("testing dg_getulowestbits\n");
+    
+    x = dg_getulowestbits(0, 0); 
+
+    if (x != 0)
+    {
+        printf(" - FAIL! dg_getulowestbits(0, 0) did not give 0, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbits(1, 0);   
+
+    if (x != 0)
+    {
+        printf(" - FAIL! dg_getulowestbits(1, 0) did not give 0, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbits(1, 1);   
+
+    if (x != 1)
+    {
+        printf(" - FAIL! dg_getulowestbits(1, 1) did not give 1, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbits(0, 1);   
+
+    if (x != 0)
+    {
+        printf(" - FAIL! dg_getulowestbits(0, 1) did not give 0, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbits(2, 1);   
+
+    if (x != 0)
+    {
+        printf(" - FAIL! dg_getulowestbits(2, 1) did not give 0, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbits(1, 2);   
+
+    if (x != 1)
+    {
+        printf(" - FAIL! dg_getulowestbits(1, 2) did not give 1, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbits(6, 1);   
+
+    if (x != 0)
+    {
+        printf(" - FAIL! dg_getulowestbits(6, 1) did not give 0, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbits(6, 2);   
+
+    if (x != 2)
+    {
+        printf(" - FAIL! dg_getulowestbits(6, 2) did not give 2, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbits(6, 3);   
+
+    if (x != 6)
+    {
+        printf(" - FAIL! dg_getulowestbits(6, 3) did not give 6, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbits(0xE0, 3); 
+
+    if (x != 0x0)
+    {
+        printf(" - FAIL! dg_getulowestbits(0xE0, 3) did not give 0x0, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbits(0x0E, 3); 
+
+    if (x != 6)
+    {
+        printf(" - FAIL! dg_getulowestbits(0x0E, 3) did not give 6, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbits(0x0E, 4); 
+
+    if (x != 0x0E)
+    {
+        printf(" - FAIL! dg_getulowestbits(0x0E, 4) did not give 0x0E, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbits(0x0E, 5); 
+
+    if (x != 0x0E)
+    {
+        printf(" - FAIL! dg_getulowestbits(0x0E, 5) did not give 0x0E, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbits(0xFF5A, 5); 
+
+    if (x != 0x1A)
+    {
+        printf(" - FAIL! dg_getulowestbits(0xFF5A, 5) did not give 0x1A, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbits(0x15A, 8); 
+
+    if (x != 0x5A)
+    {
+        printf(" - FAIL! dg_getulowestbits(0x5A, 8) did not give 0x5A, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbits(0x15A, 9); 
+
+    if (x != 0x15A)
+    {
+        printf(" - FAIL! dg_getulowestbits(0x15A, 9) did not give 0x15A, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbits(0x15A, 6); 
+
+    if (x != 0x1A)
+    {
+        printf(" - FAIL! dg_getulowestbits(0x1A, 6) did not give 0x1A, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbits(0x8000000000000000, 1); 
+
+    if (x != 0)
+    {
+        printf(" - FAIL! dg_getulowestbits(0, 1) did not give 0, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbits(0x8000000000000000, 0x40); 
+
+    if (x != 0x8000000000000000)
+    {
+        printf(" - FAIL! dg_getulowestbits(0x8000000000000000, 0x40) did not give 0x8000000000000000, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbits(0xC000000000000000, 0x40); 
+
+    if (x != 0xC000000000000000)
+    {
+        printf(" - FAIL! dg_getulowestbits(0xC000000000000000, 0x40) did not give 0xC000000000000000, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbits(0xC000000000000000, 0x3f); 
+
+    if (x != 0x4000000000000000)
+    {
+        printf(" - FAIL! dg_getulowestbits(0xC000000000000000, 0x3f) did not give 0x4000000000000000, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbits(0xFFFFFFFFFFFFFFFF, 0x40); 
+
+    if (x != 0xFFFFFFFFFFFFFFFF)
+    {
+        printf(" - FAIL! dg_getulowestbits(0xFFFFFFFFFFFFFFFF, 0x40) did not give 0xFFFFFFFFFFFFFFFF, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbits(0xFFFFFFFFFFFFFFFF, 0x41); 
+
+    if (x != 0xFFFFFFFFFFFFFFFF)
+    {
+        printf(" - FAIL! dg_getulowestbits(0xFFFFFFFFFFFFFFFF, 0x41) did not give 0xFFFFFFFFFFFFFFFF, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbits(0xFFFFFFFFFFFFFFFF, 0x42); 
+
+    if (x != 0xFFFFFFFFFFFFFFFF)
+    {
+        printf(" - FAIL! dg_getulowestbits(0xFFFFFFFFFFFFFFFF, 0x42) did not give 0xFFFFFFFFFFFFFFFF, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbits(0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF); 
+
+    if (x != 0xFFFFFFFFFFFFFFFF)
+    {
+        printf(" - FAIL! dg_getulowestbits(0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF) did not give 0xFFFFFFFFFFFFFFFF, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestbits(0xFEEFFFFFFFFFF00F, 0xFFFFFFFFFFFFFFFF); 
+
+    if (x != 0xFEEFFFFFFFFFF00F)
+    {
+        printf(" - FAIL! dg_getulowestbits(0xFEEFFFFFFFFFF00F, 0xFFFFFFFFFFFFFFFF) did not give 0xFEEFFFFFFFFFF00F, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+}
+
+void testdg_getulowestsetbits ()
+{
+    INT64 x;
+    UINT32 xlo, xhi;
+    printf("testing dg_getulowestsetbits\n");
+    
+    x = dg_getulowestsetbits(0, 0);   // scan for 0th set bit... should return not found
+
+    if (x != 0)
+    {
+        printf(" - FAIL! dg_getulowestsetbits(0, 0) did not give 0, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestsetbits(1, 0);   // scan for 0th set bit... should return not found
+
+    if (x != 0)
+    {
+        printf(" - FAIL! dg_getulowestsetbits(1, 0) did not give 0, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestsetbits(1, 1);   
+
+    if (x != 1)
+    {
+        printf(" - FAIL! dg_getulowestsetbits(1, 1) did not give 1, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestsetbits(0, 1);   // scan for 0th set bit... should return not found
+
+    if (x != 0)
+    {
+        printf(" - FAIL! dg_getulowestsetbits(0, 1) did not give 0, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestsetbits(2, 1);   
+
+    if (x != 2)
+    {
+        printf(" - FAIL! dg_getulowestsetbits(2, 1) did not give 2, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestsetbits(6, 1);   
+
+    if (x != 2)
+    {
+        printf(" - FAIL! dg_getulowestsetbits(6, 1) did not give 2, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestsetbits(6, 2);   
+
+    if (x != 6)
+    {
+        printf(" - FAIL! dg_getulowestsetbits(6, 2) did not give 6, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestsetbits(0xE0, 3); 
+
+    if (x != 0xE0)
+    {
+        printf(" - FAIL! dg_getulowestsetbits(0xE0, 3) did not give 0xE0, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestsetbits(0x0E, 2); 
+
+    if (x != 6)
+    {
+        printf(" - FAIL! dg_getulowestsetbits(0x0E, 2) did not give 6, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestsetbits(0xFF5A, 5); 
+
+    if (x != 0x15A)
+    {
+        printf(" - FAIL! dg_getulowestsetbits(0xFF5A, 5) did not give 0x15A, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestsetbits(0x15A, 5); 
+
+    if (x != 0x15A)
+    {
+        printf(" - FAIL! dg_getulowestsetbits(0x15A, 5) did not give 0x15A, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestsetbits(0x15A, 6); 
+
+    if (x != 0x15A)
+    {
+        printf(" - FAIL! dg_getulowestsetbits(0x15A, 6) did not give 0x15A, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestsetbits(0x8000000000000000, 1); 
+
+    if (x != 0x8000000000000000)
+    {
+        printf(" - FAIL! dg_getulowestsetbits(0x8000000000000000, 1) did not give 0x8000000000000000, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestsetbits(0x8000000000000000, 2); 
+
+    if (x != 0x8000000000000000)
+    {
+        printf(" - FAIL! dg_getulowestsetbits(0x8000000000000000, 2) did not give 0x8000000000000000, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestsetbits(0xC000000000000000, 2); 
+
+    if (x != 0xC000000000000000)
+    {
+        printf(" - FAIL! dg_getulowestsetbits(0xC000000000000000, 2) did not give 0xC000000000000000, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestsetbits(0xC000000000000000, 3); 
+
+    if (x != 0xC000000000000000)
+    {
+        printf(" - FAIL! dg_getulowestsetbits(0xC000000000000000, 3) did not give 0xC000000000000000, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestsetbits(0xB000000000000000, 2); 
+
+    if (x != 0x3000000000000000)
+    {
+        printf(" - FAIL! dg_getulowestsetbits(0xB000000000000000, 2) did not give 0x3000000000000000, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestsetbits(0xFFFFFFFFFFFFFFFF, 0x40); 
+
+    if (x != 0xFFFFFFFFFFFFFFFF)
+    {
+        printf(" - FAIL! dg_getulowestsetbits(0xFFFFFFFFFFFFFFFF, 0x40) did not give 0xFFFFFFFFFFFFFFFF, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestsetbits(0xFFFFFFFFFFFFFFFF, 0x41); 
+
+    if (x != 0xFFFFFFFFFFFFFFFF)
+    {
+        printf(" - FAIL! dg_getulowestsetbits(0xFFFFFFFFFFFFFFFF, 0x41) did not give 0xFFFFFFFFFFFFFFFF, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestsetbits(0xFFFFFFFFFFFFFFFF, 0x42); 
+
+    if (x != 0xFFFFFFFFFFFFFFFF)
+    {
+        printf(" - FAIL! dg_getulowestsetbits(0xFFFFFFFFFFFFFFFF, 0x42) did not give 0xFFFFFFFFFFFFFFFF, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestsetbits(0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF); 
+
+    if (x != 0xFFFFFFFFFFFFFFFF)
+    {
+        printf(" - FAIL! dg_getulowestsetbits(0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF) did not give 0xFFFFFFFFFFFFFFFF, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_getulowestsetbits(0xFEEFFFFFFFFFF00F, 0xFFFFFFFFFFFFFFFF); 
+
+    if (x != 0xFEEFFFFFFFFFF00F)
+    {
+        printf(" - FAIL! dg_getulowestsetbits(0xFEEFFFFFFFFFF00F, 0xFFFFFFFFFFFFFFFF) did not give 0xFEEFFFFFFFFFF00F, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+}
+
+void testdg_scanforuthsetbit ()
+{
+    INT64 x;
+    UINT32 xlo, xhi;
+    printf("testing dg_scanforuthsetbit\n");
+    
+    x = dg_scanforuthsetbit(0, 0);   // scan for 0th set bit... should return not found
+
+    if (x != 0x40)
+    {
+        printf(" - FAIL! dg_scanforuthsetbit(0, 0) did not give 0x40\n");
+    }
+
+    x = dg_scanforuthsetbit(1, 0);   // scan for 0th set bit... should return not found
+
+    if (x != 0x40)
+    {
+        printf(" - FAIL! dg_scanforuthsetbit(0, 1) did not give 0x40\n");
+    }
+
+    x = dg_scanforuthsetbit(2, 0);    // scan for 0th set bit... should return not found
+
+    if (x != 0x40)
+    {
+        printf(" - FAIL! dg_scanforuthsetbit(2, 0) did not give 0x40\n");
+    }
+
+    x = dg_scanforuthsetbit(0, 1);  // scan for first bit set... but there are none... 
+
+    if (x != 0x40)
+    {
+        printf(" - FAIL! dg_scanforuthsetbit(0, 1) did not give 0x40\n");
+    }
+
+    x = dg_scanforuthsetbit(1, 1);  // scan for first bit set in 1... should return bit 0
+
+    if (x != 0)
+    {
+        printf(" - FAIL! dg_scanforuthsetbit(1, 1) did not give 0\n");
+    }
+
+    x = dg_scanforuthsetbit(2, 1);
+
+    if (x != 1)
+    {
+        printf(" - FAIL! dg_scanforuthsetbit(2, 1) did not give 1\n");
+    }
+
+    x = dg_scanforuthsetbit(0x8000000000000000, 1);
+
+    if (x != 0x3f)
+    {
+        printf(" - FAIL! dg_scanforuthsetbit(0x8000000000000000, 1) did not give 0x3f\n");
+    }
+
+    x = dg_scanforuthsetbit(3, 2);
+
+    if (x != 1)
+    {
+        printf(" - FAIL! dg_scanforuthsetbit(3, 2) did not give 1\n");
+    }
+
+    x = dg_scanforuthsetbit(5, 2);
+
+    if (x != 2)
+    {
+        printf(" - FAIL! dg_scanforuthsetbit(5, 2) did not give 2\n");
+    } 
+
+    x = dg_scanforuthsetbit(0x0a, 2);
+
+    if (x != 3)
+    {
+        printf(" - FAIL! dg_scanforuthsetbit(0x0a, 2) did not give 3\n");
+    }
+
+    x = dg_scanforuthsetbit(0x1a, 2);
+
+    if (x != 3)
+    {
+        printf(" - FAIL! dg_scanforuthsetbit(0x0a, 2) did not give 3\n");
+    }
+
+    x = dg_scanforuthsetbit(0x1a, 2);
+
+    if (x != 3)
+    {
+        printf(" - FAIL! dg_scanforuthsetbit(0x1a, 2) did not give 3\n");
+    }
+
+    x = dg_scanforuthsetbit(0x1a, 3);
+
+    if (x != 4)
+    {
+        printf(" - FAIL! dg_scanforuthsetbit(0x1a, 3) did not give 4\n");
+    }
+
+    x = dg_scanforuthsetbit(0x1a, 4);
+
+    if (x != 0x40)
+    {
+        printf(" - FAIL! dg_scanforuthsetbit(0x1a, 4) did not give 0x40\n");
+    }
+
+    x = dg_scanforuthsetbit(largestunsignedint, 0x40);
+
+    if (x != 0x3f)
+    {
+        printf(" - FAIL! dg_scanforuthsetbit(-1, 0x40) did not give 0x3f\n");
+    }
+}
+
+void testdg_setbit ()
+{
+    INT64 x;
+    UINT32 xlo, xhi;
+    printf("testing dg_setbit\n");
+    
+    x = dg_setbit(0, 0);
+
+    if (x != 1)
+    {
+        printf(" - FAIL! dg_setbit(0, 0) did not give 1\n");
+    }
+
+    x = dg_setbit(1, 0);
+
+    if (x != 1)
+    {
+        printf(" - FAIL! dg_setbit(1, 0) did not give 1\n");
+    }
+
+    x = dg_setbit(2, 0);
+
+    if (x != 3)
+    {
+        printf(" - FAIL! dg_setbit(2, 0) did not give 3\n");
+    }
+
+    x = dg_setbit(0, 1);
+
+    if (x != 2)
+    {
+        printf(" - FAIL! setbit(0, 1) did not give 2\n");
+    }
+
+    x = dg_setbit(0, 2);
+
+    if (x != 4)
+    {
+        printf(" - FAIL! setbit(0, 2) did not give 4\n");
+    }
+
+    x = dg_setbit(0x8000000000000000, 1);
+
+    if (x != 0x8000000000000002)
+    {
+        printf(" - FAIL! setbit(0x8000000000000000, 1) did not give 0x8000000000000002\n");
+    }
+
+    x = dg_setbit(0x0000000000000000, 0x3f);
+
+    if (x != 0x8000000000000000)
+    {
+        printf(" - FAIL! setbit(0x0000000000000000, 0x3f) did not give 0x8000000000000000\n");
+    } 
+}
+
+void testdg_clrbit ()
+{
+    INT64 x;
+    UINT32 xlo, xhi;
+    printf("testing dg_clrbit\n");
+    
+    x = dg_clrbit(0xffffffffffffffff, 0);
+
+    if (x != 0xfffffffffffffffe)
+    {
+        printf(" - FAIL! dg_clrbit(0xffffffffffffffff, 0) did not give 0xfffffffffffffffe\n");
+    }
+
+    x = dg_clrbit(0xfffffffffffffffd, 0);
+
+    if (x != 0xfffffffffffffffc)
+    {
+        printf(" - FAIL! dg_clrbit(0xfffffffffffffffd, 0) did not give 0xfffffffffffffffc\n");
+    }
+
+    x = dg_clrbit(0xfffffffffffffffb, 0);
+
+    if (x != 0xfffffffffffffffa)
+    {
+        printf(" - FAIL! dg_clrbit(0xfffffffffffffffb, 0) did not give 0xfffffffffffffffa\n");
+    }
+
+    x = dg_clrbit(0xffffffffffffffff, 1);
+
+    if (x != 0xfffffffffffffffd)
+    {
+        printf(" - FAIL! setbit(0xffffffffffffffff, 1) did not give 0xfffffffffffffffd\n");
+    }
+
+    x = dg_clrbit(0xffffffffffffffff, 2);
+
+    if (x != 0xfffffffffffffffb)
+    {
+        printf(" - FAIL! clrbit(0xffffffffffffffff, 2) did not give 0xfffffffffffffffb\n");
+    }
+
+    x = dg_clrbit(0x7fffffffffffffff, 1);
+
+    if (x != 0x7ffffffffffffffd)
+    {
+        printf(" - FAIL! setbit(0x7fffffffffffffff, 1) did not give 0x7ffffffffffffffd\n");
+    }
+
+    x = dg_clrbit(0xffffffffffffffff, 0x3f);
+
+    if (x != 0x7fffffffffffffff)
+    {
+        printf(" - FAIL! setbit(0xffffffffffffffff, 0x3f) did not give 0x7fffffffffffffff\n");
+    } 
+}
+
+void testdg_notbit ()
+{
+    INT64 x;
+    UINT32 xlo, xhi;
+    printf("testing dg_notbit\n");
+    
+    x = dg_notbit(0, 0);
+
+    if (x != 1)
+    {
+        printf(" - FAIL! dg_clrbit(0, 0) did not give 1\n");
+    }
+
+    x = dg_notbit(1, 0);
+
+    if (x != 0)
+    {
+        printf(" - FAIL! dg_clrbit(1, 0) did not give 0\n");
+    }
+
+    x = dg_notbit(0, 1);
+
+    if (x != 2)
+    {
+        printf(" - FAIL! dg_clrbit(0, 1) did not give 2\n");
+    }
+
+    x = dg_notbit(2, 1);
+
+    if (x != 0)
+    {
+        printf(" - FAIL! dg_clrbit(2, 1) did not give 0\n");
+    }
+
+    x = dg_notbit(0, 0x3f);
+
+    if (x != 0x8000000000000000)
+    {
+        printf(" - FAIL! dg_clrbit(0, 0x3f) did not give 0x8000000000000000\n");
+    }
+
+    x = dg_notbit(0x8000000000000000, 0x3f);
+
+    if (x != 0)
+    {
+        printf(" - FAIL! dg_clrbit(0x8000000000000000, 0x3f) did not give 0\n");
+    }
+}
+
+void testdg_twototheu ()
+{
+    INT64 x;
+    UINT32 xlo, xhi;
+    printf("testing dg_twototheu\n");
+    
+    x = dg_twototheu(0);
+
+    if (x != 1)
+    {
+        printf(" - FAIL! 2 ^ 0x00 did not give 1\n");
+    }
+
+    x = dg_twototheu(1);
+
+    if (x != 2)
+    {
+        printf(" - FAIL! 2 ^ 0x01 did not give 2\n");
+    }
+
+    x = dg_twototheu(2);
+
+    if (x != 4)
+    {
+        printf(" - FAIL! 2 ^ 0x02 did not give 4\n");
+    }
+
+    x = dg_twototheu(3);
+
+    if (x != 8)
+    {
+        printf(" - FAIL! 2 ^ 0x03 did not give 8\n");
+    }
+
+    x = dg_twototheu(8);
+
+    if (x != 0x100)
+    {
+        printf(" - FAIL! 2 ^ 0x08 did not give 0x100\n");
+    }
+
+    x = dg_twototheu(0x10);
+
+    if (x != 0x10000)
+    {
+        printf(" - FAIL! 2 ^ 0x10 did not give 0x10000\n");
+    }
+
+    x = dg_twototheu(0x20);
+
+    if (x != 0x100000000)
+    {
+        printf(" - FAIL! 2 ^ 0x20 did not give 0x100000000\n");
+    }
+
+    x = dg_twototheu(0x3f);
+
+    if (x != 0x8000000000000000)
+    {
+        printf(" - FAIL! 2 ^ 0x3f did not give 0x8000000000000000\n");
+    }
+
+    x = dg_twototheu(0x40);
+
+    if (x != 1)
+    {
+        printf(" - FAIL! 2 ^ 0x40 did not give 1\n");
+    }
+
+    x = dg_twototheu(0x41);
+
+    if (x != 2)
+    {
+        printf(" - FAIL! 2 ^ 0x41 did not give 2\n");
+    }
+}
 
 void testdg_n8ton64 ()
 {
@@ -1346,6 +2287,145 @@ void testdg_movebytes()
     if (destbuf[9] != 'x')
     {
         printf("  dg_movebytes changed buffer after last character moved!\n");
+    }
+}
+
+
+void testdg_moveuint64s()
+{
+    UINT64 i;
+    UINT64 srcbuf[64];
+    UINT64 destbuf[64];
+    const char* perror;
+    UINT64 x;
+    UINT32 xlo, xhi;
+
+    printf("testing dg_moveuint64s\n");
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = 'x';
+        srcbuf[i] = (UINT8)i + 0x4142434445464741;
+    }
+
+    perror = dg_moveuint64s(srcbuf, destbuf, 9);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_moveuint64s failed with error %s\n", perror);
+    }
+
+    if (destbuf[0] != 0x4142434445464741)
+    {
+        printf("  first character moved incorrect\n");
+    }
+
+    if (destbuf[8] != 0x4142434445464749)
+    {
+        printf("  last character moved incorrect\n");
+    }
+
+    if (destbuf[9] != 'x')
+    {
+        printf("  dg_moveuint64s changed buffer after last character moved!\n");
+    }
+    
+    perror = dg_moveuint64s((UINT64*)-0x1001, destbuf, 9);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_moveuint64s bad memory at src case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+
+    perror = dg_moveuint64s((UINT64*)srcbuf, (UINT64*)-0x1001, 9);
+
+    if (perror != dg_badmemoryerror)
+    {
+        printf("- FAIL! dg_moveuint64s bad memory at dest case, expected %s got %s\n", dg_badmemoryerror, perror);
+    }
+
+    for (i = 0; i < 20; i++)
+    {
+        destbuf[i] = 'x';
+    }
+
+    srcbuf[0] = 'd';
+    srcbuf[8] = 'u';
+    srcbuf[9] = 'a';
+
+    perror = dg_moveuint64s(srcbuf, destbuf, 9);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_moveuint64s failed with error %s\n", perror);
+    }
+
+    if (destbuf[0] != 'd')
+    {
+        printf("  first character moved incorrect, expected 'd'n");
+    }
+
+    if (destbuf[8] != 'u')
+    {
+        printf("  last character moved incorrect, expected 'u'\n");
+    }
+
+    if (destbuf[9] != 'x')
+    {
+        printf("  dg_moveuint64s changed buffer after last character moved!\n");
+    }
+
+    // testing reverse case
+    for (i = 0; i < 20; i++)
+    {
+        srcbuf[i] = i + 0x41;
+    }
+
+    perror = dg_moveuint64s(srcbuf, srcbuf+1, 9);
+
+    if (perror != dg_success)
+    {
+        printf("  dg_moveuint64s reverse case failed with error %s\n", perror);
+    }
+
+    if (srcbuf[0] != 0x41)
+    {
+        x = srcbuf[0];
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("  dg_moveuint64s reverse case first source character changed, expected 0x41, got %08x%08x\n", xhi, xlo);
+    }
+
+    if (srcbuf[1] != 0x41)
+    {
+        x = srcbuf[1];
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("  dg_moveuint64s reverse case first dest character incorrect, expected 0x41, got %08x%08x\n", xhi, xlo);
+    }
+
+    if (srcbuf[2] != 0x42)
+    {
+        x = srcbuf[2];
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("  dg_moveuint64s reverse case second dest character incorrect, expected 0x42, got %08x%08x\n", xhi, xlo);
+    }
+
+    if (srcbuf[9] != 0x49)
+    {
+        x = srcbuf[9];
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("  dg_moveuint64s reverse case last dest character incorrect, expected 0x49, got %08x%08x\n", xhi, xlo);
+    }
+
+    if (srcbuf[10] != 0x4b)
+    {
+        x = srcbuf[10];
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("  dg_moveuint64s reverse case changed buffer after last character moved!, expected 0x4b, got %08x%08x\n", xhi, xlo);
     }
 }
 
@@ -13438,6 +14518,7 @@ testdg_putuint16();
 testdg_putuint32();
 testdg_putuint64();
 testdg_movebytes();
+testdg_moveuint64s();
 testdg_movebytes2();
 testdg_movebytesforward();
 testdg_movebytesreverse();
@@ -13526,6 +14607,16 @@ testdg_n8ton64();
 testdg_n16ton64();
 testdg_n32ton64();
 
+testdg_twototheu();
+testdg_setbit();
+testdg_clrbit();
+testdg_notbit();
+
+testdg_scanforuthsetbit();
+testdg_getulowestsetbits();
+testdg_getulowestbits();
+testdg_getulowestbitsmask();
+
 
 
 /*
@@ -13534,7 +14625,8 @@ testdg_n32ton64();
     // testdg_makesharedlibtobuf();
     testdg_runfileandwait();
 */
-    
+        printf("   \n  All tests done. \n");    
+
 	return(0);
 }
 

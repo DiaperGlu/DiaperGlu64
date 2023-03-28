@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2022 James Patrick Norris
+//    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.7.
+//    This file is part of DiaperGlu v5.8.
 //
-//    DiaperGlu v5.7 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.8 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.7 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.8 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.7; if not, write to the Free Software
+//    along with DiaperGlu v5.8; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// August 26, 2022            //
-// version 5.7                //
+// March 27, 2023             //
+// version 5.8                //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -263,10 +263,13 @@ void dg_forthselftest ()
     // test c compiling routines
     testdg_bumpdisplacementsizeifneeded();
     testdg_compilemovregtoreg();
+    testdg_compilemovfregtofreg();
     testdg_compilenegatereg();
     testdg_compileaddregtoreg();
     testdg_compilesubn8fromrsp();
+    testdg_compilesubnfromrsp();
     testdg_compileaddn8torsp();
+    testdg_compileaddntorsp();
     testdg_compilepushntoret();
     testdg_compilepopregfromret();
     testdg_compilepushregtoret();
@@ -288,17 +291,46 @@ void dg_forthselftest ()
     testdg_compilepushtodatastack();
     testdg_compilepushntodatastack();
     testdg_compileobtoptodatastack();
+    testdg_compilemovbracketrsptoreg();
+    
     testdg_compilemovbracketrbpd8toreg();
+    testdg_compilemovbracketrbpd8tofreg();
     testdg_compilemovbracketrbpd32toreg();
+    testdg_compilemovbracketrbpd32tofreg();
     testdg_compilemovbracketrbpdtoreg();
+
+    testdg_compilemovbracketrspd8toreg();    
+    testdg_compilemovbracketrspd32toreg();    
+    testdg_compilemovbracketrspdtoreg();
+
+    testdg_compilemovregtobracketrsp();
+
     testdg_compilemovregtobracketrbpd8();
+    testdg_compilemovfregtobracketrbpd8();
     testdg_compilemovregtobracketrbpd32();
+    testdg_compilemovfregtobracketrbpd32();
     testdg_compilemovregtobracketrbpd();
+
+    testdg_compilemovregtobracketrspd8(); 
+    testdg_compilemovregtobracketrspd32();    
+    testdg_compilemovregtobracketrspd();
+
+    testdg_compilepreservelocalsregstoret();
+    testdg_compilepreservenoframeregs();
+    testdg_compilepreservecallsubsregs();
+
+    testdg_compileunpreservelocalsregsfromret();
+    testdg_compileunpreservelocalsregsfromframe();
+    testdg_compileunpreservenoframeregs();
+    testdg_compileunpreservecallsubsframeregs();
+
     testdg_compilebracketrbpdtodatastack();
     testdg_compiledatastacktobracketrbpd();
     testdg_compilecallcoreoneuparam();
     testdg_compilecallcoretwouparams();
     // testdg_compilebracketobtoptodatastack();
+    testdg_compileopreg64tobracketrsp();
+    
     
 
     testdg_initjumpbuffer();
@@ -340,6 +372,8 @@ void dg_forthselftest ()
     testdg_namedbufnametoeid ();
     testdg_namedbufnametobufid ();
     testdg_namedbufnametoaddr ();
+
+    testdg_ubitsmask();
 
 	// test Forth Core Words
 	testdg_checkloopdone ();
@@ -797,5 +831,13 @@ void dg_forthselftest ()
     */
     
     testdg_determineparameterregister();
-    
+    testdg_regtolocalsregindex();
+    testdg_localsregindextoreg();
+    testdg_paramregsindextolocalsregindex();
+    testdg_marklocalsregasused();
+    testdg_forthallrmaskunuse();
+    testdg_usenextunusedlocalsintreg();
+    testdg_usenextunusedlocalsfloatreg();
+    testdg_forthregscurly();
+
 }
