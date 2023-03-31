@@ -1,10 +1,11 @@
 Changelog for Diaperglu
    31 Mar 2023
      Released v5.9
+     Added UI-UF-MAKE-SURE-AVAILABLE-RMASK
      Changed dg_compileaddnlocalstocallsubsframe to compile nothing if n is 0
      Updated documentation for dg_pulloneaddressingmode
        (note: behavior for DGLU-FORTH-FRAME-LOCAL was changed in v5.8 but not
-        documented. Then again... it just wasn't documented)
+        documented. Then again... it wasn't documented to begin with...)
      Added a range check to dg_forthnoframeparamscurly on Mac when calling 
       dg_paramregsindextolocalsregindex (shouldn't change anything)
 
