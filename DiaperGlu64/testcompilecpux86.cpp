@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.8.
+//    This file is part of DiaperGlu v5.9.
 //
-//    DiaperGlu v5.8 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.9 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.8 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.9 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.8; if not, write to the Free Software
+//    along with DiaperGlu v5.9; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// March 27, 2023             //
-// version 5.8                //
+// March 31, 2023             //
+// version 5.9                //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -31565,6 +31565,235 @@ void testdg_compilepreservecallsubsregs ()
 
 
     dg_printzerostring(&BHarrayhead, (unsigned char*)"  ... test done\n");
+}
+
+
+void testdg_getcallsubsframepreservedregoffset ()
+{
+    Bufferhandle BHarrayhead;
+
+    INT64 offset;
+
+
+    dg_initpbharrayhead(&BHarrayhead);
+   
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_getcallsubsframepreservedregoffset\n");
+
+    
+    //  getting offset of first of 4 preserved success case   
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_regspreserveddepth,
+        8);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_getcallsubsframepreservedregoffset first of four case error putting preserved depth\n");
+        return;
+    }
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_subroutineregspreserved,
+        0x2148);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_getcallsubsframepreservedregoffset first of four case error putting preserved mask\n");
+        return;
+    }
+    
+    offset = dg_getcallsubsframepreservedregoffset(
+        &BHarrayhead,
+        3); // position of first set bit 
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_getcallsubsframepreservedregoffset first of four case error doing dg_getcallsubsframepreservedregoffset \n");
+        return;
+    }
+
+    if (offset != -8 * sizeof(UINT64))
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_getcallsubsframepreservedregoffset - first of four case got wrong depth, expected ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)-0x40);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)", got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)offset);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+
+
+    //  getting offset of second of 4 preserved success case   
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_regspreserveddepth,
+        8);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_getcallsubsframepreservedregoffset second of four case error putting preserved depth\n");
+        return;
+    }
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_subroutineregspreserved,
+        0x2148);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_getcallsubsframepreservedregoffset second of four case error putting preserved mask\n");
+        return;
+    }
+    
+    offset = dg_getcallsubsframepreservedregoffset(
+        &BHarrayhead,
+        6); // position of second set bit 
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_getcallsubsframepreservedregoffset second of four case error doing dg_getcallsubsframepreservedregoffset\n");
+        return;
+    }
+
+    if (offset != -7 * sizeof(UINT64))
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_getcallsubsframepreservedregoffset - second of four case got wrong depth, expected ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)-0x38);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)", got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)offset);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+
+
+    //  getting offset of third of 4 preserved success case   
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_regspreserveddepth,
+        8);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_getcallsubsframepreservedregoffset - third of four case error putting preserved depth\n");
+        return;
+    }
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_subroutineregspreserved,
+        0x2148);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_getcallsubsframepreservedregoffset - third of four case error putting preserved mask\n");
+        return;
+    }
+    
+    offset = dg_getcallsubsframepreservedregoffset(
+        &BHarrayhead,
+        8); // position of third set bit
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_getcallsubsframepreservedregoffset - third of four case error doing dg_getcallsubsframepreservedregoffset \n");
+        return;
+    }
+
+    if (offset != -6 * sizeof(UINT64))
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_getcallsubsframepreservedregoffset - third of four case got wrong depth, expected ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)-0x30);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)", got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)offset);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+
+
+    //  getting offset of fourth of 4 preserved success case   
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_regspreserveddepth,
+        8);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_getcallsubsframepreservedregoffset - fourth of four case error putting preserved depth\n");
+        return;
+    }
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_subroutineregspreserved,
+        0x2148);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_getcallsubsframepreservedregoffset - fourth of four case error putting preserved mask\n");
+        return;
+    }
+    
+    offset = dg_getcallsubsframepreservedregoffset(
+        &BHarrayhead,
+        13); // position of fourth set bit
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_getcallsubsframepreservedregoffset - fourth of four case error doing dg_getcallsubsframepreservedregoffset \n");
+        return;
+    }
+
+    if (offset != -5 * sizeof(UINT64))
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_getcallsubsframepreservedregoffset - fourth of four case got wrong depth, expected ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)-0x28);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)", got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)offset);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
 }
 
 

@@ -1,0 +1,194 @@
+( //////////////////////////////////////////////////////////////////////////////////////// )
+( //                                                                                       )
+( //    Copyright 2023 James Patrick Norris                                                )
+( //                                                                                       )
+( //    This file is part of Diaperglu 5.9.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.9 is free software; you can redistribute it and/or modify              )
+( //    it under the terms of the GNU General Public License as published by               )
+( //    the Free Software Foundation; either version 2 of the License, or                  )
+( //    {at your option} any later version.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.9 is distributed in the hope that it will be useful,                   )
+( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
+( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
+( //    GNU General Public License for more details.                                       )
+( //                                                                                       )
+( //    You should have received a copy of the GNU General Public License                  )
+( //    along with Diaperglu 5.9; if not, write to the Free Software                       )
+( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
+( //                                                                                       )
+( //////////////////////////////////////////////////////////////////////////////////////// )
+
+( /////////////////////////////// )
+( // James Patrick Norris      // )
+( // www.rainbarrel.com        // )
+( // March 31, 2023            // )
+( // version 5.9               // )
+( /////////////////////////////// )
+
+
+// last changed May 29, 2020
+
+// this script first makes a .o file
+// then runs ld to build a .dylib file from the .o file
+// then opens the .dylib and calls the test functions
+
+PCURRENTCOMPILEBUFFER @ CONSTANT OLDCOMPILEBUFID
+
+
+// make new empty compile buffer to hold the compiled code
+
+HEX 10000 -1 NEWBUFFER CONSTANT TESTMAKEDOTOCOMPILEBUFID 
+TESTMAKEDOTOCOMPILEBUFID PCURRENTCOMPILEBUFFER ! 
+
+
+// making an hlist to hold a symbol list and making it the current elementid hlistid
+
+NEW-NGLULIST>EH
+
+
+// adding a root element to the current EH hlist
+//  this element is not used other than as a parent to the symbol elements
+
+$" dg2dgraphics" 0 >NEW$ EH-NEW-ELEMENT>EH
+
+
+// adding the assembler to the search order
+
+X86-WORDLIST >SEARCH-ORDER
+
+HEX
+OSYMBOL dg_getoverlapsegment
+  ( RDI=ASX RSI=AL RDX=BSX RCX=BL -regs- RAX=OVERLAPL RDX=OVERLAPSX )
+
+  // ret            [RBP+8]
+  // saved RBP      [RBP+0]
+  RBP PUSH,
+  RSP RBP MOV,
+
+  RDX  RAX  MOV,  
+  RDI  RAX  SUB,  // RAX now holds DL = BSX - ASX
+  
+  // checking case one, 
+  // if BSX - ASX <= AL then b starts in a 
+  RSI RAX  CMP,  // comparing (BSX - ASX) with AL
+  ULE IF,
+    // OVERLAPSX = BSX
+
+    // OVERLAPL = smaller of BL or (ASX + AL) - BSX
+    //   (ASX + AL) - BSX = (ASX - BSX) + AL = AL - (BSX - ASX)
+    RSI RAX  SUB,  // RAX now holds (BSX - ASX) - AL
+    RAX NEG, // RAX now holds AL - (BSX - ASX)
+    RCX  RAX  CMP,  
+    UGT IF,
+      RCX  RAX  MOV,
+    THEN,
+    
+    RBP POP,
+    RET,
+  THEN,
+
+  // checking case two, 
+  // if ASX - BSX <= BL then a starts in b
+  RAX NEG,
+  RCX RAX  CMP,  // ASX - BSX <= BL
+  ULE IF,
+    // OVERLAPSX = EAX
+    RDI RDX  MOV,
+
+    // OVERLAPL = smaller of (ASX - BSX) - BL or AL
+    RCX RAX  SUB,  
+    RAX NEG,                  
+    RSI RAX  CMP,  
+    UGT IF,
+      RSI RAX  MOV,
+    THEN,
+    
+    RBP POP,
+    RET,
+  THEN,
+
+  // case 3, no overlap
+  // OVERLAPSX = EAX
+  RDI RDX  MOV,
+
+  // OVERLAPL = 0
+  RAX  RAX  XOR,
+  
+  RBP POP,
+  RET,
+
+
+HEX
+//  RDI pdest
+//  RSI psrc
+//  RDX length                // in uint32s  ...  need one 64 bit mask for every 64 uint32s
+//  RCX maskstartoffset       // in bits and goes from 0-63
+//  R8  pmask
+OSYMBOL dg_maskedmoveuint32s  // this should work... but could be faster
+
+  // if length is 0 don't do anything...
+  //  I can probably take this out... caller is going to check for 0 anyways
+  // RDX RDX OR,
+  // ZS IF,
+  //  RET,
+  // THEN,
+
+  PUSHF,
+
+  R8 [R]  RAX  MOV,  
+  RAX  BSWAP,         // RAX now holds first mask bits
+  8 N  R8  ADD,
+  CL  RAX  SHL,
+    
+
+  BEGIN,
+    
+    1 N  RAX  SHL,
+    CS IF,
+      MOVSD,
+    ELSE,
+      4 N  RSI  ADD,
+      4 N  RDI  ADD,
+    THEN,
+    
+    // if bitmap offset mod 64 = 0 then load next mask
+    RCX INC,
+    3F N  RCX  AND,
+    ZS IF,
+      R8 [R]  RAX  MOV,  
+      RAX BSWAP,         
+      8 N  R8  ADD,
+    THEN,
+
+    RDX DEC,  
+  ZS UNTIL,
+
+  POPF,
+  RET,
+
+
+
+OLDCOMPILEBUFID PCURRENTCOMPILEBUFFER !
+
+
+
+
+// saving the compiled buffer in the mach-o .o format
+
+TESTMAKEDOTOCOMPILEBUFID EH> $" dg2dgraphics.o" BUF>.OFILE$
+
+
+// usind ld to turn the .o file into a dylib
+
+( CRLF ." Running ld to turn the .o file into a dylib... sometimes this take awhile" CRLF )
+
+( RUNFILEANDWAITNOENV" ld -macosx_version_min 10.11 -dynamic -dylib -no_uuid -no_eh_labels -o libdg2dgraphics.dylib dg2dgraphics.o" )
+
+
+// removing the .o file
+
+( RUNFILEANDWAITNOENV" rm dg2dgraphics.o" )
+
+

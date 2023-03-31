@@ -1,4 +1,27 @@
 Changelog for Diaperglu
+   31 Mar 2023
+     Released v5.9
+     Changed dg_compileaddnlocalstocallsubsframe to compile nothing if n is 0
+     Updated documentation for dg_pulloneaddressingmode
+       (note: behavior for DGLU-FORTH-FRAME-LOCAL was changed in v5.8 but not
+        documented. Then again... it just wasn't documented)
+     Added a range check to dg_forthnoframeparamscurly on Mac when calling 
+      dg_paramregsindextolocalsregindex (shouldn't change anything)
+
+   30 Mar 2023     
+     Fixed out of range check in dg_paramregsindextolocalsregindex so that it would
+      work on Mac as well as Windows. (float indexes 6 and 7 on Mac were incorrectly
+      considered out of range)
+     Added dg_getcallsubsframepreservedregoffset and made dg_pulloneaddressingmode's
+      'is a call subs frame param that is preserved' case use it... so that the
+      calculation for this case was tested by a test script and would do error
+      checking.  I'm still not checking some assembly function returns for
+      out of range... The incorrect calculation may have been from the
+      dg_paramregsindextolocalsregindex bug...
+
+   28 Mar 2023
+     Recompiled for Mac OS X 13.3 Ventura - no changes required
+ 
    27 Mar 2023
      Released v5.8
      Added function to updateLineEndings.dglu mac sample to automatically convert

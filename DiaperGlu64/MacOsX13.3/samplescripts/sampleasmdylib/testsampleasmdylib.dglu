@@ -1,0 +1,121 @@
+( //////////////////////////////////////////////////////////////////////////////////////// )
+( //                                                                                       )
+( //    Copyright 2023 James Patrick Norris                                                )
+( //                                                                                       )
+( //    This file is part of Diaperglu 5.9.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.9 is free software; you can redistribute it and/or modify              )
+( //    it under the terms of the GNU General Public License as published by               )
+( //    the Free Software Foundation; either version 2 of the License, or                  )
+( //    {at your option} any later version.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.9 is distributed in the hope that it will be useful,                   )
+( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
+( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
+( //    GNU General Public License for more details.                                       )
+( //                                                                                       )
+( //    You should have received a copy of the GNU General Public License                  )
+( //    along with Diaperglu 5.9; if not, write to the Free Software                       )
+( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
+( //                                                                                       )
+( //////////////////////////////////////////////////////////////////////////////////////// )
+
+( /////////////////////////////// )
+( // James Patrick Norris      // )
+( // www.rainbarrel.com        // )
+( // March 31, 2023            // )
+( // version 5.9               // )
+( /////////////////////////////// )
+
+
+// this file expects a valid hlistid elementid on the top of the EH stack which represents the
+//  parent element of the export symbol list
+
+// this file also compiles to the current compile buffer
+
+
+// adding the assembler to the search order
+
+X86-WORDLIST >SEARCH-ORDER
+
+
+ OSYMBOL dg_bswap
+ ( u64                        RDI
+   -ret-
+   reverse byte order of u64  RAX )
+   
+   RDI RAX -> MOV,
+   RAX BSWAP,
+   RET,
+   
+   
+  OSYMBOL dg_inc
+  ( u64                       RDI
+    -ret-
+    u64 + 1                   RAX )
+    
+    RDI RAX -> MOV,
+    RAX INC,
+    RET,
+  
+  
+  OSYMBOL dg_getrsp
+  ( -ret-
+    rsp during call         RAX )
+    
+    RSP RAX -> MOV,
+    RET,
+    
+    
+  OSYMBOL dg_twoslash
+  ( n64                          RDI
+    -ret-
+    n64'                         RAX )   // if n64 = 0, n64' = 0
+                                         // if n64 != 0, n64' = n64 / 2
+                                         
+    RDI RAX -> MOV,
+    1 N RAX SAR,
+    RET,
+ 
+ 
+  OSYMBOL dg_lshift
+  ( u64                    RDI
+    shiftcount             RSI
+    -ret-
+    u'                     RAX )
+    
+    RDI RAX -> MOV,
+    ESI ECX -> MOV,
+    CL RAX SHL,
+    RET,
+  
+
+
+// /////////////////////////////////////////////////////////
+// Diaperglu uses two files to represent a shared library //
+// /////////////////////////////////////////////////////////
+
+// The first file is just the raw code
+// saving the compiled buffer to a file
+
+// LIFECOMPILEBUFID $" life.dglib" SAVEFILE$
+
+// DROPEH ( dropping symbol list elementid hlistid )
+
+
+// The second file contains the linker information
+//   The Diaperglu linker can also allocate buffers
+
+// saving the nglu list which in this case just holds an export symbol list
+
+// EH> PACK-HLIST $" life.glulist" SAVEFILE$
+ 
+
+// DROP ( dropping nglu list element id )
+
+
+// I didn't free the life glulistHLIST or LIFECOMPILEBUFID buffer
+
+
+     
+

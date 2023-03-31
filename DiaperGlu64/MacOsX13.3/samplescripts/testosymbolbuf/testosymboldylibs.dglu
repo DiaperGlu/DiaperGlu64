@@ -1,0 +1,289 @@
+( //////////////////////////////////////////////////////////////////////////////////////// )
+( //                                                                                       )
+( //    Copyright 2023 James Patrick Norris                                                )
+( //                                                                                       )
+( //    This file is part of Diaperglu 5.9.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.9 is free software; you can redistribute it and/or modify              )
+( //    it under the terms of the GNU General Public License as published by               )
+( //    the Free Software Foundation; either version 2 of the License, or                  )
+( //    {at your option} any later version.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.9 is distributed in the hope that it will be useful,                   )
+( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
+( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
+( //    GNU General Public License for more details.                                       )
+( //                                                                                       )
+( //    You should have received a copy of the GNU General Public License                  )
+( //    along with Diaperglu 5.9; if not, write to the Free Software                       )
+( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
+( //                                                                                       )
+( //////////////////////////////////////////////////////////////////////////////////////// )
+
+( /////////////////////////////// )
+( // James Patrick Norris      // )
+( // www.rainbarrel.com        // )
+( // March 31, 2023            // )
+( // version 5.9               // )
+( /////////////////////////////// )
+
+
+$" libosymbolexport.dylib" OPENLIBRARY$ CONSTANT MYLIBHANDLE CONSTANT MYWORDLISTID
+
+$" dg_firstfunction" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT firstfunction
+$" dg_secondfunction" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT secondfunction
+$" dg_testbracketomovcommma" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT testbracketomovcommma
+$" dg_myexportvalue" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT pmyexportvalue
+$" dg_thirdfunction" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT thirdfunction
+$" dg_fourthfunction" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT fourthfunction
+$" dg_fifthfunction" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT fifthfunction
+$" dg_sixthfunction" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT sixthfunction
+$" dg_seventhfunction" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT seventhfunction
+$" dg_eighthfunction" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT eighthfunction
+$" dg_ninthfunction" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT ninthfunction
+$" dg_testonelocalretuint128" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT testonelocalretuint128
+$" dg_testfourlocals" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT testfourlocals
+$" dg_testtwentylocals" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT testtwentylocals
+$" dg_testresultbuf" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT testresultbuf
+$" dg_testnoframeparamsretf10" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT testnoframeparamsretf10
+$" dg_testnoframeparamsretf3" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT testnoframeparamsretf3
+$" dg_pickparamn" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT pickparamn
+$" dg_testptoiparam" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT testptoiparam
+
+CR CR ." Testing export dylib."
+CR ." Calling first function, I expect 1122334455667788, I got "
+0 firstfunction CALLPROC HEX U. CR
+
+CR ." Calling second function, I expect 1213141516171819, I got"  
+0 secondfunction CALLPROC HEX U. CR
+
+CR ." Expected export value 88776655, got " pmyexportvalue @ HEX U. CR
+
+CR ." Testing EH. osymbol [O] RAX  MOV, expected 88776655, got " 
+0 testbracketomovcommma CALLPROC HEX U. CR
+
+CR ." Calling third function, I expect 27, I got "  
+24 3 2 thirdfunction CALLPROC HEX U. CR
+
+CR ." Calling fourth function, I expect 2D, I got "  
+24 4 5 3 fourthfunction CALLPROC HEX U. CR
+
+CR ." Calling fifth function, I expect 34, I got "  
+24 4 5 7 4 fifthfunction CALLPROC HEX U. CR
+
+CR ." Calling sixth function, I expect 35, I got "  
+24 4 5 7 1 5 sixthfunction CALLPROC HEX U. CR
+
+CR ." Calling seventh function, I expect 37, I got "  
+24 4 5 7 1 2 6 seventhfunction CALLPROC HEX U. CR
+
+CR ." Calling eighth function, I expect 3A, I got "  
+24 4 5 7 1 2 3 7 eighthfunction CALLPROC HEX U. CR
+
+CR ." Calling ninth function, I expect 8, I got "  
+5 3 2 1 4 ninthfunction CALLPROC HEX U. CR
+
+CR ." Calling testptoiparam function, I expect 298365982, I got "  
+0 testptoiparam CALLPROC HEX U. CR
+
+CR ." Calling testonelocalretuint128 function, I expect 5 hi 0 lo, I got "  
+0 testonelocalretuint128 CALLPROCRETUINT128 HEX ."  hi=" U. ."  lo=" U. CR
+
+CR ." Calling testfourlocals function, I expect 11, I got "  
+5 3 2 7 4 testfourlocals CALLPROC HEX U. CR
+
+CR ." Calling testtwentylocals function, I expect 0, I got "  
+0 testtwentylocals CALLPROC HEX U. CR
+
+CR ." Calling dg_testnoframeparamsretf10 function "  
+HEX 
+500B 500A 5009 5008 5007 5006 5005 5004 5003 5002 5001 5000 // float params
+400B 400A 4009 4008 4007 4006 4005 4004 4003 4002 4001 4000 // int params
+0C 0C testnoframeparamsretf10 CALLDFPPROC HEX ." expected 500A, got " U. CRLF
+
+CR ." Calling dg_testnoframeparamsretf3 function "  
+HEX 
+500B 500A 5009 5008 5007 5006 5005 5004 5003 5002 5001 5000 // float params
+400B 400A 4009 4008 4007 4006 4005 4004 4003 4002 4001 4000 // int params
+0C 0C testnoframeparamsretf3 CALLDFPPROC HEX ." expected 5003, got " U. CRLF
+
+CR ." Calling dg_pickparamn param 1 function "  
+HEX 
+500B 500A 5009 5008 5007 5006 5005 5004 5003 5002 5001 5000 // float params
+400B 400A 4009 4008 4007 4006 4005 4004 4003 4002 4001 1 // int params
+0C 0C pickparamn CALLDFPPROC HEX ." expected 4001, got " U. CRLF
+
+CR ." Calling dg_pickparamn param 2 function "  
+HEX 
+500B 500A 5009 5008 5007 5006 5005 5004 5003 5002 5001 5000 // float params
+400B 400A 4009 4008 4007 4006 4005 4004 4003 4002 4001 2 // int params
+0C 0C pickparamn CALLDFPPROC HEX ." expected 4002, got " U. CRLF
+
+CR ." Calling dg_pickparamn param 0C function "  
+HEX 
+500B 500A 5009 5008 5007 5006 5005 5004 5003 5002 5001 5000 // float params
+400B 400A 4009 4008 4007 4006 4005 4004 4003 4002 4001 0C // int params
+0C 0C pickparamn CALLDFPPROC HEX ." expected 5000, got " U. CRLF
+
+CR ." Calling dg_pickparamn param 0D function "  
+HEX 
+500B 500A 5009 5008 5007 5006 5005 5004 5003 5002 5001 5000 // float params
+400B 400A 4009 4008 4007 4006 4005 4004 4003 4002 4001 0D // int params
+0C 0C pickparamn CALLDFPPROC HEX ." expected 5001, got " U. CRLF
+
+CR ." Calling dg_pickparamn param 0E function "  
+HEX 
+500B 500A 5009 5008 5007 5006 5005 5004 5003 5002 5001 5000 // float params
+400B 400A 4009 4008 4007 4006 4005 4004 4003 4002 4001 0E // int params
+0C 0C pickparamn CALLDFPPROC HEX ." expected 5002, got " U. CRLF
+
+CR ." Calling dg_pickparamn param 0F function "  
+HEX 
+500B 500A 5009 5008 5007 5006 5005 5004 5003 5002 5001 5000 // float params
+400B 400A 4009 4008 4007 4006 4005 4004 4003 4002 4001 0F // int params
+0C 0C pickparamn CALLDFPPROC HEX ." expected 5003, got " U. CRLF
+
+CR ." Calling dg_pickparamn param 10 function "  
+HEX 
+500B 500A 5009 5008 5007 5006 5005 5004 5003 5002 5001 5000 // float params
+400B 400A 4009 4008 4007 4006 4005 4004 4003 4002 4001 10 // int params
+0C 0C pickparamn CALLDFPPROC HEX ." expected 5004, got " U. CRLF
+
+CR ." Calling dg_pickparamn param 11 function "  
+HEX 
+500B 500A 5009 5008 5007 5006 5005 5004 5003 5002 5001 5000 // float params
+400B 400A 4009 4008 4007 4006 4005 4004 4003 4002 4001 11 // int params
+0C 0C pickparamn CALLDFPPROC HEX ." expected 5005, got " U. CRLF
+
+CR ." Calling dg_pickparamn param 12 function "  
+HEX 
+500B 500A 5009 5008 5007 5006 5005 5004 5003 5002 5001 5000 // float params
+400B 400A 4009 4008 4007 4006 4005 4004 4003 4002 4001 12 // int params
+0C 0C pickparamn CALLDFPPROC HEX ." expected 5006, got " U. CRLF
+
+CR ." Calling dg_pickparamn param 13 function "  
+HEX 
+500B 500A 5009 5008 5007 5006 5005 5004 5003 5002 5001 5000 // float params
+400B 400A 4009 4008 4007 4006 4005 4004 4003 4002 4001 13 // int params
+0C 0C pickparamn CALLDFPPROC HEX ." expected 5007, got " U. CRLF
+
+CR ." Calling dg_pickparamn param 14 function "  
+HEX 
+500B 500A 5009 5008 5007 5006 5005 5004 5003 5002 5001 5000 // float params
+400B 400A 4009 4008 4007 4006 4005 4004 4003 4002 4001 14 // int params
+0C 0C pickparamn CALLDFPPROC HEX ." expected 5008, got " U. CRLF
+
+CR ." Calling dg_pickparamn param 15 function "  
+HEX 
+500B 500A 5009 5008 5007 5006 5005 5004 5003 5002 5001 5000 // float params
+400B 400A 4009 4008 4007 4006 4005 4004 4003 4002 4001 15 // int params
+0C 0C pickparamn CALLDFPPROC HEX ." expected 5009, got " U. CRLF
+
+CR ." Calling dg_pickparamn param 16 function "  
+HEX 
+500B 500A 5009 5008 5007 5006 5005 5004 5003 5002 5001 5000 // float params
+400B 400A 4009 4008 4007 4006 4005 4004 4003 4002 4001 16 // int params
+0C 0C pickparamn CALLDFPPROC HEX ." expected 500A, got " U. CRLF
+
+CR ." Calling dg_pickparamn param 17 function "  
+HEX 
+500B 500A 5009 5008 5007 5006 5005 5004 5003 5002 5001 5000 // float params
+400B 400A 4009 4008 4007 4006 4005 4004 4003 4002 4001 17 // int params
+0C 0C pickparamn CALLDFPPROC HEX ." expected 500B, got " U. CRLF
+
+$" libosymbolimport.dylib" OPENLIBRARY$ CONSTANT MYLIBHANDLE CONSTANT MYWORDLISTID
+
+$" dg_testfirstimport" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT firstfunction
+$" dg_testfirstimportagain" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT firstfunctionagain
+$" dg_testsecondimport" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT secondfunction
+$" dg_testsecondimportagain" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT secondfunctionagain
+$" dg_testvalueimport" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT testvalueimport
+$" dg_callpickparamn" MYLIBHANDLE FINDLIBRARYSYMBOL CONSTANT callpickparamn
+
+CR CR ." Testing import dylib."
+CR ." Calling first function, I expect 1122334455667788, I got "
+0 firstfunction CALLPROC HEX U. CR
+
+CR ." Calling second function, I expect 1213141516171819, I got "  
+0 secondfunction CALLPROC HEX U. CR
+
+CR ." Calling first function again, I expect 1122334455667788, I got "  
+0 firstfunctionagain CALLPROC HEX U. CR
+
+CR ." Calling second function again, I expect 1213141516171819, I got "  
+0 secondfunctionagain CALLPROC HEX U. CR
+
+CR ." Calling value import function, I expect 88776655, I got "  
+0 testvalueimport CALLPROC HEX U. CR
+
+CR ." Calling callpickparamn function n = 1, I expect 4001, I got " 
+1 1 callpickparamn CALLPROC HEX U. CR
+
+CR ." Calling callpickparamn function n = 2, I expect 4002, I got "  
+2 1 callpickparamn CALLPROC HEX U. CR
+
+CR ." Calling callpickparamn function n = 3, I expect 4003, I got "  
+3 1 callpickparamn CALLPROC HEX U. CR
+
+CR ." Calling callpickparamn function n = 4, I expect 4004, I got "  
+4 1 callpickparamn CALLPROC HEX U. CR
+
+CR ." Calling callpickparamn function n = 5, I expect 4005, I got "  
+5 1 callpickparamn CALLPROC HEX U. CR
+
+CR ." Calling callpickparamn function n = 6, I expect 4006, I got "  
+6 1 callpickparamn CALLPROC HEX U. CR
+
+CR ." Calling callpickparamn function n = 7, I expect 4007, I got "  
+7 1 callpickparamn CALLPROC HEX U. CR
+
+CR ." Calling callpickparamn function n = 8, I expect 4008, I got "  
+8 1 callpickparamn CALLPROC HEX U. CR
+
+CR ." Calling callpickparamn function n = 9, I expect 4009, I got "  
+9 1 callpickparamn CALLPROC HEX U. CR
+
+CR ." Calling callpickparamn function n = 0A, I expect 400A, I got "  
+0A 1 callpickparamn CALLPROC HEX U. CR
+
+CR ." Calling callpickparamn function n = 0B, I expect 400B, I got "  
+0B 1 callpickparamn CALLPROC HEX U. CR
+
+CR ." Calling callpickparamn function n = 0C, I expect 5000, I got "  
+0C 1 callpickparamn CALLPROC HEX U. CR
+
+CR ." Calling callpickparamn function n = 0D, I expect 5001, I got "  
+0D 1 callpickparamn CALLPROC HEX U. CR
+
+CR ." Calling callpickparamn function n = 0E, I expect 5002, I got "  
+0E 1 callpickparamn CALLPROC HEX U. CR
+
+CR ." Calling callpickparamn function n = 0F, I expect 5003, I got "  
+0F 1 callpickparamn CALLPROC HEX U. CR
+
+CR ." Calling callpickparamn function n = 10, I expect 5004, I got "  
+10 1 callpickparamn CALLPROC HEX U. CR
+
+CR ." Calling callpickparamn function n = 11, I expect 5005, I got "  
+11 1 callpickparamn CALLPROC HEX U. CR
+
+CR ." Calling callpickparamn function n = 12, I expect 5006, I got "  
+12 1 callpickparamn CALLPROC HEX U. CR
+
+CR ." Calling callpickparamn function n = 13, I expect 5007, I got "  
+13 1 callpickparamn CALLPROC HEX U. CR
+
+CR ." Calling callpickparamn function n = 14, I expect 5008, I got "  
+14 1 callpickparamn CALLPROC HEX U. CR
+
+CR ." Calling callpickparamn function n = 15, I expect 5009, I got "  
+15 1 callpickparamn CALLPROC HEX U. CR
+
+CR ." Calling callpickparamn function n = 16, I expect 500A, I got "  
+16 1 callpickparamn CALLPROC HEX U. CR
+
+CR ." Calling callpickparamn function n = 17, I expect 500B, I got "  
+17 1 callpickparamn CALLPROC HEX U. CR
+
+
+

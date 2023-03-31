@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.8.
+//    This file is part of DiaperGlu v5.9.
 //
-//    DiaperGlu v5.8 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.9 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.8 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.9 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.8; if not, write to the Free Software
+//    along with DiaperGlu v5.9; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// March 27, 2023             //
-// version 5.8                //
+// March 31, 2023             //
+// version 5.9                //
 // /////////////////////////////
 
   
@@ -3658,7 +3658,7 @@ void dg_pulloneaddressingmode(
     UINT64 parameterregpreservedregindex;
     UINT64 regspreserveddepth;
     UINT64 currentreturnstackdepth;
-    UINT64 parameterregreturnstackoffset;
+    INT64 parameterregreturnstackoffset;
 
     UINT64 rstackdepth;
     
@@ -4218,7 +4218,7 @@ void dg_pulloneaddressingmode(
 
                     parameterregreturnstackoffset = sizeof(UINT64) *
                         (parameterregpreservedregindex + (currentreturnstackdepth - regspreserveddepth));
-                
+
                     psf->displacementsize = 0; // use at least 0  bytes to encode the displacement
                     psf->displacement = parameterregreturnstackoffset;
                     psf->basereg = dg_rsp;
@@ -4331,28 +4331,38 @@ void dg_pulloneaddressingmode(
 
                     // getulowestbits of regspreserved where u is paramreg's localsregsindex + 1
                     //     get which preserved reg the paramreg is (countsetbits in ulowestbits)
-                    parameterregpreservedregindex = 
-                        dg_countbits(dg_getulowestbits(
-                                         subroutineregspreserved, 
-                                         parameterreglocalsregindex + 1)) - 1;
+                    // parameterregpreservedregindex = 
+                    //    dg_countbits(dg_getulowestbits(
+                    //                     subroutineregspreserved, 
+                    //                     parameterreglocalsregindex + 1)) - 1;
 
-                    regspreserveddepth = dg_getbufferuint64(
+                    // regspreserveddepth = dg_getbufferuint64(
+                    //    pBHarrayhead,
+                    //    DG_DATASPACE_BUFFERID,
+                    //    dg_regspreserveddepth);
+
+                    // if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    // {
+                    //    dg_pusherror(pBHarrayhead, dg_pulloneaddressingmodename);
+                    //    return;
+                    // }
+
+                    //     calculate offset of preserved reg
+                    //       get depth of regs preserved dg_regspreserveddepth 
+                    //       offset = ((0 - currentdepth) + whichpreservedreg) * sizeof(UINT64)
+
+                    // parameterregreturnstackoffset = sizeof(UINT64) *
+                    //    (parameterregpreservedregindex + (0 - currentreturnstackdepth));
+
+                    parameterregreturnstackoffset = dg_getcallsubsframepreservedregoffset(
                         pBHarrayhead,
-                        DG_DATASPACE_BUFFERID,
-                        dg_regspreserveddepth);
+                        parameterreglocalsregindex);
 
                     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
                     {
                         dg_pusherror(pBHarrayhead, dg_pulloneaddressingmodename);
                         return;
                     }
-
-                    //     calculate offset of preserved reg
-                    //       get depth of regs preserved dg_regspreserveddepth 
-                    //       offset = ((0 - currentdepth) + whichpreservedreg) * sizeof(UINT64)
-
-                    parameterregreturnstackoffset = sizeof(UINT64) *
-                        (parameterregpreservedregindex + (0 - currentreturnstackdepth));
                 
                     psf->displacementsize = 0; // use at least 0  bytes to encode the displacement
                     psf->displacement = parameterregreturnstackoffset;

@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.8.
+//    This file is part of DiaperGlu v5.9.
 //
-//    DiaperGlu v5.8 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.9 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.8 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.9 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.8; if not, write to the Free Software
+//    along with DiaperGlu v5.9; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// March 27, 2023             //
-// version 5.8                //
+// March 31, 2023             //
+// version 5.9                //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -857,6 +857,143 @@ void dg_forthrmasknoframepreservecomma (Bufferhandle* pBHarrayhead)
 }
 
 
+const char dg_forthuiufmakesureavailablermaskname[] = "UI-UF-MAKE-SURE-AVAILABLE-RMASK";
+
+void dg_forthuiufmakesureavailablermask (Bufferhandle* pBHarrayhead)
+{
+    UINT64 usedregsmask;
+    UINT64 numberofintregswanted;
+    UINT64 numberoffloatregswanted;
+    UINT64 numberofintregsneeded = 0;
+    UINT64 numberoffloatregsneeded = 0;
+
+    UINT64 currentlyavailablefloatsrmask;
+    UINT64 currentlyavailableintsrmask;
+    UINT64 numberofavailablefloatregs;
+    UINT64 numberofavailableintregs;
+
+    UINT64 regstopreservermask = 0;
+    UINT64 xrmask, xbitsinmask;
+
+    UINT64 numbertotrytopreservefloatregs;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    numberoffloatregswanted = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)dg_forthuiufmakesureavailablermaskname);
+        return;
+    }
+
+    numberofintregswanted = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)dg_forthuiufmakesureavailablermaskname);
+        return;
+    }
+
+    usedregsmask = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_localsregsused); 
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)dg_forthuiufmakesureavailablermask);
+        return;
+    }
+
+    // dg_printzerostring(pBHarrayhead, (unsigned char*)"\nuiuf - usedregsmask = ");
+    // dg_writestdoutuint64tohex(pBHarrayhead, usedregsmask);
+
+    currentlyavailablefloatsrmask = dg_allocatablefloatregsmask & (~usedregsmask);
+    currentlyavailableintsrmask = dg_allocatableintregsmask & (~usedregsmask);
+
+    numberofavailablefloatregs = dg_countbits(currentlyavailablefloatsrmask);
+    numberofavailableintregs = dg_countbits(currentlyavailableintsrmask);
+
+    // use available regs first (rmask 0)
+    // if not enough available, use must be preserved regs that can be available (so all but rbp)
+    //   dg_mustbepreservedregsmask
+    //   dg_allocatableintregsmask
+    //   dg_allocatablefloatregsmask
+    // after that use regs used as parameters (so used regs that are parameters) 
+    //   dg_iparamsregsmask
+    //   dg_fparamsregsmask
+
+    if (numberoffloatregswanted > numberofavailablefloatregs)
+    {
+        // allocate must be preserved float regs
+        numberoffloatregsneeded = numberoffloatregswanted - numberofavailablefloatregs;
+
+        xrmask = dg_getulowestsetbits (
+            dg_mustbepreservedregsmask & dg_allocatablefloatregsmask, 
+            numberoffloatregsneeded);
+
+        regstopreservermask |= xrmask;
+
+        xbitsinmask = dg_countbits(xrmask);
+
+        if (numberoffloatregsneeded > xbitsinmask)
+        {
+            // allocate float regs used as parameters
+            numberoffloatregsneeded -= xbitsinmask;
+            xrmask = dg_getulowestsetbits (
+                dg_fparamsregsmask & usedregsmask, 
+                numberoffloatregsneeded);
+
+            regstopreservermask |= xrmask; 
+
+            // that's all that can be allocated
+        }
+    }
+
+
+    if (numberofintregswanted > numberofavailableintregs)
+    {
+        // allocate must be preserved int regs
+        numberofintregsneeded = numberofintregswanted - numberofavailableintregs;
+
+        xrmask = dg_getulowestsetbits (
+            dg_mustbepreservedregsmask & dg_allocatableintregsmask, // handles rbp case 
+            numberofintregsneeded);
+
+        regstopreservermask |= xrmask;
+
+        xbitsinmask = dg_countbits(xrmask);
+
+        if (numberofintregsneeded > xbitsinmask)
+        {
+            // allocate regs used as parameters
+            numberofintregsneeded -= xbitsinmask;
+            xrmask = dg_getulowestsetbits (
+                dg_iparamsregsmask & usedregsmask, 
+                numberofintregsneeded);
+
+            regstopreservermask |= xrmask; 
+
+            // that's all that can be allocated
+        }
+    }
+
+    dg_pushdatastack(pBHarrayhead, regstopreservermask);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)dg_forthuiufmakesureavailablermask);
+        return;
+    }    
+}
+
+
 // when do you need REX?
 //  only in 64 bit mode
 //  not using AH, BH, CH, DH
@@ -951,7 +1088,7 @@ const char dg_forthiparam1name[]                  = "IPARAM1";
 const char dg_forthiparam2name[]                  = "IPARAM2";
 const char dg_forthiparam3name[]                  = "IPARAM3";
 
-const char dg_forthshadowsizename[]                  = "SHADOWSIZE";
+const char dg_forthshadowsizename[]               = "SHADOWSIZE";
 
 
 const char dg_forthrtormaskposname[] = "R>RMASKPOS";
@@ -1088,18 +1225,24 @@ UINT64 dg_paramregsindextolocalsregindex (
         return (largestunsignedint);
     }
 
-    // on windows... you only get 4 param regs and type is ignored
-    if (paramregsindex >= dg_numberofparamintregs)
-    {
-        return (largestunsignedint);
-    }
-
     if (0 == paramregstype)
     {
+        // on windows... you only get 4 param regs and type is ignored
+        if (paramregsindex >= dg_numberofparamintregs)
+        {
+            return (largestunsignedint);
+        }
+
         return(dg_paramintregslocalsindex[paramregsindex]);
     }
     else
     {
+        // on windows... you only get 4 param regs and type is ignored
+        if (paramregsindex >= dg_numberofparamfloatregs)
+        {
+            return (largestunsignedint);
+        }
+
         return(dg_paramfloatregslocalsindex[paramregsindex]);
     }
 }
@@ -1942,6 +2085,11 @@ void dg_compileaddnlocalstocallsubsframe(
         return;
     }
 
+    if (0 == n)
+    {
+        return;
+    }
+
     returnstackdepth = dg_getbufferuint64(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
@@ -2434,6 +2582,102 @@ void dg_compileunpreservelocalsregsfromframe (
         }
     } 
 }
+
+
+const char dg_getcallsubsframepreservedregoffsetname[] = "dg_getcallsubsframepreservedregoffset";
+
+INT64 dg_getcallsubsframepreservedregoffset(
+    Bufferhandle* pBHarrayhead,
+    UINT64 regpreservedpos)
+{
+    UINT64 regspreserveddepth;
+    UINT64 regspreservedlocalsregsmask;
+    UINT64 localsregsmask = dg_twototheu(regpreservedpos);
+    UINT64 whichsetbit;
+    INT64 preservedregoffset = 0;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return(preservedregoffset);
+    }
+
+    if (0 == localsregsmask)
+    {
+        return(preservedregoffset);
+    }
+
+    regspreserveddepth = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_regspreserveddepth); 
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_getcallsubsframepreservedregoffsetname);
+        return(preservedregoffset);
+    }
+
+    regspreservedlocalsregsmask = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_subroutineregspreserved);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_getcallsubsframepreservedregoffsetname);
+        return(preservedregoffset);
+    }
+
+    // check to see if list of regs to unpreserve makes sense...
+    if (0 != (localsregsmask & (~regspreservedlocalsregsmask)))
+    {
+        dg_pusherror(pBHarrayhead, dg_regsnotpreservederror);
+        dg_pusherror(pBHarrayhead, dg_getcallsubsframepreservedregoffsetname);
+        return(preservedregoffset);
+    }
+
+    // need to figure out which set bit the one at regpreservedpos is...
+    if (regpreservedpos < 63)
+    {
+        whichsetbit = dg_countbits(
+            dg_getulowestbits(
+                regspreservedlocalsregsmask, 
+                regpreservedpos + 1));
+    }
+    else
+    {
+        whichsetbit = dg_countbits(regspreservedlocalsregsmask);
+    }
+
+    // these shouldn't really happen... but tossing it in to check for programming errors
+    if (whichsetbit > dg_countbits(regspreservedlocalsregsmask))
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"preserved reg to get was off end of preserved rmask");
+        dg_pusherror(pBHarrayhead, dg_getcallsubsframepreservedregoffsetname);
+        return(preservedregoffset);
+    }
+
+    if (0 == whichsetbit)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"got no bits set which in low part of preserved mask which isn't possible");
+        dg_pusherror(pBHarrayhead, dg_getcallsubsframepreservedregoffsetname);
+        return(preservedregoffset);
+    }
+
+    if (whichsetbit > regspreserveddepth)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"preserved reg to get was not in frame which shouldn't be possible");
+        dg_pusherror(pBHarrayhead, dg_getcallsubsframepreservedregoffsetname);
+        return(preservedregoffset);
+    }
+
+    preservedregoffset = ((whichsetbit - 1) - regspreserveddepth) * sizeof(UINT64);
+
+    return(preservedregoffset);
+}
+
 
 
 const char dg_compileunpreservecallsubsframeregsname[] = "dg_compileunpreservecallsubsframeregs";
@@ -2960,6 +3204,222 @@ void dg_forthregscurly(Bufferhandle* pBHarrayhead)
 //     compile type of the params?
 //   then allocate using local stack frame
 
+// REGS<
+//   simply allocates available regs
+//   regs that must be preserved or used as parameters are marked unavailable
+//     during FRAME-PARAMS< or NO-FRAME-PARAMS<
+//     they can become available again during RMASK-CALL-SUBS-FRAME-PRESERVE,
+//       or RMASK-NO-FRAME-PRESERVE, or RMASK-UNUSE
+
+const char dg_forthcallsubsframefastlocalscommacurlyname[] = "CALL-SUBS-FRAME-FAST-LOCALS,<";
+
+void dg_forthcallsubsframefastlocalscommacurly(Bufferhandle* pBHarrayhead)
+{
+    UINT64 localwordid;
+    UINT64 localswordlistid;
+
+    UINT64 foundendflag = FORTH_FALSE;
+
+    unsigned char* pname;
+    UINT64 namelength = 0;
+
+    UINT64 compiletypelo;
+    UINT64 datatypelo;
+    UINT64 datatypehi;
+
+    INT64 compareflag;
+    UINT64 parsingfloatsflag = FORTH_FALSE; // start out parsing ints
+
+    UINT64 i = 0;
+    UINT64 reg;
+
+    UINT64 returnstackdepth;
+    UINT64 numberoflocalsonstack = 0;
+    const char* pError;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    localswordlistid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_localswordlistid);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcallsubsframefastlocalscommacurlyname);
+        return;
+    }
+
+    returnstackdepth = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_returnstackdepth);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcallsubsframefastlocalscommacurlyname);
+        return;
+    }
+
+    while (foundendflag == FORTH_FALSE)
+    {
+        pname = dg_parsewords(
+            pBHarrayhead,
+            &namelength,
+            (unsigned char)'>',
+            &foundendflag,
+            FORTH_FALSE);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthcallsubsframefastlocalscommacurlyname);
+            return;
+        }
+
+        if (namelength != 0)
+        {
+
+            pError = dg_comparebytes(
+                pname,                 // pstring1, 
+                namelength,            // string1length,
+                (unsigned char*)"INT", //  pstring2,
+                3,                     // string2length,
+                &compareflag);         // pflag);
+
+            if (pError != dg_success)
+            {
+                dg_pusherror(pBHarrayhead, pError);
+                dg_pusherror(pBHarrayhead, dg_comparebytesname);
+                dg_pusherror(pBHarrayhead, dg_forthcallsubsframefastlocalscommacurlyname);
+                return;
+            }
+
+            if (0 == compareflag)
+            {
+                parsingfloatsflag = FORTH_FALSE;
+            }
+            else
+            {
+                pError = dg_comparebytes(
+                    pname,                 // pstring1, 
+                    namelength,            // string1length,
+                    (unsigned char*)"FLOAT", //  pstring2,
+                    5,                     // string2length,
+                    &compareflag);         // pflag);
+
+                if (pError != dg_success)
+                {
+                    dg_pusherror(pBHarrayhead, pError);
+                    dg_pusherror(pBHarrayhead, dg_comparebytesname);
+                    dg_pusherror(pBHarrayhead, dg_forthcallsubsframefastlocalscommacurlyname);
+                    return;
+                }
+
+                if (0 == compareflag)
+                {
+                    parsingfloatsflag = FORTH_TRUE;
+                }
+                else
+                {
+                    // it's a parameter name
+                    if (parsingfloatsflag != FORTH_FALSE)
+                    {
+                        // it's a float
+                        reg = dg_usenextunusedlocalsfloatreg(pBHarrayhead);   
+
+                        if (dg_noreg == reg)
+                        {
+                            numberoflocalsonstack++;
+
+                            compiletypelo = (UINT64)&dg_forthdocompiletypedpushdn;
+                            datatypelo = returnstackdepth + numberoflocalsonstack;
+                            datatypehi = dg_isdgluforthframelocal;
+                        }
+                        else
+                        {
+                            compiletypelo = (UINT64)&dg_forthdocompiletypedpushn;
+                            datatypelo = reg;
+                            datatypehi = 0;
+                        } 
+                    }
+                    else
+                    {
+                        // it's an int
+                        reg = dg_usenextunusedlocalsintreg(pBHarrayhead);
+
+                        if (dg_noreg == reg)
+                        {
+                            numberoflocalsonstack++;
+
+                            compiletypelo = (UINT64)&dg_forthdocompiletypedpushdn;
+                            datatypelo = returnstackdepth + numberoflocalsonstack;
+                            datatypehi = dg_isdgluforthframelocal;
+                        }
+                        else
+                        {
+                            compiletypelo = (UINT64)&dg_forthdocompiletypedpushn;
+                            datatypelo = reg;
+                            datatypehi = 0;
+                        }     
+                    }
+
+                    // localwordid = dg_createconstantdef (
+        	    //    pBHarrayhead,
+                    //    reg,
+                    //    pname,
+                    //    namelength);
+
+                    localwordid = dg_newwordcopyname (
+                        pBHarrayhead,
+                        (UINT64)DG_CORE_BUFFERID,
+                        compiletypelo,
+                        datatypehi, 
+                        datatypelo, 
+                        (UINT64)DG_CORE_BUFFERID,
+                        (UINT64)pname,
+                        namelength);
+
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthcallsubsframefastlocalscommacurlyname);
+                        return;
+                    }
+
+                    dg_linkdefinition(
+                        pBHarrayhead,
+                        localswordlistid,
+                        localwordid);
+
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthcallsubsframefastlocalscommacurlyname);
+                        return;
+                    }
+
+                    i++;
+                }
+            }
+        }
+    }
+
+    if (numberoflocalsonstack > 0)
+    {
+        dg_compileaddnlocalstocallsubsframe( 
+            pBHarrayhead,
+            numberoflocalsonstack);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthcallsubsframefastlocalscommacurlyname);
+            return;
+        }
+    }
+}
 
 // **********************************************************************************
 
@@ -69339,6 +69799,15 @@ Premadeword* dg_getppresortedx86words()
 
     i++;
 
+    presortedx86words[i].pname = dg_forthcallsubsframefastlocalscommacurlyname;
+    presortedx86words[i].namelength = sizeof(dg_forthcallsubsframefastlocalscommacurlyname);
+    presortedx86words[i].compileroutinebuf = DG_CORE_BUFFERID;
+    presortedx86words[i].compileroutineoffset = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedx86words[i].databuf = DG_CORE_BUFFERID;
+    presortedx86words[i].dataoffset = (UINT64)dg_forthcallsubsframefastlocalscommacurly;
+
+    i++;
+
     presortedx86words[i].pname = dg_iscallsubsframelocalname;
     presortedx86words[i].namelength = sizeof(dg_iscallsubsframelocalname);
     presortedx86words[i].compileroutinebuf = DG_CORE_BUFFERID;
@@ -76274,6 +76743,15 @@ Premadeword* dg_getppresortedx86words()
     presortedx86words[i].compileroutineoffset = (UINT64)&dg_forthdocompiletypedpushn;
     presortedx86words[i].databuf = 0;
     presortedx86words[i].dataoffset = (UINT64)dg_ccugt;
+
+    i++;
+
+    presortedx86words[i].pname = dg_forthuiufmakesureavailablermaskname;
+    presortedx86words[i].namelength = sizeof(dg_forthuiufmakesureavailablermaskname);
+    presortedx86words[i].compileroutinebuf = DG_CORE_BUFFERID;
+    presortedx86words[i].compileroutineoffset = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedx86words[i].databuf = DG_CORE_BUFFERID;
+    presortedx86words[i].dataoffset = (UINT64)&dg_forthuiufmakesureavailablermask;
 
     i++;
 

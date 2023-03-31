@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.8.
+//    This file is part of DiaperGlu v5.9.
 //
-//    DiaperGlu v5.8 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.9 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.8 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.9 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.8; if not, write to the Free Software
+//    along with DiaperGlu v5.9; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// March 27, 2023             //
-// version 5.8                //
+// March 31, 2023             //
+// version 5.9                //
 // /////////////////////////////
 
 #if !defined(_INC_diapergluforth)
@@ -253,7 +253,7 @@ enum dg_cpux86regs {
 //  leaving dg_localsrspmask | out since preserving and unpreserving it in the middle of a subroutine might cause issues...
 
 #define dg_allocatableintregsmask ( dg_localsr11mask | dg_localsr10mask | dg_localsr9mask | dg_localsr8mask | dg_localsrdxmask | dg_localsrcxmask | dg_localsrdimask | dg_localsrsimask | dg_localsrbxmask | dg_localsr15mask | dg_localsr14mask | dg_localsr13mask | dg_localsr12mask )
-#define dg_allocatablefloatregsmask ( dg_localsxmm0mask | dg_localsxmm1mask | dg_localsxmm2mask | dg_localsxmm3mask | dg_localsxmm4mask | dg_localsxmm5mask | dg_localsxmm6mask | dg_localsxmm7mask | dg_localsxmm8mask | dg_localsxmm8mask | dg_localsxmm9mask | dg_localsxmm10mask | dg_localsxmm11mask | dg_localsxmm12mask | dg_localsxmm13mask | dg_localsxmm14mask | dg_localsxmm15mask )
+#define dg_allocatablefloatregsmask ( dg_localsxmm0mask | dg_localsxmm1mask | dg_localsxmm2mask | dg_localsxmm3mask | dg_localsxmm4mask | dg_localsxmm5mask | dg_localsxmm6mask | dg_localsxmm7mask | dg_localsxmm8mask | dg_localsxmm9mask | dg_localsxmm10mask | dg_localsxmm11mask | dg_localsxmm12mask | dg_localsxmm13mask | dg_localsxmm14mask | dg_localsxmm15mask )
 #define dg_allocatableregsmask ( dg_allocatableintregsmask | dg_allocatablefloatregsmask )
 
 #define dg_stringregsmask     ( dg_localsrsimask | dg_localsrdimask | dg_localsrcxmask )
@@ -649,7 +649,7 @@ enum dg_cpux86regs {
 // #define dg_presortederrorwordlistsize (0)
 #define dg_prestoredbufferwordlistsize (656)
 // #define dg_presortedoswordlistsize (0)
-#define dg_presortedx86wordlistsize (1308)
+#define dg_presortedx86wordlistsize (1310)
 
     // gcc inline assembly doesn't take 'FORTH_TRUE', so 0xFFFFFFFF was hardcoded in some places
     //  gcc inline assembly was buggy so stopped using it a long time ago JN 7/16/2013
@@ -9799,8 +9799,14 @@ DGLU_API UINT64 dg_pushimportsymbolstowin64coffbuffers(
 // for win64 x86 assembler 
 // for win64 x86 assembler
 DGLU_API void dg_forthmovq2comma (Bufferhandle* pBHarrayhead); // for )), both int and float param case
+
 DGLU_API void dg_forthoimportcodelink (Bufferhandle* pBHarrayhead);
+
 DGLU_API extern const char dg_isoimportcodelinkname[];
+
+DGLU_API INT64 dg_getcallsubsframepreservedregoffset(
+    Bufferhandle* pBHarrayhead,
+    UINT64 regpreservedpos);
 
 #ifdef  __cplusplus
 }

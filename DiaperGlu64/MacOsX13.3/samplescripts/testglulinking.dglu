@@ -1,0 +1,142 @@
+( //////////////////////////////////////////////////////////////////////////////////////// )
+( //                                                                                       )
+( //    Copyright 2023 James Patrick Norris                                                )
+( //                                                                                       )
+( //    This file is part of Diaperglu 5.9.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.9 is free software; you can redistribute it and/or modify              )
+( //    it under the terms of the GNU General Public License as published by               )
+( //    the Free Software Foundation; either version 2 of the License, or                  )
+( //    {at your option} any later version.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.9 is distributed in the hope that it will be useful,                   )
+( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
+( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
+( //    GNU General Public License for more details.                                       )
+( //                                                                                       )
+( //    You should have received a copy of the GNU General Public License                  )
+( //    along with Diaperglu 5.9; if not, write to the Free Software                       )
+( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
+( //                                                                                       )
+( //////////////////////////////////////////////////////////////////////////////////////// )
+
+( /////////////////////////////// )
+( // James Patrick Norris      // )
+( // www.rainbarrel.com        // )
+( // March 31, 2023            // )
+( // version 5.9               // )
+( /////////////////////////////// )
+
+// making a new buffer, setting it as the compile buffer
+//  and adding it to the named buffer list
+
+HEX 1000 -1 NEWBUFFER DUP CONSTANT mydestbufid
+PCURRENTCOMPILEBUFFER !
+
+0 ( root is parent ) BUFFER-HLISTID
+mydestbufid >NEW$ $" mydestbuf" NEW-ELEMENT DROP
+
+
+
+// opening the diaperglu lib and adding it to the named lib list
+
+$" ../libdiaperglu.dylib" OPENLIBRARY$ 
+	CONSTANT mydglulibhandle         
+	DROP ( don't need the wordlistid -- and why did I do this? )
+
+0 ( root is parent ) LIBRARY-HLISTID
+mydglulibhandle >NEW$ $" mysrclib" 
+NEW-ELEMENT DROP
+
+
+// compile a link with no address. Will patch the link later. (that's the test)
+mydestbufid GETBUFFERLENGTH CONSTANT mylinkstartoffset
+
+X86-WORDLIST >SEARCH-ORDER
+
+0 N RAX  MOV,
+RAXJMP,
+
+SEARCH-ORDER> DROP
+
+
+
+// Making a glu hlist with a patch list for this buffer
+
+NEW-HLIST CONSTANT mydestlinkhlistid
+
+-1 ( no parent ) mydestlinkhlistid
+NEW$ $" Glu " NEW-ELEMENT DROP
+
+0 ( root is parent ) mydestlinkhlistid
+$" mysrclib" $" SrcLib" NEW-ELEMENT DROP
+
+0 ( root is parent ) mydestlinkhlistid
+$" mydestbuf" $" DestBuf" NEW-ELEMENT DROP
+
+0 ( root is parent ) mydestlinkhlistid
+NEW$ $" LinkLib" NEW-ELEMENT CONSTANT mypatchlistelementid
+
+mypatchlistelementid mydestlinkhlistid
+mylinkstartoffset 1+ >NEW$ $" dg_forthoneplus" NEW-ELEMENT DROP
+
+CRLF ." about to glu"
+
+
+// running the glu hlist
+mydestlinkhlistid GLU
+
+CRLF ." finished gluing"
+
+// seeing if the link got patched with the correct address
+$" dg_forthoneplus" mydglulibhandle FINDLIBRARYSYMBOL
+
+HEX
+CRLF ." linked address should be " U.
+mylinkstartoffset 1+ mydestbufid O>P  
+CRLF ." linked address is " @ U. 
+
+CRLF
+
+
+// Making an nglu hlist with a patch list for this buffer
+
+
+NEW-HLIST CONSTANT mydestlinkhlistid2
+ 
+  -1 ( no parent ) mydestlinkhlistid2
+  NEW$ $" NGlu" NEW-ELEMENT DROP
+
+DECIMAL
+0 ( root is parent ) mydestlinkhlistid2
+$" mysrclib" NGLU-SRCLIB ( 13 ) >NEW$ NEW-ELEMENT DROP
+
+0 ( root is parent ) mydestlinkhlistid2
+$" mydestbuf" NGLU-DESTBUF ( 5 ) >NEW$ NEW-ELEMENT DROP
+
+
+  0 ( root is parent ) mydestlinkhlistid2
+  NEW$      NGLU-LINKLIB ( 11 ) >NEW$ NEW-ELEMENT CONSTANT mypatchlistelementid2
+
+ 
+mypatchlistelementid2 mydestlinkhlistid2
+mylinkstartoffset 1+ >NEW$ $" dg_forthoneminus" NEW-ELEMENT DROP
+
+CRLF ." about to nglu"
+
+// running the nglu hlist
+mydestlinkhlistid2 NGLU
+
+CRLF ." finished ngluing"
+
+// seeing if the link got patched with the correct address
+$" dg_forthoneminus" mydglulibhandle FINDLIBRARYSYMBOL
+
+HEX
+CRLF ." linked address should be " U.
+mylinkstartoffset 1+ mydestbufid O>P  
+CRLF ." linked address is " @ U. 
+
+CRLF
+
+

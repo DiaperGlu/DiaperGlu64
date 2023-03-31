@@ -1,0 +1,3312 @@
+( //////////////////////////////////////////////////////////////////////////////////////// )
+( //                                                                                       )
+( //    Copyright 2022 James Patrick Norris                                                )
+( //                                                                                       )
+( //    This file is part of Diaperglu 5.7.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.7 is free software; you can redistribute it and/or modify              )
+( //    it under the terms of the GNU General Public License as published by               )
+( //    the Free Software Foundation; either version 2 of the License, or                  )
+( //    {at your option} any later version.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.7 is distributed in the hope that it will be useful,                   )
+( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
+( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
+( //    GNU General Public License for more details.                                       )
+( //                                                                                       )
+( //    You should have received a copy of the GNU General Public License                  )
+( //    along with Diaperglu 5.7; if not, write to the Free Software                       )
+( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
+( //                                                                                       )
+( //////////////////////////////////////////////////////////////////////////////////////// )
+
+( /////////////////////////////// )
+( // James Patrick Norris      // )
+( // www.rainbarrel.com        // )
+( // August 26, 2022           // )
+( // version 5.7               // )
+( /////////////////////////////// )
+
+
+( Making sure the new variable buffer won't move when new variables are declared )
+HEX
+1000 1000 NEWBUFFER CONSTANT mylockeddownbuffer
+mylockeddownbuffer PCURRENTNEWVARIABLEBUFFER !
+
+200000 200000 NEWBUFFER PCURRENTCOMPILEBUFFER !  // this doesn't grow either
+
+VARIABLE VARX
+VARIABLE VARZ
+VARIABLE VARY  // a fixed address UINT64 variable
+0 VARY !
+100 ALLOT
+
+
+
+
+: CCO@ PCURRENTCOMPILEBUFFER @ O@ ;
+: CCO! PCURRENTCOMPILEBUFFER @ O! ;
+: CCOC! PCURRENTCOMPILEBUFFER @ OC! ;
+: CCOC@ PCURRENTCOMPILEBUFFER @ OC@ ;
+: CCO>P PCURRENTCOMPILEBUFFER @ GETSBUFFER DROP + ;
+
+: CCOU32@ PCURRENTCOMPILEBUFFER @ GETSBUFFER DROP + U32@ ;
+: CCOU32! PCURRENTCOMPILEBUFFER @ GETSBUFFER DROP + U32! ;
+
+( push and pop 32bit reg instructions already tested… )
+
+
+HEX
+OHERE CONSTANT O1 1 CODE-U64,
+OHERE CONSTANT O1b 1 CODE-U64,
+OHERE CONSTANT O2 2 CODE-U64,
+OHERE CONSTANT O3 3 CODE-U64,
+OHERE CONSTANT O4 4 CODE-U64,
+OHERE CONSTANT O5 5 CODE-U64,
+OHERE CONSTANT O6 6 CODE-U64,
+OHERE CONSTANT O7 7 CODE-U64,
+OHERE CONSTANT O8 8 CODE-U64,
+OHERE CONSTANT O9 9 CODE-U64,
+OHERE CONSTANT O10 0A CODE-U64,
+OHERE CONSTANT O1.5 3FF8000000000000 CODE-U64,
+OHERE CONSTANT O4.0 4010000000000000 CODE-U64,
+OHERE CONSTANT O-2 -2 CODE-U64,
+OHERE CONSTANT ORESULT1 0 CODE-U64,
+OHERE CONSTANT ORESULT2 0 CODE-U64,
+OHERE CONSTANT ORESULT3 0 CODE-U64,
+OHERE CONSTANT OM80 HEX 0 CODE-U64, 0 CODE-U16,
+OHERE CONSTANT OM28B HEX 20 CODE-ALLOT
+OHERE CONSTANT OM108B HEX 80 CODE-ALLOT
+OHERE CONSTANT O1.0 3FF0000000000000 CODE-U64,
+OHERE CONSTANT O2.0 4000000000000000 CODE-U64,
+OHERE CONSTANT O3.0 4008000000000000 CODE-U64,
+OHERE CONSTANT O5.0 4014000000000000 CODE-U64,
+OHERE CONSTANT O6.0 4018000000000000 CODE-U64,
+OHERE CONSTANT O8.0 4020000000000000 CODE-U64,
+
+HEX
+C000000000000000 CONSTANT FPD-2.0
+
+3FF0000000000000 CONSTANT FPD1.0
+3FF8000000000000 CONSTANT FPD1.5
+4000000000000000 CONSTANT FPD2.0
+4008000000000000 CONSTANT FPD3.0
+4010000000000000 CONSTANT FPD4.0
+4014000000000000 CONSTANT FPD5.0
+4018000000000000 CONSTANT FPD6.0
+4020000000000000 CONSTANT FPD8.0
+4022000000000000 CONSTANT FPD9.0
+
+C0000000 CONSTANT FPS-2.0
+
+3F800000 CONSTANT FPS1.0
+3FC00000 CONSTANT FPS1.5
+40000000 CONSTANT FPS2.0
+40400000 CONSTANT FPS3.0
+40800000 CONSTANT FPS4.0
+40A00000 CONSTANT FPS5.0
+40C00000 CONSTANT FPS6.0
+41000000 CONSTANT FPS8.0
+41100000 CONSTANT FPS9.0
+
+
+
+// align to 16 byte boundary
+HEX
+10  PCURRENTCOMPILEBUFFER @ GETSBUFFER + 10 MOD -  10 MOD   CODE-ALLOT
+OHERE CONSTANT OU128A 10 CODE-ALLOT
+OHERE CONSTANT OU128B 20 CODE-ALLOT // added room so I can do unaligned tests
+OHERE CONSTANT OU128C 20 CODE-ALLOT // added room so I can do unaligned tests
+OHERE CONSTANT OU128D 10 CODE-ALLOT
+
+
+HEX
+CODE TESTNOFRAMERETPARAM1 ( -ret- )
+  NO-FRAME-PARAMS< param1 >
+  param1 RAX MOV, 
+  RAX INC,
+  RET, 
+END-CODE
+
+: testnoframeretparam1
+    ." testing no frame return param one "
+    12134546789ABCDE 1 ['] TESTNOFRAMERETPARAM1 >BODY CALLPROC DUP 12134546789ABCDF = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 12134546789ABCDF, got " HEX U.
+    THEN
+    CR
+; 
+
+testnoframeretparam1
+
+
+HEX
+CODE TESTNOFRAMERETPARAM2 ( -ret- )
+  NO-FRAME-PARAMS< param1 param2 >
+  param2 RAX MOV, 
+  RAX INC,
+  RET, 
+END-CODE
+
+: testnoframeretparam2
+    ." testing no frame return param two "
+    12134546789ABCDE 2298367477238 2 ['] TESTNOFRAMERETPARAM2 >BODY CALLPROC DUP 12134546789ABCDF = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 12134546789ABCDF, got " HEX U.
+    THEN
+    CR
+; 
+
+testnoframeretparam2
+
+
+HEX
+CODE TESTNOFRAMERETPARAM3 ( -ret- )
+  NO-FRAME-PARAMS< param1 param2 param3 >
+  param3 RAX MOV, 
+  RAX INC,
+  RET, 
+END-CODE
+
+: testnoframeretparam3
+    ." testing no frame return param three "
+    12134546789ABCDE 2298367477238 3928734320897 3 ['] TESTNOFRAMERETPARAM3 >BODY CALLPROC DUP 12134546789ABCDF = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 12134546789ABCDF, got " HEX U.
+    THEN
+    CR
+; 
+
+testnoframeretparam3
+
+
+HEX
+CODE TESTNOFRAMERETPARAM4 ( -ret- )
+  NO-FRAME-PARAMS< param1 param2 param3 param4 >
+  param4 RAX MOV, 
+  RAX INC,
+  RET, 
+END-CODE
+
+: testnoframeretparam4
+    ." testing no frame return param four "
+    12134546789ABCDE 2298367477238 3928734320897 287634867 4 ['] TESTNOFRAMERETPARAM4 >BODY CALLPROC DUP 12134546789ABCDF = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 12134546789ABCDF, got " HEX U.
+    THEN
+    CR
+; 
+
+testnoframeretparam4
+
+
+HEX
+CODE TESTNOFRAMERETPARAM5 ( -ret- )
+  NO-FRAME-PARAMS< param1 param2 param3 param4 param5 >
+  param5 RAX MOV, 
+  RAX INC,
+  RET, 
+END-CODE
+
+: testnoframeretparam5
+    ." testing no frame return param five "
+    12134546789ABCDE 2298367477238 3928734320897 287634867 723864364 5 ['] TESTNOFRAMERETPARAM5 >BODY CALLPROC DUP 12134546789ABCDF = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 12134546789ABCDF, got " HEX U.
+    THEN
+    CR
+; 
+
+testnoframeretparam5
+
+
+HEX
+CODE TESTNOFRAMERETPARAM6 ( -ret- )
+  NO-FRAME-PARAMS< param1 param2 param3 param4 param5 param6 >
+  param6 RAX MOV, 
+  RAX INC,
+  RET, 
+END-CODE
+
+: testnoframeretparam6
+    ." testing no frame return param six "
+    12134546789ABCDE 2298367477238 3928734320897 287634867 723864364 8234876342 6 ['] TESTNOFRAMERETPARAM6 >BODY CALLPROC DUP 12134546789ABCDF = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 12134546789ABCDF, got " HEX U.
+    THEN
+    CR
+; 
+
+testnoframeretparam6
+
+
+HEX
+CODE TESTNOFRAMERETPARAM7 ( -ret- )
+  NO-FRAME-PARAMS< param1 param2 param3 param4 param5 param6 param7 >
+  param7 RAX MOV, 
+  RAX INC,
+  RET, 
+END-CODE
+
+: testnoframeretparam7
+    ." testing no frame return param seven "
+    12134546789ABCDE 2298367477238 3928734320897 287634867 723864364 8234876342 1238764456 7 ['] TESTNOFRAMERETPARAM7 >BODY CALLPROC DUP 12134546789ABCDF = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 12134546789ABCDF, got " HEX U.
+    THEN
+    CR
+; 
+
+testnoframeretparam7
+
+
+HEX
+CODE TESTNOFRAMERETPARAM8 ( -ret- )
+  NO-FRAME-PARAMS< param1 param2 param3 param4 param5 param6 param7 param8 >
+  param8 RAX MOV, 
+  RAX INC,
+  RET, 
+END-CODE
+
+: testnoframeretparam8
+    ." testing no frame return param eight "
+    12134546789ABCDE 2298367477238 3928734320897 287634867 723864364 8234876342 1238764456 6236754 8 ['] TESTNOFRAMERETPARAM8 >BODY CALLPROC DUP 12134546789ABCDF = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 12134546789ABCDF, got " HEX U.
+    THEN
+    CR
+; 
+
+testnoframeretparam8
+
+HEX
+: test2^U
+    ." testing 2^u 0 case "
+    0 2^U DUP 1 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 1, got " HEX U.
+    THEN
+    CR
+
+    ." testing 2^u 1 case "
+    1 2^U DUP 2 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 2, got " HEX U.
+    THEN
+    CR
+
+    ." testing 2^u 2 case "
+    2 2^U DUP 4 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 4, got " HEX U.
+    THEN
+    CR
+
+    ." testing 2^u 3F case "
+    3F 2^U DUP 8000000000000000 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 8000000000000000, got " HEX U.
+    THEN
+    CR
+
+    ." testing 2^u 40 case "
+    40 2^U DUP -1 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected FFFFFFFFFFFFFFFF, got " HEX U.
+    THEN
+    CR
+; 
+
+test2^U
+
+X86-WORDLIST >SEARCH-ORDER
+
+: test$SRC-RMASK
+    ." testing $SRC-RMASK (and R>RMASK) "
+    $SRC-RMASK RSI R>RMASK = DUP FALSE <> IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected TRUE, got " HEX U.
+    THEN
+    CRLF  
+; 
+
+test$SRC-RMASK
+
+: test$DEST-RMASK
+    ." testing $DEST-RMASK (and R>RMASK) "
+    $DEST-RMASK RDI R>RMASK = DUP FALSE <> IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected TRUE, got " HEX U.
+    THEN
+    CRLF    
+; 
+
+test$DEST-RMASK
+
+: test$CTR-RMASK
+    ." testing $CTR-RMASK (and R>RMASK) "
+    $CTR-RMASK RCX R>RMASK = DUP FALSE <> IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected TRUE, got " HEX U.
+    THEN
+    CRLF    
+; 
+
+test$CTR-RMASK
+
+: test$-RMASK
+    ." testing $-RMASK (and R>RMASK) "
+    $-RMASK 
+    RDI R>RMASK 
+    RSI R>RMASK OR 
+    RCX R>RMASK OR = DUP FALSE <> IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected TRUE, got " HEX U.
+    THEN
+    CRLF    
+; 
+
+test$-RMASK
+
+: testMATH-HI-RMASK
+    ." testing MATH-HI-RMASK (and R>RMASK) "
+    MATH-HI-RMASK RDX R>RMASK = DUP FALSE <> IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected TRUE, got " HEX U.
+    THEN
+    CRLF    
+; 
+
+testMATH-HI-RMASK
+
+    RBX R>RMASK 
+    RBP R>RMASK OR 
+    RDI R>RMASK OR 
+    RSI R>RMASK OR
+    ( RSP R>RMASK OR )
+    R12 R>RMASK OR
+    R13 R>RMASK OR
+    R14 R>RMASK OR 
+    R15 R>RMASK OR 
+    XMM6 R>RMASK OR
+    XMM7 R>RMASK OR
+    XMM8 R>RMASK OR
+    XMM9 R>RMASK OR
+    XMM10 R>RMASK OR
+    XMM11 R>RMASK OR
+    XMM12 R>RMASK OR
+    XMM13 R>RMASK OR
+    XMM14 R>RMASK OR 
+    XMM15 R>RMASK OR CONSTANT mytestpreservedmask
+
+: testWinMUST-BE-PRESERVED-RMASK
+    ." testing Win MUST-BE-PRESERVED-RMASK (and R>RMASK) "
+    MUST-BE-PRESERVED-RMASK 
+    mytestpreservedmask DUP = FALSE <> IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected " mytestpreservedmask HEX U. ." , got " HEX U.
+    THEN
+    CRLF    
+; 
+
+testWinMUST-BE-PRESERVED-RMASK
+
+: testWinU-IMUST-BE-PRESERVED-RMASK
+    ." testing Win 0 U-IMUST-BE-PRESERVED-RMASK (and R>RMASK) "
+    0 0 U-IMUST-BE-PRESERVED-RMASK 
+    DUP = FALSE <> IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected " 0 HEX U. ." , got " HEX U.
+    THEN
+    CRLF 
+
+    ." testing Win 1 U-IMUST-BE-PRESERVED-RMASK (and R>RMASK) "
+    10 1 U-IMUST-BE-PRESERVED-RMASK 
+    DUP = FALSE <> IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected " 10 HEX U. ." , got " HEX U.
+    THEN
+    CRLF
+
+    ." testing Win 2 U-IMUST-BE-PRESERVED-RMASK (and R>RMASK) "
+    30 2 U-IMUST-BE-PRESERVED-RMASK 
+    DUP = FALSE <> IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected " 20 HEX U. ." , got " HEX U.
+    THEN
+    CRLF
+
+    ." testing Win 5 U-IMUST-BE-PRESERVED-RMASK (and R>RMASK) "
+    8F0 5 U-IMUST-BE-PRESERVED-RMASK 
+    DUP = FALSE <> IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected " 8F0 HEX U. ." , got " HEX U.
+    THEN
+    CRLF   
+; 
+
+testWinU-IMUST-BE-PRESERVED-RMASK
+
+1 U-IMUST-BE-PRESERVED-RMASK LOBIT RMASKPOS>R CONSTANT FIRSTPRESERVEDREG
+2 U-IMUST-BE-PRESERVED-RMASK HIBIT RMASKPOS>R CONSTANT SECONDPRESERVEDREG
+3 U-IMUST-BE-PRESERVED-RMASK HIBIT RMASKPOS>R CONSTANT THIRDPRESERVEDREG
+
+SEARCH-ORDER> DROP
+
+HEX
+CODE TESTRMASK-NO-FRAME-PRESERVE, ( -ret- )
+  FIRSTPRESERVEDREG PUSH,
+  298349724 N FIRSTPRESERVEDREG MOV,
+
+  1 U-IMUST-BE-PRESERVED-RMASK RMASK-NO-FRAME-PRESERVE,
+  RAX POP,
+  
+  FIRSTPRESERVEDREG POP,
+  RET, 
+END-CODE
+
+: testrmask-no-frame-preserve,
+    ." testing RMASK-NO-FRAME-PRESERVE, 1 reg preserved "
+    0 ['] TESTRMASK-NO-FRAME-PRESERVE, >BODY CALLPROC DUP 298349724 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 298349724, got " HEX U.
+    THEN
+    CR
+; 
+
+testrmask-no-frame-preserve,
+
+
+HEX
+CODE TESTRMASK-NO-FRAME-PRESERVE,2regsa ( -ret- )
+  FIRSTPRESERVEDREG PUSH,
+  SECONDPRESERVEDREG PUSH,
+  298349724 N FIRSTPRESERVEDREG MOV,
+  983498742983 N SECONDPRESERVEDREG MOV,
+
+  2 U-IMUST-BE-PRESERVED-RMASK RMASK-NO-FRAME-PRESERVE,
+  RAX POP,
+  8 N RSP ADD,
+  
+  FIRSTPRESERVEDREG POP,
+  SECONDPRESERVEDREG POP,
+  RET, 
+END-CODE
+
+: testrmask-no-frame-preserve,2regsa
+    ." testing RMASK-NO-FRAME-PRESERVE, 2 regs preserved a "
+    0 ['] TESTRMASK-NO-FRAME-PRESERVE,2regsa >BODY CALLPROC DUP 298349724 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 298349724, got " HEX U.
+    THEN
+    CR
+; 
+
+testrmask-no-frame-preserve,2regsa
+
+
+HEX
+CODE TESTRMASK-NO-FRAME-PRESERVE,2regsb ( -ret- )
+  FIRSTPRESERVEDREG PUSH,
+  SECONDPRESERVEDREG PUSH,
+  298349724 N FIRSTPRESERVEDREG MOV,
+  983498742983 N SECONDPRESERVEDREG MOV,
+
+  2 U-IMUST-BE-PRESERVED-RMASK RMASK-NO-FRAME-PRESERVE,
+  8 N RSP ADD,
+  RAX POP,
+  
+  FIRSTPRESERVEDREG POP,
+  SECONDPRESERVEDREG POP,
+  RET, 
+END-CODE
+
+: testrmask-no-frame-preserve,2regsb
+    ." testing RMASK-NO-FRAME-PRESERVE, 2 regs preserved b "
+    0 ['] TESTRMASK-NO-FRAME-PRESERVE,2regsb >BODY CALLPROC DUP 983498742983 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 983498742983, got " HEX U.
+    THEN
+    CR
+; 
+
+testrmask-no-frame-preserve,2regsb
+
+
+HEX
+CODE TESTRMASK-NO-FRAME-PRESERVE,3regsa ( -ret- )
+  FIRSTPRESERVEDREG PUSH,
+  SECONDPRESERVEDREG PUSH,
+  THIRDPRESERVEDREG PUSH,
+  298349724 N FIRSTPRESERVEDREG MOV,
+  983498742983 N SECONDPRESERVEDREG MOV,
+
+  3 U-IMUST-BE-PRESERVED-RMASK RMASK-NO-FRAME-PRESERVE,
+  RAX POP,
+  8 N RSP ADD,
+  8 N RSP ADD,
+  
+  THIRDPRESERVEDREG POP,
+  FIRSTPRESERVEDREG POP,
+  SECONDPRESERVEDREG POP,
+  RET, 
+END-CODE
+
+: testrmask-no-frame-preserve,3regsa
+    ." testing RMASK-NO-FRAME-PRESERVE, 3 regs preserved a "
+    0 ['] TESTRMASK-NO-FRAME-PRESERVE,3regsa >BODY CALLPROC DUP 298349724 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 298349724, got " HEX U.
+    THEN
+    CR
+; 
+
+testrmask-no-frame-preserve,3regsa
+
+
+HEX
+CODE TESTRMASK-NO-FRAME-PRESERVE,3regsb ( -ret- )
+  FIRSTPRESERVEDREG PUSH,
+  SECONDPRESERVEDREG PUSH,
+  THIRDPRESERVEDREG PUSH,
+  298349724 N FIRSTPRESERVEDREG MOV,
+  983498742983 N SECONDPRESERVEDREG MOV,
+  723874363378 N THIRDPRESERVEDREG MOV,
+
+  3 U-IMUST-BE-PRESERVED-RMASK RMASK-NO-FRAME-PRESERVE,
+  8 N RSP ADD,
+  RAX POP,
+  8 N RSP ADD,
+  
+  THIRDPRESERVEDREG POP,
+  FIRSTPRESERVEDREG POP,
+  SECONDPRESERVEDREG POP,
+  RET, 
+END-CODE
+
+: testrmask-no-frame-preserve,3regsb
+    ." testing RMASK-NO-FRAME-PRESERVE, 3 regs preserved b "
+    0 ['] TESTRMASK-NO-FRAME-PRESERVE,3regsb >BODY CALLPROC DUP 983498742983 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 983498742983, got " HEX U.
+    THEN
+    CR
+; 
+
+testrmask-no-frame-preserve,3regsb
+
+
+HEX
+CODE TESTRMASK-NO-FRAME-PRESERVE,3regsc ( -ret- )
+  FIRSTPRESERVEDREG PUSH,
+  SECONDPRESERVEDREG PUSH,
+  THIRDPRESERVEDREG PUSH,
+  298349724 N FIRSTPRESERVEDREG MOV,
+  983498742983 N SECONDPRESERVEDREG MOV,
+  723874363378 N THIRDPRESERVEDREG MOV,
+
+  3 U-IMUST-BE-PRESERVED-RMASK RMASK-NO-FRAME-PRESERVE,
+  8 N RSP ADD,
+  8 N RSP ADD,
+  RAX POP,
+  
+  THIRDPRESERVEDREG POP,
+  FIRSTPRESERVEDREG POP,
+  SECONDPRESERVEDREG POP,
+  RET, 
+END-CODE
+
+: testrmask-no-frame-preserve,3regsc
+    ." testing RMASK-NO-FRAME-PRESERVE, 3 regs preserved c "
+    0 ['] TESTRMASK-NO-FRAME-PRESERVE,3regsc >BODY CALLPROC DUP 723874363378 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 723874363378, got " HEX U.
+    THEN
+    CR
+; 
+
+testrmask-no-frame-preserve,3regsc
+
+
+HEX
+CODE TESTRMASK-NO-FRAME-UNPRESERVE, ( -ret- )
+  FIRSTPRESERVEDREG PUSH,
+  298349724 N FIRSTPRESERVEDREG MOV,
+
+  1 U-IMUST-BE-PRESERVED-RMASK RMASK-NO-FRAME-PRESERVE,
+  92384642736 N FIRSTPRESERVEDREG MOV,
+  1 U-IMUST-BE-PRESERVED-RMASK RMASK-NO-FRAME-UNPRESERVE,
+  FIRSTPRESERVEDREG RAX MOV,
+  8 N RSP ADD,
+  FIRSTPRESERVEDREG POP,
+  RET, 
+END-CODE
+
+: testrmask-no-frame-unpreserve,
+    ." testing RMASK-NO-FRAME-UNPRESERVE, 1 reg unpreserved "
+    0 ['] TESTRMASK-NO-FRAME-UNPRESERVE, >BODY CALLPROC DUP 298349724 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 298349724, got " HEX U.
+    THEN
+    CR
+; 
+
+testrmask-no-frame-unpreserve,
+
+X86-WORDLIST >SEARCH-ORDER
+
+HEX
+: testRMASK-UNUSE
+    ." testing -1 RMASK-UNUSE "
+    -1 PUSED-RMASK !
+    -1 RMASK-UNUSE
+    PUSED-RMASK @  DUP 0 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 0, got " HEX U.
+    THEN
+    CRLF
+
+    ." testing 1 RMASK-UNUSE "
+    -1 PUSED-RMASK !
+    1 RMASK-UNUSE
+    PUSED-RMASK @ DUP -2 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected -2, got " HEX U.
+    THEN
+    CRLF
+
+    ." testing 2 RMASK-UNUSE "
+    -1 PUSED-RMASK !
+    2 RMASK-UNUSE
+    PUSED-RMASK @ DUP FFFFFFFFFFFFFFFD = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected FFFFFFFFFFFFFFFD, got " HEX U.
+    THEN
+    CRLF
+
+    ." testing 6 RMASK-UNUSE "
+    -1 PUSED-RMASK !
+    6 RMASK-UNUSE
+    PUSED-RMASK @ DUP FFFFFFFFFFFFFFF9 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected FFFFFFFFFFFFFFF9, got " HEX U.
+    THEN
+    CRLF
+
+    ." testing 6 RMASK-UNUSE already unused case "
+    0 PUSED-RMASK !
+    6 RMASK-UNUSE
+    PUSED-RMASK @ DUP 0 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 0, got " HEX U.
+    THEN
+    CRLF
+; 
+
+testRMASK-UNUSE
+
+
+HEX
+: testRMASK-USE
+    ." testing -1 RMASK-USE "
+    0 PUSED-RMASK !
+    -1 RMASK-USE
+    PUSED-RMASK @  DUP -1 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected -1, got " HEX U.
+    THEN
+    CRLF
+
+    ." testing 1 RMASK-USE "
+    0 PUSED-RMASK !
+    1 RMASK-USE
+    PUSED-RMASK @ DUP 1 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 1, got " HEX U.
+    THEN
+    CRLF
+
+    ." testing 2 RMASK-USE "
+    0 PUSED-RMASK !
+    2 RMASK-USE
+    PUSED-RMASK @ DUP 2 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 2, got " HEX U.
+    THEN
+    CRLF
+
+    ." testing 6 RMASK-USE "
+    0 PUSED-RMASK !
+    6 RMASK-USE
+    PUSED-RMASK @ DUP 6 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 6, got " HEX U.
+    THEN
+    CRLF
+; 
+
+testRMASK-USE
+
+
+SEARCH-ORDER> DROP
+
+HEX
+CODE TESTNOFRAMEIPARAM0-RMASKA ( -ret- )
+  NO-FRAME-PARAMS< x >
+  IPARAM0-RMASK RMASK-NO-FRAME-PRESERVE,
+  RAX POP,
+  RET, 
+END-CODE
+
+: testno-frameiparam0-rmaska
+    ." testing IPARAM0-RMASK a "
+    82376478 1 ['] TESTNOFRAMEIPARAM0-RMASKA >BODY CALLPROC DUP 82376478 = IF
+        DROP ." SUCCESS! "
+    ELSE 
+        ." FAIL! expected 82376478, got " HEX U.
+    THEN
+    CRLF
+; 
+
+
+testno-frameiparam0-rmaska
+
+HEX
+CODE TESTNOFRAMEIPARAM0-RMASKB ( -ret- )
+  NO-FRAME-PARAMS< x >
+  IPARAM0-RMASK RMASK-NO-FRAME-PRESERVE,
+  IPARAM0-RMASK RMASK-NO-FRAME-UNPRESERVE,
+  x  RAX  MOV,
+  8 N RSP ADD,
+  RET, 
+END-CODE
+
+: testno-frameiparam0-rmaskb
+    ." testing IPARAM0-RMASK b "
+    82376478 1 ['] TESTNOFRAMEIPARAM0-RMASKB >BODY CALLPROC DUP 82376478 = IF
+        DROP ." SUCCESS! "
+    ELSE 
+        ." FAIL! expected 82376478, got " HEX U.
+    THEN
+    CRLF
+; 
+
+testno-frameiparam0-rmaskb
+
+
+HEX
+CODE TESTNOFRAMEIPARAM0-RMASKC ( -ret- )
+  NO-FRAME-PARAMS< x >
+  IPARAM0-RMASK RMASK-NO-FRAME-PRESERVE,
+  IPARAM0-RMASK HIBIT RMASKPOS>R  INC,
+  IPARAM0-RMASK RMASK-NO-FRAME-UNPRESERVE,
+  x  RAX  MOV,
+  8 N RSP ADD,
+  RET, 
+END-CODE
+
+: testno-frameiparam0-rmaskc
+    ." testing IPARAM0-RMASK c "
+    82376478 1 ['] TESTNOFRAMEIPARAM0-RMASKC >BODY CALLPROC DUP 82376478 = IF
+        DROP ." SUCCESS! "
+    ELSE 
+        ." FAIL! expected 82376478, got " HEX U.
+    THEN
+    CRLF
+; 
+
+testno-frameiparam0-rmaskc
+
+
+HEX
+CODE TESTNOFRAMEIPARAM0-RMASKD ( -ret- )
+  NO-FRAME-PARAMS< x >
+  IPARAM0-RMASK RMASK-NO-FRAME-PRESERVE,
+  IPARAM0-RMASK HIBIT RMASKPOS>R  INC,
+  x 64BIT DEC, // x should now refer to the preserved local...
+  IPARAM0-RMASK RMASK-NO-FRAME-UNPRESERVE,
+  IPARAM0-RMASK HIBIT RMASKPOS>R  RAX  MOV,
+  IPARAM0-RMASK COUNTBITS RETDROP,
+  RET, 
+END-CODE
+
+: testno-frameiparam0-rmaskd
+    ." testing IPARAM0-RMASK d "
+    82376478 1 ['] TESTNOFRAMEIPARAM0-RMASKD >BODY CALLPROC DUP 82376477 = IF
+        DROP ." SUCCESS! "
+    ELSE 
+        ." FAIL! expected 82376477, got " HEX U.
+    THEN
+    CRLF
+; 
+
+testno-frameiparam0-rmaskd
+
+
+HEX
+CODE TESTNOFRAMEIPARAM1-RMASKA ( -ret- )
+  NO-FRAME-PARAMS< x y >
+  IPARAM1-RMASK RMASK-NO-FRAME-PRESERVE,
+  IPARAM1-RMASK HIBIT RMASKPOS>R  INC,
+  y 64BIT DEC, // y should now refer to the preserved local...
+  IPARAM1-RMASK RMASK-NO-FRAME-UNPRESERVE,
+  IPARAM1-RMASK HIBIT RMASKPOS>R  RAX  MOV,
+  IPARAM1-RMASK COUNTBITS RETDROP,
+  RET, 
+END-CODE
+
+: testno-frameiparam1-rmaska
+    ." testing IPARAM1-RMASK a "
+    239874748 82376478 2 ['] TESTNOFRAMEIPARAM1-RMASKA >BODY CALLPROC DUP 239874747 = IF
+        DROP ." SUCCESS! "
+    ELSE 
+        ." FAIL! expected 239874747, got " HEX U.
+    THEN
+    CRLF
+; 
+
+testno-frameiparam1-rmaska
+
+
+HEX
+CODE TESTNOFRAMEIPARAM0IPARAM1-RMASKA ( -ret- )
+  NO-FRAME-PARAMS< x y >
+  IPARAM0-RMASK IPARAM1-RMASK OR RMASK-NO-FRAME-PRESERVE,
+  2 N IPARAM0-RMASK HIBIT RMASKPOS>R  ADD,
+  IPARAM1-RMASK HIBIT RMASKPOS>R  INC,
+  2 N  x 64BIT  SUB,  // x should now refer to the preserved local..
+  y 64BIT DEC, // y should now refer to the preserved local...
+  IPARAM0-RMASK IPARAM1-RMASK OR  RMASK-NO-FRAME-UNPRESERVE,
+  IPARAM0-RMASK HIBIT RMASKPOS>R  RAX  MOV,
+  IPARAM0-RMASK IPARAM1-RMASK OR COUNTBITS RETDROP,
+  RET, 
+END-CODE
+
+: testno-frameiparam0iparam1-rmaska
+    ." testing IPARAM0-RMASK IPARAM1-RMASK a "
+    239874748 82376478 2 ['] TESTNOFRAMEIPARAM0IPARAM1-RMASKA >BODY CALLPROC DUP 82376476 = IF
+        DROP ." SUCCESS! "
+    ELSE 
+        ." FAIL! expected 82376476, got " HEX U.
+    THEN
+    CRLF
+; 
+
+testno-frameiparam0iparam1-rmaska
+
+
+HEX
+CODE TESTNOFRAMEIPARAM0IPARAM1-RMASKB ( -ret- )
+  NO-FRAME-PARAMS< x y >
+  IPARAM0-RMASK IPARAM1-RMASK OR RMASK-NO-FRAME-PRESERVE,
+  2 N IPARAM0-RMASK HIBIT RMASKPOS>R  ADD,
+  IPARAM1-RMASK HIBIT RMASKPOS>R  INC,
+  2 N  x 64BIT  SUB,  // x should now refer to the preserved local..
+  y 64BIT DEC, // y should now refer to the preserved local...
+  IPARAM0-RMASK IPARAM1-RMASK OR  RMASK-NO-FRAME-UNPRESERVE,
+  IPARAM1-RMASK HIBIT RMASKPOS>R  RAX  MOV,
+  IPARAM0-RMASK IPARAM1-RMASK OR COUNTBITS RETDROP,
+  RET, 
+END-CODE
+
+: testno-frameiparam0iparam1-rmaskb
+    ." testing IPARAM0-RMASK IPARAM1-RMASK b "
+    239874748 82376478 2 ['] TESTNOFRAMEIPARAM0IPARAM1-RMASKB >BODY CALLPROC DUP 239874747 = IF
+        DROP ." SUCCESS! "
+    ELSE 
+        ." FAIL! expected 239874747, got " HEX U.
+    THEN
+    CRLF
+; 
+
+testno-frameiparam0iparam1-rmaskb
+
+
+HEX
+CODE TESTNOFRAMENPRESERVED ( -ret- )
+  NO-FRAME-PARAMS< x >
+  5 U-IMUST-BE-PRESERVED-RMASK RMASK-NO-FRAME-PRESERVE, 
+  REGS< r0 r1 r2 r3 r4 > 
+  x r0 MOV,
+  r1 r1 XOR,
+  r2 r2 XOR,
+  r3 r3 XOR,
+  r4 r4 XOR,
+  r0 ( its a reg for sure so don't need 64BIT ) DEC,
+  r0 RAX MOV,
+  5 U-IMUST-BE-PRESERVED-RMASK  RMASK-NO-FRAME-UNPRESERVE,
+  5 RETDROP,
+  RET, 
+END-CODE
+
+: testnoframenpreserved
+    ." testing noframe npreserved "
+    239874748 1 ['] TESTNOFRAMENPRESERVED >BODY CALLPROC DUP 239874747 = IF
+        DROP ." SUCCESS! "
+    ELSE 
+        ." FAIL! expected 239874747, got " HEX U.
+    THEN
+    CRLF
+; 
+
+testnoframenpreserved
+
+
+HEX
+CODE TESTNOFRAMENPRESERVEDb ( -ret- )
+  NO-FRAME-PARAMS< x >
+  5 U-IMUST-BE-PRESERVED-RMASK RMASK-NO-FRAME-PRESERVE, 
+  REGS< r0 r1 r2 r3 r4 > 
+  x r1 MOV,
+  r0 r0 XOR,
+  r2 r2 XOR,
+  r3 r3 XOR,
+  r4 r4 XOR,
+  r1 ( its a reg for sure so don't need 64BIT ) DEC,
+  r1 RAX MOV,
+  5 U-IMUST-BE-PRESERVED-RMASK  RMASK-NO-FRAME-UNPRESERVE,
+  5 RETDROP,
+  RET, 
+END-CODE
+
+: testnoframenpreservedb
+    ." testing noframe npreserved b "
+    239874748 1 ['] TESTNOFRAMENPRESERVEDb >BODY CALLPROC DUP 239874747 = IF
+        DROP ." SUCCESS! "
+    ELSE 
+        ." FAIL! expected 239874747, got " HEX U.
+    THEN
+    CRLF
+; 
+
+testnoframenpreservedb
+
+
+HEX
+CODE TESTNOFRAMENPRESERVEDc ( -ret- )
+  NO-FRAME-PARAMS< x >
+  5 U-IMUST-BE-PRESERVED-RMASK RMASK-NO-FRAME-PRESERVE, 
+  REGS< r0 r1 r2 r3 r4 > 
+  x r2 MOV,
+  r0 r0 XOR,
+  r1 r1 XOR,
+  r3 r3 XOR,
+  r4 r4 XOR,
+  r2 ( its a reg for sure so don't need 64BIT ) DEC,
+  r2 RAX MOV,
+  5 U-IMUST-BE-PRESERVED-RMASK  RMASK-NO-FRAME-UNPRESERVE,
+  5 RETDROP,
+  RET, 
+END-CODE
+
+: testnoframenpreservedc
+    ." testing noframe npreserved c "
+    239874748 1 ['] TESTNOFRAMENPRESERVEDc >BODY CALLPROC DUP 239874747 = IF
+        DROP ." SUCCESS! "
+    ELSE 
+        ." FAIL! expected 239874747, got " HEX U.
+    THEN
+    CRLF
+; 
+
+testnoframenpreservedc
+
+
+HEX
+CODE TESTNOFRAMENPRESERVEDd ( -ret- )
+  NO-FRAME-PARAMS< x >
+  5 U-IMUST-BE-PRESERVED-RMASK RMASK-NO-FRAME-PRESERVE, 
+  REGS< r0 r1 r2 r3 r4 > 
+  x r3 MOV,
+  r0 r0 XOR,
+  r1 r1 XOR,
+  r2 r2 XOR,
+  r4 r4 XOR,
+  r3 ( its a reg for sure so don't need 64BIT ) DEC,
+  r3 RAX MOV,
+  5 U-IMUST-BE-PRESERVED-RMASK  RMASK-NO-FRAME-UNPRESERVE,
+  5 RETDROP,
+  RET, 
+END-CODE
+
+: testnoframenpreservedd
+    ." testing noframe npreserved d "
+    239874748 1 ['] TESTNOFRAMENPRESERVEDc >BODY CALLPROC DUP 239874747 = IF
+        DROP ." SUCCESS! "
+    ELSE 
+        ." FAIL! expected 239874747, got " HEX U.
+    THEN
+    CRLF
+; 
+
+testnoframenpreservedd
+
+
+HEX
+CODE TESTNOFRAMENPRESERVEDe ( -ret- )
+  NO-FRAME-PARAMS< x >
+  5 U-IMUST-BE-PRESERVED-RMASK RMASK-NO-FRAME-PRESERVE, 
+  REGS< r0 r1 r2 r3 r4 > 
+  x r4 MOV,
+  r0 r0 XOR,
+  r1 r1 XOR,
+  r2 r2 XOR,
+  r3 r3 XOR,
+  r4 ( its a reg for sure so don't need 64BIT ) DEC,
+  r4 RAX MOV,
+  5 U-IMUST-BE-PRESERVED-RMASK  RMASK-NO-FRAME-UNPRESERVE,
+  5 RETDROP,
+  RET, 
+END-CODE
+
+: testnoframenpreservede
+    ." testing noframe npreserved e "
+    239874748 1 ['] TESTNOFRAMENPRESERVEDc >BODY CALLPROC DUP 239874747 = IF
+        DROP ." SUCCESS! "
+    ELSE 
+        ." FAIL! expected 239874747, got " HEX U.
+    THEN
+    CRLF
+; 
+
+testnoframenpreservede
+
+
+HEX
+CODE TESTCALLSUBSFRAMERETPARAM1 ( -ret- )
+  ENTER-CALL-SUBS-FRAME,
+  FRAME-PARAMS< param1 >
+  param1 RAX MOV, 
+  RAX INC,
+  EXIT-CALL-SUBS-FRAME,
+  RET, 
+END-CODE
+
+: testcallsubsframeretparam1
+    ." testing call subs frame return param one "
+    12134546789ABCDE 1 ['] TESTCALLSUBSFRAMERETPARAM1 >BODY CALLPROC DUP 12134546789ABCDF = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 12134546789ABCDF, got " HEX U.
+    THEN
+    CR
+; 
+
+testcallsubsframeretparam1
+
+
+HEX
+CODE TESTCALLSUBSFRAMERETPARAM2 ( -ret- )
+  ENTER-CALL-SUBS-FRAME,
+  FRAME-PARAMS< param1 param2 >
+  param1 param1 64BIT ( just in case it's in memory ) XOR,
+  param2 RAX MOV, 
+  RAX INC,
+  EXIT-CALL-SUBS-FRAME,
+  RET, 
+END-CODE
+
+: testcallsubsframeretparam2
+    ." testing call subs frame return param two "
+    12134546789ABCDE 2938497234 2 ['] TESTCALLSUBSFRAMERETPARAM2 >BODY CALLPROC DUP 12134546789ABCDF = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 12134546789ABCDF, got " HEX U.
+    THEN
+    CR
+; 
+
+testcallsubsframeretparam2
+
+
+HEX
+CODE TESTCALLSUBSFRAMERETPARAM3 ( -ret- )
+  ENTER-CALL-SUBS-FRAME,
+  FRAME-PARAMS< param1 param2 param3 >
+  param1 param1 64BIT ( just in case it's in memory ) XOR,
+  param2 param2 64BIT ( just in case it's in memory ) XOR,
+  param3 RAX MOV, 
+  RAX INC,
+  EXIT-CALL-SUBS-FRAME,
+  RET, 
+END-CODE
+
+: testcallsubsframeretparam3
+    ." testing call subs frame return param three "
+    12134546789ABCDE 2938497234 872376464 3 ['] TESTCALLSUBSFRAMERETPARAM3 >BODY CALLPROC DUP 12134546789ABCDF = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 12134546789ABCDF, got " HEX U.
+    THEN
+    CR
+; 
+
+testcallsubsframeretparam3
+
+
+HEX
+CODE TESTCALLSUBSFRAMERETPARAM4 ( -ret- )
+  ENTER-CALL-SUBS-FRAME,
+  FRAME-PARAMS< param1 param2 param3 param4 >
+  param1 param1 64BIT ( just in case it's in memory ) XOR,
+  param2 param2 64BIT ( just in case it's in memory ) XOR,
+  param3 param3 64BIT ( just in case it's in memory ) XOR,
+  param4 RAX MOV, 
+  RAX INC,
+  EXIT-CALL-SUBS-FRAME,
+  RET, 
+END-CODE
+
+: testcallsubsframeretparam4
+    ." testing call subs frame return param four "
+    12134546789ABCDE 2938497234 872376464 7238764 4 ['] TESTCALLSUBSFRAMERETPARAM4 >BODY CALLPROC DUP 12134546789ABCDF = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 12134546789ABCDF, got " HEX U.
+    THEN
+    CR
+; 
+
+testcallsubsframeretparam4
+
+
+HEX
+CODE TESTCALLSUBSFRAMERETPARAM5 ( -ret- )
+  ENTER-CALL-SUBS-FRAME,
+  FRAME-PARAMS< param1 param2 param3 param4 param5 >
+  param1 param1 64BIT ( just in case it's in memory ) XOR,
+  param2 param2 64BIT ( just in case it's in memory ) XOR,
+  param3 param3 64BIT ( just in case it's in memory ) XOR,
+  param4 param4 64BIT ( just in case it's in memory ) XOR,
+  param5 RAX MOV, 
+  RAX INC,
+  EXIT-CALL-SUBS-FRAME,
+  RET, 
+END-CODE
+
+: testcallsubsframeretparam5
+    ." testing call subs frame return param five "
+    12134546789ABCDE 2938497234 872376464 7238764 53872346 5 ['] TESTCALLSUBSFRAMERETPARAM5 >BODY CALLPROC DUP 12134546789ABCDF = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 12134546789ABCDF, got " HEX U.
+    THEN
+    CR
+; 
+
+testcallsubsframeretparam5
+
+
+HEX
+CODE TESTCALLSUBSFRAMERETPARAM6 ( -ret- )
+  ENTER-CALL-SUBS-FRAME,
+  FRAME-PARAMS< param1 param2 param3 param4 param5 param6 >
+  param1 param1 64BIT ( just in case it's in memory ) XOR,
+  param2 param2 64BIT ( just in case it's in memory ) XOR,
+  param3 param3 64BIT ( just in case it's in memory ) XOR,
+  param4 param4 64BIT ( just in case it's in memory ) XOR,
+  param5 param5 64BIT ( just in case it's in memory ) XOR,
+  param6 RAX MOV, 
+  RAX INC,
+  EXIT-CALL-SUBS-FRAME,
+  RET, 
+END-CODE
+
+: testcallsubsframeretparam6
+    ." testing call subs frame return param six "
+    12134546789ABCDE 2938497234 872376464 7238764 53872346 3298347 6 ['] TESTCALLSUBSFRAMERETPARAM6 >BODY CALLPROC DUP 12134546789ABCDF = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 12134546789ABCDF, got " HEX U.
+    THEN
+    CR
+; 
+
+testcallsubsframeretparam6
+
+
+HEX
+CODE TESTCALLSUBSFRAMERETPARAM7 ( -ret- )
+  ENTER-CALL-SUBS-FRAME,
+  FRAME-PARAMS< param1 param2 param3 param4 param5 param6 param7 >
+  param1 param1 64BIT ( just in case it's in memory ) XOR,
+  param2 param2 64BIT ( just in case it's in memory ) XOR,
+  param3 param3 64BIT ( just in case it's in memory ) XOR,
+  param4 param4 64BIT ( just in case it's in memory ) XOR,
+  param5 param5 64BIT ( just in case it's in memory ) XOR,
+  param6 param6 64BIT ( just in case it's in memory ) XOR,
+  param7 RAX MOV, 
+  RAX INC,
+  EXIT-CALL-SUBS-FRAME,
+  RET, 
+END-CODE
+
+: testcallsubsframeretparam7
+    ." testing call subs frame return param seven "
+    12134546789ABCDE 2938497234 872376464 7238764 53872346 3298347 498329874 7 ['] TESTCALLSUBSFRAMERETPARAM7 >BODY CALLPROC DUP 12134546789ABCDF = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 12134546789ABCDF, got " HEX U.
+    THEN
+    CR
+; 
+
+testcallsubsframeretparam7
+
+
+HEX
+CODE TESTCALL-SUBS-FRAME-ALIGNMENT ( -ret- )
+  8 N  RSP  SUB,
+  FRAME-PARAMS<  > // sets depth... but depth isn't used so technically not needed
+  ENTER-CALL-SUBS-FRAME,
+  298349724 N  RAX  MOV,
+  EXIT-CALL-SUBS-FRAME-NO-RET,
+  8 N  RSP  ADD,  
+  RET, 
+END-CODE
+
+: testcall-subs-frame-alignment
+    ." testing TESTCALL-SUBS-FRAME-ALIGNMENT "
+    0 ['] TESTCALL-SUBS-FRAME-ALIGNMENT >BODY CALLPROC DUP 298349724 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 298349724, got " HEX U.
+    THEN
+    CR
+; 
+
+testcall-subs-frame-alignment
+
+
+HEX
+CODE TESTCALL-SUBS-FRAME-ALIGNMENTA ( -ret- )
+  FIRSTPRESERVEDREG  PUSH,
+  FRAME-PARAMS<  > // sets depth... but depth isn't used so technically not needed
+  ENTER-CALL-SUBS-FRAME,
+  298349724 N  RAX  MOV,
+  EXIT-CALL-SUBS-FRAME-NO-RET,
+  FIRSTPRESERVEDREG  POP,  
+  RET, 
+END-CODE
+
+: testcall-subs-frame-alignmenta
+    ." testing TESTCALL-SUBS-FRAME-ALIGNMENT A "
+    0 ['] TESTCALL-SUBS-FRAME-ALIGNMENTA >BODY CALLPROC DUP 298349724 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 298349724, got " HEX U.
+    THEN
+    CR
+; 
+
+testcall-subs-frame-alignmenta
+
+
+HEX
+CODE TESTRMASK-CALL-SUBS-FRAME-PRESERVE, ( -ret- )
+  FIRSTPRESERVEDREG PUSH,
+  FRAME-PARAMS<  > // sets depth... but depth isn't used so technically not needed
+  298349724 N FIRSTPRESERVEDREG MOV,
+  ENTER-CALL-SUBS-FRAME,
+
+  1 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  RSP [R]  RAX  MOV,
+  
+  // don't need to unpreserve because of PUSH POP on outside
+  EXIT-CALL-SUBS-FRAME-NO-RET,
+  FIRSTPRESERVEDREG POP,
+  RET, 
+END-CODE
+
+: testrmask-call-subs-frame-preserve,
+    ." testing RMASK-CALL-SUBS-FRAME-PRESERVE, 1 reg preserved "
+    0 ['] TESTRMASK-CALL-SUBS-FRAME-PRESERVE, >BODY CALLPROC DUP 298349724 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 298349724, got " HEX U.
+    THEN
+    CR
+; 
+
+testrmask-call-subs-frame-preserve,
+
+
+HEX
+CODE TESTRMASK-CALL-SUBS-FRAME-UNPRESERVE, ( -ret- )
+  FIRSTPRESERVEDREG PUSH,
+  FRAME-PARAMS<  > // sets depth... this is required for UNPRESERVE
+  298349724 N FIRSTPRESERVEDREG MOV,
+  ENTER-CALL-SUBS-FRAME,
+
+  1 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  FIRSTPRESERVEDREG  FIRSTPRESERVEDREG  XOR,
+  1 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-UNPRESERVE,
+
+  FIRSTPRESERVEDREG  RAX  MOV,
+  
+  // don't need to unpreserve because of PUSH POP on outside
+  EXIT-CALL-SUBS-FRAME-NO-RET,
+  FIRSTPRESERVEDREG POP,
+  RET, 
+END-CODE
+
+: testrmask-call-subs-frame-unpreserve,
+    ." testing RMASK-CALL-SUBS-FRAME-UNPRESERVE, 1 reg preserved "
+    0 ['] TESTRMASK-CALL-SUBS-FRAME-PRESERVE, >BODY CALLPROC DUP 298349724 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 298349724, got " HEX U.
+    THEN
+    CR
+; 
+
+testrmask-call-subs-frame-unpreserve,
+
+
+HEX
+CODE TESTRMASK-CALL-SUBS-FRAME-PRESERVE,B ( -ret- )
+  FIRSTPRESERVEDREG PUSH,
+  SECONDPRESERVEDREG PUSH,
+  298349724 N SECONDPRESERVEDREG MOV,
+  FRAME-PARAMS<  > // sets depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+
+  2 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  RSP 8 [R+N]  RAX  MOV,
+  
+  // don't need to unpreserve because of PUSH POP on outside
+  EXIT-CALL-SUBS-FRAME-NO-RET,
+  SECONDPRESERVEDREG POP,
+  FIRSTPRESERVEDREG POP,
+  RET, 
+END-CODE
+
+: testrmask-call-subs-frame-preserve,b
+    ." testing RMASK-CALL-SUBS-FRAME-PRESERVE,B 2 regs preserved "
+    0 ['] TESTRMASK-CALL-SUBS-FRAME-PRESERVE,B >BODY CALLPROC DUP 298349724 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 298349724, got " HEX U.
+    THEN
+    CR
+; 
+
+testrmask-call-subs-frame-preserve,b
+
+
+HEX
+CODE TESTRMASK-CALL-SUBS-FRAME-PRESERVE,C ( -ret- )
+  FIRSTPRESERVEDREG PUSH,
+  SECONDPRESERVEDREG PUSH,
+  298349724 N FIRSTPRESERVEDREG MOV,
+  0 N  SECONDPRESERVEDREG  MOV, 
+  FRAME-PARAMS<  > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+
+  2 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  RSP [R]  RAX  MOV,
+  
+  // don't need to unpreserve because of PUSH POP on outside
+  EXIT-CALL-SUBS-FRAME-NO-RET,
+  SECONDPRESERVEDREG POP,
+  FIRSTPRESERVEDREG POP,
+  RET, 
+END-CODE
+
+: testrmask-call-subs-frame-preserve,c
+    ." testing RMASK-CALL-SUBS-FRAME-PRESERVE,C 2 regs preserved "
+    0 ['] TESTRMASK-CALL-SUBS-FRAME-PRESERVE,C >BODY CALLPROC DUP 298349724 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 298349724, got " HEX U.
+    THEN
+    CR
+; 
+
+testrmask-call-subs-frame-preserve,c
+
+
+HEX
+CODE TESTRMASK-CALL-SUBS-FRAME-UNPRESERVE,B ( -ret- )
+  FIRSTPRESERVEDREG PUSH,
+  SECONDPRESERVEDREG PUSH,
+  298349724 N FIRSTPRESERVEDREG MOV,
+  783498234 N SECONDPRESERVEDREG MOV,
+  FRAME-PARAMS<  > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+
+  2 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  FIRSTPRESERVEDREG  FIRSTPRESERVEDREG  XOR,
+  SECONDPRESERVEDREG  SECONDPRESERVEDREG  XOR,
+  2 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-UNPRESERVE,
+
+  SECONDPRESERVEDREG  RAX  MOV,
+  
+  EXIT-CALL-SUBS-FRAME-NO-RET,
+  SECONDPRESERVEDREG POP,
+  FIRSTPRESERVEDREG POP,
+  RET, 
+END-CODE
+
+: testrmask-call-subs-frame-unpreserve,b
+    ." testing RMASK-CALL-SUBS-FRAME-UNPRESERVE,B 2 regs preserved "
+    0 ['] TESTRMASK-CALL-SUBS-FRAME-UNPRESERVE,B >BODY CALLPROC DUP 783498234 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 783498234, got " HEX U.
+    THEN
+    CR
+; 
+
+
+HEX
+CODE TESTCALLSUBSFRAMEWITHLOCALSBEFOREPRESERVEDA ( -ret- )
+  FIRSTPRESERVEDREG PUSH,
+  SECONDPRESERVEDREG PUSH,
+  298349724 N FIRSTPRESERVEDREG MOV,
+  783498234 N SECONDPRESERVEDREG MOV,
+  FRAME-PARAMS<  > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  // PREGS-PRESERVED-DEPTH @ ." PRESERVED-DEPTH INIT = " U. CRLF
+  CALL-SUBS-FRAME-LOCALS,< locala localb localc >
+  // PREGS-PRESERVED-DEPTH @ ." PRESERVED-DEPTH after locals = " U. CRLF
+  2 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  // PREGS-PRESERVED-DEPTH @ ." PRESERVED-DEPTH after preserved = " U. CRLF
+  RAX  RAX  XOR,
+  RAX  locala  MOV,
+  RAX  localb  MOV,
+  RAX  localc  MOV,
+  RAX  FIRSTPRESERVEDREG  MOV,
+  RAX  SECONDPRESERVEDREG  MOV,
+  2 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-UNPRESERVE,
+
+  SECONDPRESERVEDREG  RAX  MOV,
+  
+  EXIT-CALL-SUBS-FRAME-NO-RET,
+  SECONDPRESERVEDREG POP,
+  FIRSTPRESERVEDREG POP,
+  RET, 
+END-CODE
+
+: testcallsubsframewithlocalsbeforepreserveda
+    ." testing  TESTCALLSUBSFRAMEWITHLOCALSBEFOREPRESERVEDA 2 regs preserved "
+    0 [']  TESTCALLSUBSFRAMEWITHLOCALSBEFOREPRESERVEDA >BODY CALLPROC DUP 783498234 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 783498234, got " HEX U.
+    THEN
+    CR
+; 
+
+
+testcallsubsframewithlocalsbeforepreserveda
+
+
+HEX
+CODE TESTCALLSUBSFRAMEWITHLOCALSAFTERPRESERVEDA ( -ret- )
+  FIRSTPRESERVEDREG PUSH,
+  SECONDPRESERVEDREG PUSH,
+  298349724 N FIRSTPRESERVEDREG MOV,
+  783498234 N SECONDPRESERVEDREG MOV,
+  FRAME-PARAMS<  > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  2 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  CALL-SUBS-FRAME-LOCALS,< locala localb localc >
+  RAX  RAX  XOR,
+  RAX  locala  MOV,
+  RAX  localb  MOV,
+  RAX  localc  MOV,
+  RAX  FIRSTPRESERVEDREG  MOV,
+  RAX  SECONDPRESERVEDREG  MOV,
+  2 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-UNPRESERVE,
+
+  SECONDPRESERVEDREG  RAX  MOV,
+  
+  EXIT-CALL-SUBS-FRAME-NO-RET,
+  SECONDPRESERVEDREG POP,
+  FIRSTPRESERVEDREG POP,
+  RET, 
+END-CODE
+
+: testcallsubsframewithlocalsafterpreserveda
+    ." testing  TESTCALLSUBSFRAMEWITHLOCALSAFTERPRESERVEDA 2 regs preserved "
+    0 [']  TESTCALLSUBSFRAMEWITHLOCALSAFTERPRESERVEDA >BODY CALLPROC DUP 783498234 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 783498234, got " HEX U.
+    THEN
+    CR
+; 
+
+
+testcallsubsframewithlocalsafterpreserveda
+
+
+HEX
+CODE TESTCALLSUBSFRAMEWITHLOCALSAFTERPRESERVEDB ( -ret- )
+  FIRSTPRESERVEDREG PUSH,
+  SECONDPRESERVEDREG PUSH,
+  THIRDPRESERVEDREG PUSH,
+  298349724 N FIRSTPRESERVEDREG MOV,
+  783498234 N SECONDPRESERVEDREG MOV,
+  892349874 N THIRDPRESERVEDREG MOV,
+  FRAME-PARAMS<  > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  3 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  CALL-SUBS-FRAME-LOCALS,< locala localb localc >
+  RAX  RAX  XOR,
+  RAX  locala  MOV,
+  RAX  localb  MOV,
+  RAX  localc  MOV,
+  RAX  FIRSTPRESERVEDREG  MOV,
+  RAX  SECONDPRESERVEDREG  MOV,
+  RAX  THIRDPRESERVEDREG MOV,
+  3 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-UNPRESERVE,
+
+  THIRDPRESERVEDREG  RAX  MOV,
+  
+  EXIT-CALL-SUBS-FRAME-NO-RET,
+  THIRDPRESERVEDREG POP,
+  SECONDPRESERVEDREG POP,
+  FIRSTPRESERVEDREG POP,
+  RET, 
+END-CODE
+
+: testcallsubsframewithlocalsafterpreservedb
+    ." testing  TESTCALLSUBSFRAMEWITHLOCALSAFTERPRESERVEDB 3 regs preserved "
+    0 [']  TESTCALLSUBSFRAMEWITHLOCALSAFTERPRESERVEDB >BODY CALLPROC DUP 892349874 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 892349874, got " HEX U.
+    THEN
+    CRLF
+; 
+
+
+testcallsubsframewithlocalsafterpreservedb
+
+
+
+HEX
+CODE TESTCALLSUBSFRAMEWITHLOCALSPRESERVEDANDREGSA ( -ret- )
+  
+  FIRSTPRESERVEDREG PUSH,
+  SECONDPRESERVEDREG PUSH,
+  THIRDPRESERVEDREG PUSH,
+  298349724 N FIRSTPRESERVEDREG MOV,
+  783498234 N SECONDPRESERVEDREG MOV,
+  892349874 N THIRDPRESERVEDREG MOV,
+
+  FRAME-PARAMS< p1 p2 p3 p4 p5 p6 p7 p8 > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  3 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  CALL-SUBS-FRAME-LOCALS,< locala localb localc >
+  REGS< x y z >  // know there are at least 3
+  29234987 N  x  MOV,
+  x  RAX  MOV,
+  
+  3 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-UNPRESERVE,
+  
+  EXIT-CALL-SUBS-FRAME-NO-RET,
+
+  THIRDPRESERVEDREG POP,
+  SECONDPRESERVEDREG POP,
+  FIRSTPRESERVEDREG POP,
+
+  RET, 
+END-CODE
+
+: testcallsubsframewithlocalspreservedandregsa
+    ." testing  TESTCALLSUBSFRAMEWITHLOCALSPRESERVEDANDREGSA 3 regs preserved "
+    0 [']  TESTCALLSUBSFRAMEWITHLOCALSPRESERVEDANDREGSA >BODY CALLPROC DUP 29234987 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 29234987, got " HEX U.
+    THEN
+    CR
+; 
+
+
+testcallsubsframewithlocalspreservedandregsa
+
+
+HEX
+CODE TESTCALLSUBSFRAMEWITHLOCALSPRESERVEDANDREGSB ( -ret- )
+  
+  FIRSTPRESERVEDREG PUSH,
+  SECONDPRESERVEDREG PUSH,
+  THIRDPRESERVEDREG PUSH,
+  298349724 N FIRSTPRESERVEDREG MOV,
+  783498234 N SECONDPRESERVEDREG MOV,
+  892349874 N THIRDPRESERVEDREG MOV,
+
+  FRAME-PARAMS< p1 p2 p3 p4 p5 p6 p7 p8 > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  3 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  CALL-SUBS-FRAME-LOCALS,< locala localb localc >
+  REGS< x y z >  // know there are at least 3
+  29234987 N  y  MOV,
+  19827237 N  x  MOV,
+  9439874523 N  z  MOV,
+  y  RAX  MOV,
+  
+  3 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-UNPRESERVE,
+  
+  EXIT-CALL-SUBS-FRAME-NO-RET,
+
+  THIRDPRESERVEDREG POP,
+  SECONDPRESERVEDREG POP,
+  FIRSTPRESERVEDREG POP,
+
+  RET, 
+END-CODE
+
+: testcallsubsframewithlocalspreservedandregsb
+    ." testing  TESTCALLSUBSFRAMEWITHLOCALSPRESERVEDANDREGSB 3 regs preserved "
+    0 [']  TESTCALLSUBSFRAMEWITHLOCALSPRESERVEDANDREGSB >BODY CALLPROC DUP 29234987 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 29234987, got " HEX U.
+    THEN
+    CR
+; 
+
+
+testcallsubsframewithlocalspreservedandregsb
+
+
+HEX
+CODE TESTCALLSUBSFRAMEWITHLOCALSPRESERVEDANDREGSC ( -ret- )
+  
+  FIRSTPRESERVEDREG PUSH,
+  SECONDPRESERVEDREG PUSH,
+  THIRDPRESERVEDREG PUSH,
+  298349724 N FIRSTPRESERVEDREG MOV,
+  783498234 N SECONDPRESERVEDREG MOV,
+  892349874 N THIRDPRESERVEDREG MOV,
+
+  FRAME-PARAMS< p1 p2 p3 p4 p5 p6 p7 p8 > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  3 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  CALL-SUBS-FRAME-LOCALS,< locala localb localc >
+  REGS< x y z >  // know there are at least 3
+  29234987 N  z  MOV,
+  19827237 N  x  MOV,
+  9439874523 N  y  MOV,
+  z  RAX  MOV,
+  
+  3 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-UNPRESERVE,
+  
+  EXIT-CALL-SUBS-FRAME-NO-RET,
+
+  THIRDPRESERVEDREG POP,
+  SECONDPRESERVEDREG POP,
+  FIRSTPRESERVEDREG POP,
+
+  RET, 
+END-CODE
+
+: testcallsubsframewithlocalspreservedandregsc
+    ." testing  TESTCALLSUBSFRAMEWITHLOCALSPRESERVEDANDREGSC 3 regs preserved "
+    0 [']  TESTCALLSUBSFRAMEWITHLOCALSPRESERVEDANDREGSC >BODY CALLPROC DUP 29234987 = IF
+        DROP ." SUCCESS!"
+    ELSE 
+        ." FAIL! expected 29234987, got " HEX U.
+    THEN
+    CR
+; 
+
+
+testcallsubsframewithlocalspreservedandregsc
+
+
+-1 PRSDEPTH !
+HEX
+CODE TESTNOFRAMEPARAMSINITA ( -ret- )
+  NO-FRAME-PARAMS< >
+  
+  PRSDEPTH @ VARX !
+
+END-CODE
+
+: testnoframeparamsinit-rsdepth 
+    ." testing  no frame params init return stack depth "
+    VARX @ 0= IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected 0, got " HEX VARX @ U.
+    THEN
+    CR
+; 
+
+
+testnoframeparamsinit-rsdepth
+
+
+X86-WORDLIST >SEARCH-ORDER
+-1 PPRESERVED-RMASK !
+SEARCH-ORDER> DROP
+HEX
+CODE TESTNOFRAMEPARAMSINITB ( -ret- )
+  NO-FRAME-PARAMS< >
+  
+  PPRESERVED-RMASK @ VARX !
+
+END-CODE
+
+: testnoframeparamsinit-preserved-rmask 
+    ." testing no frame params init - regs preserved "
+    VARX @ 0= IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected 0, got " HEX VARX @ U.
+    THEN
+    CRLF
+; 
+
+
+
+testnoframeparamsinit-preserved-rmask
+
+
+X86-WORDLIST >SEARCH-ORDER
+-1 PUSED-RMASK !
+SEARCH-ORDER> DROP
+HEX
+CODE TESTNOFRAMEPARAMSINITC ( -ret- )
+  NO-FRAME-PARAMS< >
+  
+  PUSED-RMASK @ VARX !
+
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testnoframeparamsinit-pused-rmask 
+    ." testing no frame params init - regs used "
+    VARX @ MUST-BE-PRESERVED-RMASK = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " HEX MUST-BE-PRESERVED-RMASK U. ." , got " HEX VARX @ U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+
+testnoframeparamsinit-pused-rmask
+
+
+X86-WORDLIST >SEARCH-ORDER
+-1 PPARAMS-USED-RMASK !
+SEARCH-ORDER> DROP
+HEX
+CODE TESTNOFRAMEPARAMSINITD ( -ret- )
+  NO-FRAME-PARAMS< >
+  
+  PPARAMS-USED-RMASK @ VARX !
+
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testnoframeparamsinit-pparams-used-rmask 
+    ." testing no frame params init - param regs used "
+    VARX @ 0= IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " HEX 0 U. ." , got " HEX VARX @ U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+testnoframeparamsinit-pparams-used-rmask
+
+
+X86-WORDLIST >SEARCH-ORDER
+-1 PPRESERVED-RMASK !
+SEARCH-ORDER> DROP
+HEX
+CODE TESTNOFRAMEPARAMS1PRESERVED ( -ret- )
+  NO-FRAME-PARAMS< >
+  1 U-IMUST-BE-PRESERVED-RMASK RMASK-NO-FRAME-PRESERVE,
+
+  PPRESERVED-RMASK @ VARX !
+
+END-CODE
+
+: testnoframeparams1preserved 
+    ." testing no frame params 1 preserved "
+    VARX @ COUNTBITS 1 = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected 1, got " HEX VARX @ COUNTBITS U.
+    THEN
+    CRLF
+; 
+
+
+
+testnoframeparams1preserved
+
+
+HEX
+CODE TESTNOFRAMEPARAMS1PRESERVEDB ( -ret- )
+  NO-FRAME-PARAMS< >
+  1 U-IMUST-BE-PRESERVED-RMASK RMASK-NO-FRAME-PRESERVE,
+
+  PUSED-RMASK @ VARX !
+
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testnoframeparams1preservedregsused 
+    ." testing no frame params 1 preserved regs used "
+    VARX @ COUNTBITS MUST-BE-PRESERVED-RMASK COUNTBITS 1- = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " MUST-BE-PRESERVED-RMASK COUNTBITS 1- U. ." , got " HEX VARX @ COUNTBITS U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+testnoframeparams1preservedregsused
+
+
+X86-WORDLIST >SEARCH-ORDER
+-1 PPRESERVED-RMASK !
+SEARCH-ORDER> DROP
+HEX
+CODE TESTNOFRAMEPARAMS2PRESERVED ( -ret- )
+  NO-FRAME-PARAMS< >
+  2 U-IMUST-BE-PRESERVED-RMASK RMASK-NO-FRAME-PRESERVE,
+
+  PPRESERVED-RMASK @ VARX !
+
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testnoframeparams2preserved 
+    ." testing no frame params 2 preserved "
+    VARX @ COUNTBITS 2 = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected 2, got " HEX VARX @ COUNTBITS U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+testnoframeparams2preserved
+
+
+HEX
+CODE TESTNOFRAMEPARAMS2PRESERVEDB ( -ret- )
+  NO-FRAME-PARAMS< >
+  2 U-IMUST-BE-PRESERVED-RMASK RMASK-NO-FRAME-PRESERVE,
+
+  PUSED-RMASK @ VARX !
+
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testnoframeparams2preservedregsused 
+    ." testing no frame params 2 preserved regs used "
+    VARX @ COUNTBITS MUST-BE-PRESERVED-RMASK COUNTBITS 2 - = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " MUST-BE-PRESERVED-RMASK COUNTBITS 2 - U. ." , got " HEX VARX @ COUNTBITS U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+
+testnoframeparams2preservedregsused
+
+
+X86-WORDLIST >SEARCH-ORDER
+-1 PPRESERVED-RMASK !
+SEARCH-ORDER> DROP
+HEX
+CODE TESTNOFRAMEPARAMS3PRESERVED ( -ret- )
+  NO-FRAME-PARAMS< >
+  3 U-IMUST-BE-PRESERVED-RMASK RMASK-NO-FRAME-PRESERVE,
+
+  PPRESERVED-RMASK @ VARX !
+
+END-CODE
+
+: testnoframeparams3preserved 
+    ." testing no frame params 3 preserved "
+    VARX @ COUNTBITS 3 = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected 3, got " HEX VARX @ COUNTBITS U.
+    THEN
+    CRLF
+; 
+
+
+testnoframeparams3preserved
+
+
+HEX
+CODE TESTNOFRAMEPARAMS3PRESERVEDC ( -ret- )
+  NO-FRAME-PARAMS< >
+  3 U-IMUST-BE-PRESERVED-RMASK RMASK-NO-FRAME-PRESERVE,
+
+  PUSED-RMASK @ VARX !
+
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testnoframeparams3preservedregsused 
+    ." testing no frame params 3 preserved regs used "
+    VARX @ COUNTBITS MUST-BE-PRESERVED-RMASK COUNTBITS 3 - = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " MUST-BE-PRESERVED-RMASK COUNTBITS 3 - U. ." , got " HEX VARX @ COUNTBITS U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+
+
+testnoframeparams3preservedregsused
+
+
+X86-WORDLIST >SEARCH-ORDER
+-1 PPRESERVED-RMASK !
+SEARCH-ORDER> DROP
+HEX
+CODE TESTNOFRAMEPARAMSALLPRESERVED ( -ret- )
+  NO-FRAME-PARAMS< >
+  MUST-BE-PRESERVED-RMASK RMASK-NO-FRAME-PRESERVE,
+
+  PPRESERVED-RMASK @ VARX !
+
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testnoframeparamsallpreserved 
+    ." testing no frame params all preserved "
+    VARX @ COUNTBITS MUST-BE-PRESERVED-RMASK COUNTBITS = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " MUST-BE-PRESERVED-RMASK COUNTBITS ." , got " HEX VARX @ COUNTBITS U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+testnoframeparamsallpreserved
+
+
+
+HEX
+CODE TESTNOFRAMEPARAMSALLPRESERVEDB ( -ret- )
+  NO-FRAME-PARAMS< >
+  MUST-BE-PRESERVED-RMASK RMASK-NO-FRAME-PRESERVE,
+
+  PUSED-RMASK @ VARX !
+
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testnoframeparamsallpreservedregsusedb
+    ." testing no frame params all preserved no regs used "
+    VARX @ COUNTBITS 0= IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " 0 U. ." , got " HEX VARX @ COUNTBITS U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+testnoframeparamsallpreservedregsusedb
+
+
+HEX
+CODE TESTNOFRAMEPARAMSALLPRESERVEDUSE1REG ( -ret- )
+  NO-FRAME-PARAMS< >
+  MUST-BE-PRESERVED-RMASK RMASK-NO-FRAME-PRESERVE,
+  REGS< x >
+  PUSED-RMASK @ VARX !
+
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testnoframeparamsallpreserveduse1reg
+    ." testing no frame params all preserved 1 reg used "
+    VARX @ COUNTBITS 1 = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " 1 U. ." , got " HEX VARX @ COUNTBITS U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+testnoframeparamsallpreserveduse1reg
+
+
+HEX
+CODE TESTNOFRAMEPARAMSALLPRESERVEDUSE2REGS ( -ret- )
+  NO-FRAME-PARAMS< >
+  MUST-BE-PRESERVED-RMASK RMASK-NO-FRAME-PRESERVE,
+  REGS< x y >
+  PUSED-RMASK @ VARX !
+
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testnoframeparamsallpreserveduse2regs
+    ." testing no frame params all preserved 2 regs used "
+    VARX @ COUNTBITS 2 = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " 2 U. ." , got " HEX VARX @ COUNTBITS U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+testnoframeparamsallpreserveduse2regs
+
+
+HEX
+CODE TESTNOFRAMEPARAMSALLPRESERVEDUSE3REGS ( -ret- )
+  NO-FRAME-PARAMS< >
+  MUST-BE-PRESERVED-RMASK RMASK-NO-FRAME-PRESERVE,
+  REGS< x y z >
+  PUSED-RMASK @ VARX !
+
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testnoframeparamsallpreserveduse3regs
+    ." testing no frame params all preserved 3 regs used "
+    VARX @ COUNTBITS 3 = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " 3 U. ." , got " HEX VARX @ COUNTBITS U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+
+testnoframeparamsallpreserveduse3regs
+
+
+X86-WORDLIST >SEARCH-ORDER
+-1 PUSED-RMASK !
+SEARCH-ORDER> DROP
+
+HEX
+CODE TESTCALLSUBSFRAMEINITREGSUSED ( -ret- )
+
+  FRAME-PARAMS<  > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  // 3 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  // CALL-SUBS-FRAME-LOCALS,< locala localb localc >
+  // REGS< x y z >  // know there are at least 3
+  
+  // 3 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-UNPRESERVE,
+  PUSED-RMASK @ VARX !
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframeinitregsused
+    ." testing call subs frame init regs used "
+    VARX @ COUNTBITS MUST-BE-PRESERVED-RMASK COUNTBITS = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " MUST-BE-PRESERVED-RMASK COUNTBITS U. ." , got " HEX VARX @ COUNTBITS U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+
+testcallsubsframeinitregsused
+
+
+X86-WORDLIST >SEARCH-ORDER
+-1 PPRESERVED-RMASK !
+SEARCH-ORDER> DROP
+
+HEX
+CODE TESTCALLSUBSFRAMEINITPRESERVED ( -ret- )
+
+  FRAME-PARAMS<  > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  // 3 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  // CALL-SUBS-FRAME-LOCALS,< locala localb localc >
+  // REGS< x y z >  // know there are at least 3
+  
+  // 3 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-UNPRESERVE,
+  PPRESERVED-RMASK @ VARX !
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframeinitpreserved
+    ." testing call subs frame init regs preserved "
+    VARX @ 0= IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " 0 U. ." , got " HEX VARX @ COUNTBITS U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+
+testcallsubsframeinitpreserved
+
+
+
+X86-WORDLIST >SEARCH-ORDER
+-1 PPARAMS-USED-RMASK !
+SEARCH-ORDER> DROP
+
+HEX
+CODE TESTCALLSUBSFRAMEINITPRESERVED ( -ret- )
+
+  FRAME-PARAMS<  > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  // 3 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  // CALL-SUBS-FRAME-LOCALS,< locala localb localc >
+  // REGS< x y z >  // know there are at least 3
+  
+  // 3 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-UNPRESERVE,
+  PPARAMS-USED-RMASK @ VARX !
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframeinitparamsused
+    ." testing call subs frame init param regs used "
+    VARX @ 0= IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " 0 U. ." , got " HEX VARX @ COUNTBITS U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+
+
+
+testcallsubsframeinitparamsused
+
+
+HEX
+CODE TESTCALLSUBSFRAME1PRESERVED ( -ret- )
+
+  FRAME-PARAMS<  > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  1 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  // CALL-SUBS-FRAME-LOCALS,< locala localb localc >
+  // REGS< x y z >  // know there are at least 3
+  
+  // 3 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-UNPRESERVE,
+  PPRESERVED-RMASK @ VARX !
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframe1preserved
+    ." testing call subs frame 1 regs preserved "
+    VARX @ COUNTBITS 1 = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " 1 U. ." , got " HEX VARX @ COUNTBITS U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+
+testcallsubsframe1preserved
+
+
+
+
+
+HEX
+
+
+
+CODE TESTCALLSUBSFRAME2PRESERVED ( -ret- )
+
+  FRAME-PARAMS<  > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  2 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  // CALL-SUBS-FRAME-LOCALS,< locala localb localc >
+  // REGS< x y z >  // know there are at least 3
+  
+  // 3 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-UNPRESERVE,
+  PPRESERVED-RMASK @ VARX !
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframe2preserved
+    ." testing call subs frame 2 regs preserved "
+    VARX @ COUNTBITS 2 = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " 2 U. ." , got " HEX VARX @ COUNTBITS U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+
+
+testcallsubsframe2preserved
+
+
+CODE TESTCALLSUBSFRAME3PRESERVED ( -ret- )
+
+  FRAME-PARAMS<  > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  3 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  // CALL-SUBS-FRAME-LOCALS,< locala localb localc >
+  // REGS< x y z >  // know there are at least 3
+  
+  // 3 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-UNPRESERVE,
+  PPRESERVED-RMASK @ VARX !
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframe3preserved
+    ." testing call subs frame 3 regs preserved "
+    VARX @ COUNTBITS 3 = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " 3 U. ." , got " HEX VARX @ COUNTBITS U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+
+
+testcallsubsframe3preserved
+
+
+CODE TESTCALLSUBSFRAME4PRESERVED ( -ret- )
+
+  FRAME-PARAMS<  > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  4 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  // CALL-SUBS-FRAME-LOCALS,< locala localb localc >
+  // REGS< x y z >  // know there are at least 3
+  
+  // 3 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-UNPRESERVE,
+  PPRESERVED-RMASK @ VARX !
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframe4preserved
+    ." testing call subs frame 4 regs preserved "
+    VARX @ COUNTBITS 4 = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " 4 U. ." , got " HEX VARX @ COUNTBITS U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+
+
+testcallsubsframe4preserved
+
+
+HEX
+CODE TESTCALLSUBSFRAME1PARAM ( -ret- )
+
+  FRAME-PARAMS< x > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  // 1 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  // CALL-SUBS-FRAME-LOCALS,< locala localb localc >
+  // REGS< x y z >  // know there are at least 3
+  
+  // 3 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-UNPRESERVE,
+  PPARAMS-USED-RMASK @ VARX !
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframe1param
+    ." testing call subs frame 1 param "
+    VARX @ COUNTBITS 1 = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " 1 U. ." , got " HEX VARX @ COUNTBITS U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+
+
+testcallsubsframe1param
+
+
+HEX
+CODE TESTCALLSUBSFRAME2PARAMS ( -ret- )
+
+  FRAME-PARAMS< x y > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  // 1 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  // CALL-SUBS-FRAME-LOCALS,< locala localb localc >
+  // REGS< x y z >  // know there are at least 3
+  
+  // 3 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-UNPRESERVE,
+  PPARAMS-USED-RMASK @ VARX !
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframe2params
+    ." testing call subs frame 2 params "
+    VARX @ COUNTBITS 2 = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " 2 U. ." , got " HEX VARX @ COUNTBITS U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+
+
+testcallsubsframe2params
+
+
+HEX
+CODE TESTCALLSUBSFRAME3PARAMS ( -ret- )
+
+  FRAME-PARAMS< x y z > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  // 1 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  // CALL-SUBS-FRAME-LOCALS,< locala localb localc >
+  // REGS< x y z >  // know there are at least 3
+  
+  // 3 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-UNPRESERVE,
+  PPARAMS-USED-RMASK @ VARX !
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframe3params
+    ." testing call subs frame 3 params "
+    VARX @ COUNTBITS 3 = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " 3 U. ." , got " HEX VARX @ COUNTBITS U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+
+testcallsubsframe3params
+
+
+HEX
+
+
+
+
+CODE TESTCALLSUBSFRAME1PARAMREGSUSED ( -ret- )
+
+  FRAME-PARAMS< x > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+
+  PUSED-RMASK @ VARX !
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframe1paramregsused
+    ." testing call subs frame 1 param regs used "
+    VARX @ COUNTBITS MUST-BE-PRESERVED-RMASK COUNTBITS 1 + = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " MUST-BE-PRESERVED-RMASK COUNTBITS 1 + U. ." , got " HEX VARX @ COUNTBITS U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+
+
+
+testcallsubsframe1paramregsused
+
+
+CODE TESTCALLSUBSFRAME2PARAMREGSUSED ( -ret- )
+
+  FRAME-PARAMS< x y > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+
+  PUSED-RMASK @ VARX !
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframe2paramregsused
+    ." testing call subs frame 2 param regs used "
+    VARX @ COUNTBITS MUST-BE-PRESERVED-RMASK COUNTBITS 2 + = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " MUST-BE-PRESERVED-RMASK COUNTBITS 2 + U. ." , got " HEX VARX @ COUNTBITS U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+
+
+testcallsubsframe2paramregsused
+
+
+
+CODE TESTCALLSUBSFRAMEALLPRESERVED0REGSUSED ( -ret- )
+
+  FRAME-PARAMS< > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  MUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  PUSED-RMASK @ VARX !
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframeallpreserved0regsused
+    ." testing call subs frame all preserved 0 regs used "
+    VARX @ COUNTBITS 0= IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " 0 U. ." , got " HEX VARX @ COUNTBITS U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+
+
+testcallsubsframeallpreserved0regsused
+
+
+CODE TESTCALLSUBSFRAMEALLPRESERVED1REGUSED ( -ret- )
+
+  FRAME-PARAMS< > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  MUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  REGS< x >
+  PUSED-RMASK @ VARX !
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframeallpreserved1regused
+    ." testing call subs frame all preserved 1 reg used "
+    VARX @ COUNTBITS 1 = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " 1 U. ." , got " HEX VARX @ COUNTBITS U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+
+
+testcallsubsframeallpreserved1regused
+
+
+CODE TESTCALLSUBSFRAMEALLPRESERVED2REGSUSED ( -ret- )
+
+  FRAME-PARAMS< > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  MUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  REGS< x y >
+  PUSED-RMASK @ VARX !
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframeallpreserved2regsused
+    ." testing call subs frame all preserved 2 regs used "
+    VARX @ COUNTBITS 2 = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " 2 U. ." , got " HEX VARX @ COUNTBITS U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+
+
+testcallsubsframeallpreserved2regsused
+
+
+CODE TESTCALLSUBSFRAMEALLPRESERVED3REGSUSED ( -ret- )
+
+  FRAME-PARAMS< > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  MUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  REGS< x y z >
+  PUSED-RMASK @ VARX !
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframeallpreserved3regsused
+    ." testing call subs frame all preserved 3 regs used "
+    VARX @ COUNTBITS 3 = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " 3 U. ." , got " HEX VARX @ COUNTBITS U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+
+testcallsubsframeallpreserved3regsused
+
+
+CODE TESTCALLSUBSFRAMEALLPRESERVED3REGSUSED ( -ret- )
+
+  FRAME-PARAMS< > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  MUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  REGS< w x y z >
+  PUSED-RMASK @ VARX !
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframeallpreserved4regsused
+    ." testing call subs frame all preserved 4 regs used "
+    VARX @ COUNTBITS 4 = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " 4 U. ." , got " HEX VARX @ COUNTBITS U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+
+
+
+testcallsubsframeallpreserved4regsused
+
+HEX
+CODE TESTCALLSUBSFRAMELOCALS,<1 ( -ret- )
+
+  FRAME-PARAMS< > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  CALL-SUBS-FRAME-LOCALS,< x >
+  x DROP VARX !  
+  PRSDEPTH @ VARY !  
+  2834763 N RCX MOV,
+  RCX x MOV,  
+  -1 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  x RAX MOV,
+  -1 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-UNPRESERVE,
+  EXIT-CALL-SUBS-FRAME,
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframelocals,<1
+    ." testing preserving regs does not corrupt previously declared locals "
+    VARX @ VARY @ = IF
+      ." SUCCESS! "
+    ELSE 
+       ." FAIL! expected locals depth off by " VARX @ VARY @ - U.
+    THEN
+    0 [']  TESTCALLSUBSFRAMELOCALS,<1 >BODY CALLPROC DUP 2834763 = IF
+        DROP ." SUCCESS! "
+    ELSE 
+        ." FAIL! expected 2834763, got " HEX U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+
+testcallsubsframelocals,<1
+
+
+HEX
+CODE TESTCALLSUBSFRAMELOCALS,<2 ( -ret- )
+
+  FRAME-PARAMS< > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  CALL-SUBS-FRAME-LOCALS,< x > 
+  x DROP VARX !
+  1 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  PRSDEPTH @ VARY !
+  CALL-SUBS-FRAME-LOCALS,< y >
+  y DROP VARZ !
+  2834763 N RCX MOV,
+  RCX y MOV,
+  1 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-UNPRESERVE,
+  y RAX MOV,
+  EXIT-CALL-SUBS-FRAME,
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframelocals,<2
+    ." testing local depths allocated correctly "
+    VARX @ 1+ VARY @ = IF
+      ." SUCCESS! "
+    ELSE 
+       ." FAIL! preserved depth off by " VARX @ 1+ VARY @ - U.
+    THEN
+    VARY @ 1+ VARZ @ = IF
+      ." SUCCESS! "
+    ELSE 
+       ." FAIL! 2nd local depth off by " VARY @ 1+ VARZ @ - U.
+    THEN
+    0 [']  TESTCALLSUBSFRAMELOCALS,<2 >BODY CALLPROC DUP 2834763 = IF
+        DROP ." SUCCESS! "
+    ELSE 
+        ." FAIL! expected 2834763, got " HEX U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+
+testcallsubsframelocals,<2
+
+
+HEX
+CODE TESTCALLSUBSFRAMELOCALS,<3 ( -ret- )
+
+  FRAME-PARAMS< > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  CALL-SUBS-FRAME-LOCALS,< > 
+  1 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  PRSDEPTH @ VARY !
+  CALL-SUBS-FRAME-LOCALS,< y >
+  y DROP VARZ !
+  2834763 N RCX MOV,
+  RCX y MOV,
+  1 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-UNPRESERVE,
+  y RAX MOV,
+  EXIT-CALL-SUBS-FRAME,
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframelocals,<3
+    ." testing local 0 allocated case "
+    VARY @ 1+ VARZ @ = IF
+      ." SUCCESS! "
+    ELSE 
+       ." FAIL! 2nd local depth off by " VARY @ 1+ VARZ @ - U.
+    THEN
+    0 [']  TESTCALLSUBSFRAMELOCALS,<3 >BODY CALLPROC DUP 2834763 = IF
+        DROP ." SUCCESS! "
+    ELSE 
+        ." FAIL! expected 2834763, got " HEX U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+
+testcallsubsframelocals,<3
+
+
+HEX
+CODE TESTCALLSUBSFRAMELOCALS,<4 ( -ret- )
+
+  FRAME-PARAMS< > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  PRSDEPTH @ VARX !
+  CALL-SUBS-FRAME-LOCALS,< x z > 
+  x DROP VARY !
+  z DROP VARZ !
+  1 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-PRESERVE,
+  CALL-SUBS-FRAME-LOCALS,< y >
+  2834763 N RCX MOV,
+  RCX y MOV,
+  1 U-IMUST-BE-PRESERVED-RMASK RMASK-CALL-SUBS-FRAME-UNPRESERVE,
+  y RAX MOV,
+  EXIT-CALL-SUBS-FRAME,
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframelocals,<4
+    ." testing local depths allocated correctly 2 locals declared at once case "
+    VARX @ 1+ VARY @ = IF
+      ." SUCCESS! "
+    ELSE 
+       ." FAIL! first local depth off by " VARX @ 1+ VARY @ - U.
+    THEN
+    VARY @ 1+ VARZ @ = IF
+      ." SUCCESS! "
+    ELSE 
+       ." FAIL! 2nd local depth off by " VARY @ 1+ VARZ @ - U.
+    THEN
+    0 [']  TESTCALLSUBSFRAMELOCALS,<4 >BODY CALLPROC DUP 2834763 = IF
+        DROP ." SUCCESS! "
+    ELSE 
+        ." FAIL! expected 2834763, got " HEX U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+
+testcallsubsframelocals,<4
+
+
+HEX
+CODE TESTCALLSUBSFRAMEWITH0FASTLOCALS ( -ret- )
+  
+  FRAME-PARAMS< > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  PRSDEPTH @ VARX !
+  CALL-SUBS-FRAME-FAST-LOCALS,< >
+  PRSDEPTH @ VARX @ - VARX !
+  RAX RAX XOR, // crash test....
+  EXIT-CALL-SUBS-FRAME-NO-RET,
+  RET, 
+END-CODE
+
+: testcallsubsframewith0fastlocals
+    ." testing  TESTCALLSUBSFRAMEWITH0FASTLOCALS "
+    0 [']  TESTCALLSUBSFRAMEWITH0FASTLOCALS >BODY CALLPROC DUP 0= IF
+        DROP ." SUCCESS! "
+    ELSE 
+        ." FAIL! expected 0, got " HEX U.
+    THEN
+    VARX @ 0= IF
+      ." SUCCESS! "
+    ELSE
+      ." FAIL! expected 0, got " VARX @ HEX U.
+    THEN
+    CRLF
+; 
+
+
+testcallsubsframewith0fastlocals
+
+
+HEX
+CODE TESTCALLSUBSFRAMEWITH6FASTLOCALS ( -ret- )
+  
+  FRAME-PARAMS< > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  PRSDEPTH @ VARX !
+  // if no params were used there should be at least 6 available int regs
+  CALL-SUBS-FRAME-FAST-LOCALS,< fastreg0 fastreg1 fastreg2 fastreg3 fastreg4 fastreg5 >
+  PRSDEPTH @ VARX @ - VARX !
+  // need to make sure they are all regs and different..
+  fastreg0 fastreg1 <>
+  fastreg0 fastreg2 <> AND
+  fastreg0 fastreg3 <> AND
+  fastreg0 fastreg4 <> AND
+  fastreg0 fastreg5 <> AND
+  fastreg1 fastreg2 <> AND
+  fastreg1 fastreg3 <> AND
+  fastreg1 fastreg4 <> AND
+  fastreg1 fastreg5 <> AND
+  fastreg2 fastreg3 <> AND
+  fastreg2 fastreg4 <> AND
+  fastreg2 fastreg5 <> AND
+  fastreg3 fastreg4 <> AND
+  fastreg3 fastreg5 <> AND
+  fastreg4 fastreg5 <> AND
+  VARY !
+  // telephone check of regs
+  fastreg0 fastreg0 XOR,
+  fastreg0 fastreg1 MOV,
+  fastreg1 fastreg2 MOV,
+  fastreg2 fastreg3 MOV,
+  fastreg3 fastreg4 MOV,
+  fastreg4 fastreg5 MOV,
+  fastreg5 RAX MOV,
+  
+  EXIT-CALL-SUBS-FRAME-NO-RET,
+  RET, 
+END-CODE
+
+: testcallsubsframewith6fastlocals
+    ." testing  TESTCALLSUBSFRAMEWITH6FASTLOCALS "
+    0 [']  TESTCALLSUBSFRAMEWITH6FASTLOCALS >BODY CALLPROC DUP 0= IF
+        DROP ." SUCCESS! "
+    ELSE 
+        ." FAIL! expected 0, got " HEX U.
+    THEN
+    VARX @ 0= IF
+      ." SUCCESS! "
+    ELSE
+      ." FAIL! expected 0, got " VARX @ HEX U.
+    THEN
+    VARY @ 0<> IF
+      ." SUCCESS! "
+    ELSE
+      ." FAIL! expected 0, got " VARY @ HEX U.
+    THEN
+    CRLF
+; 
+
+
+testcallsubsframewith6fastlocals
+
+
+HEX
+CODE TESTCALLSUBSFRAMEWITH6FLOATFASTLOCALS ( -ret- )
+  
+  FRAME-PARAMS< > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  PRSDEPTH @ VARX !
+  // if no params were used there should be at least 6 available float regs
+  CALL-SUBS-FRAME-FAST-LOCALS,< FLOAT fastreg0 fastreg1 fastreg2 fastreg3 fastreg4 fastreg5 >
+  PRSDEPTH @ VARX @ - VARX !
+  // need to make sure they are all regs and different..
+  fastreg0 fastreg1 <>
+  fastreg0 fastreg2 <> AND
+  fastreg0 fastreg3 <> AND
+  fastreg0 fastreg4 <> AND
+  fastreg0 fastreg5 <> AND
+  fastreg1 fastreg2 <> AND
+  fastreg1 fastreg3 <> AND
+  fastreg1 fastreg4 <> AND
+  fastreg1 fastreg5 <> AND
+  fastreg2 fastreg3 <> AND
+  fastreg2 fastreg4 <> AND
+  fastreg2 fastreg5 <> AND
+  fastreg3 fastreg4 <> AND
+  fastreg3 fastreg5 <> AND
+  fastreg4 fastreg5 <> AND
+  VARY !
+  // telephone check of regs
+  RAX RAX XOR,
+  RAX PUSH,
+  RSP [R]  fastreg0  MOVQ,
+  fastreg0 fastreg1 MOVQ,
+  fastreg1 fastreg2 MOVQ,
+  fastreg2 fastreg3 MOVQ,
+  fastreg3 fastreg4 MOVQ,
+  fastreg4 fastreg5 MOVQ,
+  fastreg5  RSP [R]  MOVQ,
+  RAX POP,
+  
+  EXIT-CALL-SUBS-FRAME-NO-RET,
+  RET, 
+END-CODE
+
+: testcallsubsframewith6floatfastlocals
+    ." testing  TESTCALLSUBSFRAMEWITH6FLOATFASTLOCALS "
+    0 [']  TESTCALLSUBSFRAMEWITH6FLOATFASTLOCALS >BODY CALLPROC DUP 0= IF
+        DROP ." SUCCESS! "
+    ELSE 
+        ." FAIL! expected 0, got " HEX U.
+    THEN
+    VARX @ 0= IF
+      ." SUCCESS! "
+    ELSE
+      ." FAIL! expected 0, got " VARX @ HEX U.
+    THEN
+    VARY @ 0<> IF
+      ." SUCCESS! "
+    ELSE
+      ." FAIL! expected 0, got " VARY @ HEX U.
+    THEN
+    CRLF
+; 
+
+
+testcallsubsframewith6floatfastlocals
+
+
+HEX
+CODE TESTCALLSUBSFRAMEWITH4STACKFASTLOCALS ( -ret- )
+  
+  FRAME-PARAMS< > // initializes depth... this is required for UNPRESERVE
+  ENTER-CALL-SUBS-FRAME,
+  PRSDEPTH @ VARX !
+  // using all available regs so that fast-locals will have to use the stack
+  AVAILABLE-RMASK RMASK-USE
+  CALL-SUBS-FRAME-FAST-LOCALS,< fastlocal0 fastlocal1 FLOAT fastlocal2 fastlocal3 >
+  PRSDEPTH @ VARX @ - VARX !
+  // making sure they are what I think they are:
+  fastlocal0 CALL-SUBS-FRAME-LOCAL = SWAP 5 = AND
+  fastlocal1 CALL-SUBS-FRAME-LOCAL = ROT AND SWAP 6 = AND
+  fastlocal2 CALL-SUBS-FRAME-LOCAL = ROT AND SWAP 7 = AND
+  fastlocal3 CALL-SUBS-FRAME-LOCAL = ROT AND SWAP 8 = AND
+  
+  VARY !
+  // telephone check of regs
+  RAX RAX XOR,
+  RAX fastlocal0 MOV, 
+  fastlocal0 fastlocal1 MOV,
+  fastlocal1 fastlocal2 MOV,
+  fastlocal2 fastlocal3 MOV,
+  fastlocal3  RAX  MOV,
+  
+  EXIT-CALL-SUBS-FRAME-NO-RET,
+  RET, 
+END-CODE
+
+: testcallsubsframewith4stackfastlocals
+    ." testing  TESTCALLSUBSFRAMEWITH4STACKFASTLOCALS "
+    0 [']  TESTCALLSUBSFRAMEWITH4STACKFASTLOCALS >BODY CALLPROC DUP 0= IF
+        DROP ." SUCCESS! "
+    ELSE 
+        ." FAIL! expected 0, got " HEX U.
+    THEN
+    VARX @ 4 = IF
+      ." SUCCESS! "
+    ELSE
+      ." FAIL! expected 4, got " VARX @ HEX U.
+    THEN
+    VARY @ 0<> IF
+      ." SUCCESS! "
+    ELSE
+      ." FAIL! expected 0, got " VARY @ HEX U.
+    THEN
+    CRLF
+; 
+
+
+testcallsubsframewith4stackfastlocals
+
+
+
+// should be at least 4 floats and 6 ints available on both platforms
+CODE TESTCALLSUBSFRAME00UIUFMAKESUREAVAILABLERMASK ( -ret- )
+
+  FRAME-PARAMS< > // initializes depth... this is required for UNPRESERVE
+  0 0 UI-UF-MAKE-SURE-AVAILABLE-RMASK VARX !
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframe00uiufmakesureavailablermask
+    ." testing call subs frame 0 0 UI-UF-MAKE-SURE-AVAILABLE-RMASK "
+    VARX @ 0= IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " 0 U. ." , got " HEX VARX @
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+testcallsubsframe00uiufmakesureavailablermask
+
+
+// should be at least 4 floats and 6 ints available on both platforms
+CODE TESTCALLSUBSFRAME12UIUFMAKESUREAVAILABLERMASK ( -ret- )
+
+  FRAME-PARAMS< > // initializes depth... this is required for UNPRESERVE
+  1 2 UI-UF-MAKE-SURE-AVAILABLE-RMASK VARX !
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframe12uiufmakesureavailablermask
+    ." testing call subs frame 1 2 UI-UF-MAKE-SURE-AVAILABLE-RMASK "
+    VARX @ 0= IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " 0 U. ." , got " HEX VARX @
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+testcallsubsframe12uiufmakesureavailablermask
+
+
+// should be at least 4 floats and 6 ints available on both platforms
+CODE TESTCALLSUBSFRAME64UIUFMAKESUREAVAILABLERMASK ( -ret- )
+
+  FRAME-PARAMS< > // initializes depth... this is required for UNPRESERVE
+  6 4 UI-UF-MAKE-SURE-AVAILABLE-RMASK VARX !
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframe64uiufmakesureavailablermask
+    ." testing call subs frame 6 4 UI-UF-MAKE-SURE-AVAILABLE-RMASK "
+    VARX @ 0= IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " 0 U. ." , got " HEX VARX @
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+testcallsubsframe64uiufmakesureavailablermask
+
+
+// using all available regs to see allocation
+CODE TESTCALLSUBSFRAMEALLUSED00UIUFMAKESUREAVAILABLERMASK ( -ret- )
+
+  FRAME-PARAMS< > // initializes depth... this is required for UNPRESERVE
+  -1 PUSED-RMASK ! 
+  0 0  UI-UF-MAKE-SURE-AVAILABLE-RMASK VARX !
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframeallused00uiufmakesureavailablermask
+    ." testing call subs frame all used 0 0 UI-UF-MAKE-SURE-AVAILABLE-RMASK "
+    VARX @ 0= IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " 0 U. ." , got " HEX VARX @
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+testcallsubsframeallused00uiufmakesureavailablermask
+
+
+// using all available regs to see allocation
+CODE TESTCALLSUBSFRAMEALLUSED10UIUFMAKESUREAVAILABLERMASK ( -ret- )
+
+  FRAME-PARAMS< > // initializes depth... this is required for UNPRESERVE
+  -1 PUSED-RMASK ! 
+  1 0  UI-UF-MAKE-SURE-AVAILABLE-RMASK VARX !
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframeallused10uiufmakesureavailablermask
+    ." testing call subs frame all used 1 0 UI-UF-MAKE-SURE-AVAILABLE-RMASK "
+    VARX @ MUST-BE-PRESERVED-RMASK IALLOCATABLE-RMASK AND 1 ULO1BITS = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " MUST-BE-PRESERVED-RMASK IALLOCATABLE-RMASK AND 1 ULO1BITS U. ." , got " HEX VARX @ U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+testcallsubsframeallused10uiufmakesureavailablermask
+
+
+// using all available regs to see allocation
+CODE TESTCALLSUBSFRAMEALLUSED20UIUFMAKESUREAVAILABLERMASK ( -ret- )
+
+  FRAME-PARAMS< > // initializes depth... this is required for UNPRESERVE
+  -1 PUSED-RMASK ! 
+  2 0  UI-UF-MAKE-SURE-AVAILABLE-RMASK VARX !
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframeallused20uiufmakesureavailablermask
+    ." testing call subs frame all used 2 0 UI-UF-MAKE-SURE-AVAILABLE-RMASK "
+    VARX @ MUST-BE-PRESERVED-RMASK IALLOCATABLE-RMASK AND 2 ULO1BITS = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " MUST-BE-PRESERVED-RMASK IALLOCATABLE-RMASK AND 2 ULO1BITS U. ." , got " HEX VARX @ U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+testcallsubsframeallused20uiufmakesureavailablermask
+
+
+// using all available regs to see allocation
+CODE TESTCALLSUBSFRAMEALLUSED30UIUFMAKESUREAVAILABLERMASK ( -ret- )
+
+  FRAME-PARAMS< > // initializes depth... this is required for UNPRESERVE
+  -1 PUSED-RMASK ! 
+  3 0  UI-UF-MAKE-SURE-AVAILABLE-RMASK VARX !
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframeallused30uiufmakesureavailablermask
+    ." testing call subs frame all used 3 0 UI-UF-MAKE-SURE-AVAILABLE-RMASK "
+    VARX @ MUST-BE-PRESERVED-RMASK IALLOCATABLE-RMASK AND 3 ULO1BITS = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " MUST-BE-PRESERVED-RMASK IALLOCATABLE-RMASK AND 3 ULO1BITS U. ." , got " HEX VARX @ U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+testcallsubsframeallused30uiufmakesureavailablermask
+
+
+// using all available regs to see allocation
+CODE TESTCALLSUBSFRAMEALLUSED-1-1UIUFMAKESUREAVAILABLERMASK ( -ret- )
+
+  FRAME-PARAMS< > // initializes depth... this is required for UNPRESERVE
+  -1 PUSED-RMASK ! 
+  -1 -1  UI-UF-MAKE-SURE-AVAILABLE-RMASK VARX !
+   
+END-CODE
+
+X86-WORDLIST >SEARCH-ORDER
+: testcallsubsframeallused-1-1uiufmakesureavailablermask
+    ." testing call subs frame all used -1 -1 UI-UF-MAKE-SURE-AVAILABLE-RMASK "
+    VARX @ MUST-BE-PRESERVED-RMASK ALLOCATABLE-RMASK AND PARAMS-RMASK OR  = IF
+      ." SUCCESS!"
+    ELSE 
+       ." FAIL! expected " MUST-BE-PRESERVED-RMASK ALLOCATABLE-RMASK AND PARAMS-RMASK OR U. ." , got " HEX VARX @ U.
+    THEN
+    CRLF
+; 
+SEARCH-ORDER> DROP
+
+testcallsubsframeallused-1-1uiufmakesureavailablermask
+
+
+
+HEX
+CODE TESTCALLSUBSFRAMETRYMAKEAVAILABLETEST ( -ret- )
+  
+  ENTER-CALL-SUBS-FRAME,
+  FRAME-PARAMS< i0 i1 i2 i3 i4 i5 i6 i7 i8 FLOAT f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 > // initializes depth... this is required for UNPRESERVE
+  -1 -1 UI-UF-MAKE-SURE-AVAILABLE-RMASK  ( make all available case )  RMASK-CALL-SUBS-FRAME-PRESERVE, 
+  CALL-SUBS-FRAME-FAST-LOCALS,< fastlocal0 fastlocal1 FLOAT fastlocal2 fastlocal3 >
+ 
+  // telephone check of regs
+  //  doing ints
+  i0 RAX MOV, 
+  i1 i2 MOV, 
+  i2 i3 MOV,
+  i3 i4 MOV,
+  i4 i5 MOV,
+  i5 i6 MOV, 
+  i6 i7 MOV, 
+  i7 i8 MOV,
+  i8 fastlocal0 MOV,
+  fastlocal0 fastlocal1 MOV,
+  fastlocal1 RAX MOV,
+
+  //  int to float
+  fastlocal1 fastlocal2 MOVQ2,  // definitely reg to freg
+
+  //  doing floats
+  fastlocal2 fastlocal3 MOVQ,   // freg to freg
+  fastlocal3 f0 MOVQ,           // freg to mem
+  f0 f1 MOV,
+  f1 f2 MOV,
+  f2 f3 MOV,
+  f3 f4 MOV,
+  f4 f5 MOV,
+  f6 f7 MOV,
+  f7 f8 MOV,
+  f8 f9 MOV,
+
+  // float to int
+  f9 RAX MOV,  // mem to reg
+
+  // just unpreserving all that were preserved
+  PPRESERVED-RMASK @  RMASK-CALL-SUBS-FRAME-UNPRESERVE,
+  EXIT-CALL-SUBS-FRAME-NO-RET,
+  RET, 
+END-CODE
+
+
+HEX
+: testcallsubsframetrymakeavailabletest
+    ." testing  TESTCALLSUBSFRAMETRYMAKEAVAILABLETEST "
+    298345664 1 [']  TESTCALLSUBSFRAMETRYMAKEAVAILABLETEST >BODY CALLPROC DUP 298345664 = IF
+        DROP ." SUCCESS! "
+    ELSE 
+        ." FAIL! expected 0, got " HEX U.
+    THEN
+    CRLF
+; 
+
+
+// testcallsubsframetrymakeavailabletest
+
+
+
+// R>RMASK
+// R>RMASKPOS
+// RMASKPOS>R
+
+// RMASK-USE
+
+// R-USE
+//  USE-UNUSED-IRS< ... > <-- need this one mabye
+//  USE-UNUSED-FRS< ... > <-- need this one maybe
+
+
+
+CR ." ***********"
+CR ." Stack Check"
+CR .S
+CR
+
+

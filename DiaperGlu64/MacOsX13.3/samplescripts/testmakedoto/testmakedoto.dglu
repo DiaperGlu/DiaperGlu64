@@ -1,0 +1,79 @@
+( //////////////////////////////////////////////////////////////////////////////////////// )
+( //                                                                                       )
+( //    Copyright 2023 James Patrick Norris                                                )
+( //                                                                                       )
+( //    This file is part of Diaperglu 5.9.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.9 is free software; you can redistribute it and/or modify              )
+( //    it under the terms of the GNU General Public License as published by               )
+( //    the Free Software Foundation; either version 2 of the License, or                  )
+( //    {at your option} any later version.                                                )
+( //                                                                                       )
+( //    Diaperglu 5.9 is distributed in the hope that it will be useful,                   )
+( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
+( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
+( //    GNU General Public License for more details.                                       )
+( //                                                                                       )
+( //    You should have received a copy of the GNU General Public License                  )
+( //    along with Diaperglu 5.9; if not, write to the Free Software                       )
+( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
+( //                                                                                       )
+( //////////////////////////////////////////////////////////////////////////////////////// )
+
+( /////////////////////////////// )
+( // James Patrick Norris      // )
+( // www.rainbarrel.com        // )
+( // March 31, 2023            // )
+( // version 5.9               // )
+( /////////////////////////////// )
+
+
+PCURRENTCOMPILEBUFFER @ CONSTANT OLDCOMPILEBUFID
+
+
+// make new empty compile buffer
+
+HEX 10000 -1 NEWBUFFER CONSTANT TESTMAKEDOTOCOMPILEBUFID 
+TESTMAKEDOTOCOMPILEBUFID PCURRENTCOMPILEBUFFER ! 
+
+// making an hlist to hold a symbol list and making it the current elementid hlistid
+
+NEW-NGLULIST>EH
+
+
+// adding a root element to the current EH hlist
+//  this element is not used other than as a parent to the symbol elements
+
+$" testmakedotosymbols" 0 >NEW$ EH-NEW-ELEMENT>EH
+
+
+// adding the assembler to the search order
+
+X86-WORDLIST >SEARCH-ORDER
+
+
+HEX
+// showing two ways to add a symbol for the current compile buffer offset
+
+OHERE >NEW$ $" dg_firstfunction" EH-NEW-ELEMENT
+// OSYMBOL dg_firstfunction 
+  1122334455667788 N RAX MOV,
+  RET,
+
+OSYMBOL dg_secondfunction
+  1213141516171819 N RAX MOV,
+  RET,
+
+
+OLDCOMPILEBUFID PCURRENTCOMPILEBUFFER !
+
+
+// saving the compiled buffer in the mach-o .o format
+
+TESTMAKEDOTOCOMPILEBUFID EH> $" testmakedoto.o" BUF>.OFILE$
+
+
+
+
+     
+
