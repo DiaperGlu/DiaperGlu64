@@ -3,20 +3,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.9.
+//    This file is part of DiaperGlu v5.10.
 //
-//    DiaperGlu v5.9 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.10 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.9 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.10 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.9; if not, write to the Free Software
+//    along with DiaperGlu v5.10; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// March 31, 2023             //
-// version 5.9                //
+// May 5, 2023                //
+// version 5.10               //
 // /////////////////////////////
 -->
 
@@ -62,6 +62,8 @@
       <a href=usingcgi.htm#macosx                             >Mac OS X Apache</a>
       <a href=usingcgi.htm#windows10iis                       >Windows 10 IIS</a>
       <a                                                      >&nbsp;</a>
+      <a href=usingcgi.htm#cacheproblem                       >Browser Cache Problem</a>
+      <a href=usingcgi.htm#htmlformvariables                  >HTML Form Variables</a>
       <a href=usingcgi.htm#filedownload                       >Downloading Files</a>
       <a href=usingcgi.htm#fileupload                         >Uploading Files</a>
       <a href=usingcgi.htm#runmodes                           >Other Ways of Running</a>
@@ -145,6 +147,7 @@ Note:
 
  You may need to change the permissions of the helloworld.dglu to execute.
  (I didn't need to do this on Catalina.)
+ (I did need to do this on Ventura.)
   open a terminal
   change to the /Library/WebServer/CGI-Executables directory
   and do chmod +x helloworld.dglu 
@@ -164,6 +167,11 @@ You should also be able to browse to this:
 If you see the message diaperglu^M bad interpreter message with the
  /cgi-bin/helloworld.dglu way of running it, that means your script file has
 the control m characters at the end of the lines.
+
+If you see a message about a problem loading the page and to contact your
+system administrator, you may need to give execute permissions to helloworld.dglu
+
+If you want your page to load faster, you can try using nodiaperglu instead of diaperglu
  
 For more information on how to configure Apache to use cgi, you can look here:
  https://httpd.apache.org/docs/2.4/howto/cgi.html  (link checked April 16, 2020)
@@ -411,6 +419,107 @@ You should also be able to use libdiaperglu to run script files this way.... on 
 </pre>
 
       </div>
+
+      <div class=pagestuffsection id=cacheproblem>
+      
+        <h3>Browser Cache Problem</h3>
+
+        <p>Browsers cache pages to speed up loading. You probably don't want this for any of your pages which have content that changes, which is probably all of them if you are using a script engine like DiaperGlu to generate them. It took me awhile to find a header that worked on different browsers and here it is:</p>
+
+        <p class=command>
+          .&quot; CONTENT-TYPE: text/html&quot; CRLF<br> 
+          .&quot; Cache-Control: no-cache, must-revalidate&quot; CRLF<br>
+          .&quot; Expires: Mon, 12 Jul 1997 05:00:00 GMT&quot; CRLF<br>
+          CRLF<br>
+        </p>
+        
+      </div>
+
+
+      <div class=pagestuffsection id=htmlformvariables>
+      
+        <h3>HTML Form Variables</h3>
+
+        <p>HTML Forms pass their variables in a form string containing a series of name$=value$ pairs. Each name$=value$ pair is
+          separated with the &amp; character. Each name$ is separated from it's value$ with the = character.
+          Each name string and value string is url encoded, which means any spaces are converted to the + character and
+          certain control characters are converted to %xx where xx is the hexadecimal ascii code for the character.</p>
+
+        <p>HTML Forms have two methods for passing form strings called 'get' and 'post'. 
+          The get method appends a ? character to the URL with the form string after that. 
+          The post method passes the form string in a way that does not show up in the url.
+          It's been a long time since I wrote the code, but it looks like sometimes post
+          passes the form string in a method similar to a file download.</p>
+
+        <p>ISAPI and Apache have different methods for getting the get and post strings. 
+          DiaperGlu deals with all the different ways they are passed in a platform independent
+          way. 
+          For the post method, DiaperGlu copies the post method's form string to a buffer with a buffer id named POSTBUFFERID. 
+          Or you can use GETPOST$ to push a copy of the post buffer to the string stack. 
+          For the get method, the get method's form string is available as an environment variable. 
+          GETQUERY$ will push a copy of the get method's form string to the string stack.</p>
+
+        <p>DiaperGlu has a few words to help deal with form strings. Here are some of them:</p>
+        <p>
+          <ul>
+            <li>
+              <a href=forthhierarchicallist.htm#dg_forthnewhlistwithroottoeh>
+              NEW-HLISTWITHROOT&gt;EH</a> will make a new hlist, and a root element, and push the
+              elementid hlistid of the root element to the EH stack.
+            </li>
+            <li>
+              <a href=forthstringstack.htm#dg_forthgetquerystring>GETQUERY$</a> will push
+              a copy of the form variable string passed using the get method to the string stack.
+            </li>
+            <li>
+              <a href=forthstringstack.htm#dg_forthgetpoststring>GETPOST$</a> will push
+              a copy of the form variable string passed using the get method to the string stack.
+            </li>
+            <li>
+              <a href=forthstringstack.htm#dg_forthformstringtovaluestringnamestringu>
+              FORM$&gt;VALUE$NAME$U</a> will break a form string up into
+              u value$ name$ pairs and URLDECODE$ them.
+            </li>
+            <li>
+              <a href=forthhierarchicallist.htm#dg_forthehnewelements>
+              EH-NEW-ELEMENTS</a> will add u value$ name$ pairs as children to an element
+              in an hlist.
+            </li>
+            <li>
+              <a href=forthhierarchicallist.htm#dg_forthquerypostehnewelements>
+              QUERY-POST-EH-NEW-ELEMENTS</a> will decode both the get and post form strings, 
+              and add the extracted name$ value$ pairs as children to the element and hlist
+              on top of the EH stack.
+            </li>
+            <li>
+               EH <a href=forthhierarchicallist.htm#dg_forthfindhlistchild>
+               FIND-ELEMENT-CHILD-BY-NAME$</a> ENDOFWORDLIST &lt;&gt; will determine if a
+               child element with the given name$ exists in the child list of the element
+               and hlist on top of the EH stack.
+            </li>
+            <li>
+               <a href=forthhierarchicallist.htm#dg_forthehnamestrtovaluestr>
+               EH-NAME$&gt;VALUE$</a> gets the value$ for a given name$ in the child list
+               of the element and hlist on top of the EH stack. If a child with that name
+               does not exist, an error is pushed to the error stack. You will probably 
+               want to use FIND-ELEMENT-CHILD-BY-NAME$ to determine if the child exists 
+               first before using this word, or just use ?NAME$&gt;VALUE$.
+            </li>
+            <li>
+               <a href=forthhierarchicallist.htm#dg_forthehquerynamestrtovaluestr>
+               EH-?NAME$&gt;VALUE$</a> gets the value$ for a given name$ in the child list
+               of the element and hlist on top of the EH stack. If a child with that name
+               does not exist, FALSE is pushed to the data stack and no value$ is pushed.
+               If a child with that name exists, then TRUE is pushed to the data stack,
+               and the value$ of the newest child with that name is pushed to the string
+               stack.
+            </li>
+          </ul>
+        </p>
+         
+        <p>You might also be able to deal with the get and post method's form strings directly.</p>
+    
+      </div>
       
       
       <div class=pagestuffsection id=filedownload>
@@ -465,7 +574,7 @@ buffer data yourself.</p>
       
         <h3>Different Ways to Run Diaperglu</h3>
         
-        <p>You can put the Diaperglu in your cgi-bin directory and use it to run script files
+        <p>You can put Diaperglu in your cgi-bin directory and use it to run script files
 directly. I added this for those cases where your ISP does not
 allow you to associate a file extension with a script engine. If
 you do this, the script engine supports the following:</p>
@@ -500,6 +609,8 @@ This allows you to pass other parameters in to Diaperglu, and even do something 
 but takes the path information from SCRIPT_FILENAME. This means scriptfilename.dglu's path has to be relative to
 the directory containing Diaperglu. You may run into some security issues on Catalina if you try to put the
 script files in a directory different from Diaperglu...</p>
+
+<p>Under Apache and Ventura using the default Apache configuration with cgi enabled, files in the cgi-bin directory are not directly accessible from the browser. This means you can't put things like audio files in the cgi-bin directory and have the audio tag or a direct url load them. The documents directory is accessible though, and data files will work there. The URL do the documents directory is http://localhost/ </p>
 
       </div>
       

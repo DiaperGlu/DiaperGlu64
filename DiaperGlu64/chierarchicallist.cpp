@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.9.
+//    This file is part of DiaperGlu v5.10.
 //
-//    DiaperGlu v5.9 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.10 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.9 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.10 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.9; if not, write to the Free Software
+//    along with DiaperGlu v5.10; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// March 31, 2023             //
-// version 5.9                //
+// May 5, 2023                //
+// version 5.10               //
 // /////////////////////////////
 
 
@@ -4924,6 +4924,85 @@ UINT64 dg_unpackhlist (
 
     return (hlistid);
 }
+
+
+const char dg_namestringtovaluestringflagname[] = "dg_namestringtovaluestringflag";
+
+unsigned char* dg_namestringtovaluestringflag(
+    Bufferhandle* pBHarrayhead,
+    UINT64 hlistid,
+    UINT64 elementid,
+    unsigned char* pname,
+    UINT64 namelength,
+    UINT64* pvaluelength,
+    UINT64* pwherefoundflag)
+{
+    UINT64 indexofkeyaftermatch, sortkey;
+    unsigned char* pvalue = (unsigned char*)dg_emptystring;
+    const char* pError;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return(pvalue);
+    }
+    
+    pError = dg_putuint64(pvaluelength, 0);
+    
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_putuint64name);
+        dg_pusherror(pBHarrayhead, dg_namestringtovaluestringname);
+        return(pvalue);
+    }
+
+    pError = dg_putuint64(pwherefoundflag, 1); // item to find is > than imaginary empty string
+    
+    if (pError != dg_success)
+    {
+        dg_pusherror(pBHarrayhead, pError);
+        dg_pusherror(pBHarrayhead, dg_putuint64name);
+        dg_pusherror(pBHarrayhead, dg_namestringtovaluestringname);
+        return(pvalue);
+    }
+    
+    *pwherefoundflag = dg_findsortedhlistchild (
+        pBHarrayhead,
+        pname,
+        namelength,
+        hlistid,
+        elementid,
+        &indexofkeyaftermatch, // index in sort key lstring after match
+        &sortkey);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_namestringtovaluestringname);
+        return(pvalue);
+    }
+    
+    if (*pwherefoundflag != 0)
+    {
+        return(pvalue); // not found case
+    }
+    
+    pvalue = dg_getshlistelementvalue (
+        pBHarrayhead,
+        hlistid,
+        sortkey,
+        pvaluelength);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_namestringtovaluestringname);
+        return(pvalue);
+    }
+    
+    return(pvalue);
+}
+
 
 const char dg_namestringtovaluestringname[] = "dg_namestringtovaluestring";
 

@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.9.
+//    This file is part of DiaperGlu v5.10.
 //
-//    DiaperGlu v5.9 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.10 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.9 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.10 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.9; if not, write to the Free Software
+//    along with DiaperGlu v5.10; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// March 31, 2023             //
-// version 5.9                //
+// May 5, 2023                //
+// version 5.10               //
 // /////////////////////////////
 
 #if !defined(_INC_diapergluforth)
@@ -647,7 +647,7 @@ enum dg_cpux86regs {
 #define dg_presortedenvwordlistsize (21)
 // #define dg_presortedstringwordlistsize (0)
 // #define dg_presortederrorwordlistsize (0)
-#define dg_prestoredbufferwordlistsize (656)
+#define dg_prestoredbufferwordlistsize (671)
 // #define dg_presortedoswordlistsize (0)
 #define dg_presortedx86wordlistsize (1310)
 
@@ -834,6 +834,8 @@ enum dg_cpux86regs {
         DG_PARAMCALLADDRESS
     };
     
+    // Empty string
+    DGLU_API extern const unsigned char dg_emptystring[];
 
     // General error and success messages
     DGLU_API extern const char dg_success[];
@@ -1739,7 +1741,22 @@ enum dg_cpux86regs {
     DGLU_API extern const char dg_forthulobitsname[];
     DGLU_API extern const char dg_forthulomaskname[];
     DGLU_API extern const char dg_forthtwototheuname[];
-    
+
+    DGLU_API extern const char dg_forthbitsetname[];
+    DGLU_API extern const char dg_forthbitclrname[];
+    DGLU_API extern const char dg_forthbitnotname[];
+
+    DGLU_API extern const char dg_forthumaxname[];
+    DGLU_API extern const char dg_forthuminname[];
+
+    DGLU_API extern const char dg_forthulessthanequalsname[];
+    DGLU_API extern const char dg_forthugreaterthanequalsname[];
+
+    DGLU_API extern const char dg_forthgetpoststringname[];
+    DGLU_API extern const char dg_forthqueryzerostringtostringname[];
+
+    DGLU_API extern const char dg_forthformstringtovaluestringnamestringuname[];
+       
     DGLU_API extern const char dg_forthmicrosecondssince1970jan01name[];
     
     DGLU_API extern const char dg_forthtouleb128name[];
@@ -2323,6 +2340,8 @@ enum dg_cpux86regs {
     DGLU_API extern const char dg_forthehnewelementname[];
     DGLU_API extern const char dg_forthehnewelementtoehname[];
     DGLU_API extern const char dg_forthnamestrtovaluestrname[];
+    DGLU_API extern const char dg_forthquerynamestrtovaluestrname[];
+    DGLU_API extern const char dg_forthehquerynamestrtovaluestrname[];
     DGLU_API extern const char dg_forthnamestrtovaluename[];
     DGLU_API extern const char dg_forthehnamestrtovaluestrname[];
     DGLU_API extern const char dg_forthehnamestrtovaluename[];
@@ -2339,6 +2358,9 @@ enum dg_cpux86regs {
     DGLU_API extern const char dg_forthnewflatosymbolbufname[];
     DGLU_API extern const char dg_forthfreeflatosymbolbufname[];
     DGLU_API extern const char dg_forthosymbolimportname[];
+    DGLU_API extern const char dg_forthehnewelementsname[];
+    DGLU_API extern const char dg_forthnewhlistwithroottoehname[];
+    DGLU_API extern const char dg_forthquerypostehnewelementsname[];
     
     DGLU_API extern const char dg_wordlisthlistidname[];
     DGLU_API extern const char dg_stringhlistidname[];
@@ -5758,6 +5780,18 @@ enum dg_cpux86regs {
     DGLU_API UINT64 dg_unpackhlist (
         Bufferhandle* pBHarrayhead,
         UINT64 lstringstringbufferid);
+
+
+   DGLU_API extern const char dg_namestringtovaluestringflagname[];
+
+   DGLU_API unsigned char* dg_namestringtovaluestringflag(
+       Bufferhandle* pBHarrayhead,
+       UINT64 hlistid,
+       UINT64 elementid,
+       unsigned char* pname,
+       UINT64 namelength,
+       UINT64* pvaluelength,
+       UINT64* pwherefoundflag);
     
     
     DGLU_API extern const char dg_namestringtovaluestringname[];
@@ -8152,6 +8186,19 @@ enum dg_cpux86regs {
     DGLU_API void dg_forthulobits (Bufferhandle* pBHarrayhead);
     DGLU_API void dg_forthulomask (Bufferhandle* pBHarrayhead);
     DGLU_API void dg_forthtwototheu (Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthbitset (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthbitclr (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthbitnot (Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthumax (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthumin (Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthulessthanequals (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthugreaterthanequals (Bufferhandle* pBHarrayhead);
+
+    
+    DGLU_API void dg_forthqueryposttoeh (Bufferhandle* pBHarrayhead);
     
     DGLU_API void dg_forthmicrosecondssince1970jan01(Bufferhandle* pBHarrayhead);
     
@@ -8243,6 +8290,13 @@ enum dg_cpux86regs {
     DGLU_API void dg_forthshowlibrarystring (Bufferhandle* pBHarrayhead);
 
     DGLU_API void dg_forthfindlibrarysymbol (Bufferhandle* pBHarrayhead);
+
+    // cgi
+    DGLU_API void dg_forthgetpoststring (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthqueryzerostringtostring (Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthformstringtovaluestringnamestringu (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthqueryposttonewhlisttoeh(Bufferhandle* pBHarrayhead);
 
     // Windows specific
     /*
@@ -8514,6 +8568,11 @@ enum dg_cpux86regs {
     // ////////////////////////////////////
     // Forth Hierarchical List Routines  //
     // ////////////////////////////////////
+
+    struct dg_eh {
+        UINT64 elementid;
+        UINT64 hlistid;
+    };
     
     DGLU_API void dg_forthnewhlist (Bufferhandle* pBHarrayhead);
     
@@ -8558,6 +8617,10 @@ enum dg_cpux86regs {
     DGLU_API void dg_forthunpackhlist(Bufferhandle* pBHarrayhead);
     
     DGLU_API void dg_forthnamestrtovaluestr(Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthquerynamestrtovaluestr(Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthehquerynamestrtovaluestr(Bufferhandle* pBHarrayhead);
     
     DGLU_API void dg_forthnamestrtovalue(Bufferhandle* pBHarrayhead);
     
@@ -8608,6 +8671,12 @@ enum dg_cpux86regs {
     DGLU_API void dg_forthfreeflatosymbolbuf(Bufferhandle* pBHarrayhead);
     
     DGLU_API void dg_forthosymbolimport(Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthehnewelements(Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthnewhlistwithroottoeh(Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthquerypostehnewelements(Bufferhandle* pBHarrayhead);
  
     
     struct CompareNameData {

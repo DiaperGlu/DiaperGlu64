@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.9.
+//    This file is part of DiaperGlu v5.10.
 //
-//    DiaperGlu v5.9 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.10 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.9 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.10 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.9; if not, write to the Free Software
+//    along with DiaperGlu v5.10; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// March 31, 2023             //
-// version 5.9                //
+// May 5, 2023                //
+// version 5.10               //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -10436,4 +10436,2113 @@ void testdg_forthbrackettoorderconstant ()
 
     dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
 }
+
+
+void testdg_forthbitset ()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 x;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthbitset\n");
+
+    // success case 0 0
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset 0 0 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset 0 0 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthbitset(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset 0 0 success case - got an error doing dg_forthbitset\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset 0 0 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset 0 0 success case - got wrong result, expected 1, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+    
+    // success case 0 1
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset 0 1 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 1);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset 0 1 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthbitset(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset 0 1 success case - got an error doing dg_forthbitset\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset 0 1 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset 0 1 success case - got wrong result, expected 2, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case 0 2
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset 0 2 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 2);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset 0 2 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthbitset(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset 0 2 success case - got an error doing dg_forthbitset\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset 0 2 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset 0 2 success case - got wrong result, expected 4, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case 1 3
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 1);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset 1 3 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 3);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset 1 3 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthbitset(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset 1 3 success case - got an error doing dg_forthbitset\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset 1 3 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != 9)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset 1 3 success case - got wrong result, expected 9, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case 8 3
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 8);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset 8 3 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 3);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset 8 3 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthbitset(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset 8 3 success case - got an error doing dg_forthbitset\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset 8 3 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset 8 3 success case - got wrong result, expected 8, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case -1 3
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, (UINT64)-1);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset -1 3 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 3);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset -1 3 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthbitset(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset -1 3 success case - got an error doing dg_forthbitset\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset -1 3 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != (UINT64)-1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitset -1 3 success case - got wrong result, expected -1, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_forthbitclr ()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 x;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthbitclr\n");
+
+    // success case 0 0
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitclr 0 0 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitclr 0 0 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthbitclr(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitclr 0 0 success case - got an error doing dg_forthbitset\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitclr 0 0 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitclr 0 0 success case - got wrong result, expected 0, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case -1 0
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0xFFFFFFFFFFFFFFFF);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitclr -1 0 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitclr -1 0 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthbitclr(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitclr -1 0 success case - got an error doing dg_forthbitset\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitclr -1 0 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != 0xFFFFFFFFFFFFFFFE)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitclr -1 0 success case - got wrong result, expected -2, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case -1 1
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0xFFFFFFFFFFFFFFFF);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitclr -1 1 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 1);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitclr -1 1 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthbitclr(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitclr -1 1 success case - got an error doing dg_forthbitset\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitclr -1 1 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != 0xFFFFFFFFFFFFFFFD)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitclr -1 1 success case - got wrong result, expected -3, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case -1 2
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0xFFFFFFFFFFFFFFFF);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitclr -1 2 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 2);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitclr -1 2 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthbitclr(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitclr -1 2 success case - got an error doing dg_forthbitclr\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitclr -1 2 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != 0xFFFFFFFFFFFFFFFB)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitclr -1 2 success case - got wrong result, expected -5, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case -5 2
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0xFFFFFFFFFFFFFFFB);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitclr -5 2 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 2);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitclr -5 2 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthbitclr(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitclr -5 2 success case - got an error doing dg_forthbitset\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitclr -5 2 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != 0xFFFFFFFFFFFFFFFB)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitclr -5 2 success case - got wrong result, expected -5, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_forthbitnot ()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 x;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthbitnot\n");
+
+    // success case 0 0
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot 0 0 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot 0 0 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthbitnot(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot 0 0 success case - got an error doing dg_forthbitnot\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot 0 0 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot 0 0 success case - got wrong result, expected 1, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case 0 1
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot 0 1 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 1);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot 0 1 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthbitnot(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot 0 1 success case - got an error doing dg_forthbitnot\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot 0 1 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot 0 1 success case - got wrong result, expected 2, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case 2 1
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 2);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot 2 1 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 1);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot 2 1 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthbitnot(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot 2 1 success case - got an error doing dg_forthbitnot\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot 2 1 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot 2 1 success case - got wrong result, expected 0, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case 0 2
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot 0 2 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 2);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot 0 2 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthbitnot(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot 0 2 success case - got an error doing dg_forthbitnot\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot 0 2 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot 0 2 success case - got wrong result, expected 4, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case -1 0
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0xFFFFFFFFFFFFFFFF);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot -1 0 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot -1 0 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthbitnot(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot -1 0 success case - got an error doing dg_forthbitnot\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot -1 0 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != 0xFFFFFFFFFFFFFFFE)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot -1 0 success case - got wrong result, expected -2, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case -2 0
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0xFFFFFFFFFFFFFFFE);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot -2 0 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot -2 0 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthbitnot(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot -2 0 success case - got an error doing dg_forthbitnot\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot -2 0 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != 0xFFFFFFFFFFFFFFFF)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot -2 0 success case - got wrong result, expected -1, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case -1 1
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0xFFFFFFFFFFFFFFFF);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot -1 1 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 1);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot -1 1 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthbitnot(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot -1 1 success case - got an error doing dg_forthbitnot\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot -1 1 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != 0xFFFFFFFFFFFFFFFD)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthbitnot -1 1 success case - got wrong result, expected -3, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+    
+}
+
+
+void testdg_forthumax ()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 x;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthumax\n");
+
+    // success case 0 0
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumax 0 0 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumax 0 0 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthumax(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumax 0 0 success case - got an error doing dg_forthumax\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumax 0 0 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumax 0 0 success case - got wrong result, expected 0, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case 0 1
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumax 0 1 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 1);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumax 0 1 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthumax(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumax 0 1 success case - got an error doing dg_forthumax\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumax 0 1 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumax 0 1 success case - got wrong result, expected 1, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case 1 0
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 1);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumax 1 0 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumax 1 0 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthumax(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumax 1 0 success case - got an error doing dg_forthumax\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumax 1 0 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumax 1 0 success case - got wrong result, expected 1, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case -1 0
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0xFFFFFFFFFFFFFFFF);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumax -1 0 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumax -1 0 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthumax(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumax -1 0 success case - got an error doing dg_forthumax\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumax -1 0 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != 0xFFFFFFFFFFFFFFFF)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumax -1 0 success case - got wrong result, expected -1, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case 0 -1
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumax 0 -1 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0xFFFFFFFFFFFFFFFF);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumax 0 -1 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthumax(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumax 0 -1 success case - got an error doing dg_forthumax\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumax 0 -1 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != 0xFFFFFFFFFFFFFFFF)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumax 0 -1 success case - got wrong result, expected -1, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+    
+}
+
+
+
+void testdg_forthumin ()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 x;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthumin\n");
+
+    // success case 0 0
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin 0 0 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin 0 0 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthumin(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin 0 0 success case - got an error doing dg_forthumin\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin 0 0 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin 0 0 success case - got wrong result, expected 0, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case 0 1
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin 0 1 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 1);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin 0 1 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthumin(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin 0 1 success case - got an error doing dg_forthumin\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin 0 1 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin 0 1 success case - got wrong result, expected 0, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case 1 0
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 1);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin 1 0 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin 1 0 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthumin(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin 1 0 success case - got an error doing dg_forthumin\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin 1 0 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin 1 0 success case - got wrong result, expected 0, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case -1 0
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0xFFFFFFFFFFFFFFFF);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin -1 0 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin -1 0 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthumin(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin -1 0 success case - got an error doing dg_forthumin\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin -1 0 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin -1 0 success case - got wrong result, expected 0, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case 0 -1
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin 0 -1 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0xFFFFFFFFFFFFFFFF);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin 0 -1 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthumin(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin 0 -1 success case - got an error doing dg_forthumin\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin 0 -1 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin 0 -1 success case - got wrong result, expected 0, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case 1 2
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 1);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin 1 2 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 2);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin 1 2 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthumin(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin 1 2 success case - got an error doing dg_forthumin\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin 1 2 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthumin 1 2 success case - got wrong result, expected 1, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+    
+    
+}
+
+
+void testdg_forthulessthanequals ()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 x;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthulessthanequals\n");
+
+    // success case 0 0
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals 0 0 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals 0 0 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthulessthanequals(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals 0 0 success case - got an error doing dg_forthulessthanequals\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals 0 0 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != FORTH_TRUE)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals 0 0 success case - got wrong result, expected true, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case 0 1
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals 0 1 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 1);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals 0 1 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthulessthanequals(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals 0 1 success case - got an error doing dg_forthulessthanequals\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals 0 1 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != FORTH_TRUE)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals 0 1 success case - got wrong result, expected true, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case 1 0
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 1);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals 1 0 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals 1 0 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthulessthanequals(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals 1 0 success case - got an error doing dg_forthulessthanequals\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals 1 0 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != FORTH_FALSE)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals 1 0 success case - got wrong result, expected false, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case -1 0
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0xFFFFFFFFFFFFFFFF);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals -1 0 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals -1 0 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthulessthanequals(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals -1 0 success case - got an error doing dg_forthulessthanequals\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals -1 0 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != FORTH_FALSE)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals -1 0 success case - got wrong result, expected false, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case 0 -1
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals 0 -1 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0xFFFFFFFFFFFFFFFF);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals 0 -1 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthulessthanequals(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals 0 -1 success case - got an error doing dg_forthulessthanequals\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals 0 -1 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != FORTH_TRUE)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals 0 -1 success case - got wrong result, expected true, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case -1 -1
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0xFFFFFFFFFFFFFFFF);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals -1 -1 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0xFFFFFFFFFFFFFFFF);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals -1 -1 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthulessthanequals(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals -1 -1 success case - got an error doing dg_forthulessthanequals\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals -1 -1 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != FORTH_TRUE)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals -1 -1 success case - got wrong result, expected true, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case -2 -1
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0xFFFFFFFFFFFFFFFE);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals -2 -1 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0xFFFFFFFFFFFFFFFF);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals -2 -1 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthulessthanequals(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals -2 -1 success case - got an error doing dg_forthulessthanequals\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals -2 -1 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != FORTH_TRUE)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals -2 -1 success case - got wrong result, expected true, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case -1 -2
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0xFFFFFFFFFFFFFFFF);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals -1 -2 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0xFFFFFFFFFFFFFFFE);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals -1 -2 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthulessthanequals(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals -1 -2 success case - got an error doing dg_forthulessthanequals\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals -1 -2 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != FORTH_FALSE)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthulessthanequals -1 -2 success case - got wrong result, expected false, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+    
+}
+
+
+void testdg_forthugreaterthanequals ()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 x;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthugreaterthanequals\n");
+
+    // success case 0 0
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 0 0 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 0 0 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthugreaterthanequals(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 0 0 success case - got an error doing dg_forthugreaterthanequals\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 0 0 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != FORTH_TRUE)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 0 0 success case - got wrong result, expected true, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case 0 1
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 0 1 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 1);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 0 1 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthugreaterthanequals(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 0 1 success case - got an error doing dg_forthugreaterthanequals\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 0 1 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != FORTH_FALSE)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 0 1 success case - got wrong result, expected false, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case 1 0
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 1);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 1 0 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 1 0 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthugreaterthanequals(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 1 0 success case - got an error doing dg_forthugreaterthanequals\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 1 0 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != FORTH_TRUE)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 1 0 success case - got wrong result, expected true, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case -1 0
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0xFFFFFFFFFFFFFFFF);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals -1 0 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals -1 0 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthugreaterthanequals(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals -1 0 success case - got an error doing dg_forthugreaterthanequals\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals -1 0 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != FORTH_TRUE)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals -1 0 success case - got wrong result, expected true, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case 0 -1
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 0 -1 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0xFFFFFFFFFFFFFFFF);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 0 -1 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthugreaterthanequals(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 0 -1 success case - got an error doing dg_forthugreaterthanequals\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 0 -1 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != FORTH_FALSE)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 0 -1 success case - got wrong result, expected false, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case -1 -1
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0xFFFFFFFFFFFFFFFF);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals -1 -1 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0xFFFFFFFFFFFFFFFF);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals -1 -1 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthugreaterthanequals(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals -1 -1 success case - got an error doing dg_forthugreaterthanequals\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals -1 -1 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != FORTH_TRUE)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals -1 -1 success case - got wrong result, expected true, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case 1 2
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 1);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 1 2 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 2);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 1 2 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthugreaterthanequals(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 1 2 success case - got an error doing dg_forthugreaterthanequals\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 1 2 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != FORTH_FALSE)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 1 2 success case - got wrong result, expected false, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // success case 2 1
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 2);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 2 1 success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 1);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 2 1 success case - got error pushing to data stack\n");
+        return;
+    }
+    
+    dg_forthugreaterthanequals(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 2 1 success case - got an error doing dg_forthugreaterthanequals\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 2 1 success case - got an error popping datastack\n" );
+    }
+ 
+    if (x != FORTH_TRUE)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthugreaterthanequals 2 1 success case - got wrong result, expected true, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+}
+
+
+
+
+
+
+
 

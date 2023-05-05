@@ -3,20 +3,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.9.
+//    This file is part of DiaperGlu v5.10.
 //
-//    DiaperGlu v5.9 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.10 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.9 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.10 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.9; if not, write to the Free Software
+//    along with DiaperGlu v5.10; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// March 31, 2023             //
-// version 5.9                //
+// May 5, 2023                //
+// version 5.10               //
 // /////////////////////////////
 -->
 
@@ -3760,6 +3760,13 @@
         </tr>
 
         <tr>
+          <td>GETPOST$</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthstringstack.htm#dg_forthgetpoststring>dg_forthgetpoststring</a></td>
+        </tr>
+
+        <tr>
           <td>CSCAN$</td>
           <td>calls x</td> 
           <td>compiles a call to x</td>
@@ -4061,6 +4068,20 @@
         </tr>
 
         <tr>
+          <td>?0$&gt;$</td>
+          <td>calls x</td>
+          <td>compiles a call to x</td>
+          <td><a href=forthstringstack.htm#dg_forthqueryzerostringtostring>dg_forthqueryzerostringtostring</a></td>
+        </tr>
+
+        <tr>
+          <td>FORM$&gt;VALUE$NAME$U</td>
+          <td>calls x</td>
+          <td>compiles a call to x</td>
+          <td><a href=forthstringstack.htm#dg_forthformstringtovaluestringnamestringu>dg_forthformstringtovaluestringnamestringu</a></td>
+        </tr>
+
+        <tr>
           <td>LOADLIBRARY$</td>
           <td>calls x</td> 
           <td>compiles a call to x</td>
@@ -4339,6 +4360,20 @@
           <td>compiles a call to x</td>
           <td><a href=forthhierarchicallist.htm#dg_forthnamestrtovaluestr>dg_forthnamestrtovaluestr</a></td>
         </tr>
+
+        <tr>
+          <td>?NAME$&gt;VALUE$</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthhierarchicallist.htm#dg_forthquerynamestrtovaluestr>dg_forthquerynamestrtovaluestr</a></td>
+        </tr>
+
+        <tr>
+          <td>EH-?NAME$&gt;VALUE$</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthhierarchicallist.htm#dg_forthehquerynamestrtovaluestr>dg_forthehquerynamestrtovaluestr</a></td>
+        </tr>
         
         <tr>
           <td>NAME$&gt;VALUE</td>
@@ -4394,6 +4429,27 @@
           <td>calls x</td> 
           <td>compiles a call to x</td>
           <td><a href=forthhierarchicallist.htm#dg_forthehoherewtonewelement>dg_forthehoherewtonewelement</a></td>
+        </tr>
+
+        <tr>
+          <td>EH-NEW-ELEMENTS</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthhierarchicallist.htm#dg_forthehnewelements>dg_forthehnewelements</a></td>
+        </tr>
+
+        <tr>
+          <td>NEW-HLISTWITHROOT&gt;EH</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthhierarchicallist.htm#dg_forthnewhlistwithroottoeh>dg_forthnewhlistwithroottoeh</a></td>
+        </tr>
+
+        <tr>
+          <td>QUERY-POST-EH-NEW-ELEMENTS</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthhierarchicallist.htm#dg_forthquerypostehnewelements>dg_forthquerypostehnewelements</a></td>
         </tr>
 
       </table>
@@ -5527,6 +5583,55 @@
           <td>calls x</td> 
           <td>compiles a call to x</td>
           <td><a href=forthmiscellaneous.htm#dg_forthtwototheu>dg_forthtwototheu</a></td>
+        </tr>
+
+        <tr>
+          <td>BITSET</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthbitset>dg_forthbitset</a></td>
+        </tr>
+
+        <tr>
+          <td>BITCLR</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthbitclr>dg_forthbitclr</a></td>
+        </tr>
+
+        <tr>
+          <td>BITNOT</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthbitnot>dg_forthbitnot</a></td>
+        </tr>
+
+        <tr>
+          <td>UMAX</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthumax>dg_forthumax</a></td>
+        </tr>
+
+        <tr>
+          <td>UMIN</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthumin>dg_forthumin</a></td>
+        </tr>
+
+        <tr>
+          <td>U&lt;=</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthulessthanequals>dg_forthulessthanequals</a></td>
+        </tr>
+
+        <tr>
+          <td>U&gt;=</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthugreaterthanequals>dg_forthugreaterthanequals</a></td>
         </tr>
         
         <tr>

@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.9.
+//    This file is part of DiaperGlu v5.10.
 //
-//    DiaperGlu v5.9 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.10 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.9 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.10 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.9; if not, write to the Free Software
+//    along with DiaperGlu v5.10; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// March 31, 2023             //
-// version 5.9                //
+// May 5, 2023                //
+// version 5.10               //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -12308,6 +12308,1817 @@ void testdg_forthulexnorstring()
 
     dg_freeallbuffers(&BHarrayhead);
 }
+
+
+void testdg_forthgetpoststring ()
+{
+    unsigned char* plstring;
+    UINT64 lstringlength;
+
+    UINT64 stringstackdepth;
+
+    Bufferhandle BHarrayhead;
+ 
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthgetpoststring\n");
+
+    // success case
+    dg_initbuffers(&BHarrayhead);
+     
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetpoststring success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushbuffersegment (
+        &BHarrayhead,
+        DG_POST_BUFFERID,
+        5, // length,
+        (unsigned char*)"stuff");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetpoststring success case - got error pushing to post buffer\n");
+        return;
+    }
+
+    dg_forthgetpoststring(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetpoststring success case - error doing copying post buffer to string stack\n");
+        return;
+    }
+
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetpoststring success case - error getting string stack depth\n");
+        return;
+    }
+
+    if (stringstackdepth != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetpoststring success case - string stack depth not correct\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetpoststring success case - error getting pointer to string stack top string\n");
+        return;
+    }
+
+    if (lstringlength != 5)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetpoststring success case - string length not correct\n");
+        return;
+    }
+
+    if (plstring[0] != 's')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetpoststring success case - string[0] incorrect\n");
+        return;
+    }
+
+    if (plstring[1] != 't')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetpoststring success case - string[1] incorrect\n");
+        return;
+    }
+
+    if (plstring[2] != 'u')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetpoststring success case - string[2] incorrect\n");
+        return;
+    }
+
+    if (plstring[3] != 'f')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetpoststring success case - string[3] incorrect\n");
+        return;
+    }
+
+    if (plstring[4] != 'f')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetpoststring success case - string[4] incorrect\n");
+        return;
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+}
+
+void testdg_forthqueryzerostringtostring ()
+{
+    unsigned char* plstring;
+    UINT64 lstringlength;
+
+    UINT64 stringstackdepth;
+
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthqueryzerostringtostring\n");
+
+    // empty string success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_forthnewstring(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthqueryzerostringtostring empty string success case - got an error doing dg_forthnewstring\n" );
+    }
+
+    dg_forthqueryzerostringtostring(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthqueryzerostringtostring empty string success case - got an error doing dg_forthnewstring\n" );
+    }
+    
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthqueryzerostringtostring empty string success case - error getting string stack depth\n");
+        return;
+    }
+
+    if (stringstackdepth != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthqueryzerostringtostring empty string success case - string stack depth not correct, expected 1, got ");
+
+        dg_writestdoutuint64tohex(&BHarrayhead, stringstackdepth);
+
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthqueryzerostringtostring empty string success case - error getting pointer to string stack top string\n");
+        return;
+    }
+
+    if (lstringlength != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthqueryzerostringtostring empty string success case - string length not correct\n");
+        return;
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // empty zero string success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // lstringlength,
+        (unsigned char*)"\0"); // plstring);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthqueryzerostringtostring empty zero string success case - got an error doing dg_pushlstring\n" );
+    }
+
+    dg_forthqueryzerostringtostring(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthqueryzerostringtostring empty zero string success case - got an error doing dg_forthnewstring\n" );
+    }
+    
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthqueryzerostringtostring empty zero string success case - error getting string stack depth\n");
+        return;
+    }
+
+    if (stringstackdepth != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthqueryzerostringtostring empty zero string success case - string stack depth not correct\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthqueryzerostringtostring empty zero string success case - error getting pointer to string stack top string\n");
+        return;
+    }
+
+    if (lstringlength != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthqueryzerostringtostring empty zero string success case - string length not correct\n");
+        return;
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // one character string success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // lstringlength,
+        (unsigned char*)"a"); // plstring);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthqueryzerostringtostring one character string success case - got an error doing dg_pushlstring\n" );
+    }
+
+    dg_forthqueryzerostringtostring(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthqueryzerostringtostring one character string success case - got an error doing dg_forthnewstring\n" );
+    }
+    
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthqueryzerostringtostring one character  string success case - error getting string stack depth\n");
+        return;
+    }
+
+    if (stringstackdepth != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthqueryzerostringtostring one character  string success case - string stack depth not correct\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthqueryzerostringtostring one character string success case - error getting pointer to string stack top string\n");
+        return;
+    }
+
+    if (lstringlength != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthqueryzerostringtostring one character string success case - string length not correct\n");
+        return;
+    }
+
+    if (plstring[0] != 'a')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetpoststring dg_forthqueryzerostringtostring one character string success case - string[0] incorrect\n");
+        return;
+    }
+
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // one character zero string success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2, // lstringlength,
+        (unsigned char*)"a\0"); // plstring);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthqueryzerostringtostring one character zero string success case - got an error doing dg_pushlstring\n" );
+    }
+
+    dg_forthqueryzerostringtostring(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthqueryzerostringtostring one character zero string success case - got an error doing dg_forthnewstring\n" );
+    }
+    
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthqueryzerostringtostring one character  string success case - error getting zero string stack depth\n");
+        return;
+    }
+
+    if (stringstackdepth != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthqueryzerostringtostring one character zero string success case - string stack depth not correct\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthqueryzerostringtostring one character zero string success case - error getting pointer to string stack top string\n");
+        return;
+    }
+
+    if (lstringlength != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthqueryzerostringtostring one character zero string success case - string length not correct\n");
+        return;
+    }
+
+    if (plstring[0] != 'a')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetpoststring dg_forthqueryzerostringtostring one character string success case - string[0] incorrect\n");
+        return;
+    }
+
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+}
+
+
+
+void testdg_forthformstringtovaluestringnamestringu ()
+{
+    unsigned char* plstring;
+    UINT64 lstringlength;
+
+    UINT64 stringstackdepth;
+
+    UINT64 x;
+
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthformstringtovaluestringnamestringu\n");
+
+    // empty string success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_forthnewstring(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu empty string success case - got an error doing dg_forthnewstring\n" );
+    }
+
+    dg_forthformstringtovaluestringnamestringu(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu empty string success case - got an error doing dg_forthnewstring\n" );
+    }
+    
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu empty string success case - error getting string stack depth\n");
+        return;
+    }
+
+    if (stringstackdepth != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu empty string success case - string stack depth not correct, expected 0, got ");
+
+        dg_writestdoutuint64tohex(&BHarrayhead, stringstackdepth);
+
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+/*
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu empty string success case - error getting pointer to string stack top string\n");
+        return;
+    }
+
+    if (lstringlength != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu empty string success case - returned string length not correct\n");
+        return;
+    }
+*/
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu empty string success case - returned u incorrect\n");
+        return;
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // one character name only success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // length,
+        (unsigned char*)"a");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu one character name only success case - got an error doing dg_forthnewstring\n" );
+    }
+
+    dg_forthformstringtovaluestringnamestringu(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu one character name only success case - got an error doing dg_forthnewstring\n" );
+    }
+    
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu one character name only success case - error getting string stack depth\n");
+        return;
+    }
+
+    if (stringstackdepth != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu one character name only success case - string stack depth not correct, expected 1, got ");
+
+        dg_writestdoutuint64tohex(&BHarrayhead, stringstackdepth);
+
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu one character name only success case - error getting pointer to string stack name 0 string\n");
+        return;
+    }
+
+    if (lstringlength != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu one character name only success case - returned name 0 string length not correct\n");
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (x != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu one character name only success case - returned u incorrect\n");
+        return;
+    }
+
+    if (plstring[0] != 'a')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu one character name only success case - got wrong name[0] character\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu one character name only success case - error getting pointer to string stack value 0 string\n");
+        return;
+    }
+
+    if (lstringlength != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu one character name onlysuccess case - returned value 0 string length not correct\n");
+        return;
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // one character 0 string name only success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2, // length,
+        (unsigned char*)"a\0");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu one character 0 string name only success case - got an error doing dg_forthnewstring\n" );
+    }
+
+    dg_forthformstringtovaluestringnamestringu(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu one character 0 string name only success case - got an error doing dg_forthnewstring\n" );
+    }
+    
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu one character 0 string name only success case - error getting string stack depth\n");
+        return;
+    }
+
+    if (stringstackdepth != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu one character 0 string name only success case - string stack depth not correct, expected 1, got ");
+
+        dg_writestdoutuint64tohex(&BHarrayhead, stringstackdepth);
+
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu one character 0 string name only success case - error getting pointer to string stack name 0 string\n");
+        return;
+    }
+
+    if (lstringlength != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu one character 0 string name only success case - returned name 0 string length not correct\n");
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (x != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu one character 0 string name only success case - returned u incorrect\n");
+        return;
+    }
+
+    if (plstring[0] != 'a')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu one character 0 string name only success case - got wrong name[0] character\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu one character 0 string name only success case - error getting pointer to string stack value 0 string\n");
+        return;
+    }
+
+    if (lstringlength != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu one character 0 string name onlysuccess case - returned value 0 string length not correct\n");
+        return;
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+
+    // two characters name only success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2, // length,
+        (unsigned char*)"az");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name only success case - got an error doing dg_pushlstring\n" );
+    }
+
+    dg_forthformstringtovaluestringnamestringu(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name only success case - got an error doing dg_forthformstringtovaluestringnamestringu\n" );
+    }
+    
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name only success case - error getting string stack depth\n");
+        return;
+    }
+
+    if (stringstackdepth != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name only success case - string stack depth not correct, expected 1, got ");
+
+        dg_writestdoutuint64tohex(&BHarrayhead, stringstackdepth);
+
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name only success case - error getting pointer to string stack name 0 string\n");
+        return;
+    }
+
+    if (lstringlength != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name only success case - returned name 0 string length not correct\n");
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (x != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name only success case - returned u incorrect\n");
+        return;
+    }
+
+    if (plstring[0] != 'a')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name only success case - got wrong name[0] character\n");
+        return;
+    }
+
+    if (plstring[1] != 'z')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name only success case - got wrong name[1] character\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name only success case - error getting pointer to string stack value 0 string\n");
+        return;
+    }
+
+    if (lstringlength != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name only success case - returned value 0 string length not correct\n");
+        return;
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // two characters name = only success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        3, // length,
+        (unsigned char*)"az=");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = only success case - got an error doing dg_pushlstring\n" );
+    }
+
+    dg_forthformstringtovaluestringnamestringu(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = only success case - got an error doing dg_forthformstringtovaluestringnamestringu, got:\n" );
+        dg_forthdoterrors(&BHarrayhead);
+    }
+    
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = only success case - error getting string stack depth\n");
+        return;
+    }
+
+    if (stringstackdepth != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = only success case - string stack depth not correct, expected 1, got ");
+
+        dg_writestdoutuint64tohex(&BHarrayhead, stringstackdepth);
+
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = only success case - error getting pointer to string stack name 0 string\n");
+        return;
+    }
+
+    if (lstringlength != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = only success case - returned name 0 string length not correct\n");
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (x != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = only success case - returned u incorrect\n");
+        return;
+    }
+
+    if (plstring[0] != 'a')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = only success case - got wrong name[0] character\n");
+        return;
+    }
+
+    if (plstring[1] != 'z')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = only success case - got wrong name[1] character\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = only success case - error getting pointer to string stack value 0 string\n");
+        return;
+    }
+
+    if (lstringlength != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = only success case - returned value 0 string length not correct\n");
+        return;
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+
+    // two characters name = one character value only success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        4, // length,
+        (unsigned char*)"az=b");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = one character value only success case - got an error doing dg_pushlstring\n" );
+    }
+
+    dg_forthformstringtovaluestringnamestringu(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = one character value only success case - got an error doing dg_forthformstringtovaluestringnamestringu\n" );
+    }
+    
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = one character value only success case - error getting string stack depth\n");
+        return;
+    }
+
+    if (stringstackdepth != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = one character value only success case - string stack depth not correct, expected 1, got ");
+
+        dg_writestdoutuint64tohex(&BHarrayhead, stringstackdepth);
+
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = one character value only success case - error getting pointer to string stack name 0 string\n");
+        return;
+    }
+
+    if (lstringlength != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = one character value only success case - returned name 0 string length not correct\n");
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (x != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = one character value only success case - returned u incorrect\n");
+        return;
+    }
+
+    if (plstring[0] != 'a')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = one character value only success case - got wrong name[0] character\n");
+        return;
+    }
+
+    if (plstring[1] != 'z')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = one character value only success case - got wrong name[1] character\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = one character value only success case - error getting pointer to string stack value 0 string\n");
+        return;
+    }
+
+    if (lstringlength != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = one character value only success case - returned value 0 string length not correct\n");
+        return;
+    }
+
+    if (plstring[0] != 'b')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = one character value only success case - got wrong value[0] character\n");
+        return;
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+
+    // two characters name = one character 0 string value only success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        5, // length,
+        (unsigned char*)"az=b\0");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = one character 0 string value only success case - got an error doing dg_pushlstring\n" );
+    }
+
+    dg_forthformstringtovaluestringnamestringu(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = one character 0 string value only success case - got an error doing dg_forthformstringtovaluestringnamestringu\n" );
+    }
+    
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = one character 0 string value only success case - error getting string stack depth\n");
+        return;
+    }
+
+    if (stringstackdepth != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = one character 0 string value only success case - string stack depth not correct, expected 1, got ");
+
+        dg_writestdoutuint64tohex(&BHarrayhead, stringstackdepth);
+
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = one character 0 string value only success case - error getting pointer to string stack name 0 string\n");
+        return;
+    }
+
+    if (lstringlength != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = one character 0 string value only success case - returned name 0 string length not correct\n");
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (x != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = one character 0 string value only success case - returned u incorrect\n");
+        return;
+    }
+
+    if (plstring[0] != 'a')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = one character 0 string value only success case - got wrong name[0] character\n");
+        return;
+    }
+
+    if (plstring[1] != 'z')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = one character 0 string value only success case - got wrong name[1] character\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = one character 0 string value only success case - error getting pointer to string stack value 0 string\n");
+        return;
+    }
+
+    if (lstringlength != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = one character 0 string value only success case - returned value 0 string length not correct\n");
+        return;
+    }
+
+    if (plstring[0] != 'b')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu two characters name = one character 0 string value only success case - got wrong value[0] character\n");
+        return;
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+
+    // az=%21 success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        6, // length,
+        (unsigned char*)"az=%21");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=%21 success case - got an error doing dg_pushlstring\n" );
+    }
+
+    dg_forthformstringtovaluestringnamestringu(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=%21 success case - got an error doing dg_forthformstringtovaluestringnamestringu\n" );
+    }
+    
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=%21 success case - error getting string stack depth\n");
+        return;
+    }
+
+    if (stringstackdepth != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=%21 success case - string stack depth not correct, expected 1, got ");
+
+        dg_writestdoutuint64tohex(&BHarrayhead, stringstackdepth);
+
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=%21 success case - error getting pointer to string stack name 0 string\n");
+        return;
+    }
+
+    if (lstringlength != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=%21 success case - returned name 0 string length not correct\n");
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (x != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=%21 success case - returned u incorrect\n");
+        return;
+    }
+
+    if (plstring[0] != 'a')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=%21 success case - got wrong name[0] character\n");
+        return;
+    }
+
+    if (plstring[1] != 'z')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=%21 success case - got wrong name[1] character\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=%21 success case - error getting pointer to string stack value 0 string\n");
+        return;
+    }
+
+    if (lstringlength != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=%21 success case - returned value 0 string length not correct\n");
+        return;
+    }
+
+    if (plstring[0] != '!')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=%21 success case - got wrong value[0] character\n");
+        return;
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+
+    // a%21=b success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        6, // length,
+        (unsigned char*)"a%21=b");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu a%21=b success case - got an error doing dg_pushlstring\n" );
+    }
+
+    dg_forthformstringtovaluestringnamestringu(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu a%21=b success case - got an error doing dg_forthformstringtovaluestringnamestringu\n" );
+    }
+    
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu a%21=b success case - error getting string stack depth\n");
+        return;
+    }
+
+    if (stringstackdepth != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu a%21=b success case - string stack depth not correct, expected 1, got ");
+
+        dg_writestdoutuint64tohex(&BHarrayhead, stringstackdepth);
+
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu a%21=b success case - error getting pointer to string stack name 0 string\n");
+        return;
+    }
+
+    if (lstringlength != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu a%21=b success case - returned name 0 string length not correct\n");
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (x != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu a%21=b success case - returned u incorrect\n");
+        return;
+    }
+
+    if (plstring[0] != 'a')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu a%21=b success case - got wrong name[0] character\n");
+        return;
+    }
+
+    if (plstring[1] != '!')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu a%21=b success case - got wrong name[1] character\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu a%21=b success case - error getting pointer to string stack value 0 string\n");
+        return;
+    }
+
+    if (lstringlength != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu a%21=b success case - returned value 0 string length not correct\n");
+        return;
+    }
+
+    if (plstring[0] != 'b')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu a%21=b success case - got wrong value[0] character\n");
+        return;
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // az=b& success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        5, // length,
+        (unsigned char*)"az=b&");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b& success case - got an error doing dg_pushlstring\n" );
+    }
+
+    dg_forthformstringtovaluestringnamestringu(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b& success case - got an error doing dg_forthformstringtovaluestringnamestringu\n" );
+    }
+    
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b& success case - error getting string stack depth\n");
+        return;
+    }
+
+    if (stringstackdepth != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b& success case - string stack depth not correct, expected 1, got ");
+
+        dg_writestdoutuint64tohex(&BHarrayhead, stringstackdepth);
+
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b& success case - error getting pointer to string stack name 0 string\n");
+        return;
+    }
+
+    if (lstringlength != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b& success case - returned name 0 string length not correct\n");
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (x != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b& success case - returned u incorrect\n");
+        return;
+    }
+
+    if (plstring[0] != 'a')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b& success case - got wrong name[0] character\n");
+        return;
+    }
+
+    if (plstring[1] != 'z')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b& success case - got wrong name[1] character\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b& success case - error getting pointer to string stack value 0 string\n");
+        return;
+    }
+
+    if (lstringlength != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b& success case - returned value 0 string length not correct\n");
+        return;
+    }
+
+    if (plstring[0] != 'b')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b& success case - got wrong value[0] character\n");
+        return;
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // az=b&c=d success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        8, // length,
+        (unsigned char*)"az=b&c=d");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d success case - got an error doing dg_pushlstring\n" );
+    }
+
+    dg_forthformstringtovaluestringnamestringu(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d success case - got an error doing dg_forthformstringtovaluestringnamestringu\n" );
+    }
+    
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d success case - error getting string stack depth\n");
+        return;
+    }
+
+    if (stringstackdepth != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d success case - string stack depth not correct, expected 1, got ");
+
+        dg_writestdoutuint64tohex(&BHarrayhead, stringstackdepth);
+
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d success case - error getting pointer to string stack name 0 string\n");
+        return;
+    }
+
+    if (lstringlength != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d success case - returned name 0 string length not correct\n");
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (x != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d success case - returned u incorrect\n");
+        return;
+    }
+
+    if (plstring[0] != 'a')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d success case - got wrong name[0] character\n");
+        return;
+    }
+
+    if (plstring[1] != 'z')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d success case - got wrong name[1] character\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d success case - error getting pointer to string stack value 0 string\n");
+        return;
+    }
+
+    if (lstringlength != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d success case - returned value 0 string length not correct\n");
+        return;
+    }
+
+    if (plstring[0] != 'b')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d success case - got wrong value[0] character\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        3, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d success case - error getting pointer to string stack name 0 string\n");
+        return;
+    }
+
+    if (lstringlength != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d success case - returned name 1 string length not correct\n");
+        return;
+    }
+
+    if (plstring[0] != 'c')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d success case - got wrong name[0] character\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d success case - error getting pointer to string stack value 1 string\n");
+        return;
+    }
+
+    if (lstringlength != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d success case - returned value 1 string length not correct\n");
+        return;
+    }
+
+    if (plstring[0] != 'd')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d success case - got wrong value[0] character\n");
+        return;
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // az=b&c=d&efg=hijk success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushlstring (
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        17, // length,
+        (unsigned char*)"az=b&c=d&efg=hijk");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - got an error doing dg_pushlstring\n" );
+    }
+
+    dg_forthformstringtovaluestringnamestringu(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - got an error doing dg_forthformstringtovaluestringnamestringu\n" );
+    }
+    
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - error getting string stack depth\n");
+        return;
+    }
+
+    if (stringstackdepth != 6)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - string stack depth not correct, expected 1, got ");
+
+        dg_writestdoutuint64tohex(&BHarrayhead, stringstackdepth);
+
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - error getting pointer to string stack name 0 string\n");
+        return;
+    }
+
+    if (lstringlength != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - returned name 0 string length not correct\n");
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (x != 3)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - returned u incorrect\n");
+        return;
+    }
+
+    if (plstring[0] != 'a')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - got wrong name0[0] character\n");
+        return;
+    }
+
+    if (plstring[1] != 'z')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - got wrong name0[1] character\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - error getting pointer to string stack value 0 string\n");
+        return;
+    }
+
+    if (lstringlength != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - returned value 0 string length not correct\n");
+        return;
+    }
+
+    if (plstring[0] != 'b')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - got wrong value0[0] character\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        3, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - error getting pointer to string stack name 1 string\n");
+        return;
+    }
+
+    if (lstringlength != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - returned name 1 string length not correct\n");
+        return;
+    }
+
+    if (plstring[0] != 'c')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - got wrong name1[0] character\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - error getting pointer to string stack value 1 string\n");
+        return;
+    }
+
+    if (lstringlength != 1)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - returned value 1 string length not correct\n");
+        return;
+    }
+
+    if (plstring[0] != 'd')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - got wrong value1[0] character\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        5, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - error getting pointer to string stack name 2 string\n");
+        return;
+    }
+
+    if (lstringlength != 3)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - returned name 2 string length not correct\n");
+        return;
+    }
+
+    if (plstring[0] != 'e')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - got wrong name2[0] character\n");
+        return;
+    }
+
+    if (plstring[1] != 'f')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - got wrong name2[1] character\n");
+        return;
+    }
+
+    if (plstring[2] != 'g')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - got wrong name2[2] character\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        4, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - error getting pointer to string stack value 2 string\n");
+        return;
+    }
+
+    if (lstringlength != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - returned value 2 string length not correct\n");
+        return;
+    }
+
+    if (plstring[0] != 'h')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - got wrong value2[0] character\n");
+        return;
+    }
+
+    if (plstring[1] != 'i')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - got wrong value2[1] character\n");
+        return;
+    }
+
+    if (plstring[2] != 'j')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - got wrong value2[2] character\n");
+        return;
+    }
+
+    if (plstring[3] != 'k')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthformstringtovaluestringnamestringu az=b&c=d&efg=hijk success case - got wrong value2[0] character\n");
+        return;
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+}
+
 
 
 /*

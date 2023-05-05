@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.9.
+//    This file is part of DiaperGlu v5.10.
 //
-//    DiaperGlu v5.9 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.10 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.9 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.10 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.9; if not, write to the Free Software
+//    along with DiaperGlu v5.10; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// March 31, 2023             //
-// version 5.9                //
+// May 5, 2023                //
+// version 5.10               //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -2466,10 +2466,759 @@ void testdg_checkplusloopdone ()
 
 	dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
 
-    
+
+        // success case large negative no cross
+	dg_initbuffers(&BHarrayhead);
+
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, (UINT64)-2); // index
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, 0); // limit
+
+	dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, 1);
+
+	flag = dg_checkplusloopdone(&BHarrayhead);
+
+	if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success case large negative no cross - error count not 0");
+	}
+
+	if (flag != FORTH_FALSE)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success case large negative no cross - expected FORTH_FALSE\n");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success case large negative no cross - got wrong limit \n");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != (UINT64)-1)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success case large negative no cross - got wrong index \n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_RSTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success case large negative no cross - rstack not empty after calculation\n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success case large negative no cross - datastack not empty after calculation\n");
+	}
+
+	dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+        // success case large negative cross
+	dg_initbuffers(&BHarrayhead);
+
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, (UINT64)-1); // index
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, 0); // limit
+
+	dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, 1);
+
+	flag = dg_checkplusloopdone(&BHarrayhead);
+
+	if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success case large negative cross - error count not 0");
+	}
+
+	if (flag != FORTH_TRUE)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success case large negative cross - expected FORTH_TRUE\n");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success case large negative cross - got wrong limit \n");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != (UINT64)-1)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success case large negative cross - got wrong index \n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_RSTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success case large negative cross - rstack not empty after calculation\n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success case large negative cross - datastack not empty after calculation\n");
+	}
+
+	dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+        // success  0 index  0 limit  1 step case
+	dg_initbuffers(&BHarrayhead);
+
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, 0); // index
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, 0); // limit
+
+	dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, 1);
+
+	flag = dg_checkplusloopdone(&BHarrayhead);
+
+	if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  0 index  0 limit  1 step case - error count not 0");
+	}
+
+	if (flag != FORTH_FALSE)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  0 index  0 limit  1 step case - expected FORTH_FALSE\n");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  0 index  0 limit  1 step case - got wrong limit \n");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != 1)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  0 index  0 limit  1 step case - got wrong index \n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_RSTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  0 index  0 limit  1 step case - rstack not empty after calculation\n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  0 index  0 limit  1 step case - datastack not empty after calculation\n");
+	}
+
+	dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+  
+        // success  1 index  0 limit  1 step case
+	dg_initbuffers(&BHarrayhead);
+
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, 1); // index
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, 0); // limit
+
+	dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, 1);
+
+	flag = dg_checkplusloopdone(&BHarrayhead);
+
+	if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  1 index  0 limit  1 step case - error count not 0");
+	}
+
+	if (flag != FORTH_FALSE)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  1 index  0 limit  1 step case - expected FORTH_FALSE\n");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  1 index  0 limit  1 step case - got wrong limit \n");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != 2)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  1 index  0 limit  1 step case - got wrong index \n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_RSTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  1 index  0 limit  1 step case - rstack not empty after calculation\n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  1 index  0 limit  1 step case - datastack not empty after calculation\n");
+	}
+
+	dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+        // success  -1 index  0 limit  2 step case
+	dg_initbuffers(&BHarrayhead);
+
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, (UINT64)-1); // index
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, 0); // limit
+
+	dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, 2);
+
+	flag = dg_checkplusloopdone(&BHarrayhead);
+
+	if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -1 index  0 limit  2 step case - error count not 0");
+	}
+
+	if (flag != FORTH_TRUE)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -1 index  0 limit  2 step case - expected FORTH_TRUE");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -1 index  0 limit  2 step case - got wrong limit \n");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != (UINT64)-1)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -1 index  0 limit  2 step case - got wrong index \n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_RSTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -1 index  0 limit  2 step case - rstack not empty after calculation\n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -1 index  0 limit  2 step case - datastack not empty after calculation\n");
+	}
+
+	dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+        // success  -2 index  0 limit  2 step case
+	dg_initbuffers(&BHarrayhead);
+
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, (UINT64)-2); // index
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, 0); // limit
+
+	dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, 2);
+
+	flag = dg_checkplusloopdone(&BHarrayhead);
+
+	if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -2 index  0 limit  2 step case - error count not 0");
+	}
+
+	if (flag != FORTH_TRUE)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -2 index  0 limit  2 step case - expected FORTH_TRUE");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -2 index  0 limit  2 step case - got wrong limit \n");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != (UINT64)-2)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -2 index  0 limit  2 step case - got wrong index \n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_RSTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -2 index  0 limit  2 step case - rstack not empty after calculation\n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -2 index  0 limit  2 step case - datastack not empty after calculation\n");
+	}
+
+	dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+        // success  -3 index  0 limit  2 step case
+	dg_initbuffers(&BHarrayhead);
+
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, (UINT64)-3); // index
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, 0); // limit
+
+	dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, 2);
+
+	flag = dg_checkplusloopdone(&BHarrayhead);
+
+	if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -3 index  0 limit  2 step case - error count not 0");
+	}
+
+	if (flag != FORTH_FALSE)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -3 index  0 limit  2 step case - expected FORTH_FALSE");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -3 index  0 limit  2 step case - got wrong limit \n");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != (UINT64)-1)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -3 index  0 limit  2 step case - got wrong index \n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_RSTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -3 index  0 limit  2 step case - rstack not empty after calculation\n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -3 index  0 limit  2 step case - datastack not empty after calculation\n");
+	}
+
+	dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+        // success  0 index  0 limit  2 step case
+	dg_initbuffers(&BHarrayhead);
+
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, 0); // index
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, 0); // limit
+
+	dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, 2);
+
+	flag = dg_checkplusloopdone(&BHarrayhead);
+
+	if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  0 index  0 limit  2 step case - error count not 0");
+	}
+
+	if (flag != FORTH_FALSE)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  0 index  0 limit  2 step case - expected FORTH_FALSE");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  0 index  0 limit  2 step case - got wrong limit \n");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != 2)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  0 index  0 limit  2 step case - got wrong index \n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_RSTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  0 index  0 limit  2 step case - rstack not empty after calculation\n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  0 index  0 limit  2 step case - datastack not empty after calculation\n");
+	}
+
+	dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+        // success  1 index  0 limit  2 step case
+	dg_initbuffers(&BHarrayhead);
+
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, 1); // index
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, 0); // limit
+
+	dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, 2);
+
+	flag = dg_checkplusloopdone(&BHarrayhead);
+
+	if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  1 index  0 limit  2 step case - error count not 0");
+	}
+
+	if (flag != FORTH_FALSE)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  1 index  0 limit  2 step case - expected FORTH_FALSE");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  1 index  0 limit  2 step case - got wrong limit \n");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != 3)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  1 index  0 limit  2 step case - got wrong index \n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_RSTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  1 index  0 limit  2 step case - rstack not empty after calculation\n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  1 index  0 limit  2 step case - datastack not empty after calculation\n");
+	}
+
+	dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
 
     
+        // success  0 index  0 limit  -1 step case
+	dg_initbuffers(&BHarrayhead);
+
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, 0); // index
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, 0); // limit
+
+	dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)-1);
+
+	flag = dg_checkplusloopdone(&BHarrayhead);
+
+	if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  0 index  0 limit  -1 step case - error count not 0");
+	}
+
+	if (flag != FORTH_FALSE)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  0 index  0 limit  -1 step case - expected FORTH_FALSE\n");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  0 index  0 limit  -1 step case - got wrong limit \n");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != (UINT64)-1)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  0 index  0 limit  -1 step case - got wrong index \n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_RSTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  0 index  0 limit  -1 step case - rstack not empty after calculation\n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  0 index  0 limit  -1 step case - datastack not empty after calculation\n");
+	}
+
+	dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+        // success  -1 index  0 limit  -1 step case
+	dg_initbuffers(&BHarrayhead);
+
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, (UINT64)-1); // index
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, 0); // limit
+
+	dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)-1);
+
+	flag = dg_checkplusloopdone(&BHarrayhead);
+
+	if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -1 index  0 limit  -1 step case - error count not 0");
+	}
+
+	if (flag != FORTH_FALSE)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -1 index  0 limit  -1 step case - expected FORTH_FALSE\n");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -1 index  0 limit  -1 step case - got wrong limit \n");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != (UINT64)-2)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -1 index  0 limit  -1 step case - got wrong index \n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_RSTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -1 index  0 limit  -1 step case - rstack not empty after calculation\n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -1 index  0 limit  -1 step case - datastack not empty after calculation\n");
+	}
+
+	dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+    
+
+        // success  1 index  0 limit  -1 step case
+	dg_initbuffers(&BHarrayhead);
+
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, 1); // index
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, 0); // limit
+
+	dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)-1);
+
+	flag = dg_checkplusloopdone(&BHarrayhead);
+
+	if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  1 index  0 limit  -1 step case - error count not 0");
+	}
+
+	if (flag != FORTH_TRUE)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  1 index  0 limit  -1 step case - expected FORTH_TRUE\n");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  1 index  0 limit  -1 step case - got wrong limit \n");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != 1)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  1 index  0 limit  -1 step case - got wrong index \n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_RSTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  1 index  0 limit  -1 step case - rstack not empty after calculation\n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  1 index  0 limit  -1 step case - datastack not empty after calculation\n");
+	}
+
+	dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+        // success  1 index  0 limit  -2 step case
+	dg_initbuffers(&BHarrayhead);
+
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, 1); // index
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, 0); // limit
+
+	dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)-2);
+
+	flag = dg_checkplusloopdone(&BHarrayhead);
+
+	if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  1 index  0 limit  -2 step case - error count not 0");
+	}
+
+	if (flag != FORTH_TRUE)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  1 index  0 limit  -2 step case - expected FORTH_TRUE\n");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  1 index  0 limit  -2 step case - got wrong limit \n");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != 1)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  1 index  0 limit  -2 step case - got wrong index \n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_RSTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  1 index  0 limit  -2 step case - rstack not empty after calculation\n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  1 index  0 limit  -2 step case - datastack not empty after calculation\n");
+	}
+
+	dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+        // success  2 index  0 limit  -2 step case
+	dg_initbuffers(&BHarrayhead);
+
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, 2); // index
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, 0); // limit
+
+	dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)-2);
+
+	flag = dg_checkplusloopdone(&BHarrayhead);
+
+	if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  2 index  0 limit  -2 step case - error count not 0");
+	}
+
+	if (flag != FORTH_TRUE)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  2 index  0 limit  -2 step case - expected FORTH_TRUE\n");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  2 index  0 limit  -2 step case - got wrong limit \n");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != 2)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  2 index  0 limit  -2 step case - got wrong index \n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_RSTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  2 index  0 limit  -2 step case - rstack not empty after calculation\n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  2 index  0 limit  -2 step case - datastack not empty after calculation\n");
+	}
+
+	dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+        // success  3 index  0 limit  -2 step case
+	dg_initbuffers(&BHarrayhead);
+
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, 3); // index
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, 0); // limit
+
+	dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)-2);
+
+	flag = dg_checkplusloopdone(&BHarrayhead);
+
+	if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  3 index  0 limit  -2 step case - error count not 0");
+	}
+
+	if (flag != FORTH_FALSE)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  3 index  0 limit  -2 step case - expected FORTH_FALSE\n");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  3 index  0 limit  -2 step case - got wrong limit \n");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != 1)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  3 index  0 limit  -2 step case - got wrong index \n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_RSTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  3 index  0 limit  -2 step case - rstack not empty after calculation\n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  3 index  0 limit  -2 step case - datastack not empty after calculation\n");
+	}
+
+	dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+        // success  -1 index  0 limit  -2 step case
+	dg_initbuffers(&BHarrayhead);
+
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, (UINT64)-1); // index
+	dg_pushbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID, 0); // limit
+
+	dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)-2);
+
+	flag = dg_checkplusloopdone(&BHarrayhead);
+
+	if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -1 index  0 limit  -2 step case - error count not 0");
+	}
+
+	if (flag != FORTH_FALSE)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -1 index  0 limit  -2 step case - expected FORTH_FALSE\n");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -1 index  0 limit  -2 step case - got wrong limit \n");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_RSTACK_BUFFERID);
+
+	if (testint != (UINT64)-3)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -1 index  0 limit  -2 step case - got wrong index \n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_RSTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -1 index  0 limit  -2 step case - rstack not empty after calculation\n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_checkplusloopdone success  -1 index  0 limit  -2 step case - datastack not empty after calculation\n");
+	}
+
+	dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
 }
+
 
 void testdg_forthplusloop()
 {

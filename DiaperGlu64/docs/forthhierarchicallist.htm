@@ -3,20 +3,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.9.
+//    This file is part of DiaperGlu v5.10.
 //
-//    DiaperGlu v5.9 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.10 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.9 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.10 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.9; if not, write to the Free Software
+//    along with DiaperGlu v5.10; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// March 31, 2023             //
-// version 5.9                //
+// May 5, 2023                //
+// version 5.10               //
 // /////////////////////////////
 -->
 
@@ -95,7 +95,9 @@
       <a href=forthhierarchicallist.htm#dg_forthehnewelement         >EH-NEW-ELEMENT</a>
       <a href=forthhierarchicallist.htm#dg_forthehnewelementtoeh     >EH-NEW-ELEMENT&gt;EH</a>
       <a href=forthhierarchicallist.htm#dg_forthnamestrtovaluestr    >NAME$&gt;VALUE$</a>
-      <a href=forthhierarchicallist.htm#dg_forthnamestrtovalue       >NAME$&gt;VALUE$</a>
+      <a href=forthhierarchicallist.htm#dg_forthquerynamestrtovaluestr>?NAME$&gt;VALUE$</a>
+      <a href=forthhierarchicallist.htm#dg_forthehquerynamestrtovaluestr>EH-?NAME$&gt;VALUE$</a>
+      <a href=forthhierarchicallist.htm#dg_forthnamestrtovalue       >NAME$&gt;VALUE</a>
       <a href=forthhierarchicallist.htm#dg_forthehnamestrtovaluestr  >EH-NAME$&gt;VALUE$</a>
       <a href=forthhierarchicallist.htm#dg_forthehnamestrtovalue     >EH-NAME$&gt;VALUE</a>
       <a href=forthhierarchicallist.htm#dg_forthnamewtovaluestr      >NAMEW&gt;VALUE$</a>
@@ -113,6 +115,10 @@
       <a href=forthhierarchicallist.htm#dg_forthsymbol               >SYMBOL</a>
       <a href=forthhierarchicallist.htm#dg_forthehoherewtonewelement >OSYMBOL</a>
       <a href=forthhierarchicallist.htm#dg_forthosymbolimport        >OSYMBOL-IMPORT</a>
+      <a href=forthhierarchicallist.htm#dg_forthehnewelements        >EH-NEW-ELEMENTS</a>
+      <a href=forthhierarchicallist.htm#dg_forthnewhlistwithroottoeh >NEW-HLISTWITHROOT&gt;EH</a>
+      <a href=forthhierarchicallist.htm#dg_forthquerypostehnewelements>QUERY-POST-EH-NEW-ELEMENTS</a>
+
       
 
     </div>
@@ -128,11 +134,10 @@
 // A hierarchical list is an array of name string value string pairs where each
 //  element in the array can have another element as it's parent. Elements
 //  with the same parent are sorted by their name strings and at the same time
-//  arranged in the order that they were added to the parent. This means
-//
-// Diaperglu maintains two orderings for an element's children:
-//  A linked list of the order in which they were added,
-//  and an array of the element ids of the children sorted by their name strings.
+//  arranged in the order that they were added to the parent. This means Diaperglu 
+//  maintains two orderings for an element's children:
+//    A linked list of the order in which they were added,
+//    and an array of the element ids of the children sorted by their name strings.
 //
 // If two elements with the same name string are added to a parent, and you
 //  try to find the element with the name string for that parent, the find
@@ -142,7 +147,7 @@
 //  structures such as hashes, symbol lists, word lists, and with a bit of work,
 //  even XML. To do XML you have to figure out a way to deal with when there
 //  are tags in the middle with text on both sides... since this implementation
-//  only has one value string for each name.
+//  only has one value string for each name string.
 //
 // //////////////////////////////////////////////////////////////////////////////////////
 </pre>
@@ -1114,8 +1119,9 @@
 // Action:
 //  Pops parentelementid and hlistid of the data stack.
 //  Then finds the child element under the parent element in the hlist who's name
-//   is name$. Then drops the name$ and pushes the child element's value$ to the
-//   string stack.
+//   is name$. Then drops the name$ and pushes the value$ of the newest child element
+//   with that name to the string stack. If the child with that name is not found
+//   an error is pushed to the error stack.
 //
 // Failure cases:
 //  A child element with a matching name string wasn't found.
@@ -1126,6 +1132,80 @@
 </pre>
       </div>
       
+
+      <div class=word id=dg_forthquerynamestrtovaluestr>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthquerynamestrtovaluestr ( ?NAME$&gt;VALUE$ )
+//
+// C prototype:
+//   void dg_forthquerynamestrtovaluestr(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( parentelementid hlistid -- )
+//  ( name$ -$- value$| )
+//  ( -- foundflag )
+//                                                            
+// Action:
+//  Pops parentelementid and hlistid of the data stack.
+//  Then finds the child element under the parent element in the hlist who's name
+//   is name$. Then drops the name$. 
+//   Then, if any children with that name exist, pushes the value$ of the newest 
+//   child with that name to the string stack and pushes TRUE to the data stack. 
+//   If a child with that name does not exist, pushes FALSE to the data stack.
+//
+// Failure cases:
+//  A child element with a matching name string wasn't found.
+//
+// Tested cases:
+//   
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthehquerynamestrtovaluestr>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthehquerynamestrtovaluestr ( EH-?NAME$&gt;VALUE$ )
+//
+// C prototype:
+//   void dg_forthehquerynamestrtovaluestr(Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( parentelementid hlistid -EH- parentelementid hlistid )
+//  ( name$ -$- value$| )
+//  ( -- foundflag )
+//                                                            
+// Action:
+//  Gets parentelementid and hlistid from the top of the EH stack.
+//  Then finds the child element under the parent element in the hlist who's name
+//   is name$. Then drops the name$. 
+//   Then, if any children with that name exist, pushes the value$ of the newest 
+//   child with that name to the string stack and pushes TRUE to the data stack. 
+//   If a child with that name does not exist, pushes FALSE to the data stack.
+//
+// Failure cases:
+//  A child element with a matching name string wasn't found.
+//
+// Tested cases:
+//   
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
       
       <div class=word id=dg_forthnamestrtovalue>
 <pre>
@@ -2009,6 +2089,128 @@
 //  Then this frees the current compile buffer.
 //  Then this pops the saved old current compile buffer id off the rstack and makes it 
 //   the current compile buffer.
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+     <div class=word id=dg_forthehnewelements>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthehnewelements ( EH-NEW-ELEMENTS )
+//
+// C prototype:
+//  void dg_forthehnewelements (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( parentelementid parenthlistid -EH- )
+//  ( value$0 name$0 value$1 name$1 ... value$u-1 name$u-1 -$- )
+//  ( u -- )
+//
+// EH stack in and out:
+//  parentelementid                parent element id of hlist to add elements to
+//  parenthlistid                  parent hlist id of hlist to add elements to
+//
+// Data stack in:
+//  u                              number of value$ name$ pairs to add
+//
+// String stack in
+//  a list of value$ name$ pairs to add to the parent element
+//
+// Forth standard:
+//  none
+//                                                          
+// Action:
+//  Removes u from the data stack, and u value$ name$ pairs from the string stack
+//    and adds u elements to the parent element with the hlist id element id on the
+//    of the eh stack. Each element added has the name$ and value$ from a value$
+//    name$ pair removed from the string stack.
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthnewhlistwithroottoeh>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthnewhlistwithroottoeh ( NEW-HLISTWITHROOT&gt;EH )
+//
+// C prototype:
+//  void dg_forthnewhlistwithroottoeh (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( -EH- 0 hlistid )
+//
+// EH stack in:
+//  none
+//
+// EH stack out:
+//  0 hlistid                     elementid hlistid of new hierarchical list 
+//                                  containing a single root element
+//                                                              
+// Action:
+//  Creates a new hlist and adds a root element with the name "root".
+//  Then the element id of the new root element, which is 0,
+//   is pushed to the EH stack
+//  Then the id of this new hlist is pushed to the EH stack.
+//
+// Failure cases:
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthquerypostehnewelements>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthquerypostehnewelements ( QUERY-POST-EH-NEW-ELEMENTS )
+//
+// C prototype:
+//  void dg_forthquerypostehnewelements (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( -EH- 0 hlistid )
+//
+// EH in:
+//  none
+//
+// EH stack out:
+//  0 hlistid                     elementid hlistid of new hierarchical list 
+//                                  containing a single root element
+//                                  that has the get and post name$=value$
+//                                  pairs as child elements
+//                                                              
+// Action:
+//  Creates a new hlist and adds a root element with the name "root".
+//  Then the element id of the new root element, which is 0,
+//   is pushed to the EH stack
+//  Then the id of this new hlist is pushed to the EH stack.
+//  Then converts the form$ passed with method get and/or post into a list of name$
+//   value$ pairs, ULRDECODE$ each name$ and value$, and adds the decoded name$
+//   value$ pairs as child elements of the root element in the new hlist. 
+//
+// Failure cases:
 //  
 // //////////////////////////////////////////////////////////////////////////////////////
 </pre>

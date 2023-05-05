@@ -3,20 +3,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.9.
+//    This file is part of DiaperGlu v5.10.
 //
-//    DiaperGlu v5.9 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.10 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.9 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.10 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.9; if not, write to the Free Software
+//    along with DiaperGlu v5.10; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// March 31, 2023             //
-// version 5.9                //
+// May 5, 2023                //
+// version 5.10               //
 // /////////////////////////////
 -->
 
@@ -113,6 +113,13 @@
       <a href=forthmiscellaneous.htm#dg_forthulobits             >dg_forthulobits</a>
       <a href=forthmiscellaneous.htm#dg_forthulomask             >dg_forthulomask</a>
       <a href=forthmiscellaneous.htm#dg_forthtwototheu           >dg_forthtwototheu</a>
+      <a href=forthmiscellaneous.htm#dg_forthbitset              >dg_forthbitset</a>
+      <a href=forthmiscellaneous.htm#dg_forthbitclr              >dg_forthbitclr</a>
+      <a href=forthmiscellaneous.htm#dg_forthbitnot              >dg_forthbitnot</a>
+      <a href=forthmiscellaneous.htm#dg_forthumax                >dg_forthumax</a>
+      <a href=forthmiscellaneous.htm#dg_forthumin                >dg_forthumin</a>
+      <a href=forthmiscellaneous.htm#dg_forthulessthanequals     >dg_forthulessthanequals</a>
+      <a href=forthmiscellaneous.htm#dg_forthugreaterthanequals  >dg_forthugreaterthanequals</a>
       <a href=forthmiscellaneous.htm#dg_forthtouleb128           >dg_forthtouleb128</a>
       <a href=forthmiscellaneous.htm#dg_forthhctwostore          >dg_forthhctwostore</a>
       <a href=forthmiscellaneous.htm#dg_forthdrshift             >dg_forthdrshift</a>
@@ -2139,6 +2146,252 @@
 //   Replaces the unsigned 64 bit integer on the top of the data stack with the
 //    number of bits set to 1 in the integer. For example: HEX A001000200030004
 //    becomes 7.
+//
+// Failure cases:
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthbitset>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthbitset ( BITSET )
+//
+// C prototype:
+//  void dg_forthbitset (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( u bitpos -- u' )
+//
+// Data stack in:
+//   u                            unsigned 64 bit integer
+//   bitpos                       0 based index of bit in u
+//
+// Data stack out:
+//   u'                           u with bit at index bitpos set
+//
+// Action:
+//   Pops u and bitpos off the stack, then changes the bit at index bitpos to 1 if
+//     it isn't 1 already, then pushes the result back onto the data stack.
+//
+// Failure cases:
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthbitclr>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthbitclr ( BITCLR )
+//
+// C prototype:
+//  void dg_forthbitclr (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( u bitpos -- u' )
+//
+// Data stack in:
+//   u                            unsigned 64 bit integer
+//   bitpos                       0 based index of bit in u
+//
+// Data stack out:
+//   u'                           u with bit at index bitpos cleared
+//
+// Action:
+//   Pops u and bitpos off the stack, then changes the bit at index bitpos to 0 if it
+//     isn't 0 already, then pushes the result back onto the data stack.
+//
+// Failure cases:
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthbitnot>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthbitnot ( BITNOT )
+//
+// C prototype:
+//  void dg_forthbitnot (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( u bitpos -- u' )
+//
+// Data stack in:
+//   u                            unsigned 64 bit integer
+//   bitpos                       0 based index of bit in u
+//
+// Data stack out:
+//   u'                           u with bit at index bitpos toggled
+//
+// Action:
+//   Pops u and bitpos off the stack, then if the bit at index bitpos is 0, the bit
+//     is changed to 1, otherwise the bit is changed to 0. Then the result is pushed
+//     back onto the data stack.
+//
+// Failure cases:
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthumax>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthumax ( UMAX )
+//
+// C prototype:
+//  void dg_forthumax (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( u1 u2 -- u1oru2 )
+//
+// Data stack in:
+//   u1                           unsigned 64 bit integer
+//   u2                           unsigned 64 bit integer
+//
+// Data stack out:
+//   u1oru2                       greater of u1 or u2
+//
+// Action:
+//   Pops u1 and u2 off the stack, then pushes whichever of u1 or u2 has the greater
+//     unsigned value back onto the data stack.
+//
+// Failure cases:
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthumin>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthumin ( UMIN )
+//
+// C prototype:
+//  void dg_forthumin (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( u1 u2 -- u1oru2 )
+//
+// Data stack in:
+//   u1                           unsigned 64 bit integer
+//   u2                           unsigned 64 bit integer
+//
+// Data stack out:
+//   u1oru2                       lesser of u1 or u2
+//
+// Action:
+//   Pops u1 and u2 off the stack, then pushes whichever of u1 or u2 has the lesser
+//     unsigned value back onto the data stack.
+//
+// Failure cases:
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthulessthanequals>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthulessthanequals ( U&lt;= )
+//
+// C prototype:
+//  void dg_forthulessthanequals (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( u1 u2 -- flag )
+//
+// Data stack in:
+//   u1                           unsigned 64 bit integer
+//   u2                           unsigned 64 bit integer
+//
+// Data stack out:
+//   flag                         TRUE if u1 <= u2, otherwise FALSE
+//
+// Action:
+//   Pops u1 and u2 off the stack, then pushes TRUE if unsigned u1 is less than or
+//     equal to u2, otherwise pushes FALSE back onto the data stack.
+//
+// Failure cases:
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthugreaterthanequals>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthugreaterthanequals ( U&gt;= )
+//
+// C prototype:
+//  void dg_forthugreaterthanequals (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( u1 u2 -- flag )
+//
+// Data stack in:
+//   u1                           unsigned 64 bit integer
+//   u2                           unsigned 64 bit integer
+//
+// Data stack out:
+//   flag                         TRUE if u1 >= u2, otherwise FALSE
+//
+// Action:
+//   Pops u1 and u2 off the stack, then pushes TRUE if unsigned u1 is greater than or
+//     equal to u2, otherwise pushes FALSE back onto the data stack.
 //
 // Failure cases:
 //  

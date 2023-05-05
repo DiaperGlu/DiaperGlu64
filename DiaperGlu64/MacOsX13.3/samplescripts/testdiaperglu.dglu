@@ -2,20 +2,20 @@
 ( //                                                                                       )
 ( //    Copyright 2023 James Patrick Norris                                                )
 ( //                                                                                       )
-( //    This file is part of Diaperglu 5.9.                                                )
+( //    This file is part of Diaperglu 5.10.                                               )
 ( //                                                                                       )
-( //    Diaperglu 5.9 is free software; you can redistribute it and/or modify              )
+( //    Diaperglu 5.10 is free software; you can redistribute it and/or modify             )
 ( //    it under the terms of the GNU General Public License as published by               )
 ( //    the Free Software Foundation; either version 2 of the License, or                  )
 ( //    {at your option} any later version.                                                )
 ( //                                                                                       )
-( //    Diaperglu 5.9 is distributed in the hope that it will be useful,                   )
+( //    Diaperglu 5.10 is distributed in the hope that it will be useful,                  )
 ( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
 ( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
 ( //    GNU General Public License for more details.                                       )
 ( //                                                                                       )
 ( //    You should have received a copy of the GNU General Public License                  )
-( //    along with Diaperglu 5.9; if not, write to the Free Software                       )
+( //    along with Diaperglu 5.10; if not, write to the Free Software                      )
 ( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
 ( //                                                                                       )
 ( //////////////////////////////////////////////////////////////////////////////////////// )
@@ -23,8 +23,8 @@
 ( /////////////////////////////// )
 ( // James Patrick Norris      // )
 ( // www.rainbarrel.com        // )
-( // March 31, 2023            // )
-( // version 5.9               // )
+( // May 5, 2023               // )
+( // version 5.10              // )
 ( /////////////////////////////// )
 
 ( test include file )
@@ -2840,6 +2840,7 @@ $" 12.3E" 0 GETS$[ND] >FLOAT TRUE = ?T
 
 FDEPTH 1 = ?T
 55E 0E F~ ?T
+DROP$
 
 
 ( /////////////////////////////////// )
@@ -4738,5 +4739,305 @@ DEPTH 1 = ?T
 55 = ?T
 
 
+( /////////////////////////////////// )
 
+$" Testing BITSET" .$ CR  
+
+( /////////////////////////////////// )
+
+DECIMAL 55 
+
+0 0 BITSET 1 = ?T
+1 0 BITSET 1 = ?T
+0 1 BITSET 2 = ?T
+2 1 BITSET 2 = ?T
+0 2 BITSET 4 = ?T
+0 3 BITSET 8 = ?T
+1 3 BITSET 9 = ?T
+-1 0 BITSET -1 = ?T
+-2 0 BITSET -1 = ?T
+
+DECIMAL
+DEPTH 1 = ?T
+55 = ?T
+
+
+( /////////////////////////////////// )
+
+$" Testing BITCLR" .$ CR  
+
+( /////////////////////////////////// )
+
+DECIMAL 55 
+
+0 0 BITCLR 0 = ?T
+1 0 BITCLR 0 = ?T
+0 1 BITCLR 0 = ?T
+2 1 BITCLR 0 = ?T
+0 2 BITCLR 0 = ?T
+0 3 BITCLR 0 = ?T
+1 3 BITCLR 1 = ?T
+-1 0 BITCLR -2 = ?T
+-2 0 BITCLR -2 = ?T
+-1 1 BITCLR -3 = ?T
+-1 2 BITCLR -5 = ?T
+
+DECIMAL
+DEPTH 1 = ?T
+55 = ?T
+
+
+( /////////////////////////////////// )
+
+$" Testing BITNOT" .$ CR  
+
+( /////////////////////////////////// )
+
+DECIMAL 55 
+
+0 0 BITNOT 1 = ?T
+1 0 BITNOT 0 = ?T
+0 1 BITNOT 2 = ?T
+2 1 BITNOT 0 = ?T
+0 2 BITNOT 4 = ?T
+0 3 BITNOT 8 = ?T
+1 3 BITNOT 9 = ?T
+-1 0 BITNOT -2 = ?T
+-2 0 BITNOT -1 = ?T
+-1 1 BITNOT -3 = ?T
+-1 2 BITNOT -5 = ?T
+
+DECIMAL
+DEPTH 1 = ?T
+55 = ?T
+
+
+( /////////////////////////////////// )
+
+$" Testing UMAX" .$ CR  
+
+( /////////////////////////////////// )
+
+DECIMAL 55 
+
+0 0 UMAX 0 = ?T
+1 0 UMAX 1 = ?T
+0 1 UMAX 1 = ?T
+2 1 UMAX 2 = ?T
+0 2 UMAX 2 = ?T
+0 3 UMAX 3 = ?T
+1 3 UMAX 3 = ?T
+-1 0 UMAX -1 = ?T
+-2 0 UMAX -2 = ?T
+-1 1 UMAX -1 = ?T
+-1 2 UMAX -1 = ?T
+0 -1 UMAX -1 = ?T
+
+DECIMAL
+DEPTH 1 = ?T
+55 = ?T
+
+
+( /////////////////////////////////// )
+
+$" Testing UMIN" .$ CR  
+
+( /////////////////////////////////// )
+
+DECIMAL 55 
+
+0 0 UMIN 0 = ?T
+1 0 UMIN 0 = ?T
+0 1 UMIN 0 = ?T
+2 1 UMIN 1 = ?T
+0 2 UMIN 0 = ?T
+0 3 UMIN 0 = ?T
+1 3 UMIN 1 = ?T
+-1 0 UMIN 0 = ?T
+-2 0 UMIN 0 = ?T
+-1 1 UMIN 1 = ?T
+-1 2 UMIN 2 = ?T
+0 -1 UMIN 0 = ?T
+
+DECIMAL
+DEPTH 1 = ?T
+55 = ?T
+
+
+( /////////////////////////////////// )
+
+$" Testing U<=" .$ CR  
+
+( /////////////////////////////////// )
+
+DECIMAL 55 
+
+0 0 U<= TRUE = ?T
+0 1 U<= TRUE = ?T
+1 0 U<= FALSE = ?T
+0 -1 U<= TRUE = ?T
+-1 0 U<= FALSE = ?T
+-1 -1 U<= TRUE = ?T
+1 2 U<= TRUE = ?T
+2 2 U<= TRUE = ?T
+2 1 U<= FALSE = ?T
+
+
+DECIMAL
+DEPTH 1 = ?T
+55 = ?T
+
+
+( /////////////////////////////////// )
+
+$" Testing U>=" .$ CR  
+
+( /////////////////////////////////// )
+
+DECIMAL 55 
+
+0 0 U>= TRUE = ?T
+0 1 U>= FALSE = ?T
+1 0 U>= TRUE = ?T
+0 -1 U>= FALSE = ?T
+-1 0 U>= TRUE = ?T
+-1 -1 U>= TRUE = ?T
+1 2 U>= FALSE = ?T
+2 2 U>= TRUE = ?T
+2 1 U>= TRUE = ?T
+
+
+DECIMAL
+DEPTH 1 = ?T
+55 = ?T
+
+
+( /////////////////////////////////// )
+
+$" Testing GETPOST$" .$ CR  
+
+( /////////////////////////////////// )
+
+
+DECIMAL 55
+
+POSTBUFFERID EMPTYBUFFER
+CHAR C  POSTBUFFERID  C>BUF
+CHAR A  POSTBUFFERID  C>BUF
+CHAR T  POSTBUFFERID  C>BUF
+
+GETPOST$
+
+DEPTH$ 1 = ?T
+$>C  CHAR T  = ?T
+$>C  CHAR A  = ?T
+$>C  CHAR C  = ?T
+
+DROP$
+
+DECIMAL
+DEPTH 1 = ?T
+55 = ?T
+
+
+
+( /////////////////////////////////// )
+
+$" Testing ?0$>$" .$ CR  
+
+( /////////////////////////////////// )
+
+
+DECIMAL 55
+
+NEW$
+
+DEPTH$ 1 = ?T
+?0$>$ 
+LENGTH$ 0= ?T
+
+CHAR a  C>$
+?0$>$ 
+LENGTH$ 1 = ?T
+
+0 C>$
+?0$>$
+LENGTH$ 1 = ?T
+$>C  CHAR a  = ?T
+
+DROP$
+
+DECIMAL
+DEPTH 1 = ?T
+55 = ?T
+
+
+( /////////////////////////////////// )
+
+$" Testing FORM$>VALUE$NAME$U" .$ CR  
+
+( /////////////////////////////////// )
+
+
+DECIMAL 55
+
+NEW$
+
+DEPTH$ 1 = ?T
+FORM$>VALUE$NAME$U 
+DEPTH$ 0= ?T
+0= ?T
+
+$" a=b&cd=ef%21"
+FORM$>VALUE$NAME$U
+2 = ?T
+DEPTH$ 4 = ?T
+LENGTH$ 2 = ?T
+$>C CHAR d = ?T
+$>C CHAR c = ?T
+DROP$
+LENGTH$ 3 = ?T
+$>C CHAR ! = ?T
+$>C CHAR f = ?T
+$>C CHAR e = ?T
+DROP$
+LENGTH$ 1 = ?T
+$>C CHAR a = ?T
+DROP$
+LENGTH$ 1 = ?T
+$>C CHAR b = ?T
+DROP$
+
+DECIMAL
+DEPTH 1 = ?T
+55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing ?NAME$>VALUE$" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ // make a new hlist with a parent element
+ //  and push the EH of the parent to the eh stack
+ ENDOFLIST NEW-HLIST DUP >R
+ $" parent" NEW$ NEW-ELEMENT R> >EH
+ $" Jim" $" myname" EH-NEW-ELEMENT
+ $" Spot" $" catname" EH-NEW-ELEMENT
+ 
+ $" myname" EH ?NAME$>VALUE$ TRUE = ?T
+ $" Jim" COMPARE$ 0= ?T
+ DROP$ DROP$
+
+ $" someothername" EH ?NAME$>VALUE$ FALSE = ?T
+ 
+ EH> FREE-HLIST DROP
+ 
+ 55 = ?T
+
+
+CRLF ." test done" CRLF CRLF
 

@@ -3,20 +3,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.9.
+//    This file is part of DiaperGlu v5.10.
 //
-//    DiaperGlu v5.9 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.10 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.9 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.10 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.9; if not, write to the Free Software
+//    along with DiaperGlu v5.10; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// March 31, 2023             //
-// version 5.9                //
+// May 5, 2023                //
+// version 5.10               //
 // /////////////////////////////
 -->
 
@@ -95,6 +95,7 @@
       <a href=chierarchicallist.htm#dg_packhlist                   >dg_packhlist</a>
       <a href=chierarchicallist.htm#dg_unpackhlist                 >dg_unpackhlist</a>
       <a href=chierarchicallist.htm#dg_namestringtovaluestring     >dg_namestringtovaluestring</a>
+      <a href=chierarchicallist.htm#dg_namestringtovaluestringflag >dg_namestringtovaluestringflag</a>
 
       <a                                                 >&nbsp;</a>
       <a                                                 >C Structures</a>
@@ -1251,6 +1252,13 @@
 //                                        element header array.
 //  
 // Outputs:
+//  UINT64 return                        standard forth compare flag
+//                                         0 if name is found
+//                                         should be 1 if not found or empty list
+//                                         -1 should not be possible
+//                                         should be -2 if error
+//                                         
+//                                       
 //  UINT64* pindexofkeyaftermatch        pointer to memory supplied by the caller 
 //                                        that will hold the 0 based index of the child 
 //                                        element in the parent's list of child 
@@ -1919,6 +1927,69 @@
 //  UINT64* pvaluelength                 length of the value string if name string was 
 //                                        found; 0 if name string was not found or
 //                                        an error happened
+//
+//  unsigned char* return                pointer to the value string if name string 
+//                                        was found
+//                                        badbufferhandle (-1) if name string not 
+//                                         found
+//                                        badbufferhandle (-1) if an error happened
+//
+// Action:
+//  This routine unpacks an hlist from a buffer that holds a packed hlist.
+//
+// Failure cases:
+// 
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_namestringtovaluestringflag>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_namestringtovaluestringflag
+//
+// C prototype:
+//  unsigned char* dg_namestringtovaluestringflag(
+//    Bufferhandle* pBHarrayhead,
+//    UINT64 hlistid,
+//    UINT64 elementid,
+//    unsigned char* pname,
+//    UINT64 namelength,
+//    UINT64* pvaluelength,
+//    UINT64* pwherefoundflag)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead           pointer to a Bufferhandle structure which is 
+//                                        used as the bufferhandle for the array where
+//                                        the other bufferhandles are stored.
+//
+//  UINT64 hlistid                       hlist id of the hierarchical list
+//                                        This is also the 0 based index of the  
+//                                        hierarchical list's header in the 
+//                                        hierarchical list header array
+//
+//  UINT64 elementid                     parent element id of the element in the 
+//                                        hierarchical list. This is also the 0 based 
+//                                        index of the element's name and value 
+//                                        strings in the hlist's lstring arrays'
+//
+//  unsigned char*                       pointer to the name string of the child 
+//                                        element to find under the parent element 
+//                                        id in the hierarchical list
+//
+//  UINT64 namelength                    length of the name string of the child element 
+//                                        to find under the parent element id in the 
+//                                        hierarchical list
+//
+// Outputs:
+//  UINT64* pvaluelength                 length of the value string if name string was 
+//                                        found; 0 if name string was not found or
+//                                        an error happened
+//
+// Outputs:
+//  UINT64* pwherefoundflag              0 if name string was found moo
 //
 //  unsigned char* return                pointer to the value string if name string 
 //                                        was found

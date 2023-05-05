@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.9.
+//    This file is part of DiaperGlu v5.10.
 //
-//    DiaperGlu v5.9 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.10 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.9 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.10 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.9; if not, write to the Free Software
+//    along with DiaperGlu v5.10; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// March 31, 2023             //
-// version 5.9                //
+// May 5, 2023                //
+// version 5.10               //
 // /////////////////////////////
 
 
@@ -5887,3 +5887,359 @@ void dg_forthn32tocell (Bufferhandle* pBHarrayhead)
 
     // no error possible
 }
+
+
+// ( u bitoffset -- u' )
+void dg_forthbitset (Bufferhandle* pBHarrayhead)
+{
+    unsigned char* pdatastack = NULL;
+    UINT64* pdatastacklength = NULL;
+    
+    UINT64* pints;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pdatastacklength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthbitsetname);
+        return;
+    }
+
+    if ( *pdatastacklength < (2 * sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthbitsetname);
+        return;
+    }
+    
+    pints = (UINT64*)(pdatastack + *pdatastacklength - (2 * sizeof(UINT64)));
+   
+    pints[0] = dg_setbit(pints[0], pints[1]);
+
+    *pdatastacklength -= sizeof(UINT64);
+}
+
+
+// ( u bitoffset -- u' )
+void dg_forthbitclr (Bufferhandle* pBHarrayhead)
+{
+    unsigned char* pdatastack = NULL;
+    UINT64* pdatastacklength = NULL;
+    
+    UINT64* pints;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pdatastacklength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthbitclrname);
+        return;
+    }
+
+    if ( *pdatastacklength < (2 * sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthbitclrname);
+        return;
+    }
+    
+    pints = (UINT64*)(pdatastack + *pdatastacklength - (2 * sizeof(UINT64)));
+   
+    pints[0] = dg_clrbit(pints[0], pints[1]);
+
+    *pdatastacklength -= sizeof(UINT64);
+}
+
+
+// ( u bitoffset -- u' )
+void dg_forthbitnot (Bufferhandle* pBHarrayhead)
+{
+    unsigned char* pdatastack = NULL;
+    UINT64* pdatastacklength = NULL;
+    
+    UINT64* pints;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pdatastacklength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthbitnotname);
+        return;
+    }
+
+    if ( *pdatastacklength < (2 * sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthbitnotname);
+        return;
+    }
+    
+    pints = (UINT64*)(pdatastack + *pdatastacklength - (2 * sizeof(UINT64)));
+   
+    pints[0] = dg_notbit(pints[0], pints[1]);
+
+    *pdatastacklength -= sizeof(UINT64);
+}
+
+
+// ( u1 u2 -- u1oru2 )
+void dg_forthumax (Bufferhandle* pBHarrayhead)
+{
+    unsigned char* pdatastack = NULL;
+    UINT64* pdatastacklength = NULL;
+    
+    UINT64* pints;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pdatastacklength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthumaxname);
+        return;
+    }
+
+    if ( *pdatastacklength < (2 * sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthumaxname);
+        return;
+    }
+    
+    pints = (UINT64*)(pdatastack + *pdatastacklength - (2 * sizeof(UINT64)));
+   
+    if (pints[1] > pints[0])
+    {
+        pints[0] = pints[1];
+    }
+
+    *pdatastacklength -= sizeof(UINT64);
+}
+
+
+// ( u1 u2 -- u1oru2 )
+void dg_forthumin (Bufferhandle* pBHarrayhead)
+{
+    unsigned char* pdatastack = NULL;
+    UINT64* pdatastacklength = NULL;
+    
+    UINT64* pints;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pdatastacklength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthuminname);
+        return;
+    }
+
+    if ( *pdatastacklength < (2 * sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthuminname);
+        return;
+    }
+    
+    pints = (UINT64*)(pdatastack + *pdatastacklength - (2 * sizeof(UINT64)));
+   
+    if (pints[1] < pints[0])
+    {
+        pints[0] = pints[1];
+    }
+
+    *pdatastacklength -= sizeof(UINT64);
+}
+
+
+// ( u1 u2 -- flag )
+void dg_forthulessthanequals (Bufferhandle* pBHarrayhead)
+{
+    unsigned char* pdatastack = NULL;
+    UINT64* pdatastacklength = NULL;
+    
+    UINT64* pints;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pdatastacklength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthulessthanequalsname);
+        return;
+    }
+
+    if ( *pdatastacklength < (2 * sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthulessthanequalsname);
+        return;
+    }
+    
+    pints = (UINT64*)(pdatastack + *pdatastacklength - (2 * sizeof(UINT64)));
+   
+    if (pints[0] <= pints[1])
+    {
+        pints[0] = FORTH_TRUE;
+    }
+    else
+    {
+        pints[0] = FORTH_FALSE;
+    }
+
+    *pdatastacklength -= sizeof(UINT64);
+}
+
+
+// ( u1 u2 -- flag )
+void dg_forthugreaterthanequals (Bufferhandle* pBHarrayhead)
+{
+    unsigned char* pdatastack = NULL;
+    UINT64* pdatastacklength = NULL;
+    
+    UINT64* pints;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pdatastacklength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthugreaterthanequalsname);
+        return;
+    }
+
+    if ( *pdatastacklength < (2 * sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthugreaterthanequalsname);
+        return;
+    }
+    
+    pints = (UINT64*)(pdatastack + *pdatastacklength - (2 * sizeof(UINT64)));
+   
+    if (pints[0] >= pints[1])
+    {
+        pints[0] = FORTH_TRUE;
+    }
+    else
+    {
+        pints[0] = FORTH_FALSE;
+    }
+
+    *pdatastacklength -= sizeof(UINT64);
+}
+
+
+// ( -$- post$ )
+void dg_forthgetpoststring (Bufferhandle* pBHarrayhead)
+{
+    unsigned char* pbuffer;
+    UINT64* pbufferlength;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pbuffer = dg_getpbuffer (
+        pBHarrayhead,
+        DG_POST_BUFFERID,
+        &pbufferlength);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthgetpoststringname);
+        return;
+    }
+
+    dg_stonewstring(
+        pBHarrayhead,
+        pbuffer,
+        *pbufferlength);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthgetpoststringname);
+        return;
+    }
+}
+
+
+
+
+

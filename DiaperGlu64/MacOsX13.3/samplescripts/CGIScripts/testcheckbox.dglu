@@ -1,0 +1,50 @@
+#! diaperglu
+
+
+( html form data is passed to page in two strings containing name value pairs in this form: )
+(   name0$=value0$&name1$=value1$ etc... )
+
+
+( Making an hlist to hold the cgi post string and get string name value pairs )
+
+NEW-HLISTWITHROOT>EH
+
+
+( Loading cgi post string and get string name value pairs into the eh hlist )
+
+QUERY-POST-EH-NEW-ELEMENTS
+
+
+DECIMAL
+: drawpage ( -- )
+
+    ." CONTENT-TYPE: text/html" CRLF 
+    ." Cache-Control: no-cache, must-revalidate" CRLF
+    ." Expires: Mon, 12 Jul 1997 05:00:00 GMT" CRLF
+    CRLF
+
+    ." <html>" CRLF
+    ."   <head>" CRLF
+    ."   </head>" CRLF
+    ."   <body>" CRLF    
+
+    ."     <h3 align='center'>Testing Form Checkbox</h3>" CRLF
+
+    ."     <form runat='server' action='http://localhost/cgi-bin/diaperglu?testcheckbox.dglu' method='post'>" CRLF
+     
+    ."       <p>The checkbox state from the previous page was (note: empty checkboxes are not passed)  &quot; " 
+             $" mycheckbox" EH-?NAME$>VALUE$ IF .$ THEN
+    ."       &quot;</p>" CRLF
+
+    // if a checkbox's variable name exists then it is checked, no need to check value
+    ."       <input type='checkbox' name='mycheckbox' "
+             $" mycheckbox" EH-?NAME$>VALUE$ IF DROP$ ." checked" THEN
+             ." ></input></p>" CRLF    
+
+    ."       <p><input type='submit'></p>" CRLF
+
+    ."     </form>" CRLF 
+    
+    ."   </body>" CRLF    ." </html>" CRLF;
+
+drawpage

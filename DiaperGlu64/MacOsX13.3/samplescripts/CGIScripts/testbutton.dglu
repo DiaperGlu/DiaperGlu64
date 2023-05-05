@@ -1,0 +1,86 @@
+#! ./diaperglu
+." CONTENT-TYPE: text/html" CRLF
+CRLF
+." <html><body>Hello Apache on Mac OS X</body></html>" CRLF
+
+TRUE ?END-EVALUATE
+
+( html form data is passed to page in two strings containing name value pairs in this form: )
+(   name0$=value0$&name1$=value1$ etc... )
+
+
+( Making an hlist to hold the cgi post string and get string name value pairs )
+
+NEW-HLISTWITHROOT>EH
+
+
+( Loading cgi post string and get string name value pairs into the eh hlist )
+
+QUERY-POST-EH-NEW-ELEMENTS
+
+
+VARIABLE pnumberofbuttonclicks
+
+0 pnumberofbuttonclicks !
+
+
+// unsigned only
+: U$>U ( u$ -$- ) ( -- u )
+    DECIMAL
+    0 0 
+    0 GETS$[ND] >NUMBER
+    2DROP // ignoring conversion problems
+    DROP
+;
+
+
+// getting the number of button clicks passed in and incrementing the count
+DECIMAL
+: getnumberofbuttonclicks
+    // have to convert string to a number...
+    $" numberofbuttonclicks" EH-?NAME$>VALUE$ IF 
+      STRIP$ U$>U 1+
+    ELSE
+      0
+    THEN
+    pnumberofbuttonclicks !
+;
+
+getnumberofbuttonclicks
+
+
+DECIMAL
+: drawpage ( -- )
+
+    ." CONTENT-TYPE: text/html" CRLF 
+    ." Cache-Control: no-cache, must-revalidate" CRLF
+    ." Expires: Mon, 12 Jul 1997 05:00:00 GMT" CRLF
+    CRLF
+
+    ." <html>" CRLF
+    ."   <head>" CRLF
+    ."   </head>" CRLF
+    ."   <body>" CRLF    
+
+    ."     <h3 align='center'>Testing Form Submit Button</h3>" CRLF
+
+    ."     <form runat='server' action='http://localhost/cgi-bin/diaperglu?testbutton.dglu' method='post'>" CRLF
+     
+    ."       <p>The button was clicked " 
+             pnumberofbuttonclicks @ DECIMAL U. 
+    ."       times without a new load.</p>" CRLF
+
+    ."     <input type='hidden' name='numberofbuttonclicks' value=' "
+             pnumberofbuttonclicks @ DECIMAL U.
+             ." '>"
+             ." </input></p>" CRLF
+
+    ."       <p><input type='submit'></p>" CRLF
+
+    ."     </form>" CRLF 
+    
+    ."   </body>" CRLF    ." </html>" CRLF;
+
+drawpage
+
+

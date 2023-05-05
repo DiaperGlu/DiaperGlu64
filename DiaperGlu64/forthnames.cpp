@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.9.
+//    This file is part of DiaperGlu v5.10.
 //
-//    DiaperGlu v5.9 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.10 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.9 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.10 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.9; if not, write to the Free Software
+//    along with DiaperGlu v5.10; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,17 +23,19 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// March 31, 2023             //
-// version 5.9                //
+// May 5, 2023                //
+// version 5.10               //
 // /////////////////////////////
 
 
 
 #include "diapergluforth.h"
 
+
 // c compiling word names
 const char dg_compilesegmentname[] = "dg_compilesegment";
 const char dg_compile0stringname[] = "dg_compile0string";
+
 
 // forth standard core wordlist names
 const char dg_forthstorename[]               = "!";
@@ -243,6 +245,31 @@ const char dg_forthvaluename[]               = "VALUE";
 const char dg_forthbackslashname[]           = "\\";
 
 
+// forth environment word names
+const char dg_forthenvironmentwordlistname[] = "ENVIRONMENT-WORDLIST";
+const char dg_forthslashcountedstringname[]  = "/COUNTED-STRING";
+const char dg_forthslashholdname[]           = "/HOLD";
+const char dg_forthslashpadname[]            = "/PAD";
+const char dg_forthaddressunitbitsname[]     = "ADDRESS-UNIT-BITS";
+const char dg_forthcorename[]                = "CORE";
+const char dg_forthcoreextname[]             = "CORE-EXT";
+const char dg_forthfloatingname[]            = "FLOATING";
+const char dg_forthfloatingextname[]         = "FLOATING-EXT";
+const char dg_forthfloatingstackname[]       = "FLOATING-STACK";
+const char dg_forthflooredname[]             = "FLOORED";
+const char dg_forthmaxcharname[]             = "MAX-CHAR";
+const char dg_forthmaxdname[]                = "MAX-D";
+const char dg_forthmaxfloatname[]            = "MAX-FLOAT";
+const char dg_forthmaxnname[]                = "MAX-N";
+const char dg_forthmaxuname[]                = "MAX-U";
+const char dg_forthmaxudname[]               = "MAX-UD";
+const char dg_forthreturnstackcellsname[]    = "RETURN-STACK-CELLS";
+const char dg_forthstackcellsname[]          = "STACK-CELLS";
+const char dg_forthsearchordername[]         = "SEARCH-ORDER";
+const char dg_forthsearchorderextname[]      = "SEARCH-ORDER-EXT";
+const char dg_forthwordlistsname[]           = "WORDLISTS";
+
+
 // forth search order word names
 const char dg_forthdefinitionsname[]    = "DEFINITIONS";
 const char dg_forthforthwordlistname[]  = "FORTH-WORDLIST";
@@ -277,6 +304,7 @@ const char dg_forthdnegatename[]     = "DNEGATE";
 const char dg_forthdulessthanname[]  = "DU<";
 const char dg_forthmstarslashname[]  = "M*/";
 const char dg_forthmplusname[]       = "M+";
+
 
 // forth floating point word names
 const char dg_forthminusdenormalname[]   = "-DENORMAL";
@@ -367,23 +395,32 @@ const char dg_forthsfloatsname[]         = "SFLOATS";
 const char dg_forthlittleename[]         = "e";
 const char dg_forthf64commaname[]        = "F64,";
 
+
 // Forth Locals Word Names
-const char dg_forthlocalsbarname[]            = "LOCALS|";
-const char dg_forthclearlocalwordlistname[]   = "CLEAR-LOCAL-WORDLIST";
+const char dg_forthlocalsbarname[]                = "LOCALS|";
+const char dg_forthclearlocalwordlistname[]       = "CLEAR-LOCAL-WORDLIST";
 const char dg_forthquerycompileunnestlocalsname[] = "?COMPILE-UNNEST-LOCALS";
-const char dg_forthqueryclearlocalsname[]     = "?CLEAR-LOCALS";
-const char dg_forthcurlybracename[]           = "{";
-const char dg_forthtwovaluename[]             = "2VALUE";
-const char dg_forthfvaluename[]               = "FVALUE";
+const char dg_forthqueryclearlocalsname[]         = "?CLEAR-LOCALS";
+const char dg_forthcurlybracename[]               = "{";
+const char dg_forthtwovaluename[]                 = "2VALUE";
+const char dg_forthfvaluename[]                   = "FVALUE";
+
 
 // Forth Programming Tools names
 const char dg_forthdotsname[]                 = ".S";
 const char dg_forthquestionname[]             = "?";
 
+
 // Forth String word names
 const char dg_forthdashtrailingname[]         = "-TRAILING";
 const char dg_forthslashstringname[]          = "/STRING";
 const char dg_forthblankname[]                = "BLANK";
+
+
+
+// forth buffer word names
+const char dg_forthbufferwordlistname[]      = "BUFFER-WORDLIST";
+
 
 // forth error word names
 const char dg_forthpushoerrorname[]           = "PUSHOERROR0$";
@@ -405,32 +442,32 @@ const char dg_forthcplgetolderrorcountname[]  = "GETOLDERRORCOUNT";
 
 
 // forth get compile type routine offset bufferid word names
-const char dg_forthodoctalwaysexecutename[]   = "OCRALWAYSEXECUTE";
-const char dg_forthodoctsubroutinename[]      = "OCREXECUTE";
-const char dg_forthodoctpreserveregsname[]    = "OCRPRESERVEREGS";
-const char dg_forthodoctsafesubroutinename[]  = "OCRSAFEEXECUTE";
-const char dg_forthodocompiletypedpushnname[] = "OCRPUSHN";
-const char dg_forthodocompiletypedpushfname[] = "OCRPUSHF";
-const char dg_forthodoctdpushdnname[]         = "OCRPUSHDN";
-const char dg_forthodocompiletypedpushpname[] = "OCRPUSHBUFADDR";
-const char dg_forthodocompiletypevaluename[]  = "OCRVALUE";
-const char dg_forthodocompiletypetwovaluename[] = "OCR2VALUE";
-const char dg_forthodocompiletypefvaluename[] = "OCRFVALUE";
-const char dg_forthodocompiletypeostorename[] = "OCRO!";
-const char dg_forthodocompiletypeof64storename[] = "OCROF64!";
-const char dg_forthodocompiletypeotwostorename[] = "OCRO2!";
-const char dg_forthodocompiletypedpushsname[] = "OCRPUSH$";
-const char dg_forthodocompiletypewordsstringquotesname[] = "OCRWORDS$\"";
-const char dg_forthodocompiletypewords0stringquotesname[] = "OCRWORDS0$\"";
+const char dg_forthodoctalwaysexecutename[]                      = "OCRALWAYSEXECUTE";
+const char dg_forthodoctsubroutinename[]                         = "OCREXECUTE";
+const char dg_forthodoctpreserveregsname[]                       = "OCRPRESERVEREGS";
+const char dg_forthodoctsafesubroutinename[]                     = "OCRSAFEEXECUTE";
+const char dg_forthodocompiletypedpushnname[]                    = "OCRPUSHN";
+const char dg_forthodocompiletypedpushfname[]                    = "OCRPUSHF";
+const char dg_forthodoctdpushdnname[]                            = "OCRPUSHDN";
+const char dg_forthodocompiletypedpushpname[]                    = "OCRPUSHBUFADDR";
+const char dg_forthodocompiletypevaluename[]                     = "OCRVALUE";
+const char dg_forthodocompiletypetwovaluename[]                  = "OCR2VALUE";
+const char dg_forthodocompiletypefvaluename[]                    = "OCRFVALUE";
+const char dg_forthodocompiletypeostorename[]                    = "OCRO!";
+const char dg_forthodocompiletypeof64storename[]                 = "OCROF64!";
+const char dg_forthodocompiletypeotwostorename[]                 = "OCRO2!";
+const char dg_forthodocompiletypedpushsname[]                    = "OCRPUSH$";
+const char dg_forthodocompiletypewordsstringquotesname[]         = "OCRWORDS$\"";
+const char dg_forthodocompiletypewords0stringquotesname[]        = "OCRWORDS0$\"";
 const char dg_forthodocompiletyperunfileandwaitnoenvquotesname[] = "OCRRUNFILEANDWAITNOENV\"";
-const char dg_forthodocompiletypecdeclname[]  = "OCRCALLPROC";
-const char dg_forthodocpltypedfpcdeclname[]   = "OCRCALLDFPPROC";
-const char dg_forthodoctcdeclretuint128name[] = "OCRCALLPROCRETUINT128";
-const char dg_forthodoctcppmembername[]       = "OCRCALLCPPMEMBER";
-const char dg_forthodocompiletypecallname[]   = "OCRCALL";
-const char dg_forthdocompiletypebrackettoordername[] = "OCR[>ORDER]";  
-const char dg_forthdocompiletypebracketwordlistdotname[] = "OCR[WORDLIST.]";
-const char dg_forthdocompiletypebracketlibdotname[] = "OCR[LIB.]";
+const char dg_forthodocompiletypecdeclname[]                     = "OCRCALLPROC";
+const char dg_forthodocpltypedfpcdeclname[]                      = "OCRCALLDFPPROC";
+const char dg_forthodoctcdeclretuint128name[]                    = "OCRCALLPROCRETUINT128";
+const char dg_forthodoctcppmembername[]                          = "OCRCALLCPPMEMBER";
+const char dg_forthodocompiletypecallname[]                      = "OCRCALL";
+const char dg_forthdocompiletypebrackettoordername[]             = "OCR[>ORDER]";  
+const char dg_forthdocompiletypebracketwordlistdotname[]         = "OCR[WORDLIST.]";
+const char dg_forthdocompiletypebracketlibdotname[]              = "OCR[LIB.]";
 
 
 // forth miscellaneous word names
@@ -472,33 +509,29 @@ const char dg_forthn8tocellname[]             = "N8>CELL";
 const char dg_forthn16tocellname[]            = "N16>CELL";
 const char dg_forthn32tocellname[]            = "N32>CELL";
 
-const char dg_forthcompileu8sname[]           = "COMPILE-U8S";
-const char dg_forthcompileu8scurlyname[]      = "COMPILE-U8S<";
-const char dg_forthlocalconstantsname[]       = "LOCAL-CONSTANTS";
-const char dg_forthbracketlocalconstantsname[] = "[LOCAL-CONSTANTS]";
-const char dg_forthlocalconstantscurlyname[]  = "LOCAL-CONSTANTS<";
+const char dg_forthcompileu8sname[]                  = "COMPILE-U8S";
+const char dg_forthcompileu8scurlyname[]             = "COMPILE-U8S<";
+const char dg_forthlocalconstantsname[]              = "LOCAL-CONSTANTS";
+const char dg_forthbracketlocalconstantsname[]       = "[LOCAL-CONSTANTS]";
+const char dg_forthlocalconstantscurlyname[]         = "LOCAL-CONSTANTS<";
 const char dg_forthbracketlocalconstantscurlyname[]  = "[LOCAL-CONSTANTS]<";
-const char dg_forthenumcurlyname[]            = "ENUM<";
-const char dg_forthlocalenumcurlyname[]       = "LOCAL-ENUM<";
-const char dg_forthbracketlocalenumcurlyname[] = "[LOCAL-ENUM]<";
-const char dg_forthtypedenumcurlyname[]       = "TYPED-ENUM<";
-const char dg_forthtypedlocalenumcurlyname[]  = "TYPED-LOCAL-ENUM<";
-const char dg_forthbenchmarkname[]            = "BENCHMARK";
-const char dg_forthnopname[]                  = "NOP";
+const char dg_forthenumcurlyname[]                   = "ENUM<";
+const char dg_forthlocalenumcurlyname[]              = "LOCAL-ENUM<";
+const char dg_forthbracketlocalenumcurlyname[]       = "[LOCAL-ENUM]<";
+const char dg_forthtypedenumcurlyname[]              = "TYPED-ENUM<";
+const char dg_forthtypedlocalenumcurlyname[]         = "TYPED-LOCAL-ENUM<";
+const char dg_forthbenchmarkname[]                   = "BENCHMARK";
+const char dg_forthnopname[]                         = "NOP";
 
+const char dg_forthcodescommaname[]                 = "CODE-S,";
+const char dg_forthcodeu8commaname[]                = "CODE-U8,";
+const char dg_forthcodeu16commaname[]               = "CODE-U16,";
+const char dg_forthcodeu32commaname[]               = "CODE-U32,";
+const char dg_forthcodeu64commaname[]               = "CODE-U64,";
+const char dg_forthcodeallotname[]                  = "CODE-ALLOT";
 
-
-
-
-const char dg_forthcodescommaname[]            = "CODE-S,";
-const char dg_forthcodeu8commaname[]           = "CODE-U8,";
-const char dg_forthcodeu16commaname[]          = "CODE-U16,";
-const char dg_forthcodeu32commaname[]          = "CODE-U32,";
-const char dg_forthcodeu64commaname[]          = "CODE-U64,";
-const char dg_forthcodeallotname[]             = "CODE-ALLOT";
-
-const char dg_forthdoterrorlinename[]          = ".ERRORLINE";
-const char dg_forthdotelname[]                 = ".EL";
+const char dg_forthdoterrorlinename[]               = ".ERRORLINE";
+const char dg_forthdotelname[]                      = ".EL";
 
 // const char dg_forthsftodfname[]                = "SF>DF";
 // const char dg_forthdftosfname[]                = "DF>SF";
@@ -514,28 +547,38 @@ const char dg_forthulobitsname[]               = "ULOBITS";
 const char dg_forthulomaskname[]               = "ULOMASK";
 const char dg_forthtwototheuname[]             = "2^U";
 
-const char dg_forthmicrosecondssince1970jan01name[] = "MICROSECONDSSINCE1970JAN01";
+const char dg_forthbitsetname[]                = "BITSET";
+const char dg_forthbitclrname[]                = "BITCLR";
+const char dg_forthbitnotname[]                = "BITNOT";
 
-const char dg_forthtouleb128name[]             = ">ULEB128";
+const char dg_forthumaxname[]                  = "UMAX";
+const char dg_forthuminname[]                  = "UMIN";
 
-const char dg_forthhctwostorename[]            = "HC2!";
+const char dg_forthulessthanequalsname[]       = "U<=";
+const char dg_forthugreaterthanequalsname[]    = "U>=";
 
-const char dg_forthdrshiftname[]               = "DRSHIFT";
-const char dg_forthdlshiftname[]               = "DLSHIFT";
-const char dg_forthdarshiftname[]              = "DARSHIFT";
+const char dg_forthmicrosecondssince1970jan01name[]         = "MICROSECONDSSINCE1970JAN01";
 
-const char dg_forthbuftodotobufname[]          = "BUF>NEW.OBUF";
-const char dg_forthbuftodotofilestringname[]   = "BUF>.OFILE$";
-const char dg_forthbuftomachodotobufname[]     = "BUF>NEWMACH-O.OBUF";
-const char dg_forthbuftoneweximdotobufname[]   = "BUF>NEWEXPORTIMPORT.OBUF";
-const char dg_forthosymbolbuftonewdotobufname[] = "OSYMBOLBUF>NEW.OBUF";
-const char dg_forthosymbolbuftonewdotofilestringname[] = "OSYMBOLBUF>NEW.OFILE$";
-const char dg_forthtestfindnumbername[]        = "TESTFINDNUMBER";
+const char dg_forthtouleb128name[]                          = ">ULEB128";
 
-const char dg_forthfunctblofnname[]            = "FUNCTBL[N]";
+const char dg_forthhctwostorename[]                         = "HC2!";
 
-const char dg_forthminusrotname[]              = "-ROT";
-const char dg_forthsizedconstantscurlyname[]   = "SIZED-CONSTANTS<";
+const char dg_forthdrshiftname[]                            = "DRSHIFT";
+const char dg_forthdlshiftname[]                            = "DLSHIFT";
+const char dg_forthdarshiftname[]                           = "DARSHIFT";
+
+const char dg_forthbuftodotobufname[]                       = "BUF>NEW.OBUF";
+const char dg_forthbuftodotofilestringname[]                = "BUF>.OFILE$";
+const char dg_forthbuftomachodotobufname[]                  = "BUF>NEWMACH-O.OBUF";
+const char dg_forthbuftoneweximdotobufname[]                = "BUF>NEWEXPORTIMPORT.OBUF";
+const char dg_forthosymbolbuftonewdotobufname[]             = "OSYMBOLBUF>NEW.OBUF";
+const char dg_forthosymbolbuftonewdotofilestringname[]      = "OSYMBOLBUF>NEW.OFILE$";
+const char dg_forthtestfindnumbername[]                     = "TESTFINDNUMBER";
+
+const char dg_forthfunctblofnname[]                         = "FUNCTBL[N]";
+
+const char dg_forthminusrotname[]                           = "-ROT";
+const char dg_forthsizedconstantscurlyname[]                = "SIZED-CONSTANTS<";
 
 
 // forth show wordlist names
@@ -548,7 +591,7 @@ const char dg_forthlibrarywordsname[]          = "LIB-WORDS";
 const char dg_forthuserwordsname[]             = "USER-WORDS";
 
 
-// forth operating system words
+// forth operating system word names
 const char dg_forthgethstdinname[]             = "GETHSTDIN";
 const char dg_forthgethstdoutname[]            = "GETHSTDOUT";
 const char dg_forthgethstderrorname[]          = "GETHSTDERR";
@@ -657,7 +700,8 @@ const char dg_forthcreatebracketlibdotname[]            = "CREATE-[LIB.]";
 
 // dg_forthcreatebracketwordlistdotname
 
-// forth variable names
+
+// forth variable word names
 const char dg_forthpbyeflagname[]                  = "PBYEFLAG";
 const char dg_forthpnopromptsflagname[]            = "PNOPROMPTSFLAG";
 const char dg_forthpcurrentinputbuffername[]       = "PCURRENTINPUTBUFFER";
@@ -669,114 +713,87 @@ const char dg_forthpquitwasinitflagname[]          = "PQUITWASINITFLAG";
 const char dg_forthpshowerrorsonexitflagname[]     = "PSHOWERRORSONEXITFLAG";
 const char dg_forthpcoloncallssafeflagname[]       = "PCOLONCALLSSAFEFLAG";
 const char dg_forthpprecisionname[]                = "PPRECISION";
+const char dg_patchdestnamedbufname[]              = "PPATCHDESTNAMEDBUF";
+const char dg_patchsrcnamedbufname[]               = "PPATCHSRCNAMEDBUF";
+const char dg_patchsrcnamedlibname[]               = "PPATCHSRCNAMEDLIB";
+const char dg_patchsrcnamedsymbollistname[]        = "PPATCHSRCNAMEDSYMBOLLIST";
+const char dg_patchdestnamedsymbollistname[]       = "PPATCHDESTNAMEDSYMBOLLIST";
+const char dg_currentnewsymbolhlistidname[]        = "PCURRENTNEWSYMBOLLISTHLISTID";
+const char dg_currentnewsymbolelementidname[]      = "PCURRENTNEWSYMBOLLISTELEMENTID";
+const char dg_currentglulisthlistidname[]          = "PCURRENTGLULISTHLISTID";
+const char dg_currentnewlinkelementidname[]        = "PCURRENTNEWLINKELEMENTID";
+const char dg_x86asmaddresssizename[]              = "PX86ASMADDRESSSIZE";
+const char dg_prsdepthname[]                       = "PRSDEPTH";
+const char dg_pnumberofintparamsname[]             = "PNUMBEROFINTPARAMS";
+const char dg_pnumberoffloatparamsname[]           = "PNUMBEROFFLOATPARAMS";
+const char dg_pregspreserveddepthname[]            = "PREGSPRESERVEDDEPTH";
+const char dg_pusedrmaskname[]                     = "PUSED-RMASK";
 
-const char dg_patchdestnamedbufname[]         = "PPATCHDESTNAMEDBUF";
-const char dg_patchsrcnamedbufname[]          = "PPATCHSRCNAMEDBUF";
-const char dg_patchsrcnamedlibname[]          = "PPATCHSRCNAMEDLIB";
-const char dg_patchsrcnamedsymbollistname[]   = "PPATCHSRCNAMEDSYMBOLLIST";
-const char dg_patchdestnamedsymbollistname[]  = "PPATCHDESTNAMEDSYMBOLLIST";
-const char dg_currentnewsymbolhlistidname[]   = "PCURRENTNEWSYMBOLLISTHLISTID";
-const char dg_currentnewsymbolelementidname[] = "PCURRENTNEWSYMBOLLISTELEMENTID";
-const char dg_currentglulisthlistidname[]     = "PCURRENTGLULISTHLISTID";
-const char dg_currentnewlinkelementidname[]   = "PCURRENTNEWLINKELEMENTID";
-const char dg_x86asmaddresssizename[]         = "PX86ASMADDRESSSIZE";
-const char dg_prsdepthname[]                  = "PRSDEPTH";
-const char dg_pnumberofintparamsname[]        = "PNUMBEROFINTPARAMS";
-const char dg_pnumberoffloatparamsname[]      = "PNUMBEROFFLOATPARAMS";
-const char dg_pregspreserveddepthname[]       = "PREGSPRESERVEDDEPTH";
 
-const char dg_pusedrmaskname[]                = "PUSED-RMASK";
-
-// forth environment word names
-const char dg_forthenvironmentwordlistname[] = "ENVIRONMENT-WORDLIST";
-const char dg_forthslashcountedstringname[]  = "/COUNTED-STRING";
-const char dg_forthslashholdname[]           = "/HOLD";
-const char dg_forthslashpadname[]            = "/PAD";
-const char dg_forthaddressunitbitsname[]     = "ADDRESS-UNIT-BITS";
-const char dg_forthcorename[]                = "CORE";
-const char dg_forthcoreextname[]             = "CORE-EXT";
-const char dg_forthfloatingname[]            = "FLOATING";
-const char dg_forthfloatingextname[]         = "FLOATING-EXT";
-const char dg_forthfloatingstackname[]       = "FLOATING-STACK";
-const char dg_forthflooredname[]             = "FLOORED";
-const char dg_forthmaxcharname[]             = "MAX-CHAR";
-const char dg_forthmaxdname[]                = "MAX-D";
-const char dg_forthmaxfloatname[]            = "MAX-FLOAT";
-const char dg_forthmaxnname[]                = "MAX-N";
-const char dg_forthmaxuname[]                = "MAX-U";
-const char dg_forthmaxudname[]               = "MAX-UD";
-const char dg_forthreturnstackcellsname[]    = "RETURN-STACK-CELLS";
-const char dg_forthstackcellsname[]          = "STACK-CELLS";
-const char dg_forthsearchordername[]         = "SEARCH-ORDER";
-const char dg_forthsearchorderextname[]      = "SEARCH-ORDER-EXT";
-const char dg_forthwordlistsname[]           = "WORDLISTS";
+// lstring stack word names
+const char dg_forthdepthlstringname[]                  = "DEPTHL$";
+const char dg_forthstartoffsetlstringname[]            = "STARTOFFSETL$";
+const char dg_forthgetstartoffsetlstringnname[]        = "GETSTARTOFFSETL$[N]";
+const char dg_forthlengthlstringname[]                 = "LENGTHL$";
+const char dg_forthlengthlstringnname[]                = "LENGTHL$[N]";
+const char dg_forthgetplstringname[]                   = "GETPL$"; // deprecated
+const char dg_forthgetslstringnname[]                  = "GETSL$[N]";
+const char dg_forthgetlstringname[]                    = "GETL$";
+const char dg_forthcopylstringntosname[]               = "COPYL$[N]>S";
+const char dg_forthlstringsfetchname[]                 = "L$S@";   // DROPL$>PASTES
+const char dg_forthlstringtosname[]                    = "DROPL$>S"; // DROPL$>PASTES
+const char dg_forthstolstringname[]                    = "S>NEWL$"; // COPYS>NEWL$
+const char dg_forthgrowlstringname[]                   = "GROWL$";
+const char dg_forthshortenlstringname[]                = "SHORTENL$";
+const char dg_forthpicklstringname[]                   = "PICKL$";
+const char dg_forthdroplstringname[]                   = "DROPL$";
+const char dg_forthdeletelstringname[]                 = "DELETEL$";
+const char dg_forthdeletelstringnname[]                = "DELETEL$[N]";
+const char dg_forthinsertlstringname[]                 = "INSERTL$";
+const char dg_forthinsertlstringnname[]                = "INSERTL$[N]";
+const char dg_forthnewlstringname[]                    = "NEWL$";
+const char dg_forthcscanlstringname[]                  = "CSCANL$";
+const char dg_forthcscanlstringnname[]                 = "CSCANL$[N]";
+const char dg_forthscanlstringname[]                   = "SCANL$";
+const char dg_forthscanlstringnname[]                  = "SCANL$[N]";
+const char dg_forthrolllstringname[]                   = "ROLLL$";
+const char dg_forthminusrolllstringname[]              = "-ROLLL$";
+const char dg_forthdeleteinlstringname[]               = "DELETEINL$";
+const char dg_forthdeleteinlstringnname[]              = "DELETEINL$[N]";
+const char dg_forthinsertinlstringname[]               = "INSERTINL$";
+const char dg_forthinsertinlstringnname[]              = "INSERTINL$[N]";
+const char dg_forthcatlstringnname[]                   = "CATL$[N]";
+const char dg_forthcopystolstringnname[]               = "COPYSTOL$[N]";
+const char dg_forthcopysfromlstringnname[]             = "COPYSFROML$[N]";
+const char dg_forthsetlengthlstringnname[]             = "SETLENGTHL$[N]";
+const char dg_forthcopystoreplacelstringnname[]        = "COPYS>REPLACEL$[N]";
+const char dg_forthcopylstringntoreplacelstringnname[] = "COPYL$[N]>REPLACEL$[N]";
+const char dg_forthnewfreeablelstringarrayname[]       = "NEWFL$[]";
+const char dg_forthfreefreeablelstringarrayname[]      = "FREEFL$[]";
+const char dg_forthpacklstringname[]                   = "PACKL$[]";
+const char dg_forthunpacklstringname[]                 = "UNPACKL$[]";
+const char dg_forthnotlstringnname[]                   = "NOTL$[N]";
+const char dg_forthu8reverselstringnname[]             = "U8REVERSEL$[N]";
+const char dg_forthuleextendlstringntolname[]          = "ULEEXTENDL$[N]TOL";
+const char dg_forthuleandlstringntolstringnname[]      = "ULEANDL$[N]>L$[N]";
+const char dg_forthuleorlstringntolstringnname[]       = "ULEORL$[N]>L$[N]";
+const char dg_forthulexorlstringntolstringnname[]      = "ULEXORL$[N]>L$[N]";
+const char dg_forthulenandlstringntolstringnname[]     = "ULENANDL$[N]>L$[N]";
+const char dg_forthulenorlstringntolstringnname[]      = "ULENORL$[N]>L$[N]";
+const char dg_forthulexnorlstringntolstringnname[]     = "ULEXNORL$[N]>L$[N]";
+const char dg_forthuleaddlstringntolstringnname[]      = "ULEADDL$[N]>L$[N]";
+const char dg_forthuleadclstringntolstringnname[]      = "ULEADCL$[N]>L$[N]";
+const char dg_forthulesbblstringntolstringnname[]      = "ULESBBL$[N]>L$[N]";
+const char dg_forthlelshiftlstringnname[]              = "LELSHIFTL$[N]";
+const char dg_forthulershiftlstringnname[]             = "ULERSHIFTL$[N]";
+const char dg_forthslershiftlstringnname[]             = "SLERSHIFTL$[N]";
+const char dg_forthlelshiftclstringnname[]             = "LELSHIFTCL$[N]";
+const char dg_forthlershiftclstringnname[]             = "LERSHIFTCL$[N]";
+const char dg_forthu64starlstringnplustolstringnname[] = "U64*L$[N]+>L$[N]";
+const char dg_forthtoslashulelstringnname[]            = ">/ULEL$[N]";
 
 
 // forth buffer word names
-const char dg_forthbufferwordlistname[]      = "BUFFER-WORDLIST";
-
-const char dg_forthdepthlstringname[]        = "DEPTHL$";
-const char dg_forthstartoffsetlstringname[]  = "STARTOFFSETL$";
-const char dg_forthgetstartoffsetlstringnname[] = "GETSTARTOFFSETL$[N]";
-const char dg_forthlengthlstringname[]       = "LENGTHL$";
-const char dg_forthlengthlstringnname[]      = "LENGTHL$[N]";
-const char dg_forthgetplstringname[]         = "GETPL$"; // deprecated
-const char dg_forthgetslstringnname[]        = "GETSL$[N]";
-const char dg_forthgetlstringname[]          = "GETL$";
-const char dg_forthcopylstringntosname[]     = "COPYL$[N]>S";
-const char dg_forthlstringsfetchname[]       = "L$S@";   // DROPL$>PASTES
-const char dg_forthlstringtosname[]          = "DROPL$>S"; // DROPL$>PASTES
-const char dg_forthstolstringname[]          = "S>NEWL$"; // COPYS>NEWL$
-const char dg_forthgrowlstringname[]         = "GROWL$";
-const char dg_forthshortenlstringname[]      = "SHORTENL$";
-const char dg_forthpicklstringname[]         = "PICKL$";
-const char dg_forthdroplstringname[]         = "DROPL$";
-const char dg_forthdeletelstringname[]       = "DELETEL$";
-const char dg_forthdeletelstringnname[]      = "DELETEL$[N]";
-const char dg_forthinsertlstringname[]       = "INSERTL$";
-const char dg_forthinsertlstringnname[]      = "INSERTL$[N]";
-const char dg_forthnewlstringname[]          = "NEWL$";
-const char dg_forthcscanlstringname[]        = "CSCANL$";
-const char dg_forthcscanlstringnname[]       = "CSCANL$[N]";
-const char dg_forthscanlstringname[]         = "SCANL$";
-const char dg_forthscanlstringnname[]        = "SCANL$[N]";
-const char dg_forthrolllstringname[]         = "ROLLL$";
-const char dg_forthminusrolllstringname[]    = "-ROLLL$";
-const char dg_forthdeleteinlstringname[]     = "DELETEINL$";
-const char dg_forthdeleteinlstringnname[]    = "DELETEINL$[N]";
-const char dg_forthinsertinlstringname[]     = "INSERTINL$";
-const char dg_forthinsertinlstringnname[]    = "INSERTINL$[N]";
-const char dg_forthcatlstringnname[]         = "CATL$[N]";
-const char dg_forthcopystolstringnname[]     = "COPYSTOL$[N]";
-const char dg_forthcopysfromlstringnname[]   = "COPYSFROML$[N]";
-const char dg_forthsetlengthlstringnname[]   = "SETLENGTHL$[N]";
-const char dg_forthcopystoreplacelstringnname[] = "COPYS>REPLACEL$[N]";
-const char dg_forthcopylstringntoreplacelstringnname[] = "COPYL$[N]>REPLACEL$[N]";
-const char dg_forthnewfreeablelstringarrayname[] = "NEWFL$[]";
-const char dg_forthfreefreeablelstringarrayname[] = "FREEFL$[]";
-const char dg_forthpacklstringname[]         = "PACKL$[]";
-const char dg_forthunpacklstringname[]       = "UNPACKL$[]";
-const char dg_forthnotlstringnname[]               = "NOTL$[N]";
-const char dg_forthu8reverselstringnname[]         = "U8REVERSEL$[N]";
-const char dg_forthuleextendlstringntolname[]      = "ULEEXTENDL$[N]TOL";
-const char dg_forthuleandlstringntolstringnname[]  = "ULEANDL$[N]>L$[N]";
-const char dg_forthuleorlstringntolstringnname[]   = "ULEORL$[N]>L$[N]";
-const char dg_forthulexorlstringntolstringnname[]  = "ULEXORL$[N]>L$[N]";
-const char dg_forthulenandlstringntolstringnname[] = "ULENANDL$[N]>L$[N]";
-const char dg_forthulenorlstringntolstringnname[]  = "ULENORL$[N]>L$[N]";
-const char dg_forthulexnorlstringntolstringnname[] = "ULEXNORL$[N]>L$[N]";
-const char dg_forthuleaddlstringntolstringnname[]  = "ULEADDL$[N]>L$[N]";
-const char dg_forthuleadclstringntolstringnname[]  = "ULEADCL$[N]>L$[N]";
-const char dg_forthulesbblstringntolstringnname[]  = "ULESBBL$[N]>L$[N]";
-const char dg_forthlelshiftlstringnname[]          = "LELSHIFTL$[N]";
-const char dg_forthulershiftlstringnname[]         = "ULERSHIFTL$[N]";
-const char dg_forthslershiftlstringnname[]         = "SLERSHIFTL$[N]";
-const char dg_forthlelshiftclstringnname[]         = "LELSHIFTCL$[N]";
-const char dg_forthlershiftclstringnname[]         = "LERSHIFTCL$[N]";
-const char dg_forthu64starlstringnplustolstringnname[] = "U64*L$[N]+>L$[N]";
-const char dg_forthtoslashulelstringnname[]        = ">/ULEL$[N]";
-
-
 const char dg_forthocfetchname[]             = "OC@";
 const char dg_forthgetbufferbytename[]       = "GETBUFFERBYTE";
 const char dg_forthofetchname[]              = "O@";
@@ -857,7 +874,8 @@ const char dg_forthu64commaname[]           = "U64,";
 const char dg_forthof64storename[]          = "OF64!";
 const char dg_forthubufalignname[]          = "UBUFALIGN";
 
-// buffer id names
+
+// buffer id word names
 const char dg_fortherrorstackbufferidname[]          = "ERRORSTACKBUFFERID";
 const char dg_forthdatastackbufferidname[]           = "DATASTACKBUFFERID";
 const char dg_forthstringstackoffsetbufferidname[]   = "$STACKOFFSETBUFFERID";
@@ -877,7 +895,7 @@ const char dg_forthleavebufferidname[]               = "LEAVEBUFFERID";
 const char dg_forthargsbufferidname[]                = "ARGSBUFFERID";
 const char dg_forthcleanupbufferidname[]             = "CLEANUPBUFFERID";
 const char dg_forthlibhandlebufferidname[]           = "LIBHANDLEBUFFERID";
-const char dg_forthpostbufferidname[]                = "POSTBUFFERID";
+const char dg_forthpostbufferidname[]                = "POSTBUFFERID"; 
 const char dg_forthscriptfilenamebufferidname[]      = "SCRIPTFILENAMEBUFFERID";
 const char dg_forthlocalpathbufferidname[]           = "LOCALPATHBUFFERID";
 const char dg_forthwordnamebufferidname[]            = "WORDNAMEBUFFERID";
@@ -890,7 +908,7 @@ const char dg_forthhstackbufferidname[]              = "HSTACKBUFFERID";
 const char dg_forthf64stackbufferidname[]            = "F64STACKBUFFERID";
 
 
-// forth string word names
+// forth string stack word names
 const char dg_forthstringwordlistname[]              = "$-WORDLIST";
 
 const char dg_forthnumbersignstringname[]            = "#$";
@@ -930,6 +948,7 @@ const char dg_forthgetmethodstringname[]             = "GETMETHOD$";
 const char dg_forthgetmidstringname[]                = "GETMID$";
 const char dg_forthgetpstringname[]                  = "GETP$";
 const char dg_forthgetquerystringname[]              = "GETQUERY$";
+const char dg_forthgetpoststringname[]               = "GETPOST$";
 const char dg_forthgetsstringndname[]                = "GETS$[ND]";
 const char dg_forthgrowstringname[]                  = "GROW$";
 const char dg_forthholdstringname[]                  = "HOLD$";
@@ -987,6 +1006,8 @@ const char dg_forthulestringtonumberstringname[]     = "ULE$>NUMBER$";
 const char dg_forthrunfileandwaitnoenvquotesname[]   = "RUNFILEANDWAITNOENV\"";
 const char dg_forthrunfileandwaitnoenvstringname[]   = "RUNFILEANDWAITNOENV$";
 const char dg_forthsetlengthstringname[]             = "SETLENGTH$";
+const char dg_forthqueryzerostringtostringname[]     = "?0$>$";
+const char dg_forthformstringtovaluestringnamestringuname[] = "FORM$>VALUE$NAME$U";
 
 
 
@@ -1141,59 +1162,65 @@ const char dg_basetoohigherrorname[]              = "BASETOOHIGHERROR";
 //const char dg_dglubufferinvaliderrorname        = "DGLUBUFFERINVALIDERROR";
 
 
-// Forth Hierarchical List Names
-const char dg_forthnewhlistname[]                = "NEW-HLIST";
-const char dg_forthfreehlistname[]               = "FREE-HLIST";
-const char dg_forthprunehlistelementname[]       = "PRUNE-ELEMENT";
-const char dg_forthfreehlistelementname[]        = "FREE-ELEMENT";
-const char dg_forthnewhlistelementname[]         = "NEW-ELEMENT";
-const char dg_forthgethlistelementnomname[]      = "GET-ELEMENT-NAME$"; // COPY-ELEMENT-NAME>NEW$
-const char dg_forthgethlistelementvaluename[]    = "GET-ELEMENT-VALUE$"; // COPY-ELEMENT-VALUE>NEW$
-const char dg_forthgethlistnewestchildname[]     = "GET-ELEMENT-NEWEST-CHILD"; // GET-NEWEST-CHILD
-const char dg_forthgethlistoldestchildname[]     = "GET-ELEMENT-OLDEST-CHILD"; // GET-NEWEST-CHILD
-const char dg_forthgethlistoldersiblingname[]    = "GET-ELEMENT-OLDER-SIBLING"; // GET-OLDER-SIBLING
-const char dg_forthgethlistnewersiblingname[]    = "GET-ELEMENT-NEWER-SIBLING"; // GET-NEWER-SIBLING
-const char dg_forthchangehlistparentname[]       = "SET-ELEMENT-PARENT"; // SET-PARENT
-const char dg_forthfindclosesthlistchildname[]   = "FIND-CLOSEST-ELEMENT-CHILD-BY-NAME$"; // FIND-CLOSEST-CHILD-BY-NAME$ FIND-CLOSEST-CHILD
-const char dg_forthhlisttoxmlstringname[]        = "ELEMENT>DGLUML$";
-const char dg_forthgethowmanyhlistkidsname[]     = "GET-ELEMENT-NUMBER-OF-SORTED-CHILDREN";
-const char dg_forthgethlistsortedchildnname[]    = "FIND-ELEMENT-CHILD-N"; // FIND-CHILD-N
-const char dg_forthfindhlistchildname[]          = "FIND-ELEMENT-CHILD-BY-NAME$"; // FIND-CHILD-BY-NAME$
-const char dg_forthhfindstringname[]             = "HFIND$";
-const char dg_forthgethlistparentname[]          = "GET-ELEMENT-PARENT"; // GET-PARENT
-const char dg_forthsethlistelementvaluename[]    = "SET-ELEMENT-VALUE$";
-const char dg_forthpackhlistname[]               = "PACK-HLIST";
-const char dg_forthunpackhlistname[]             = "UNPACK-HLIST";
-const char dg_forthtoehname[]                    = ">EH";
-const char dg_forthehfromname[]                  = "EH>";
-const char dg_forthdropehname[]                  = "DROPEH";
-const char dg_forthehtopname[]                   = "EH[TOP]";
-const char dg_forthehndname[]                    = "EH[ND]";
-const char dg_forthdupehname[]                   = "DUPEH";
-const char dg_forthehname[]                      = "EH";
-const char dg_forthetoehtopname[]                = "E>EH[TOP]";
-const char dg_forthehnewelementname[]            = "EH-NEW-ELEMENT";
-const char dg_forthehnewelementtoehname[]        = "EH-NEW-ELEMENT>EH";
-const char dg_forthnamestrtovaluestrname[]       = "NAME$>VALUE$";
-const char dg_forthnamestrtovaluename[]          = "NAME$>VALUE";
-const char dg_forthehnamestrtovaluestrname[]     = "EH-NAME$>VALUE$";
-const char dg_forthehnamestrtovaluename[]        = "EH-NAME$>VALUE";
-const char dg_forthnamewtovaluestrname[]         = "NAMEW>VALUE$";
-const char dg_forthnamewtovaluename[]            = "NAMEW>VALUE";
-const char dg_forthehnamewtovaluestrname[]       = "EH-NAMEW>VALUE$";
-const char dg_forthehnamewtovaluename[]          = "EH-NAMEW>VALUE";
-const char dg_forthehoherewtonewelementname[]    = "EH-OHERE-W>NEW-ELEMENT";
-const char dg_forthehdotname[]                   = "EH.";
-const char dg_forthehbracketnddotname[]          = "EH[ND].";
-const char dg_forthehbracket1ddotname[]          = "EH[1D].";
-const char dg_forthsymbolenumcurlyname[]         = "SYMBOL-ENUM<";
+// Forth Hierarchical List Word Names
+const char dg_forthnewhlistname[]                     = "NEW-HLIST";
+const char dg_forthfreehlistname[]                    = "FREE-HLIST";
+const char dg_forthprunehlistelementname[]            = "PRUNE-ELEMENT";
+const char dg_forthfreehlistelementname[]             = "FREE-ELEMENT";
+const char dg_forthnewhlistelementname[]              = "NEW-ELEMENT";
+const char dg_forthgethlistelementnomname[]           = "GET-ELEMENT-NAME$"; // COPY-ELEMENT-NAME>NEW$
+const char dg_forthgethlistelementvaluename[]         = "GET-ELEMENT-VALUE$"; // COPY-ELEMENT-VALUE>NEW$
+const char dg_forthgethlistnewestchildname[]          = "GET-ELEMENT-NEWEST-CHILD"; // GET-NEWEST-CHILD
+const char dg_forthgethlistoldestchildname[]          = "GET-ELEMENT-OLDEST-CHILD"; // GET-NEWEST-CHILD
+const char dg_forthgethlistoldersiblingname[]         = "GET-ELEMENT-OLDER-SIBLING"; // GET-OLDER-SIBLING
+const char dg_forthgethlistnewersiblingname[]         = "GET-ELEMENT-NEWER-SIBLING"; // GET-NEWER-SIBLING
+const char dg_forthchangehlistparentname[]            = "SET-ELEMENT-PARENT"; // SET-PARENT
+const char dg_forthfindclosesthlistchildname[]        = "FIND-CLOSEST-ELEMENT-CHILD-BY-NAME$"; // FIND-CLOSEST-CHILD-BY-NAME$ FIND-CLOSEST-CHILD
+const char dg_forthhlisttoxmlstringname[]             = "ELEMENT>DGLUML$";
+const char dg_forthgethowmanyhlistkidsname[]          = "GET-ELEMENT-NUMBER-OF-SORTED-CHILDREN";
+const char dg_forthgethlistsortedchildnname[]         = "FIND-ELEMENT-CHILD-N"; // FIND-CHILD-N
+const char dg_forthfindhlistchildname[]               = "FIND-ELEMENT-CHILD-BY-NAME$"; // FIND-CHILD-BY-NAME$
+const char dg_forthhfindstringname[]                  = "HFIND$";
+const char dg_forthgethlistparentname[]               = "GET-ELEMENT-PARENT"; // GET-PARENT
+const char dg_forthsethlistelementvaluename[]         = "SET-ELEMENT-VALUE$";
+const char dg_forthpackhlistname[]                    = "PACK-HLIST";
+const char dg_forthunpackhlistname[]                  = "UNPACK-HLIST";
+const char dg_forthtoehname[]                         = ">EH";
+const char dg_forthehfromname[]                       = "EH>";
+const char dg_forthdropehname[]                       = "DROPEH";
+const char dg_forthehtopname[]                        = "EH[TOP]";
+const char dg_forthehndname[]                         = "EH[ND]";
+const char dg_forthdupehname[]                        = "DUPEH";
+const char dg_forthehname[]                           = "EH";
+const char dg_forthetoehtopname[]                     = "E>EH[TOP]";
+const char dg_forthehnewelementname[]                 = "EH-NEW-ELEMENT";
+const char dg_forthehnewelementtoehname[]             = "EH-NEW-ELEMENT>EH";
+const char dg_forthnamestrtovaluestrname[]            = "NAME$>VALUE$";
+const char dg_forthquerynamestrtovaluestrname[]       = "?NAME$>VALUE$";
+const char dg_forthehquerynamestrtovaluestrname[]     = "EH-?NAME$>VALUE$";
+const char dg_forthnamestrtovaluename[]               = "NAME$>VALUE";
+const char dg_forthehnamestrtovaluestrname[]          = "EH-NAME$>VALUE$";
+const char dg_forthehnamestrtovaluename[]             = "EH-NAME$>VALUE";
+const char dg_forthnamewtovaluestrname[]              = "NAMEW>VALUE$";
+const char dg_forthnamewtovaluename[]                 = "NAMEW>VALUE";
+const char dg_forthehnamewtovaluestrname[]            = "EH-NAMEW>VALUE$";
+const char dg_forthehnamewtovaluename[]               = "EH-NAMEW>VALUE";
+const char dg_forthehoherewtonewelementname[]         = "EH-OHERE-W>NEW-ELEMENT";
+const char dg_forthehdotname[]                        = "EH.";
+const char dg_forthehbracketnddotname[]               = "EH[ND].";
+const char dg_forthehbracket1ddotname[]               = "EH[1D].";
+const char dg_forthsymbolenumcurlyname[]              = "SYMBOL-ENUM<";
 const char dg_forthosymbolcodeimportscommacurlyname[] = "OSYMBOL-CODE-IMPORTS,<";
-const char dg_forthnewflatosymbolbufname[]       = "NEW-FLAT-OSYMBOL-BUF";
-const char dg_forthfreeflatosymbolbufname[]      = "FREE-FLAT-OSYMBOL-BUF";
-const char dg_forthosymbolimportname[]           = "OSYMBOL-IMPORT";
-const char dg_forthimportlinkdatasizename[]      = "IMPORT-LINK-DATA-SIZE";
+const char dg_forthnewflatosymbolbufname[]            = "NEW-FLAT-OSYMBOL-BUF";
+const char dg_forthfreeflatosymbolbufname[]           = "FREE-FLAT-OSYMBOL-BUF";
+const char dg_forthosymbolimportname[]                = "OSYMBOL-IMPORT";
+const char dg_forthimportlinkdatasizename[]           = "IMPORT-LINK-DATA-SIZE";
+const char dg_forthehnewelementsname[]                = "EH-NEW-ELEMENTS";
+const char dg_forthnewhlistwithroottoehname[]         = "NEW-HLISTWITHROOT>EH";
+const char dg_forthquerypostehnewelementsname[]       = "QUERY-POST-EH-NEW-ELEMENTS";
 
-// Forth Glu List Names
+
+// Forth Glu List Word Names
 const char dg_forthgluelementname[]              = "GLU-ELEMENT";
 const char dg_forthngluelementname[]             = "NGLU-ELEMENT";
 const char dg_forthgluname[]                     = "GLU";
@@ -1226,7 +1253,7 @@ const char dg_bufferhlistidname[]                = "BUFFER-HLISTID";
 const char dg_symbollistshlistidname[]           = "SYMBOLLIST-HLISTID";
 const char dg_libraryhlistidname[]               = "LIBRARY-HLISTID";
 
-// Forth Glu List Names
+// Forth NGlu List Word Names
 const char dg_nglufuncbufsname[]            = "NGLU-BUFS";
 const char dg_nglufunccallbufname[]         = "NGLU-CALLBUF";
 const char dg_nglufunccallbuftodsname[]     = "NGLU-CALLBUF>";
@@ -2013,7 +2040,7 @@ Premadeword* dg_getppresortedcorewords (Bufferhandle* pBHarrayhead)
     presortedcorewords[i].databuf               = DG_CORE_BUFFERID;
     presortedcorewords[i].dataoffset            = (UINT64)dg_forthquestion;
 
-    i++;   
+    i++;
  
     presortedcorewords[i].pname                 = dg_forthqueryclearlocalsname;
     presortedcorewords[i].namelength            = sizeof(dg_forthqueryclearlocalsname);
@@ -4828,6 +4855,15 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthtouleb128;
 
     i++;
+
+    presortedbufferwords[i].pname                 = dg_forthqueryzerostringtostringname;
+    presortedbufferwords[i].namelength            = sizeof(dg_forthqueryzerostringtostringname);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
+    presortedbufferwords[i].dataoffset            = (UINT64)dg_forthqueryzerostringtostring;
+
+    i++;
     
     presortedbufferwords[i].pname                 = dg_forthqueryendevaluatename;
     presortedbufferwords[i].namelength            = sizeof(dg_forthqueryendevaluatename);
@@ -4853,6 +4889,15 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
     presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
     presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthqueryincludefilestring;
+
+    i++;
+
+    presortedbufferwords[i].pname                 = dg_forthquerynamestrtovaluestrname;
+    presortedbufferwords[i].namelength            = sizeof(dg_forthquerynamestrtovaluestrname);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
+    presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthquerynamestrtovaluestr;
 
     i++;
     
@@ -5006,6 +5051,33 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypedpushdn;
     presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
     presortedbufferwords[i].dataoffset            = (UINT64)dg_BHarraynubgtsize;
+
+    i++;
+
+    presortedbufferwords[i].pname                 = dg_forthbitclrname;
+    presortedbufferwords[i].namelength            = sizeof(dg_forthbitclrname);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
+    presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthbitclr;
+
+    i++;
+
+    presortedbufferwords[i].pname                 = dg_forthbitnotname;
+    presortedbufferwords[i].namelength            = sizeof(dg_forthbitnotname);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
+    presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthbitnot;
+
+    i++;
+
+    presortedbufferwords[i].pname                 = dg_forthbitsetname;
+    presortedbufferwords[i].namelength            = sizeof(dg_forthbitsetname);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
+    presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthbitset;
 
     i++;
         
@@ -6061,7 +6133,16 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthehtop;
 
     i++;
-    
+
+    presortedbufferwords[i].pname                 = dg_forthehquerynamestrtovaluestrname;
+    presortedbufferwords[i].namelength            = sizeof(dg_forthehquerynamestrtovaluestrname);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
+    presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthehquerynamestrtovaluestr;
+
+    i++;
+  
     presortedbufferwords[i].pname                 = dg_forthehnamestrtovaluename;
     presortedbufferwords[i].namelength            = sizeof(dg_forthehnamestrtovaluename);
     presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
@@ -6113,6 +6194,15 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
     presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
     presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthehnewelementtoeh;
+
+    i++;
+
+    presortedbufferwords[i].pname                 = dg_forthehnewelementsname;
+    presortedbufferwords[i].namelength            = sizeof(dg_forthehnewelementsname);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
+    presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthehnewelements;
 
     i++;
     
@@ -6565,6 +6655,15 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthfixpathstring;
 
     i++;
+
+    presortedbufferwords[i].pname                 = dg_forthformstringtovaluestringnamestringuname;
+    presortedbufferwords[i].namelength            = sizeof(dg_forthformstringtovaluestringnamestringuname);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
+    presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthformstringtovaluestringnamestringu;
+
+    i++;
     
     presortedbufferwords[i].pname                 = dg_forthfreehlistelementname;
     presortedbufferwords[i].namelength            = sizeof(dg_forthfreehlistelementname);
@@ -7004,6 +7103,15 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
     presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
     presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthgetpnewbuffer;
+
+    i++;
+
+    presortedbufferwords[i].pname                 = dg_forthgetpoststringname;
+    presortedbufferwords[i].namelength            = sizeof(dg_forthgetpoststringname);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
+    presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthgetpoststring;
 
     i++;
     
@@ -7832,6 +7940,15 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
     presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
     presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthnewhlist;
+
+    i++;
+
+    presortedbufferwords[i].pname                 = dg_forthnewhlistwithroottoehname;
+    presortedbufferwords[i].namelength            = sizeof(dg_forthnewhlistwithroottoehname);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
+    presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthnewhlistwithroottoeh;
 
     i++;
     
@@ -8905,6 +9022,15 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     presortedbufferwords[i].dataoffset            = (UINT64)promptsoffflag;
 
     i++;
+
+    // presortedbufferwords[i].pname                 = dg_forthpostbufferidname;
+    // presortedbufferwords[i].namelength            = sizeof(dg_forthpostbufferidname);
+    // presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    // presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypedpushn;
+    // presortedbufferwords[i].databuf               = 0;
+    // presortedbufferwords[i].dataoffset            = (UINT64)DG_POST_BUFFERID;
+
+    // i++;
     
     presortedbufferwords[i].pname                 = dg_pnumberoffloatparamsname;
     presortedbufferwords[i].namelength            = sizeof(dg_pnumberoffloatparamsname);
@@ -9092,6 +9218,15 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypedpushp;
     presortedbufferwords[i].databuf               = DG_DATASPACE_BUFFERID;
     presortedbufferwords[i].dataoffset            = dg_x86asmaddresssize;
+
+    i++;
+
+    presortedbufferwords[i].pname                 = dg_forthquerypostehnewelementsname;
+    presortedbufferwords[i].namelength            = sizeof(dg_forthquerypostehnewelementsname);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
+    presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthquerypostehnewelements;
 
     i++;
     
@@ -9788,6 +9923,24 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
 
     i++;
 
+    presortedbufferwords[i].pname                 = dg_forthulessthanequalsname;
+    presortedbufferwords[i].namelength            = sizeof(dg_forthulessthanequalsname);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
+    presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthulessthanequals;
+
+    i++;
+
+    presortedbufferwords[i].pname                 = dg_forthugreaterthanequalsname;
+    presortedbufferwords[i].namelength            = sizeof(dg_forthugreaterthanequalsname);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
+    presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthugreaterthanequals;
+
+    i++;
+
     presortedbufferwords[i].pname                 = dg_forthubufalignname;
     presortedbufferwords[i].namelength            = sizeof(dg_forthubufalignname);
     presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
@@ -10010,6 +10163,24 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
     presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
     presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthulomask;
+
+    i++;
+
+    presortedbufferwords[i].pname                 = dg_forthumaxname;
+    presortedbufferwords[i].namelength            = sizeof(dg_forthumaxname);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
+    presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthumax;
+
+    i++;
+
+    presortedbufferwords[i].pname                 = dg_forthuminname;
+    presortedbufferwords[i].namelength            = sizeof(dg_forthuminname);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
+    presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthumin;
 
     i++;
     

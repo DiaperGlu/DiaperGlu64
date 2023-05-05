@@ -3,20 +3,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.9.
+//    This file is part of DiaperGlu v5.10.
 //
-//    DiaperGlu v5.9 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.10 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.9 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.10 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.9; if not, write to the Free Software
+//    along with DiaperGlu v5.10; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// March 31, 2023             //
-// version 5.9                //
+// May 5, 2023                //
+// version 5.10               //
 // /////////////////////////////
 -->
 
@@ -106,6 +106,7 @@
       <a href=forthstringstack.htm#dg_forthgetenvstring            >dg_forthgetenvstring</a>
       <a href=forthstringstack.htm#dg_forthgetmethodstring         >dg_forthgetmethodstring</a>
       <a href=forthstringstack.htm#dg_forthgetquerystring          >dg_forthgetquerystring</a>
+      <a href=forthstringstack.htm#dg_forthgetpoststring           >dg_forthgetpoststring</a>
       <a href=forthstringstack.htm#dg_forthcscanstring             >dg_forthcscanstring</a>
       <a href=forthstringstack.htm#dg_forthminuscscanstring        >dg_forthminuscscanstring</a>
       <a href=forthstringstack.htm#dg_forthasciitounicodestring    >dg_forthasciitounicodestring</a>
@@ -149,6 +150,8 @@
       <a href=forthstringstack.htm#dg_forthulenorstring            >dg_forthulenorstring</a>
       <a href=forthstringstack.htm#dg_forthulexnorstring           >dg_forthulexnorstring</a>
       <a href=forthstringstack.htm#dg_forthtofactorialulestring    >dg_forthtofactorialulestring</a>
+      <a href=forthstringstack.htm#dg_forthqueryzerostringtostring >dg_forthqueryzerostringtostring</a>
+      <a href=forthstringstack.htm#dg_forthformstringtovaluestringnamestringu >dg_forthformstringtovaluestringnamestringu</a>
 
     </div>
 
@@ -205,8 +208,17 @@
 //                                flag = -1 if $1 &lt; $2
 //                                                            
 // Action:
-//  pops parameters from the data stack
-//  removes the top lstring from the lstring stack
+//  Compares the top two strings on the string stack and push a flag indicating
+//    the result to the data stack. The compare starts at the first byte of each 
+//    string and continues until either the end of a string is reached or a non
+//    equal bytes are found.
+//    When a non equal byte is found:
+//      if $1's byte was unsigned less than $2's byte then -1 is returned
+//      if $1's byte was unsigned greater than $2's byte then 1 is returned
+//    If no non equal bytes were found then:
+//      if $1's length is less than $2's length then -1 is returned
+//      if $1's length is equal to $2's length then 0 is returned
+//      if $1's length is greater than $2's length then 1 is returned
 //
 // Failure cases:
 //  error getting number of strings on string stack
@@ -2018,6 +2030,41 @@
 // Action:
 //  pushes the cgi or isapi query string onto the string stack
 //
+// Note:
+//  this is the stuff after a ? in a URL
+//  this gets the form$ from an html form passing data using method get
+//
+// Failure cases:
+//  error getting script processing state
+//   
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthgetpoststring>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthgetpoststring ( GETPOST$ )
+//
+// C prototype:
+//  void dg_forthgetpoststring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the  
+//                                    other bufferhandles are stored          
+//
+// Stack action shorthand:
+//  ( -$- post$ )
+//
+// Action:
+//  pushes the cgi or isapi post string onto the string stack
+//
+// Note:
+//  this gets the form$ from an html form passing data using method post
+//
 // Failure cases:
 //  error getting script processing state
 //   
@@ -3529,6 +3576,101 @@
 //
 // Failure cases:
 //
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthqueryzerostringtostring>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthqueryzerostringtostring ( ?0$&gt;$ )
+//
+// C prototype:
+//  void dg_forthqueryzerostringtostring (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( -- )
+//  ( $or0$ -$- $ )
+//
+// String stack in:
+//   A string which may or may not be null terminated
+//                                                            
+// Action:
+//   If there is a null terminator on the end of the string, it is removed.
+//   If there are more than one null terminators on the end of the string, only one
+//     is removed.
+//
+// Failure cases:
+//  buffer system corrupt
+//  string stack underflow
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthformstringtovaluestringnamestringu>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthformstringtovaluestringnamestringu ( FORM$&gt;VALUE$NAME$U )
+//
+// C prototype:
+//  void dg_forthformstringtovaluestringnamestringu (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+// 
+// Stack action shorthand:
+//  ( -- u )
+//  ( form$ -$- value$0 name$0 value$1 name$1 ... value$u-1 name$u-1 )
+//
+// String stack in:
+//   form$                        An html form encoded string
+//
+// Data stack out:
+//   u                            number of value string name string pairs
+//
+// String stack out:
+//   u value$ name$ pairs
+//
+// Action:
+//   Pulls the value$ name$ pairs out of an html form encoded string
+//    and pushes the number of value$ name$ pairs extracted from the html form 
+//    encoded string onto the data stack
+//   While this is done, each name$ and value$ is decoded using URLDECODE$
+//
+// Note:
+//   An html form encoded string consists of a series of name$ value$ pairs.
+//   Each name$ is separated from the value$ with the '=' character.
+//   Each name$=value$ pair is separated from each other with the '&amp;' character.
+//   Each name$ value$ in the form encoded string is decoded using URLDECODE$
+//     which means each + is changed to a space and %xx is changed to the ascii
+//     character for with hex code xx
+//   Formal html form encoding rules restricts certain characters like ! occurring 
+//     in the string but URLDECODE$ rules work even if those characters occur.
+//   If any name$ or value$ is null terminated, a single null terminator character
+//     is removed from each of those strings. This is done because sometimes the
+//     browser may append null terminators to some of the strings from a form.
+//
+// For example:
+//  $" myname=myvalue&amp;catname=Spot%21" FORM$&gt;VALUE$NAME$U does this:
+//   ( "myname=myvalue&amp;catname=Spot%21" -$- "myvalue" "myname" "Spot!" "catname" )
+//   ( -- 2 )
+//
+// Failure cases:
+//  buffer system corrupt
+//  string stack underflow
+//  
 // //////////////////////////////////////////////////////////////////////////////////////
 </pre>
       </div>

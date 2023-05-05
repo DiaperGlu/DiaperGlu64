@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.9.
+//    This file is part of DiaperGlu v5.10.
 //
-//    DiaperGlu v5.9 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.10 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.9 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.10 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.9; if not, write to the Free Software
+//    along with DiaperGlu v5.10; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// March 31, 2023             //
-// version 5.9                //
+// May 5, 2023                //
+// version 5.10               //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -18972,6 +18972,254 @@ void testdg_namestringtovaluestring()
     if (myflag != 0)
     {
         dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_namestringtovaluestring success case - valuer2 string did not match. Expected >>>valuer2<<<, got >>>");
+        dg_writestdout(&BHarrayhead, pvalue, valuelength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"<<<\n");
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+    
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_namestringtovaluestringflag()
+{
+    Bufferhandle BHarrayhead;
+
+    UINT64 hlistid;    
+
+    unsigned char* pvalue;
+
+    UINT64 valuelength;
+    UINT64 wherefoundflag;
+    
+    INT64 myflag;
+    
+    const char* pError;
+    
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_namestringtovaluestringflag\n");
+
+    // empty hlist case
+    dg_initbuffers(&BHarrayhead);
+    
+    dg_initvariables(&BHarrayhead);
+    
+    hlistid = dg_newhlist(&BHarrayhead);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_namestringtovaluestringflag success case - got an error making hlist, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_newhlistelement (
+        &BHarrayhead,
+        hlistid, // hlistid,
+        (UINT64)-1, // parentelementid,
+        (unsigned char*)"root", //"func3", // pname,
+        4,    //5, // namelength,
+        (unsigned char*)"", // pvalue,
+        0); // valuelength);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_namestringtovaluestringflag success case - got an error making root element, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_newhlistelement (
+        &BHarrayhead,
+        hlistid, // hlistid,
+        0, // parentelementid,
+        (unsigned char*)"name1", //"func3", // pname,
+        5,    //5, // namelength,
+        (unsigned char*)"value1", // pvalue,
+        6); // valuelength);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_namestringtovaluestringflag success case - got an error making 1st child element, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    dg_newhlistelement (
+        &BHarrayhead,
+        hlistid, // hlistid,
+        0, // parentelementid,
+        (unsigned char*)"namer2", //"func3", // pname,
+        6,    //5, // namelength,
+        (unsigned char*)"valuer2", // pvalue,
+        7); // valuelength);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_namestringtovaluestringflag success case - got an error making 2nd child element, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    pvalue = dg_namestringtovaluestringflag(
+        &BHarrayhead,
+        hlistid,
+        0,
+        (unsigned char*)"name1",
+        5,
+        &valuelength,
+        &wherefoundflag);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_namestringtovaluestringflag success case - got an error getting 1st value from 1st name, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (valuelength != 6)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_namestringtovaluestringflag success case - got wrong value length from 1st name expected 6, got ");
+        dg_writestdoutuinttodec(&BHarrayhead, valuelength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    if (wherefoundflag != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_namestringtovaluestringflag success case - got wrong where found flag from 1st name expected 0, got ");
+        dg_writestdoutuinttodec(&BHarrayhead, wherefoundflag);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    pError = dg_comparebytes (
+        pvalue,
+        valuelength,
+        (unsigned char*)"value1",
+        6,
+        &myflag);
+    
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_namestringtovaluestringflag success case - got an error comparing value1 string, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (myflag != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_namestringtovaluestringflag success case - value1 string did not match. Expected >>>value1<<<, got >>>");
+        dg_writestdout(&BHarrayhead, pvalue, valuelength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"<<<\n");
+    }
+    
+    pvalue = dg_namestringtovaluestringflag(
+        &BHarrayhead,
+        hlistid,
+        0,
+        (unsigned char*)"namer2",
+        6,
+        &valuelength,
+        &wherefoundflag);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_namestringtovaluestringflag success case - got an error getting 1st value from 2nd name, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (valuelength != 7)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_namestringtovaluestringflag success case - got wrong value length from 2nd name expected 7, got ");
+        dg_writestdoutuinttodec(&BHarrayhead, valuelength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    if (wherefoundflag != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_namestringtovaluestringflag success case - got wrong wherefoundflag from 2nd name expected 0, got ");
+        dg_writestdoutuinttodec(&BHarrayhead, wherefoundflag);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    pError = dg_comparebytes (
+        pvalue,
+        valuelength,
+        (unsigned char*)"valuer2",
+        7,
+        &myflag);
+    
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_namestringtovaluestringflag success case - got an error comparing valuer2 string, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (myflag != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_namestringtovaluestringflag success case - valuer2 string did not match. Expected >>>valuer2<<<, got >>>");
+        dg_writestdout(&BHarrayhead, pvalue, valuelength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"<<<\n");
+    }
+
+    pvalue = dg_namestringtovaluestringflag(
+        &BHarrayhead,
+        hlistid,
+        0,
+        (unsigned char*)"nameb",
+        5,
+        &valuelength,
+        &wherefoundflag);
+    
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        pError = dg_poperror(&BHarrayhead);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_namestringtovaluestringflag success case - got an error getting 1st value from 3rd name, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+    
+    if (valuelength != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_namestringtovaluestringflag success case - got wrong value length from 3rd name expected 7, got ");
+        dg_writestdoutuinttodec(&BHarrayhead, valuelength);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    if (wherefoundflag == 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_namestringtovaluestringflag success case - got wrong wherefoundflag from 3rd name expected not 0, got ");
+        dg_writestdoutuinttodec(&BHarrayhead, wherefoundflag);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+     
+    if (pvalue != dg_emptystring)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_namestringtovaluestringflag success case - value not empty string, got >>>");
         dg_writestdout(&BHarrayhead, pvalue, valuelength);
         dg_printzerostring(&BHarrayhead, (unsigned char*)"<<<\n");
     }

@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.9.
+//    This file is part of DiaperGlu v5.10.
 //
-//    DiaperGlu v5.9 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.10 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.9 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.10 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.9; if not, write to the Free Software
+//    along with DiaperGlu v5.10; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// March 31, 2023             //
-// version 5.9                //
+// May 5, 2023                //
+// version 5.10               //
 // /////////////////////////////
 
 
@@ -6915,6 +6915,396 @@ void dg_forthsetlengthstring (Bufferhandle* pBHarrayhead)
 }
 
 
+// ( 0$or$ -$- $ )
+void dg_forthqueryzerostringtostring (Bufferhandle* pBHarrayhead)
+{
+    unsigned char* plstring;
+    UINT64 lstringlength;
 
+    UINT64 stringstackdepth;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthqueryzerostringtostringname);
+        return;
+    }
+    
+    if (stringstackdepth < 1)
+    {
+        // underflow error
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthqueryzerostringtostringname);
+        return;
+    }
+
+    // get address length of top string on the locals lstring stack
+    //  only need to do this once since it won't move
+    plstring = dg_getplstring(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID, 
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        stringstackdepth - 1,
+        &lstringlength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthqueryzerostringtostringname);
+        return;
+    }
+
+    if (0 == lstringlength)
+    {
+        // string is empty... so it's not a zero string
+        return;
+    }
+
+    // find out of the last character in the string is a null, if so drop it...
+    if (0 == plstring[lstringlength - 1])
+    {
+        dg_deleteinlstring (
+            pBHarrayhead,
+            DG_STRINGOFFSETSTACK_BUFFERID, 
+            DG_STRINGSTRINGSTACK_BUFFERID,
+            stringstackdepth - 1,
+            lstringlength - 1,
+            1);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthqueryzerostringtostringname);
+            return;
+        }
+    }
+}
+
+
+void dg_forthformstringtovaluestringnamestringu (Bufferhandle* pBHarrayhead)
+{
+    unsigned char* plstring;
+    UINT64 lstringlength;
+
+    UINT64 stringstackdepth;
+
+    UINT64 numberofpairs = 0;
+    UINT64 x;
+    const char* perror;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    stringstackdepth = dg_getnumberoflstringsonstack(
+        pBHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+        return;
+    }
+    
+    if (stringstackdepth < 1)
+    {
+        // underflow error
+        dg_pusherror(pBHarrayhead, dg_stringstackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+        return;
+    }
+
+    while(true)
+    {
+        stringstackdepth = dg_getnumberoflstringsonstack(
+            pBHarrayhead,
+            DG_STRINGOFFSETSTACK_BUFFERID);
+        
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+            return;
+        }
+
+        plstring = dg_getplstring(
+            pBHarrayhead,
+            DG_STRINGOFFSETSTACK_BUFFERID, 
+            DG_STRINGSTRINGSTACK_BUFFERID,
+            stringstackdepth - 1,
+            &lstringlength);
+        
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+            return;
+        }
+
+        if (0 == lstringlength)
+        {
+            break;
+        }
+
+        numberofpairs++;
+
+        x = lstringlength;
+
+        perror = dg_scanforbyte (
+            (void*)plstring,
+            &x,
+            (UINT64)'&');
+
+        if (perror != dg_success)
+        {
+            dg_pusherror(pBHarrayhead, perror);
+            dg_pusherror(pBHarrayhead, dg_scanforbytename);
+            dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+            return;
+        }
+
+        if (largestunsignedint == x)
+        {
+            // no & found, this is the last name$ value$ pair
+            dg_forthnewstring(pBHarrayhead);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+                return;
+            }
+
+            dg_forthswapstring(pBHarrayhead);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+                return;
+            }
+        }
+        else
+        {
+            dg_pushdatastack(pBHarrayhead, x+1);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+                return;
+            }
+
+            dg_forthsplitstring(pBHarrayhead);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+                return;
+            }
+
+            dg_forthswapstring(pBHarrayhead);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+                return;
+            }
+
+            // drop the &... I really need a shortenlstring function
+            dg_forthstringtoc(pBHarrayhead);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+                return;
+            }
+
+            dg_forthdrop(pBHarrayhead);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+                return;
+            }
+        }
+
+        // now have name value string on top, need to split it at =
+        stringstackdepth = dg_getnumberoflstringsonstack(
+            pBHarrayhead,
+            DG_STRINGOFFSETSTACK_BUFFERID);
+        
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+            return;
+        }
+
+        plstring = dg_getplstring(
+            pBHarrayhead,
+            DG_STRINGOFFSETSTACK_BUFFERID, 
+            DG_STRINGSTRINGSTACK_BUFFERID,
+            stringstackdepth - 1,
+            &lstringlength);
+        
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+            return;
+        }
+
+        x = lstringlength;
+
+        perror = dg_scanforbyte(
+            (void*)plstring,
+            &x,
+            (UINT64)'=');
+
+        if (perror != dg_success)
+        {
+            dg_pusherror(pBHarrayhead, perror);
+            dg_pusherror(pBHarrayhead, dg_scanforbytename);
+            dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+            return;
+        }
+
+        if (largestunsignedint == x)
+        {
+            // no = case, treat entire string as a name$
+            dg_forthnewstring(pBHarrayhead);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+                return;
+            }
+
+            dg_forthswapstring(pBHarrayhead);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+                return;
+            }
+
+            // server sometimes sends 0 strings
+            dg_forthqueryzerostringtostring(pBHarrayhead);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+                return;
+            }
+        }
+        else
+        {
+            dg_pushdatastack(pBHarrayhead, x+1);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+                return;
+            }
+
+            dg_forthsplitstring(pBHarrayhead);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+                return;
+            }
+
+            dg_forthurldecodestring(pBHarrayhead);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+                return;
+            }
+
+            // server sometimes sends 0 strings
+            dg_forthqueryzerostringtostring(pBHarrayhead);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+                return;
+            }
+
+            dg_forthswapstring(pBHarrayhead);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+                return;
+            }
+
+            // dropping the =, I really need a shortenlstring function
+            dg_forthstringtoc(pBHarrayhead);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+                return;
+            }
+
+            dg_forthdrop(pBHarrayhead);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+                return;
+            }
+
+            dg_forthurldecodestring(pBHarrayhead);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+                return;
+            }
+
+            // server sometimes sends 0 strings
+            dg_forthqueryzerostringtostring(pBHarrayhead);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+                return;
+            }            
+        }
+
+        // bring the urlstring back to the top
+        dg_forthrotstring(pBHarrayhead);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+            return;
+        }
+    }
+
+    dg_forthdropstring(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+        return;
+    }
+
+    dg_pushdatastack(pBHarrayhead, numberofpairs); 
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthformstringtovaluestringnamestringuname);
+        return;
+    } 
+}
 
 

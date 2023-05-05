@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.9.
+//    This file is part of DiaperGlu v5.10.
 //
-//    DiaperGlu v5.9 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.10 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.9 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.10 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.9; if not, write to the Free Software
+//    along with DiaperGlu v5.10; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// March 31, 2023             //
-// version 5.9                //
+// May 5, 2023                //
+// version 5.10               //
 // /////////////////////////////
 
 
@@ -602,9 +602,9 @@ UINT64 dg_checkplusloopdone (Bufferhandle* pBHarrayhead)
     unsigned char* prstack = NULL;
     UINT64* prstacklength = NULL;
 
-    INT64* pints = NULL;
+    UINT64* pints = NULL;
 
-    INT64 loopstep = 0;
+    UINT64 loopstep = 0;
 
     // UINT64 olderrorcount = 0;
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
@@ -635,7 +635,7 @@ UINT64 dg_checkplusloopdone (Bufferhandle* pBHarrayhead)
 
     olderrorcount = dg_geterrorcount(pBHarrayhead);
 
-    loopstep = (int)dg_popbufferuint64(
+    loopstep = dg_popbufferuint64(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID);
 
@@ -646,21 +646,21 @@ UINT64 dg_checkplusloopdone (Bufferhandle* pBHarrayhead)
         return(FORTH_TRUE);
     }
 
-    pints = (INT64*)(prstack + *prstacklength - 2* sizeof(UINT64));
+    pints = (UINT64*)(prstack + *prstacklength - (2 * sizeof(UINT64)));
 
     // if 0 < limit - index <= loopstep, loop is finished
     if ((pints[1] - pints[0]) != 0)
     {
-        if (loopstep >= 0)
+        if ((INT64)loopstep >= 0)
         {
-            if ((pints[1] - pints[0]) <= loopstep) // signed comparison
+            if ((pints[1] - pints[0]) <= loopstep) // unsigned comparison
             {
                 return (FORTH_TRUE);
             }
         }
         else
         {
-            if ((pints[1] - pints[0]) >= loopstep) // signed comparison
+            if ((pints[1] - pints[0]) >= loopstep) // unsigned comparison
             {
                 return (FORTH_TRUE);
             }

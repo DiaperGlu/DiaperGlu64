@@ -1,4 +1,39 @@
 Changelog for Diaperglu
+   5 May 2023
+     Released v5.10
+
+   4 May 2023
+     Fixed +LOOP to handle the case where the difference between the loop bounds is very
+       large (negative). Also fixed the documentation for +LOOP.
+
+   19 Apr 2023
+     Added EH-?NAME$>VALUE$
+     Added ?NAME$>VALUE$
+     Fixed documentation action description for COMPARE$
+     Added dg_namestringtovaluestringflag
+
+   17 Apr 2023
+     Added QUERY-POST-EH-NEW-ELEMENTS
+     Added NEW-HLISTWITHROOT>EH
+
+   16 Apr 2023
+     Added EH-NEW-ELEMENTS
+     Added FORM$>VALUE$NAME$U ( adding a dg_shrinklstring function would improve performace )
+                              (  or I could just modify the string stack buffers directly... )
+
+   14 Apr 2023
+     Added GETPOST$
+     Added ?0$>$
+
+   13 Apr 2023
+     Added BITSET
+     Added BITCLR
+     Added BITNOT
+     Added UMAX
+     Added UMIN
+     Added U<=
+     Added U>=
+
    31 Mar 2023
      Released v5.9
      Added UI-UF-MAKE-SURE-AVAILABLE-RMASK
@@ -22,6 +57,7 @@ Changelog for Diaperglu
 
    28 Mar 2023
      Recompiled for Mac OS X 13.3 Ventura - no changes required
+     Added CALL-SUBS-FRAME-FAST-LOCALS,<
  
    27 Mar 2023
      Released v5.8
