@@ -1,0 +1,1020 @@
+		( //////////////////////////////////////////////////////////////////////////////////////// )
+( //                                                                                       )
+( //    Copyright 2023 James Patrick Norris                                                )
+( //                                                                                       )
+( //    This file is part of Diaperglu Elevator Simulator v1.4.                            )
+( //                                                                                       )
+( //    Diaperglu Elevator Simulator v1.4 is free software; you can redistribute it and/or modify )
+( //    it under the terms of the GNU General Public License as published by               )
+( //    the Free Software Foundation; either version 2 of the License, or                  )
+( //    {at your option} any later version.                                                )
+( //                                                                                       )
+( //    Diaperglu Elevator Simulator v1.4 is distributed in the hope that it will be useful, )
+( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
+( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
+( //    GNU General Public License for more details.                                       )
+( //                                                                                       )
+( //    You should have received a copy of the GNU General Public License                  )
+( //    along with Diaperglu Elevator Simulator v1.4; if not, write to the Free Software   )
+( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
+( //                                                                                       )
+( //////////////////////////////////////////////////////////////////////////////////////// )
+
+( /////////////////////////////// )
+( // James Patrick Norris      // )
+( // www.rainbarrel.com        // )
+( // May 11, 2023              // )
+( // version 1.4               // )
+( /////////////////////////////// )
+
+$" ElevatorContest.dglu" INCLUDEFILE$
+
+
+: testUMAXEXCEPT-1 ( -- )
+    CRLF ." testing UMAXEXCEPT-1 "
+    0 0  UMAXEXCEPT-1 0= 0= IF CRLF ." - FAIL! 0 0 case" EXIT THEN
+    0 1  UMAXEXCEPT-1 0= 1 = IF CRLF ." - FAIL! 0 1 case" EXIT THEN
+    1 0  UMAXEXCEPT-1 1 = 0= IF CRLF ." - FAIL! 0 1 case" EXIT THEN
+    -1 0 UMAXEXCEPT-1 0= 0= IF CRLF ." - FAIL! -1 1 case" EXIT THEN
+    0 -1 UMAXEXCEPT-1 0= 0= IF CRLF ." - FAIL! 0 -1 case" EXIT THEN
+    3 5  UMAXEXCEPT-1 5 = 0= IF CRLF ." - FAIL! 3 5 case" EXIT THEN
+    5 3  UMAXEXCEPT-1 5 = 0= IF CRLF ." - FAIL! 5 3 case" EXIT THEN
+    -1 -1  UMAXEXCEPT-1 -1 = 0= IF CRLF ." - FAIL! 5 3 case" EXIT THEN
+    ." Success!"
+;
+
+
+HEX
+: testpressupbutton ( -- )
+    CRLF ." testing pressupbutton "
+    0 upbuttons !
+    0 pressupbutton
+    upbuttons @ 1 = 0= IF CRLF ." - FAIL! 0 only case" EXIT THEN
+    1 pressupbutton
+    upbuttons @ 3 = 0= IF CRLF ." - FAIL! 0 and 1 pressed case" EXIT THEN
+    2 pressupbutton
+    upbuttons @ 7 = 0= IF CRLF ." - FAIL! 0, 1, and 2 pressed case" EXIT THEN
+    0 pressupbutton
+    upbuttons @ 7 = 0= IF CRLF ." - FAIL! 0, 1, and 2 pressed case b" EXIT THEN
+    0 upbuttons !
+    2 pressupbutton 4 pressupbutton
+    upbuttons @ 14 = 0= IF CRLF ." - FAIL! 0, 1, and 2 pressed case b" EXIT THEN 
+    ." Success!"
+;
+
+
+HEX
+: testpressdownbutton ( -- )
+    CRLF ." testing pressdownbutton "
+    0 downbuttons !
+    0 pressdownbutton
+    downbuttons @ 1 = 0= IF CRLF ." - FAIL! 0 only case" EXIT THEN
+    1 pressdownbutton
+    downbuttons @ 3 = 0= IF CRLF ." - FAIL! 0 and 1 pressed case" EXIT THEN
+    2 pressdownbutton
+    downbuttons @ 7 = 0= IF CRLF ." - FAIL! 0, 1, and 2 pressed case" EXIT THEN
+    0 pressdownbutton
+    downbuttons @ 7 = 0= IF CRLF ." - FAIL! 0, 1, and 2 pressed case b" EXIT THEN
+    0 downbuttons !
+    2 pressdownbutton 4 pressdownbutton
+    downbuttons @ 14 = 0= IF CRLF ." - FAIL! 0, 1, and 2 pressed case b" EXIT THEN 
+    ." Success!"
+;
+
+
+HEX
+: testpressfloorbutton ( -- )
+    CRLF ." testing pressfloorbutton "
+    0 floorbuttons !
+    0 pressfloorbutton
+    floorbuttons @ 1 = 0= IF CRLF ." - FAIL! 0 only case" EXIT THEN
+    1 pressfloorbutton
+    floorbuttons @ 3 = 0= IF CRLF ." - FAIL! 0 and 1 pressed case" EXIT THEN
+    2 pressfloorbutton
+    floorbuttons @ 7 = 0= IF CRLF ." - FAIL! 0, 1, and 2 pressed case" EXIT THEN
+    0 pressfloorbutton
+    floorbuttons @ 7 = 0= IF CRLF ." - FAIL! 0, 1, and 2 pressed case b" EXIT THEN
+    0 floorbuttons !
+    2 pressfloorbutton 4 pressfloorbutton
+    floorbuttons @ 14 = 0= IF CRLF ." - FAIL! 0, 1, and 2 pressed case b" EXIT THEN 
+    ." Success!"
+;
+
+
+HEX
+: testclearupbutton ( -- )
+    CRLF ." testing clearupbutton "
+    3F upbuttons !
+    0 clearupbutton
+    upbuttons @ 3E = 0= IF CRLF ." - FAIL! 0 only case" EXIT THEN
+    1 clearupbutton
+    upbuttons @ 3C = 0= IF CRLF ." - FAIL! 0 and 1 cleared case" EXIT THEN
+    2 clearupbutton
+    upbuttons @ 38 = 0= IF CRLF ." - FAIL! 0, 1, and 2 cleared case" EXIT THEN
+    0 clearupbutton
+    upbuttons @ 38 = 0= IF CRLF ." - FAIL! 0, 1, and 2 cleared case b" EXIT THEN
+    3F upbuttons !
+    2 clearupbutton 4 clearupbutton
+    upbuttons @ 2B = 0= IF CRLF ." - FAIL! 0, 1, and 2 cleared case b" EXIT THEN 
+    ." Success!"
+;
+
+
+HEX
+: testcleardownbutton ( -- )
+    CRLF ." testing cleardownbutton "
+    3F downbuttons !
+    0 cleardownbutton
+    downbuttons @ 3E = 0= IF CRLF ." - FAIL! 0 only case" EXIT THEN
+    1 cleardownbutton
+    downbuttons @ 3C = 0= IF CRLF ." - FAIL! 0 and 1 cleared case" EXIT THEN
+    2 cleardownbutton
+    downbuttons @ 38 = 0= IF CRLF ." - FAIL! 0, 1, and 2 cleared case" EXIT THEN
+    0 cleardownbutton
+    downbuttons @ 38 = 0= IF CRLF ." - FAIL! 0, 1, and 2 cleared case b" EXIT THEN
+    3F downbuttons !
+    2 cleardownbutton 4 cleardownbutton
+    downbuttons @ 2B = 0= IF CRLF ." - FAIL! 0, 1, and 2 cleared case b" EXIT THEN 
+    ." Success!"
+;
+
+
+HEX
+: testclearfloorbutton ( -- )
+    CRLF ." testing clearfloorbutton "
+    3F floorbuttons !
+    0 clearfloorbutton
+    floorbuttons @ 3E = 0= IF CRLF ." - FAIL! 0 only case" EXIT THEN
+    1 clearfloorbutton
+    floorbuttons @ 3C = 0= IF CRLF ." - FAIL! 0 and 1 cleared case" EXIT THEN
+    2 clearfloorbutton
+    floorbuttons @ 38 = 0= IF CRLF ." - FAIL! 0, 1, and 2 cleared case" EXIT THEN
+    0 clearfloorbutton
+    floorbuttons @ 38 = 0= IF CRLF ." - FAIL! 0, 1, and 2 cleared case b" EXIT THEN
+    3F floorbuttons !
+    2 clearfloorbutton 4 clearfloorbutton
+    floorbuttons @ 2B = 0= IF CRLF ." - FAIL! 0, 1, and 2 cleared case b" EXIT THEN 
+    ." Success!"
+;
+
+
+HEX
+: testdownmask ( -- )
+    CRLF ." testing downmask "
+    0 downmask 0= 0= IF CRLF ." - FAIL! 0 case" EXIT THEN
+    1 downmask 1 = 0= IF CRLF ." - FAIL! 1 case" EXIT THEN
+    2 downmask 3 = 0= IF CRLF ." - FAIL! 2 case" EXIT THEN
+    3 downmask 7 = 0= IF CRLF ." - FAIL! 2 case" EXIT THEN
+    4 downmask 0F = 0= IF CRLF ." - FAIL! 2 case" EXIT THEN
+    5 downmask 1F = 0= IF CRLF ." - FAIL! 2 case" EXIT THEN
+    ." Success!"
+;
+
+
+HEX
+: testupmask ( -- )
+    CRLF ." testing upmask "
+    0 upmask FFFFFFFFFFFFFFFE numberoffloors ULOMASK AND = 0= IF CRLF ." - FAIL! 0 case" EXIT THEN
+    1 upmask FFFFFFFFFFFFFFFC numberoffloors ULOMASK AND = 0= IF CRLF ." - FAIL! 1 case" EXIT THEN
+    2 upmask FFFFFFFFFFFFFFF8 numberoffloors ULOMASK AND = 0= IF CRLF ." - FAIL! 2 case" EXIT THEN
+    3 upmask FFFFFFFFFFFFFFF0 numberoffloors ULOMASK AND = 0= IF CRLF ." - FAIL! 2 case" EXIT THEN
+    4 upmask FFFFFFFFFFFFFFE0 numberoffloors ULOMASK AND = 0= IF CRLF ." - FAIL! 2 case" EXIT THEN
+    5 upmask FFFFFFFFFFFFFFC0 numberoffloors ULOMASK AND = 0= IF CRLF ." - FAIL! 2 case" EXIT THEN
+    ." Success!"
+;
+
+
+HEX
+: testlowestfloorset ( -- )
+    CRLF ." testing lowestfloorset "
+    0 lowestfloorset -1 = 0= IF CRLF ." - FAIL! 0 case" EXIT THEN
+    1 lowestfloorset 0= 0= IF CRLF ." - FAIL! 0 case" EXIT THEN
+    3 lowestfloorset 0= 0= IF CRLF ." - FAIL! 0 case" EXIT THEN
+    5 lowestfloorset 0= 0= IF CRLF ." - FAIL! 0 case" EXIT THEN
+    7 lowestfloorset 0= 0= IF CRLF ." - FAIL! 0 case" EXIT THEN
+    2 lowestfloorset 1 = 0= IF CRLF ." - FAIL! 0 case" EXIT THEN
+    0A lowestfloorset 1 = 0= IF CRLF ." - FAIL! 0 case" EXIT THEN
+    3A lowestfloorset 1 = 0= IF CRLF ." - FAIL! 0 case" EXIT THEN
+    20 lowestfloorset 5 = 0= IF CRLF ." - FAIL! 0 case" EXIT THEN
+    ." Success!"
+;
+
+
+HEX
+: testhighestfloorset ( -- )
+    CRLF ." testing highestfloorset "
+    0 highestfloorset -1 = 0= IF CRLF ." - FAIL! 0 case" EXIT THEN
+    1 highestfloorset 0= 0= IF CRLF ." - FAIL! 0 case" EXIT THEN
+    3 highestfloorset 1 = 0= IF CRLF ." - FAIL! 0 case" EXIT THEN
+    5 highestfloorset 2 = 0= IF CRLF ." - FAIL! 0 case" EXIT THEN
+    7 highestfloorset 2 = 0= IF CRLF ." - FAIL! 0 case" EXIT THEN
+    2 highestfloorset 1 = 0= IF CRLF ." - FAIL! 0 case" EXIT THEN
+    0A highestfloorset 3 = 0= IF CRLF ." - FAIL! 0 case" EXIT THEN
+    3A highestfloorset 5 = 0= IF CRLF ." - FAIL! 0 case" EXIT THEN
+    20 highestfloorset 5 = 0= IF CRLF ." - FAIL! 0 case" EXIT THEN
+    ." Success!"
+;
+
+
+: test?anyhigherbuttons ( -- )
+    CRLF ." testing ?anyhigherbuttons "
+    6 pnumberoffloors !
+    reset
+    ?anyhigherbuttons FALSE <> IF CRLF ." - FAIL! floor 0 all clear case" EXIT THEN
+    3 currentfloor !
+    ?anyhigherbuttons FALSE <> IF CRLF ." - FAIL! floor 3 all clear case" EXIT THEN
+    2 pressdownbutton
+    ?anyhigherbuttons FALSE <> IF CRLF ." - FAIL! floor 3 down 2 case" EXIT THEN
+    3 pressdownbutton
+    ?anyhigherbuttons FALSE <> IF CRLF ." - FAIL! floor 3 down 2 down 3 case" EXIT THEN
+    4 pressdownbutton
+    ?anyhigherbuttons TRUE <> IF CRLF ." - FAIL! floor 3 down 2 down 3 down 4 case" EXIT THEN
+    reset
+    3 currentfloor !
+    3 pressupbutton
+    ?anyhigherbuttons FALSE <> IF CRLF ." - FAIL! floor 3 up 3 case" EXIT THEN
+    4 pressupbutton
+    ?anyhigherbuttons TRUE <> IF CRLF ." - FAIL! floor 3 up 3 up 4 case" EXIT THEN
+    reset
+    3 currentfloor !
+    3 pressfloorbutton
+    ?anyhigherbuttons FALSE <> IF CRLF ." - FAIL! floor 3 floorb 3 case" EXIT THEN
+    4 pressupbutton
+    ?anyhigherbuttons TRUE <> IF CRLF ." - FAIL! floor 3 floorb 3 floorb 4 case" EXIT THEN
+    reset
+    3 currentfloor !
+    5 pressupbutton
+    ?anyhigherbuttons TRUE <> IF CRLF ." - FAIL! floor 3 up 5 case" EXIT THEN
+    reset
+    3 currentfloor !
+    5 pressdownbutton
+    ?anyhigherbuttons TRUE <> IF CRLF ." - FAIL! floor 3 down 5 case" EXIT THEN
+    reset
+    3 currentfloor !
+    5 pressfloorbutton
+    ?anyhigherbuttons TRUE <> IF CRLF ." - FAIL! floor 3 floorb 5 case" EXIT THEN
+    3 currentfloor !
+    5 pressfloorbutton 3 pressupbutton 3 pressdownbutton
+    ?anyhigherbuttons TRUE <> IF CRLF ." - FAIL! floor 3 floorb 3 floorb 4 floorb 5 case" EXIT THEN   
+;
+
+
+: test?anylowerbuttons ( -- )
+    CRLF ." testing ?anylowerbuttons "
+    6 pnumberoffloors !
+    reset
+    ?anylowerbuttons FALSE <> IF CRLF ." - FAIL! floor 0 all clear case" EXIT THEN
+    3 currentfloor !
+    ?anylowerbuttons FALSE <> IF CRLF ." - FAIL! floor 3 all clear case" EXIT THEN
+    4 pressdownbutton
+    ?anylowerbuttons FALSE <> IF CRLF ." - FAIL! floor 3 down 4 case" EXIT THEN
+    3 pressdownbutton
+    ?anylowerbuttons FALSE <> IF CRLF ." - FAIL! floor 3 down 4 down 3 case" EXIT THEN
+    2 pressdownbutton
+    ?anylowerbuttons TRUE <> IF CRLF ." - FAIL! floor 3 down 4 down 3 down 2 case" EXIT THEN
+    reset
+    3 currentfloor !
+    2 pressupbutton
+    ?anylowerbuttons TRUE <> IF CRLF ." - FAIL! floor 3 up 2 case" EXIT THEN
+    reset
+    3 currentfloor !
+    2 pressfloorbutton
+    ?anylowerbuttons TRUE <> IF CRLF ." - FAIL! floor 3 floorb 2 case" EXIT THEN
+;
+
+
+HEX
+: test?currentfloor ( -- ) // note: currently only testing idle case...
+    CRLF ." testing ?currentfloor "
+    reset ( currentfloor is 0 and all buttons are cleared )
+    idle direction !
+    ?currentfloor -1 = 0= IF CRLF ." - FAIL! floor 0 clear case" EXIT THEN
+    reset idle direction ! 0 pressupbutton 
+    ?currentfloor 0= 0= IF CRLF ." - FAIL! floor 0 up pressed case" EXIT THEN
+    reset idle direction ! 1 pressupbutton 
+    ?currentfloor -1 = 0= IF CRLF ." - FAIL! floor 0 up for 1 pressed case" EXIT THEN
+    reset idle direction ! 0 pressdownbutton 
+    ?currentfloor 0= 0= IF CRLF ." - FAIL! floor 0 down pressed case" EXIT THEN
+    reset idle direction ! 0 pressfloorbutton 
+    ?currentfloor 0= 0= IF CRLF ." - FAIL! floor 0 floor pressed case" EXIT THEN
+    reset idle direction ! 0 pressupbutton 0 pressdownbutton 0 pressfloorbutton 
+    ?currentfloor 0= 0= IF CRLF ." - FAIL! floor 0 all pressed case" EXIT THEN
+    reset idle direction ! 1 currentfloor ! 
+    ?currentfloor -1 = 0= IF CRLF ." - FAIL! floor 1 clear case" EXIT THEN
+    reset idle direction ! 1 currentfloor ! 0 pressupbutton 
+    ?currentfloor -1 = 0= IF CRLF ." - FAIL! floor 1 up for 0 pressed case" EXIT THEN
+    reset idle direction ! 1 pressupbutton 1 currentfloor !
+    ?currentfloor 1 = 0= IF CRLF ." - FAIL! floor 1 up pressed case" EXIT THEN
+    reset idle direction ! 1 currentfloor ! 1 pressdownbutton 
+    ?currentfloor 1 = 0= IF CRLF ." - FAIL! floor 1 down pressed case" EXIT THEN
+    reset idle direction ! 1 currentfloor ! 1 pressfloorbutton 
+    ?currentfloor 1 = 0= IF CRLF ." - FAIL! floor 1 floor pressed case" EXIT THEN
+    reset idle direction ! 1 currentfloor ! 1 pressupbutton 1 pressdownbutton 1 pressfloorbutton 
+    ?currentfloor 1 = 0= IF CRLF ." - FAIL! floor 1 all pressed case" EXIT THEN
+    reset  goingup direction !  1 currentfloor ! 1 pressupbutton 1 pressdownbutton 1 pressfloorbutton 
+    ?currentfloor 1 = 0= IF CRLF ." - FAIL! floor 1 going up all pressed case" EXIT THEN
+    reset  goingup direction !  1 currentfloor ! 1 pressupbutton 
+    ?currentfloor 1 = 0= IF CRLF ." - FAIL! floor 1 going up up pressed case" EXIT THEN
+    reset  goingup direction !  1 currentfloor ! 1 pressdownbutton 
+    ?currentfloor -1 = 0= IF CRLF ." - FAIL! floor 1 going up down pressed case" EXIT THEN
+    reset  goingup direction !  1 currentfloor ! 1 pressfloorbutton 
+    ?currentfloor 1 = 0= IF CRLF ." - FAIL! floor 1 going up floor pressed case" EXIT THEN
+   
+    ." Success!"
+;
+
+
+HEX
+: testfindnearestgoingup ( -- )
+    CRLF ." testing findnearestgoingup "
+    reset ( currentfloor is 0 and all buttons are cleared )
+    findnearestgoingup -1 = 0= IF CRLF ." - FAIL! floor 0 all clear case" EXIT THEN
+    reset 1 currentfloor ! 0 pressupbutton
+    findnearestgoingup -1 = 0= IF CRLF ." - FAIL! floor 1 up 0 pressed case" EXIT THEN
+    reset 1 currentfloor ! 0 pressfloorbutton
+    findnearestgoingup -1 = 0= IF CRLF ." - FAIL! floor 1 floor 0 pressed case" EXIT THEN
+    reset 1 currentfloor ! 0 pressupbutton 0 pressfloorbutton
+    findnearestgoingup -1 = 0= IF CRLF ." - FAIL! floor 1 floor 0 up 0 pressed case" EXIT THEN
+    reset 
+    5 pressupbutton
+    findnearestgoingup 5 = 0= IF CRLF ." - FAIL! floor 0, up 5 pressed case" EXIT THEN
+    4 pressfloorbutton
+    findnearestgoingup 4 = 0= IF CRLF ." - FAIL! floor 0, up 5 floor 4 pressed case" EXIT THEN
+    3 pressupbutton
+    findnearestgoingup 3 = 0= IF CRLF ." - FAIL! floor 0, up 5 floor 4 up 3 pressed case" EXIT THEN
+    2 pressfloorbutton
+    findnearestgoingup 2 = 0= IF CRLF ." - FAIL! floor 0, up 5 floor 4 up 3 floor 2 pressed case" EXIT THEN
+    1 pressdownbutton
+    findnearestgoingup 2 = 0= IF CRLF ." - FAIL! floor 0, up 5 floor 4 up 3 floor 2 down 1 pressed case" EXIT THEN
+    
+    ." Success!"
+;
+
+
+HEX
+: testfindnearestgoingdown ( -- )
+    CRLF ." testing findnearestgoingdown "
+    reset 5 currentfloor !
+    findnearestgoingdown -1 = 0= IF CRLF ." - FAIL! floor 5 all clear case" EXIT THEN
+    reset 4 currentfloor ! 5 pressdownbutton
+    findnearestgoingdown -1 = 0= IF CRLF ." - FAIL! floor 4 down 5 pressed case" EXIT THEN
+    reset 4 currentfloor ! 5 pressfloorbutton
+    findnearestgoingdown -1 = 0= IF CRLF ." - FAIL! floor 4 floor 5 pressed case" EXIT THEN
+    reset 4 currentfloor ! 5 pressdownbutton 5 pressfloorbutton
+    findnearestgoingdown -1 = 0= IF CRLF ." - FAIL! floor 4 floor 5 up 5 pressed case" EXIT THEN
+    reset 5 currentfloor ! 
+    0 pressdownbutton
+    findnearestgoingdown 0 = 0= IF CRLF ." - FAIL! floor 5, down 0 pressed case" EXIT THEN
+    1 pressfloorbutton
+    findnearestgoingdown 1 = 0= IF CRLF ." - FAIL! floor 5, down 0 floor 1 pressed case" EXIT THEN
+    2 pressdownbutton
+    findnearestgoingdown 2 = 0= IF CRLF ." - FAIL! floor 5, down 0 floor 1 down 2 pressed case" EXIT THEN
+    3 pressfloorbutton
+    findnearestgoingdown 3 = 0= IF CRLF ." - FAIL! floor 5, down 0 floor 1 down 2 floor 1 pressed case" EXIT THEN
+    4 pressdownbutton
+    findnearestgoingdown 4 = 0= IF CRLF ." - FAIL! floor 5, down 0 floor 1 down 2 floor 3 down 4 pressed case" EXIT THEN
+    
+    ." Success!"
+;
+
+
+HEX
+: testfindhighestgoingdown ( -- )
+    CRLF ." testing findhighestgoingdown "
+    reset ( currentfloor is 0 and all buttons are cleared )
+    findhighestgoingdown -1 = 0= IF CRLF ." - FAIL! floor 0 all clear case" EXIT THEN
+    reset 1 currentfloor ! 0 pressdownbutton
+    findhighestgoingdown -1 = 0= IF CRLF ." - FAIL! floor 1 up 0 pressed case" EXIT THEN
+    reset 1 currentfloor ! 0 pressfloorbutton
+    findhighestgoingdown -1 = 0= IF CRLF ." - FAIL! floor 1 floor 0 pressed case" EXIT THEN
+    reset 1 currentfloor ! 0 pressdownbutton 0 pressfloorbutton
+    findhighestgoingdown -1 = 0= IF CRLF ." - FAIL! floor 1 floor 0 down 0 pressed case" EXIT THEN
+    reset 
+    1 pressdownbutton
+    findhighestgoingdown 1 = 0= IF CRLF ." - FAIL! floor 0, down 1 pressed case" EXIT THEN
+    3 pressdownbutton
+    findhighestgoingdown 3 = 0= IF CRLF ." - FAIL! floor 0, down 1 down 3 pressed case" EXIT THEN
+    4 pressdownbutton
+    findhighestgoingdown DUP 4 = 0= IF CRLF ." - FAIL! floor 0, down 1 down 3 down 4 pressed case, expected 4 got: " 
+      U. EXIT 
+    THEN DROP
+    5 pressdownbutton
+    findhighestgoingdown DUP 5 = 0= IF CRLF ." - FAIL! floor 0, down 1 down 3 down 4 down 5 pressed case, expected 4 got: " 
+      U. EXIT 
+    THEN DROP
+    
+    ." Success!"
+;
+
+
+HEX
+: testfindlowestgoingup ( -- )
+    CRLF ." testing findlowestgoingup "
+    reset 5 currentfloor !
+    findlowestgoingup -1 = 0= IF CRLF ." - FAIL! floor 5 all clear case" EXIT THEN
+    reset 4 currentfloor ! 5 pressupbutton
+    findlowestgoingup -1 = 0= IF CRLF ." - FAIL! floor 4 down 5 pressed case" EXIT THEN
+    reset 4 currentfloor ! 5 pressfloorbutton
+    findlowestgoingup -1 = 0= IF CRLF ." - FAIL! floor 4 floor 5 pressed case" EXIT THEN
+    reset 4 currentfloor ! 5 pressupbutton 5 pressfloorbutton
+    findlowestgoingup -1 = 0= IF CRLF ." - FAIL! floor 4 floor 5 up 5 pressed case" EXIT THEN
+    reset 5 currentfloor ! 
+    4 pressupbutton
+    findlowestgoingup 4 = 0= IF CRLF ." - FAIL! floor 5, up 4 pressed case" EXIT THEN
+    3 pressupbutton
+    findlowestgoingup 3 = 0= IF CRLF ." - FAIL! floor 5, up 4 up 3 pressed case" EXIT THEN
+    2 pressupbutton
+    findlowestgoingup 2 = 0= IF CRLF ." - FAIL! floor 5, up 4 up 3 up 2 pressed case" EXIT THEN
+    1 pressupbutton
+    findlowestgoingup 1 = 0= IF CRLF ." - FAIL! floor 5, up 4 up 3 up 2 up 1 pressed case" EXIT THEN
+    0 pressupbutton
+    findlowestgoingup 0= 0= IF CRLF ." - FAIL! floor 5, up 4 up 3 up 2 up 1 up 0 pressed case" EXIT THEN
+    
+    ." Success!"
+;
+
+
+HEX
+: testfindnextdirectionidlefloor ( -- )
+    CRLF ." testing findnextdirectionidlefloor "
+    reset 
+    findnextdirectionidlefloor -1 = 0= IF CRLF ." - FAIL! floor 0 all clear case" EXIT THEN
+    3 currentfloor !
+    findnextdirectionidlefloor -1 = 0= IF CRLF ." - FAIL! floor 3 all clear case" EXIT THEN
+    0 pressupbutton 
+    findnextdirectionidlefloor 0= 0= IF CRLF ." - FAIL! floor 3 up 0 case" EXIT THEN
+    5 pressdownbutton 
+    findnextdirectionidlefloor 5 = 0= IF CRLF ." - FAIL! floor 3 up 0 5 down case" EXIT THEN
+    1 pressdownbutton 
+    findnextdirectionidlefloor 1 = 0= IF CRLF ." - FAIL! floor 3 up 0 5 down 1 down case" EXIT THEN
+    4 pressupbutton 
+    findnextdirectionidlefloor 4 = 0= IF CRLF ." - FAIL! floor 3 up 0 5 down 1 down 4 up case" EXIT THEN
+    2 pressupbutton 
+    findnextdirectionidlefloor 4 = 0= IF CRLF ." - FAIL! floor 3 up 0 5 down 1 down 4 up 2 up case" EXIT THEN
+    2 pressfloorbutton 
+    findnextdirectionidlefloor 4 = 0= IF CRLF ." - FAIL! floor 3 up 0 5 down 1 down 4 up 2 up 2 floor case" EXIT THEN
+    2 pressdownbutton 
+    findnextdirectionidlefloor 4 = 0= IF CRLF ." - FAIL! floor 3 up 0 5 down 1 down 4 up 2 up 2 floor2 down case" EXIT THEN
+    3 pressdownbutton 
+    findnextdirectionidlefloor 4 = 0= IF CRLF ." - FAIL! floor 3 up 0 5 down 1 down 4 up 2 up 2 floor 2 down 3 down case" EXIT THEN
+    3 pressupbutton 
+    findnextdirectionidlefloor 3 = 0= IF CRLF ." - FAIL! floor 3 up 0 5 down 1 down 4 up 2 up 2 floor 2 down 3 down 3 up case" EXIT THEN
+    reset 
+    3 currentfloor !  3 pressfloorbutton
+    findnextdirectionidlefloor 3 = 0= IF CRLF ." - FAIL! floor 3 3 floorb case" EXIT THEN  
+    ." Success!"
+;
+
+
+HEX
+: testfindnextdirectionupfloor ( -- )
+    CRLF ." testing findnextdirectionupfloor "
+    reset 
+    findnextdirectionupfloor -1 = 0= IF CRLF ." - FAIL! floor 0 all clear case" EXIT THEN
+    3 currentfloor !
+    findnextdirectionupfloor -1 = 0= IF CRLF ." - FAIL! floor 3 all clear case" EXIT THEN
+    0 pressupbutton 
+    findnextdirectionupfloor 0= 0= IF CRLF ." - FAIL! floor 3 up 0 case" EXIT THEN
+    1 pressdownbutton 
+    findnextdirectionupfloor 1 = 0= IF CRLF ." - FAIL! floor 3 up 0 down 1 case" EXIT THEN 
+    5 pressdownbutton 
+    findnextdirectionupfloor 5 = 0= IF CRLF ." - FAIL! floor 3 up 0 down 1 down 5 case" EXIT THEN
+    4 pressupbutton 
+    findnextdirectionupfloor 4 = 0= IF CRLF ." - FAIL! floor 3 up 0 down 1 down 5 up 4 case" EXIT THEN
+    3 pressfloorbutton 
+    findnextdirectionupfloor 3 = 0= IF CRLF ." - FAIL! floor 3 up 0 down 1 down 5 up 4 floor 3 case" EXIT THEN 
+    ." Success!"
+;
+
+
+HEX
+: testfindnextdirectiondownfloor ( -- )
+    CRLF ." testing findnextdirectiondownfloor "
+    reset 
+    findnextdirectiondownfloor -1 = 0= IF CRLF ." - FAIL! floor 0 all clear case" EXIT THEN
+    3 currentfloor !
+    findnextdirectiondownfloor -1 = 0= IF CRLF ." - FAIL! floor 3 all clear case" EXIT THEN
+    5 pressdownbutton
+    findnextdirectiondownfloor 5 = 0= IF CRLF ." - FAIL! floor 3 down 5 case" EXIT THEN
+    4 pressupbutton
+    findnextdirectiondownfloor 4 = 0= IF CRLF ." - FAIL! floor 3 down 5 up 4 case" EXIT THEN
+    0 pressupbutton
+    findnextdirectiondownfloor 0 = 0= IF CRLF ." - FAIL! floor 3 down 5 up 4 up 0 case" EXIT THEN
+    1 pressdownbutton
+    findnextdirectiondownfloor 1 = 0= IF CRLF ." - FAIL! floor 3 down 5 up 4 up 0 down 1 case" EXIT THEN
+    3 pressupbutton
+    findnextdirectiondownfloor 1 = 0= IF CRLF ." - FAIL! floor 3 down 5 up 4 up 0 down 1 up 3 case" EXIT THEN 
+    3 pressdownbutton
+    findnextdirectiondownfloor 3 = 0= IF CRLF ." - FAIL! floor 3 down 5 up 4 up 0 down 1 up 3 down 3 case" EXIT THEN
+    reset 
+    3 currentfloor ! 3 pressfloorbutton
+    findnextdirectiondownfloor 3 = 0= IF CRLF ." - FAIL! floor 3 3 floorb case" EXIT THEN
+    
+    ." Success!"
+;
+
+
+HEX
+: testfindnextfloor ( -- )
+    CRLF ." testing findnextfloor "
+    reset idle direction !
+    findnextfloor -1 = 0= IF CRLF ." - FAIL! idle floor 0 all clear case" EXIT THEN
+    3 currentfloor !  idle direction !
+    findnextfloor -1 = 0= IF CRLF ." - FAIL! idle floor 3 all clear case" EXIT THEN
+    5 pressdownbutton  idle direction !
+    findnextfloor 5 = 0= IF CRLF ." - FAIL! idle floor 3 down 5 case" EXIT THEN
+    2 pressdownbutton  idle direction !
+    findnextfloor 2 = 0= IF CRLF ." - FAIL! idle floor 3 down 5 down 2 case" EXIT THEN 
+    4 pressupbutton  idle direction !
+    findnextfloor 4 = 0= IF CRLF ." - FAIL! idle floor 3 down 5 down 2 up 4 case" EXIT THEN
+    0 pressupbutton  idle direction !
+    findnextfloor 4 = 0= IF CRLF ." - FAIL! idle floor 3 down 5 down 2 up 4 up 0 case" EXIT THEN
+    1 pressdownbutton  idle direction !
+    findnextfloor 4 = 0= IF CRLF ." - FAIL! idle floor 3 down 5 down 2 up 4 up 0 down 1 case" EXIT THEN
+    3 pressupbutton  idle direction !
+    findnextfloor 3 = 0= IF CRLF ." - FAIL! idle floor 3 down 5 down 2 up 4 up 0 down 1 up 3 case" EXIT THEN
+    reset idle direction !
+    3 currentfloor !  3 pressupbutton
+    findnextfloor 3 = 0= IF CRLF ." - FAIL! idle floor 3 up 3 case" EXIT THEN
+    reset idle direction !
+    3 currentfloor !  3 pressdownbutton
+    findnextfloor 3 = 0= IF CRLF ." - FAIL! idle floor 3 down 3 case" EXIT THEN
+    reset idle direction !
+    3 currentfloor !  3 pressupbutton  3 pressdownbutton
+    findnextfloor 3 = 0= IF CRLF ." - FAIL! idle floor 3 up 3 down 3 case" EXIT THEN
+    reset idle direction !
+    3 currentfloor !  3 pressdownbutton
+    findnextfloor 3 = 0= IF CRLF ." - FAIL! idle floor 3 down 3 case" EXIT THEN
+    reset idle direction !
+    3 currentfloor !  3 pressfloorbutton
+    findnextfloor 3 = 0= IF CRLF ." - FAIL! idle floor 3 floorb 3 case" EXIT THEN
+
+    reset goingup direction !
+    findnextfloor -1 = 0= IF CRLF ." - FAIL! goingup floor 0 all clear case" EXIT THEN
+    3 currentfloor !  goingup direction !
+    findnextfloor -1 = 0= IF CRLF ." - FAIL! goingup floor 3 all clear case" EXIT THEN
+    5 pressdownbutton  goingup direction !
+    findnextfloor 5 = 0= IF CRLF ." - FAIL! goingup floor 3 down 5 case" EXIT THEN
+    2 pressdownbutton  goingup direction !
+    findnextfloor 5 = 0= IF CRLF ." - FAIL! goingup floor 3 down 5 down 2 case" EXIT THEN
+    4 pressupbutton  goingup direction !
+    findnextfloor 4 = 0= IF CRLF ." - FAIL! goingup floor 3 down 5 down 2 up 4 case" EXIT THEN
+    0 pressupbutton  goingup direction !
+    findnextfloor 4 = 0= IF CRLF ." - FAIL! goingup floor 3 down 5 down 2 up 4 up 0 case" EXIT THEN
+    1 pressdownbutton  goingup direction !
+    findnextfloor 4 = 0= IF CRLF ." - FAIL! goingup floor 3 down 5 down 2 up 4 up 0 down 1 case" EXIT THEN
+    3 pressupbutton  goingup direction !
+    findnextfloor 3 = 0= IF CRLF ." - FAIL! goingup floor 3 down 5 down 2 up 4 up 0 down 1 up 3 case" EXIT THEN
+    reset goingup direction !
+    3 currentfloor !  3 pressfloorbutton
+    findnextfloor 3 = 0= IF CRLF ." - FAIL! goingup floor 3 floorb 3 case" EXIT THEN
+    reset goingup direction !
+    3 currentfloor !  3 pressupbutton
+    findnextfloor 3 = 0= IF CRLF ." - FAIL! goingup floor 3 up 3 case" EXIT THEN
+    direction @ goingup <> IF CRLF ." - FAIL! goingup floor 3 up 3 case, got wrong direction" EXIT THEN
+    reset goingup direction !
+    3 currentfloor !  3 pressdownbutton
+    findnextfloor 3 = 0= IF CRLF ." - FAIL! goingup floor 3 down 3 case" EXIT THEN
+    direction @ goingdown <> IF CRLF ." - FAIL! goingup floor 3 down 3 case, got wrong direction" EXIT THEN
+    
+    reset goingdown direction !
+    findnextfloor -1 = 0= IF CRLF ." - FAIL! goingdown floor 0 all clear case" EXIT THEN
+    3 currentfloor !  goingdown direction !
+    findnextfloor -1 = 0= IF CRLF ." - FAIL! goingdown floor 3 all clear case" EXIT THEN
+    5 pressdownbutton  goingdown direction !
+    findnextfloor 5 = 0= IF CRLF ." - FAIL! goingdown floor 3 down 5 case" EXIT THEN
+    2 pressdownbutton  goingdown direction !
+    findnextfloor 2 = 0= IF CRLF ." - FAIL! goingdown floor 3 down 5 down 2 case" EXIT THEN
+    4 pressupbutton  goingdown direction !
+    findnextfloor 2 = 0= IF CRLF ." - FAIL! goingdown floor 3 down 5 down 2 up 4 case" EXIT THEN
+    0 pressupbutton  goingdown direction !
+    findnextfloor 2 = 0= IF CRLF ." - FAIL! goingdown floor 3 down 5 down 2 up 4 up 0 case" EXIT THEN
+    1 pressdownbutton  goingdown direction !
+    findnextfloor 2 = 0= IF CRLF ." - FAIL! goingdown floor 3 down 5 down 2 up 4 up 0 down 1 case" EXIT THEN
+    3 pressupbutton  goingdown direction !	
+    findnextfloor 2 = 0= IF CRLF ." - FAIL! goingdown floor 3 down 5 down 2 up 4 up 0 down 1 up 3 case" EXIT THEN
+    3 pressdownbutton  goingdown direction !	
+    findnextfloor 3 = 0= IF CRLF ." - FAIL! goingdown floor 3 down 5 down 2 up 4 up 0 down 1 up 3 down 3 case" EXIT THEN
+    reset goingdown direction !
+    3 currentfloor !  3 pressupbutton
+    findnextfloor 3 = 0= IF CRLF ." - FAIL! goingdown floor 3 up 3 case" EXIT THEN
+    direction @ goingup <> IF CRLF ." - FAIL! goingdown floor 3 up 3 case, got wrong direction" EXIT THEN
+    reset goingdown direction !
+    3 currentfloor !  3 pressdownbutton
+    findnextfloor 3 = 0= IF CRLF ." - FAIL! goingdown floor 3 down 3 case" EXIT THEN
+    direction @ goingdown <> IF CRLF ." - FAIL! goingdown floor 3 down 3 case, got wrong direction" EXIT THEN
+    reset goingdown direction !
+    3 currentfloor !  3 pressfloorbutton
+    findnextfloor 3 = 0= IF CRLF ." - FAIL! goingdown floor 3 floorb 3 case" EXIT THEN
+    direction @ goingdown <> IF CRLF ." - FAIL! goingdown floor 3 floorb 3 case, got wrong direction" EXIT THEN
+    ." Success!"
+;
+
+
+HEX
+: testgotonextfloor ( -- )
+    CRLF ." testing gotonextfloor "
+    reset goingup direction !
+    3 pressupbutton 3 pressdownbutton 3 pressfloorbutton
+    3 gotonextfloor 
+      currentfloor @ 3 <> IF CRLF ." - FAIL! on 0 go to 3 buttons all pressed direction up case current floor incorrect " EXIT THEN
+      direction @ goingup <> IF CRLF ." - FAIL! on 0 go to 3 buttons all pressed direction up case direction incorrect " EXIT THEN
+      upbuttons @ downbuttons @ 3 2^U XOR floorbuttons @  OR OR 0<> IF CRLF ." - FAIL! on 0 go to 3 buttons all pressed direction up case buttons incorrect " EXIT THEN
+
+    reset goingdown direction !
+    2 currentfloor !
+
+    2 pressupbutton 2 pressdownbutton 2 pressfloorbutton
+    2 gotonextfloor 
+      currentfloor @ 2 <> IF CRLF ." - FAIL! on 3 go to 2 buttons pressed case current floor incorrect " EXIT THEN
+      direction @ goingdown <> IF CRLF ." - FAIL! on 3 go to 2 buttons pressed case direction incorrect " EXIT THEN
+      upbuttons @ 2 2^U XOR downbuttons @ floorbuttons @ OR OR 0<> IF CRLF ." - FAIL! on 3 go to 2 buttons pressed case buttons incorrect " EXIT THEN
+
+    reset idle direction !
+    2 currentfloor !
+
+    2 pressupbutton 2 pressdownbutton 2 pressfloorbutton
+    2 gotonextfloor 
+      currentfloor @ 2 <> IF CRLF ." - FAIL! on 2 go to 2 buttons pressed case current floor incorrect " EXIT THEN
+      direction @ idle <> IF CRLF ." - FAIL! on 2 go to 2 buttons pressed case direction incorrect " EXIT THEN
+      upbuttons @ downbuttons @ floorbuttons @ OR OR 0<> IF CRLF ." - FAIL! on 2 go to 2 case buttons incorrect " EXIT THEN
+
+    reset idle direction !
+    2 currentfloor !
+
+    -1 gotonextfloor 
+      currentfloor @ 2 <> IF CRLF ." - FAIL! on 2 go nowhere case current floor incorrect " EXIT THEN
+      direction @ idle <> IF CRLF ." - FAIL! on 2 go nowhere case direction incorrect " EXIT THEN
+      upbuttons @ downbuttons @ floorbuttons @ OR OR 0<> IF CRLF ." - FAIL! on 2 go nowhere case buttons incorrect " EXIT THEN
+  
+    ." Success!"
+;
+
+
+: testincfloorpos ( -- )
+    CRLF ." testing incfloorpos "
+    reset
+    2 pnumberofstepsbetweenfloors !
+    4 pnumberoffloors !
+    incfloorpos
+    currentfloor @ 0 <> IF 
+      CRLF ." - FAIL! on 0 0 of 4 2 case current floor incorrect, got " currentfloor @ U.
+      EXIT 
+    THEN
+    pbetweenfloorpos @ 1 <> IF 
+      CRLF ." - FAIL! on 0 0 of 4 2 case current floor incorrect, got " pbetweenfloorpos @ U.
+      EXIT 
+    THEN
+    incfloorpos
+    currentfloor @ 0 <> IF CRLF ." - FAIL! on 0 1 of 4 2 case current floor incorrect " EXIT THEN
+    pbetweenfloorpos @ 2 <> IF CRLF ." - FAIL! on 0 1 of 4 2 case current floor incorrect " EXIT THEN 
+    incfloorpos
+    currentfloor @ 1 <> IF CRLF ." - FAIL! on 0 2 of 4 2 case current floor incorrect " EXIT THEN
+    pbetweenfloorpos @ 0 <> IF CRLF ." - FAIL! on 0 2 of 4 2 case current floor incorrect " EXIT THEN
+    incfloorpos
+    currentfloor @ 1 <> IF CRLF ." - FAIL! on 1 0 of 4 2 case current floor incorrect " EXIT THEN
+    pbetweenfloorpos @ 1 <> IF CRLF ." - FAIL! on 1 0 of 4 2 case current floor incorrect " EXIT THEN 
+    incfloorpos
+    currentfloor @ 1 <> IF CRLF ." - FAIL! on 1 1 of 4 2 case current floor incorrect " EXIT THEN
+    pbetweenfloorpos @ 2 <> IF CRLF ." - FAIL! on 1 1 of 4 2 case current floor incorrect " EXIT THEN
+    incfloorpos
+    currentfloor @ 2 <> IF CRLF ." - FAIL! on 1 2 of 4 2 case current floor incorrect " EXIT THEN
+    pbetweenfloorpos @ 0 <> IF CRLF ." - FAIL! on 1 2 of 4 2 case current floor incorrect " EXIT THEN
+    incfloorpos
+    currentfloor @ 2 <> IF CRLF ." - FAIL! on 2 0 of 4 2 case current floor incorrect " EXIT THEN
+    pbetweenfloorpos @ 1 <> IF CRLF ." - FAIL! on 2 0 of 4 2 case current floor incorrect " EXIT THEN
+    incfloorpos
+    currentfloor @ 2 <> IF CRLF ." - FAIL! on 2 1 of 4 2 case current floor incorrect " EXIT THEN
+    pbetweenfloorpos @ 2 <> IF CRLF ." - FAIL! on 2 1 of 4 2 case current floor incorrect " EXIT THEN
+    incfloorpos
+    currentfloor @ 3 <> IF CRLF ." - FAIL! on 2 2 of 4 2 case current floor incorrect " EXIT THEN
+    pbetweenfloorpos @ 0 <> IF CRLF ." - FAIL! on 2 2 of 4 2 case current floor incorrect " EXIT THEN
+    incfloorpos
+    currentfloor @ 3 <> IF CRLF ." - FAIL! on 3 0 of 4 2 case current floor incorrect " EXIT THEN
+    pbetweenfloorpos @ 0 <> IF CRLF ." - FAIL! on 3 0 of 4 2 case current floor incorrect " EXIT THEN 
+    ." Success!"
+;
+
+
+: testdecfloorpos ( -- )
+    CRLF ." testing decfloorpos "
+    reset
+    2 pnumberofstepsbetweenfloors !
+    4 pnumberoffloors !
+    3 currentfloor !
+
+    decfloorpos
+    currentfloor @ 2 <> IF 
+      CRLF ." - FAIL! on 3 0 of 4 2 case current floor incorrect, got " currentfloor @ U.
+      EXIT 
+    THEN
+    pbetweenfloorpos @ 2 <> IF 
+      CRLF ." - FAIL! on 3 0 of 4 2 case current floor incorrect, got " pbetweenfloorpos @ U.
+      EXIT 
+    THEN
+
+    decfloorpos
+    currentfloor @ 2 <> IF 
+      CRLF ." - FAIL! on 2 2 of 4 2 case current floor incorrect, got " currentfloor @ U.
+      EXIT 
+    THEN
+    pbetweenfloorpos @ 1 <> IF 
+      CRLF ." - FAIL! on 2 2 of 4 2 case current floor incorrect, got " pbetweenfloorpos @ U.
+      EXIT 
+    THEN
+
+    decfloorpos
+    currentfloor @ 2 <> IF 
+      CRLF ." - FAIL! on 2 1 of 4 2 case current floor incorrect, got " currentfloor @ U.
+      EXIT 
+    THEN
+    pbetweenfloorpos @ 0 <> IF 
+      CRLF ." - FAIL! on 2 1 of 4 2 case current floor incorrect, got " pbetweenfloorpos @ U.
+      EXIT 
+    THEN
+
+    decfloorpos
+    currentfloor @ 1 <> IF 
+      CRLF ." - FAIL! on 2 0 of 4 2 case current floor incorrect, got " currentfloor @ U.
+      EXIT 
+    THEN
+    pbetweenfloorpos @ 2 <> IF 
+      CRLF ." - FAIL! on 2 0 of 4 2 case current floor incorrect, got " pbetweenfloorpos @ U.
+      EXIT 
+    THEN
+
+    decfloorpos
+    currentfloor @ 1 <> IF 
+      CRLF ." - FAIL! on 1 2 of 4 2 case current floor incorrect, got " currentfloor @ U.
+      EXIT 
+    THEN
+    pbetweenfloorpos @ 1 <> IF 
+      CRLF ." - FAIL! on 1 2 of 4 2 case current floor incorrect, got " pbetweenfloorpos @ U.
+      EXIT 
+    THEN
+
+    decfloorpos
+    currentfloor @ 1 <> IF 
+      CRLF ." - FAIL! on 1 1 of 4 2 case current floor incorrect, got " currentfloor @ U.
+      EXIT 
+    THEN
+    pbetweenfloorpos @ 0 <> IF 
+      CRLF ." - FAIL! on 1 1 of 4 2 case current floor incorrect, got " pbetweenfloorpos @ U.
+      EXIT 
+    THEN
+
+    decfloorpos
+    currentfloor @ 0 <> IF 
+      CRLF ." - FAIL! on 1 0 of 4 2 case current floor incorrect, got " currentfloor @ U.
+      EXIT 
+    THEN
+    pbetweenfloorpos @ 2 <> IF 
+      CRLF ." - FAIL! on 1 0 of 4 2 case current floor incorrect, got " pbetweenfloorpos @ U.
+      EXIT 
+    THEN
+
+    decfloorpos
+    currentfloor @ 0 <> IF 
+      CRLF ." - FAIL! on 0 2 of 4 2 case current floor incorrect, got " currentfloor @ U.
+      EXIT 
+    THEN
+    pbetweenfloorpos @ 1 <> IF 
+      CRLF ." - FAIL! on 0 2 of 4 2 case current floor incorrect, got " pbetweenfloorpos @ U.
+      EXIT 
+    THEN
+
+    decfloorpos
+    currentfloor @ 0 <> IF 
+      CRLF ." - FAIL! on 0 1 of 4 2 case current floor incorrect, got " currentfloor @ U.
+      EXIT 
+    THEN
+    pbetweenfloorpos @ 0 <> IF 
+      CRLF ." - FAIL! on 0 1 of 4 2 case current floor incorrect, got " pbetweenfloorpos @ U.
+      EXIT 
+    THEN
+
+    decfloorpos
+    currentfloor @ 0 <> IF 
+      CRLF ." - FAIL! on 0 0 of 4 2 case current floor incorrect, got " currentfloor @ U.
+      EXIT 
+    THEN
+    pbetweenfloorpos @ 0 <> IF 
+      CRLF ." - FAIL! on 0 0 of 4 2 case current floor incorrect, got " pbetweenfloorpos @ U.
+      EXIT 
+    THEN
+    
+    ." Success!"
+;
+
+
+: test?neednewdestination ( -- )
+    CRLF ." testing ?neednewdestination "
+    reset
+    2 pnumberofstepsbetweenfloors !
+    4 pnumberoffloors !
+
+    1 currentfloor !
+    0 pbetweenfloorpos !
+    -1 pdestinationfloor !
+        
+    ?neednewdestination DUP 0 <> IF 
+      CRLF ." - FAIL! on 1 0 of -1 case incorrect, got " U.
+      EXIT 
+    THEN DROP
+
+    1 currentfloor !
+    0 pbetweenfloorpos !
+    1 pdestinationfloor !
+        
+    ?neednewdestination DUP 0 <> IF 
+      CRLF ." - FAIL! on 1 0 of 1 case incorrect, got " U.
+      EXIT 
+    THEN DROP
+
+    1 currentfloor !
+    1 pbetweenfloorpos !
+    1 pdestinationfloor !
+        
+    ?neednewdestination DUP 1 <> IF 
+      CRLF ." - FAIL! on 1 1 of 1 case incorrect, got " U.
+      EXIT 
+    THEN DROP
+
+    0 currentfloor !
+    2 pbetweenfloorpos !
+    1 pdestinationfloor !
+        
+    ?neednewdestination DUP -1 <> IF 
+      CRLF ." - FAIL! on 0 2 of 1 case incorrect, got " U.
+      EXIT 
+    THEN DROP
+
+    2 currentfloor !
+    0 pbetweenfloorpos !
+    1 pdestinationfloor !
+        
+    ?neednewdestination DUP 1 <> IF 
+      CRLF ." - FAIL! on 2 0 of 1 case incorrect, got " U.
+      EXIT 
+    THEN DROP
+;
+
+: testexpresselevator ( -- )
+    CRLF ." testing expresselevator "
+
+    // reset going nowhere case
+    reset
+    expresselevator 
+    currentfloor @ 0<> IF
+      CRLF ." - FAIL! reset going nowhere case, current floor wrong, expected 0 got " currentfloor @ U.
+      EXIT
+    THEN
+    pbetweenfloorpos @ 0<> IF
+      CRLF ." - FAIL! reset going nowhere case, between floor position wrong, expected 0 got " pbetweenfloorpos @ U.
+      EXIT
+    THEN
+    direction @ idle <> IF
+      CRLF ." - FAIL! reset going nowhere case, direction wrong, expected idle got " direction @ .direction
+      EXIT
+    THEN
+    pdestinationfloor @ -1 <> IF
+      CRLF ." - FAIL! reset going nowhere case, destination wrong, expected -1 got " pdestinationfloor @ U.
+      EXIT
+    THEN
+
+    // reset 2 upbutton from idle 0 case
+    reset 
+    0 pnumberofstepsbetweenfloors ! 
+    2 pressupbutton
+    expresselevator 
+    currentfloor @ 1 <> IF
+      CRLF ." - FAIL! reset 2 upbutton from idle 0 case, current floor wrong, expected 1 got " currentfloor @ U.
+      EXIT
+    THEN
+    pbetweenfloorpos @ 0<> IF
+      CRLF ." - FAIL! reset 2 upbutton from idle 0 case, between floor position wrong, expected 0 got " pbetweenfloorpos @ U.
+      EXIT
+    THEN
+    direction @ goingup <> IF
+      CRLF ." - FAIL! reset 2 upbutton from idle 0 case, direction wrong, expected goingup got " direction @ .direction
+      EXIT
+    THEN
+    pdestinationfloor @ 2 <> IF
+      CRLF ." - FAIL! reset 2 upbutton from idle 0 case, destination wrong, expected 2 got " pdestinationfloor @ U.
+      EXIT
+    THEN
+
+    // reset destination 2 from 1 1 upbutton goingup case
+    reset 
+    0 pnumberofstepsbetweenfloors ! 
+    1 pressupbutton
+    goingup direction !
+    2 pdestinationfloor !
+    1 currentfloor !
+    expresselevator 
+    currentfloor @ 2 <> IF
+      CRLF ." - FAIL! reset destination 2 from 1 1 upbutton goingup case, current floor wrong, expected 1 got " currentfloor @ U.
+      EXIT
+    THEN
+    pbetweenfloorpos @ 0<> IF
+      CRLF ." - FAIL! reset destination 2 from 1 1 upbutton goingup case, between floor position wrong, expected 0 got " pbetweenfloorpos @ U.
+      EXIT
+    THEN
+    direction @ goingup <> IF
+      CRLF ." - FAIL! reset destination 2 from 1 1 upbutton goingup case, direction wrong, expected goingup got " direction @ .direction
+      EXIT
+    THEN
+    pdestinationfloor @ 2 <> IF
+      CRLF ." - FAIL! reset destination 2 from 1 1 upbutton goingup case, destination wrong, expected 2 got " pdestinationfloor @ U.
+      EXIT
+    THEN
+    upbuttons @ 1 2^U <> IF
+      CRLF ." - FAIL! reset destination 2 from 1 1 upbutton goingup case, upbuttons wrong, expected 2 got " upbuttons @ U.
+      EXIT
+    THEN
+
+    // reset 2 upbutton from idle floor 0 betweenfloor 0 stepsbetweenfloor 1 case
+    reset 
+    1 pnumberofstepsbetweenfloors ! 
+    2 pressupbutton
+    expresselevator 
+    currentfloor @ 0 <> IF
+      CRLF ." - FAIL! reset 2 upbutton from idle floor 0 betweenfloor 0 stepsbetweenfloor 1 case, current floor wrong, expected 0 got " currentfloor @ U.
+      EXIT
+    THEN
+    pbetweenfloorpos @ 1 <> IF
+      CRLF ." - FAIL! reset 2 upbutton from idle floor 0 betweenfloor 0 stepsbetweenfloor 1 case, between floor position wrong, expected 1 got " pbetweenfloorpos @ U.
+      EXIT
+    THEN
+    direction @ goingup <> IF
+      CRLF ." - FAIL! reset 2 upbutton from idle floor 0 betweenfloor 0 stepsbetweenfloor 1 case, direction wrong, expected goingup got " direction @ .direction
+      EXIT
+    THEN
+    pdestinationfloor @ 2 <> IF
+      CRLF ." - FAIL! reset 2 upbutton from idle floor 0 betweenfloor 0 stepsbetweenfloor 1 case, destination wrong, expected 2 got " pdestinationfloor @ U.
+      EXIT
+    THEN
+
+
+    // reset destination 2 from floor 0 betweenfloor 1 stepsbetweenfloor 1 case
+    reset 
+    1 pnumberofstepsbetweenfloors ! 
+    1 pbetweenfloorpos !
+    2 pdestinationfloor !
+    expresselevator 
+    currentfloor @ 1 <> IF
+      CRLF ." - FAIL! reset 2 upbutton from idle floor 0 betweenfloor 1 stepsbetweenfloor 1 case, current floor wrong, expected 1 got " currentfloor @ U.
+      EXIT
+    THEN
+    pbetweenfloorpos @ 0 <> IF
+      CRLF ." - FAIL! reset 2 upbutton from idle floor 0 betweenfloor 1 stepsbetweenfloor 1 case, between floor position wrong, expected 0 got " pbetweenfloorpos @ U.
+      EXIT
+    THEN
+    direction @ goingup <> IF
+      CRLF ." - FAIL! reset 2 upbutton from idle floor 0 betweenfloor 1 stepsbetweenfloor 1 case, direction wrong, expected goingup got " direction @ .direction
+      EXIT
+    THEN
+    pdestinationfloor @ 2 <> IF
+      CRLF ." - FAIL! reset 2 upbutton from idle floor 0 betweenfloor 1 stepsbetweenfloor 1 case, destination wrong, expected 2 got " pdestinationfloor @ U.
+      EXIT
+    THEN
+    
+
+;
+
+: test
+    CRLF CRLF ." starting test" CRLF CRLF
+  
+    testUMAXEXCEPT-1
+    testpressupbutton
+    testpressdownbutton
+    testpressfloorbutton
+    testclearupbutton
+    testcleardownbutton
+    testclearfloorbutton
+    testdownmask
+    testupmask
+    testlowestfloorset
+    testhighestfloorset
+    test?currentfloor
+    testfindnearestgoingup
+    testfindnearestgoingdown
+    testfindhighestgoingdown
+    testfindlowestgoingup
+    testfindnextdirectionidlefloor
+    testfindnextdirectionupfloor
+    testfindnextdirectiondownfloor
+    testfindnextfloor
+    testgotonextfloor
+    testincfloorpos
+    testdecfloorpos
+    test?neednewdestination
+    test?anyhigherbuttons
+    test?anylowerbuttons
+    testexpresselevator
+
+    CRLF CRLF ." test done" CRLF
+;
+
+test
+

@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.10.
+//    This file is part of DiaperGlu v5.11.
 //
-//    DiaperGlu v5.10 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.11 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.10 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.11 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.10; if not, write to the Free Software
+//    along with DiaperGlu v5.11; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// May 5, 2023                //
-// version 5.10               //
+// June 10, 2023              //
+// version 5.11               //
 // /////////////////////////////
 
 
@@ -861,6 +861,84 @@ void dg_shrinkbuffer (
         pBH->nextunusedbyte = 0;
     }
 
+    return;
+}
+
+
+// if new size < length, length is used as new size
+//   then result is rounded up to nearest page size
+// (if you pass in 0 as new size, the smallest possible size is used)
+const char* dg_resizebuffername = "dg_resizebuffer";
+    
+void dg_resizebuffer (
+    Bufferhandle* pBHarrayhead,
+    UINT64 bufferid,
+    UINT64 newsize,
+    const char** pError)
+{
+    Bufferhandle* pBH;
+    UINT64 finalnewsize;
+    const char* flag;
+
+#ifndef DGLU_NO_DIAPER
+    flag = dg_putuint64(
+        (UINT64*)pError,
+        (UINT64)dg_noerroryet);
+
+    if (flag != dg_success)
+    {
+        return;
+    }
+
+    flag = dg_checkbharray(pBHarrayhead);
+
+    if (flag != dg_success)
+    {
+        *pError = flag;
+        return;
+    }
+
+    if (pBHarrayhead->nextunusedbyte % sizeof(Bufferhandle) != 0)
+    {
+        *pError = dg_buffernubcorrupt;
+        return;
+    }
+
+    if (bufferid >= (pBHarrayhead->nextunusedbyte / sizeof (Bufferhandle))  )
+    {
+        *pError = dg_bufferidnotinbharray;
+        return;
+    }
+#endif
+
+    pBH = &( ((Bufferhandle*)(pBHarrayhead->pbuf))[bufferid] );
+
+    if (pBH->pbuf == badbufferhandle)
+    {
+        *pError = dg_bufferidisfree;
+        return;
+    }
+
+    finalnewsize = newsize;
+
+    if (finalnewsize <= pBH->nextunusedbyte)
+    {
+        finalnewsize = pBH->nextunusedbyte;
+    }
+
+    finalnewsize = dg_getnearesthighestmultiple (
+        finalnewsize,   // n,
+        pBH->growby);   // pagesize)
+
+    // need to resize...
+    flag = dg_realloc(
+        &(pBHarrayhead->pbuf), 
+        pBHarrayhead->size,
+        finalnewsize, 
+        dg_success);
+
+    *pError = flag;
+    
     return;
 }
 

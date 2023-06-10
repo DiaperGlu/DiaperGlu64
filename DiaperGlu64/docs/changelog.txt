@@ -1,4 +1,12 @@
 Changelog for Diaperglu
+
+   10 Jun 2023
+     Released v5.11
+     Minor documentation fixes
+
+   20 May 2023
+     Added Mac CGI script Elevator Simulator 1.4 example
+
    5 May 2023
      Released v5.10
 

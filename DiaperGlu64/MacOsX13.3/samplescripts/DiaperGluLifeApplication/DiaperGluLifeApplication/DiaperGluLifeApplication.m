@@ -20,7 +20,7 @@
 //  this demo assumes libdiaperglu.dylib is at the mylocalpath place
 //  and this demo assumes some support files are in the samplescripts subdirectory
 //  and this demo assumes the DiaperGluLifeApplication demo is in the samplescripts subdirectory
-NSString* mylocalpath = @"/Users/jamespatricknorris/desktop/DiaperGlu64/macosx10.15.6/";
+NSString* mylocalpath = @"/Users/jamespatricknorris/desktop/DiaperGlu64git/DiaperGlu64/macosx13.3/";
 
 unsigned char bittbl[8] = {0x80, 0x40, 0x20, 0x10, 8, 4, 2, 1};
 

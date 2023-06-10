@@ -1,0 +1,516 @@
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2023 James Patrick Norris
+//
+//    This file is part of DG6502CrossAsm v1.0
+//
+//    DG6502CrossAsm v1.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DG6502CrossAsm v1.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DG6502CrossAsm v1.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// June 10, 2023              //
+// version 1.0                //
+// /////////////////////////////
+
+
+// compile guard
+' DG6502CROSSASM.DGLU ENDOFWORDLIST = 0= ?END-EVALUATE
+
+0 CONSTANT DG6502CROSSASM.DGLU
+
+
+// might need to use a base address since you might need to compile a buffer that
+//   doesn't start at 0.... or could use 64k buffers... but that's not how dglu works...
+
+VARIABLE PBASEADDRESS
+0 PBASEADDRESS !
+
+: +BA ( bufferoffset -- baraddress )
+    PBASEADDRESS @ +
+;
+
+: -BA ( baraddress -- bufferoffset )
+    PBASEADDRESS @ - 
+;
+
+// base address relative here
+: BARHERE OHERE +BA ;
+
+// base address relative C@
+: BARC@ ( baraddress -- )
+    -BA PCURRENTCOMPILEBUFFER @ OC@
+;
+
+: BARC! ( data baraddress -- )
+    -BA PCURRENTCOMPILEBUFFER @ OC!
+;
+
+: BARU16! ( data baraddress -- )
+    -BA PCURRENTCOMPILEBUFFER @ O>P U16!
+;
+
+// addressing modes
+HEX
+0 CONSTANT RA  // using RA instead of A since A is a hex number
+1 CONSTANT X
+2 CONSTANT Y
+3 CONSTANT U8
+4 CONSTANT U16
+5 CONSTANT [U8]
+6 CONSTANT [U16]
+7 CONSTANT [U8+X]
+7 CONSTANT [X+U8]
+8 CONSTANT [U16+X]
+8 CONSTANT [X+U16]
+9 CONSTANT [U8+Y]
+9 CONSTANT [Y+U8]
+0A CONSTANT [U16+Y]
+0A CONSTANT [Y+U16]
+0B CONSTANT [[U8]]
+0C CONSTANT [[U8]+X]
+0C CONSTANT [X+[U8]]
+0D CONSTANT [[U8]+Y]
+0D CONSTANT [Y+[U8]]
+0E CONSTANT PC+N8
+0F CONSTANT [[U16+X]]
+0F CONSTANT [[X+U16]]
+
+10 CONSTANT NumberOfAddrModes
+
+: CC, CODE-U8, ;
+
+CREATE AddrModeImmediateSizes
+( RA     X      Y      U8     U16    [U8]   [U16]  [U8+X]  [U16+X]  [U8+Y]  [U16+Y]  [[U8]]  [[U8]+X]  [[U8]+Y] PC+N8  [[U16+X]] )
+  0 CC,  0 CC,  0 CC,  1 CC,  2 CC,  1 CC,  2 CC,  1 CC,   2 CC,    1 CC,   2 CC,    1 CC,   1 CC,     1 CC,    1 CC,  2 CC,
+
+CREATE ORAOpTable
+  FF CC, FF CC, FF CC, 09 CC, FF CC, 05 CC, 0D CC, 15 CC,  1D CC,   FF CC,  19 CC,   12 CC,   01 CC,    11 CC,  FF CC,  FF CC,
+
+CREATE ANDAOpTable
+  FF CC, FF CC, FF CC, 29 CC, FF CC, 25 CC, 2D CC, 35 CC,  3D CC,   FF CC,  39 CC,   32 CC,   21 CC,    31 CC,  FF CC,  FF CC,
+
+CREATE XORAOpTable
+  FF CC, FF CC, FF CC, 49 CC, FF CC, 45 CC, 4D CC, 55 CC,  5D CC,   FF CC,  59 CC,   52 CC,   41 CC,    51 CC,  FF CC,  FF CC,
+
+CREATE ADCAOpTable
+  FF CC, FF CC, FF CC, 69 CC, FF CC, 65 CC, 6D CC, 75 CC,  7D CC,   FF CC,  79 CC,   72 CC,   61 CC,    71 CC,  FF CC,  FF CC,
+
+CREATE STAOpTable
+  FF CC, AA CC, A8 CC, FF CC, FF CC, 85 CC, 8D CC, 95 CC,  9D CC,   FF CC,  99 CC,   92 CC,   81 CC,    91 CC,  FF CC,  FF CC,
+
+CREATE LDAOpTable
+  FF CC, 8A CC, 98 CC, A9 CC, FF CC, A5 CC, AD CC, B5 CC,  BD CC,   FF CC,  B9 CC,   B2 CC,   A1 CC,    B1 CC,  FF CC,  FF CC,
+
+CREATE CMPAOpTable
+  FF CC, FF CC, FF CC, C9 CC, FF CC, C5 CC, CD CC, D5 CC,  DD CC,   FF CC,  D9 CC,   D2 CC,   C1 CC,    D1 CC,  FF CC,  FF CC,
+
+CREATE SBCAOpTable
+  FF CC, FF CC, FF CC, E9 CC, FF CC, E5 CC, ED CC, F5 CC,  FD CC,   FF CC,  F9 CC,   F2 CC,   E1 CC,    F1 CC,  FF CC,  FF CC,
+
+CREATE STZOpTable
+  FF CC, FF CC, FF CC, FF CC, FF CC, 64 CC, 9C CC, 74 CC,  9E CC,   FF CC,  FF CC,   FF CC,   FF CC,    FF CC,  FF CC,  FF CC,
+
+CREATE ASLAOpTable
+  0A CC, FF CC, FF CC, FF CC, FF CC, 06 CC, 0E CC, 16 CC,  1E CC,   FF CC,  FF CC,   FF CC,   FF CC,    FF CC,  FF CC,  FF CC,
+
+CREATE ROLAOpTable
+  2A CC, FF CC, FF CC, FF CC, FF CC, 26 CC, 2E CC, 36 CC,  3E CC,   FF CC,  FF CC,   FF CC,   FF CC,    FF CC,  FF CC,  FF CC,
+
+CREATE LSRAOpTable
+  4A CC, FF CC, FF CC, FF CC, FF CC, 46 CC, 4E CC, 56 CC,  5E CC,   FF CC,  FF CC,   FF CC,   FF CC,    FF CC,  FF CC,  FF CC,
+
+CREATE RORAOpTable
+  6A CC, FF CC, FF CC, FF CC, FF CC, 66 CC, 6E CC, 76 CC,  7E CC,   FF CC,  FF CC,   FF CC,   FF CC,    FF CC,  FF CC,  FF CC,
+
+CREATE TRBOpTable
+  FF CC, FF CC, FF CC, FF CC, FF CC, 14 CC, 1C CC, FF CC,  FF CC,   FF CC,  FF CC,   FF CC,   FF CC,    FF CC,  FF CC,  FF CC,
+
+CREATE TSBOpTable
+  FF CC, FF CC, FF CC, FF CC, FF CC, 04 CC, 0C CC, FF CC,  FF CC,   FF CC,  FF CC,   FF CC,   FF CC,    FF CC,  FF CC,  FF CC,
+
+CREATE JSROpTable
+  FF CC, FF CC, FF CC, FF CC, 20 CC, FF CC, FF CC, FF CC,  FF CC,   FF CC,  FF CC,   FF CC,   FF CC,    FF CC,  FF CC,  FF CC,
+
+CREATE BITAOpTable
+  FF CC, FF CC, FF CC, 89 CC, FF CC, 24 CC, 2C CC, 34 CC,  3C CC,   FF CC,  FF CC,   FF CC,   FF CC,    FF CC,  FF CC,  FF CC,
+
+CREATE JMPOpTable
+  FF CC, FF CC, FF CC, FF CC, 4C CC, FF CC, 6C CC, FF CC,  FF CC,   FF CC,  FF CC,   FF CC,   FF CC,    FF CC,  FF CC,  7C CC,
+
+CREATE STYOpTable
+( RA     X      Y      U8     U16    [U8]   [U16]  [U8+X]  [U16+X]  [U8+Y]  [U16+Y]  [[[U8]]  [U8]+X]  [[U8]+Y] PC+N8  [[U16+X] )
+  FF CC, FF CC, FF CC, FF CC, FF CC, 84 CC, 8C CC, 94 CC,  FF CC,   FF CC,  FF CC,   FF CC,   FF CC,    FF CC,  FF CC,  FF CC,
+
+CREATE STXOpTable
+  FF CC, FF CC, FF CC, FF CC, FF CC, 86 CC, 8E CC, FF CC,  FF CC,   96 CC,  FF CC,   FF CC,   FF CC,    FF CC,  FF CC,  FF CC,
+
+CREATE LDYOpTable
+  FF CC, FF CC, FF CC, A0 CC, FF CC, A4 CC, AC CC, B4 CC,  BC CC,   FF CC,  FF CC,   FF CC,   FF CC,    FF CC,  FF CC,  FF CC,
+
+CREATE LDXOpTable
+  FF CC, FF CC, FF CC, A2 CC, FF CC, A6 CC, AE CC, FF CC,  FF CC,   B6 CC,  BE CC,   FF CC,   FF CC,    FF CC,  FF CC,  FF CC,
+
+CREATE CMPXOpTable
+  FF CC, FF CC, FF CC, C0 CC, FF CC, C4 CC, CC CC, FF CC,  FF CC,   FF CC,  FF CC,   FF CC,   FF CC,    FF CC,  FF CC,  FF CC,
+
+CREATE CMPYOpTable
+  FF CC, FF CC, FF CC, E0 CC, FF CC, E4 CC, EC CC, FF CC,  FF CC,   FF CC,  FF CC,   FF CC,   FF CC,    FF CC,  FF CC,  FF CC,
+
+CREATE INCOpTable
+  1A CC, E8 CC, C8 CC, FF CC, FF CC, E6 CC, EE CC, F6 CC,  FE CC,   FF CC,  FF CC,   FF CC,   FF CC,    FF CC,  FF CC,  FF CC,
+
+CREATE DECOpTable
+  3A CC, CA CC, 88 CC, FF CC, FF CC, C6 CC, CE CC, D6 CC,  DE CC,   FF CC,  FF CC,   FF CC,   FF CC,    FF CC,  FF CC,  FF CC,
+
+CREATE PUSHOpTable
+  48 CC, DA CC, 5A CC, FF CC, FF CC, FF CC, FF CC, FF CC,  FF CC,   FF CC,  FF CC,   FF CC,   FF CC,    FF CC,  FF CC,  FF CC,
+
+CREATE PULLOpTable
+  68 CC, FA CC, 7A CC, FF CC, FF CC, FF CC, FF CC, FF CC,  FF CC,   FF CC,  FF CC,   FF CC,   FF CC,    FF CC,  FF CC,  FF CC,
+
+: ImmediateData, ( |immediatedata addrmode -- )
+    AddrModeImmediateSizes + C@
+    DUP 0= IF
+      DROP EXIT
+    THEN
+    DUP 1 = IF
+      DROP
+      CC, EXIT
+    THEN
+    2 = IF
+      CODE-U16, EXIT
+    THEN
+    // this shouldn't happen
+    DROP
+;
+
+: ?<>0DROP
+    0<> IF
+      DROP
+    THEN
+;
+
+: AddrMode, ( |immediatedata addrmode poptable -- )
+    OVER NumberOfAddrModes U< IF
+      OVER + C@ DUP FF = IF
+        DROP ?<>0DROP ERROR" addressing mode not supported for this opcode " EXIT
+      THEN
+      CC,
+      ImmediateData,
+    ELSE
+      2DROP ERROR" unknown addressing mode "
+    THEN
+;
+
+: ORA,  ORAOpTable  AddrMode, ;
+: AND,  ANDAOpTable AddrMode, ;
+: EOR,  XORAOpTable AddrMode, ;
+: ADC,  ADCAOpTable AddrMode, ;
+: STA,  STAOpTable  AddrMode, ;
+: LDA,  LDAOpTable  AddrMode, ;
+: CMP,  CMPAOpTable AddrMode, ;
+: SBC,  SBCAOpTable AddrMode, ;
+: STZ,  STZOpTable  AddrMode, ;
+: ASL,  ASLAOpTable AddrMode, ;
+: ROL,  ROLAOpTable AddrMode, ;
+: LSR,  LSRAOpTable AddrMode, ;
+: ROR,  RORAOpTable AddrMode, ;
+: TRB,  TRBOpTable  AddrMode, ;
+: TSB,  TSBOpTable  AddrMode, ;
+: JSR,  JSROpTable  AddrMode, ;
+: BIT,  BITAOpTable AddrMode, ;
+: JMP,  JMPOpTable  AddrMode, ;
+: STY,  STYOpTable  AddrMode, ;
+: STX,  STXOpTable  AddrMode, ;
+: LDX,  LDXOpTable  AddrMode, ;
+: LDY,  LDYOpTable  AddrMode, ;
+: CPY,  CMPYOpTable AddrMode, ;
+: CPX,  CMPXOpTable AddrMode, ;
+: INC,  INCOpTable  AddrMode, ;
+: DEC,  DECOpTable  AddrMode, ;
+: PUSH, PUSHOpTable AddrMode, ;
+: PULL, PULLOpTable AddrMode, ;
+
+: BRK, 00 CC, ;   
+: RTI, 40 CC, ;
+: RTS, 60 CC, ;
+: PHP, 08 CC, ;
+: CLC, 18 CC, ;
+: PLP, 28 CC, ;
+: SEC, 38 CC, ;
+: PHA, 48 CC, ;
+: CLI, 58 CC, ;
+: PLA, 68 CC, ;
+: SEI, 78 CC, ;
+: CLV, B8 CC, ;
+: CLD, D8 CC, ;
+: NOP, EA CC, ;
+: SED, F8 CC, ;
+: TAX, AA CC, ;
+: TAY, A8 CC, ;
+: TSX, BA CC, ;
+: TXA, 8A CC, ;
+: TXS, 9A CC, ;
+: TYA, 98 CC, ;
+: INY, C8 CC, ;
+: DEX, CA CC, ;
+: INX, E8 CC, ;
+: DEY, 88 CC, ;
+: DEA, 3A CC, ;
+: INA, 1A CC, ;
+: PHX, DA CC, ;
+: PHY, 5A CC, ;
+: PLY, FA CC, ;
+
+
+// changes to smallest of [U8] or [U16]
+: [U] DUP 100 U< IF [U8] ELSE [U16] THEN ;
+
+// changes to smallest immediate size
+: [X+U] DUP 100 U< IF [U8+X] ELSE [U16+X] THEN ;
+: [U+X] DUP 100 U< IF [U8+X] ELSE [U16+X] THEN ;
+
+// changes to smallest immediate size... probably can only use this safely with LDX
+: [Y+U] DUP 100 U< IF [U8+Y] ELSE [U16+Y] THEN ;
+: [U+Y] DUP 100 U< IF [U8+Y] ELSE [U16+Y] THEN ;
+
+
+HEX
+: ?N8 ( displacement -- flag )
+    80 + 100 U<
+;
+
+: ?SHORTBRANCH ( beginaddr afterbranchaddr -- flag )
+    - ?N8
+;
+
+// condition codes for BRANCH,
+80 CONSTANT ALWAYS
+30 CONSTANT MI
+10 CONSTANT PL
+50 CONSTANT VC
+70 CONSTANT VS
+90 CONSTANT NC // not using CC since it is a hex number
+B0 CONSTANT CS
+D0 CONSTANT NE
+F0 CONSTANT EQ
+A0 CONSTANT NEVER
+NE CONSTANT NZ
+EQ CONSTANT ZS
+
+: SHORTBRANCH, ( opcode -- afterbranchaddr )
+    DUP NEVER = IF  // NEVER compiles a branch always +1 so that the resolve works
+      DROP ALWAYS CC, 01 CC,
+      00 CC, BARHERE
+      EXIT
+    THEN
+    CC, 30 CC, BARHERE
+;
+
+: LONGBRANCH, ( opcode -- afterbranchaddr )
+    DUP NEVER = IF
+      DROP
+      ALWAYS CC, 3 CC,
+      4C CC, 0 CODE-U16, // this branch never taken...
+      BARHERE
+      EXIT
+    THEN
+    DUP ALWAYS = IF
+      DROP
+      4C CC, 0 CODE-U16,
+      BARHERE
+      EXIT
+    THEN
+    20 XOR CC, 03 CC,
+    4C CC, 0 CODE-U16,
+    BARHERE
+;
+
+: RESOLVE-SHORTBRANCH, ( targetaddress afterbranchaddress -- )
+    SWAP OVER ( afterbranchaddress targetaddress afterbranchaddress -- ) 
+    - ( afterbranchaddress branchdistance -- )
+    DUP ?N8 IF
+      ( afterbranchaddress branchdistance -- )
+      SWAP ( branchdistance afterbranchaddress -- ) 
+      1- BARC!
+    ELSE
+      // if afterbranchoffset is at the end of the buffer, you can compile a long branch...
+      //   which is a branch over a jump to the after branch offset...
+      2DROP
+      ERROR" branch too far"
+      EXIT
+    THEN
+;
+
+: RESOLVE-LONGBRANCH, ( targetaddress afterbranchaddress -- )
+    2 - BARU16!
+;
+
+
+: IF, ( conditioncode -- )
+   // could check for a valid condition code
+   // ALWAYS will compile as U8 LDY, ... RESOLVE-BRANCH, needs to change this to 0 ALWAYS BRANCH,
+   20 XOR SHORTBRANCH,
+;
+
+: LONGIF, ( conditioncode -- )
+    20 XOR LONGBRANCH,
+;
+
+: THEN, ( afterbranchaddr -- )
+    BARHERE SWAP RESOLVE-SHORTBRANCH,
+;
+
+: LONGTHEN, ( afterbranchoaddr -- )
+    BARHERE SWAP RESOLVE-LONGBRANCH,
+;
+
+: ELSE, ( iffaddr -- )
+    ( ALWAYS BRANCH, )
+    CLC, NC SHORTBRANCH, >R
+    THEN,
+    R>
+;
+
+: LONGELSE, ( iffaddr -- )
+    CLC, NC LONGBRANCH, >R
+    LONGTHEN,
+    R>
+;
+
+: QELSE, ( iffaddr -- )
+    ALWAYS SHORTBRANCH, >R
+    THEN,
+    R>
+;
+
+: WHILE, ( beginaddr cc -- whileaddr beginaddr )
+    IF, SWAP
+;
+
+: LONGWHILE, ( beginaddr cc -- whileaddr beginaddr )
+    LONGIF, SWAP
+;
+
+: BEGIN, ( -- beginaddr )
+    BARHERE
+;
+
+: LONGBEGIN, ( -- beginaddr )
+    BARHERE
+;
+
+HEX
+: UNTIL, ( beginaddr cc -- )
+    20 XOR
+    OVER ( beginaddr cc beginaddr -- )
+    BARHERE 2 + ( beginaddr cc beginaddr afterbranchaddr -- )
+    ?SHORTBRANCH ( beginaddr cc flag -- ) IF
+      ( beginaddr cc -- )
+      SHORTBRANCH, ( beginaddr afterbranchaddr -- ) 
+      RESOLVE-SHORTBRANCH,
+    ELSE
+      ( beginaddr cc -- )
+      LONGBRANCH, RESOLVE-LONGBRANCH,
+    THEN
+;
+
+: REPEAT, ( whileaddr beginaddr -- )
+    CLC,  NC UNTIL,
+    THEN,
+;
+
+: LONGREPEAT, ( whileaddr beginaddr -- )
+    CLC, NC UNTIL,
+    LONGTHEN,
+;
+
+: QREPEAT, ( whileoffset beginoffset -- )
+    NEVER UNTIL,
+    THEN,
+;
+
+: NEWCROSSBUFFER ( baseaddress -- )
+    PBASEADDRESS ! PAGESIZE -1 NEWBUFFER PCURRENTCOMPILEBUFFER !
+;
+
+: .CROSSBUFFER ( -- )
+    CRLF ." Base Address = " PBASEADDRESS @ HEX U. CRLF
+    ."   (DUMP is showing the local address, not the cross compile address... " CRLF
+    PCURRENTCOMPILEBUFFER @ GETSBUFFER DUMP
+;
+
+: BranchToU, ( targetaddr cc -- )
+    OVER BARHERE 2 + ( targetaddr cc targetaddr aftershortbranchaddr -- )
+    ?SHORTBRANCH IF
+      ( targetaddr cc -- )
+      SHORTBRANCH, RESOLVE-SHORTBRANCH,
+    ELSE
+      LONGBRANCH, RESOLVE-LONGBRANCH,
+    THEN
+;
+
+: BranchToPC+N, ( targetdisplacement cc -- )
+    DUP NEVER = IF
+      DROP DROP EXIT
+    THEN
+    OVER ?N8 IF    
+      CC, CC,
+    ELSE
+      // compile a long branch
+      DUP ALWAYS = IF
+        DROP 2 + BARHERE + 
+        // compile a jump...
+        4C CC, CODE-U16,
+      ELSE
+        20 XOR CC, 03 CC,
+        BARHERE 2 - +
+        4C CC, CODE-U16,
+      THEN
+    THEN
+;
+
+: BranchAddrMode, ( branchtarget addrmode cc -- )
+    SWAP 
+    DUP U16 = IF 
+      DROP ( targetaddr cc -- )
+      BranchToU,
+      EXIT
+    THEN
+    PC+N8 = IF
+      ( targetdisplacement cc -- )
+      BranchToPC+N,
+      EXIT
+    THEN
+    ERROR" addressing mode not supported for branches"
+;
+
+
+: BRA, ( branchtarget addrmode -- ) ALWAYS BranchAddrMode, ;
+: BMI, ( branchtarget addrmode -- ) MI BranchAddrMode, ;
+: BPL, ( branchtarget addrmode -- ) PL BranchAddrMode, ;
+: BVC, ( branchtarget addrmode -- ) VC BranchAddrMode, ;
+: BVS, ( branchtarget addrmode -- ) VS BranchAddrMode, ;
+: BCC, ( branchtarget addrmode -- ) NC BranchAddrMode, ;
+: BNC, ( branchtarget addrmode -- ) NC BranchAddrMode, ;
+: BCS, ( branchtarget addrmode -- ) CS BranchAddrMode, ;
+: BNE, ( branchtarget addrmode -- ) NE BranchAddrMode, ;
+: BEQ, ( branchtarget addrmode -- ) EQ BranchAddrMode, ;
+: BNEVER, ( branchtarget addrmode -- ) ;
+
+

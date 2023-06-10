@@ -1,0 +1,588 @@
+#! nodiaperglu
+
+( //////////////////////////////////////////////////////////////////////////////////////// )
+( //                                                                                       )
+( //    Copyright 2023 James Patrick Norris                                                )
+( //                                                                                       )
+( //    This file is part of Diaperglu Elevator Simulator v1.4.                            )
+( //                                                                                       )
+( //    Diaperglu Elevator Simulator v1.4 is free software; you can redistribute it and/or modify )
+( //    it under the terms of the GNU General Public License as published by               )
+( //    the Free Software Foundation; either version 2 of the License, or                  )
+( //    {at your option} any later version.                                                )
+( //                                                                                       )
+( //    Diaperglu Elevator Simulator v1.4 is distributed in the hope that it will be useful, )
+( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
+( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
+( //    GNU General Public License for more details.                                       )
+( //                                                                                       )
+( //    You should have received a copy of the GNU General Public License                  )
+( //    along with Diaperglu Elevator Simulator v1.4; if not, write to the Free Software   )
+( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
+( //                                                                                       )
+( //////////////////////////////////////////////////////////////////////////////////////// )
+
+( /////////////////////////////// )
+( // James Patrick Norris      // )
+( // www.rainbarrel.com        // )
+( // May 11, 2023              // )
+( // version 1.2               // )
+( /////////////////////////////// )
+
+CREATE usingcgi // #define flag for elevatorcontest.dglu
+$" elevatorcontest.dglu" INCLUDEFILE$
+
+
+// html form data is passed to page in two strings containing name value pairs in this form:
+//  name0$=value0$&name1$=value1$ etc...
+
+
+( Making an hlist to hold the cgi post string and get string name value pairs )
+
+NEW-HLISTWITHROOT>EH
+
+
+( Loading cgi post string and get string name value pairs into the eh hlist )
+// this does not have to be done before compiling drawpage or getupbuttons
+
+QUERY-POST-EH-NEW-ELEMENTS
+
+DECIMAL
+2 CONSTANT minfloors
+60 CONSTANT maxfloors // buttons presses are stored in 64 bit integers
+
+// VARIABLE upbuttons
+// VARIABLE downbuttons
+// VARIABLE floorbuttons
+// VARIABLE currentfloor
+// VARIABLE direction
+
+reset
+
+0 CONSTANT modeteleport
+1 CONSTANT modesinglestep
+2 CONSTANT modeexpresssinglestep
+4 CONSTANT modeloadtestmask
+
+VARIABLE olddirection
+VARIABLE oldfloor
+VARIABLE poldbetweenfloorpos
+VARIABLE showlicense
+VARIABLE showbunny
+VARIABLE elevatormode  // 0 = modeteleport, 1 = modesinglestep, 2 = modeexpresssinglestep, 
+                       // 4 = modeloadtestforteleport, 5 = modeloadtestforsinglestep, 6 = modeloadtestforexpresssinglestep
+
+FALSE showlicense !
+FALSE showbunny !
+0 olddirection !
+0 oldfloor !
+0 poldbetweenfloorpos !
+modeteleport elevatormode !
+
+
+// unsigned only
+: U$>U ( u$ -$- ) ( -- u )
+    DECIMAL
+    0 0 
+    0 GETS$[ND] >NUMBER
+    2DROP // ignoring conversion problems
+    DROP
+;
+
+DECIMAL
+: getdestinationfloor
+    // have to convert string to a number...
+    $" destinationfloor" EH-?NAME$>VALUE$ IF 
+      STRIP$ U$>U
+    ELSE
+      -1
+    THEN
+    DUP -1 = IF
+      pdestinationfloor !
+      EXIT
+    THEN
+    maxfloors UMIN
+    pdestinationfloor !
+;
+
+getdestinationfloor
+
+// getting the number of floors has to come first because the other get routines need to know
+//  how many floors there are
+DECIMAL
+: getnumberoffloors
+    // have to convert string to a number...
+    $" elevatornumberoffloors" EH-?NAME$>VALUE$ IF 
+      STRIP$ U$>U
+    ELSE
+      7
+    THEN
+    minfloors UMAX maxfloors UMIN
+    pnumberoffloors !
+;
+
+getnumberoffloors
+
+DECIMAL
+: getnumberofstepsbetweenfloors
+    // have to convert string to a number...
+    $" numberofstepsbetweenfloors" EH-?NAME$>VALUE$ IF 
+      STRIP$ U$>U
+    ELSE
+      0
+    THEN
+    pnumberofstepsbetweenfloors !
+;
+
+getnumberofstepsbetweenfloors
+
+: getupbuttons
+    0 upbuttons !
+    numberoffloors 0 DO
+      $" up" I >NEW$ DECIMAL ULE$>NUMBER$ $>$ EH FIND-ELEMENT-CHILD-BY-NAME$ ENDOFWORDLIST <> IF
+        upbuttons @ I BITSET upbuttons !
+      THEN
+    LOOP
+;
+
+
+: getdownbuttons
+    0 downbuttons !
+    numberoffloors 0 DO
+      $" down" I >NEW$ DECIMAL ULE$>NUMBER$ $>$ EH FIND-ELEMENT-CHILD-BY-NAME$ ENDOFWORDLIST <> IF
+        downbuttons @ I BITSET downbuttons !
+      THEN
+    LOOP
+;
+
+: getfloorbuttons
+    0 floorbuttons !
+    numberoffloors 0 DO
+      $" floor" I >NEW$ DECIMAL ULE$>NUMBER$ $>$ EH FIND-ELEMENT-CHILD-BY-NAME$ ENDOFWORDLIST <> IF
+        floorbuttons @ I BITSET floorbuttons !
+      THEN
+    LOOP
+;
+
+
+: ?uppressed ( u -- flag )
+    2^U upbuttons @ AND 0<>
+;
+
+: ?downpressed ( u -- flag )
+    2^U downbuttons @ AND 0<>
+;
+
+: ?floorpressed ( u -- flag )
+    2^U floorbuttons @ AND 0<>
+;
+
+: ?.checked ( flag -- )
+    IF ."  checked " THEN
+;
+
+: ?upchecked ( u -- ) ?uppressed ?.checked ;
+: ?downchecked ( u -- ) ?downpressed ?.checked ;
+: ?floorchecked ( u -- ) ?floorpressed ?.checked ;
+: ?bunnychecked ( -- ) showbunny @ ?.checked ;
+
+getupbuttons
+getdownbuttons
+getfloorbuttons
+
+: getcurrentfloor
+    // have to convert string to a number...
+    $" elevatorfloor" EH-?NAME$>VALUE$ IF
+      STRIP$ U$>U
+    ELSE
+      0
+    THEN
+    currentfloor !
+;
+
+getcurrentfloor
+
+currentfloor @ oldfloor !
+
+: getbetweenfloorpos
+    // have to convert string to a number...
+    $" betweenfloorpos" EH-?NAME$>VALUE$ IF
+      STRIP$ U$>U
+    ELSE
+      0
+    THEN
+    pbetweenfloorpos !
+;
+
+getbetweenfloorpos
+
+pbetweenfloorpos @ poldbetweenfloorpos !
+
+: getdirection
+    // have to convert string to a number...
+    $" elevatordirection" EH-?NAME$>VALUE$ IF
+      STRIP$ U$>U
+    ELSE
+      0
+    THEN
+    direction !
+;
+
+getdirection
+
+: getelevatormode
+    // have to convert string to a number...
+    $" elevatormode" EH-?NAME$>VALUE$ IF
+      STRIP$ U$>U
+    ELSE
+      modeteleport
+    THEN
+    elevatormode !
+;
+
+getelevatormode
+
+: getoutstate
+    // have to convert string to a number...
+    $" outstate" EH-?NAME$>VALUE$ IF
+      STRIP$ U$>U
+    ELSE
+      0
+    THEN
+    outstate !
+;
+
+getoutstate
+
+direction @ olddirection !
+
+: getshowinglicense
+    // if showing license, showinglicense is checked
+    $" showinglicense" EH FIND-ELEMENT-CHILD-BY-NAME$ ENDOFWORDLIST <> IF
+      TRUE showlicense ! EXIT
+    THEN
+    FALSE showlicense !
+;
+
+getshowinglicense
+
+: getshowingbunny
+    // if showing bunny, showingbunny is checked
+    $" showingbunny" EH FIND-ELEMENT-CHILD-BY-NAME$ ENDOFWORDLIST <> IF
+      TRUE showbunny ! EXIT
+    THEN
+    FALSE showbunny !
+;
+
+getshowingbunny
+
+: ?dooropen ( -- flag )
+    ?neednewdestination 0= IF
+      pdestinationfloor @ -1 <> IF
+        TRUE
+        EXIT
+      THEN
+    THEN
+    FALSE
+;
+
+: .elevator
+    ?dooropen IF
+      showbunny @ IF
+        ." &nbsp;&#128007;]"
+      ELSE
+        ." &nbsp;&nbsp;]" EXIT
+      THEN
+    ELSE
+      showbunny @ IF
+        ." [&#128007;]"
+      ELSE
+        ." [ ]" EXIT
+      THEN
+    THEN
+;
+
+: .elevatorshaft ( u -- )
+    DUP currentfloor @ U> IF
+      DROP ." &nbsp;|" EXIT
+    THEN
+    currentfloor @ = IF
+      .elevator
+    THEN
+;
+
+: .olddirection ( -- )
+    olddirection @ 0= IF
+      ." idle"
+      EXIT
+    THEN
+    olddirection @ 1 = IF
+      ." going up"
+      EXIT
+    THEN
+    olddirection @ 2 = IF
+      ." going down"
+      EXIT
+    THEN
+    ." wandering aimlessly among the stars" ;
+
+: domode
+    // if load test flag is set then skip moving elevator one time
+    elevatormode @ modeloadtestmask AND 0<> IF
+      elevatormode @ 3 AND elevatormode !
+      EXIT
+    THEN
+
+    elevatormode @ modeteleport = IF
+      teleportelevator
+      EXIT
+    THEN
+
+    elevatormode @ modesinglestep = IF
+      nonexpresselevator
+      EXIT
+    THEN
+
+    elevatormode @ modeexpresssinglestep = IF
+      expresselevator
+      EXIT
+    THEN
+;
+
+: ?teleportchecked ( u -- ) elevatormode @ modeteleport = ?.checked ;
+: ?nonexpresschecked ( u -- ) elevatormode @ modesinglestep = ?.checked ;
+: ?expresschecked ( u -- ) elevatormode @ modeexpresssinglestep = ?.checked ;
+
+: .oldonorabove poldbetweenfloorpos @ 0= IF ." on " ELSE ." above " THEN ;
+: .onorabove pbetweenfloorpos @ 0= IF ." on " ELSE ." above " THEN ;
+
+DECIMAL
+: drawpage ( -- )
+
+    domode
+
+    ." CONTENT-TYPE: text/html" CRLF 
+    ." Cache-Control: no-cache, must-revalidate" CRLF
+    ." Expires: Mon, 12 Jul 1997 05:00:00 GMT" CRLF
+    CRLF
+
+    ." <html>" CRLF
+    ."   <head>" CRLF
+    ."     <style type='text/css'>" CRLF
+    ."     form {border-width: 2px; border-style: solid}" CRLF
+    ."     table {border-width: 1px; border-style: solid; border-color: gray}" CRLF
+    ."     </style>" CRLF
+    ."   </head>" CRLF
+    ."   <body>" CRLF    
+
+    ."     <h3 align='center'>DiaperGlu CGI Elevator Simulator v1.4</h3>" CRLF
+
+    ."   <form runat='server' action='http://localhost/cgi-bin/nodiaperglu?ElevatorCGI.dglu' method='post'>" CRLF
+    ."   <table>" CRLF
+
+    ."     <th>" CRLF
+    ."       <td>Up</td>" CRLF
+    ."       <td>Down</td>" CRLF
+    ."       <td>Floor</td>" CRLF
+    ."       <td>{*}</td>" CRLF
+    ."     </th>" CRLF
+
+    currentfloor @ numberoffloors U> IF
+      ." <p>&#128562; Flying elevator! " .elevator ." </p>" CRLF
+    THEN
+
+    numberoffloors 0 DO
+
+    ."     <tr>" CRLF
+    ."       <td>" numberoffloors I - 1- >NEW$ DECIMAL ULE$>NUMBER$ .$ ." </td>" CRLF
+
+    ."       <td>" I 0<> IF 
+      ." <input type='checkbox' name='up" numberoffloors I - 1- >NEW$ DECIMAL ULE$>NUMBER$ .$ ." ' " 
+               numberoffloors I - 1- ?upchecked
+               ." ></input>" 
+    THEN ." </td>" CRLF
+
+    ."       <td>" I numberoffloors 1- U< IF 
+      ." <input type='checkbox' name='down" numberoffloors I - 1- >NEW$ DECIMAL ULE$>NUMBER$ .$ ." ' "
+               numberoffloors I - 1- ?downchecked
+               ." ></input>" 
+    THEN ." </td>" CRLF
+
+    ."       <td><input type='checkbox' name='floor" numberoffloors I - 1- >NEW$ DECIMAL ULE$>NUMBER$ .$ ." ' "
+               numberoffloors I - 1- ?floorchecked 
+               ." ></input></td>" CRLF
+
+    ."       <td>"
+               numberoffloors I - 1- .elevatorshaft
+    ."       </td>" CRLF
+
+    ."     </tr>" CRLF
+
+    LOOP
+
+    ."   </table> " CRLF
+
+    ."     <p> The elevator was " .oldonorabove ." floor "
+             oldfloor @ U.
+    ."       and was " 
+             .olddirection
+     ."    </p>" CRLF
+
+    ."     <p> The elevator is " .onorabove ." floor (0-" 
+             numberoffloors 1- U. ." ) " CRLF
+    ."       <input type='text' name='elevatorfloor' value=' " 
+               currentfloor @ DECIMAL U.
+               ." '></input>" CRLF
+    ."       , is " CRLF
+    ."       <input type='hidden' name='elevatordirection' value=' "
+               direction @ DECIMAL U.
+               ." '>"
+               .direction
+               ." </input>" CRLF
+
+    ."     , and is going to floor (-1 = none) "
+    ."     <input type='hidden' name='destinationfloor' value=' "
+             pdestinationfloor @ DECIMAL U.
+             ." '>"
+             pdestinationfloor @ .
+             ." </input></p>" CRLF
+
+    ."     <p> The elevator between floor position is "
+    ."       <input type='text' name='betweenfloorpos' value=' "
+               pbetweenfloorpos @ DECIMAL U.
+               ." '></input></p>" CRLF
+
+    ."     <p> The elevator between floor position was "
+             poldbetweenfloorpos @ DECIMAL U.
+               ." </p>" CRLF 
+             
+    ."     <p> Elevator mode:<br>" 
+            ." <input type='radio' id='teleport' name='elevatormode' value='0' " CRLF
+              ?teleportchecked ." >" CRLF
+            ." <label for='teleport'>Teleport</label><br></input>" CRLF
+            ." <input type='radio' id='nonexpress' name='elevatormode' value='1' " CRLF
+              ?nonexpresschecked ." >" CRLF
+            ." <label for='nonexpress'>Nonexpress</label><br></input>" CRLF
+            ." <input type='radio' id='express' name='elevatormode' value='2' " CRLF
+              ?expresschecked ." >" CRLF
+            ." <label for='express'>Express</label><br></input></p>" CRLF
+
+    ."     <p> Number of floors is (2 - 60) "
+    ."       <input type='text' name='elevatornumberoffloors' value=' "
+               numberoffloors DECIMAL U.
+               ." '></input></p>"
+
+    ."     <p> Number of steps between floors is (0 - anything) "
+    ."       <input type='text' name='numberofstepsbetweenfloors' value=' "
+               pnumberofstepsbetweenfloors @ DECIMAL U.
+               ." '></input></p>"
+
+    ."     <p> Show license:" 
+            ." <input type='checkbox' name='showinglicense'></input></p>" CRLF
+
+    ."     <p> Show bunny:" 
+            ." <input type='checkbox' name='showingbunny' "
+            ?bunnychecked 
+            ." ></input></p>" CRLF
+
+    ."     <input type='submit'>" CRLF
+
+    ."   </form>" CRLF 
+
+    ?neednewdestination 0= IF
+      pdestinationfloor @ -1 <> IF
+          
+    ." <p>Ding! The elevator has arrived.</p>" CRLF
+    ." <p><a href='http://localhost/Ding.mp3'>Ding.mp3</a></p>" CRLF
+
+    ." <audio autoplay>" CRLF
+    ."   <source src='http://localhost/Ding.mp3' type='audio/mpeg'>" CRLF
+    ."   Audio not supported." CRLF 
+    ." </audio>" CRLF
+
+      ELSE
+    ." <p>No ding. The elevator has no destination.</p>" CRLF
+    ." <p><a href='http://localhost/Ding.mp3'>Ding.mp3</a></p>" CRLF
+      THEN
+    ELSE
+      ." <p><a href='http://localhost/Ding.mp3'>Ding.mp3</a></p>" CRLF
+      ." <p>No ding. The elevator is travelling.</p>" CRLF
+    THEN
+
+    ."   <form runat='server' action='http://localhost/cgi-bin/nodiaperglu?ElevatorCGI.dglu' method='post'>" CRLF
+    ."     <p><input type='submit'>Reset elevator</input></p>" 
+           ." <input type='hidden' name='elevatormode' value='4'></input>" CRLF
+    ."   </form>" CRLF 
+
+    ."   <form runat='server' action='http://localhost/cgi-bin/nodiaperglu?ElevatorCGI.dglu' method='post'>" CRLF
+    ."     <p><input type='submit'>Load elevator test: teleport up3 down3 floor5</input></p>" 
+           ." <input type='hidden' name='elevatormode' value='4'></input>" CRLF
+           ." <input type='hidden' name='up3'></input>" CRLF
+           ." <input type='hidden' name='down3'></input>" CRLF
+           ." <input type='hidden' name='floor5'></input>" CRLF
+    ."   </form>" CRLF 
+
+    ."   <form runat='server' action='http://localhost/cgi-bin/nodiaperglu?ElevatorCGI.dglu' method='post'>" CRLF
+    ."     <p><input type='submit'>Load elevator test: nonexpress up3 down3 floor5</input></p>" 
+           ." <input type='hidden' name='elevatormode' value='5'></input>" CRLF
+           ." <input type='hidden' name='up3'></input>" CRLF
+           ." <input type='hidden' name='down3'></input>" CRLF
+           ." <input type='hidden' name='floor5'></input>" CRLF
+    ."   </form>" CRLF 
+
+    ."   <form runat='server' action='http://localhost/cgi-bin/nodiaperglu?ElevatorCGI.dglu' method='post'>" CRLF
+    ."     <p><input type='submit'>Load elevator test: express up3 down3 floor5</input></p>" 
+           ." <input type='hidden' name='elevatormode' value='6'></input>" CRLF
+           ." <input type='hidden' name='up3'></input>" CRLF
+           ." <input type='hidden' name='down3'></input>" CRLF
+           ." <input type='hidden' name='floor5'></input>" CRLF
+    ."   </form>" CRLF 
+
+    ."   <form runat='server' action='http://localhost/cgi-bin/nodiaperglu?ElevatorCGI.dglu' method='post'>" CRLF
+    ."     <p><input type='submit'>Load elevator test: teleport elevatorfloor=5 up3 down3 floor1</input></p>" 
+           ." <input type='hidden' name='elevatormode' value='4'></input>" CRLF
+           ." <input type='hidden' name='elevatorfloor' value='5'></input>" CRLF
+           ." <input type='hidden' name='up3'></input>" CRLF
+           ." <input type='hidden' name='down3'></input>" CRLF
+           ." <input type='hidden' name='floor1'></input>" CRLF
+    ."   </form>" CRLF
+
+    ."   <form runat='server' action='http://localhost/cgi-bin/nodiaperglu?ElevatorCGI.dglu' method='post'>" CRLF
+    ."     <p><input type='submit'>Load elevator test: nonexpress elevatorfloor=5 up3 down3 floor1</input></p>" 
+           ." <input type='hidden' name='elevatormode' value='5'></input>" CRLF
+           ." <input type='hidden' name='elevatorfloor' value='5'></input>" CRLF
+           ." <input type='hidden' name='up3'></input>" CRLF
+           ." <input type='hidden' name='down3'></input>" CRLF
+           ." <input type='hidden' name='floor1'></input>" CRLF
+    ."   </form>" CRLF
+
+    ."   <form runat='server' action='http://localhost/cgi-bin/nodiaperglu?ElevatorCGI.dglu' method='post'>" CRLF
+    ."     <p><input type='submit'>Load elevator test: express elevatorfloor=5 up3 down3 floor1</input></p>" 
+           ." <input type='hidden' name='elevatormode' value='6'></input>" CRLF
+           ." <input type='hidden' name='elevatorfloor' value='5'></input>" CRLF
+           ." <input type='hidden' name='up3'></input>" CRLF
+           ." <input type='hidden' name='down3'></input>" CRLF
+           ." <input type='hidden' name='floor1'></input>" CRLF
+    ."   </form>" CRLF
+
+    ."   <form runat='server' action='http://localhost/cgi-bin/nodiaperglu?ElevatorCGI.dglu' method='post'>" CRLF
+    ."     <p><input type='submit'>Load elevator test: nonexpress elevatorfloor=5 numberofstepsbetweenfloors=1 up3 down3 floor1</input></p>" 
+           ." <input type='hidden' name='elevatormode' value='5'></input>" CRLF
+           ." <input type='hidden' name='elevatorfloor' value='5'></input>" CRLF
+           ." <input type='hidden' name='numberofstepsbetweenfloors' value='1'></input>" CRLF
+           ." <input type='hidden' name='up3'></input>" CRLF
+           ." <input type='hidden' name='down3'></input>" CRLF
+           ." <input type='hidden' name='floor1'></input>" CRLF
+    ."   </form>" CRLF
+
+    showlicense @ IF
+      ." <p><pre>" CRLF
+      .license
+      ." </pre></p>" CRLF
+    THEN 
+
+    // ." <p><pre>Stack = " .S ." </pre></p>" CRLF
+
+    ."   </body>" CRLF    ." </html>" CRLF;
+
+drawpage

@@ -1,0 +1,536 @@
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2023 James Patrick Norris
+//
+//    This file is part of DG6502CrossAsm v1.0
+//
+//    DG6502CrossAsm v1.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DG6502CrossAsm v1.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DG6502CrossAsm v1.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// June 10, 2023              //
+// version 1.0                //
+// /////////////////////////////
+
+
+// Based on the AR Disassembly Project Disassembler
+
+( Compile guard, don't include this file if it is already included. )
+
+' DG6502DisAsm.DGLU ENDOFWORDLIST = 0= ?END-EVALUATE
+
+0 CONSTANT DG6502DisAsm.DGLU
+
+
+HEX 100  100    NEWBUFFER CONSTANT OPCODETYPEBUFID
+
+HEX 1000 10000  NEWBUFFER CONSTANT OPCODENAMEL$OFFSETBUFID
+HEX 1000 100000 NEWBUFFER CONSTANT OPCODENAMEL$STRINGBUFID
+
+: >OPCODE ( opcodetype addrmode -- ) ( opcodename -$- )
+    OPCODETYPEBUFID C>BUF
+      
+    0 GETP$
+    OPCODENAMEL$OFFSETBUFID
+    OPCODENAMEL$STRINGBUFID
+    S>NEWL$ DROP$
+;
+
+( Opcode data types )
+0 CONSTANT none
+1 CONSTANT byte
+2 CONSTANT address
+3 CONSTANT branch
+4 CONSTANT terminating
+5 CONSTANT byteaddress
+
+
+CREATE POpcodeTypeDataSizeTable
+0 CODE-U8, // for none
+1 CODE-U8, // for byte
+2 CODE-U8, // for address
+1 CODE-U8, // for branch
+0 CODE-U8, // for terminating
+1 CODE-U8, // for byteaddress
+ 
+6 CONSTANT NumberOfDataTypes 
+
+
+( 00 ) ( $" brk" )         terminating   $" BRK,"           >OPCODE
+( 01 ) ( $" ora[[]+x]" )   byteaddress   $" [[U8]+X] ORA,"  >OPCODE
+( 02 ) ( $" ???" )         terminating   $" 02 CODE-U8,"    >OPCODE
+( 03 ) ( $" ???" )         terminating   $" 03 CODE-U8,"    >OPCODE
+( 04 ) ( $" tsb[]" )       byteaddress   $" [U8] TSB, ( 65C02 )" >OPCODE
+( 05 ) ( $" ora[]" )       byteaddress   $" [U8] ORA,"      >OPCODE
+( 06 ) ( $" asl[]" )       byteaddress   $" [U8] ASL,"      >OPCODE
+( 07 ) ( $" ???" )         terminating   $" 07 CODE-U8,"    >OPCODE
+( 08 ) ( $" pshp" )        none          $" PHP,"           >OPCODE
+( 09 ) ( $" ora" )         byte          $" U8 ORA,"        >OPCODE
+( 0a ) ( $" asla" )        none          $" RA ASL,"        >OPCODE
+( 0b ) ( $" ???" )         terminating   $" 0B CODE-U8,"    >OPCODE
+( 0c ) ( $" tsb[]" )       address       $" [U16] TSB, ( 65C02 )" >OPCODE
+( 0d ) ( $" ora[]" )       address       $" [U16] ORA,"     >OPCODE
+( 0e ) ( $" asl[]" )       address       $" [U16] ASL,"     >OPCODE
+( 0f ) ( $" ???" )         terminating   $" 0F CODE-U8,"    >OPCODE
+
+( 10 ) ( $" bpl" )         branch        $" PC+N8 BPL,"     >OPCODE
+( 11 ) ( $" ora[[]+y]" )   byteaddress   $" [[U8]+Y] ORA,"  >OPCODE
+( 12 ) ( $" ora[[]]" )     byteaddress   $" [[U8]] ORA, ( 65C02 )" >OPCODE
+( 13 ) ( $" ???" )         terminating   $" 13 CODE-U8,"    >OPCODE
+( 14 ) ( $" trb[]" )       byteaddress   $" [U8] TRB, ( 65C02 )" >OPCODE
+( 15 ) ( $" ora[+x]" )     byteaddress   $" [U8+X] ORA,"    >OPCODE
+( 16 ) ( $" asl[+x]" )     byteaddress   $" [U8+X] ASL,"    >OPCODE
+( 17 ) ( $" ???" )         terminating   $" 17 CODE-U8,"    >OPCODE
+( 18 ) ( $" clc" )         none          $" CLC,"           >OPCODE
+( 19 ) ( $" ora[+y]" )     address       $" [U16+Y] ORA,"   >OPCODE
+( 1a ) ( $" ina" )         none          $" INA, ( 65C02 )" >OPCODE
+( 1b ) ( $" ???" )         terminating   $" 1B CODE-U8,"    >OPCODE
+( 1c ) ( $" trb[]" )       address       $" [U16] TRB, ( 65C02 )" >OPCODE
+( 1d ) ( $" ora[+x]" )     address       $" [U16+X] ORA,"   >OPCODE
+( 1e ) ( $" asl[+x]" )     address       $" [U16+X] ASL,"   >OPCODE
+( 1f ) ( $" ???" )         terminating   $" 1F CODE-U8,"    >OPCODE
+
+( 20 ) ( $" jsr" )         address       $" U16 JSR,"       >OPCODE
+( 21 ) ( $" anda[[]+x]" )  byteaddress   $" [[U8]+X] AND,"  >OPCODE
+( 22 ) ( $" ???" )         terminating   $" 22 CODE-U8,"    >OPCODE
+( 23 ) ( $" ???" )         terminating   $" 23 CODE-U8,"    >OPCODE
+( 24 ) ( $" bit[]" )       byteaddress   $" [U8] BIT,"      >OPCODE
+( 25 ) ( $" anda[]" )      byteaddress   $" [U8] AND,"      >OPCODE
+( 26 ) ( $" rol[]" )       byteaddress   $" [U8] ROL,"      >OPCODE
+( 27 ) ( $" ???" )         terminating   $" 27 CODE-U8,"    >OPCODE
+( 28 ) ( $" pulp" )        none          $" PLP,"           >OPCODE
+( 29 ) ( $" anda" )        byte          $" U8 AND,"        >OPCODE
+( 2a ) ( $" rola" )        none          $" RA ROL,"        >OPCODE
+( 2b ) ( $" ???" )         terminating   $" 2B CODE-U8,"    >OPCODE
+( 2c ) ( $" bit[]" )       address       $" [U16] BIT,"     >OPCODE
+( 2d ) ( $" anda[]" )      address       $" [U16] AND,"     >OPCODE
+( 2e ) ( $" rol[]" )       address       $" [U16] ROL,"     >OPCODE
+( 2f ) ( $" ???" )         terminating   $" 2F CODE-U8,"    >OPCODE
+
+( 30 ) ( $" bmi" )         branch        $" PC+N8 BMI,"     >OPCODE
+( 31 ) ( $" anda[[]+y]" )  byteaddress   $" [[U8]+Y] AND,"  >OPCODE
+( 32 ) ( $" and[[]]" )     byteaddress   $" [[U8]] AND, ( 65C02 )" >OPCODE
+( 33 ) ( $" ???" )         terminating   $" 33 CODE-U8,"    >OPCODE
+( 34 ) ( $" bit[+x]" )     byteaddress   $" [U8+X] BIT, ( 65C02 )" >OPCODE
+( 35 ) ( $" anda[+x]" )    byteaddress   $" [U8+X] AND,"    >OPCODE
+( 36 ) ( $" rol[+x]" )     byteaddress   $" [U8+X] ROL,"    >OPCODE
+( 37 ) ( $" ???" )         terminating   $" 37 CODE-U8,"    >OPCODE
+( 38 ) ( $" sec" )         none          $" SEC,"           >OPCODE
+( 39 ) ( $" anda[+y]" )    address       $" [U16+Y] AND,"   >OPCODE
+( 3a ) ( $" dea" )         none          $" DEA, ( 65C02 )" >OPCODE
+( 3b ) ( $" ???" )         terminating   $" 3B CODE-U8,"    >OPCODE
+( 3c ) ( $" bit[+x]" )     address       $" [U16+X] BIT, ( 65C02 )" >OPCODE
+( 3d ) ( $" anda[+x]" )    address       $" [U16+X] AND,"   >OPCODE
+( 3e ) ( $" rol[+x]" )     address       $" [U16+X] ROL,"   >OPCODE
+( 3f ) ( $" ???" )         terminating   $" 3F CODE-U8,"    >OPCODE
+
+( 40 ) ( $" rti" )         terminating   $" RTI,"           >OPCODE
+( 41 ) ( $" eora[[]+x]" )  byteaddress   $" [[U8]+X] EOR,"  >OPCODE
+( 42 ) ( $" ???" )         terminating   $" 42 CODE-U8,"    >OPCODE
+( 43 ) ( $" ???" )         terminating   $" 43 CODE-U8,"    >OPCODE
+( 44 ) ( $" ???" )         terminating   $" 44 CODE-U8,"    >OPCODE
+( 45 ) ( $" eora[]" )      byteaddress   $" [U8] EOR,"      >OPCODE
+( 46 ) ( $" lsr[]" )       byteaddress   $" [U8] LSR,"      >OPCODE
+( 47 ) ( $" ???" )         terminating   $" 47 CODE-U8,"    >OPCODE
+( 48 ) ( $" psha" )        none          $" PHA,"           >OPCODE
+( 49 ) ( $" eora" )        byte          $" U8 EOR,"        >OPCODE
+( 4a ) ( $" lsra" )        none          $" RA LSR,"        >OPCODE
+( 4b ) ( $" ???" )         terminating   $" 4B CODE-U8,"    >OPCODE
+( 4c ) ( $" jmp" )         address       $" U16 JMP,"       >OPCODE
+( 4d ) ( $" eora[]" )      address       $" [U16] EOR,"     >OPCODE
+( 4e ) ( $" lsr[]" )       address       $" [U16] LSR,"     >OPCODE
+( 4f ) ( $" ???" )         terminating   $" 4F CODE-U8,"    >OPCODE
+
+( 50 ) ( $" bvc" )         branch        $" PC+N8 BVC,"     >OPCODE
+( 51 ) ( $" eora[[]+y]" )  byteaddress   $" [[U8]+Y] EOR,"  >OPCODE
+( 52 ) ( $" eora[[]]" )    byteaddress   $" [[U8]] EOR, ( 65C02 )" >OPCODE
+( 53 ) ( $" ???" )         terminating   $" 53 CODE-U8,"    >OPCODE
+( 54 ) ( $" ???" )         terminating   $" 54 CODE-U8,"    >OPCODE
+( 55 ) ( $" eora[+x]" )    byteaddress   $" [U8+X] EOR,"    >OPCODE
+( 56 ) ( $" lsr[+x]" )     byteaddress   $" [U8+X] LSR,"    >OPCODE
+( 57 ) ( $" ???" )         terminating   $" 57 CODE-U8,"    >OPCODE
+( 58 ) ( $" cli" )         none          $" CLI,"           >OPCODE
+( 59 ) ( $" eora[+y]" )    address       $" [U16+Y] EOR,"   >OPCODE
+( 5A ) ( $" phy" )         none          $" PHY, ( 65C02 )" >OPCODE
+( 5B ) ( $" ???" )         terminating   $" 5B CODE-U8,"    >OPCODE
+( 5C ) ( $" ???" )         terminating   $" 5C CODE-U8,"    >OPCODE
+( 5D ) ( $" eora[+x]" )    address       $" [U16+X] EOR,"   >OPCODE
+( 5E ) ( $" lsr[+x]" )     address       $" [U16+X] LSR,"   >OPCODE
+( 5f ) ( $" ???" )         terminating   $" 5F CODE-U8,"    >OPCODE
+
+( 60 ) ( $" rts" )         terminating   $" RTS,"           >OPCODE
+( 61 ) ( $" adca[[]+x]" )  byteaddress   $" [[U8]+X] ADC,"  >OPCODE
+( 62 ) ( $" ???" )         terminating   $" 62 CODE-U8,"    >OPCODE
+( 63 ) ( $" ???" )         terminating   $" 63 CODE-U8,"    >OPCODE
+( 64 ) ( $" stz[]" )       byteaddress   $" [U8] STZ, ( 65C02 )" >OPCODE
+( 65 ) ( $" adca[]" )      byteaddress   $" [U8] ADC,"      >OPCODE
+( 66 ) ( $" ror[]" )       byteaddress   $" [U8] ROR,"      >OPCODE
+( 67 ) ( $" ???" )         terminating   $" 67 CODE-U8,"    >OPCODE
+( 68 ) ( $" pula" )        none          $" PLA,"           >OPCODE
+( 69 ) ( $" adca" )        byte          $" U8 ADC,"        >OPCODE
+( 6a ) ( $" rora" )        none          $" RA ROR,"        >OPCODE
+( 6b ) ( $" ???" )         terminating   $" 6B CODE-U8,"    >OPCODE
+( 6c ) ( $" jmp[]" )       address       $" [U16] JMP,"     >OPCODE
+( 6d ) ( $" adca[]" )      address       $" [U16] ADC,"     >OPCODE
+( 6e ) ( $" ror[]" )       address       $" [U16] ROR,"     >OPCODE
+( 6f ) ( $" ???" )         terminating   $" 6F CODE-U8,"    >OPCODE
+
+( 70 ) ( $" bvs" )         branch        $" PC+N8 BVS,"     >OPCODE
+( 71 ) ( $" adca[[]+y]" )  byteaddress   $" [[U8]+Y] ADC,"  >OPCODE
+( 72 ) ( $" adc[[]]" )     byteaddress   $" [[U8]] ADC, ( 65C02 )" >OPCODE
+( 73 ) ( $" ???" )         terminating   $" 73 CODE-U8,"    >OPCODE
+( 74 ) ( $" stz[+x]" )     byteaddress   $" [U8+X] STZ, ( 65C02 )" >OPCODE
+( 75 ) ( $" adca[+x]" )    byteaddress   $" [U8+X] ADC,"    >OPCODE
+( 76 ) ( $" ror[+x]" )     byteaddress   $" [U8+X] ROR,"    >OPCODE
+( 77 ) ( $" ???" )         terminating   $" 77 CODE-U8,"    >OPCODE
+( 78 ) ( $" sei" )         none          $" SEI,"           >OPCODE
+( 79 ) ( $" adca[+y]" )    address       $" [U16+Y] ADC,"   >OPCODE
+( 7a ) ( $" ply" )         none          $" PLY, ( 65C02 )" >OPCODE
+( 7b ) ( $" ???" )         terminating   $" 7B CODE-U8,"    >OPCODE
+( 7c ) ( $" jmp[[+x]]" )   address       $" [[U16+X]] JMP, ( 65C02 )" >OPCODE
+( 7d ) ( $" adca[+x]" )    address       $" [U16+X] ADC,"   >OPCODE
+( 7e ) ( $" ror[+x]" )     address       $" [U16+X] ROR,"   >OPCODE
+( 7f ) ( $" ???" )         terminating   $" 7F CODE-U8,"    >OPCODE
+
+( 80 ) ( $" bra" )         branch        $" PC+N8 BRA, ( 65C02 )" >OPCODE
+( 81 ) ( $" sta[[]+x]" )   byteaddress   $" [[U8]+X] STA,"  >OPCODE
+( 82 ) ( $" ???" )         terminating   $" 82 CODE-U8,"    >OPCODE
+( 83 ) ( $" ???" )         terminating   $" 83 CODE-U8,"    >OPCODE
+( 84 ) ( $" sty[]" )       byteaddress   $" [U8] STY,"      >OPCODE
+( 85 ) ( $" sta[]" )       byteaddress   $" [U8] STA,"      >OPCODE
+( 86 ) ( $" stx[]" )       byteaddress   $" [U8] STX,"      >OPCODE
+( 87 ) ( $" ???" )         terminating   $" 87 CODE-U8,"    >OPCODE
+( 88 ) ( $" decy" )        none          $" DEY,"           >OPCODE
+( 89 ) ( $" bit" )         byte          $" U8 BIT, ( 65C02 )" >OPCODE
+( 8a ) ( $" txa" )         none          $" TXA,"           >OPCODE
+( 8b ) ( $" ???" )         terminating   $" 8B CODE-U8,"    >OPCODE
+( 8c ) ( $" sty[]" )       address       $" [U16] STY,"     >OPCODE
+( 8d ) ( $" sta[]" )       address       $" [U16] STA,"     >OPCODE
+( 8e ) ( $" stx[]" )       address       $" [U16] STX,"     >OPCODE
+( 8f ) ( $" ???" )         terminating   $" 8F CODE-U8,"    >OPCODE
+
+( 90 ) ( $" bcc" )         branch        $" PC+N8 BCC,"     >OPCODE
+( 91 ) ( $" sta[[]+y]" )   byteaddress   $" [[U8]+Y] STA,"  >OPCODE
+( 92 ) ( $" sta[[]]" )     byteaddress   $" [[U8]] STA, ( 65C02 )" >OPCODE
+( 93 ) ( $" ???" )         terminating   $" 93 CODE-U8,"    >OPCODE
+( 94 ) ( $" sty[+x]" )     byteaddress   $" [U8+X] STY,"    >OPCODE
+( 95 ) ( $" sta[+x]" )     byteaddress   $" [U8+X] STA,"    >OPCODE
+( 96 ) ( $" stx[+y]" )     byteaddress   $" [U8+Y] STX,"    >OPCODE
+( 97 ) ( $" ???" )         terminating   $" 97 CODE-U8,"    >OPCODE
+( 98 ) ( $" tya" )         none          $" TYA,"           >OPCODE
+( 99 ) ( $" sta[+y]" )     address       $" [U16+Y] STA,"   >OPCODE
+( 9a ) ( $" txs" )         none          $" TXS,"           >OPCODE
+( 9b ) ( $" ???" )         terminating   $" 9B CODE-U8,"    >OPCODE
+( 9c ) ( $" stz[]" )       address       $" [U16] STZ, ( 65C02 )" >OPCODE
+( 9d ) ( $" sta[+x]" )     address       $" [U16+X] STA,"   >OPCODE
+( 9e ) ( $" stz[+x" )      address       $" [U16+X] STZ, ( 65C02 )" >OPCODE
+( 9f ) ( $" ???" )         terminating   $" 9F CODE-U8,"    >OPCODE
+
+( a0 ) ( $" ldy" )         byte          $" U8 LDY,"        >OPCODE
+( a1 ) ( $" lda[[]+x]" )   byteaddress   $" [[U8]+X] LDA,"  >OPCODE
+( a2 ) ( $" ldx" )         byte          $" U8 LDX,"        >OPCODE
+( a3 ) ( $" ???" )         terminating   $" A3 CODE-U8,"    >OPCODE
+( a4 ) ( $" ldy[]" )       byteaddress   $" [U8] LDY,"      >OPCODE
+( a5 ) ( $" lda[]" )       byteaddress   $" [U8] LDA,"      >OPCODE
+( a6 ) ( $" ldx[]" )       byteaddress   $" [U8] LDX,"      >OPCODE
+( a7 ) ( $" ???" )         terminating   $" A7 CODE-U8,"    >OPCODE
+( a8 ) ( $" tay" )         none          $" TAY,"           >OPCODE
+( a9 ) ( $" lda" )         byte          $" U8 LDA,"        >OPCODE
+( aa ) ( $" tax" )         none          $" TAX,"           >OPCODE
+( ab ) ( $" ???" )         terminating   $" AB CODE-U8,"    >OPCODE
+( ac ) ( $" ldy[]" )       address       $" [U16] LDY,"     >OPCODE
+( ad ) ( $" lda[]" )       address       $" [U16] LDA,"     >OPCODE
+( ae ) ( $" ldx[]" )       address       $" [U16] LDX,"     >OPCODE
+( af ) ( $" ???" )         terminating   $" AF CODE-U8,"    >OPCODE
+
+( b0 ) ( $" bcs" )         branch        $" PC+N8 BCS,"     >OPCODE
+( b1 ) ( $" lda[[]+y]" )   byteaddress   $" [[U8]+Y] LDA,"  >OPCODE
+( b2 ) ( $" lda[[]]" )     byteaddress   $" [[U8]] LDA, ( 65C02 )" >OPCODE
+( b3 ) ( $" ???" )         terminating   $" B3 CODE-U8,"    >OPCODE
+( b4 ) ( $" ldy[+x]" )     byteaddress   $" [U8+X] LDY,"    >OPCODE
+( b5 ) ( $" lda[+x]" )     byteaddress   $" [U8+X] LDA,"    >OPCODE
+( b6 ) ( $" ldx[+y]" )     byteaddress   $" [U8+Y] LDX,"    >OPCODE
+( b7 ) ( $" ???" )         terminating   $" B7 CODE-U8,"    >OPCODE
+( b8 ) ( $" clv" )         none          $" CLV,"           >OPCODE
+( b9 ) ( $" lda[+y]" )     address       $" [U16+Y] LDA,"   >OPCODE
+( ba ) ( $" tsx" )         none          $" TSX,"           >OPCODE
+( bb ) ( $" ???" )         terminating   $" BB CODE-U8,"    >OPCODE
+( bc ) ( $" ldy[+x]" )     address       $" [U16+X] LDY,"   >OPCODE
+( bd ) ( $" lda[+x]" )     address       $" [U16+X] LDA,"   >OPCODE
+( be ) ( $" ldx[+y]" )     address       $" [U16+Y] LDX,"   >OPCODE
+( bf ) ( $" ???" )         terminating   $" BF CODE-U8,"    >OPCODE
+
+( c0 ) ( $" cpy" )         byte          $" CPY,"           >OPCODE
+( c1 ) ( $" cmp[[]+x]" )   byteaddress   $" [[U8]+X] CMP,"  >OPCODE
+( c2 ) ( $" ???" )         terminating   $" C2 CODE-U8,"    >OPCODE
+( c3 ) ( $" ???" )         terminating   $" C3 CODE-U8,"    >OPCODE
+( c4 ) ( $" cpy[]" )       byteaddress   $" [U8] CPY,"      >OPCODE
+( c5 ) ( $" cmpa[]" )      byteaddress   $" [U8] CMP,"      >OPCODE
+( c6 ) ( $" dec[]" )       byteaddress   $" [U8] DEC,"      >OPCODE
+( c7 ) ( $" ???" )         terminating   $" C7 CODE-U8,"    >OPCODE
+( c8 ) ( $" iny" )         none          $" INY,"           >OPCODE
+( c9 ) ( $" cmpa" )        byte          $" U8 CMP,"        >OPCODE
+( ca ) ( $" dex"  )        none          $" DEX,"           >OPCODE
+( cb ) ( $" ???" )         terminating   $" CB CODE-U8,"    >OPCODE
+( cc ) ( $" cpy[]" )       address       $" [U16] CPY,"     >OPCODE
+( cd ) ( $" cmpa[]" )      address       $" [U16] CMP,"     >OPCODE
+( ce ) ( $" dec[]" )       address       $" [U16] DEC,"     >OPCODE
+( cf ) ( $" ???" )         terminating   $" CF CODE-U8,"    >OPCODE
+
+( d0 ) ( $" bne" )         branch        $" PC+N8 BNE,"     >OPCODE
+( d1 ) ( $" cmpa[[]+y]" )  byteaddress   $" [[U8]+Y] CMP,"  >OPCODE
+( d2 ) ( $" cmp[[]]" )     byteaddress   $" [[U8]] CMP, ( 65C02 )" >OPCODE
+( d3 ) ( $" ???" )         terminating   $" D3 CODE-U8,"    >OPCODE
+( d4 ) ( $" ???" )         terminating   $" D4 CODE-U8"     >OPCODE
+( d5 ) ( $" cmpa[+x]" )    byteaddress   $" [U8+X] CMP,"    >OPCODE
+( d6 ) ( $" dec[+x]" )     byteaddress   $" [U8+X] DEC,"    >OPCODE
+( d7 ) ( $" ???" )         terminating   $" D7 CODE-U8,"    >OPCODE
+( d8 ) ( $" cld" )         none          $" CLD,"           >OPCODE
+( d9 ) ( $" cmpa[+y]" )    address       $" [U16+Y] CMP,"   >OPCODE
+( da ) ( $" phx" )         none          $" PHX, ( 65C02 )" >OPCODE
+( db ) ( $" ???" )         terminating   $" DB CODE-U8,"    >OPCODE
+( dc ) ( $" ???" )         terminating   $" DC CODE-U8,"    >OPCODE
+( dd ) ( $" cmpa[+x]" )    address       $" [U16+X] CMP,"   >OPCODE
+( de ) ( $" dec[+x]" )     address       $" [U16+X] DEC,"   >OPCODE
+( df ) ( $" ???" )         terminating   $" DF CODE-U8,"    >OPCODE
+
+( e0 ) ( $" cpx" )         byte          $" U8 CPX,"        >OPCODE
+( e1 ) ( $" sbc[[]+x]" )   byteaddress   $" [[U8]+X] SBC,"  >OPCODE
+( e2 ) ( $" ???" )         terminating   $" E2 CODE-U8,"    >OPCODE
+( e3 ) ( $" ???" )         terminating   $" E3 CODE-U8,"    >OPCODE
+( e4 ) ( $" cpx[]" )       byteaddress   $" [U8] CPX,"      >OPCODE
+( e5 ) ( $" sbca[]" )      byteaddress   $" [U8] SBC,"      >OPCODE
+( e6 ) ( $" inc[]" )       byteaddress   $" [U8] INC,"      >OPCODE
+( e7 ) ( $" ???" )         terminating   $" E7 CODE-U8,"    >OPCODE
+( e8 ) ( $" inx" )         none          $" INX,"           >OPCODE
+( e9 ) ( $" sbca" )        byte          $" U8 SBC,"        >OPCODE
+( ea ) ( $" nop" )         none          $" NOP,"           >OPCODE
+( eb ) ( $" ???" )         terminating   $" EB CODE-U8,"    >OPCODE
+( ec ) ( $" cpx[]" )       address       $" [U16] CPX,"     >OPCODE
+( ed ) ( $" sbca[]" )      address       $" [U16] SBC,"     >OPCODE
+( ee ) ( $" inc[]" )       address       $" [U16] INC,"     >OPCODE
+( ef ) ( $" ???" )         terminating   $" EF CODE-U8,"    >OPCODE
+
+( f0 ) ( $" beq" )         branch        $" PC+N8 BEQ,"     >OPCODE
+( f1 ) ( $" sbca[[]+y]" )  byteaddress   $" [[U8+Y] SBC,"   >OPCODE
+( f2 ) ( $" sbca[[]]" )    byteaddress   $" [[U8]] SBC, ( 65C02 )" >OPCODE
+( f3 ) ( $" ???" )         terminating   $" F3 CODE-U8,"    >OPCODE
+( f4 ) ( $" ???" )         terminating   $" F4 CODE-U8,"    >OPCODE
+( f5 ) ( $" sbca[+x]" )    byteaddress   $" [U8+X] SBC,"    >OPCODE
+( f6 ) ( $" inc[+x]" )     byteaddress   $" [U8+X] INC,"    >OPCODE
+( f7 ) ( $" ???" )         terminating   $" F7 CODE-U8,"    >OPCODE
+( f8 ) ( $" sed" )         none          $" SED,"           >OPCODE
+( f9 ) ( $" sbca[+y]" )    address       $" [U16+Y] SBC,"   >OPCODE
+( fa ) ( $" plx" )         none          $" PLX, ( 65C02 )" >OPCODE
+( fb ) ( $" ???" )         terminating   $" FB CODE-U8,"    >OPCODE
+( fc ) ( $" ???" )         terminating   $" FC CODE-U8,"    >OPCODE
+( fd ) ( $" sbca[+x]" )    address       $" [U16+X] SBC,"   >OPCODE
+( fe ) ( $" inc[+x]" )     address       $" [U16+X] INC,"   >OPCODE
+( ff ) ( $" ???" )         terminating   $" FF CODE-U8,"    >OPCODE
+
+
+VARIABLE PDISASMBASEADDRESS
+0 PDISASMBASEADDRESS ! 
+
+HEX
+: U>HEX$ ( u -- ) ( -$- hex$ )
+    HEX
+    0 <#$ #S$ #>$
+;
+
+: >HEXBYTE$ ( byte -- ) ( -$- hexbyte$ )
+    FF AND
+    DUP 10 U< IF
+      $" 0"
+    ELSE
+      NEW$
+    THEN
+    HEX
+    0 <#$ #S$ #>$ $>$
+;
+
+: >HEXINT8$ ( INT8 -- ) ( -$- int8$ )
+    DUP 0< IF
+      $" -"
+      ABS
+    ELSE
+      NEW$
+    THEN
+    >HEXBYTE$ $>$
+; 
+
+HEX
+: CSIGNEXTEND ( n -- n' ) ( bit7 is copied to all higher bits )
+    ( Forth doesn't have a sign extend byte function? )
+
+    FF AND
+
+    DUP 80 U< IF
+      EXIT
+    THEN
+
+    FFFFFFFFFFFFFF00 OR
+;
+
+: OCOUNT ( offset bufferid -- offset+1 bufferid data|-1 )
+    // if offset is at end of buffer, return data=-1
+    DUP LENGTHBUF ( -- offset bufferid length ) 
+    2 PICK U<= IF
+      -1 
+      EXIT
+    THEN
+
+    2DUP OC@ ( offset bufferid data )
+    ROT 1+ -ROT
+;
+
+: OSIZECOUNT ( offset bufferid size -- offset+size bufferid data )
+    DUP 0= IF
+      // already have a 0 on the stack for fake data
+      EXIT
+    THEN
+
+    DUP 1 = IF
+      DROP
+      OCOUNT
+      EXIT
+    THEN
+
+    2 = IF
+      2DUP O>P U16@
+      ROT 2 + -ROT
+      EXIT
+    THEN
+
+    NAME>E ERROR" sizes U> 2 not supported"
+;
+
+: GETINSTRUCTIONDATA ( offset bufferid type -- offset+datasize bufferid data type )
+    DUP NumberOfDataTypes U>= IF
+      NAME>E ERROR" unknown instruction data type" EXIT
+    THEN
+
+    DUP ( -- offset bufferid type type ) 
+    >R POpcodeTypeDataSizeTable + C@ ( -- offset bufferid datasize )
+    OSIZECOUNT ( -- offset+size bufferid data  ) 
+    R> ( -- offset+size bufferid data type )
+;
+
+: GETINSTRUCTION ( offset bufferid -- offset+1 bufferid data type ) ( -$- addrmodeopcode$ )
+    OCOUNT ( -- offset|offset+1 bufferid -1|opcode )
+    DUP -1 = IF
+      // at end of buffer
+      terminating ( -- offset bufferid -1 terminating )
+      EXIT
+    THEN
+
+    DUP ( -- offset+1 bufferid opcode opcode )
+     
+    OPCODENAMEL$OFFSETBUFID
+    OPCODENAMEL$STRINGBUFID
+    GETPL$ S>NEW$ ( -- offset+1 bufferid opcode ) ( -- addrmodeopcode$ )
+
+    OPCODETYPEBUFID OC@ ( -- offset+1 bufferid type ) ( -- addrmodeopcode$ )
+
+    GETINSTRUCTIONDATA ( -- offset+instructionsize bufferid data type )
+;
+
+: INSTRUCTIONTYPEDATA>$ ( data type -- ) ( -- data$ )
+
+    DUP none = IF 
+      2DROP
+      NEW$
+      EXIT
+    THEN
+
+    DUP byte = IF 
+      DROP
+      >HEXBYTE$
+      $"  " $>$
+      EXIT
+    THEN
+
+    DUP address = IF 
+      DROP
+      DUP 8 RSHIFT >HEXBYTE$
+      FF AND >HEXBYTE$ $>$
+      $"  " $>$
+      EXIT
+    THEN
+
+    DUP branch = IF 
+      DROP
+      >HEXINT8$
+      $"  " $>$
+      EXIT
+    THEN
+
+    DUP terminating = IF 
+      2DROP
+      $" ( terminating ) "
+      EXIT
+    THEN
+
+    byteaddress = IF  
+      >HEXBYTE$
+      $"  " $>$
+      EXIT
+    THEN
+
+    NAME>E  ERROR" unknown instruction type"
+            
+;
+
+: DISASM>NEW$ ( offset bufferid length -- ) ( -$- disasm$ )
+    2 PICK + ( -- offset bufferid length+offset )
+    OVER LENGTHBUF UMIN ( -- offset bufferid length+offset' )
+    { notdoneflag | endoffset -- }  // moving offsetlength to a local variable
+    NEW$ ( -$- result$ )
+    TRUE TO notdoneflag
+    BEGIN
+      OVER endoffset U<
+      notdoneflag AND
+    WHILE
+      ( offset bufferid -- )
+
+      // do address as a comment... relative to pgaseaddress
+      $" ( " $>$ 
+      OVER PDISASMBASEADDRESS @ + U>HEX$ $>$ 
+      $"  ) " $>$ 
+
+      GETINSTRUCTION ( -- offset+instructionsize bufferid data type ) ( -$- result$ addrmodeopcode$ )
+
+      ( DUP terminating = IF
+        FALSE TO notdoneflag
+      THEN )
+
+      // append data
+      INSTRUCTIONTYPEDATA>$ ( result$ addrmodeopcode$ data$ -- ) ( -$- result$ addrmodeopcode$ data$ )
+
+      SWAP$ $>$ ( -$- result$ data$addrmodeopcode$ )
+
+      // append addressing mode and opcode
+      ( disasm$ data$addrmodeopcode$ -$- ) $>$
+
+      // append CRLF
+      0C C>$ 0A C>$
+
+    REPEAT
+    
+;
+
