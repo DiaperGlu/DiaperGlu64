@@ -1,3 +1,32 @@
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2023 James Patrick Norris
+//
+//    This file is part of DG6502CrossAsm v1.1
+//
+//    DG6502CrossAsm v1.1 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DG6502CrossAsm v1.1 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DG6502CrossAsm v1.1; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// June 10, 2023              //
+// version 1.1                //
+// /////////////////////////////
+
 
 DiaperGlu 6502 Cross Assembler
 
@@ -54,6 +83,9 @@ Some things to consider:
     clear condition code CC. Instead I named it NC even though the branch is called BCC, 
     If your control flow stuff isn't compiling correctly it may be because you used CC 
     instead of NC.
+
+  A is a valid Forth hexadecimal number. For this reason I used RA as the name of 
+    register A.
 
   DiaperGlu has more advanced words than CONSTANT for handling assembler symbols. If you 
     need to group symbols or have hierarchical symbols, check out DiaperGlu's hierarchical 
@@ -177,8 +209,8 @@ Forth style control flow instructions:
   These instructions compile short branches. 
   Except for UNTIL, the branch distance must be from -80 to 7F
   UNTIL, will compile a long branch if needed
-  ELSE, REPEAT, and LONGREPEAT, use CLC, NC UNTIL, for it's branch which means 
-    they clears the carry flag
+  ELSE, REPEAT, and LONGREPEAT, use CLC, NC UNTIL, for their branches which means
+    they clear the carry flag
   QELSE, and QREPEAT, use BRA, which is not available in the original version of 
     the 6502
 
@@ -259,8 +291,10 @@ Note:
 
   It might be simpler to use the Forth style control flow instructions.
 
-  Except for BRA, and BNEVER, these branch instructions compile a long branch 
-    if the branch distance is not in the range of -80 to 7F
+  Except for BRA, and BNEVER, if the branch distance is not in the range of -80 to 7F
+    these branch instructions compile a long branch. A long branch is a branch of the
+    opposite condition over a jump instruction.
+    
 
   If BRA, is too far for a short branch, a JMP, is compiled. If you used PC+N8
     with BRA, and it is too far for a short branch, the start of the instruction + 2

@@ -1,3 +1,32 @@
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2023 James Patrick Norris
+//
+//    This file is part of DG6502CrossAsm v1.1
+//
+//    DG6502CrossAsm v1.1 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DG6502CrossAsm v1.1 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DG6502CrossAsm v1.1; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// June 10, 2023              //
+// version 1.1                //
+// /////////////////////////////
+
 $" DG6502CrossAsm.dglu" INCLUDEFILE$
 $" DG6502DisAsm.dglu" INCLUDEFILE$
 
@@ -362,10 +391,19 @@ CRLF OHERE DUP U. ." : " BARHERE U16 BNE,    ." BARHERE U16 BNE,    "  DUP CCOC@
 
 CRLF OHERE DUP U. ." : " BARHERE U16 BEQ,    ." BARHERE U16 BEQ,    "  DUP CCOC@ U.  1+ CCOC@ U.
 
-CRLF OHERE DUP U. ." : " BARHERE U16 BNEVER, ." BARHERE U16 BNEVER, "  DUP CCOC@ U.  DUP 1+ CCOC@ U.  2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BARHERE U16 BNEVER, ." BARHERE U16 BNEVER, "  DROP
+
+CRLF ." Next Offset = " OHERE U.
+CRLF ." Next Base Address Relative Address = " BARHERE U.
+
+CRLF ." Data Stack after Test: " .S
+CRLF ." String Stack after Test: " .$S
 
 CRLF ." Disassembly of Test" CRLF
 
 0 PCURRENTCOMPILEBUFFER @ -1 DISASM>NEW$ .$
+
+CRLF ." Data Stack after Disassembly: " .S
+CRLF ." String Stack after Disassembly: " .$S
 
 

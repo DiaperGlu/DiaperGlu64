@@ -1,0 +1,12 @@
+Changelog for DG6502CrossAsm
+
+  10 Jun 2023
+    Released v1.1
+      added the license file to the directory
+      fixed BNEVER, to clean the stack of the input parameters
+      fixed test for BNEVER, to not check memory
+      fixed DISASM>NEW$ to clean the stack when done
+      added stack checks to test
+      readme.txt spelling fixes
+ 
+    Released v1.0
