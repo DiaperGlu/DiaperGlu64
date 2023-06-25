@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.11.
+//    This file is part of DiaperGlu v5.12.
 //
-//    DiaperGlu v5.11 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.12 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.11 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.12 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.11; if not, write to the Free Software
+//    along with DiaperGlu v5.12; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 10, 2023              //
-// version 5.11               //
+// June 24, 2023              //
+// version 5.12               //
 // /////////////////////////////
 
 #if !defined(_INC_diapergluforth)
@@ -204,9 +204,6 @@ enum dg_cpux86regs {
 
 
 #ifdef DGLU_OS_WIN64
-    
-#include "windows.h" // for the types in basestd.h
-// #include "httpext.h"
 
 #ifdef DGLU_NO_DIAPER
 
@@ -225,6 +222,11 @@ enum dg_cpux86regs {
 #define DG_DIAPERGLUOSAPI_LIB_NAME_LENGTH (18)
 
 #endif
+    
+#include "windows.h" // for the types in basestd.h
+// #include "httpext.h"
+
+
 
 #ifdef DGLU_EXPORTS
 
@@ -462,9 +464,25 @@ enum dg_cpux86regs {
     
 #ifdef DGLU_OS_FREEBSD
 
-#define DG_DIAPERGLU_LIB_NAME "libdiaperglu.dylib"
+#ifdef DGLU_NO_DIAPER
 
+#define DG_DIAPERGLU_LIB_NAME "libnodiaperglu.dylib"
+#define DG_DIAPERGLU_LIB_NAME_LENGTH (20)
+#define DG_DIAPERGLUOSAPI_LIB_NAME "libnodiapergluosapi.dylib"
+#define DG_DIAPERGLUOSAPI_LIB_NAME_LENGTH (25)
+
+#endif
+
+#ifndef DGLU_NO_DIAPER
+
+#define DG_DIAPERGLU_LIB_NAME "libdiaperglu.dylib"
 #define DG_DIAPERGLU_LIB_NAME_LENGTH (18)
+#define DG_DIAPERGLUOSAPI_LIB_NAME "libdiapergluosapi.dylib"
+#define DG_DIAPERGLUOSAPI_LIB_NAME_LENGTH (23)
+
+#endif
+
+
 
 #define DG_PATH_SLASH_SYMBOL ((unsigned char)'/')
     

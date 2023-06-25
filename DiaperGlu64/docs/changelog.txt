@@ -1,4 +1,11 @@
 Changelog for Diaperglu
+   24 June 2023
+     Released v5.12
+
+   14 Jun 2023
+     Changed #define for DG_DIAPERGLU_LIB_NAME on Mac for DGLU_NO_DIAPER case which would cause
+       cglu load library test to link to diaperglu library and fail if the library was not present
+       now test links to nodiaperglu library
 
    10 Jun 2023
      Released v5.11

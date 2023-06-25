@@ -1,0 +1,1004 @@
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2023 James Patrick Norris
+//
+//    This file is part of DG68HC11CrossAsm v1.0
+//
+//    DG68HC11CrossAsm v1.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DG68HC11CrossAsm v1.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DG68HC11CrossAsm v1.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// June 24, 2023              //
+// version 1.0                //
+// /////////////////////////////
+
+$" DG68HC11CrossAsm.dglu" INCLUDEFILE$
+$" DG68HC11DisAsm.dglu" INCLUDEFILE$
+
+: $>CCBUF
+    PCURRENTCOMPILEBUFFER @ $>BUF
+;
+
+: CCOC@ PCURRENTCOMPILEBUFFER @ OC@ ;
+
+HEX CRLF
+: test?N8 ( -- )
+    CRLF ." Testing ?N8 "
+    0 ?N8 TRUE <> IF ." 0 case fail " EXIT THEN
+    7F ?N8 TRUE <> IF ." 7F case fail " EXIT THEN
+    80 ?N8 FALSE <> IF ." 80 case fail " EXIT THEN
+    -80 ?N8 TRUE <> IF ." -80 case fail " EXIT THEN
+    -81 ?N8 FALSE <> IF ." -81 case fail " EXIT THEN
+    ." success"
+;
+
+test?N8
+
+: test?SHORTBRANCH ( -- )
+    CRLF ." Testing ?SHORTBRANCH "
+    8000 8000 ?SHORTBRANCH TRUE <> IF ." +0 case fail " EXIT THEN
+    807F 8000 ?SHORTBRANCH TRUE <> IF ." +7F case fail " EXIT THEN
+    8080 8000 ?SHORTBRANCH FALSE <> IF ." +80 case fail " EXIT THEN
+    8000 80 - 8000 ?SHORTBRANCH TRUE <> IF ." -80 case fail " EXIT THEN
+    8000 81 - 8000 ?SHORTBRANCH FALSE <> IF ." -81 case fail " EXIT THEN
+    ." success"
+;
+
+test?SHORTBRANCH
+
+HEX
+: testOSIZECOUNT ( -- )
+    CRLF ." Testing OSIZECOUNT "
+    1000 1000 NEWBUFFER >R
+    30 R@ C>BUF  31 R@ C>BUF  32 R@ C>BUF  33 R@ C>BUF
+
+    // count 0 case
+    55
+    1 R@ 0 OSIZECOUNT
+      R@ <> IF CRLF ." - FAIL! 0 case buffer wrong" EXIT THEN
+      1 <> IF CRLF ." - FAIL! 0 case offset wrong" EXIT THEN
+      55 <> IF CRLF ." - FAIL! 0 case stack corrupt" EXIT THEN
+
+    // count 1 case
+    55
+    1 R@ 1 OSIZECOUNT
+      31 <> IF CRLF ." - FAIL! 1 case data wrong" EXIT THEN
+      R@ <> IF CRLF ." - FAIL! 1 case buffer wrong" EXIT THEN
+      2 <> IF CRLF ." - FAIL! 1 case offset wrong" EXIT THEN
+      55 <> IF CRLF ." - FAIL! 1 case stack corrupt" EXIT THEN
+
+    // count 2 case
+    55
+    1 R@ 2 OSIZECOUNT
+      3231 <> IF CRLF ." - FAIL! 2 case data wrong" EXIT THEN
+      R@ <> IF CRLF ." - FAIL! 2 case buffer wrong" EXIT THEN
+      3 <> IF CRLF ." - FAIL! 2 case offset wrong" EXIT THEN
+      55 <> IF CRLF ." - FAIL! 2 case stack corrupt" EXIT THEN
+
+    // count FE case
+    55
+    1 R@ FE OSIZECOUNT
+      32 <> IF CRLF ." - FAIL! FE case data1 wrong" EXIT THEN
+      31 <> IF CRLF ." - FAIL! FE case data0 wrong" EXIT THEN
+      R@ <> IF CRLF ." - FAIL! FE case buffer wrong" EXIT THEN
+      3 <> IF CRLF ." - FAIL! FE case offset wrong" EXIT THEN
+      55 <> IF CRLF ." - FAIL! FE case stack corrupt" EXIT THEN
+
+    // count FD case
+    55
+    1 R@ FD OSIZECOUNT ?ERRORIF CRLF NAME>E EXIT THEN 
+      32 <> IF CRLF ." - FAIL! FD case data1 wrong" EXIT THEN
+      31 <> IF CRLF ." - FAIL! FD case data0 wrong" EXIT THEN
+      33 <> IF CRLF ." - FAIL! FD case data2 wrong" EXIT THEN
+      R@ <> IF CRLF ." - FAIL! FD case buffer wrong" EXIT THEN
+      4 <> IF CRLF ." - FAIL! FD case offset wrong" EXIT THEN
+      55 <> IF CRLF ." - FAIL! FD case stack corrupt" EXIT THEN
+
+    R@ FREEBUFFER
+
+    R> DROP
+;
+
+testOSIZECOUNT
+
+
+HEX
+: testGETINSTRUCTIONDATA ( -- )
+    CRLF ." Testing GETINSTRUCTIONDATA "
+    1000 1000 NEWBUFFER >R
+    30 R@ C>BUF  31 R@ C>BUF  32 R@ C>BUF  33 R@ C>BUF
+
+    // none case
+    55
+    1 R@ none GETINSTRUCTIONDATA
+      none <> IF CRLF ." -FAIL! none case type wrong" EXIT THEN
+      R@ <> IF CRLF ." - FAIL! none case buffer wrong" EXIT THEN
+      1 <> IF CRLF ." - FAIL! none case offset wrong" EXIT THEN
+      55 <> IF CRLF ." - FAIL! none case stack corrupt" EXIT THEN
+
+    // u8data case
+    55
+    1 R@ u8data GETINSTRUCTIONDATA
+      u8data <> IF CRLF ." -FAIL! u8data case type wrong" EXIT THEN
+      31 <> IF CRLF ." - FAIL! u8data case data wrong" EXIT THEN
+      R@ <> IF CRLF ." - FAIL! u8data case buffer wrong" EXIT THEN
+      2 <> IF CRLF ." - FAIL! u8data case offset wrong" EXIT THEN
+      55 <> IF CRLF ." - FAIL! u8data case stack corrupt" EXIT THEN
+
+    // u16address case
+    55
+    1 R@ u16address GETINSTRUCTIONDATA
+      u16address <> IF CRLF ." -FAIL! u16address case type wrong" EXIT THEN
+      3231 <> IF CRLF ." - FAIL! u16address case data wrong" EXIT THEN
+      R@ <> IF CRLF ." - FAIL! u16address case buffer wrong" EXIT THEN
+      3 <> IF CRLF ." - FAIL! u16address case offset wrong" EXIT THEN
+      55 <> IF CRLF ." - FAIL! u16address case stack corrupt" EXIT THEN
+
+    // pc+n8address case
+    55
+    1 R@ pc+n8address GETINSTRUCTIONDATA
+      pc+n8address <> IF CRLF ." -FAIL! pc+n8address case type wrong" EXIT THEN
+      31 <> IF CRLF ." - FAIL! pc+n8address case data wrong" EXIT THEN
+      R@ <> IF CRLF ." - FAIL! pc+n8address case buffer wrong" EXIT THEN
+      2 <> IF CRLF ." - FAIL! pc+n8address case offset wrong" EXIT THEN
+      55 <> IF CRLF ." - FAIL! pc+n8address case stack corrupt" EXIT THEN
+
+    // terminating case
+    55
+    1 R@ terminating GETINSTRUCTIONDATA
+      terminating <> IF CRLF ." -FAIL! terminating case type wrong" EXIT THEN
+      R@ <> IF CRLF ." - FAIL! terminating case buffer wrong" EXIT THEN
+      1 <> IF CRLF ." - FAIL! terminating case offset wrong" EXIT THEN
+      55 <> IF CRLF ." - FAIL! terminating case stack corrupt" EXIT THEN
+
+    // u8address case
+    55
+    1 R@ u8address GETINSTRUCTIONDATA
+      u8address <> IF CRLF ." -FAIL! u8address case type wrong" EXIT THEN
+      31 <> IF CRLF ." - FAIL! u8address case data wrong" EXIT THEN
+      R@ <> IF CRLF ." - FAIL! u8address case buffer wrong" EXIT THEN
+      2 <> IF CRLF ." - FAIL! u8address case offset wrong" EXIT THEN
+      55 <> IF CRLF ." - FAIL! u8address case stack corrupt" EXIT THEN
+
+    // u16data case
+    55
+    1 R@ u16data GETINSTRUCTIONDATA
+      u16data <> IF CRLF ." -FAIL! u16data case type wrong" EXIT THEN
+      3231 <> IF CRLF ." - FAIL! u16data case data wrong" EXIT THEN
+      R@ <> IF CRLF ." - FAIL! u16data case buffer wrong" EXIT THEN
+      3 <> IF CRLF ." - FAIL! u16data case offset wrong" EXIT THEN
+      55 <> IF CRLF ." - FAIL! u16data case stack corrupt" EXIT THEN
+
+    // masku8address case
+    55
+    1 R@ masku8address GETINSTRUCTIONDATA
+      masku8address <> IF CRLF ." -FAIL! masku8address case type wrong" EXIT THEN
+      32 <> IF CRLF ." - FAIL! masku8address case data1 wrong" EXIT THEN
+      31 <> IF CRLF ." - FAIL! masku8address case data0 wrong" EXIT THEN
+      R@ <> IF CRLF ." - FAIL! masku8address case buffer wrong" EXIT THEN
+      3 <> IF CRLF ." - FAIL! masku8address case offset wrong" EXIT THEN
+      55 <> IF CRLF ." - FAIL! masku8address case stack corrupt" EXIT THEN
+
+    // masku8addrpc+n8 case
+    55
+    1 R@ masku8addrpc+n8 GETINSTRUCTIONDATA ?ERRORIF CRLF NAME>E EXIT THEN
+      masku8addrpc+n8 <> IF CRLF ." -FAIL! masku8addrpc+n8 case type wrong" EXIT THEN
+      32 <> IF CRLF ." - FAIL! masku8addrpc+n8 case data1 wrong" EXIT THEN
+      31 <> IF CRLF ." - FAIL! masku8addrpc+n8 case data0 wrong" EXIT THEN
+      33 <> IF CRLF ." - FAIL! masku8addrpc+n8 case data2 wrong" EXIT THEN
+      R@ <> IF CRLF ." - FAIL! masku8addrpc+n8 case buffer wrong" EXIT THEN
+      4 <> IF CRLF ." - FAIL! masku8addrpc+n8 case offset wrong" EXIT THEN
+      55 <> IF CRLF ." - FAIL! masku8addrpc+n8 case stack corrupt" EXIT THEN
+
+    R@ FREEBUFFER
+
+    R> DROP
+;
+
+testGETINSTRUCTIONDATA
+
+: .?same ( flag -- ) // 0 = the same
+    CRLF
+    0= IF 
+      ." Recompiling the disassembled code produced the same code" 
+    ELSE
+      ." Recompiling the disassembled code did not produce the same code"
+    THEN
+;
+
+: .CompareCodeBuffers { | oldbufferid newbufferid -- }
+    CRLF 
+    oldbufferid GETSBUFFER
+    newbufferid GETSBUFFER
+    COMPARE
+    .?same
+;
+
+1000 -1 NEWBUFFER CONSTANT stringevalbufferid
+
+: EVALUATE$
+    stringevalbufferid EMPTYBUFFER
+
+    // copying string to a buffer just in case
+    //   the evaluated code needs to use the string stack
+    0 GETS$[ND] stringevalbufferid S>BUF DROP$
+    stringevalbufferid EVALUATEBUFFER
+;
+
+VARIABLE pstartoffset
+
+PCURRENTCOMPILEBUFFER @ CONSTANT originalccbufid
+
+HEX 2000 NEWCROSSBUFFER PCURRENTCOMPILEBUFFER @ CONSTANT asmccbufid
+HEX 2000 NEWCROSSBUFFER PCURRENTCOMPILEBUFFER @ CONSTANT disasmccbufid
+
+originalccbufid PCURRENTCOMPILEBUFFER !
+
+VARIABLE pcompareflag
+VARIABLE pcomparestartoffset
+
+: dumpcomparedcode 
+    CRLF ." compiled original code"
+    pcomparestartoffset @ asmccbufid O>P OHERE pcomparestartoffset @ - DUMP
+    CRLF ." compiled disassembled code"
+    pcomparestartoffset @ disasmccbufid O>P OHERE pcomparestartoffset @ - DUMP
+;
+
+: .checkagainstdisassembly
+    pstartoffset @ pcomparestartoffset !
+    asmccbufid PCURRENTCOMPILEBUFFER ! // just in case
+    pstartoffset @ asmccbufid OHERE pstartoffset @ - DISASM>NEW$
+
+    CRLF DUP$ .$
+    disasmccbufid PCURRENTCOMPILEBUFFER !
+    EVALUATE$
+    pstartoffset @ disasmccbufid O>P OHERE pstartoffset @ -
+
+    asmccbufid PCURRENTCOMPILEBUFFER !
+    pstartoffset @ asmccbufid O>P OHERE pstartoffset @ -
+
+    COMPARE DUP pcompareflag !
+    .?same
+    asmccbufid PCURRENTCOMPILEBUFFER !
+
+    pcompareflag @ 0<> IF
+      dumpcomparedcode 
+    THEN
+
+    OHERE pstartoffset ! // set up for next section
+
+    CRLF
+;
+
+asmccbufid PCURRENTCOMPILEBUFFER !
+
+OHERE pstartoffset !
+
+CRLF OHERE DUP U. ." : " ABA, ." ABA, " CCOC@ U.
+CRLF OHERE DUP U. ." : " ABX, ." ABX, " CCOC@ U.
+CRLF OHERE DUP U. ." : " ABY, ." ABY, " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " CBA, ." CBA, " CCOC@ U.
+CRLF OHERE DUP U. ." : " CLC, ." CLC, " CCOC@ U.
+CRLF OHERE DUP U. ." : " CLI, ." CLI, " CCOC@ U.
+CRLF OHERE DUP U. ." : " COMA, ." COMA, " CCOC@ U.
+CRLF OHERE DUP U. ." : " COMB, ." COMB, " CCOC@ U.
+CRLF OHERE DUP U. ." : " DAA, ." DAA, " CCOC@ U.
+CRLF OHERE DUP U. ." : " DECA, ." DECA, " CCOC@ U.
+CRLF OHERE DUP U. ." : " DECB, ." DECB, " CCOC@ U.
+CRLF OHERE DUP U. ." : " DES, ." DES, " CCOC@ U.
+CRLF OHERE DUP U. ." : " DEX, ." DEX, " CCOC@ U.
+CRLF OHERE DUP U. ." : " DEY, ." DEY, " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " INCA, ." INCA, " CCOC@ U.
+CRLF OHERE DUP U. ." : " INCB, ." INCB, " CCOC@ U.
+CRLF OHERE DUP U. ." : " INS, ." INS, " CCOC@ U.
+CRLF OHERE DUP U. ." : " INX, ." INX, " CCOC@ U.
+CRLF OHERE DUP U. ." : " INY, ." INY, " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " LSLA, ." LSLA, " CCOC@ U.
+CRLF OHERE DUP U. ." : " LSLB, ." LSLB, " CCOC@ U.
+CRLF OHERE DUP U. ." : " LSLD, ." LSLD, " CCOC@ U.
+CRLF OHERE DUP U. ." : " LSRA, ." LSRA, " CCOC@ U.
+CRLF OHERE DUP U. ." : " LSRB, ." LSRB, " CCOC@ U.
+CRLF OHERE DUP U. ." : " LSRD, ." LSRD, " CCOC@ U.
+CRLF OHERE DUP U. ." : " MUL, ." MUL, " CCOC@ U.
+CRLF OHERE DUP U. ." : " NEGA, ." NEGA, " CCOC@ U.
+CRLF OHERE DUP U. ." : " NEGB, ." NEGB, " CCOC@ U.
+CRLF OHERE DUP U. ." : " NOP, ." NOP, " CCOC@ U.
+CRLF OHERE DUP U. ." : " PSHA, ." PSHA, " CCOC@ U.
+CRLF OHERE DUP U. ." : " PSHB, ." PSHB, " CCOC@ U.
+CRLF OHERE DUP U. ." : " PSHD, ." PSHD, " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " PSHX, ." PSHX, " CCOC@ U.
+CRLF OHERE DUP U. ." : " PSHY, ." PSHY, " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " PULA, ." PULA, " CCOC@ U.
+CRLF OHERE DUP U. ." : " PULB, ." PULB, " CCOC@ U.
+CRLF OHERE DUP U. ." : " PULD, ." PULD, " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " PULX, ." PULX, " CCOC@ U.
+CRLF OHERE DUP U. ." : " PULY, ." PULY, " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " ROLA, ." ROLA, " CCOC@ U.
+CRLF OHERE DUP U. ." : " ROLB, ." ROLB, " CCOC@ U.
+CRLF OHERE DUP U. ." : " ROLD, ." ROLD, " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " RORA, ." RORA, " CCOC@ U.
+CRLF OHERE DUP U. ." : " RORB, ." RORB, " CCOC@ U.
+CRLF OHERE DUP U. ." : " RORD, ." RORD, " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " RTI, ." RTI, " CCOC@ U.
+CRLF OHERE DUP U. ." : " RTS, ." RTS, " CCOC@ U.
+CRLF OHERE DUP U. ." : " SBA, ." SBA, " CCOC@ U.
+CRLF OHERE DUP U. ." : " SEC, ." SEC, " CCOC@ U.
+CRLF OHERE DUP U. ." : " SEI, ." SEI, " CCOC@ U.
+CRLF OHERE DUP U. ." : " SEV, ." SEV, " CCOC@ U.
+CRLF OHERE DUP U. ." : " STOP, ." STOP, " CCOC@ U.
+CRLF OHERE DUP U. ." : " SWI, ." SWI, " CCOC@ U.
+CRLF OHERE DUP U. ." : " TAB, ." TAB, " CCOC@ U.
+CRLF OHERE DUP U. ." : " TAP, ." TAP, " CCOC@ U.
+CRLF OHERE DUP U. ." : " TBA, ." TBA, " CCOC@ U.
+CRLF OHERE DUP U. ." : " TEST, ." TEST, " CCOC@ U.
+CRLF OHERE DUP U. ." : " TPA, ." TPA, " CCOC@ U.
+CRLF OHERE DUP U. ." : " TSTA, ." TSTA, " CCOC@ U.
+CRLF OHERE DUP U. ." : " TSTB, ." TSTB, " CCOC@ U.
+CRLF OHERE DUP U. ." : " TSX, ." TSX, " CCOC@ U.
+CRLF OHERE DUP U. ." : " TSY, ." TSY, " CCOC@ U.
+CRLF OHERE DUP U. ." : " TXS, ." TXS, " CCOC@ U.
+CRLF OHERE DUP U. ." : " TYS, ." TYS, " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " WAI, ." WAI, " CCOC@ U.
+CRLF OHERE DUP U. ." : " XGDX, ." XGDX, " CCOC@ U.
+CRLF OHERE DUP U. ." : " XGDY, ." XGDY, " DUP CCOC@ U. 1+ CCOC@ U.
+
+.checkagainstdisassembly
+
+CRLF
+CRLF OHERE DUP U. ." : " 37 U8 ADCA,        ." 37 U8 ADCA,         " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8] ADCA,      ." 37 [U8] ADCA,       " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] ADCA,   ." 37FE [U16] ADCA,    " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] ADCA,    ." 37 [U8+X] ADCA,     " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] ADCA,    ." 37 [U8+Y] ADCA,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37 U8 ADCB,        ." 37 U8 ADCB,         " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8] ADCB,      ." 37 [U8] ADCB,       " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] ADCB,   ." 37FE [U16] ADCB,    " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] ADCB,    ." 37 [U8+X] ADCB,     " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] ADCB,    ." 37 [U8+Y] ADCB,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " RB ADDA,           ." RB ADDA,            " CCOC@ U. 
+CRLF OHERE DUP U. ." : " 37 U8 ADDA,        ." 37 U8 ADDA,         " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8] ADDA,      ." 37 [U8] ADDA,       " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] ADDA,   ." 37FE [U16] ADDA,    " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] ADDA,    ." 37 [U8+X] ADDA,     " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] ADDA,    ." 37 [U8+Y] ADDA,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37 U8 ADDB,        ." 37 U8 ADDB,         " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8] ADDB,      ." 37 [U8] ADDB,       " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] ADDB,   ." 37FE [U16] ADDB,    " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] ADDB,    ." 37 [U8+X] ADDB,     " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] ADDB,    ." 37 [U8+Y] ADDB,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37FE U16 ADDD,     ." 37FE U16 ADDD,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8] ADDD,      ." 37 [U8] ADDD,       " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] ADDD,   ." 37FE [U16] ADDD,    " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] ADDD,    ." 37 [U8+X] ADDD,     " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] ADDD,    ." 37 [U8+Y] ADDD,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37 U8 ANDA,        ." 37 U8 ANDA,         " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8] ANDA,      ." 37 [U8] ANDA,       " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] ANDA,   ." 37FE [U16] ANDA,    " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] ANDA,    ." 37 [U8+X] ANDA,     " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] ANDA,    ." 37 [U8+Y] ANDA,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF OHERE DUP U. ." : " 37 U8 ANDB,        ." 37 U8 ANDB,         " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8] ANDB,      ." 37 [U8] ANDB,       " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] ANDB,   ." 37FE [U16] ANDB,    " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] ANDB,    ." 37 [U8+X] ANDB,     " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] ANDB,    ." 37 [U8+Y] ANDB,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " RA ASL,            ." RA ASL,             " CCOC@ U.
+CRLF OHERE DUP U. ." : " RB ASL,            ." RB ASL,             " CCOC@ U. 
+CRLF OHERE DUP U. ." : " RD ASL,            ." RD ASL,             " CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] ASL,    ." 37FE [U16] ASL,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] ASL,     ." 37 [U8+X] ASL,      " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] ASL,     ." 37 [U8+Y] ASL,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " RA ASR,            ." RA ASR,             " CCOC@ U.
+CRLF OHERE DUP U. ." : " RB ASR,            ." RB ASR,             " CCOC@ U. 
+CRLF OHERE DUP U. ." : " RD ASR,            ." RD ASR,             " CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] ASR,    ." 37FE [U16] ASR,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] ASR,     ." 37 [U8+X] ASR,      " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] ASR,     ." 37 [U8+Y] ASR,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 95 37FE [U8] BCLR,    ." 95 37 [U8] BCLR,       " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U. 
+CRLF OHERE DUP U. ." : " 95 37 [U8+X] BCLR,    ." 95 37 [U8+X] BCLR,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 95 37 [U8+Y] BCLR,    ." 95 37 [U8+Y] BCLR,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. 3 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37 U8 BITA,        ." 37 U8 BITA,         " DUP CCOC@ U. 1+ CCOC@ U. 
+CRLF OHERE DUP U. ." : " 37 [U8] BITA,      ." 37 [U8] BITA,       " DUP CCOC@ U. 1+ CCOC@ U. 
+CRLF OHERE DUP U. ." : " 37FE [U16] BITA,   ." 37FE [U16] BITA,    " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] BITA,    ." 37 [U8+X] BITA,     " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] BITA,    ." 37 [U8+Y] BITA,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37 U8 BITB,        ." 37 U8 BITB,         " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8] BITB,      ." 37 [U8] BITB,       " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] BITB,   ." 37FE [U16] BITB,    " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] BITB,    ." 37 [U8+X] BITB,     " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] BITB,    ." 37 [U8+Y] BITB,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 95 37 [U8] BSET,      ." 95 37 [U8] BSET,       " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 95 37 [U8+X] BSET,    ." 95 37 [U8+X] BSET,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 95 37 [U8+Y] BSET,    ." 95 37 [U8+Y] BSET,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. 3 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " RA CLR,            ." RA CLR,             " CCOC@ U.
+CRLF OHERE DUP U. ." : " RB CLR,            ." RB CLR,             " CCOC@ U. 
+CRLF OHERE DUP U. ." : " RD CLR,            ." RD CLR,             " CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] CLR,    ." 37FE [U16] CLR,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] CLR,     ." 37 [U8+X] CLR,      " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] CLR,     ." 37 [U8+Y] CLR,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " RB CMPA,           ." RB CMPA,            " CCOC@ U. 
+CRLF OHERE DUP U. ." : " 37 U8 CMPA,        ." 37 U8 CMPA,         " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8] CMPA,      ." 37 [U8] CMPA,       " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] CMPA,   ." 37FE [U16] CMPA,    " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] CMPA,    ." 37 [U8+X] CMPA,     " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] CMPA,    ." 37 [U8+Y] CMPA,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37 U8 CMPB,        ." 37 U8 CMPB,         " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8] CMPB,      ." 37 [U8] CMPB,       " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] CMPB,   ." 37FE [U16] CMPB,    " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] CMPB,    ." 37 [U8+X] CMPB,     " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] CMPB,    ." 37 [U8+Y] CMPB,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37FE [U16] COM,    ." 37FE [U16] COM,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] COM,     ." 37 [U8+X] COM,      " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] COM,     ." 37 [U8+Y] COM,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37FE U16 CPD,      ." 37FE U16 CPD,       " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. 3 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8] CPD,       ." 37 [U8] CPD,        " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] CPD,    ." 37FE [U16] CPD,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] CPD,     ." 37 [U8+X] CPD,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] CPD,     ." 37 [U8+Y] CPD,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37FE U16 CPX,      ." 37FE U16 CPX,       " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8] CPX,       ." 37 [U8] CPX,        " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] CPX,    ." 37FE [U16] CPX,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] CPX,     ." 37 [U8+X] CPX,      " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] CPX,     ." 37 [U8+Y] CPX,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37FE U16 CPY,      ." 37FE U16 CPY,       " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. 3 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8] CPY,       ." 37 [U8] CPY,        " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] CPY,    ." 37FE [U16] CPY,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] CPY,     ." 37 [U8+X] CPY,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] CPY,     ." 37 [U8+Y] CPY,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " RA DEC,            ." RA DEC,             " CCOC@ U.
+CRLF OHERE DUP U. ." : " RB DEC,            ." RB DEC,             " CCOC@ U.
+CRLF OHERE DUP U. ." : " X DEC,             ." X DEC,              " CCOC@ U.
+CRLF OHERE DUP U. ." : " Y DEC,             ." Y DEC,              " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] DEC,    ." 37FE [U16] DEC,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] DEC,     ." 37 [U8+X] DEC,      " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] DEC,     ." 37 [U8+Y] DEC,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37 U8 EORA,        ." 37 U8 EORA,         " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8] EORA,      ." 37 [U8] EORA,       " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] EORA,   ." 37FE [U16] EORA,    " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] EORA,    ." 37 [U8+X] EORA,     " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] EORA,    ." 37 [U8+Y] EORA,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37 U8 EORB,        ." 37 U8 EORB,         " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8] EORB,      ." 37 [U8] EORB,       " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] EORB,   ." 37FE [U16] EORB,    " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] EORB,    ." 37 [U8+X] EORB,     " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] EORB,    ." 37 [U8+Y] EORB,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " RA INC,            ." RA INC,             " CCOC@ U.
+CRLF OHERE DUP U. ." : " RB INC,            ." RB INC,             " CCOC@ U.
+CRLF OHERE DUP U. ." : " X INC,             ." X INC,              " CCOC@ U.
+CRLF OHERE DUP U. ." : " Y INC,             ." Y INC,              " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] INC,    ." 37FE [U16] INC,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] INC,     ." 37 [U8+X] INC,      " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] INC,     ." 37 [U8+Y] INC,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+.checkagainstdisassembly
+
+CRLF
+CRLF OHERE DUP U. ." : " 37FE [U16] JMPEA,  ." 37FE [U16] JMPEA,   " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] JMPEA,   ." 37 [U8+X] JMPEA,    " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] JMPEA,   ." 37 [U8+Y] JMPEA,    " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37FE U16 JMP,      ." 37FE U16 JMP,       " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 U8+X JMP,       ." 37 U8+X JMP,        " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 U8+Y JMP,       ." 37 U8+Y JMP,        " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37 [U8] JSREA,     ." 37 [U8] JSREA,      " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] JSREA,  ." 37FE [U16] JSREA,   " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] JSREA,   ." 37 [U8+X] JSREA,    " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] JSREA,   ." 37 [U8+Y] JSREA,    " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37 U8 JSR,         ." 37 U8 JSR,          " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE U16 JSR,      ." 37FE U16 JSR,       " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 U8+X JSR,       ." 37 U8+X JSR,        " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 U8+Y JSR,       ." 37 U8+Y JSR,        " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " RB LDAA,           ." RB LDAA,            " CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 U8 LDAA,        ." 37 U8 LDAA,         " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8] LDAA,      ." 37 [U8] LDAA,       " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] LDAA,   ." 37FE [U16] LDAA,    " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] LDAA,    ." 37 [U8+X] LDAA,     " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] LDAA,    ." 37 [U8+Y] LDAA,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37 U8 LDAB,        ." 37 U8 LDAB,         " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8] LDAB,      ." 37 [U8] LDAB,       " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] LDAB,   ." 37FE [U16] LDAB,    " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] LDAB,    ." 37 [U8+X] LDAB,     " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] LDAB,    ." 37 [U8+Y] LDAB,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37FE U16 LDD,      ." 37FE U16 LDD,       " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8] LDD,       ." 37 [U8] LDD,        " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] LDD,    ." 37FE [U16] LDD,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] LDD,     ." 37 [U8+X] LDD,      " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] LDD,     ." 37 [U8+Y] LDD,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37FE U16 LDS,      ." 37FE U16 LDS,       " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8] LDS,       ." 37 [U8] LDS,        " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] LDS,    ." 37FE [U16] LDS,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] LDS,     ." 37 [U8+X] LDS,      " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] LDS,     ." 37 [U8+Y] LDS,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37FE U16 LDX,      ." 37FE U16 LDX,       " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8] LDX,       ." 37 [U8] LDX,        " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] LDX,    ." 37FE [U16] LDX,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] LDX,     ." 37 [U8+X] LDX,      " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] LDX,     ." 37 [U8+Y] LDX,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37FE U16 LDY,      ." 37FE U16 LDY,       " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. 3 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8] LDY,       ." 37 [U8] LDY,        " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] LDY,    ." 37FE [U16] LDY,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] LDY,     ." 37 [U8+X] LDY,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] LDY,     ." 37 [U8+Y] LDY,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " RA LSL,            ." RA LSL,             " CCOC@ U.
+CRLF OHERE DUP U. ." : " RB LSL,            ." RB LSL,             " CCOC@ U.
+CRLF OHERE DUP U. ." : " RD LSL,            ." RD LSL,             " CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] LSL,    ." 37FE [U16] LSL,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] LSL,     ." 37 [U8+X] LSL,      " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] LSL,     ." 37 [U8+Y] LSL,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " RA LSR,            ." RA LSR,             " CCOC@ U.
+CRLF OHERE DUP U. ." : " RB LSR,            ." RB LSR,             " CCOC@ U.
+CRLF OHERE DUP U. ." : " RD LSR,            ." RD LSR,             " CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] LSR,    ." 37FE [U16] LSR,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] LSR,     ." 37 [U8+X] LSR,      " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] LSR,     ." 37 [U8+Y] LSR,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " RA NEG,            ." RA NEG,             " CCOC@ U.
+CRLF OHERE DUP U. ." : " RB NEG,            ." RB NEG,             " CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] NEG,    ." 37FE [U16] NEG,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] NEG,     ." 37 [U8+X] NEG,      " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] NEG,     ." 37 [U8+Y] NEG,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37 U8 ORAA,        ." 37 U8 ORAA,         " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8] ORAA,      ." 37 [U8] ORAA,       " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] ORAA,   ." 37FE [U16] ORAA,    " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] ORAA,    ." 37 [U8+X] ORAA,     " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] ORAA,    ." 37 [U8+Y] ORAA,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37 U8 ORAB,        ." 37 U8 ORAB,         " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8] ORAB,      ." 37 [U8] ORAB,       " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] ORAB,   ." 37FE [U16] ORAB,    " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] ORAB,    ." 37 [U8+X] ORAB,     " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] ORAB,    ." 37 [U8+Y] ORAB,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " RA ROL,            ." RA ROL,             " CCOC@ U.
+CRLF OHERE DUP U. ." : " RB ROL,            ." RB ROL,             " CCOC@ U.
+CRLF OHERE DUP U. ." : " RD ROL,            ." RD ROL,             " CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] ROL,    ." 37FE [U16] ROL,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] ROL,     ." 37 [U8+X] ROL,      " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] ROL,     ." 37 [U8+Y] ROL,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " RA ROR,            ." RA ROR,             " CCOC@ U.
+CRLF OHERE DUP U. ." : " RB ROR,            ." RB ROR,             " CCOC@ U.
+CRLF OHERE DUP U. ." : " RD ROR,            ." RD ROR,             " CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] ROR,    ." 37FE [U16] ROR,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] ROR,     ." 37 [U8+X] ROR,      " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] ROR,     ." 37 [U8+Y] ROR,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37 U8 SBCA,        ." 37 U8 SBCA,         " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8] SBCA,      ." 37 [U8] SBCA,       " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] SBCA,   ." 37FE [U16] SBCA,    " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] SBCA,    ." 37 [U8+X] SBCA,     " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] SBCA,    ." 37 [U8+Y] SBCA,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37 U8 SBCB,        ." 37 U8 SBCB,         " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8] SBCB,      ." 37 [U8] SBCB,       " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] SBCB,   ." 37FE [U16] SBCB,    " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] SBCB,    ." 37 [U8+X] SBCB,     " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] SBCB,    ." 37 [U8+Y] SBCB,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37 [U8] STAA,      ." 37 [U8] STAA,       " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] STAA,   ." 37FE [U16] STAA,    " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] STAA,    ." 37 [U8+X] STAA,     " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] STAA,    ." 37 [U8+Y] STAA,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37 [U8] STAB,      ." 37 [U8] STAB,       " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] STAB,   ." 37FE [U16] STAB,    " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] STAB,    ." 37 [U8+X] STAB,     " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] STAB,    ." 37 [U8+Y] STAb,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37 [U8] STD,       ." 37 [U8] STD,        " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] STD,    ." 37FE [U16] STD,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] STD,     ." 37 [U8+X] STD,      " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] STD,     ." 37 [U8+Y] STD,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37 [U8] STS,       ." 37 [U8] STS,        " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] STS,    ." 37FE [U16] STS,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] STS,     ." 37 [U8+X] STS,      " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] STS,     ." 37 [U8+Y] STS,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37 [U8] STX,       ." 37 [U8] STX,        " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] STX,    ." 37FE [U16] STX,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] STX,     ." 37 [U8+X] STX,      " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] STX,     ." 37 [U8+Y] STX,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37 [U8] STY,       ." 37 [U8] STY,        " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] STY,    ." 37FE [U16] STY,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] STY,     ." 37 [U8+X] STY,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] STY,     ." 37 [U8+Y] STY,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " RB SUBA,           ." RB SUBA,            " CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 U8 SUBA,        ." 37 U8 SUBA,         " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8] SUBA,      ." 37 [U8] SUBA,       " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] SUBA,   ." 37FE [U16] SUBA,    " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] SUBA,    ." 37 [U8+X] SUBA,     " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] SUBA,    ." 37 [U8+Y] SUBA,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37 U8 SUBB,        ." 37 U8 SUBB,         " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8] SUBB,      ." 37 [U8] SUBB,       " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] SUBB,   ." 37FE [U16] SUBB,    " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] SUBB,    ." 37 [U8+X] SUBB,     " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] SUBB,    ." 37 [U8+Y] SUBB,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " 37FE U16 SUBD,     ." 37FE U16 SUBD,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8] SUBD,      ." 37 [U8] SUBD,       " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] SUBD,   ." 37FE [U16] SUBD,    " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] SUBD,    ." 37 [U8+X] SUBD,     " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] SUBD,    ." 37 [U8+Y] SUBD,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+CRLF
+CRLF OHERE DUP U. ." : " RA TST,            ." RA TST,             " CCOC@ U.
+CRLF OHERE DUP U. ." : " RB TST,            ." RB TST,             " CCOC@ U.
+CRLF OHERE DUP U. ." : " 37FE [U16] TST,    ." 37FE [U16] TST,     " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+X] TST,     ." 37 [U8+X] TST,      " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 37 [U8+Y] TST,     ." 37 [U8+Y] TST,      " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+.checkagainstdisassembly
+
+HEX CRLF
+CRLF OHERE DUP U. ." : " MI SHORTBRANCH, >R     ." MI SHORTBRANCH,      " DUP CCOC@ U. 1+ CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " PL SHORTBRANCH, >R     ." PL SHORTBRANCH,      " DUP CCOC@ U. 1+ CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " VC SHORTBRANCH, >R     ." VC SHORTBRANCH,      " DUP CCOC@ U. 1+ CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " VS SHORTBRANCH, >R     ." VS SHORTBRANCH,      " DUP CCOC@ U. 1+ CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " NC SHORTBRANCH, >R     ." NC SHORTBRANCH,      " DUP CCOC@ U. 1+ CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " CS SHORTBRANCH, >R     ." CS SHORTBRANCH,      " DUP CCOC@ U. 1+ CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " NE SHORTBRANCH, >R     ." NE SHORTBRANCH,      " DUP CCOC@ U. 1+ CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " EQ SHORTBRANCH, >R     ." EQ SHORTBRANCH,      " DUP CCOC@ U. 1+ CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " ALWAYS SHORTBRANCH, >R ." ALWAYS SHORTBRANCH,  " DUP CCOC@ U. 1+ CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " NEVER SHORTBRANCH,  >R ." NEVER SHORTBRANCH,   " DUP CCOC@ U. 1+ CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " GE SHORTBRANCH, >R     ." GE SHORTBRANCH,      " DUP CCOC@ U. 1+ CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " GT SHORTBRANCH, >R     ." GT SHORTBRANCH,      " DUP CCOC@ U. 1+ CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " HI SHORTBRANCH, >R     ." HI SHORTBRANCH,      " DUP CCOC@ U. 1+ CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " HS SHORTBRANCH, >R     ." HS SHORTBRANCH,      " DUP CCOC@ U. 1+ CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " LE SHORTBRANCH, >R     ." LE SHORTBRANCH,      " DUP CCOC@ U. 1+ CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " LO SHORTBRANCH, >R     ." LO SHORTBRANCH,      " DUP CCOC@ U. 1+ CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " LS SHORTBRANCH, >R     ." LS SHORTBRANCH,      " DUP CCOC@ U. 1+ CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " LT SHORTBRANCH, >R     ." LT SHORTBRANCH,      " DUP CCOC@ U. 1+ CCOC@ U. ." afterbranchaddr = " R> U.
+
+.checkagainstdisassembly
+
+CRLF
+CRLF OHERE DUP U. ." : " A5 37 [U8] NSET SHORTBRANCH, >R        ." A5 37 [U8] NSET SHORTBRANCH,          " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. 5 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8] NMASKEDSET SHORTBRANCH, >R  ." A5 37 [U8] NMASKEDSET SHORTBRANCH,    " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. 5 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8] SET SHORTBRANCH, >R         ." A5 37 [U8] SET SHORTBRANCH,           " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. 3 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8] MASKEDSET SHORTBRANCH, >R   ." A5 37 [U8] MASKEDSET SHORTBRANCH,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. 3 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8] NCLR SHORTBRANCH, >R        ." A5 37 [U8] NCLR SHORTBRANCH,          " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. 5 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8] NMASKEDCLR SHORTBRANCH, >R  ." A5 37 [U8] NMASKEDCLR SHORTBRANCH,    " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. 5 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8] CLR SHORTBRANCH, >R         ." A5 37 [U8] CLR SHORTBRANCH,           " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. 3 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8] MASKEDCLR SHORTBRANCH, >R   ." A5 37 [U8] MASKEDCLR SHORTBRANCH,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. 3 + CCOC@ U. ." afterbranchaddr = " R> U.
+
+CRLF OHERE DUP U. ." : " A5 37 [U8+X] NSET SHORTBRANCH, >R        ." A5 37 [U8+X] NSET SHORTBRANCH,          " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. 5 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+X] NMASKEDSET SHORTBRANCH, >R  ." A5 37 [U8+X] NMASKEDSET SHORTBRANCH,    " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. 5 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+X] SET SHORTBRANCH, >R         ." A5 37 [U8+X] SET SHORTBRANCH,           " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. 3 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+X] MASKEDSET SHORTBRANCH, >R   ." A5 37 [U8+X] MASKEDSET SHORTBRANCH,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. 3 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+X] NCLR SHORTBRANCH, >R        ." A5 37 [U8+X] NCLR SHORTBRANCH,          " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. 5 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+X] NMASKEDCLR SHORTBRANCH, >R  ." A5 37 [U8+X] NMASKEDCLR SHORTBRANCH,    " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. 5 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+X] CLR SHORTBRANCH, >R         ." A5 37 [U8+X] CLR SHORTBRANCH,           " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. 3 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+X] MASKEDCLR SHORTBRANCH, >R   ." A5 37 [U8+X] MASKEDCLR SHORTBRANCH,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. 3 + CCOC@ U. ." afterbranchaddr = " R> U.
+
+CRLF OHERE DUP U. ." : " A5 37 [U8+Y] NSET SHORTBRANCH, >R        ." A5 37 [U8+Y] NSET SHORTBRANCH,          " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. 6 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+Y] NMASKEDSET SHORTBRANCH, >R  ." A5 37 [U8+Y] NMASKEDSET SHORTBRANCH,    " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. 6 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+Y] SET SHORTBRANCH, >R         ." A5 37 [U8+Y] SET SHORTBRANCH,           " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+Y] MASKEDSET SHORTBRANCH, >R   ." A5 37 [U8+Y] MASKEDSET SHORTBRANCH,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+Y] NCLR SHORTBRANCH, >R        ." A5 37 [U8+Y] NCLR SHORTBRANCH,          " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. 6 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+Y] NMASKEDCLR SHORTBRANCH, >R  ." A5 37 [U8+Y] NMASKEDCLR SHORTBRANCH,    " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. 6 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+Y] CLR SHORTBRANCH, >R         ." A5 37 [U8+Y] CLR SHORTBRANCH,           " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+Y] MASKEDCLR SHORTBRANCH, >R   ." A5 37 [U8+Y] MASKEDCLR SHORTBRANCH,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U. ." afterbranchaddr = " R> U.
+
+.checkagainstdisassembly
+
+CRLF OHERE DUP U. ." : " BEGIN,  DEX,  MI SHORTBRANCH,  RESOLVE-SHORTBRANCH,  ." BEGIN,  DEX,  MI SHORTBRANCH,  RESOLVE-SHORTBRANCH, " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+.checkagainstdisassembly
+
+CRLF OHERE DUP U. ." : " MI LONGBRANCH, >R      ." MI LONGBRANCH,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " PL LONGBRANCH, >R      ." PL LONGBRANCH,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " VC LONGBRANCH, >R      ." VC LONGBRANCH,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " VS LONGBRANCH, >R      ." VS LONGBRANCH,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " NC LONGBRANCH, >R      ." NC LONGBRANCH,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " CS LONGBRANCH, >R      ." CS LONGBRANCH,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " NE LONGBRANCH, >R      ." NE LONGBRANCH,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " EQ LONGBRANCH, >R      ." EQ LONGBRANCH,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " NEVER LONGBRANCH, >R   ." NEVER LONGBRANCH,  " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " ALWAYS LONGBRANCH, >R  ." ALWAYS LONGBRANCH, " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " GE LONGBRANCH, >R      ." GE LONGBRANCH,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " GT LONGBRANCH, >R      ." GT LONGBRANCH,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " HI LONGBRANCH, >R      ." HI LONGBRANCH,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " HS LONGBRANCH, >R      ." HS LONGBRANCH,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " LE LONGBRANCH, >R      ." LE LONGBRANCH,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " LO LONGBRANCH, >R      ." LO LONGBRANCH,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " LS LONGBRANCH, >R      ." LS LONGBRANCH,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " LT LONGBRANCH, >R      ." LT LONGBRANCH,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U. ." afterbranchaddr = " R> U.
+
+CRLF OHERE DUP U. ." : " A5 37 [U8] NSET LONGBRANCH, >R        ." A5 37 [U8] NSET LONGBRANCH,          " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. 6 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8] NMASKEDSET LONGBRANCH, >R  ." A5 37 [U8] NMASKEDSET LONGBRANCH,    " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. 6 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8] SET LONGBRANCH, >R         ." A5 37 [U8] SET LONGBRANCH,           " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. DUP 6 + CCOC@ U. DUP 7 + CCOC@ U. 8 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8] MASKEDSET LONGBRANCH, >R   ." A5 37 [U8] MASKEDSET LONGBRANCH,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. DUP 6 + CCOC@ U. DUP 7 + CCOC@ U. 8 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8] NCLR LONGBRANCH, >R        ." A5 37 [U8] NCLR LONGBRANCH,          " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. 6 + CCOC@ U. ." afterbranchaddr = " R> U. 
+CRLF OHERE DUP U. ." : " A5 37 [U8] NMASKEDCLR LONGBRANCH, >R  ." A5 37 [U8] NMASKEDCLR LONGBRANCH,    " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. 6 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8] CLR LONGBRANCH, >R         ." A5 37 [U8] CLR LONGBRANCH,           " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. DUP 6 + CCOC@ U. DUP 7 + CCOC@ U. 8 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8] MASKEDCLR LONGBRANCH, >R   ." A5 37 [U8] MASKEDCLR LONGBRANCH,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. DUP 6 + CCOC@ U. DUP 7 + CCOC@ U. 8 + CCOC@ U. ." afterbranchaddr = " R> U.
+
+CRLF OHERE DUP U. ." : " A5 37 [U8+X] NSET LONGBRANCH, >R        ." A5 37 [U8+X] NSET LONGBRANCH,          " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. 6 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+X] NMASKEDSET LONGBRANCH, >R  ." A5 37 [U8+X] NMASKEDSET LONGBRANCH,    " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. 6 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+X] SET LONGBRANCH, >R         ." A5 37 [U8+X] SET LONGBRANCH,           " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. DUP 6 + CCOC@ U. DUP 7 + CCOC@ U. 8 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+X] MASKEDSET LONGBRANCH, >R   ." A5 37 [U8+X] MASKEDSET LONGBRANCH,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. DUP 6 + CCOC@ U. DUP 7 + CCOC@ U. 8 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+X] NCLR LONGBRANCH, >R        ." A5 37 [U8+X] NCLR LONGBRANCH,          " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. 6 + CCOC@ U. ." afterbranchaddr = " R> U. 
+CRLF OHERE DUP U. ." : " A5 37 [U8+X] NMASKEDCLR LONGBRANCH, >R  ." A5 37 [U8+X] NMASKEDCLR LONGBRANCH,    " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. 6 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+X] CLR LONGBRANCH, >R         ." A5 37 [U8+X] CLR LONGBRANCH,           " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. DUP 6 + CCOC@ U. DUP 7 + CCOC@ U. 8 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+X] MASKEDCLR LONGBRANCH, >R   ." A5 37 [U8+X] MASKEDCLR LONGBRANCH,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. DUP 6 + CCOC@ U. DUP 7 + CCOC@ U. 8 + CCOC@ U. ." afterbranchaddr = " R> U.
+
+CRLF OHERE DUP U. ." : " A5 37 [U8+Y] NSET LONGBRANCH, >R        ." A5 37 [U8+Y] NSET LONGBRANCH,          " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. DUP 6 + CCOC@ U. 7 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+Y] NMASKEDSET LONGBRANCH, >R  ." A5 37 [U8+Y] NMASKEDSET LONGBRANCH,    " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. DUP 6 + CCOC@ U. 7 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+Y] SET LONGBRANCH, >R         ." A5 37 [U8+Y] SET LONGBRANCH,           " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. DUP 6 + CCOC@ U. DUP 7 + CCOC@ U. DUP 8 + CCOC@ U. 9 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+Y] MASKEDSET LONGBRANCH, >R   ." A5 37 [U8+Y] MASKEDSET LONGBRANCH,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. DUP 6 + CCOC@ U. DUP 7 + CCOC@ U. DUP 8 + CCOC@ U. 9 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+Y] NCLR LONGBRANCH, >R        ." A5 37 [U8+Y] NCLR LONGBRANCH,          " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. DUP 6 + CCOC@ U. 7 + CCOC@ U. ." afterbranchaddr = " R> U. 
+CRLF OHERE DUP U. ." : " A5 37 [U8+Y] NMASKEDCLR LONGBRANCH, >R  ." A5 37 [U8+Y] NMASKEDCLR LONGBRANCH,    " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. DUP 6 + CCOC@ U. 7 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+Y] CLR LONGBRANCH, >R         ." A5 37 [U8+Y] CLR LONGBRANCH,           " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. DUP 6 + CCOC@ U. DUP 7 + CCOC@ U. DUP 8 + CCOC@ U. 9 + CCOC@ U. ." afterbranchaddr = " R> U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+Y] MASKEDCLR LONGBRANCH, >R   ." A5 37 [U8+Y] MASKEDCLR LONGBRANCH,     " DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. DUP 6 + CCOC@ U. DUP 7 + CCOC@ U. DUP 8 + CCOC@ U. 9 + CCOC@ U. ." afterbranchaddr = " R> U.
+
+.checkagainstdisassembly
+
+CRLF
+CRLF OHERE DUP U. ." : " BEGIN, DEX, ALWAYS UNTIL, ." BEGIN, DEX, ALWAYS UNTIL, "  DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, MI UNTIL,     ." BEGIN, DEX, MI UNTIL,     "  DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, PL UNTIL,     ." BEGIN, DEX, PL UNTIL,     "  DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, VC UNTIL,     ." BEGIN, DEX, VC UNTIL,     "  DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, VS UNTIL,     ." BEGIN, DEX, VS UNTIL,     "  DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, NC UNTIL,     ." BEGIN, DEX, NC UNTIL,     "  DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, CS UNTIL,     ." BEGIN, DEX, CS UNTIL,     "  DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, NE UNTIL,     ." BEGIN, DEX, NE UNTIL,     "  DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, EQ UNTIL,     ." BEGIN, DEX, EQ UNTIL,     "  DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, NEVER UNTIL,  ." BEGIN, DEX, NEVER UNTIL,  "  DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, GE UNTIL,     ." BEGIN, DEX, GE UNTIL,     "  DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, GT UNTIL,     ." BEGIN, DEX, GT UNTIL,     "  DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, HI UNTIL,     ." BEGIN, DEX, HI UNTIL,     "  DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, HS UNTIL,     ." BEGIN, DEX, HS UNTIL,     "  DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, LE UNTIL,     ." BEGIN, DEX, LE UNTIL,     "  DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, LO UNTIL,     ." BEGIN, DEX, LO UNTIL,     "  DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, LS UNTIL,     ." BEGIN, DEX, LS UNTIL,     "  DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, LT UNTIL,     ." BEGIN, DEX, LT UNTIL,     "  DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
+
+.checkagainstdisassembly
+
+CRLF OHERE DUP U. ." : " BEGIN, DEX, A5 37 [U8] NSET UNTIL,           ." BEGIN, DEX, A5 37 [U8] NSET UNTIL,           "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, A5 37 [U8] NMASKEDSET UNTIL,     ." BEGIN, DEX, A5 37 [U8] NMASKEDSET UNTIL,     "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, A5 37 [U8] SET UNTIL,            ." BEGIN, DEX, A5 37 [U8] SET UNTIL,            "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. 6 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, A5 37 [U8] MASKEDSET UNTIL,      ." BEGIN, DEX, A5 37 [U8] MASKEDSET UNTIL,      "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. 6 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, A5 37 [U8] NCLR UNTIL,           ." BEGIN, DEX, A5 37 [U8] NCLR UNTIL,           "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, A5 37 [U8] NMASKEDCLR UNTIL,     ." BEGIN, DEX, A5 37 [U8] NMASKEDCLR UNTIL,     "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, A5 37 [U8] CLR UNTIL,            ." BEGIN, DEX, A5 37 [U8] CLR UNTIL,            "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. 6 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, A5 37 [U8] MASKEDCLR UNTIL,      ." BEGIN, DEX, A5 37 [U8] MASKEDCLR UNTIL,      "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. 6 + CCOC@ U.
+
+CRLF OHERE DUP U. ." : " BEGIN, DEX, A5 37 [U8+X] NSET UNTIL,         ." BEGIN, DEX, A5 37 [U8+X] NSET UNTIL,         "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, A5 37 [U8+X] NMASKEDSET UNTIL,   ." BEGIN, DEX, A5 37 [U8+X] NMASKEDSET UNTIL,   "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, A5 37 [U8+X] SET UNTIL,          ." BEGIN, DEX, A5 37 [U8+X] SET UNTIL,          "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. 6 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, A5 37 [U8+X] MASKEDSET UNTIL,    ." BEGIN, DEX, A5 37 [U8+X] MASKEDSET UNTIL,    "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. 6 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, A5 37 [U8+X] NCLR UNTIL,         ." BEGIN, DEX, A5 37 [U8+X] NCLR UNTIL,         "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, A5 37 [U8+X] NMASKEDCLR UNTIL,   ." BEGIN, DEX, A5 37 [U8+X] NMASKEDCLR UNTIL,   "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, A5 37 [U8+X] CLR UNTIL,          ." BEGIN, DEX, A5 37 [U8+X] CLR UNTIL,          "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. 6 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, A5 37 [U8+X] MASKEDCLR UNTIL,    ." BEGIN, DEX, A5 37 [U8+X] MASKEDCLR UNTIL,    "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. 6 + CCOC@ U.
+
+CRLF OHERE DUP U. ." : " BEGIN, DEX, A5 37 [U8+Y] NSET UNTIL,         ." BEGIN, DEX, A5 37 [U8+Y] NSET UNTIL,         "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. 5 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, A5 37 [U8+Y] NMASKEDSET UNTIL,   ." BEGIN, DEX, A5 37 [U8+Y] NMASKEDSET UNTIL,   "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. 5 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, A5 37 [U8+Y] SET UNTIL,          ." BEGIN, DEX, A5 37 [U8+Y] SET UNTIL,          "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. DUP 6 + CCOC@ U. 7 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, A5 37 [U8+Y] MASKEDSET UNTIL,    ." BEGIN, DEX, A5 37 [U8+Y] MASKEDSET UNTIL,    "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. DUP 6 + CCOC@ U. 7 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, A5 37 [U8+Y] NCLR UNTIL,         ." BEGIN, DEX, A5 37 [U8+Y] NCLR UNTIL,         "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. 5 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, A5 37 [U8+Y] NMASKEDCLR UNTIL,   ." BEGIN, DEX, A5 37 [U8+Y] NMASKEDCLR UNTIL,   "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. 5 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, A5 37 [U8+Y] CLR UNTIL,          ." BEGIN, DEX, A5 37 [U8+Y] CLR UNTIL,          "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. DUP 6 + CCOC@ U. 7 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, A5 37 [U8+Y] MASKEDCLR UNTIL,    ." BEGIN, DEX, A5 37 [U8+Y] MASKEDCLR UNTIL,    "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. DUP 6 + CCOC@ U. 7 + CCOC@ U.
+
+.checkagainstdisassembly
+
+CRLF OHERE DUP U. ." : " DEX, NE IF, INX, THEN,               ." DEX, NE IF, INX, THEN,               "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. 3 + CCOC@ U.
+CRLF OHERE DUP U. ." : " DEX, A5 37 [U8] NSET IF, INX, THEN,  ." DEX, A5 37 [U8] NSET IF, INX, THEN,  "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. 5 + CCOC@ U.
+
+CRLF OHERE DUP U. ." : " DEX, NE LONGIF, INX, LONGTHEN,              ." DEX, NE LONGIF, INX, LONGTHEN,              "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. 6 + CCOC@ U.
+CRLF OHERE DUP U. ." : " DEX, A5 37 [U8] NSET LONGIF, INX, LONGTHEN, ." DEX, A5 37 [U8] NSET LONGIF, INX, LONGTHEN, "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. DUP 6 + CCOC@ U. DUP 7 + CCOC@ U. DUP 8 + CCOC@ U. DUP 9 + CCOC@ U. 0A + CCOC@ U.
+
+CRLF OHERE DUP U. ." : " DEX, NE IF, INX, ELSE, DEX, THEN,              ." DEX, NE IF, INX, ELSE, DEX, THEN,              "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. 6 + CCOC@ U.
+CRLF OHERE DUP U. ." : " DEX, A5 37 [U8] NSET IF, INX, ELSE, DEX, THEN, ." DEX, A5 37 [U8] NSET IF, INX, ELSE, DEX, THEN, "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. DUP 6 + CCOC@ U. DUP 7 + CCOC@ U. 8 + CCOC@ U. 
+
+CRLF OHERE DUP U. ." : " DEX, NE LONGIF, INX, LONGELSE, DEX, LONGTHEN, ." DEX, NE LONGIF, INX, LONGELSE, DEX, LONGTHEN, "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. DUP 6 + CCOC@ U. DUP 7 + CCOC@ U. DUP 8 + CCOC@ U. DUP 9 + CCOC@ U. 0A + CCOC@ U.
+CRLF OHERE DUP U. ." : " DEX, A5 37 [U8] NSET LONGIF, INX, LONGELSE, DEX, LONGTHEN, ." DEX, A5 37 [U8] NSET LONGIF, INX, LONGELSE, DEX, LONGTHEN, "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. DUP 6 + CCOC@ U. DUP 7 + CCOC@ U. DUP 8 + CCOC@ U. DUP 9 + CCOC@ U. DUP 0A + CCOC@ U. DUP 0B + CCOC@ U. DUP 0C + CCOC@ U. DUP 0D + CCOC@ U. 0E + CCOC@ U.
+
+CRLF OHERE DUP U. ." : " BEGIN, DEX, NE WHILE, INX, REPEAT, ." BEGIN, DEX, NE WHILE, INX, REPEAT, "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. 4 + CCOC@ U.
+CRLF OHERE DUP U. ." : " BEGIN, DEX, A5 37 [U8] NSET WHILE, INX, REPEAT, ." BEGIN, DEX, A5 37 [U8] NSET WHILE, INX, REPEAT, "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. 6 + CCOC@ U.
+
+CRLF OHERE DUP U. ." : " LONGBEGIN, DEX, NE LONGWHILE, INX, LONGREPEAT, ." LONGBEGIN, DEX, NE LONGWHILE, INX, LONGREPEAT, "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. DUP 6 + CCOC@ U. 7 + CCOC@ U.
+CRLF OHERE DUP U. ." : " LONGBEGIN, DEX, A5 37 [U8] NSET LONGWHILE, INX, LONGREPEAT, ." LONGBEGIN, DEX, A5 37 [U8] NSET LONGWHILE, INX, LONGREPEAT, "  DUP CCOC@ U. DUP 1+ CCOC@ U. DUP 2 + CCOC@ U. DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. DUP 6 + CCOC@ U. DUP 7 + CCOC@ U. DUP 8 + CCOC@ U. DUP 9 + CCOC@ U. DUP 0A + CCOC@ U. 0B + CCOC@ U.
+
+.checkagainstdisassembly
+
+CRLF OHERE DUP U. ." : " BARHERE U16 BRA,    ." BARHERE U16 BRA,    "  DUP CCOC@ U.  1+ CCOC@ U. 
+CRLF OHERE DUP U. ." : " 1234 U16 BRA,       ." 1234 U16 BRA,       "  DUP CCOC@ U.  DUP 1+ CCOC@ U.  2 + CCOC@ U. 
+CRLF OHERE DUP U. ." : " -3 PC+N8 BRA,       ." -3 PC+N8 BRA,       "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " 80 PC+N8 BRA,       ." 80 PC+N8 BRA,       "  DUP CCOC@ U.  DUP 1+ CCOC@ U.  2 + CCOC@ U.
+CRLF OHERE DUP U. ." : " -81 PC+N8 BRA,      ." -81 PC+N8 BRA,      "  DUP CCOC@ U.  DUP 1+ CCOC@ U.  2 + CCOC@ U.
+
+.checkagainstdisassembly
+
+CRLF OHERE DUP U. ." : " -3 PC+N8 BMI,       ." -3 PC+N8 BMI,       "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " -3 PC+N8 BPL,       ." -3 PC+N8 BPL,       "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " -3 PC+N8 BVC,       ." -3 PC+N8 BVC,       "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " -3 PC+N8 BCC,       ." -3 PC+N8 BCC,       "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " -3 PC+N8 BCS,       ." -3 PC+N8 BCS,       "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " -3 PC+N8 BNE,       ." -3 PC+N8 BNE,       "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " -3 PC+N8 BEQ,       ." -3 PC+N8 BEQ,       "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " -3 PC+N8 BRN,       ." -3 PC+N8 BRN,       "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " -3 PC+N8 BGE,       ." -3 PC+N8 BGE,       "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " -3 PC+N8 BGT,       ." -3 PC+N8 BGT,       "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " -3 PC+N8 BHI,       ." -3 PC+N8 BHI,       "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " -3 PC+N8 BHS,       ." -3 PC+N8 BHS,       "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " -3 PC+N8 BLE,       ." -3 PC+N8 BLE,       "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " -3 PC+N8 BLO,       ." -3 PC+N8 BLO,       "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " -3 PC+N8 BLS,       ." -3 PC+N8 BLS,       "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " -3 PC+N8 BLT,       ." -3 PC+N8 BLT,       "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " -3 PC+N8 BSR,       ." -3 PC+N8 BSR,       "  DUP CCOC@ U.  1+ CCOC@ U.
+
+.checkagainstdisassembly
+
+CRLF OHERE DUP U. ." : " A5 37 [U8] -3 PC+N8 BRSET,  ." A5 37 [U8] -3 PC+N8 BRSET,  "  DUP CCOC@ U.  DUP 1+ CCOC@ U.  DUP 2 + CCOC@ U.  3 + CCOC@ U.
+CRLF OHERE DUP U. ." : " A5 37 [U8] -3 PC+N8 BRNSET, ." A5 37 [U8] -3 PC+N8 BRNSET, "  DUP CCOC@ U.  DUP 1+ CCOC@ U.  DUP 2 + CCOC@ U.  DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. 5 + CCOC@ U.
+CRLF OHERE DUP U. ." : " A5 37 [U8] -3 PC+N8 BRCLR,  ." A5 37 [U8] -3 PC+N8 BRCLR,  "  DUP CCOC@ U.  DUP 1+ CCOC@ U.  DUP 2 + CCOC@ U.  3 + CCOC@ U.
+CRLF OHERE DUP U. ." : " A5 37 [U8] -3 PC+N8 BRNCLR, ." A5 37 [U8] -3 PC+N8 BRNCLR, "  DUP CCOC@ U.  DUP 1+ CCOC@ U.  DUP 2 + CCOC@ U.  DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. 5 + CCOC@ U.
+
+CRLF OHERE DUP U. ." : " A5 37 [U8+X] -3 PC+N8 BRSET,  ." A5 37 [U8+X] -3 PC+N8 BRSET,  "  DUP CCOC@ U.  DUP 1+ CCOC@ U.  DUP 2 + CCOC@ U.  3 + CCOC@ U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+X] -3 PC+N8 BRNSET, ." A5 37 [U8+X] -3 PC+N8 BRNSET, "  DUP CCOC@ U.  DUP 1+ CCOC@ U.  DUP 2 + CCOC@ U.  DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. 5 + CCOC@ U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+X] -3 PC+N8 BRCLR,  ." A5 37 [U8+X] -3 PC+N8 BRCLR,  "  DUP CCOC@ U.  DUP 1+ CCOC@ U.  DUP 2 + CCOC@ U.  3 + CCOC@ U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+X] -3 PC+N8 BRNCLR, ." A5 37 [U8+X] -3 PC+N8 BRNCLR, "  DUP CCOC@ U.  DUP 1+ CCOC@ U.  DUP 2 + CCOC@ U.  DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. 5 + CCOC@ U.
+
+CRLF OHERE DUP U. ." : " A5 37 [U8+Y] -3 PC+N8 BRSET,  ." A5 37 [U8+Y] -3 PC+N8 BRSET,  "  DUP CCOC@ U.  DUP 1+ CCOC@ U.  DUP 2 + CCOC@ U.  DUP 3 + CCOC@ U. 4 + CCOC@ U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+Y] -3 PC+N8 BRNSET, ." A5 37 [U8+Y] -3 PC+N8 BRNSET, "  DUP CCOC@ U.  DUP 1+ CCOC@ U.  DUP 2 + CCOC@ U.  DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. 6 + CCOC@ U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+Y] -3 PC+N8 BRCLR,  ." A5 37 [U8+Y] -3 PC+N8 BRCLR,  "  DUP CCOC@ U.  DUP 1+ CCOC@ U.  DUP 2 + CCOC@ U.  DUP 3 + CCOC@ U. 4 + CCOC@ U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+Y] -3 PC+N8 BRNCLR, ." A5 37 [U8+Y] -3 PC+N8 BRNCLR, "  DUP CCOC@ U.  DUP 1+ CCOC@ U.  DUP 2 + CCOC@ U.  DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. 6 + CCOC@ U.
+
+.checkagainstdisassembly
+
+CRLF OHERE DUP U. ." : " BARHERE U16 BMI,    ." BARHERE U16 BMI,    "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " BARHERE U16 BPL,    ." BARHERE U16 BPL,    "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " BARHERE U16 BVC,    ." BARHERE U16 BVC,    "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " BARHERE U16 BCC,    ." BARHERE U16 BCC,    "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " BARHERE U16 BCS,    ." BARHERE U16 BCS,    "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " BARHERE U16 BNE,    ." BARHERE U16 BNE,    "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " BARHERE U16 BEQ,    ." BARHERE U16 BEQ,    "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " BARHERE U16 BRN,    ." BARHERE U16 BRN,    "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " BARHERE U16 BGE,    ." BARHERE U16 BGE,    "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " BARHERE U16 BGT,    ." BARHERE U16 BGT,    "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " BARHERE U16 BHI,    ." BARHERE U16 BHI,    "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " BARHERE U16 BHS,    ." BARHERE U16 BHS,    "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " BARHERE U16 BLE,    ." BARHERE U16 BLE,    "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " BARHERE U16 BLO,    ." BARHERE U16 BLO,    "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " BARHERE U16 BLS,    ." BARHERE U16 BLS,    "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " BARHERE U16 BLT,    ." BARHERE U16 BLT,    "  DUP CCOC@ U.  1+ CCOC@ U.
+CRLF OHERE DUP U. ." : " BARHERE U16 BSR,    ." BARHERE U16 BSR,    "  DUP CCOC@ U.  1+ CCOC@ U.
+
+.checkagainstdisassembly
+
+CRLF OHERE DUP U. ." : " A5 37 [U8] BARHERE U16 BRSET,  ." A5 37 [U8] BARHERE U16 BRSET,  "  DUP CCOC@ U.  DUP 1+ CCOC@ U.  DUP 2 + CCOC@ U.  3 + CCOC@ U.
+CRLF OHERE DUP U. ." : " A5 37 [U8] BARHERE U16 BRNSET, ." A5 37 [U8] BARHERE U16 BRNSET, "  DUP CCOC@ U.  DUP 1+ CCOC@ U.  DUP 2 + CCOC@ U.  DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. 5 + CCOC@ U.
+CRLF OHERE DUP U. ." : " A5 37 [U8] BARHERE U16 BRCLR,  ." A5 37 [U8] BARHERE U16 BRCLR,  "  DUP CCOC@ U.  DUP 1+ CCOC@ U.  DUP 2 + CCOC@ U.  3 + CCOC@ U.
+CRLF OHERE DUP U. ." : " A5 37 [U8] BARHERE U16 BRNCLR, ." A5 37 [U8] BARHERE U16 BRNCLR, "  DUP CCOC@ U.  DUP 1+ CCOC@ U.  DUP 2 + CCOC@ U.  DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. 5 + CCOC@ U.
+
+CRLF OHERE DUP U. ." : " A5 37 [U8+X] BARHERE U16 BRSET,  ." A5 37 [U8+X] BARHERE U16 BRSET,  "  DUP CCOC@ U.  DUP 1+ CCOC@ U.  DUP 2 + CCOC@ U.  3 + CCOC@ U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+X] BARHERE U16 BRNSET, ." A5 37 [U8+X] BARHERE U16 BRNSET, "  DUP CCOC@ U.  DUP 1+ CCOC@ U.  DUP 2 + CCOC@ U.  DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. 5 + CCOC@ U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+X] BARHERE U16 BRCLR,  ." A5 37 [U8+X] BARHERE U16 BRCLR,  "  DUP CCOC@ U.  DUP 1+ CCOC@ U.  DUP 2 + CCOC@ U.  3 + CCOC@ U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+X] BARHERE U16 BRNCLR, ." A5 37 [U8+X] BARHERE U16 BRNCLR, "  DUP CCOC@ U.  DUP 1+ CCOC@ U.  DUP 2 + CCOC@ U.  DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. 5 + CCOC@ U.
+
+CRLF OHERE DUP U. ." : " A5 37 [U8+Y] BARHERE U16 BRSET,  ." A5 37 [U8+Y] BARHERE U16 BRSET,  "  DUP CCOC@ U.  DUP 1+ CCOC@ U.  DUP 2 + CCOC@ U.  DUP 3 + CCOC@ U. 4 + CCOC@ U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+Y] BARHERE U16 BRNSET, ." A5 37 [U8+Y] BARHERE U16 BRNSET, "  DUP CCOC@ U.  DUP 1+ CCOC@ U.  DUP 2 + CCOC@ U.  DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. 6 + CCOC@ U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+Y] BARHERE U16 BRCLR,  ." A5 37 [U8+Y] BARHERE U16 BRCLR,  "  DUP CCOC@ U.  DUP 1+ CCOC@ U.  DUP 2 + CCOC@ U.  DUP 3 + CCOC@ U. 4 + CCOC@ U.
+CRLF OHERE DUP U. ." : " A5 37 [U8+Y] BARHERE U16 BRNCLR, ." A5 37 [U8+Y] BARHERE U16 BRNCLR, "  DUP CCOC@ U.  DUP 1+ CCOC@ U.  DUP 2 + CCOC@ U.  DUP 3 + CCOC@ U. DUP 4 + CCOC@ U. DUP 5 + CCOC@ U. 6 + CCOC@ U.
+
+.checkagainstdisassembly
+
+CRLF ." Next Offset = " OHERE U.
+CRLF ." Next Base Address Relative Address = " BARHERE U.
+
+CRLF ." Data Stack after Test: " .S
+CRLF ." String Stack after Test: " .$S
+CRLF ." Test buffer length = " PCURRENTCOMPILEBUFFER @ LENGTHBUF U.
+
+CRLF CRLF CRLF
+
+
+
+
+
+
+

@@ -1,5 +1,23 @@
 Changelog for DG6502CrossAsm
 
+  25 Jun 2023
+    Released v1.2
+
+  24 Jun 2023
+    Changed test to show base relative addresses
+    Changed test to compile a section, disassemble the sections, then
+      recompile the disassembled code, and compare with the original compiled code
+    Fixed opcodes C4 CC E0 E4 EC, swapped CPX, with CPY,
+    Fixed PLY, and added PLX, in assembler.
+    Fixed opcode c0 in disassembler: changed CPY, to U8 CPX,
+    Fixed opcode f1 in disassembler: changed [[U8+Y] to [[U8]+Y]
+    Fixed branch disassembly to generate a signed displacement
+
+  23 Jun 2023
+    Fixed typos in readme.txt 
+      changed [U18+Y] to [U8+Y]
+      changed One target instructions: ( addrmode -- )  to ( data addrmode -- )
+
   10 Jun 2023
     Released v1.1
       added the license file to the directory

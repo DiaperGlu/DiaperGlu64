@@ -1,0 +1,1099 @@
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2023 James Patrick Norris
+//
+//    This file is part of DG68HC11CrossAsm v1.0
+//
+//    DG68HC11CrossAsm v1.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DG68HC11CrossAsm v1.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DG68HC11CrossAsm v1.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// June 24, 2023              //
+// version 1.0                //
+// /////////////////////////////
+
+
+// Based on the AR Disassembly Project Disassembler
+
+( Compile guard, don't include this file if it is already included. )
+
+' DG68HC11DisAsm.DGLU ENDOFWORDLIST = 0= ?END-EVALUATE
+
+0 CONSTANT DG68HC11DisAsm.DGLU
+
+
+HEX 100  100    NEWBUFFER CONSTANT OPCODETYPEBUFID
+HEX 100  100    NEWBUFFER CONSTANT OPCODEAMODEBUFID
+HEX 100  100    NEWBUFFER CONSTANT OPNAMEBUFID
+HEX 100  100    NEWBUFFER CONSTANT OP18NAMEBUFID // what instruction gets promoted to if 18 is used
+
+HEX 1000 10000  NEWBUFFER CONSTANT OPCODENAMEL$OFFSETBUFID
+HEX 1000 100000 NEWBUFFER CONSTANT OPCODENAMEL$STRINGBUFID
+
+HEX 1000 1000   NEWBUFFER CONSTANT ADDRMODENAMEL$OFFSETBUFID
+HEX 1000 10000  NEWBUFFER CONSTANT ADDRMODENAMEL$STRINGBUFID
+
+HEX 1000 10000  NEWBUFFER CONSTANT OPNAMEL$OFFSETBUFID
+HEX 1000 100000 NEWBUFFER CONSTANT OPNAMEL$STRINGBUFID
+
+HEX
+: U16BSWAP
+    BSWAP 30 RSHIFT
+;
+
+: >ADDRMODENAME$ ( addrmodename$ -$- )
+    0 GETS$[ND]
+    ADDRMODENAMEL$OFFSETBUFID
+    ADDRMODENAMEL$STRINGBUFID
+    S>NEWL$ DROP$
+;
+
+
+0 CONSTANT INHERENT
+1 CONSTANT TERMINATING
+2 CONSTANT AMODEU8       // calling it AMODEU8 to avoid name conflict with assembler
+3 CONSTANT AMODEU16
+4 CONSTANT AMODE[U8]
+5 CONSTANT AMODE[U8+X]
+6 CONSTANT AMODE[U8+Y]
+7 CONSTANT AMODE[U16]
+8 CONSTANT AMODEPC+N8
+
+( 0 ) NEW$ >ADDRMODENAME$ ( Inherent )
+( 1 ) NEW$ >ADDRMODENAME$ ( Inherent terminating )
+( 2 ) $" U8 " >ADDRMODENAME$
+( 3 ) $" U16 " >ADDRMODENAME$
+( 4 ) $" [U8] " >ADDRMODENAME$
+( 5 ) $" [U8+X] " >ADDRMODENAME$
+( 6 ) $" [U8+Y] " >ADDRMODENAME$
+( 7 ) $" [U16] " >ADDRMODENAME$
+( 8 ) $" PC+N8 " >ADDRMODENAME$
+
+CREATE PAddrModeSizeTable
+( 0 ) 0 CODE-U8, // for none
+( 1 ) 0 CODE-U8, // for none
+( 2 ) 1 CODE-U8, // for U8
+( 3 ) 2 CODE-U8, // for U16
+( 4 ) 1 CODE-U8, // for [U8]
+( 5 ) 1 CODE-U8, // for [U8+X]
+( 6 ) 1 CODE-U8, // for [U8+Y]
+( 7 ) 1 CODE-U8, // for [U16]
+( 8 ) -4 CODE-U8, // for PC+N8
+
+09 CONSTANT NumberOfAddrModes
+
+: >OPNAME$ ( instructionname$ -$- ) ( -- index )
+    0 GETS$[ND]
+    OPNAMEL$OFFSETBUFID
+    OPNAMEL$STRINGBUFID
+    S>NEWL$ DROP$
+    OPNAMEL$OFFSETBUFID DEPTHL$ 1-
+;
+
+: .OPNAME$S ( -- )
+     OPNAMEL$OFFSETBUFID DEPTHL$
+     CRLF ." ["
+     0 DO
+       CRLF I U. [CHAR] " EMIT 
+       I 
+       OPNAMEL$OFFSETBUFID
+       OPNAMEL$STRINGBUFID
+       GETSL$[N]
+       TYPE
+       [CHAR] " EMIT
+     LOOP
+     CRLF ." ]"
+;
+
+HEX
+ $" TEST,"  >OPNAME$  CONSTANT OPTEST
+ $" NOP,"   >OPNAME$  CONSTANT OPNOP
+ $" IDIV,"  >OPNAME$  CONSTANT OPIDIV
+ $" FDIV,"  >OPNAME$  CONSTANT OPFDIV
+ $" LSRD,"  >OPNAME$  CONSTANT OPLSRD
+ $" LSLD, ( ASLD, )" >OPNAME$  CONSTANT OPLSLD
+ $" TAP,"   >OPNAME$  CONSTANT OPTAP
+ $" TPA,"   >OPNAME$  CONSTANT OPTPA
+ $" INX,"   >OPNAME$  CONSTANT OPINX
+ $" INY,"   >OPNAME$  CONSTANT OPINY
+ $" DEX,"   >OPNAME$  CONSTANT OPDEX
+ $" DEY,"   >OPNAME$  CONSTANT OPDEY
+ $" CLV,"   >OPNAME$  CONSTANT OPCLV
+ $" SEV,"   >OPNAME$  CONSTANT OPSEV
+ $" CLC,"   >OPNAME$  CONSTANT OPCLC
+ $" SEC,"   >OPNAME$  CONSTANT OPSEC
+ $" CLI,"   >OPNAME$  CONSTANT OPCLI
+ $" SEI,"   >OPNAME$  CONSTANT OPSEI 
+
+ $" SBA,"   >OPNAME$  CONSTANT OPSBA
+ $" CBA,"   >OPNAME$  CONSTANT OPCBA
+ $" BRSET," >OPNAME$  CONSTANT OPBRSET
+ $" BRCLR," >OPNAME$  CONSTANT OPBRCLR 
+ $" BSET,"  >OPNAME$  CONSTANT OPBSET 
+ $" BCLR,"  >OPNAME$  CONSTANT OPBCLR 
+ $" TAB,"   >OPNAME$  CONSTANT OPTAB
+ $" TBA,"   >OPNAME$  CONSTANT OPTBA
+ $" YforX," >OPNAME$  CONSTANT OPYforX
+ $" DAA,"   >OPNAME$  CONSTANT OPDAA
+ $" CHANGEDEST,"   >OPNAME$  CONSTANT OPCHANGEDEST
+
+ $" ABA,"   >OPNAME$  CONSTANT OPABA
+ $" BRA,"   >OPNAME$  CONSTANT OPBRA
+ $" BRN,"   >OPNAME$  CONSTANT OPBRN
+ $" BHI,"   >OPNAME$  CONSTANT OPBHI
+ $" BLS,"   >OPNAME$  CONSTANT OPBLS
+ $" BCC, ( BHS, )"   >OPNAME$  CONSTANT OPBCC
+ $" BCS, ( BLO, )"   >OPNAME$  CONSTANT OPBCS
+ $" BNE,"   >OPNAME$  CONSTANT OPBNE
+ $" BEQ,"   >OPNAME$  CONSTANT OPBEQ
+ $" BVC,"   >OPNAME$  CONSTANT OPBVC
+ $" BVS,"   >OPNAME$  CONSTANT OPBVS
+ $" BPL,"   >OPNAME$  CONSTANT OPBPL
+ $" BMI,"   >OPNAME$  CONSTANT OPBMI
+ $" BGE,"   >OPNAME$  CONSTANT OPBGE
+ $" BLT,"   >OPNAME$  CONSTANT OPBLT
+ $" BGT,"   >OPNAME$  CONSTANT OPBGT
+ $" BLE,"   >OPNAME$  CONSTANT OPBLE
+
+ $" TSX,"   >OPNAME$  CONSTANT OPTSX
+ $" TSY,"   >OPNAME$  CONSTANT OPTSY
+ $" INS,"   >OPNAME$  CONSTANT OPINS
+ $" PULA,"  >OPNAME$  CONSTANT OPPULA
+ $" PULB,"  >OPNAME$  CONSTANT OPPULB
+ $" DES,"   >OPNAME$  CONSTANT OPDES
+ $" TXS,"   >OPNAME$  CONSTANT OPTXS
+ $" TYS,"   >OPNAME$  CONSTANT OPTYS
+ $" PSHA,"  >OPNAME$  CONSTANT OPPSHA
+ $" PSHB,"  >OPNAME$  CONSTANT OPPSHB
+ $" PULX,"  >OPNAME$  CONSTANT OPPULX
+ $" PULY,"  >OPNAME$  CONSTANT OPPULY
+ $" RTS,"   >OPNAME$  CONSTANT OPRTS
+ $" ABX,"   >OPNAME$  CONSTANT OPABX
+ $" ABY,"   >OPNAME$  CONSTANT OPABY
+ $" RTI,"   >OPNAME$  CONSTANT OPRTI
+ $" PSHX,"  >OPNAME$  CONSTANT OPPSHX
+ $" PSHY,"  >OPNAME$  CONSTANT OPPSHY
+ $" MUL,"   >OPNAME$  CONSTANT OPMUL
+ $" WAI,"   >OPNAME$  CONSTANT OPWAI
+ $" SWI,"   >OPNAME$  CONSTANT OPSWI
+
+ $" NEGA,"  >OPNAME$  CONSTANT OPNEGA
+ $" COMA,"  >OPNAME$  CONSTANT OPCOMA
+ $" LSRA,"  >OPNAME$  CONSTANT OPLSRA
+ $" RORA,"  >OPNAME$  CONSTANT OPRORA
+ $" ASRA,"  >OPNAME$  CONSTANT OPASRA
+ $" LSLA, ( ASLA,)"  >OPNAME$  CONSTANT OPLSLA
+ $" ROLA,"  >OPNAME$  CONSTANT OPROLA
+ $" DECA,"  >OPNAME$  CONSTANT OPDECA
+ $" INCA,"  >OPNAME$  CONSTANT OPINCA
+ $" TSTA,"  >OPNAME$  CONSTANT OPTSTA
+ $" CLRA,"  >OPNAME$  CONSTANT OPCLRA
+
+ $" NEGB,"  >OPNAME$  CONSTANT OPNEGB
+ $" COMB,"  >OPNAME$  CONSTANT OPCOMB
+ $" LSRB,"  >OPNAME$  CONSTANT OPLSRB
+ $" RORB,"  >OPNAME$  CONSTANT OPRORB
+ $" ASRB,"  >OPNAME$  CONSTANT OPASRB
+ $" LSLB, ( ASLB, )"  >OPNAME$  CONSTANT OPLSLB
+ $" ROLB,"  >OPNAME$  CONSTANT OPROLB
+ $" DECB,"  >OPNAME$  CONSTANT OPDECB
+ $" INCB,"  >OPNAME$  CONSTANT OPINCB
+ $" TSTB,"  >OPNAME$  CONSTANT OPTSTB
+ $" CLRB,"  >OPNAME$  CONSTANT OPCLRB
+
+ $" NEG,"   >OPNAME$  CONSTANT OPNEG
+ $" COM,"   >OPNAME$  CONSTANT OPCOM
+ $" LSR,"   >OPNAME$  CONSTANT OPLSR
+ $" ROR,"   >OPNAME$  CONSTANT OPROR
+ $" ASR,"   >OPNAME$  CONSTANT OPASR
+ $" LSL, ( [U8+X] ASL, )"   >OPNAME$  CONSTANT OPLSL[U8+X]
+ $" LSL, ( [U8+Y] ASL, )"   >OPNAME$  CONSTANT OPLSL[U8+Y]
+ $" ROL,"   >OPNAME$  CONSTANT OPROL
+ $" DEC,"   >OPNAME$  CONSTANT OPDEC
+ $" INC,"   >OPNAME$  CONSTANT OPINC
+ $" TST,"   >OPNAME$  CONSTANT OPTST
+ $" JMPEA, ( U8+X JMP, )" >OPNAME$  CONSTANT OPJMPU8+X
+ $" JMPEA, ( U8+Y JMP, )" >OPNAME$  CONSTANT OPJMPU8+Y
+ $" CLR,"   >OPNAME$  CONSTANT OPCLR
+
+ $" LSL, ( [U16] ASL, )"  >OPNAME$  CONSTANT OPLSL[U16]
+ $" JMPEA, ( U16 JMP, )"  >OPNAME$  CONSTANT OPJMPU16
+
+ $" SUBA,"  >OPNAME$  CONSTANT OPSUBA
+ $" CMPA,"  >OPNAME$  CONSTANT OPCMPA
+ $" SBCA,"  >OPNAME$  CONSTANT OPSBCA
+ $" SUBD,"  >OPNAME$  CONSTANT OPSUBD
+ $" ANDA,"  >OPNAME$  CONSTANT OPANDA
+ $" BITA,"  >OPNAME$  CONSTANT OPBITA
+ $" LDAA,"  >OPNAME$  CONSTANT OPLDAA
+ $" EORA,"  >OPNAME$  CONSTANT OPEORA
+ $" ADCA,"  >OPNAME$  CONSTANT OPADCA
+ $" ORAA,"  >OPNAME$  CONSTANT OPORAA
+ $" ADDA,"  >OPNAME$  CONSTANT OPADDA
+ $" CPX,"   >OPNAME$  CONSTANT OPCPX
+ $" CPY,"   >OPNAME$  CONSTANT OPCPY
+ $" BSR,"   >OPNAME$  CONSTANT OPBSR
+ $" LDS,"   >OPNAME$  CONSTANT OPLDS
+ $" XGDX,"  >OPNAME$  CONSTANT OPXGDX
+ $" XGDY,"  >OPNAME$  CONSTANT OPXGDY
+
+ $" STAA,"  >OPNAME$  CONSTANT OPSTAA
+ $" JSREA, ( U8 JSR, )"   >OPNAME$  CONSTANT OPJSRU8
+ $" JSREA, ( U8+X JSR, )" >OPNAME$  CONSTANT OPJSRU8+X
+ $" JSREA, ( U8+Y JSR, )" >OPNAME$  CONSTANT OPJSRU8+Y
+ $" STS,"   >OPNAME$  CONSTANT OPSTS
+ $" JSREA, ( U16 JSR, )"  >OPNAME$  CONSTANT OPJSRU16
+
+ $" SUBB,"  >OPNAME$  CONSTANT OPSUBB
+ $" CMPB,"  >OPNAME$  CONSTANT OPCMPB
+ $" SBCB,"  >OPNAME$  CONSTANT OPSBCB
+ $" ADDD,"  >OPNAME$  CONSTANT OPADDD
+ $" ANDB,"  >OPNAME$  CONSTANT OPANDB
+ $" BITB,"  >OPNAME$  CONSTANT OPBITB
+ $" LDAB,"  >OPNAME$  CONSTANT OPLDAB
+ $" EORB,"  >OPNAME$  CONSTANT OPEORB
+ $" ADCB,"  >OPNAME$  CONSTANT OPADCB
+ $" ORAB,"  >OPNAME$  CONSTANT OPORAB
+ $" ADDB,"  >OPNAME$  CONSTANT OPADDB
+ $" LDD,"   >OPNAME$  CONSTANT OPLDD
+ $" SRCYCHANGEDEST,"   >OPNAME$  CONSTANT OPSRCYCHANGEDEST
+ $" LDX,"   >OPNAME$  CONSTANT OPLDX
+ $" LDY,"   >OPNAME$  CONSTANT OPLDY
+ $" STOP,"  >OPNAME$  CONSTANT OPSTOP
+
+ $" STAB,"  >OPNAME$  CONSTANT OPSTAB
+ $" STD,"   >OPNAME$  CONSTANT OPSTD
+ $" STX,"   >OPNAME$  CONSTANT OPSTX
+ $" STY,"   >OPNAME$  CONSTANT OPSTY
+
+ $" CPD,"   >OPNAME$  CONSTANT OPCPD
+
+ $" CODE-U8," >OPNAME$  CONSTANT OPCODE-U8
+
+
+: >OPCODE ( opcodetype addrmode opname op18name -- ) ( opcodename$ -$- )
+    OP18NAMEBUFID C>BUF
+    OPNAMEBUFID C>BUF
+    OPCODEAMODEBUFID C>BUF
+    OPCODETYPEBUFID C>BUF
+      
+    0 GETP$
+    OPCODENAMEL$OFFSETBUFID
+    OPCODENAMEL$STRINGBUFID
+    S>NEWL$ DROP$
+;
+
+: .OPCODENAME$S ( -- )
+     OPCODENAMEL$OFFSETBUFID DEPTHL$
+     CRLF ." ["
+     0 DO
+       CRLF I U. [CHAR] " EMIT 
+       I 
+       OPCODENAMEL$OFFSETBUFID
+       OPCODENAMEL$STRINGBUFID
+       GETSL$[N]
+       TYPE
+       [CHAR] " EMIT
+     LOOP
+     CRLF ." ]"
+;
+
+( Opcode data types )
+0 CONSTANT none
+1 CONSTANT u8data
+2 CONSTANT u16address
+3 CONSTANT pc+n8address
+4 CONSTANT terminating
+5 CONSTANT u8address
+6 CONSTANT u16data
+7 CONSTANT masku8address
+8 CONSTANT masku8addrpc+n8
+9 CONSTANT noneshowopcode
+
+CREATE POpcodeTypeDataSizeTable
+0 CODE-U8, // for none
+1 CODE-U8, // for u8data
+2 CODE-U8, // for u16address
+1 CODE-U8, // for pc+n8address
+0 CODE-U8, // for terminating
+1 CODE-U8, // for u8address
+2 CODE-U8, // for u16data
+FE CODE-U8, // for masku8address
+FD CODE-U8, // for masku8addrpc+n8
+FC CODE-U8, // for noneshowopcode
+ 
+0A CONSTANT NumberOfDataTypes 
+
+(      type            addrmode      opname         after 18 name  )
+( 00 ) none            INHERENT      OPTEST         OPTEST         $" TEST,"           >OPCODE
+( 01 ) none            INHERENT      OPNOP          OPNOP          $" NOP,"            >OPCODE
+( 02 ) none            INHERENT      OPIDIV         OPIDIV         $" IDIV,"           >OPCODE
+( 03 ) none            INHERENT      OPFDIV         OPFDIV         $" FDIV,"           >OPCODE
+( 04 ) none            INHERENT      OPLSRD         OPLSRD         $" LSRD,"           >OPCODE
+( 05 ) none            INHERENT      OPLSLD         OPLSLD         $" LSLD, ( ASLD, )" >OPCODE
+( 06 ) none            INHERENT      OPTAP          OPTAP          $" TAP,"            >OPCODE
+( 07 ) none            INHERENT      OPTPA          OPTPA          $" TPA,"            >OPCODE
+( 08 ) none            INHERENT      OPINX          OPINY          $" INX,"            >OPCODE
+( 09 ) none            INHERENT      OPDEX          OPDEY          $" DEX,"            >OPCODE
+( 0a ) none            INHERENT      OPCLV          OPCLV          $" CLV,"            >OPCODE
+( 0b ) none            INHERENT      OPSEV          OPSEV          $" SEV,"            >OPCODE
+( 0c ) none            INHERENT      OPCLC          OPCLC          $" CLC,"            >OPCODE
+( 0d ) none            INHERENT      OPSEC          OPSEC          $" SEC,"            >OPCODE
+( 0e ) none            INHERENT      OPCLI          OPCLI          $" CLI,"            >OPCODE
+( 0f ) none            INHERENT      OPSEI          OPSEI          $" SEI,"            >OPCODE
+
+( 10 ) none            INHERENT      OPSBA          OPSBA          $" SBA,"            >OPCODE
+( 11 ) none            INHERENT      OPCBA          OPCBA          $" CBA,"            >OPCODE
+( 12 ) masku8addrpc+n8 AMODE[U8]     OPBRSET        OPBRSET        $" BRSET,"          >OPCODE
+( 13 ) masku8addrpc+n8 AMODE[U8]     OPBRCLR        OPBRCLR        $" BRCLR,"          >OPCODE
+( 14 ) masku8address   AMODE[U8]     OPBSET         OPBSET         $" BSET,"           >OPCODE
+( 15 ) masku8address   AMODE[U8]     OPBCLR         OPBCLR         $" BCLR,"           >OPCODE
+( 16 ) none            INHERENT      OPTAB          OPTAB          $" TAB,"            >OPCODE
+( 17 ) none            INHERENT      OPTBA          OPTBA          $" TBA,"            >OPCODE
+( 18 ) none            INHERENT      OPYforX        OPYforX        $" YforX"           >OPCODE
+( 19 ) none            INHERENT      OPDAA          OPDAA          $" DAA,"            >OPCODE
+( 1a ) none            INHERENT      OPCHANGEDEST   OPCHANGEDEST   $" CHANGEDEST,"     >OPCODE
+( 1b ) none            INHERENT      OPABA          OPABA          $" ABA,"            >OPCODE
+( 1d ) masku8address   AMODE[U8+X]   OPBSET         OPBSET         $" BSET,"           >OPCODE
+( 1d ) masku8address   AMODE[U8+X]   OPBCLR         OPBCLR         $" BCLR,"           >OPCODE
+( 1f ) masku8addrpc+n8 AMODE[U8+X]   OPBRSET        OPBRSET        $" BRSET,"          >OPCODE
+( 1f ) masku8addrpc+n8 AMODE[U8+X]   OPBRCLR        OPBRCLR        $" BRCLR,"          >OPCODE
+
+( 20 ) pc+n8address    AMODEPC+N8    OPBRA          OPBRA          $" BRA,"            >OPCODE
+( 21 ) pc+n8address    AMODEPC+N8    OPBRN          OPBRN          $" BRN,"            >OPCODE
+( 22 ) pc+n8address    AMODEPC+N8    OPBHI          OPBHI          $" BHI,"            >OPCODE
+( 23 ) pc+n8address    AMODEPC+N8    OPBLS          OPBLS          $" BLS,"            >OPCODE
+( 24 ) pc+n8address    AMODEPC+N8    OPBCC          OPBCC          $" BCC, ( BHS, )"   >OPCODE
+( 25 ) pc+n8address    AMODEPC+N8    OPBCS          OPBCS          $" BCS, ( BLO, )"   >OPCODE
+( 26 ) pc+n8address    AMODEPC+N8    OPBNE          OPBNE          $" BNE,"            >OPCODE
+( 27 ) pc+n8address    AMODEPC+N8    OPBEQ          OPBEQ          $" BEQ,"            >OPCODE
+( 28 ) pc+n8address    AMODEPC+N8    OPBVC          OPBVC          $" BVC,"            >OPCODE
+( 29 ) pc+n8address    AMODEPC+N8    OPBVS          OPBVS          $" BVS,"            >OPCODE
+( 2a ) pc+n8address    AMODEPC+N8    OPBPL          OPBPL          $" BPL,"            >OPCODE
+( 2b ) pc+n8address    AMODEPC+N8    OPBMI          OPBMI          $" BMI,"            >OPCODE
+( 2c ) pc+n8address    AMODEPC+N8    OPBGE          OPBGE          $" BGE,"            >OPCODE
+( 2d ) pc+n8address    AMODEPC+N8    OPBLT          OPBLT          $" BLT,"            >OPCODE
+( 2e ) pc+n8address    AMODEPC+N8    OPBGT          OPBGT          $" BGT,"            >OPCODE
+( 2f ) pc+n8address    AMODEPC+N8    OPBLE          OPBLE          $" BLE,"            >OPCODE
+
+( 30 ) none            INHERENT      OPTSX          OPTSY          $" TSX,"            >OPCODE
+( 31 ) none            INHERENT      OPINS          OPINS          $" INS,"            >OPCODE
+( 32 ) none            INHERENT      OPPULA         OPPULA         $" PULA,"           >OPCODE
+( 33 ) none            INHERENT      OPPULB         OPPULB         $" PULB,"           >OPCODE
+( 34 ) none            INHERENT      OPDES          OPDES          $" DES,"            >OPCODE
+( 35 ) none            INHERENT      OPTXS          OPTYS          $" TXS,"            >OPCODE
+( 36 ) none            INHERENT      OPPSHA         OPPSHA         $" PSHA,"           >OPCODE
+( 37 ) none            INHERENT      OPPSHB         OPPSHB         $" PSHB,"           >OPCODE
+( 38 ) none            INHERENT      OPPULX         OPPULY         $" PULX,"           >OPCODE
+( 39 ) none            INHERENT      OPRTS          OPRTS          $" RTS,"            >OPCODE
+( 3a ) none            INHERENT      OPABX          OPABY          $" ABX,"            >OPCODE
+( 3b ) none            INHERENT      OPRTI          OPRTI          $" RTI"             >OPCODE
+( 3c ) none            INHERENT      OPPSHX         OPPSHY         $" PSHX,"           >OPCODE
+( 3d ) none            INHERENT      OPMUL          OPMUL          $" MUL,"            >OPCODE
+( 3e ) none            INHERENT      OPWAI          OPWAI          $" WAI,"            >OPCODE
+( 3f ) none            INHERENT      OPSWI          OPSWI          $" SWI,"            >OPCODE
+
+( 40 ) none            INHERENT      OPNEGA         OPNEGA         $" NEGA,"           >OPCODE
+( 41 ) noneshowopcode  TERMINATING   OPCODE-U8      OPCODE-U8      $" 41 CODE-U8,"     >OPCODE
+( 42 ) noneshowopcode  TERMINATING   OPCODE-U8      OPCODE-U8      $" 42 CODE-U8,"     >OPCODE
+( 43 ) none            INHERENT      OPCOMA         OPCOMA         $" COMA,"           >OPCODE
+( 44 ) none            INHERENT      OPLSRA         OPLSRA         $" LSRA,"           >OPCODE
+( 45 ) noneshowopcode  TERMINATING   OPCODE-U8      OPCODE-U8      $" 45 CODE-U8,"     >OPCODE
+( 46 ) none            INHERENT      OPRORA         OPRORA         $" RORA,"           >OPCODE
+( 47 ) none            INHERENT      OPASRA         OPASRA         $" ASRA,"           >OPCODE
+( 48 ) none            INHERENT      OPLSLA         OPLSLA         $" LSLA, ( ASLA, )" >OPCODE
+( 49 ) none            INHERENT      OPROLA         OPROLA         $" ROLA,"           >OPCODE
+( 4a ) none            INHERENT      OPDECA         OPDECA         $" DECA,"           >OPCODE
+( 4b ) noneshowopcode  TERMINATING   OPCODE-U8      OPCODE-U8      $" 4B CODE-U8,"     >OPCODE
+( 4c ) none            INHERENT      OPINCA         OPINCA         $" INCA,"           >OPCODE
+( 4d ) none            INHERENT      OPTSTA         OPTSTA         $" TSTA,"           >OPCODE
+( 4e ) noneshowopcode  TERMINATING   OPCODE-U8      OPCODE-U8      $" 4E CODE-U8,"     >OPCODE
+( 4f ) none            INHERENT      OPCLRA         OPCLRA         $" CLRA,"           >OPCODE
+
+( 50 ) none            INHERENT      OPNEGB         OPNEGB         $" NEGB,"           >OPCODE
+( 51 ) noneshowopcode  TERMINATING   OPCODE-U8      OPCODE-U8      $" 51 CODE-U8,"     >OPCODE
+( 52 ) noneshowopcode  TERMINATING   OPCODE-U8      OPCODE-U8      $" 52 CODE-U8,"     >OPCODE
+( 53 ) none            INHERENT      OPCOMB         OPCOMB         $" COMB,"           >OPCODE
+( 54 ) none            INHERENT      OPLSRB         OPLSRB         $" LSRB,"           >OPCODE
+( 55 ) noneshowopcode  TERMINATING   OPCODE-U8      OPCODE-U8      $" 55 CODE-U8,"     >OPCODE
+( 56 ) none            INHERENT      OPRORB         OPRORB         $" RORB,"           >OPCODE
+( 57 ) none            INHERENT      OPASRB         OPASRB         $" ASRB,"           >OPCODE
+( 58 ) none            INHERENT      OPLSLB         OPLSLB         $" LSLB, ( ASLB, )" >OPCODE
+( 59 ) none            INHERENT      OPROLB         OPROLB         $" ROLB,"           >OPCODE
+( 5A ) none            INHERENT      OPDECB         OPDECB         $" DECB,"           >OPCODE
+( 5B ) noneshowopcode  TERMINATING   OPCODE-U8      OPCODE-U8      $" 5B CODE-U8,"     >OPCODE
+( 5C ) none            INHERENT      OPINCB         OPINCB         $" INCB,"           >OPCODE
+( 5D ) none            INHERENT      OPTSTB         OPTSTB         $" TSTB,"           >OPCODE
+( 5E ) noneshowopcode  TERMINATING   OPCODE-U8      OPCODE-U8      $" 5E CODE-U8,"     >OPCODE
+( 5f ) none            INHERENT      OPCLRB         OPCLRB         $" CLRB,"           >OPCODE
+
+( 60 ) u8address       AMODE[U8+X]   OPNEG          OPNEG          $" NEG,"            >OPCODE
+( 61 ) noneshowopcode  TERMINATING   OPCODE-U8      OPCODE-U8      $" 61 CODE-U8,"    >OPCODE
+( 62 ) noneshowopcode  TERMINATING   OPCODE-U8      OPCODE-U8      $" 62 CODE-U8,"    >OPCODE
+( 63 ) u8address       AMODE[U8+X]   OPCOM          OPCOM          $" COM,"    >OPCODE
+( 64 ) u8address       AMODE[U8+X]   OPLSR          OPLSR          $" LSR,"    >OPCODE
+( 65 ) noneshowopcode  TERMINATING   OPCODE-U8      OPCODE-U8      $" 65 CODE-U8,"    >OPCODE
+( 66 ) u8address       AMODE[U8+X]   OPROR          OPROR          $" ROR,"    >OPCODE
+( 67 ) u8address       AMODE[U8+X]   OPASR          OPASR          $" ASR,"    >OPCODE
+( 68 ) u8address       AMODE[U8+X]   OPLSL[U8+X]    OPLSL[U8+Y]    $" LSL, ( [U8+X] ASL, )"    >OPCODE
+( 69 ) u8address       AMODE[U8+X]   OPROL          OPROL          $" ROL,"    >OPCODE
+( 6a ) u8address       AMODE[U8+X]   OPDEC          OPDEC          $" DEC,"    >OPCODE
+( 6b ) noneshowopcode  TERMINATING   OPCODE-U8      OPCODE-U8      $" 6B CODE-U8,"    >OPCODE
+( 6c ) u8address       AMODE[U8+X]   OPINC          OPINC          $" INC,"    >OPCODE
+( 6d ) u8address       AMODE[U8+X]   OPTST          OPTST          $" TST,"    >OPCODE
+( 6e ) u8address       AMODE[U8+X]   OPJMPU8+X      OPJMPU8+Y      $" JMPEA, ( U8+X JMP, )"   >OPCODE
+( 6f ) u8address       AMODE[U8+X]   OPCLR          OPCLR          $" CLR,"   >OPCODE
+
+( 70 ) u16address      AMODE[U16]    OPNEG          OPNEG          $" NEG,"     >OPCODE
+( 71 ) noneshowopcode  TERMINATING   OPCODE-U8      OPCODE-U8      $" 71 CODE-U8,"    >OPCODE
+( 72 ) noneshowopcode  TERMINATING   OPCODE-U8      OPCODE-U8      $" 72 CODE-U8,"    >OPCODE
+( 73 ) u16address      AMODE[U16]    OPCOM          OPCOM          $" COM,"     >OPCODE
+( 74 ) u16address      AMODE[U16]    OPLSR          OPLSR          $" LSR,"     >OPCODE
+( 75 ) noneshowopcode  TERMINATING   OPCODE-U8      OPCODE-U8      $" 75 CODE-U8,"    >OPCODE
+( 76 ) u16address      AMODE[U16]    OPROR          OPROR          $" ROR,"     >OPCODE
+( 77 ) u16address      AMODE[U16]    OPASR          OPASR          $" ASR,"     >OPCODE
+( 78 ) u16address      AMODE[U16]    OPLSL[U16]     OPLSL[U16]     $" LSL, ( [U16] ASL, )"     >OPCODE
+( 79 ) u16address      AMODE[U16]    OPROL          OPROL          $" ROL,"     >OPCODE
+( 7a ) u16address      AMODE[U16]    OPDEC          OPDEC          $" DEC,"     >OPCODE
+( 7b ) noneshowopcode  TERMINATING   OPCODE-U8      OPCODE-U8      $" 7B CODE-U8,"    >OPCODE
+( 7c ) u16address      AMODE[U16]    OPINC          OPINC          $" INC,"     >OPCODE
+( 7d ) u16address      AMODE[U16]    OPTST          OPTST          $" TST,"     >OPCODE
+( 7e ) u16address      AMODE[U16]    OPJMPU16       OPJMPU16       $" JMPEA, ( U16 JMP, )"   >OPCODE
+( 7f ) u16address      AMODE[U16]    OPCLR          OPCLR          $" CLR,"     >OPCODE
+
+( 80 ) u8data          AMODEU8       OPSUBA         OPSUBA         $" SUBA,"       >OPCODE
+( 81 ) u8data          AMODEU8       OPCMPA         OPCMPA         $" CMPA,"       >OPCODE
+( 82 ) u8data          AMODEU8       OPSBCA         OPSBCA         $" SBCA,"       >OPCODE
+( 83 ) u16data         AMODEU16      OPSUBD         OPSUBD         $" SUBD,"       >OPCODE
+( 84 ) u8data          AMODEU8       OPANDA         OPANDA         $" ANDA,"       >OPCODE
+( 85 ) u8data          AMODEU8       OPBITA         OPBITA         $" BITA,"       >OPCODE
+( 86 ) u8data          AMODEU8       OPLDAA         OPLDAA         $" LDAA,"       >OPCODE
+( 87 ) noneshowopcode  TERMINATING   OPCODE-U8      OPCODE-U8      $" 87 CODE-U8,"    >OPCODE
+( 88 ) u8data          AMODEU8       OPEORA         OPEORA         $" EORA,"       >OPCODE
+( 89 ) u8data          AMODEU8       OPADCA         OPADCA         $" ADCA,"       >OPCODE
+( 8a ) u8data          AMODEU8       OPORAA         OPORAA         $" ORAA,"       >OPCODE
+( 8b ) u8data          AMODEU8       OPADDA         OPADDA         $" ADDA,"       >OPCODE
+( 8c ) u16data         AMODEU16      OPCPX          OPCPY          $" CPX,"       >OPCODE
+( 8d ) pc+n8address    AMODEPC+N8    OPBSR          OPBSR          $" BSR,"           >OPCODE
+( 8e ) u16data         AMODEU16      OPLDS          OPLDS          $" LDS,"       >OPCODE
+( 8f ) none            INHERENT      OPXGDX         OPXGDY         $" XGDX,"          >OPCODE
+
+( 90 ) u8address       AMODE[U8]     OPSUBA         OPSUBA         $" SUBA,"      >OPCODE
+( 91 ) u8address       AMODE[U8]     OPCMPA         OPCMPA         $" CMPA,"      >OPCODE
+( 92 ) u8address       AMODE[U8]     OPSBCA         OPSBCA         $" SBCA,"      >OPCODE
+( 93 ) u8address       AMODE[U8]     OPSUBD         OPSUBD         $" SUBD,"      >OPCODE
+( 94 ) u8address       AMODE[U8]     OPANDA         OPANDA         $" ANDA,"      >OPCODE
+( 95 ) u8address       AMODE[U8]     OPBITA         OPBITA         $" BITA,"      >OPCODE
+( 96 ) u8address       AMODE[U8]     OPLDAA         OPLDAA         $" LDAA,"      >OPCODE
+( 97 ) u8address       AMODE[U8]     OPSTAA         OPSTAA         $" STAA,"      >OPCODE
+( 98 ) u8address       AMODE[U8]     OPEORA         OPEORA         $" EORA,"      >OPCODE
+( 99 ) u8address       AMODE[U8]     OPADCA         OPADCA         $" ADCA,"      >OPCODE
+( 9a ) u8address       AMODE[U8]     OPORAA         OPORAA         $" ORAA,"      >OPCODE
+( 9b ) u8address       AMODE[U8]     OPADDA         OPADDA         $" ADDA,"      >OPCODE
+( 9c ) u8address       AMODE[U8]     OPCPX          OPCPY          $" CPX,"       >OPCODE
+( 9d ) u8address       AMODE[U8]     OPJSRU8        OPJSRU8        $" JSREA, ( U8 JSR, )"   >OPCODE
+( 9e ) u8address       AMODE[U8]     OPLDS          OPLDS          $" LDS,"       >OPCODE
+( 9f ) u8address       AMODE[U8]     OPSTS          OPSTS          $" STS,"       >OPCODE
+
+( a0 ) u8address       AMODE[U8+X]   OPSUBA         OPSUBA         $" SUBA,"    >OPCODE
+( a1 ) u8address       AMODE[U8+X]   OPCMPA         OPCMPA         $" CMPA,"    >OPCODE
+( a2 ) u8address       AMODE[U8+X]   OPSBCA         OPSBCA         $" SBCA,"    >OPCODE
+( a3 ) u8address       AMODE[U8+X]   OPSUBD         OPSUBD         $" SUBD,"    >OPCODE
+( a4 ) u8address       AMODE[U8+X]   OPANDA         OPANDA         $" ANDA,"    >OPCODE
+( a5 ) u8address       AMODE[U8+X]   OPBITA         OPBITA         $" BITA,"    >OPCODE
+( a6 ) u8address       AMODE[U8+X]   OPLDAA         OPLDAA         $" LDAA,"    >OPCODE
+( a7 ) u8address       AMODE[U8+X]   OPSTAA         OPSTAA         $" STAA,"    >OPCODE
+( a8 ) u8address       AMODE[U8+X]   OPEORA         OPEORA         $" EORA,"    >OPCODE
+( a9 ) u8address       AMODE[U8+X]   OPADCA         OPADCA         $" ADCA,"    >OPCODE
+( aa ) u8address       AMODE[U8+X]   OPORAA         OPORAA         $" ORAA,"    >OPCODE
+( ab ) u8address       AMODE[U8+X]   OPADDA         OPADDA         $" ADDA,"    >OPCODE
+( ac ) u8address       AMODE[U8+X]   OPCPX          OPCPY          $" CPX,"     >OPCODE
+( ad ) u8address       AMODE[U8+X]   OPJSRU8+X      OPJSRU8+Y      $" JSREA, ( U8+X JSR, )"     >OPCODE
+( ae ) u8address       AMODE[U8+X]   OPLDS          OPLDS          $" LDS,"     >OPCODE
+( af ) u8address       AMODE[U8+X]   OPSTS          OPSTS          $" STS,"     >OPCODE
+
+( b0 ) u16address      AMODE[U16]     OPSUBA         OPSUBA         $" SUBA,"     >OPCODE
+( b1 ) u16address      AMODE[U16]     OPCMPA         OPCMPA         $" CMPA,"     >OPCODE
+( b2 ) u16address      AMODE[U16]     OPSBCA         OPSBCA         $" SBCA,"     >OPCODE
+( b3 ) u16address      AMODE[U16]     OPSUBD         OPSUBD         $" SUBD,"     >OPCODE
+( b4 ) u16address      AMODE[U16]     OPANDA         OPANDA         $" ANDA,"     >OPCODE
+( b5 ) u16address      AMODE[U16]     OPBITA         OPBITA         $" BITA,"     >OPCODE
+( b6 ) u16address      AMODE[U16]     OPLDAA         OPLDAA         $" LDAA,"     >OPCODE
+( b7 ) u16address      AMODE[U16]     OPSTAA         OPSTAA         $" STAA,"     >OPCODE
+( b8 ) u16address      AMODE[U16]     OPEORA         OPEORA         $" EORA,"     >OPCODE
+( b9 ) u16address      AMODE[U16]     OPADCA         OPADCA         $" ADCA,"     >OPCODE
+( ba ) u16address      AMODE[U16]     OPORAA         OPORAA         $" ORAA,"     >OPCODE
+( bb ) u16address      AMODE[U16]     OPADDA         OPADDA         $" ADDA,"     >OPCODE
+( bc ) u16address      AMODE[U16]     OPCPX          OPCPY          $" CPX,"      >OPCODE
+( bd ) u16address      AMODE[U16]     OPJSRU16       OPJSRU16       $" JSREA, ( U16 JSR, )"   >OPCODE
+( be ) u16address      AMODE[U16]     OPLDS          OPLDS          $" LDS,"      >OPCODE
+( bf ) u16address      AMODE[U16]     OPSTS          OPSTS          $" STS,"      >OPCODE
+
+( c0 ) u8data          AMODEU8        OPSUBB         OPSUBB         $" SUBB,"        >OPCODE
+( c1 ) u8data          AMODEU8        OPCMPB         OPCMPB         $" CMPB,"        >OPCODE
+( c2 ) u8data          AMODEU8        OPSBCB         OPSBCB         $" SBCB,"        >OPCODE
+( c3 ) u16data         AMODEU16       OPADDD         OPADDD         $" ADDD,"        >OPCODE
+( c4 ) u8data          AMODEU8        OPANDB         OPANDB         $" ANDB,"        >OPCODE
+( c5 ) u8data          AMODEU8        OPBITB         OPBITB         $" BITB,"        >OPCODE
+( c6 ) u8data          AMODEU8        OPLDAB         OPLDAB         $" LDAB,"        >OPCODE
+( c7 ) noneshowopcode  TERMINATING    OPCODE-U8      OPCODE-U8      $" C7 CODE-U8,"  >OPCODE
+( c8 ) u8data          AMODEU8        OPEORB         OPEORB         $" EORB,"        >OPCODE
+( c9 ) u8data          AMODEU8        OPADCB         OPADCB         $" ADCB,"        >OPCODE
+( ca ) u8data          AMODEU8        OPORAB         OPORAB         $" ORAB,"        >OPCODE
+( cb ) u8data          AMODEU8        OPADDB         OPADDB         $" ADDB,"        >OPCODE
+( cc ) u16data         AMODEU16       OPLDD          OPLDD          $" LDD,"         >OPCODE
+( cd ) none            INHERENT       OPSRCYCHANGEDEST OPSRCYCHANGEDEST $" SRCYCHANGEDEST," >OPCODE
+( ce ) u16data         AMODEU16       OPLDX          OPLDY          $" LDX,"         >OPCODE
+( cf ) none            INHERENT       OPSTOP         OPSTOP         $" STOP,"        >OPCODE
+
+( d0 ) u8address       AMODE[U8]      OPSUBB         OPSUBB         $" SUBB,"      >OPCODE
+( d1 ) u8address       AMODE[U8]      OPCMPB         OPCMPB         $" CMPB,"      >OPCODE
+( d2 ) u8address       AMODE[U8]      OPSBCB         OPSBCB         $" SBCB,"      >OPCODE
+( d3 ) u8address       AMODE[U8]      OPADDD         OPADDD         $" ADDD,"      >OPCODE
+( d4 ) u8address       AMODE[U8]      OPANDB         OPANDB         $" ANDB,"      >OPCODE
+( d5 ) u8address       AMODE[U8]      OPBITB         OPBITB         $" BITB,"      >OPCODE
+( d6 ) u8address       AMODE[U8]      OPLDAB         OPLDAB         $" LDAB,"      >OPCODE
+( d7 ) u8address       AMODE[U8]      OPSTAB         OPSTAB         $" STAB,"      >OPCODE
+( d8 ) u8address       AMODE[U8]      OPEORB         OPEORB         $" EORB,"      >OPCODE
+( d9 ) u8address       AMODE[U8]      OPADCB         OPADCB         $" ADCB,"      >OPCODE
+( da ) u8address       AMODE[U8]      OPORAB         OPORAB         $" ORAB,"      >OPCODE
+( db ) u8address       AMODE[U8]      OPADDB         OPADDB         $" ADDB,"      >OPCODE
+( dc ) u8address       AMODE[U8]      OPLDD          OPLDD          $" LDD,"       >OPCODE
+( dd ) u8address       AMODE[U8]      OPSTD          OPSTD          $" STD,"       >OPCODE
+( de ) u8address       AMODE[U8]      OPLDX          OPLDY          $" LDX,"       >OPCODE
+( df ) u8address       AMODE[U8]      OPSTX          OPSTY          $" STX,"       >OPCODE
+
+( e0 ) u8address       AMODE[U8+X]    OPSUBB         OPSUBB         $" SUBB,"    >OPCODE
+( e1 ) u8address       AMODE[U8+X]    OPCMPB         OPCMPB         $" CMPB,"    >OPCODE
+( e2 ) u8address       AMODE[U8+X]    OPSBCB         OPSBCB         $" SBCB,"    >OPCODE
+( e3 ) u8address       AMODE[U8+X]    OPADDD         OPADDD         $" ADDD,"    >OPCODE
+( e4 ) u8address       AMODE[U8+X]    OPANDB         OPANDB         $" ANDB,"    >OPCODE
+( e5 ) u8address       AMODE[U8+X]    OPBITB         OPBITB         $" BITB,"    >OPCODE
+( e6 ) u8address       AMODE[U8+X]    OPLDAB         OPLDAB         $" LDAB,"    >OPCODE
+( e7 ) u8address       AMODE[U8+X]    OPSTAB         OPSTAB         $" STAB,"    >OPCODE
+( e8 ) u8address       AMODE[U8+X]    OPEORB         OPEORB         $" EORB,"    >OPCODE
+( e9 ) u8address       AMODE[U8+X]    OPADCB         OPADCB         $" ADCB,"    >OPCODE
+( ea ) u8address       AMODE[U8+X]    OPORAB         OPORAB         $" ORAB,"    >OPCODE
+( eb ) u8address       AMODE[U8+X]    OPADDB         OPADDB         $" ADDB,"    >OPCODE
+( ec ) u8address       AMODE[U8+X]    OPLDD          OPLDD          $" LDD,"     >OPCODE
+( ed ) u8address       AMODE[U8+X]    OPSTD          OPSTD          $" STD,"     >OPCODE
+( ee ) u8address       AMODE[U8+X]    OPLDX          OPLDY          $" LDX,"     >OPCODE
+( ef ) u8address       AMODE[U8+X]    OPSTX          OPSTY          $" STX,"     >OPCODE
+
+( f0 ) u16address      AMODE[U16]     OPSUBB         OPSUBB         $" SUBB,"     >OPCODE
+( f1 ) u16address      AMODE[U16]     OPCMPB         OPCMPB         $" CMPB,"     >OPCODE
+( f2 ) u16address      AMODE[U16]     OPSBCB         OPSBCB         $" SBCB,"     >OPCODE
+( f3 ) u16address      AMODE[U16]     OPADDD         OPADDD         $" ADDD,"     >OPCODE
+( f4 ) u16address      AMODE[U16]     OPANDB         OPANDB         $" ANDB,"     >OPCODE
+( f5 ) u16address      AMODE[U16]     OPBITB         OPBITB         $" BITB,"     >OPCODE
+( f6 ) u16address      AMODE[U16]     OPLDAB         OPLDAB         $" LDAB,"     >OPCODE
+( f7 ) u16address      AMODE[U16]     OPSTAB         OPSTAB         $" STAB,"     >OPCODE
+( f8 ) u16address      AMODE[U16]     OPEORB         OPEORB         $" EORB,"     >OPCODE
+( f9 ) u16address      AMODE[U16]     OPADCB         OPADCB         $" ADCB,"     >OPCODE
+( fa ) u16address      AMODE[U16]     OPORAB         OPORAB         $" ORAB,"     >OPCODE
+( fb ) u16address      AMODE[U16]     OPADDB         OPADDB         $" ADDB,"     >OPCODE
+( fc ) u16address      AMODE[U16]     OPLDD          OPLDD          $" LDD,"      >OPCODE
+( fd ) u16address      AMODE[U16]     OPSTD          OPSTD          $" STD,"      >OPCODE
+( fe ) u16address      AMODE[U16]     OPLDX          OPLDY          $" LDX,"      >OPCODE
+( ff ) u16address      AMODE[U16]     OPSTX          OPSTY          $" STX,"      >OPCODE
+
+
+VARIABLE PDISASMBASEu16address
+0 PDISASMBASEu16address ! 
+
+HEX
+: U>HEX$ ( u -- ) ( -$- hex$ )
+    HEX
+    0 <#$ #S$ #>$
+;
+
+: >HEXu8data$ ( u8data -- ) ( -$- hexu8data$ )
+    FF AND
+    DUP 10 U< IF
+      $" 0"
+    ELSE
+      NEW$
+    THEN
+    HEX
+    0 <#$ #S$ #>$ $>$
+;
+
+: >HEXINT8$ ( INT8 -- ) ( -$- int8$ )
+    DUP 0< IF
+      $" -"
+      ABS
+    ELSE
+      NEW$
+    THEN
+    >HEXu8data$ $>$
+; 
+
+HEX
+: CSIGNEXTEND ( n -- n' ) ( bit7 is copied to all higher bits )
+    ( Forth doesn't have a sign extend u8data function? )
+
+    FF AND
+
+    DUP 80 U< IF
+      EXIT
+    THEN
+
+    FFFFFFFFFFFFFF00 OR
+;
+
+: OCOUNT ( offset bufferid -- offset+1 bufferid data|-1 )
+    // if offset is at end of buffer, return data=-1
+    DUP LENGTHBUF ( -- offset bufferid length ) 
+    2 PICK U<= IF
+      -1 
+      EXIT
+    THEN
+
+    2DUP OC@ ( offset bufferid data )
+    ROT 1+ -ROT
+;
+
+: OSIZECOUNT ( offset bufferid size -- offset+size bufferid data )
+    DUP 0= IF
+      DROP
+      EXIT
+    THEN
+
+    DUP 1 = IF
+      DROP ( -- offset bufferid )
+      OCOUNT ?ERRORIF NAME>E EXIT THEN ( -- offset bufferid data )
+      EXIT
+    THEN
+
+    DUP 2 = IF
+      ( -- offset bufferid )
+      DROP
+      2DUP ( -- offset bufferid offset bufferid )
+      O>P ( -- offset bufferid paddr ) 
+      U16@ ( -- offset bufferid data ) 
+      ROT 2 + -ROT ( -- offset+2 bufferid swappeddata )
+      EXIT
+    THEN
+
+    DUP FE = IF
+      DROP
+      OCOUNT ?ERRORIF NAME>E EXIT THEN >R ( -- offset bufferid ) ( -r- data )
+      OCOUNT R> ( -- offset bufferid mask data ) ( -r- )
+      SWAP ( -- offset bufferid data mask ) ( -r- )
+      EXIT
+    THEN
+
+    FD = IF
+      ( offset bufferid -- offset+3 bufferid displacement data mask )
+      OCOUNT ?ERRORIF NAME>E EXIT THEN >R ( -- offset+1 bufferid ) ( -r- data )
+      OCOUNT >R ( -- offset+2 bufferid ) ( -r- data mask )
+      OCOUNT ( -- offset+3 bufferid displacement ) ( -r- data mask )
+      R> R> SWAP ( -- offset+3 bufferid displacement data mask )
+      EXIT
+    THEN
+
+    NAME>E ERROR" unknown instruction data size"
+;
+
+: GETINSTRUCTIONDATA ( offset bufferid type -- offset+datasize bufferid |data3 |data2 |data1 type )
+    DUP NumberOfDataTypes U>= IF
+      NAME>E ERROR" unknown instruction data type" EXIT
+    THEN
+
+    DUP ( -- offset bufferid type type ) 
+    >R POpcodeTypeDataSizeTable + C@ ( -- offset bufferid datasize )
+    OSIZECOUNT ?ERRORIF NAME>E R> DROP EXIT THEN ( -- offset+size bufferid |data3 |data2 |data1  ) 
+    R> ( -- offset+size bufferid |data3 |data2 |data1 type )
+;
+
+VARIABLE POPCODE  0 POPCODE !   // re-initializing in case it's ever ported
+VARIABLE PLASTOPCODE  0 POPCODE !   // re-initializing in case it's ever ported
+
+// CD instructions... changes addr mode only
+// CD A3  [U8+Y] CPD,  ( promotes from [U8+X] SUBD, )
+// CD AC  [U8+Y] CPX,  ( promotes from [U8+X] CPX, )
+// CD EE  [U8+Y] LDX,  ( promotes from [U8+X] LDX, )
+// CD EF  [U8+Y] STX,  ( promotes from [U8+X] STX, )
+
+: ?CDinstruction ( opcode -- opcode flag )
+    DUP A3 =
+    OVER AC = OR
+    OVER EE = OR
+    OVER EF = OR
+;
+
+HEX
+: ?CHANGE+Xto+Y ( amode -- amode! )
+    PLASTOPCODE @ 18 =
+    PLASTOPCODE @ CD = OR  // not sure if CD changes ALL x to y... 
+    IF
+      DUP AMODE[U8+X] = IF
+        DROP AMODE[U8+Y]
+      THEN
+    THEN
+;
+
+// 1A instructions... changes opname$ only
+// 1A 83  U16 CPD,  ( promotes from U16 SUBD, )
+// 1A 93  [U8] CPD,  ( promotes from [U8] SUBD, )
+// 1A B3  [U16] CPD,  ( promotes from [U16] SUBD, )
+// 1A A3  [U8+X] CPD,  ( promotes from [U8+X] SUBD, )
+// 1A AC  [U8+X] CPY,  ( promotes from [U8+X] CPX, )
+// 1A EE  [U8+X] LDY,  ( promotes from [U8+X] LDX, )
+// 1A EF  [U8+X] STY,  ( promotes from [U8+X] STX, )
+
+HEX
+: ?1Ainstruction ( opcode -- opcode is1ainstructionflag ) 
+    DUP 83 =
+    OVER 93 = OR
+    OVER B3 = OR
+    OVER A3 = OR
+    OVER AC = OR
+    OVER EE = OR
+    OVER EF = OR 
+;
+
+: OPNAMEINDEX>NEW$ ( opnameindex -- ) ( -$- opname$ )
+    OPNAMEL$OFFSETBUFID
+    OPNAMEL$STRINGBUFID
+    GETPL$ ?ERRORIF NAME>E EXIT THEN  
+    S>NEW$ ?ERRORIF NAME>E EXIT THEN ( -- opcode ) ( -- prefix$ )
+;
+: ILLOP$ ( opnameindex -- ) ( -$- prefix$ )
+    $" ( illop? this is before this instruction: "
+    OPNAMEINDEX>NEW$
+    $>$
+    $"  ) " $>$
+;
+
+: GETCDOPNAME$ ( opcode -- opcode ) ( -$- opcodename$ )
+    ( -- opcode )
+    ?CDinstruction IF
+      NEW$
+    ELSE
+      OPSRCYCHANGEDEST 
+      ILLOP$
+    THEN
+
+    DUP A3 = IF
+      OPCPD ( -- opcode opnameindex )
+    ELSE
+      DUP
+      OPNAMEBUFID OC@ ( -- opcode opnameindex )
+    THEN
+
+    OPNAMEINDEX>NEW$ ( -- opcode ) ( -- prefix$ opcodename$ )
+    $>$ ( -- prefix$opcodename$ )
+;
+
+: GET1AOPNAME$ ( opcode -- opcode ) ( -$- opcodename$ )
+    ( -- opcode )
+    ?1Ainstruction IF
+      NEW$
+    ELSE
+      OPCHANGEDEST 
+      ILLOP$
+    THEN
+
+    DUP OP18NAMEBUFID OC@ ( -- opcode opnameindex )
+
+    DUP OPSUBD = IF
+      DROP OPCPD
+    THEN ( -- opcode opnameindex )
+
+    OPNAMEINDEX>NEW$ ( -- opcode ) ( -- prefix$ opcodename$ )
+    $>$ ( -- prefix$opcodename$ )
+;
+
+: GETOPNAME$ ( opcode -- opcode ) ( -$-  opcodename$ )
+    // if last opcode was 18 then need to promote opcodename$
+    //   promotion cases:
+    //     promoting YforX: ( two 18s in a row ) need to show 1 YforX, ( and maybe illop? ) because 2nd one might be for next opcode
+    //       promoting YforX case is the same as same opcodename$ case...
+    //     same opcodename$: need to show YforX, and opcodename$ ( and maybe illop? )
+    //     18 opcodename$ is different: use 18 opcodename$
+
+    PLASTOPCODE @ CD = IF
+      GETCDOPNAME$ EXIT
+    THEN
+
+    PLASTOPCODE @ 1A = IF
+      GET1AOPNAME$ EXIT
+    THEN
+
+    PLASTOPCODE @ 18 <>
+    IF   
+      // normal case
+      DUP ( -- opcode opcode )
+      OPNAMEBUFID OC@ ( -- opcode opnameindex )
+
+      OPNAMEINDEX>NEW$ ( -- opcode ) ( -- prefix$ opcodename$ )
+      EXIT
+    THEN
+
+    // if 18 instruction, not [U8+X], and 18 and non18 opnames are the same
+    DUP ( -- opcode opcode )
+    OPNAMEBUFID OC@ ( -- opcode opnameindex )
+    OVER ( -- opcode opnameindex opcode )
+    OP18NAMEBUFID OC@ ( -- opcode opnameindex op18nameindex )
+    2DUP ( -- opcode opnameindex op18nameindex opnameindex op18nameindex )
+    = ( -- opcode opnameindex op18nameindex issameflag )
+    3 PICK OPCODEAMODEBUFID OC@ AMODE[U8+X] <> AND
+    PLASTOPCODE @ 18 = AND
+
+    IF
+      // this doesn't work... have to have the opname illop thing appear before everything... or in a comment... )
+      // after 18 and no special 18 opcode name and amode not [U8+X]...
+      ( -- opcode opnameindex op18nameindex )
+      DROP ( -- opcode opnameindex )
+      
+      OPYforX ILLOP$  ( -- opcode opnameindex ) ( -- YforX,$ )
+
+      OPNAMEINDEX>NEW$ $>$ ( -- opcode ) ( -- prefix$opcodename$ )
+
+      EXIT
+
+    THEN
+
+    // have special after 18 opcode name
+    ( -- opcode opnameindex op18nameindex )
+    SWAP DROP ( -- opcode op18nameindex )
+      
+    OPNAMEINDEX>NEW$ ( -- opcode ) ( -- opcodename$ )
+;
+
+HEX
+: GETINSTRUCTION ( offset bufferid -- offset+instructionsize bufferid |data |mask type ) ( -$- opcode$ addrmode$ )
+    OCOUNT ( -- offset|offset+1 bufferid -1|opcode )
+    POPCODE @ PLASTOPCODE !
+    DUP POPCODE !  // the undefined instruction CODE-U8, thing needs this...
+    DUP -1 = IF
+      // at end of buffer
+      DROP terminating ( -- offset bufferid terminating )
+      EXIT
+    THEN
+
+    ( -- offset+1 bufferid opcode )
+    // check for YforX CHANGEDEST or CHANGESRC opcode
+    DUP 18 =
+    OVER 1A = OR
+    OVER CD = OR 
+    IF
+      PLASTOPCODE !
+      OCOUNT DUP POPCODE !
+      DUP -1 = IF
+        // at end of buffer
+        DROP terminating ( -- offset bufferid terminating )
+        EXIT
+      THEN
+    THEN
+
+    // DUP ( -- offset+1 bufferid opcode opcode )
+    // OPNAMEBUFID OC@ ( offset+1 bufferid opcode opnameindex -- )
+    // OPNAMEL$OFFSETBUFID
+    // OPNAMEL$STRINGBUFID
+    // GETPL$ ?ERRORIF NAME>E EXIT THEN  
+    // S>NEW$ ?ERRORIF NAME>E EXIT THEN ( -- offset+opcodesize bufferid opcode ) ( -- opcode$ )
+
+    GETOPNAME$ ( -- offset+opcodesize bufferid opcode ) ( -- opcode$ )
+
+    DUP ( -- offset+1 bufferid opcode opcode )
+
+    OPCODEAMODEBUFID OC@ ?ERRORIF NAME>E EXIT THEN ( -- offset+1 bufferid opcode amode ) ( -- opcode$ )
+    
+    ?CHANGE+Xto+Y ( -- offset+opcodesize bufferid opcode amode ) ( -- opcode$ )
+ 
+    ADDRMODENAMEL$OFFSETBUFID
+    ADDRMODENAMEL$STRINGBUFID
+    GETPL$ ?ERRORIF NAME>E EXIT THEN 
+    S>NEW$ ?ERRORIF NAME>E EXIT THEN ( -- offset+opcodesize bufferid opcode ) ( -- opcode$ addrmode$ )
+
+    OPCODETYPEBUFID OC@ ?ERRORIF NAME>E EXIT THEN ( -- offset+opcodesize bufferid type ) ( -- opcode$ addrmode$ )
+
+    GETINSTRUCTIONDATA ?ERRORIF NAME>E EXIT THEN ( -- offset+instructionsize bufferid |data3 |data2 |data1 type )
+;
+
+
+: INSTRUCTIONTYPEDATA>$ ( |data3 |data2 |data1 type -- ) ( opcode$ addrmode$ -- result$ )
+
+    DUP none = IF 
+      DROP
+      SWAP$ $>$ ( -$- addrmode$opcode$ )
+      EXIT
+    THEN
+
+    DUP u8data = IF 
+      DROP
+      >HEXu8data$ $"  " $>$ ( -$- opcode$ addrmode$ data$ )
+      SWAP$ $>$ ( -$- opcode$ data$addrmode$ )
+      SWAP$ $>$ ( -$- data$addrmode$opcode$ )
+      EXIT
+    THEN
+
+    DUP u16data = IF 
+      DROP
+      U16BSWAP
+      DUP 8 RSHIFT >HEXu8data$
+      FF AND >HEXu8data$ $>$ $"  " $>$ ( -$- opcode$ addrmode$ data$ )
+      SWAP$ $>$ ( -$- opcode$ data$addrmode$ )
+      SWAP$ $>$ ( -$- data$addrmode$opcode$ )
+      EXIT
+    THEN
+
+    DUP u16address = IF 
+      DROP ( -- data )
+      U16BSWAP
+      DUP ( -- data data ) 
+      8 RSHIFT >HEXu8data$ ( -- data ) ( -$- hinybble$ )
+      FF AND >HEXu8data$ $>$ ( -- ) ( -$- u16$ ) $"  " $>$ ( -$- opcode$ addrmode$ data$ )
+      SWAP$ $>$ ( -$- opcode$ data$addrmode$ )
+      SWAP$ $>$ ( -$- data$addrmode$opcode$ )
+      EXIT
+    THEN
+
+    DUP pc+n8address = IF 
+      DROP
+      CSIGNEXTEND // need to make it a signed value
+      >HEXINT8$ $"  " $>$ ( -$- opcode$ addrmode$ data$ )
+      SWAP$ $>$ ( -$- opcode$ data$addrmode$ )
+      SWAP$ $>$ ( -$- data$addrmode$opcode$ )
+      EXIT
+    THEN
+
+    DUP terminating = IF 
+      DROP
+      $" ( terminating ) " ( -$- opcode$ addrmode$ data$ )
+      SWAP$ $>$ ( -$- opcode$ data$addrmode$ )
+      SWAP$ $>$ ( -$- data$addrmode$opcode$ )
+      EXIT
+    THEN
+
+    DUP u8address = IF 
+      DROP 
+      >HEXu8data$ $"  " $>$ ( -$- opcode$ addrmode$ data$ )
+      SWAP$ $>$ ( -$- opcode$ data$addrmode$ )
+      SWAP$ $>$ ( -$- data$addrmode$opcode$ )
+      EXIT
+    THEN
+
+    DUP masku8address = IF
+      DROP 
+      >HEXu8data$ $"  " $>$
+      >HEXu8data$ $"  " $>$ $>$ ( -$- opcode$ addrmode$ data$ )
+      SWAP$ $>$ ( -$- opcode$ data$addrmode$ )
+      SWAP$ $>$ ( -$- data$addrmode$opcode$ )
+      EXIT
+    THEN
+
+    DUP masku8addrpc+n8 = IF
+      DROP
+      ( displacement offset mask -- ) ( opcode$ addrmode$ -- )
+      >HEXu8data$
+      $"  " $>$ ( -- displacement offset )  ( -$- opcode$ addrmode$ mask$ )
+      >HEXu8data$
+      $"  " $>$ $>$ ( -- displacement )  ( -$- opcode$ addrmode$ mask$offset$ )
+      SWAP$ $>$     ( -- displacement )  ( -$- opcode$ mask$offset$addrmode$  )
+      SWAP$         ( -- displacement )  ( -$- mask$offset$addrmode$ opcode$ )
+      CSIGNEXTEND
+      >HEXINT8$     
+      $"  " $>$ ( -- )  ( -$- mask$offset$addrmode$ opcode$ displacement$ )
+      $" PC+N8 " $>$     ( -$- mask$offset$addrmode$ opcode$ displacementPC+N8$ )
+      SWAP$ $>$         ( -$- mask$offset$addrmode$ displacementPC+N8$$opcode$  )
+      // need to add ( displacement+barhere U16 targetaddr )
+      $>$               ( -$- mask$offset$addrmode$displacementPC+N8$$opcode$ )
+      EXIT
+    THEN
+
+    noneshowopcode = IF
+      SWAP$ $>$ ( -$- addrmode$opcode$ )
+      POPCODE @ >HEXu8data$ $"  " $>$ ( -$- addrmode$opcode$ opbytecode$ )
+      SWAP$ $>$ ( -$- opbytecode$addrmode$opcode$ )
+      EXIT
+    THEN
+
+    NAME>E  ERROR" unknown instruction type"
+            
+;
+
+HEX
+: EOL>$ ( a$ -$- a$eol$ )
+    0A C>$
+;
+
+: DISASM>NEW$ ( offset bufferid length -- ) ( -$- disasm$ )
+    2 PICK + ( -- offset bufferid length+offset )
+    OVER LENGTHBUF UMIN ( -- offset bufferid length+offset' )
+    { notdoneflag | endoffset -- }  // moving offsetlength to a local variable
+
+    NEW$
+   
+    TRUE TO notdoneflag
+    BEGIN
+      OVER endoffset U<
+      notdoneflag AND
+    WHILE
+      ( offset bufferid -- )
+
+      // CRLF ." at start of loop should be ( offset bufferid -- ) and result$ : " .S .$S
+
+      NEW$ ( -$- result$ )
+
+      // do u16address as a comment... relative to pgaseu16address
+      $" ( " $>$ 
+      OVER PDISASMBASEu16address @ + U>HEX$ $>$ 
+      $"  ) " $>$ 
+
+      GETINSTRUCTION ( -- offset+instructionsize bufferid |data3 |data2 |data1 type ) ( -$- result$ opcode$ addrmode$ )
+      ?ERRORIF NAME>E EXIT THEN
+      ( DUP terminating = IF
+        FALSE TO notdoneflag
+      THEN )
+
+      // CRLF ." after GETINSTRUCTION : " .S .$S
+
+      // append data
+      INSTRUCTIONTYPEDATA>$ ( result$ addrmodeopcode$ data$ -- ) ( -$- result$ data$addrmode$opcode$ )
+      ?ERRORIF NAME>E EXIT THEN
+
+      // CRLF ." after INSTRUCTIONTYPEDATA>$ : " .S .$S
+
+      // append data$addrmode$opcode$
+      ( disasm$ data$addrmodeopcode$ -$- ) $>$
+
+      // append LF
+      EOL>$
+
+      $>$
+
+    REPEAT
+    2DROP $" ( DONE )" $>$ EOL>$
+;
+
+HEX
+: $>NEWFILE ( -- ) ( a$ filename$ -$- ) 
+    { bufid }
+    1000 -1 NEWBUFFER ?ERRORIF NAME>E EXIT THEN 
+    TO bufid
+    1 GETS$[ND] ?ERRORIF NAME>E EXIT THEN
+    bufid S>BUF ?ERRORIF NAME>E EXIT THEN
+    bufid SAVEFILE$ ?ERRORIF NAME>E EXIT THEN
+    bufid FREEBUFFER
+    DROP$
+;
+
+

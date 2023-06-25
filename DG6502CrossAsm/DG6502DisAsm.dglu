@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DG6502CrossAsm v1.1
+//    This file is part of DG6502CrossAsm v1.2
 //
-//    DG6502CrossAsm v1.1 is free software; you can redistribute it and/or modify
+//    DG6502CrossAsm v1.2 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DG6502CrossAsm v1.1 is distributed in the hope that it will be useful,
+//    DG6502CrossAsm v1.2 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DG6502CrossAsm v1.1; if not, write to the Free Software
+//    along with DG6502CrossAsm v1.2; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 10, 2023              //
-// version 1.1                //
+// June 25, 2023              //
+// version 1.2                //
 // /////////////////////////////
 
 
@@ -275,11 +275,11 @@ CREATE POpcodeTypeDataSizeTable
 ( be ) ( $" ldx[+y]" )     address       $" [U16+Y] LDX,"   >OPCODE
 ( bf ) ( $" ???" )         terminating   $" BF CODE-U8,"    >OPCODE
 
-( c0 ) ( $" cpy" )         byte          $" CPY,"           >OPCODE
+( c0 ) ( $" cpy" )         byte          $" U8 CPX,"        >OPCODE
 ( c1 ) ( $" cmp[[]+x]" )   byteaddress   $" [[U8]+X] CMP,"  >OPCODE
 ( c2 ) ( $" ???" )         terminating   $" C2 CODE-U8,"    >OPCODE
 ( c3 ) ( $" ???" )         terminating   $" C3 CODE-U8,"    >OPCODE
-( c4 ) ( $" cpy[]" )       byteaddress   $" [U8] CPY,"      >OPCODE
+( c4 ) ( $" cpy[]" )       byteaddress   $" [U8] CPX,"      >OPCODE
 ( c5 ) ( $" cmpa[]" )      byteaddress   $" [U8] CMP,"      >OPCODE
 ( c6 ) ( $" dec[]" )       byteaddress   $" [U8] DEC,"      >OPCODE
 ( c7 ) ( $" ???" )         terminating   $" C7 CODE-U8,"    >OPCODE
@@ -287,7 +287,7 @@ CREATE POpcodeTypeDataSizeTable
 ( c9 ) ( $" cmpa" )        byte          $" U8 CMP,"        >OPCODE
 ( ca ) ( $" dex"  )        none          $" DEX,"           >OPCODE
 ( cb ) ( $" ???" )         terminating   $" CB CODE-U8,"    >OPCODE
-( cc ) ( $" cpy[]" )       address       $" [U16] CPY,"     >OPCODE
+( cc ) ( $" cpy[]" )       address       $" [U16] CPX,"     >OPCODE
 ( cd ) ( $" cmpa[]" )      address       $" [U16] CMP,"     >OPCODE
 ( ce ) ( $" dec[]" )       address       $" [U16] DEC,"     >OPCODE
 ( cf ) ( $" ???" )         terminating   $" CF CODE-U8,"    >OPCODE
@@ -309,11 +309,11 @@ CREATE POpcodeTypeDataSizeTable
 ( de ) ( $" dec[+x]" )     address       $" [U16+X] DEC,"   >OPCODE
 ( df ) ( $" ???" )         terminating   $" DF CODE-U8,"    >OPCODE
 
-( e0 ) ( $" cpx" )         byte          $" U8 CPX,"        >OPCODE
+( e0 ) ( $" cpx" )         byte          $" U8 CPY,"        >OPCODE
 ( e1 ) ( $" sbc[[]+x]" )   byteaddress   $" [[U8]+X] SBC,"  >OPCODE
 ( e2 ) ( $" ???" )         terminating   $" E2 CODE-U8,"    >OPCODE
 ( e3 ) ( $" ???" )         terminating   $" E3 CODE-U8,"    >OPCODE
-( e4 ) ( $" cpx[]" )       byteaddress   $" [U8] CPX,"      >OPCODE
+( e4 ) ( $" cpx[]" )       byteaddress   $" [U8] CPY,"      >OPCODE
 ( e5 ) ( $" sbca[]" )      byteaddress   $" [U8] SBC,"      >OPCODE
 ( e6 ) ( $" inc[]" )       byteaddress   $" [U8] INC,"      >OPCODE
 ( e7 ) ( $" ???" )         terminating   $" E7 CODE-U8,"    >OPCODE
@@ -321,13 +321,13 @@ CREATE POpcodeTypeDataSizeTable
 ( e9 ) ( $" sbca" )        byte          $" U8 SBC,"        >OPCODE
 ( ea ) ( $" nop" )         none          $" NOP,"           >OPCODE
 ( eb ) ( $" ???" )         terminating   $" EB CODE-U8,"    >OPCODE
-( ec ) ( $" cpx[]" )       address       $" [U16] CPX,"     >OPCODE
+( ec ) ( $" cpx[]" )       address       $" [U16] CPY,"     >OPCODE
 ( ed ) ( $" sbca[]" )      address       $" [U16] SBC,"     >OPCODE
 ( ee ) ( $" inc[]" )       address       $" [U16] INC,"     >OPCODE
 ( ef ) ( $" ???" )         terminating   $" EF CODE-U8,"    >OPCODE
 
 ( f0 ) ( $" beq" )         branch        $" PC+N8 BEQ,"     >OPCODE
-( f1 ) ( $" sbca[[]+y]" )  byteaddress   $" [[U8+Y] SBC,"   >OPCODE
+( f1 ) ( $" sbca[[]+y]" )  byteaddress   $" [[U8]+Y] SBC,"   >OPCODE
 ( f2 ) ( $" sbca[[]]" )    byteaddress   $" [[U8]] SBC, ( 65C02 )" >OPCODE
 ( f3 ) ( $" ???" )         terminating   $" F3 CODE-U8,"    >OPCODE
 ( f4 ) ( $" ???" )         terminating   $" F4 CODE-U8,"    >OPCODE
@@ -475,6 +475,7 @@ HEX
 
     DUP branch = IF 
       DROP
+      CSIGNEXTEND
       >HEXINT8$
       $"  " $>$
       EXIT
@@ -527,8 +528,8 @@ HEX
       // append addressing mode and opcode
       ( disasm$ data$addrmodeopcode$ -$- ) $>$
 
-      // append CRLF
-      0C C>$ 0A C>$
+      // append LF
+      ( 0C C>$ ) 0A C>$
 
     REPEAT
     2DROP
