@@ -1,0 +1,76 @@
+$" ../DG6502CrossAsm.dglu" INCLUDEFILE$
+$" BufToATR.dglu" INCLUDEFILE$
+
+
+HEX
+// CIO from https://www.atarimax.com/freenet/freenet_material/12.AtariLibrary/2.MiscellaneousTextFiles/showarticle.php?30
+
+0342 CONSTANT ICCOM // command ( writeappendeol=09 )
+0344 CONSTANT ICBAL // buffer address low   
+0345 CONSTANT ICBAH // buffer address hi
+
+0348 CONSTANT ICBLL // buffer length low
+0349 CONSTANT ICBLH // buffer length hi
+
+E456 CONSTANT CIOV
+
+09 CONSTANT ICCOMwriteline
+0B CONSTANT ICCOMwrite
+
+
+// Make the disk image buffer
+HEX 600 NEWCROSSBUFFER  
+
+
+// Atari810 Disk Header
+//   This program loads at 600 and never exits the initialization routine
+//   This program uses the CIO to write "Hello World" using IOCB 0 which is the screen or editor
+//     after boot
+
+( 0x600 ) 0 CC,           // probably has to be 0 (disassemble OS to find out for sure)
+OHERE CONSTANT oNumberOfBootSectors
+( 0x601 ) 1 CC,           // number of boot sectors
+( 0x602 ) 600 CODE-U16,   // boot load address
+( 0x604 ) 606 CODE-U16,   // boot init routine address
+
+( 0x606 )
+
+// Branching over data
+// Using IF, assumes string length <= 7F because it uses a short branch
+//  For data larger than 7F use LONGIF, LONGTHEN,
+
+CLC, CS IF,
+
+  BARHERE CONSTANT pHelloWorld
+  $" Hello World" LENGTH$ CONSTANT HelloWorldSize
+  0 GETS$[ND] CODE-S, DROP$
+
+THEN,
+
+// setting register X to IOCB 0 which is the screen or editor and is already open after boot
+00 U8 LDX, 
+
+// setting IOCB 0 command to writeappendeol
+ICCOMwriteline U8 LDA,
+ICCOM [U] STA,  
+
+// setting IOCB i/o buffer pointer to point to Hello World message
+pHelloWorld FF AND U8 LDA,    ICBAL [U] STA,
+pHelloWorld 8 RSHIFT U8 LDA,  ICBAH [U] STA,
+
+// setting IOCB i/o buffer length to length of Hello World message
+HelloWorldSize FF AND U8 LDA,     ICBLL [U] STA,
+HelloWorldSize 8 RSHIFT U8 LDA,   ICBLH [U] STA, // not assuming sizehi is 0 so same code will work for future things 
+
+CIOV U16 JSR,
+
+// Busy Wait Forever
+BEGIN,
+CLC, CS UNTIL,
+
+OHERE SectorSize ROUNDUP SectorSize /   // calculate number of sectors needed
+oNumberOfBootSectors PCURRENTCOMPILEBUFFER @ O>P C!
+
+
+$" HelloWorld.atr" PCURRENTCOMPILEBUFFER @ Buf>ATRFile
+

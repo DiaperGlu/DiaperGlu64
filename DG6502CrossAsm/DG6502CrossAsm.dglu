@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DG6502CrossAsm v1.2
+//    This file is part of DG6502CrossAsm v1.3
 //
-//    DG6502CrossAsm v1.2 is free software; you can redistribute it and/or modify
+//    DG6502CrossAsm v1.3 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DG6502CrossAsm v1.2 is distributed in the hope that it will be useful,
+//    DG6502CrossAsm v1.3 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DG6502CrossAsm v1.2; if not, write to the Free Software
+//    along with DG6502CrossAsm v1.3; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 25, 2023              //
-// version 1.2                //
+// July 06, 2023              //
+// version 1.3                //
 // /////////////////////////////
 
 
@@ -73,19 +73,19 @@ HEX
 4 CONSTANT U16
 5 CONSTANT [U8]
 6 CONSTANT [U16]
-7 CONSTANT [U8+X]
-7 CONSTANT [X+U8]
+7 CONSTANT [U8+X] // (U8+X)&FF (wraps to stay on page 0)
+7 CONSTANT [X+U8] // (X+U8)&FF (wraps to stay on page 0)
 8 CONSTANT [U16+X]
 8 CONSTANT [X+U16]
-9 CONSTANT [U8+Y]
-9 CONSTANT [Y+U8]
+9 CONSTANT [U8+Y] 
+9 CONSTANT [Y+U8] 
 0A CONSTANT [U16+Y]
 0A CONSTANT [Y+U16]
 0B CONSTANT [[U8]]
-0C CONSTANT [[U8]+X]
-0C CONSTANT [X+[U8]]
-0D CONSTANT [[U8]+Y]
-0D CONSTANT [Y+[U8]]
+0C CONSTANT [[U8+X]] // (U8+X)&FF (wraps to stay on page 0)
+0C CONSTANT [[X+U8]] // (U8+X)&FF (wraps to stay on page 0)
+0D CONSTANT [[U8]+Y] 
+0D CONSTANT [Y+[U8]] 
 0E CONSTANT PC+N8
 0F CONSTANT [[U16+X]]
 0F CONSTANT [[X+U16]]
@@ -95,7 +95,7 @@ HEX
 : CC, CODE-U8, ;
 
 CREATE AddrModeImmediateSizes
-( RA     X      Y      U8     U16    [U8]   [U16]  [U8+X]  [U16+X]  [U8+Y]  [U16+Y]  [[U8]]  [[U8]+X]  [[U8]+Y] PC+N8  [[U16+X]] )
+( RA     X      Y      U8     U16    [U8]   [U16]  [U8+X]  [U16+X]  [U8+Y]  [U16+Y]  [[U8]]  [[U8+X]]  [[U8]+Y] PC+N8  [[U16+X]] )
   0 CC,  0 CC,  0 CC,  1 CC,  2 CC,  1 CC,  2 CC,  1 CC,   2 CC,    1 CC,   2 CC,    1 CC,   1 CC,     1 CC,    1 CC,  2 CC,
 
 CREATE ORAOpTable
@@ -153,7 +153,7 @@ CREATE JMPOpTable
   FF CC, FF CC, FF CC, FF CC, 4C CC, FF CC, 6C CC, FF CC,  FF CC,   FF CC,  FF CC,   FF CC,   FF CC,    FF CC,  FF CC,  7C CC,
 
 CREATE STYOpTable
-( RA     X      Y      U8     U16    [U8]   [U16]  [U8+X]  [U16+X]  [U8+Y]  [U16+Y]  [[[U8]]  [U8]+X]  [[U8]+Y] PC+N8  [[U16+X] )
+( RA     X      Y      U8     U16    [U8]   [U16]  [U8+X]  [U16+X]  [U8+Y]  [U16+Y]  [[U8]]  [[U8+X]]  [[U8]+Y] PC+N8  [[U16+X] )
   FF CC, FF CC, FF CC, FF CC, FF CC, 84 CC, 8C CC, 94 CC,  FF CC,   FF CC,  FF CC,   FF CC,   FF CC,    FF CC,  FF CC,  FF CC,
 
 CREATE STXOpTable
@@ -166,10 +166,10 @@ CREATE LDXOpTable
   FF CC, FF CC, FF CC, A2 CC, FF CC, A6 CC, AE CC, FF CC,  FF CC,   B6 CC,  BE CC,   FF CC,   FF CC,    FF CC,  FF CC,  FF CC,
 
 CREATE CMPXOpTable
-  FF CC, FF CC, FF CC, C0 CC, FF CC, C4 CC, CC CC, FF CC,  FF CC,   FF CC,  FF CC,   FF CC,   FF CC,    FF CC,  FF CC,  FF CC,
+  FF CC, FF CC, FF CC, E0 CC, FF CC, E4 CC, EC CC, FF CC,  FF CC,   FF CC,  FF CC,   FF CC,   FF CC,    FF CC,  FF CC,  FF CC,
 
 CREATE CMPYOpTable
-  FF CC, FF CC, FF CC, E0 CC, FF CC, E4 CC, EC CC, FF CC,  FF CC,   FF CC,  FF CC,   FF CC,   FF CC,    FF CC,  FF CC,  FF CC,
+  FF CC, FF CC, FF CC, C0 CC, FF CC, C4 CC, CC CC, FF CC,  FF CC,   FF CC,  FF CC,   FF CC,   FF CC,    FF CC,  FF CC,  FF CC,
 
 CREATE INCOpTable
   1A CC, E8 CC, C8 CC, FF CC, FF CC, E6 CC, EE CC, F6 CC,  FE CC,   FF CC,  FF CC,   FF CC,   FF CC,    FF CC,  FF CC,  FF CC,

@@ -1,0 +1,97 @@
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2023 James Patrick Norris
+//
+//    This file is part of DG6502CrossAsm v1.3
+//
+//    DG6502CrossAsm v1.3 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DG6502CrossAsm v1.3 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DG6502CrossAsm v1.3; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// July 05, 2023              //
+// version 1.3                //
+// /////////////////////////////
+
+// compile guard
+' BUFTOATR.DGLU ENDOFWORDLIST = 0= ?END-EVALUATE
+
+0 CONSTANT BUFTOATR.DGLU
+
+HEX
+
+80 CONSTANT SectorSize
+
+// Buf>ATRFile saves a buffer of an Atari boot disk image to a .ATR file
+//   using the smallest number of sectors possible.
+
+: Buf>ATRFile ( inbufid -- ) ( filename$ -$- )
+
+    { oldccbufid oSizeDiv10 myImageSize | inbufid -- } // local variables
+
+    PCURRENTCOMPILEBUFFER @ TO oldccbufid
+    1000 -1 NEWBUFFER PCURRENTCOMPILEBUFFER !
+    ?ERRORIF NAME>E EXIT THEN
+
+       
+    // ATR File Header 10 bytes
+    0296       CODE-U16,        // ATR Magic
+    OHERE TO oSizeDiv10
+    0000       CODE-U16,        // Low 16 bits of disk image size in bytes/0x10
+    SectorSize CODE-U16,        // Sector Size
+    0          CODE-U16,        // High 16 bits of disk image size in bytes/0x10
+    0          CODE-U8,         // flags - see these links
+                                //  http://pages.suddenlink.net/wa5bdu/readme.txt
+                                //  https://forums.atariage.com/topic/290655-where-can-i-learn-more-about-atr-files/#comment-4266108
+    0          CODE-U16,        // first or typical bad sector
+    0          CODE-U8,         // unused
+    0          CODE-U8,         // unused
+    0          CODE-U8,         // unused
+    0          CODE-U8,         // unused
+    0          CODE-U8,         // unused
+
+
+    // Figure out big the image will be in multiples of sectors
+    inbufid LENGTHBUF SectorSize ROUNDUP TO myImageSize
+
+    // Copy the image to the output buffer
+    inbufid GETSBUFFER PCURRENTCOMPILEBUFFER @ S>BUF
+    ?ERRORIF 
+      NAME>E PCURRENTCOMPILEBUFFER @ FREEBUFFER oldccbufid PCURRENTCOMPILEBUFFER ! 
+      EXIT 
+    THEN
+
+    // Grow output buffer to nearest sector size + the size of the header
+    myImageSize 10 + ( -- filesize )
+    inbufid LENGTHBUF - PCURRENTCOMPILEBUFFER @ GROWBUFFER
+    ?ERRORIF 
+      NAME>E PCURRENTCOMPILEBUFFER @ FREEBUFFER oldccbufid PCURRENTCOMPILEBUFFER ! 
+      EXIT 
+    THEN
+
+    // Set the image size in the header - assumes high word of size is 0
+    myImageSize 10 / oSizeDiv10 PCURRENTCOMPILEBUFFER @ O>P U16!
+
+    PCURRENTCOMPILEBUFFER @ SAVEFILE$
+    ?ERRORIF
+      NAME>E
+    THEN
+
+    PCURRENTCOMPILEBUFFER @ FREEBUFFER oldccbufid PCURRENTCOMPILEBUFFER !
+;
+
+

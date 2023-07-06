@@ -1,4 +1,12 @@
 Changelog for DG6502CrossAsm
+  06 July 2023
+    Released v1.3
+    Added test of nearly all instructions for Atari target
+
+  30 June 2023
+    Fixed. Swapped opcodes for CPX, and CPY, in assembler and disassembler.
+    Fixed. Renamed [[U8]+X] [X+[U8]]
+      to [[U8+X]] [[X+U8]] in assembler and disassembler.
 
   25 Jun 2023
     Released v1.2

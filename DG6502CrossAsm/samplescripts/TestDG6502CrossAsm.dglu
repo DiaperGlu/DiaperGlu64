@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DG6502CrossAsm v1.2
+//    This file is part of DG6502CrossAsm v1.3
 //
-//    DG6502CrossAsm v1.2 is free software; you can redistribute it and/or modify
+//    DG6502CrossAsm v1.3 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DG6502CrossAsm v1.2 is distributed in the hope that it will be useful,
+//    DG6502CrossAsm v1.3 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DG6502CrossAsm v1.2; if not, write to the Free Software
+//    along with DG6502CrossAsm v1.3; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,12 +23,12 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 25, 2023              //
-// version 1.2                //
+// July 06, 2023              //
+// version 1.3                //
 // /////////////////////////////
 
-$" DG6502CrossAsm.dglu" INCLUDEFILE$
-$" DG6502DisAsm.dglu" INCLUDEFILE$
+$" ../DG6502CrossAsm.dglu" INCLUDEFILE$
+$" ../DG6502DisAsm.dglu" INCLUDEFILE$
 
 : $>CCBUF
     PCURRENTCOMPILEBUFFER @ $>BUF
@@ -178,7 +178,7 @@ CRLF OHERE DUP +BA U. ." : " 37 [U8+X] ORA,    ." 37 [U8+X] ORA,     " DUP CCOC@
 CRLF OHERE DUP +BA U. ." : " 37FE [U16+X] ORA, ." 37FE [U16+X] ORA,  " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
 CRLF OHERE DUP +BA U. ." : " 37FE [U16+Y] ORA, ." 37FE [U16+Y] ORA,  " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
 CRLF OHERE DUP +BA U. ." : " 37 [[U8]] ORA,    ." 37 [[U8]] ORA,     " DUP CCOC@ U. 1+ CCOC@ U.
-CRLF OHERE DUP +BA U. ." : " 37 [[U8]+X] ORA,  ." 37 [[U8]+X] ORA,   " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP +BA U. ." : " 37 [[U8+X]] ORA,  ." 37 [[U8+X]] ORA,   " DUP CCOC@ U. 1+ CCOC@ U.
 CRLF OHERE DUP +BA U. ." : " 37 [[U8]+Y] ORA,  ." 37 [[U8]+Y] ORA,   " DUP CCOC@ U. 1+ CCOC@ U.
 
 CRLF
@@ -189,7 +189,7 @@ CRLF OHERE DUP +BA U. ." : " 37 [U8+X] AND,    ." 37 [U8+X] AND,     " DUP CCOC@
 CRLF OHERE DUP +BA U. ." : " 37FE [U16+X] AND, ." 37FE [U16+X] AND,  " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
 CRLF OHERE DUP +BA U. ." : " 37FE [U16+Y] AND, ." 37FE [U16+Y] AND,  " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
 CRLF OHERE DUP +BA U. ." : " 37 [[U8]] AND,    ." 37 [[U8]] AND,     " DUP CCOC@ U. 1+ CCOC@ U.
-CRLF OHERE DUP +BA U. ." : " 37 [[U8]+X] AND,  ." 37 [[U8]+X] AND,   " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP +BA U. ." : " 37 [[U8+X]] AND,  ." 37 [[U8+X]] AND,   " DUP CCOC@ U. 1+ CCOC@ U.
 CRLF OHERE DUP +BA U. ." : " 37 [[U8]+Y] AND,  ." 37 [[U8]+Y] AND,   " DUP CCOC@ U. 1+ CCOC@ U.
 
 CRLF
@@ -200,7 +200,7 @@ CRLF OHERE DUP +BA U. ." : " 37 [U8+X] EOR,    ." 37 [U8+X] EOR,     " DUP CCOC@
 CRLF OHERE DUP +BA U. ." : " 37FE [U16+X] EOR, ." 37FE [U16+X] EOR,  " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
 CRLF OHERE DUP +BA U. ." : " 37FE [U16+Y] EOR, ." 37FE [U16+Y] EOR,  " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
 CRLF OHERE DUP +BA U. ." : " 37 [[U8]] EOR,    ." 37 [[U8]] EOR,     " DUP CCOC@ U. 1+ CCOC@ U.
-CRLF OHERE DUP +BA U. ." : " 37 [[U8]+X] EOR,  ." 37 [[U8]+X] EOR,   " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP +BA U. ." : " 37 [[U8+X]] EOR,  ." 37 [[U8+X]] EOR,   " DUP CCOC@ U. 1+ CCOC@ U.
 CRLF OHERE DUP +BA U. ." : " 37 [[U8]+Y] EOR,  ." 37 [[U8]+Y] EOR,   " DUP CCOC@ U. 1+ CCOC@ U.
 
 CRLF
@@ -211,7 +211,7 @@ CRLF OHERE DUP +BA U. ." : " 37 [U8+X] ADC,    ." 37 [U8+X] ADC,     " DUP CCOC@
 CRLF OHERE DUP +BA U. ." : " 37FE [U16+X] ADC, ." 37FE [U16+X] ADC,  " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
 CRLF OHERE DUP +BA U. ." : " 37FE [U16+Y] ADC, ." 37FE [U16+Y] ADC,  " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
 CRLF OHERE DUP +BA U. ." : " 37 [[U8]] ADC,    ." 37 [[U8]] ADC,     " DUP CCOC@ U. 1+ CCOC@ U.
-CRLF OHERE DUP +BA U. ." : " 37 [[U8]+X] ADC,  ." 37 [[U8]+X] ADC,   " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP +BA U. ." : " 37 [[U8+X]] ADC,  ." 37 [[U8+X]] ADC,   " DUP CCOC@ U. 1+ CCOC@ U.
 CRLF OHERE DUP +BA U. ." : " 37 [[U8]+Y] ADC,  ." 37 [[U8]+Y] ADC,   " DUP CCOC@ U. 1+ CCOC@ U.
 
 CRLF
@@ -221,7 +221,7 @@ CRLF OHERE DUP +BA U. ." : " 37 [U8+X] STA,    ." 37 [U8+X] STA,     " DUP CCOC@
 CRLF OHERE DUP +BA U. ." : " 37FE [U16+X] STA, ." 37FE [U16+X] STA,  " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
 CRLF OHERE DUP +BA U. ." : " 37FE [U16+Y] STA, ." 37FE [U16+Y] STA,  " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
 CRLF OHERE DUP +BA U. ." : " 37 [[U8]] STA,    ." 37 [[U8]] STA,     " DUP CCOC@ U. 1+ CCOC@ U.
-CRLF OHERE DUP +BA U. ." : " 37 [[U8]+X] STA,  ." 37 [[U8]+X] STA,   " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP +BA U. ." : " 37 [[U8+X]] STA,  ." 37 [[U8+X]] STA,   " DUP CCOC@ U. 1+ CCOC@ U.
 CRLF OHERE DUP +BA U. ." : " 37 [[U8]+Y] STA,  ." 37 [[U8]+Y] STA,   " DUP CCOC@ U. 1+ CCOC@ U.
 
 CRLF
@@ -232,7 +232,7 @@ CRLF OHERE DUP +BA U. ." : " 37 [U8+X] LDA,    ." 37 [U8+X] LDA,     " DUP CCOC@
 CRLF OHERE DUP +BA U. ." : " 37FE [U16+X] LDA, ." 37FE [U16+X] LDA,  " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
 CRLF OHERE DUP +BA U. ." : " 37FE [U16+Y] LDA, ." 37FE [U16+Y] LDA,  " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
 CRLF OHERE DUP +BA U. ." : " 37 [[U8]] LDA,    ." 37 [[U8]] LDA,     " DUP CCOC@ U. 1+ CCOC@ U.
-CRLF OHERE DUP +BA U. ." : " 37 [[U8]+X] LDA,  ." 37 [[U8]+X] LDA,   " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP +BA U. ." : " 37 [[U8+X]] LDA,  ." 37 [[U8+X]] LDA,   " DUP CCOC@ U. 1+ CCOC@ U.
 CRLF OHERE DUP +BA U. ." : " 37 [[U8]+Y] LDA,  ." 37 [[U8]+Y] LDA,   " DUP CCOC@ U. 1+ CCOC@ U.
 
 CRLF
@@ -243,7 +243,7 @@ CRLF OHERE DUP +BA U. ." : " 37 [U8+X] CMP,    ." 37 [U8+X] CMP,     " DUP CCOC@
 CRLF OHERE DUP +BA U. ." : " 37FE [U16+X] CMP, ." 37FE [U16+X] CMP,  " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
 CRLF OHERE DUP +BA U. ." : " 37FE [U16+Y] CMP, ." 37FE [U16+Y] CMP,  " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
 CRLF OHERE DUP +BA U. ." : " 37 [[U8]] CMP,    ." 37 [[U8]] CMP,     " DUP CCOC@ U. 1+ CCOC@ U.
-CRLF OHERE DUP +BA U. ." : " 37 [[U8]+X] CMP,  ." 37 [[U8]+X] CMP,   " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP +BA U. ." : " 37 [[U8+X]] CMP,  ." 37 [[U8+X]] CMP,   " DUP CCOC@ U. 1+ CCOC@ U.
 CRLF OHERE DUP +BA U. ." : " 37 [[U8]+Y] CMP,  ." 37 [[U8]+Y] CMP,   " DUP CCOC@ U. 1+ CCOC@ U.
 
 CRLF
@@ -254,7 +254,7 @@ CRLF OHERE DUP +BA U. ." : " 37 [U8+X] SBC,    ." 37 [U8+X] SBC,     " DUP CCOC@
 CRLF OHERE DUP +BA U. ." : " 37FE [U16+X] SBC, ." 37FE [U16+X] SBC,  " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
 CRLF OHERE DUP +BA U. ." : " 37FE [U16+Y] SBC, ." 37FE [U16+Y] SBC,  " DUP CCOC@ U. DUP 1+ CCOC@ U. 2 + CCOC@ U.
 CRLF OHERE DUP +BA U. ." : " 37 [[U8]] SBC,    ." 37 [[U8]] SBC,     " DUP CCOC@ U. 1+ CCOC@ U.
-CRLF OHERE DUP +BA U. ." : " 37 [[U8]+X] SBC,  ." 37 [[U8]+X] SBC,   " DUP CCOC@ U. 1+ CCOC@ U.
+CRLF OHERE DUP +BA U. ." : " 37 [[U8+X]] SBC,  ." 37 [[U8+X]] SBC,   " DUP CCOC@ U. 1+ CCOC@ U.
 CRLF OHERE DUP +BA U. ." : " 37 [[U8]+Y] SBC,  ." 37 [[U8]+Y] SBC,   " DUP CCOC@ U. 1+ CCOC@ U.
 
 CRLF

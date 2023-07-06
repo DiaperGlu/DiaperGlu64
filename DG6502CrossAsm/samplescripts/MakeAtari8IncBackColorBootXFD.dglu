@@ -1,0 +1,53 @@
+$" ../DG6502CrossAsm.dglu" INCLUDEFILE$
+
+HEX
+0014 CONSTANT RTCLOCK0
+02C8 CONSTANT COLOR4 // shadow for COLBK
+
+// Atari Disk Boot Info from: https://atari.fox-1.nl/disk-formats-explained/#boot2
+//  Sector 1 byte 0 = 0
+//  Sector 1 byte 1 = number of boot sectors to read (usually 3?)
+//  Sector 1 bytes 2,3 Boot load address (Atari Dos uses HEX 700)
+//  Sector 1 bytes 4,5 Boot init address called after loading the boot sectors
+//  Sector 1 byte 6 and on... if you return from the init routine, the boot code jumps to here
+
+// An 810 drive has 720 128 byte sectors
+// A 1050 drive has 1040 128 byte sectors (40 tracks with 26 sectors per track)
+DECIMAL 720 128 * CONSTANT Atari810DiskSize
+
+
+: GrowCCBufToAtari810Size ( -- ) Atari810DiskSize OHERE U< IF
+    ERROR" buffer is too big" NAME>E EXIT
+  THEN
+  Atari810DiskSize OHERE - PCURRENTCOMPILEBUFFER @ GROWBUFFER
+;
+
+
+// This program loads at 600 and never exits the initialization routine
+
+HEX 600 NEWCROSSBUFFER
+0 CC,           // probably has to be 0 (disassemble OS to find out for sure)
+1 CC,           // number of sectors
+600 CODE-U16,   // load address
+606 CODE-U16,   // init routine address
+
+
+// The program busy waits for the OS vbi 1/60th of a second real time clock to
+//  increase 6 times and then increments the shadow background color value 
+
+
+HEX
+BEGIN,
+  COLOR4 [U] INC,
+  RTCLOCK0 [U] LDA,
+  CLC,
+  6 U8 ADC,
+  BEGIN,
+    RTCLOCK0 [U] CMP,
+  EQ UNTIL,
+CLC, CS UNTIL,
+
+GrowCCBufToAtari810Size
+
+PCURRENTCOMPILEBUFFER @ $" IncBackColor.xfd" SAVEFILE$
+

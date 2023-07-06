@@ -1,0 +1,43 @@
+$" ../DG6502CrossAsm.dglu" INCLUDEFILE$
+$" BufToATR.dglu" INCLUDEFILE$
+
+// Note: This example assumes program will fit into one sector
+//  If you modify this and make it bigger, you may need to change the
+//  number of boot sectors.
+
+HEX
+0014 CONSTANT RTCLOCK0
+02C8 CONSTANT COLOR4 // shadow for COLBK
+
+
+// Make the disk image buffer
+HEX 600 NEWCROSSBUFFER  
+
+
+// Atari810 Disk Header
+//   This program loads at 600 and never exits the initialization routine
+
+( 0x600 ) 0 CC,           // probably has to be 0 (disassemble OS to find out for sure)
+( 0x601 ) 1 CC,           // number of boot sectors - assumes program will fit in one sector
+( 0x602 ) 600 CODE-U16,   // boot load address
+( 0x604 ) 606 CODE-U16,   // boot init routine address
+
+
+// The program busy waits for the OS vbi 1/60th of a second real time clock to
+//  increase 10 times and then increments the shadow background color value 
+
+( 0x606 )
+HEX
+BEGIN,
+  COLOR4 [U] INC,
+  RTCLOCK0 [U] LDA,
+  CLC,
+  0A U8 ADC,
+  BEGIN,
+    RTCLOCK0 [U] CMP,
+  EQ UNTIL,
+CLC, CS UNTIL,
+
+
+$" IncBackColor.atr" PCURRENTCOMPILEBUFFER @ Buf>ATRFile
+
