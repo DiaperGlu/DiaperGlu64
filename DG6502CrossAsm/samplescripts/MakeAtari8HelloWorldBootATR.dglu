@@ -1,10 +1,87 @@
+
+// This script cross compiles an Atari 8 bit computer .atr disk image hello world program.
+//   The hello world program loads at 600 and never exits the initialization routine
+//   This program uses the CIO to write "Hello World" using IOCB 0
+//   IOCB 0 is the default screen or editor i/o channel after a cold boot
+
+// This script runs under the DiaperGlu script engine.
+// The DiaperGlu script engine is compatible with the 1994 ANSI Forth draft standard.
+
+
+// You probably do not need to know Forth to use this cross assembler.
+
+
+// You can probably just replace the hello world example program below with your code.
+
+
+// But, if you are not familiar with Forth, there are some things you might like to know:
+
+//   Forth uses stacks like an HP calculator. 
+//   Paramaters for functions are usually passed on stacks.
+//   This means the parameters for functions are pushed onto a stack and the function name follows.
+//   Also, function names and parameters are called words. Whitespace must separate each word.
+//   Except for a few words like a line comment which consumes the rest of a text on a line, 
+//     all text is free format.
+
+
+// Explanation of some of the functions used in the assembly program part of the script:
+
+// // is a line comment.  
+( This is an inline comment. )
+//   CC,            means compile a byte onto the end of the current compile buffer
+//   CODE-U16,      means compile a 16 bit little endian value onto the end of the current compile buffer
+//   BARHERE        means push the current cross compile target's base relative address onto the data stack
+//   $" my string"  means push a string onto the string stack
+//   CONSTANT       means assign a number to a label, also known as a word name  
+//   HEX            tells the interpreter to expect hexadecimal numbers
+//   LENGTH$        gets the length of the top string on the string stack
+//   GETS$[ND]      given a 0 based depth, this gets the address and length of a string on the string stack 
+//                    at the indicated depth. The address is only valid until the next time you change the
+//                    contents of the string stack.
+//   CODE-S,        given an address and length, this compiles length bytes at the address onto the
+//                    end of the current compile buffer
+//   DROP$          removes the top string from the string stack
+//   600            means push the value 600 onto the data stack
+
+
+//   6502 opcode names in this script are the standard names except that they have a comma after them.
+//     This is mainly to avoid name conflicts with hexadecimal numbers and is a standard practice in
+//     Forth assemblers. Also, a comma at the end is a Forth assembler shorthand for compile.
+
+//   Addressing mode names use math standard notation instead of the usual 6502 assembler notation.
+//     I did this to make them easier to understand and remember.
+
+//   This example script uses Forth style branching like IF, and THEN,
+//   Forth style branching uses the stack to hold branch targets which eliminates the need for a lot
+//     of labels.
+
+//   The 6502 cross assembler is documented in             DG6502CrossAsm/ReadMe.txt
+//   The DiaperGlu script engine documentation root is in  DiaperGlu64/docs/index.htm
+
+//   The 6502 cross assembler is fully tested for the Atari version of the 6502. The test scripts
+//     I used are included with the assembler.
+
+
+// /////////////////////////////////////////////////
+// Boiler plate to initialize the cross assembler //
+// /////////////////////////////////////////////////
+
+
+// compile the 6502 cross assembler
 $" ../DG6502CrossAsm.dglu" INCLUDEFILE$
+
+// compile the .atr disk file maker
 $" BufToATR.dglu" INCLUDEFILE$
 
 
-HEX
-// CIO from https://www.atarimax.com/freenet/freenet_material/12.AtariLibrary/2.MiscellaneousTextFiles/showarticle.php?30
+HEX 
 
+// Make the Atari OS labels needed for this program
+//   You could also do:
+//     $" AtariLabels.dglu" INCLUDEFILE$ 
+//   but this loads all labels which is slower
+
+// CIO labels from https://www.atarimax.com/freenet/freenet_material/12.AtariLibrary/2.MiscellaneousTextFiles/showarticle.php?30
 0342 CONSTANT ICCOM // command ( writeappendeol=09 )
 0344 CONSTANT ICBAL // buffer address low   
 0345 CONSTANT ICBAH // buffer address hi
@@ -18,26 +95,34 @@ E456 CONSTANT CIOV
 0B CONSTANT ICCOMwrite
 
 
-// Make the disk image buffer
-HEX 600 NEWCROSSBUFFER  
+// Initialize the cross assembler. This makes the disk image buffer.
+//   600 NEWCROSSBUFFER means make a new current compile buffer using relative base address 600
+HEX 
+600 NEWCROSSBUFFER  
 
 
-// Atari810 Disk Header
-//   This program loads at 600 and never exits the initialization routine
-//   This program uses the CIO to write "Hello World" using IOCB 0 which is the screen or editor
-//     after boot
 
-( 0x600 ) 0 CC,           // probably has to be 0 (disassemble OS to find out for sure)
-OHERE CONSTANT oNumberOfBootSectors
+// /////////////////////////////////////////////////////
+// This is where your assembly language program goes. //
+// /////////////////////////////////////////////////////
+
+
+// Cross compile the Atari810 Disk Header 
+
+( 0x600 ) 0 CC,           // probably has to be 0 ( disassemble OS to find out for sure )
+OHERE CONSTANT oNumberOfBootSectors  // this makes a label so the script can automatically set the correct number of sectors
 ( 0x601 ) 1 CC,           // number of boot sectors
 ( 0x602 ) 600 CODE-U16,   // boot load address
 ( 0x604 ) 606 CODE-U16,   // boot init routine address
 
 ( 0x606 )
 
-// Branching over data
-// Using IF, assumes string length <= 7F because it uses a short branch
-//  For data larger than 7F use LONGIF, LONGTHEN,
+// Cross compile the Hello World program
+
+//   Branching over data
+//   Using IF, assumes data length is <= 7F because it uses a short branch
+//     For data larger than 7F use LONGIF, LONGTHEN,
+//   Using Forth style branch instructions eliminates the need for branch labels
 
 CLC, CS IF,
 
@@ -62,15 +147,37 @@ pHelloWorld 8 RSHIFT U8 LDA,  ICBAH [U] STA,
 HelloWorldSize FF AND U8 LDA,     ICBLL [U] STA,
 HelloWorldSize 8 RSHIFT U8 LDA,   ICBLH [U] STA, // not assuming sizehi is 0 so same code will work for future things 
 
+// Call the Atari OS CIO
 CIOV U16 JSR,
 
 // Busy Wait Forever
 BEGIN,
 CLC, CS UNTIL,
 
+
+// //////////////////////////////////
+// End of where your program goes. //
+// //////////////////////////////////
+
+
+// This calculates and sets the number of boot sectors automatically
+//   I didn't fully test this calculation...
 OHERE SectorSize ROUNDUP SectorSize /   // calculate number of sectors needed
 oNumberOfBootSectors PCURRENTCOMPILEBUFFER @ O>P C!
 
 
+// This converts the program into a .ATR disk image and saves it to a file
 $" HelloWorld.atr" PCURRENTCOMPILEBUFFER @ Buf>ATRFile
+
+
+// Explanation of some of the other functions used in this script:
+//   INCLUDEFILE$   means load and compile a file using the filename$ on top of the string stack
+//   OHERE          means get the current offset in the current compile buffer which is also it's length
+//   ROUNDUP        means round the first value up to the nearest multiple of the second value
+//   @              means get a 64 bit value from memory
+//   C!             means store a byte to memory
+//   O>P            means convert an offset bufferid to an address
+//   /              means divide the first value by the second value
+
+
 

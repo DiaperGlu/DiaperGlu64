@@ -1,4 +1,12 @@
 Changelog for DG6502CrossAsm
+  25 Sep 2023
+    Released v1.4
+
+  24 Sep 2023
+    Changed [[U8]+X] to [[U8+X]] in ReadMe.txt
+    Added more comments to MakeAtari8HelloWorldBootATR.dglu
+    Removed the test .atr file from the release
+
   06 July 2023
     Released v1.3
     Added test of nearly all instructions for Atari target

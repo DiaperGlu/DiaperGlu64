@@ -148,7 +148,7 @@ Addressing Modes: ( -- addrmode )
   Register targets          RA  X  Y
   Immediate targets         U8  U16
   Direct Memory targets     [U8] [U16]  [U8+X] [U16+X]  [U8+Y] [U16+Y]
-  Indirect Memory targets   [[U8]+X]  [[U8]+Y]
+  Indirect Memory targets   [[U8+X]]  [[U8]+Y]
   PC relative               PC+N8
 
 
