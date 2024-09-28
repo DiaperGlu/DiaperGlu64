@@ -1,0 +1,5709 @@
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2023 James Patrick Norris
+//
+//    This file is part of DGXtensaElfDotoMaker v1.0
+//
+//    DGXtensaElfDotoMaker v1.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DGXtensaElfDotoMaker v1.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DGXtensaElfDotoMaker v1.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// September 28, 2024         //
+// version 1.0                //
+// /////////////////////////////
+
+CRLF CRLF ." Loading DGXtensa Cross Assembler"
+$" DGXtensaCrossAsm.dglu" INCLUDEFILE$
+CRLF ." - Finished loading DGXtensa Cross Assembler"
+
+CRLF CRLF ." Loading export only elf .o maker for ESP32-S3"
+CRLF ." - (ESP32-S3 uses a picky format... not sure about others)"
+$" DGXtensaElfDotoMaker.dglu" INCLUDEFILE$
+CRLF ." - Finished loading export only elf .o maker for ESP32-S3"
+
+
+CRLF CRLF ." Cross compiling test for ESP32-S3"
+
+NEW-FLAT-OSYMBOL-BUF
+( -R- oldcurrentcompilebufid )
+( -EH- importelementid_importhlistid exportelementid_exporthlistid )
+( // current compile buffer set to new buffer )
+
+
+// *****************************
+//
+// return stack pointer is ar1
+// it seems C uses windowed call but I don't know the rotation amount...
+//   but I could probably figure it out :-) since a0 may hold the return address and rotation amount
+// XTENTRY is probably needed or you may overwrite some registers
+//   XTENTRY rotates the registers with the amount requested from the windowed call
+//   and allocates space for local variables 
+// subroutines must end with RETW.N or RETW
+//   RETW.N undoes the local variable allocation and register rotation
+// integer or floating point return value goes in ar2
+// subroutine entry offsets must be 32 bit aligned
+//
+// ******************************
+
+
+HEX
+OSYMBOL testXTMOVI
+
+  // : XTENTRY, ( s n12 -- ) 000036 FORMATSI12, ;
+  1 0 XTENTRY,   // rsp = ar1  framesize = 0 * 8  no locals needed
+
+  // : XTMOVI, ( t n12 -- ) 00A002 FORMATTI12, ;
+  37 2 XTMOVI,    // 37 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+  // from espelf.dglu. I should probably add a CODE-ALIGN to DiaperGlu
+
+OSYMBOL testXTMOVN
+
+  1 0 XTENTRY,    // rsp = ar1  framesize = 0*8
+
+  38 3 XTMOVI,    // 37 -> ar3 
+
+  3 2 XTMOV.N,     // ar3 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTJ
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 51 2 XTMOVI,   // 51 -> ar2
+
+  ( 6 ) 2 XTJ,         // skip next 3 byte instruction
+
+  ( 9 ) 32 2 XTMOVI,   // 38 -> ar2
+
+  ( 0C ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTS32INL32IN
+
+  ( 0 ) 1 1 XTENTRY,     // rsp = ar1  framesize = 1*8
+
+  ( 3 ) 27 3 XTMOVI,     // 27 -> ar3
+
+  ( 6 ) 3 1 0 XTS32I.N,  // ar3 -> [ar1]
+
+  ( 8 ) 32 2 XTMOVI,     // 38 -> ar2
+
+  ( 0B ) 1 0 2 XTL32I.N,  // [ar1] -> ar2
+
+  ( 0D ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBEQ
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) 31 3 XTMOVI,  // 31 -> ar3
+
+  ( 9 ) 2 3 2 XTBEQ,  // if ar2 == ar3 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBEQb
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 32 2 XTMOVI,  // 32 -> ar2
+
+  ( 6 ) 31 3 XTMOVI,  // 31 -> ar3
+
+  ( 9 ) 2 3 2 XTBEQ,  // if ar2 == ar3 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBEQc
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 30 2 XTMOVI,  // 30 -> ar2
+
+  ( 6 ) 31 3 XTMOVI,  // 31 -> ar3
+
+  ( 9 ) 2 3 2 XTBEQ,  // if ar2 == ar3 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBGE
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) 31 3 XTMOVI,  // 31 -> ar3
+
+  ( 9 ) 2 3 2 XTBGE,  // if ar2 == ar3 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBGEb
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 32 2 XTMOVI,  // 32 -> ar2
+
+  ( 6 ) 31 3 XTMOVI,  // 31 -> ar3
+
+  ( 9 ) 2 3 2 XTBGE,  // if ar2 == ar3 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBGEc
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 30 2 XTMOVI,  // 30 -> ar2
+
+  ( 6 ) 31 3 XTMOVI,  // 31 -> ar3
+
+  ( 9 ) 2 3 2 XTBGE,  // if ar2 == ar3 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBLT
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) 31 3 XTMOVI,  // 31 -> ar3
+
+  ( 9 ) 2 3 2 XTBLT,  // if ar2 == ar3 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBLTb
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 32 2 XTMOVI,  // 32 -> ar2
+
+  ( 6 ) 31 3 XTMOVI,  // 31 -> ar3
+
+  ( 9 ) 2 3 2 XTBLT,  // if ar2 == ar3 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBLTc
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 30 2 XTMOVI,  // 30 -> ar2
+
+  ( 6 ) 31 3 XTMOVI,  // 31 -> ar3
+
+  ( 9 ) 2 3 2 XTBLT,  // if ar2 == ar3 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBNE
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) 31 3 XTMOVI,  // 31 -> ar3
+
+  ( 9 ) 2 3 2 XTBNE,  // if ar2 == ar3 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBNEb
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 32 2 XTMOVI,  // 32 -> ar2
+
+  ( 6 ) 31 3 XTMOVI,  // 31 -> ar3
+
+  ( 9 ) 2 3 2 XTBNE,  // if ar2 == ar3 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBNEc
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 30 2 XTMOVI,  // 30 -> ar2
+
+  ( 6 ) 31 3 XTMOVI,  // 31 -> ar3
+
+  ( 9 ) 2 3 2 XTBNE,  // if ar2 == ar3 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBLTU
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) 31 3 XTMOVI,  // 31 -> ar3
+
+  ( 9 ) 2 3 2 XTBLTU, // if ar2 < ar3 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBLTUb
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) -1 2 XTMOVI,  // -1 -> ar2
+
+  ( 6 ) 31 3 XTMOVI,  // 31 -> ar3
+
+  ( 9 ) 2 3 2 XTBLTU, // if ar2 == ar3 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBLTUc
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 30 2 XTMOVI,  // 30 -> ar2
+
+  ( 6 ) 31 3 XTMOVI,  // 31 -> ar3
+
+  ( 9 ) 2 3 2 XTBLTU, // if ar2 == ar3 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBEQZ
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) 0 3 XTMOVI,   // 0 -> ar3
+
+  ( 9 ) 3 2 XTBEQZ,   // if ar3 == 0 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBEQZb
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) 1 3 XTMOVI,   // 1 -> ar3
+
+  ( 9 ) 3 2 XTBEQZ,   // if ar3 == 0 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBEQZc
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) -1 3 XTMOVI,  // -1 -> ar3
+
+  ( 9 ) 3 2 XTBEQZ,   // if ar3 == 0 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBGEZ
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) 0 3 XTMOVI,   // 0 -> ar3
+
+  ( 9 ) 3 2 XTBGEZ,   // if ar3 == 0 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBGEZb
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) 1 3 XTMOVI,   // 1 -> ar3
+
+  ( 9 ) 3 2 XTBGEZ,   // if ar3 == 0 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBGEZc
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) -1 3 XTMOVI,  // -1 -> ar3
+
+  ( 9 ) 3 2 XTBGEZ,   // if ar3 == 0 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBLTZ
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) 0 3 XTMOVI,   // 0 -> ar3
+
+  ( 9 ) 3 2 XTBLTZ,   // if ar3 == 0 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBLTZb
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) 1 3 XTMOVI,   // 1 -> ar3
+
+  ( 9 ) 3 2 XTBLTZ,   // if ar3 == 0 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBLTZc
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) -1 3 XTMOVI,  // -1 -> ar3
+
+  ( 9 ) 3 2 XTBLTZ,   // if ar3 == 0 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBNEZ
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) 0 3 XTMOVI,   // 0 -> ar3
+
+  ( 9 ) 3 2 XTBNEZ,   // if ar3 == 0 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBNEZb
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) 1 3 XTMOVI,   // 1 -> ar3
+
+  ( 9 ) 3 2 XTBNEZ,   // if ar3 == 0 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBNEZc
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) -1 3 XTMOVI,  // -1 -> ar3
+
+  ( 9 ) 3 2 XTBNEZ,   // if ar3 == 0 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+  ( -4 ) 11213141 CODE-U32,
+OSYMBOL testXTL32R
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) -2 2 XTL32R,  // 11213141 -> ar2
+
+  ( 6 ) XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4
+  ( 0 ) 52 2 XTMOVI,    // 52 -> ar2
+  ( 3 ) XTRET,
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTCALL0
+
+  ( 8 ) 1 0 XTENTRY,   // rsp = ar1  framesize = 0 * 8  no locals needed
+  ( 0B ) 0 3 XTMOV.N,  // ar0 -> ar3
+  ( 0D ) -4 XTCALL0,   // offset 0C is -1... so 0 shoud be -4
+  ( 0F ) 3 0 XTMOV.N,  // ar3 -> ar0 
+  ( 11 ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTADDN
+
+  ( 00 ) 1 0 XTENTRY,   // rsp = ar1  framesize = 0 * 8  no locals needed
+  ( 03 ) 11 2 XTMOVI,   // 11 -> ar2
+  ( 06 ) 23 3 XTMOVI,   // 23 -> ar3
+  ( 09 ) 2 3 2 XTADD.N, // srca + srcb -> dest
+  ( 11 ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTADDNb
+
+  ( 00 ) 1 0 XTENTRY,   // rsp = ar1  framesize = 0 * 8  no locals needed
+  ( 03 ) 11 2 XTMOVI,   // 11 -> ar2
+  ( 06 ) 23 3 XTMOVI,   // 23 -> ar3
+  ( 09 ) 3 2 2 XTADD.N, // srca + srcb -> dest
+  ( 11 ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTADD
+
+  ( 00 ) 1 0 XTENTRY,   // rsp = ar1  framesize = 0 * 8  no locals needed
+  ( 03 ) 11 2 XTMOVI,   // 11 -> ar2
+  ( 06 ) 23 3 XTMOVI,   // 23 -> ar3
+  ( 09 ) 2 3 2 XTADD,   // srca + srcb -> dest
+  ( 11 ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTADDb
+
+  ( 00 ) 1 0 XTENTRY,   // rsp = ar1  framesize = 0 * 8  no locals needed
+  ( 03 ) 11 2 XTMOVI,   // 11 -> ar2
+  ( 06 ) 23 3 XTMOVI,   // 23 -> ar3
+  ( 09 ) 3 2 2 XTADD,   // srca + srcb -> dest
+  ( 11 ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTADDI
+
+  ( 00 ) 1 0 XTENTRY,   // rsp = ar1  framesize = 0 * 8  no locals needed
+  ( 03 ) 11 2 XTMOVI,   // 11 -> ar2
+  ( 06 ) 23 3 XTMOVI,   // 23 -> ar3
+  ( 09 ) 3 43 2 XTADDI, // ar3 + 43 -> ar2
+  ( 11 ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTADDIN
+
+  ( 00 ) 1 0 XTENTRY,    // rsp = ar1  framesize = 0 * 8  no locals needed
+  ( 03 ) 11 2 XTMOVI,    // 11 -> ar2
+  ( 06 ) 23 3 XTMOVI,    // 23 -> ar3
+  ( 09 ) 3 0 2 XTADDI.N, // ar3 + -1 -> ar2
+  ( 11 ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTADDMI
+
+  ( 00 ) 1 0 XTENTRY,    // rsp = ar1  framesize = 0 * 8  no locals needed
+  ( 03 ) 11 2 XTMOVI,    // 11 -> ar2
+  ( 06 ) 423 3 XTMOVI,   // 423 -> ar3
+  ( 09 ) 3 43 2 XTADDMI, // ar3 + 43 -> ar2
+  ( 11 ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTADDX2
+
+  ( 00 ) 1 0 XTENTRY,   // rsp = ar1  framesize = 0 * 8  no locals needed
+  ( 03 ) 11 2 XTMOVI,   // 11 -> ar2
+  ( 06 ) 23 3 XTMOVI,   // 23 -> ar3
+  ( 09 ) 2 3 2 XTADDX2, // ar2 + 2*ar3 -> ar2
+  ( 11 ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTADDX4
+
+  ( 00 ) 1 0 XTENTRY,   // rsp = ar1  framesize = 0 * 8  no locals needed
+  ( 03 ) 11 2 XTMOVI,   // 11 -> ar2
+  ( 06 ) 23 3 XTMOVI,   // 23 -> ar3
+  ( 09 ) 2 3 2 XTADDX4, // ar2 + 4*ar3 -> ar2  11 + 8C
+  ( 11 ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTADDX8
+
+  ( 00 ) 1 0 XTENTRY,   // rsp = ar1  framesize = 0 * 8  no locals needed
+  ( 03 ) 11 2 XTMOVI,   // 11 -> ar2
+  ( 06 ) 23 3 XTMOVI,   // 23 -> ar3
+  ( 09 ) 2 3 2 XTADDX8, // ar2 + 8*ar3 -> ar2  11 + 118
+  ( 11 ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTAND
+
+  ( 00 ) 1 0 XTENTRY,   // rsp = ar1  framesize = 0 * 8  no locals needed
+  ( 03 ) 11 2 XTMOVI,   // 11 -> ar2
+  ( 06 ) 23 3 XTMOVI,   // 23 -> ar3
+  ( 09 ) 2 3 2 XTAND,   // ar2 and ar3 -> ar2  11 and 23 -> 01
+  ( 11 ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTOR
+
+  ( 00 ) 1 0 XTENTRY,   // rsp = ar1  framesize = 0 * 8  no locals needed
+  ( 03 ) 11 2 XTMOVI,   // 11 -> ar2
+  ( 06 ) 23 3 XTMOVI,   // 23 -> ar3
+  ( 09 ) 2 3 2 XTOR,   // ar2 and ar3 -> ar2  11 or 23 -> 33
+  ( 11 ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTXOR
+
+  ( 00 ) 1 0 XTENTRY,   // rsp = ar1  framesize = 0 * 8  no locals needed
+  ( 03 ) 11 2 XTMOVI,   // 11 -> ar2
+  ( 06 ) 23 3 XTMOVI,   // 23 -> ar3
+  ( 09 ) 2 3 2 XTXOR,   // ar2 and ar3 -> ar2  11 or 23 -> 32
+  ( 11 ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTSUB
+
+  ( 00 ) 1 0 XTENTRY,   // rsp = ar1  framesize = 0 * 8  no locals needed
+  ( 03 ) 11 2 XTMOVI,   // 11 -> ar2
+  ( 06 ) 23 3 XTMOVI,   // 23 -> ar3
+  ( 09 ) 3 2 2 XTSUB,   // ar3 - ar2 -> ar2  23 - 11 -> 12 
+  ( 11 ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTSUBX2
+
+  ( 00 ) 1 0 XTENTRY,   // rsp = ar1  framesize = 0 * 8  no locals needed
+  ( 03 ) 11 2 XTMOVI,   // 11 -> ar2
+  ( 06 ) 23 3 XTMOVI,   // 23 -> ar3
+  ( 09 ) 3 2 2 XTSUBX2, // ar3 - ar2 -> ar2  2*23 - 11 -> 35 
+  ( 11 ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTSUBX4
+
+  ( 00 ) 1 0 XTENTRY,   // rsp = ar1  framesize = 0 * 8  no locals needed
+  ( 03 ) 11 2 XTMOVI,   // 11 -> ar2
+  ( 06 ) 23 3 XTMOVI,   // 23 -> ar3
+  ( 09 ) 3 2 2 XTSUBX4, // ar3 - ar2 -> ar2  4*23 - 11 -> 7B 
+  ( 11 ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTSUBX8
+
+  ( 00 ) 1 0 XTENTRY,   // rsp = ar1  framesize = 0 * 8  no locals needed
+  ( 03 ) 11 2 XTMOVI,   // 11 -> ar2
+  ( 06 ) 23 3 XTMOVI,   // 23 -> ar3
+  ( 09 ) 3 2 2 XTSUBX8, // ar3 - ar2 -> ar2  8*23 - 11 -> 107 
+  ( 11 ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMIN
+
+  ( 00 ) 1 0 XTENTRY,   // rsp = ar1  framesize = 0 * 8  no locals needed
+  ( 03 ) 11 2 XTMOVI,   // 11 -> ar2
+  ( 06 ) -23 3 XTMOVI,  // -23 -> ar3
+  ( 09 ) 3 2 2 XTMIN,   // ar3 min ar2 -> ar2  -23 min 11 -> -23 
+  ( 11 ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMINU
+
+  ( 00 ) 1 0 XTENTRY,   // rsp = ar1  framesize = 0 * 8  no locals needed
+  ( 03 ) 11 2 XTMOVI,   // 11 -> ar2
+  ( 06 ) -23 3 XTMOVI,  // -23 -> ar3
+  ( 09 ) 3 2 2 XTMINU,  // ar3 umin ar2 -> ar2  -23 min 11 -> 11 
+  ( 11 ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMAX
+
+  ( 00 ) 1 0 XTENTRY,   // rsp = ar1  framesize = 0 * 8  no locals needed
+  ( 03 ) 11 2 XTMOVI,   // 11 -> ar2
+  ( 06 ) -23 3 XTMOVI,  // -23 -> ar3
+  ( 09 ) 3 2 2 XTMAX,   // ar3 min ar2 -> ar2  -23 max 11 -> 11 
+  ( 11 ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMAXU
+
+  ( 00 ) 1 0 XTENTRY,   // rsp = ar1  framesize = 0 * 8  no locals needed
+  ( 03 ) 11 2 XTMOVI,   // 11 -> ar2
+  ( 06 ) -23 3 XTMOVI,  // -23 -> ar3
+  ( 09 ) 3 2 2 XTMAXU,  // ar3 umax ar2 -> ar2  -23 umax 11 -> -23 
+  ( 11 ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL getBaseAddress
+
+  ( 00 ) 1 0 XTENTRY,   // rsp = ar1  framesize = 0 * 8  no locals needed
+  ( 03 ) 0 3 XTMOV.N,   // a0 -> a3  save return address
+  ( 05 ) 0 XTCALL0,     // offset 6 and 4 is -1... so 0C shoud be 1
+  ( 08 ) OHERE NEGATE   // a0 return address should be for this offset
+  ( 08 ) ( basedisplacement -- ) 2 XTMOVI, // basedisplacement -> a2
+                                           // assumes getBaseAddress is near enough to start
+                                           // and that basedisplacement fits in 12 bit signed value
+  ( 0B ) 0 2 2 XTADD,   // a0 + a2 -> a2
+  ( 0E ) 3 0 XTMOV.N,   // a3 -> a0  recover return address
+  ( 10 ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOV
+
+  1 0 XTENTRY,    // rsp = ar1  framesize = 0*8
+
+  39 3 XTMOVI,    // 39 -> ar3 
+
+  3 2 XTMOV,      // ar3 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTNOP
+
+  1 0 XTENTRY,    // rsp = ar1  framesize = 0*8
+
+  XTNOP,
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTABS
+
+  1 0 XTENTRY,    // rsp = ar1  framesize = 0*8
+
+  -51 3 XTMOVI,   // -51 -> ar3 
+
+  3 2 XTABS,      // |ar3| -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTUFLOATS
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+
+  2 2 XTMOVI,       // 2 -> ar2 
+
+  2 0 0 XTUFLOAT.S, // ar2 * (2^0) -> fr0
+
+  0 1 0 XTSSI,      // fr0 -> [ar1 + 0]
+
+  1 0 2 XTL32I.N,   // [ar1] -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMUL16S
+
+  1 0 XTENTRY,   // rsp = ar1  framesize = 0*8
+
+  -2 3 XTMOVI,   // -2 -> ar3 
+
+  3 2 XTMOVI,    // 3 -> ar2 
+
+  3 2 2 XTMUL16S, // ar2 * ar3 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMUL16U
+
+  1 0 XTENTRY,   // rsp = ar1  framesize = 0*8
+
+  2 3 XTMOVI,    // 2 -> ar3 
+
+  3 2 XTMOVI,    // 3 -> ar2 
+
+  3 2 2 XTMUL16U, // ar2 * ar3 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTSALT
+
+  1 0 XTENTRY,   // rsp = ar1  framesize = 0*8
+
+  2 3 XTMOVI,    // 2 -> ar3 
+
+  -3 2 XTMOVI,   // -3 -> ar2 
+
+  2 3 2 XTSALT,  // if ar2 < ar3 then 1 -> ar2 else 0 -> ar2 
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTSALTU
+
+  1 0 XTENTRY,   // rsp = ar1  framesize = 0*8
+
+  2 3 XTMOVI,    // 2 -> ar3 
+
+  -3 2 XTMOVI,   // -3 -> ar2 
+
+  2 3 2 XTSALTU, // if ar2 U< ar3 then 1 -> ar2 else 0 -> ar2 
+
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTSEXT
+
+  1 0 XTENTRY,   // rsp = ar1  framesize = 0*8
+
+  80 3 XTMOVI,   // 80 -> ar3 
+
+  -1 2 XTMOVI,    // -1 -> ar2 
+
+  3 0 2 XTSEXT,  // ar3 with bit0+7 extended -> ar2
+
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTSLLI
+
+  1 0 XTENTRY,   // rsp = ar1  framesize = 0*8
+
+  80 3 XTMOVI,   // 80 -> ar3 
+
+  -1 2 XTMOVI,    // -1 -> ar2 
+
+  3 1C 2 XTSLLI,  // ar3 shifted left 32-28 bits -> ar2
+
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTNEG
+
+  1 0 XTENTRY,   // rsp = ar1  framesize = 0*8
+
+  -7E 3 XTMOVI,  // -7E -> ar3 
+
+  -1 2 XTMOVI,   // -1 -> ar2 
+
+  3 2 XTNEG,     // 0 - ar3 -> ar2 ( should be 7E )
+
+  XTRETW.N,
+
+
+// HEX
+// PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+// OSYMBOL testXTDEPBITS // probably not supported on esp32s3...
+
+//  1 0 XTENTRY,   // rsp = ar1  framesize = 0*8
+
+//  18 3 XTMOVI,   // 18 -> ar3 
+
+//  -1 2 XTMOVI,   // -1 -> ar2 
+
+//  3 3 4 2 XTDEPBITS,  // put 18 into position 0C of ar2
+
+//  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTCEILS
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 1*8
+
+  3 2 XTMOVI,       // 3 -> ar2
+
+  2 1 1 XTUFLOAT.S, // ar2 / (2^1) -> fr1  so fr1 should be 1.5
+
+  1 0 2 XTCEIL.S,   // fr1 * (2^0) rounded towards +inf -> ar2 // ar2 should be 2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTADDS
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 0 0 XTUFLOAT.S, // ar2 / (2^0) -> fr0  so fr0 should be 2.0
+
+  3 2 XTMOVI,       // 3 -> ar2
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 3.0
+
+  0 1 2 XTADD.S,    // fr0 + fr1 -> fr2
+
+  2 1 0 XTSSI,      // fr2 -> [ar1 + 0]
+
+  1 0 2 XTL32I.N,   // [ar1 + 0] -> ar2
+
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVEQZ
+
+  1 1 XTENTRY,     // rsp = ar1  framesize = 1*8
+
+  0 1 0 XTS32I.N,  // ar0 -> [ar1 + 0]
+
+  29 3 XTMOVI,     // 29-> ar3 
+
+  -1 2 XTMOVI,     // -1 -> ar2 
+
+  0 0 XTMOVI,      // 0 -> ar0
+
+  3 2 0 XTMOVEQZ,  // if ar0 == 0 then ar3 -> ar2 so 29 -> ar2
+
+  1 0 0 XTL32I.N,  // [ar1 + 0] -> ar0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVEQZb
+
+  1 1 XTENTRY,     // rsp = ar1  framesize = 1*8
+
+  0 1 0 XTS32I.N,  // ar0 -> [ar1 + 0]
+
+  29 3 XTMOVI,     // 29 -> ar3 
+
+  -1 2 XTMOVI,     // -1 -> ar2 
+
+  1 0 XTMOVI,      // 1 -> ar0
+
+  3 2 0 XTMOVEQZ,  // if ar0 == 0 then ar3 -> ar2 so ar2 is still -1
+
+  1 0 0 XTL32I.N,  // [ar1 + 0] -> ar0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVEQZc
+
+  1 1 XTENTRY,     // rsp = ar1  framesize = 1*8
+
+  0 1 0 XTS32I.N,  // ar0 -> [ar1 + 0]
+
+  29 3 XTMOVI,     // 29 -> ar3 
+
+  -1 2 XTMOVI,     // -1 -> ar2 
+
+  -1 0 XTMOVI,     // -1 -> ar0
+
+  3 2 0 XTMOVEQZ,  // if ar0 == 0 then ar3 -> ar2 so ar2 is still -1
+
+  1 0 0 XTL32I.N,  // [ar1 + 0] -> ar0
+
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVGEZ
+
+  1 1 XTENTRY,     // rsp = ar1  framesize = 1*8
+
+  0 1 0 XTS32I.N,  // ar0 -> [ar1 + 0]
+
+  29 3 XTMOVI,     // 29-> ar3 
+
+  -1 2 XTMOVI,     // -1 -> ar2 
+
+  0 0 XTMOVI,      // 0 -> ar0
+
+  3 2 0 XTMOVGEZ,  // if ar0 >= 0 then ar3 -> ar2 so 29 -> ar2
+
+  1 0 0 XTL32I.N,  // [ar1 + 0] -> ar0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVGEZb
+
+  1 1 XTENTRY,     // rsp = ar1  framesize = 1*8
+
+  0 1 0 XTS32I.N,  // ar0 -> [ar1 + 0]
+
+  29 3 XTMOVI,     // 29 -> ar3 
+
+  -1 2 XTMOVI,     // -1 -> ar2 
+
+  1 0 XTMOVI,      // 1 -> ar0
+
+  3 2 0 XTMOVGEZ,  // if ar0 >= 0 then ar3 -> ar2 so 29 -> ar2
+
+  1 0 0 XTL32I.N,  // [ar1 + 0] -> ar0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVGEZc
+
+  1 1 XTENTRY,     // rsp = ar1  framesize = 1*8
+
+  0 1 0 XTS32I.N,  // ar0 -> [ar1 + 0]
+
+  29 3 XTMOVI,     // 29 -> ar3 
+
+  -1 2 XTMOVI,     // -1 -> ar2 
+
+  -1 0 XTMOVI,     // -1 -> ar0
+
+  3 2 0 XTMOVGEZ,  // if ar0 >= 0 then ar3 -> ar2 so ar2 is still -1
+
+  1 0 0 XTL32I.N,  // [ar1 + 0] -> ar0
+
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVLTZ
+
+  1 1 XTENTRY,     // rsp = ar1  framesize = 1*8
+
+  0 1 0 XTS32I.N,  // ar0 -> [ar1 + 0]
+
+  29 3 XTMOVI,     // 29-> ar3 
+
+  -1 2 XTMOVI,     // -1 -> ar2 
+
+  0 0 XTMOVI,      // 0 -> ar0
+
+  3 2 0 XTMOVLTZ,  // if ar0 < 0 then ar3 -> ar2 so ar2 is still -1
+
+  1 0 0 XTL32I.N,  // [ar1 + 0] -> ar0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVLTZb
+
+  1 1 XTENTRY,     // rsp = ar1  framesize = 1*8
+
+  0 1 0 XTS32I.N,  // ar0 -> [ar1 + 0]
+
+  29 3 XTMOVI,     // 29 -> ar3 
+
+  -1 2 XTMOVI,     // -1 -> ar2 
+
+  1 0 XTMOVI,      // 1 -> ar0
+
+  3 2 0 XTMOVLTZ,  // if ar0 < 0 then ar3 -> ar2 so ar2 is still -1
+
+  1 0 0 XTL32I.N,  // [ar1 + 0] -> ar0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVLTZc
+
+  1 1 XTENTRY,     // rsp = ar1  framesize = 1*8
+
+  0 1 0 XTS32I.N,  // ar0 -> [ar1 + 0]
+
+  29 3 XTMOVI,     // 29 -> ar3 
+
+  -1 2 XTMOVI,     // -1 -> ar2 
+
+  -1 0 XTMOVI,     // -1 -> ar0
+
+  3 2 0 XTMOVLTZ,  // if ar0 < 0 then ar3 -> ar2 so 29 -> ar2
+
+  1 0 0 XTL32I.N,  // [ar1 + 0] -> ar0
+
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVNEZ
+
+  1 1 XTENTRY,     // rsp = ar1  framesize = 1*8
+
+  0 1 0 XTS32I.N,  // ar0 -> [ar1 + 0]
+
+  29 3 XTMOVI,     // 29-> ar3 
+
+  -1 2 XTMOVI,     // -1 -> ar2 
+
+  0 0 XTMOVI,      // 0 -> ar0
+
+  3 2 0 XTMOVNEZ,  // if ar0 <> 0 then ar3 -> ar2 so ar2 is still -1
+
+  1 0 0 XTL32I.N,  // [ar1 + 0] -> ar0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVNEZb
+
+  1 1 XTENTRY,     // rsp = ar1  framesize = 1*8
+
+  0 1 0 XTS32I.N,  // ar0 -> [ar1 + 0]
+
+  29 3 XTMOVI,     // 29 -> ar3 
+
+  -1 2 XTMOVI,     // -1 -> ar2 
+
+  1 0 XTMOVI,      // 1 -> ar0
+
+  3 2 0 XTMOVNEZ,  // if ar0 < 0 then ar3 -> ar2 so 29 -> ar2
+
+  1 0 0 XTL32I.N,  // [ar1 + 0] -> ar0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVNEZc
+
+  1 1 XTENTRY,     // rsp = ar1  framesize = 1*8
+
+  0 1 0 XTS32I.N,  // ar0 -> [ar1 + 0]
+
+  29 3 XTMOVI,     // 29 -> ar3 
+
+  -1 2 XTMOVI,     // -1 -> ar2 
+
+  -1 0 XTMOVI,     // -1 -> ar0
+
+  3 2 0 XTMOVNEZ,  // if ar0 < 0 then ar3 -> ar2 so 29 -> ar2
+
+  1 0 0 XTL32I.N,  // [ar1 + 0] -> ar0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTRFR
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2 
+
+  2 0 0 XTUFLOAT.S, // ar2 * (2^0) -> fr0
+
+  0 2 XTRFR,        // fr0 -> ar2  so ar2 is 40000000
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTWFR
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2 
+
+  0 3 XTMOVI,       // 0 -> ar3
+
+  2 0 0 XTUFLOAT.S, // ar2 * (2^0) -> fr0
+
+  3 0 XTWFR,        // ar3 -> fr0
+
+  0 2 XTRFR,        // fr0 -> ar2  so ar2 is 0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMADDS
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 0 0 XTUFLOAT.S, // ar2 / (2^0) -> fr0  so fr0 should be 2.0
+
+  3 2 XTMOVI,       // 3 -> ar2
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 3.0
+
+  1 2 XTMOVI,       // 1 -> ar2
+
+  2 0 2 XTUFLOAT.S, // ar2 / (2^0) -> fr2  so fr2 should be 1.0
+
+  0 1 2 XTMADD.S,   // fr0 * fr1 + fr2 -> fr2 so fr2 should be 7.0
+
+  2 1 0 XTSSI,      // fr2 -> [ar1 + 0]
+
+  1 0 2 XTL32I.N,   // [ar1 + 0] -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMADDNS
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 0 0 XTUFLOAT.S, // ar2 / (2^0) -> fr0  so fr0 should be 2.0
+
+  3 2 XTMOVI,       // 3 -> ar2
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 3.0
+
+  1 2 XTMOVI,       // 1 -> ar2
+
+  2 0 2 XTUFLOAT.S, // ar2 / (2^0) -> fr2  so fr2 should be 1.0
+
+  0 1 2 XTMADDN.S,  // fr0 * fr1 + fr2 -> fr2 so fr2 should be 7.0
+
+  2 1 0 XTSSI,      // fr2 -> [ar1 + 0]
+
+  1 0 2 XTL32I.N,   // [ar1 + 0] -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVS
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 0 0 XTUFLOAT.S, // ar2 / (2^0) -> fr0  so fr0 should be 2.0
+
+  3 2 XTMOVI,       // 3 -> ar2
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 3.0
+
+  0 1 XTMOV.S,      // fr0  -> fr1
+
+  1 1 0 XTSSI,      // fr1 -> [ar1 + 0]
+
+  1 0 2 XTL32I.N,   // [ar1 + 0] -> ar2
+
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVEQZS
+
+  1 0 XTENTRY,       // rsp = ar1  framesize = 0*8
+
+  29 2 XTMOVI,       // 29 -> ar2 
+  
+  2 0 0 XTUFLOAT.S,  // ar2 / (2^0) -> fr0  so fr0 should be 41.0
+
+  7 2 XTMOVI,        // 7 -> ar2 
+
+  2 0 1 XTUFLOAT.S,  // ar2 / (2^0) -> fr1  so fr1 should be 7.0
+
+  0 2 XTMOVI,        // 0 -> ar2
+
+  0 1 2 XTMOVEQZ.S,  // if ar2 == 0 then fr0 -> fr1 so 41.0 -> fr1
+
+  1 2 XTRFR,         // fr1 -> ar2 
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVEQZSb
+
+  1 0 XTENTRY,       // rsp = ar1  framesize = 0*8
+
+  29 2 XTMOVI,       // 29-> ar2 
+  
+  2 0 0 XTUFLOAT.S,  // ar2 / (2^0) -> fr0  so fr0 should be 41.0
+
+  7 2 XTMOVI,        // 7 -> ar2 
+
+  2 0 1 XTUFLOAT.S,  // ar2 / (2^0) -> fr1  so fr1 should be 7.0
+
+  1 2 XTMOVI,        // 1 -> ar2
+
+  0 1 2 XTMOVEQZ.S,  // if ar2 == 0 then fr0 -> fr1 so fr1 stays 7.0
+
+  1 2 XTRFR,         // fr1 -> ar2 
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVEQZSc
+
+  1 0 XTENTRY,       // rsp = ar1  framesize = 0*8
+
+  29 2 XTMOVI,       // 29 -> ar2 
+  
+  2 0 0 XTUFLOAT.S,  // ar2 / (2^0) -> fr0  so fr0 should be 41.0
+
+  7 2 XTMOVI,        // 7 -> ar2 
+
+  2 0 1 XTUFLOAT.S,  // ar2 / (2^0) -> fr1  so fr1 should be 7.0
+
+  -1 2 XTMOVI,       // -1 -> ar2
+
+  0 1 2 XTMOVEQZ.S,  // if ar2 == 0 then fr0 -> fr1 so fr1 stays 7.0
+
+  1 2 XTRFR,         // fr1 -> ar2 
+
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVGEZS
+
+  1 0 XTENTRY,       // rsp = ar1  framesize = 0*8
+
+  29 2 XTMOVI,       // 29 -> ar2 
+  
+  2 0 0 XTUFLOAT.S,  // ar2 / (2^0) -> fr0  so fr0 should be 41.0
+
+  7 2 XTMOVI,        // 7 -> ar2 
+
+  2 0 1 XTUFLOAT.S,  // ar2 / (2^0) -> fr1  so fr1 should be 7.0
+
+  0 2 XTMOVI,        // 0 -> ar2
+
+  0 1 2 XTMOVGEZ.S,  // if ar0 >= 0 then fr0 -> fr1 so 41.0 -> fr1
+
+  1 2 XTRFR,         
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVGEZSb
+
+  1 0 XTENTRY,       // rsp = ar1  framesize = 0*8
+
+  29 2 XTMOVI,       // 29-> ar2 
+  
+  2 0 0 XTUFLOAT.S,  // ar2 / (2^0) -> fr0  so fr0 should be 41.0
+
+  7 2 XTMOVI,        // 7 -> ar2 
+
+  2 0 1 XTUFLOAT.S,  // ar2 / (2^0) -> fr1  so fr1 should be 7.0
+
+  1 2 XTMOVI,        // 1 -> ar2
+
+  0 1 2 XTMOVGEZ.S,  // if ar0 >= 0 then fr0 -> fr1 so 41.0 -> fr1
+
+  1 2 XTRFR,
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVGEZSc
+
+  1 0 XTENTRY,       // rsp = ar1  framesize = 0*8
+
+  29 2 XTMOVI,       // 29-> ar2 
+  
+  2 0 0 XTUFLOAT.S,  // ar2 / (2^0) -> fr0  so fr0 should be 41.0
+
+  7 2 XTMOVI,        // 7 -> ar2 
+
+  2 0 1 XTUFLOAT.S,  // ar2 / (2^0) -> fr1  so fr1 should be 7.0
+
+  -1 2 XTMOVI,       // -1 -> ar2
+
+  0 1 2 XTMOVGEZ.S,  // if ar0 >= 0 then fr0 -> fr1 so fr1 stays 7.0
+
+  1 2 XTRFR,
+
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVLTZS
+
+  1 0 XTENTRY,       // rsp = ar1  framesize = 0*8
+
+  29 2 XTMOVI,       // 29-> ar2 
+  
+  2 0 0 XTUFLOAT.S,  // ar2 / (2^0) -> fr0  so fr0 should be 41.0
+
+  7 2 XTMOVI,        // 7 -> ar2 
+
+  2 0 1 XTUFLOAT.S,  // ar2 / (2^0) -> fr1  so fr1 should be 7.0
+
+  0 2 XTMOVI,        // 0 -> ar2
+
+  0 1 2 XTMOVLTZ.S,  // if ar0 < 0 then fr0 -> fr1 so fr1 stays 7.0
+
+  1 2 XTRFR,
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVLTZSb
+
+  1 0 XTENTRY,       // rsp = ar1  framesize = 0*8
+
+  29 2 XTMOVI,       // 29-> ar2 
+  
+  2 0 0 XTUFLOAT.S,  // ar2 / (2^0) -> fr0  so fr0 should be 41.0
+
+  7 2 XTMOVI,        // 7 -> ar2 
+
+  2 0 1 XTUFLOAT.S,  // ar2 / (2^0) -> fr1  so fr1 should be 7.0
+
+  1 2 XTMOVI,        // 1 -> ar2
+
+  0 1 2 XTMOVLTZ.S,  // if ar0 < 0 then fr0 -> fr1 so fr1 stays 7.0
+
+  1 2 XTRFR,
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVLTZSc
+
+  1 0 XTENTRY,       // rsp = ar1  framesize = 0*8
+
+  29 2 XTMOVI,       // 29-> ar2 
+  
+  2 0 0 XTUFLOAT.S,  // ar2 / (2^0) -> fr0  so fr0 should be 41.0
+
+  7 2 XTMOVI,        // 7 -> ar2 
+
+  2 0 1 XTUFLOAT.S,  // ar2 / (2^0) -> fr1  so fr1 should be 7.0
+
+  -1 2 XTMOVI,       // -1 -> ar2
+
+  0 1 2 XTMOVLTZ.S,  // if ar0 < 0 then fr0 -> fr1 so 41.0 -> fr1
+
+  1 2 XTRFR,
+
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVNEZS
+
+  1 0 XTENTRY,       // rsp = ar1  framesize = 0*8
+
+  29 2 XTMOVI,       // 29 -> ar2 
+  
+  2 0 0 XTUFLOAT.S,  // ar2 / (2^0) -> fr0  so fr0 should be 41.0
+
+  7 2 XTMOVI,        // 7 -> ar2 
+
+  2 0 1 XTUFLOAT.S,  // ar2 / (2^0) -> fr1  so fr1 should be 7.0
+
+  0 2 XTMOVI,        // 0 -> ar2
+
+  0 1 2 XTMOVNEZ.S,  // if ar0 <> 0 then fr0 -> fr1 so fr1 stays 41.0
+
+  1 2 XTRFR,
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVNEZSb
+
+  1 0 XTENTRY,       // rsp = ar1  framesize = 0*8
+
+  29 2 XTMOVI,       // 0x29-> ar2 
+  
+  2 0 0 XTUFLOAT.S,  // ar2 / (2^0) -> fr0  so fr0 should be 41.0
+
+  7 2 XTMOVI,        // 7 -> ar2 
+
+  2 0 1 XTUFLOAT.S,  // ar2 / (2^0) -> fr1  so fr1 should be 7
+
+  1 2 XTMOVI,        // 1 -> ar2
+
+  0 1 2 XTMOVNEZ.S,  // if ar0 <> 0 then fr0 -> fr1 so 41.0 -> fr1
+
+  1 2 XTRFR,
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVNEZSc
+
+  1 0 XTENTRY,       // rsp = ar1  framesize = 0*8
+
+  29 2 XTMOVI,       // 0x29 -> ar2 
+  
+  2 0 0 XTUFLOAT.S,  // ar2 / (2^0) -> fr0  so fr0 should be 41.0
+
+  7 2 XTMOVI,        // 7 -> ar2 
+
+  2 0 1 XTUFLOAT.S,  // ar2 / (2^0) -> fr1  so fr1 should be 7
+
+  -1 2 XTMOVI,       // -1 -> ar2
+
+  0 1 2 XTMOVNEZ.S,  // if ar0 <> 0 then fr0 -> fr1 so 41.0 -> fr1
+
+  1 2 XTRFR,
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMSUBS
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 0 0 XTUFLOAT.S, // ar2 / (2^0) -> fr0  so fr0 should be 2.0
+
+  3 2 XTMOVI,       // 3 -> ar2
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 3.0
+
+  1 2 XTMOVI,       // 1 -> ar2
+
+  2 0 2 XTUFLOAT.S, // ar2 / (2^0) -> fr2  so fr2 should be 1.0
+
+  0 1 2 XTMSUB.S,   // fr0 * fr1 + fr2 -> fr2 so fr2 should be 5.0
+
+  2 1 0 XTSSI,      // fr2 -> [ar1 + 0]
+
+  1 0 2 XTL32I.N,   // [ar1 + 0] -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMULL
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+
+  0 1 0 XTS32I.N,   // ar0 -> [ar1 + 0]
+
+  2 0 XTMOVI,       // 2 -> ar0
+
+  3 3 XTMOVI,       // 3 -> ar3
+
+  0 3 2 XTMULL,     // ar0 * ar3 -> ar2 so ar2 should be 6.0
+
+  1 0 0 XTL32I.N,   // [ar1 + 0] -> ar0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMULSH
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+
+  0 1 0 XTS32I.N,   // ar0 -> [ar1 + 0]
+
+  -2 0 XTMOVI,      // -2 -> ar0
+
+  3 3 XTMOVI,       // 3 -> ar3
+
+  0 3 2 XTMULSH,    // ar0 * ar3 shi-> ar2 so ar2 should be -1.0 
+
+  1 0 0 XTL32I.N,   // [ar1 + 0] -> ar0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMULUH
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+
+  0 1 0 XTS32I.N,   // ar0 -> [ar1 + 0]
+
+  2 0 XTMOVI,       // 2 -> ar0 
+
+  -3 3 XTMOVI,      // 3 -> ar3 but will be treated as 0xfffffffd
+
+  0 3 2 XTMULUH,    // ar0 * ar3 uhi-> ar2 so ar2 should be 0x1 of 0x1fffffffa 
+
+  1 0 0 XTL32I.N,   // [ar1 + 0] -> ar0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTSLL
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  1E 2 XTMOVI,      // 1E -> ar2  shift amount 30 decimal
+
+  2 SAR XTWSR,      // ar2 -> sr[SAR] 
+
+  3 3 XTMOVI,       // 3 -> ar3
+
+  3 2 XTSLL,        // ar3 <<32-sar -> ar2  so ar is 3 * 4
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTRSR
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  1E 3 XTMOVI,      // 1E -> ar3  shift amount 30 decimal
+
+  3 SAR XTWSR,      // ar3 -> sr[SAR] 
+
+  SAR 2 XTRSR,      // sr[SAR] -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTOEQS
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 0 0 XTUFLOAT.S, // ar2 / (2^0) -> fr0  so fr0 should be 2.0
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 2.0
+
+  0 1 2 XTOEQ.S,    // if fr0 == fr1 then 1 -> br[2] else 0 -> br[2]  so 1->br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2
+
+  4 3 XTMOVI,       // 4 -> ar3
+
+  2 3 2 XTAND,      // ar2 and ar3 -> ar2  so 4 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTOEQSb
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 0 0 XTUFLOAT.S, // ar2 / (2^0) -> fr0  so fr0 should be 2.0
+
+  3 2 XTMOVI,
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 3.0
+
+  0 1 2 XTOEQ.S,    // if fr0 == fr1 then 1 -> br[2] else 0 -> br[2]  so 0->br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2
+
+  4 3 XTMOVI,       // 4 -> ar3
+
+  2 3 2 XTAND,      // ar2 and ar3 -> ar2  so 0 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTOEQSc
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 0 0 XTUFLOAT.S, // ar2 / (2^0) -> fr0  so fr0 should be 2.0
+
+  1 2 XTMOVI,
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 1.0
+
+  0 1 2 XTOEQ.S,    // if fr0 == fr1 then 1 -> br[2] else 0 -> br[2]  so 0->br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2
+
+  4 3 XTMOVI,       // 4 -> ar3
+
+  2 3 2 XTAND,      // ar2 and ar3 -> ar2  so 0 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTOLES
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 0 0 XTUFLOAT.S, // ar2 / (2^0) -> fr0  so fr0 should be 2.0
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 2.0
+
+  0 1 2 XTOLE.S,    // if fr0 == fr1 then 1 -> br[2] else 0 -> br[2]  so 1->br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2
+
+  4 3 XTMOVI,       // 4 -> ar3
+
+  2 3 2 XTAND,      // ar2 and ar3 -> ar2  so 4 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTOLESb
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 0 0 XTUFLOAT.S, // ar2 / (2^0) -> fr0  so fr0 should be 2.0
+
+  3 2 XTMOVI,       // 3 -> ar2
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 3.0
+
+  0 1 2 XTOLE.S,    // if fr0 == fr1 then 1 -> br[2] else 0 -> br[2]  so 1->br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2
+
+  4 3 XTMOVI,       // 4 -> ar3
+
+  2 3 2 XTAND,      // ar2 and ar3 -> ar2  so 4 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTOLESc
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 0 0 XTUFLOAT.S, // ar2 / (2^0) -> fr0  so fr0 should be 2.0
+
+  1 2 XTMOVI,
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 1.0
+
+  0 1 2 XTOLE.S,    // if fr0 == fr1 then 1 -> br[2] else 0 -> br[2]  so 0->br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2
+
+  4 3 XTMOVI,       // 4 -> ar3
+
+  2 3 2 XTAND,      // ar2 and ar3 -> ar2  so 0 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTOLTS
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 0 0 XTUFLOAT.S, // ar2 / (2^0) -> fr0  so fr0 should be 2.0
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 2.0
+
+  0 1 2 XTOLT.S,    // if fr0 == fr1 then 1 -> br[2] else 0 -> br[2]  so 0->br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2
+
+  4 3 XTMOVI,       // 4 -> ar3
+
+  2 3 2 XTAND,      // ar2 and ar3 -> ar2  so 0 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTOLTSb
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 0 0 XTUFLOAT.S, // ar2 / (2^0) -> fr0  so fr0 should be 2.0
+
+  3 2 XTMOVI,       // 3 -> ar2
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 3.0
+
+  0 1 2 XTOLT.S,    // if fr0 == fr1 then 1 -> br[2] else 0 -> br[2]  so 1->br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2
+
+  4 3 XTMOVI,       // 4 -> ar3
+
+  2 3 2 XTAND,      // ar2 and ar3 -> ar2  so 4 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTOLTSc
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 0 0 XTUFLOAT.S, // ar2 / (2^0) -> fr0  so fr0 should be 2.0
+
+  1 2 XTMOVI,
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 1.0
+
+  0 1 2 XTOLT.S,    // if fr0 == fr1 then 1 -> br[2] else 0 -> br[2]  so 0->br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2
+
+  4 3 XTMOVI,       // 4 -> ar3
+
+  2 3 2 XTAND,      // ar2 and ar3 -> ar2  so 0 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTANDB0
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  0 2 XTMOVI,       // 0 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  0 1 2 XTANDB,     // br0 and br1 -> br2
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTANDB1
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  1 2 XTMOVI,       // 1 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  0 1 2 XTANDB,     // br0 and br1 -> br2
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 1
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTANDB2
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  0 1 2 XTANDB,     // br0 and br1 -> br2
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTANDB3
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  3 2 XTMOVI,       // 3 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  0 1 2 XTANDB,     // br0 and br1 -> br2
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 7
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTANDBC0
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  0 2 XTMOVI,       // 0 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  0 1 2 XTANDBC,    // notbr0 and br1 -> br2
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTANDBC1
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  1 2 XTMOVI,       // 1 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  0 1 2 XTANDBC,    // notbr0 and br1 -> br2
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 1
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTANDBC2
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  0 1 2 XTANDBC,    // notbr0 and br1 -> br2
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 6
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTANDBC3
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  3 2 XTMOVI,       // 3 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  0 1 2 XTANDBC,    // notbr0 and br1 -> br2
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 3
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTORB0
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  0 2 XTMOVI,       // 0 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  0 1 2 XTORB,      // br0 or br1 -> br2
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTORB1
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  1 2 XTMOVI,       // 1 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  0 1 2 XTORB,      // br0 or br1 -> br2
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 5
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTORB2
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  0 1 2 XTORB,      // br0 or br1 -> br2
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 6
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTORB3
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  3 2 XTMOVI,       // 3 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  0 1 2 XTORB,      // br0 or br1 -> br2
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 7
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTORBC0
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  0 2 XTMOVI,       // 0 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  0 1 2 XTORBC,     // notbr0 or br1 -> br2
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 4
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTORBC1
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  1 2 XTMOVI,       // 1 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  0 1 2 XTORBC,     // notbr0 or br1 -> br2
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 5
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTORBC2
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  0 1 2 XTORBC,     // notbr0 or br1 -> br2
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTORBC3
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  3 2 XTMOVI,       // 3 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  0 1 2 XTORBC,     // notbr0 or br1 -> br2
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 7
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTXORB0
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  0 2 XTMOVI,       // 0 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  0 1 2 XTXORB,     // br0 xor br1 -> br2
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTXORB1
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  1 2 XTMOVI,       // 1 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  0 1 2 XTXORB,     // br0 xor br1 -> br2
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 5
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTXORB2
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  0 1 2 XTXORB,     // br0 xor br1 -> br2
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 6
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTXORB3
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  3 2 XTMOVI,       // 3 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  0 1 2 XTXORB,     // br0 xor br1 -> br2
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 3
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTQUOS
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+
+  0 1 0 XTS32I.N,   // ar0 -> [ar1 + 0]
+
+  6 0 XTMOVI,       // 6 -> ar0 
+
+  -3 3 XTMOVI,      // -3 -> ar3
+
+  0 3 2 XTQUOS,     // ar0 / ar3 -> ar2 so ar2 should be -0x2 or 0x1fffffffe 
+
+  1 0 0 XTL32I.N,   // [ar1 + 0] -> ar0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTQUOU
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+
+  0 1 0 XTS32I.N,   // ar0 -> [ar1 + 0]
+
+  6 0 XTMOVI,       // 6 -> ar0 
+
+  3 3 XTMOVI,       // 3 -> ar3
+
+  0 3 2 XTQUOU,     // ar0 / ar3 -> ar2 so ar2 should be 2 
+
+  1 0 0 XTL32I.N,   // [ar1 + 0] -> ar0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTREMS
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+
+  0 1 0 XTS32I.N,   // ar0 -> [ar1 + 0]
+
+  -7 0 XTMOVI,      // -7 -> ar0 
+
+  3 3 XTMOVI,       // 3 -> ar3
+
+  0 3 2 XTREMS,     // ar0 / ar3 rem-> ar2 so ar2 should be -0x1 or 0x1ffffffff 
+
+  1 0 0 XTL32I.N,   // [ar1 + 0] -> ar0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTREMU
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+
+  0 1 0 XTS32I.N,   // ar0 -> [ar1 + 0]
+
+  7 0 XTMOVI,       // 6 -> ar0 
+
+  3 3 XTMOVI,       // 3 -> ar3
+
+  0 3 2 XTREMU,     // ar0 / ar3 rem-> ar2 so ar2 should be 1 
+
+  1 0 0 XTL32I.N,   // [ar1 + 0] -> ar0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVF
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  0 2 XTMOVI,       // 0 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR] 
+
+  7 3 XTMOVI,       // 7 -> ar3
+
+  3 2 0 XTMOVF,     // if br0 == 0 then ar3 -> ar2 so 7 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVFb
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  1 2 XTMOVI,       // 1 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR] 
+
+  7 3 XTMOVI,       // 7 -> ar3
+
+  3 2 0 XTMOVF,     // if br0 == 0 then ar3 -> ar2 so ar2 stays 1
+
+  XTRETW.N,
+
+
+OSYMBOL testXTMOVT
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  0 2 XTMOVI,       // 0 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR] 
+
+  7 3 XTMOVI,       // 7 -> ar3
+
+  3 2 0 XTMOVT,     // if br0 == 1 then ar3 -> ar2 so ar2 stays 0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVTb
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  1 2 XTMOVI,       // 1 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR] 
+
+  7 3 XTMOVI,       // 7 -> ar3
+
+  3 2 0 XTMOVT,     // if br0 == 1 then ar3 -> ar2 so 7 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVFS
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  0 2 XTMOVI,       // 0 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR] 
+
+  7 3 XTMOVI,       // 7 -> ar3
+
+  3 0 0 XTUFLOAT.S, // ar3 / (2^0) -> fr0  so fr0 should be 7.0
+
+  1 2 XTMOVI,       // 1 -> ar2
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 1.0
+
+  0 1 0 XTMOVF.S,   // if br0 == 0 then fr0 -> fr1 so 7.0 -> fr1
+
+  1 2 XTRFR,        // fr0 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVFSb
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  1 2 XTMOVI,       // 1 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR] 
+
+  7 3 XTMOVI,       // 7 -> ar3
+
+  3 0 0 XTUFLOAT.S, // ar3 / (2^0) -> fr0  so fr0 should be 7.0
+
+  1 2 XTMOVI,       // 1 -> ar2
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 1.0
+
+  0 1 0 XTMOVF.S,   // if br0 == 0 then fr0 -> fr1 so fr1 stays 1.0
+
+  1 2 XTRFR,        // fr0 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVTS
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  0 2 XTMOVI,       // 0 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR] 
+
+  7 3 XTMOVI,       // 7 -> ar3
+
+  3 0 0 XTUFLOAT.S, // ar3 / (2^0) -> fr0  so fr0 should be 7.0
+
+  1 2 XTMOVI,       // 1 -> ar2
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 1.0
+
+  0 1 0 XTMOVT.S,   // if br0 == 1 then fr0 -> fr1 so fr1 stays 1.0
+
+  1 2 XTRFR,        // fr0 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVTSb
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  1 2 XTMOVI,       // 1 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR] 
+
+  7 3 XTMOVI,       // 7 -> ar3
+
+  3 0 0 XTUFLOAT.S, // ar3 / (2^0) -> fr0  so fr0 should be 7.0
+
+  1 2 XTMOVI,       // 1 -> ar2
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 1.0
+
+  0 1 0 XTMOVT.S,   // if br0 == 1 then fr0 -> fr1 so 7.0 -> fr1
+
+  1 2 XTRFR,        // fr1 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTFLOATS
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  -9 2 XTMOVI,      // -9 -> ar2
+
+  2 0 1 XTFLOAT.S,  // ar2 / {2^0} int>float -> f1 so f1 = -9.0
+
+  1 2 XTRFR,        // fr1 -> ar2 so ar2 holds float -9.0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTROUNDS
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  -9 2 XTMOVI,      // -9 -> ar2
+
+  2 0 1 XTFLOAT.S,  // ar2 / {2^0} int>float -> f1 so f1 = -9.0
+
+  0 2 XTMOVI,       // 0 -> ar2
+
+  1 0 2 XTROUND.S,  // fr1 floatround>int -> ar2 so ar2 holds int -9.0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTFLOORS
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  -9 2 XTMOVI,      // -9 -> ar2
+
+  2 0 1 XTFLOAT.S,  // ar2 / {2^0} int>float -> f1 so f1 = -9.0
+
+  0 2 XTMOVI,       // 0 -> ar2
+
+  1 0 2 XTFLOOR.S,  // fr1 floatfloorint -> ar2 so ar2 holds int -9.0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTSUBS
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+
+  7 2 XTMOVI,       // 7 -> ar2
+
+  2 0 0 XTUFLOAT.S, // ar2 / (2^0) -> fr0  so fr0 should be 7.0
+
+  3 2 XTMOVI,       // 3 -> ar2
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 3.0
+
+  0 1 2 XTSUB.S,    // fr0 - fr1 -> fr2
+
+  2 1 0 XTSSI,      // fr2 -> [ar1 + 0]
+
+  1 0 2 XTL32I.N,   // [ar1 + 0] -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTTRUNCS
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  -9 2 XTMOVI,      // -9 -> ar2
+
+  2 0 1 XTFLOAT.S,  // ar2 / {2^0} int>float -> f1 so f1 = -9.0
+
+  0 2 XTMOVI,       // 0 -> ar2
+
+  1 0 2 XTTRUNC.S,  // fr1 floattruncint -> ar2 so ar2 holds int -9.0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTSRC
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  0 3 XTWFR,        // ar0 -> fr3
+
+  01 2 XTMOVI,      // 01 -> ar2  shift amount 01 decimal
+
+  2 SAR XTWSR,      // ar2 -> sr[SAR]
+
+  1E 0 XTMOVI,      // 1E -> ar0 
+
+  3 3 XTMOVI,       // 3 -> ar3
+
+  0 3 2 XTSRC,      // ar3hi:ar0lo >>SAR -> ar2 so 03 0000001E / 2 = 1 8000000F
+
+  3 0 XTRFR,        // fr3 -> ar0
+  
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTSRLI
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  -1 2 XTMOVI,      // -1 -> ar2 
+
+  3E 3 XTMOVI,      // 3E -> ar3
+
+  3 2 1 XTSRLI,     // ar3 >>1 -> ar2 so 3E / 2 = 1F
+  
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTCLAMPSa
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  -1 2 XTMOVI,      // -1 -> ar2 
+
+  7F 3 XTMOVI,      // 7F -> ar3
+
+  3 0 2 XTCLAMPS,   // if ar3 fits in 0+7 signed bits then ar3 -> ar2 else ar3 7bitsext -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTCLAMPSb
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  -1 2 XTMOVI,      // -1 -> ar2 
+
+  80 3 XTMOVI,      // 80 -> ar3
+
+  3 0 2 XTCLAMPS,   // if ar3 fits in 0+7 signed bits then ar3 -> ar2 else ar3 7bitsext -> ar2
+  
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTLSX
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+
+  62 3 XTMOVI,      // 62 -> ar3
+
+  3 0 0 XTUFLOAT.S, // ar3 / (2^0) -> fr0  so fr0 should be 62.0
+
+  0 2 XTRFR,        // fr0 -> ar2  ar2 should be float 62.0
+
+  2 1 1 XTS32I.N,   // ar2 -> [ar1 + 1*4]
+
+  4 2 XTMOVI,       // 4 -> ar2
+
+  1 2 3 XTLSX,      // mem32[ar1 + ar2] -> fr3
+
+  3 2 XTRFR,        // fr3 -> ar2 so ar2 should be float 98.0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTLSXPa
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+
+  62 3 XTMOVI,      // 62 -> ar3
+
+  3 0 0 XTUFLOAT.S, // ar3 / (2^0) -> fr0  so fr0 should be 62.0
+
+  0 2 XTRFR,        // fr0 -> ar2  ar2 should be float 62.0
+
+  2 1 0 XTS32I.N,   // ar2 -> [ar1 + 0*4]
+
+  4 2 XTMOVI,       // 4 -> ar2
+
+  1 3 XTMOV,        // ar1 -> ar3
+
+  3 2 0 XTLSXP,     // mem32[ar3] -> fr0; ar3 + ar2 -> ar3
+
+  0 2 XTRFR,        // fr0 -> ar2 so ar2 should be float 98.0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTLSXPb
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+
+  62 3 XTMOVI,      // 62 -> ar3
+
+  3 0 0 XTUFLOAT.S, // ar3 / (2^0) -> fr0  so fr0 should be 62.0
+
+  0 2 XTRFR,        // fr0 -> ar2  ar2 should be float 62.0
+
+  2 1 0 XTS32I.N,   // ar2 -> [ar1 + 0*4]
+
+  4 2 XTMOVI,       // 4 -> ar2
+
+  1 3 XTMOV,        // ar1 -> ar3
+
+  3 2 0 XTLSXP,     // mem32[ar3] -> fr0; ar3 + ar2 -> ar3
+
+  3 1 2 XTSUB,      // ar3 - ar1 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTLSXUa
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+
+  62 3 XTMOVI,      // 62 -> ar3
+
+  3 0 0 XTUFLOAT.S, // ar3 / (2^0) -> fr0  so fr0 should be 62.0
+
+  0 2 XTRFR,        // fr0 -> ar2  ar2 should be float 62.0
+
+  2 1 0 XTS32I.N,   // ar2 -> [ar1 + 0*4]
+
+  4 2 XTMOVI,       // 4 -> ar2
+
+  1 3 XTMOV,        // ar1 -> ar3
+
+  3 2 0 XTLSXU,     // mem32[ar3] -> fr0; ar3 + ar2 -> ar3
+
+  0 2 XTRFR,        // fr0 -> ar2 so ar2 should be float 98.0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTLSXUb
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+
+  62 3 XTMOVI,      // 62 -> ar3
+
+  3 0 0 XTUFLOAT.S, // ar3 / (2^0) -> fr0  so fr0 should be 62.0
+
+  0 2 XTRFR,        // fr0 -> ar2  ar2 should be float 62.0
+
+  2 1 1 XTS32I.N,   // ar2 -> [ar1 + 1*4]
+
+  4 2 XTMOVI,       // 4 -> ar2
+
+  1 3 XTMOV,        // ar1 -> ar3
+
+  3 2 0 XTLSXU,     // mem32[ar3 + ar2] -> fr0; ar3 + ar2 -> ar3
+
+  3 1 2 XTSUB,      // ar3 - ar1 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTSSX
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+
+  62 3 XTMOVI,      // 62 -> ar3
+
+  4 2 XTMOVI,       // 4 -> ar2
+
+  3 0 0 XTUFLOAT.S, // ar3 / (2^0) -> fr0  so fr0 should be 62.0
+
+  0 1 2 XTSSX,      // fr0 -> mem32[ar1 + ar2]
+
+  1 2 3 XTLSX,      // mem32[ar1 + ar2] -> fr3
+
+  3 2 XTRFR,        // fr3 -> ar2 so ar2 should be float 98.0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTSSXPa
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+
+  62 3 XTMOVI,      // 62 -> ar3
+
+  3 0 0 XTUFLOAT.S, // ar3 / (2^0) -> fr0  so fr0 should be 62.0
+
+  4 2 XTMOVI,       // 4 -> ar2
+
+  1 3 XTMOV,        // ar1 -> ar3
+
+  0 3 2 XTSSXP,     // fr0 -> mem32[ar1]; ar3 + ar2 -> ar3
+
+  4 2 XTMOVI,       // 4 -> ar2
+
+  1 3 XTMOV,        // ar1 -> ar3
+
+  3 2 0 XTLSXP,     // mem32[ar3] -> fr0; ar3 + ar2 -> ar3
+
+  0 2 XTRFR,        // fr0 -> ar2 so ar2 should be float 98.0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTSSXPb
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+
+  62 3 XTMOVI,      // 62 -> ar3
+
+  3 0 0 XTUFLOAT.S, // ar3 / (2^0) -> fr0  so fr0 should be 62.0
+
+  4 2 XTMOVI,       // 4 -> ar2
+
+  1 3 XTMOV,        // ar1 -> ar3
+
+  0 3 2 XTSSXP,     // fr0 -> mem32[ar1]; ar3 + ar2 -> ar3
+
+  3 1 2 XTSUB,      // ar3 - ar1 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTSSXUa
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+
+  62 3 XTMOVI,      // 62 -> ar3
+
+  3 0 0 XTUFLOAT.S, // ar3 / (2^0) -> fr0  so fr0 should be 62.0
+
+  4 2 XTMOVI,       // 4 -> ar2
+
+  1 3 XTMOV,        // ar1 -> ar3
+
+  0 3 2 XTSSXU,     // fr0 -> mem32[ar3 + ar2] 
+
+  4 2 XTMOVI,       // 4 -> ar2
+
+  1 3 XTMOV,        // ar1 -> ar3
+
+  3 2 0 XTLSXU,     // mem32[ar3] -> fr0; ar3 + ar2 -> ar3
+
+  0 2 XTRFR,        // fr0 -> ar2 so ar2 should be float 98.0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTSSXUb
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+
+  62 3 XTMOVI,      // 62 -> ar3
+
+  3 0 0 XTUFLOAT.S, // ar3 / (2^0) -> fr0  so fr0 should be 62.0
+
+  4 2 XTMOVI,       // 4 -> ar2
+
+  1 3 XTMOV,        // ar1 -> ar3
+
+  0 3 2 XTSSXU,     // fr0 -> mem32[ar3 + ar2] 
+
+  3 1 2 XTSUB,      // ar3 - ar1 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTUEQS
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 0 0 XTUFLOAT.S, // ar2 / (2^0) -> fr0  so fr0 should be 2.0
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 2.0
+
+  0 1 2 XTUEQ.S,    // if fr0 == fr1 then 1 -> br[2] else 0 -> br[2]  so 1->br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2
+
+  4 3 XTMOVI,       // 4 -> ar3
+
+  2 3 2 XTAND,      // ar2 and ar3 -> ar2  so 4 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTUEQSb
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 0 0 XTUFLOAT.S, // ar2 / (2^0) -> fr0  so fr0 should be 2.0
+
+  3 2 XTMOVI,
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 3.0
+
+  0 1 2 XTUEQ.S,    // if fr0 == fr1 then 1 -> br[2] else 0 -> br[2]  so 0->br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2
+
+  4 3 XTMOVI,       // 4 -> ar3
+
+  2 3 2 XTAND,      // ar2 and ar3 -> ar2  so 0 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTUEQSc
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 0 0 XTUFLOAT.S, // ar2 / (2^0) -> fr0  so fr0 should be 2.0
+
+  1 2 XTMOVI,
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 1.0
+
+  0 1 2 XTUEQ.S,    // if fr0 == fr1 then 1 -> br[2] else 0 -> br[2]  so 0->br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2
+
+  4 3 XTMOVI,       // 4 -> ar3
+
+  2 3 2 XTAND,      // ar2 and ar3 -> ar2  so 0 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTULES
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 0 0 XTUFLOAT.S, // ar2 / (2^0) -> fr0  so fr0 should be 2.0
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 2.0
+
+  0 1 2 XTULE.S,    // if fr0 == fr1 then 1 -> br[2] else 0 -> br[2]  so 1->br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2
+
+  4 3 XTMOVI,       // 4 -> ar3
+
+  2 3 2 XTAND,      // ar2 and ar3 -> ar2  so 4 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTULESb
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 0 0 XTUFLOAT.S, // ar2 / (2^0) -> fr0  so fr0 should be 2.0
+
+  3 2 XTMOVI,       // 3 -> ar2
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 3.0
+
+  0 1 2 XTULE.S,    // if fr0 == fr1 then 1 -> br[2] else 0 -> br[2]  so 1->br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2
+
+  4 3 XTMOVI,       // 4 -> ar3
+
+  2 3 2 XTAND,      // ar2 and ar3 -> ar2  so 4 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTULESc
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 0 0 XTUFLOAT.S, // ar2 / (2^0) -> fr0  so fr0 should be 2.0
+
+  1 2 XTMOVI,
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 1.0
+
+  0 1 2 XTULE.S,    // if fr0 == fr1 then 1 -> br[2] else 0 -> br[2]  so 0->br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2
+
+  4 3 XTMOVI,       // 4 -> ar3
+
+  2 3 2 XTAND,      // ar2 and ar3 -> ar2  so 0 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTULTS
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 0 0 XTUFLOAT.S, // ar2 / (2^0) -> fr0  so fr0 should be 2.0
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 2.0
+
+  0 1 2 XTULT.S,    // if fr0 == fr1 then 1 -> br[2] else 0 -> br[2]  so 0->br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2
+
+  4 3 XTMOVI,       // 4 -> ar3
+
+  2 3 2 XTAND,      // ar2 and ar3 -> ar2  so 0 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTULTSb
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 0 0 XTUFLOAT.S, // ar2 / (2^0) -> fr0  so fr0 should be 2.0
+
+  3 2 XTMOVI,       // 3 -> ar2
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 3.0
+
+  0 1 2 XTULT.S,    // if fr0 == fr1 then 1 -> br[2] else 0 -> br[2]  so 1->br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2
+
+  4 3 XTMOVI,       // 4 -> ar3
+
+  2 3 2 XTAND,      // ar2 and ar3 -> ar2  so 4 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTULTSc
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 0 0 XTUFLOAT.S, // ar2 / (2^0) -> fr0  so fr0 should be 2.0
+
+  1 2 XTMOVI,
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 1.0
+
+  0 1 2 XTULT.S,    // if fr0 == fr1 then 1 -> br[2] else 0 -> br[2]  so 0->br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2
+
+  4 3 XTMOVI,       // 4 -> ar3
+
+  2 3 2 XTAND,      // ar2 and ar3 -> ar2  so 0 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTUNSa
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 0 0 XTUFLOAT.S, // ar2 / (2^0) -> fr0  so fr0 should be 2.0
+
+  1 2 XTMOVI,       // 1 -> ar2
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 1.0
+
+  0 1 2 XTUN.S,     // if fr0 or fr1 are NAN then 1 -> br[2] else 0 -> br[2]  so 0->br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2
+
+  4 3 XTMOVI,       // 4 -> ar3
+
+  2 3 2 XTAND,      // ar2 and ar3 -> ar2  so 0 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTUNSb
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  -1 2 XTMOVI,      // -1 -> ar2
+
+  2 0 XTWFR,        // ar2 -> fr0  so fr0 should be NaN
+
+  1 2 XTMOVI,       // 1 -> ar2
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 1.0
+
+  0 1 2 XTUN.S,     // if fr0 or fr1 are NAN then 1 -> br[2] else 0 -> br[2]  so 1->br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2
+
+  4 3 XTMOVI,       // 4 -> ar3
+
+  2 3 2 XTAND,      // ar2 and ar3 -> ar2  so 1 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTUNSc
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  -1 2 XTMOVI,      // -1 -> ar2
+
+  2 0 XTWFR,        // ar2 -> fr0  so fr0 should be NaN
+
+  1 2 XTMOVI,       // 1 -> ar2
+
+  2 0 1 XTUFLOAT.S, // ar2 / (2^0) -> fr1  so fr1 should be 1.0
+
+  1 0 2 XTUN.S,     // if fr0 or fr1 are NAN then 1 -> br[2] else 0 -> br[2]  so 1->br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2
+
+  4 3 XTMOVI,       // 4 -> ar3
+
+  2 3 2 XTAND,      // ar2 and ar3 -> ar2  so 1 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTSRA
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  3 2 XTMOVI,       // 3 -> ar2
+
+  2 SAR XTWSR,      // ar2 -> sr[SAR]
+
+  -10 3 XTMOVI,     // -0x10 -> ar3
+
+  3 2 XTSRA,        // ar3 3>> -> ar2 so ar2 = -2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTSRL
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  3 2 XTMOVI,       // 3 -> ar2
+
+  2 SAR XTWSR,      // ar2 -> sr[SAR]
+
+  -10 3 XTMOVI,     // -0x10 -> ar3
+
+  3 2 XTSRL,        // ar3 3>> -> ar2 so ar2 = 1FFFFFFE
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTALL4a
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  0 2 XTMOVI,       // 0 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  4 2 XTALL4,       // br[4] & br[5] & br[6] & br[7] -> br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTALL4b
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  F0 2 XTMOVI,      // F0 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  4 2 XTALL4,       // br[4] & br[5] & br[6] & br[7] -> br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be F4
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTALL4c
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  70 2 XTMOVI,      // 70 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  4 2 XTALL4,       // br[4] & br[5] & br[6] & br[7] -> br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 70
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTANY4a
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  0 2 XTMOVI,       // 0 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  4 2 XTANY4,       // br[4] | br[5] | br[6] | br[7] -> br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTANY4b
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  F0 2 XTMOVI,      // F0 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  4 2 XTANY4,       // br[4] | br[5] | br[6] | br[7] -> br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be F4
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTANY4c
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  70 2 XTMOVI,      // 70 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  4 2 XTANY4,       // br[4] | br[5] | br[6] | br[7] -> br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 74
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTALL8a
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  0 2 XTMOVI,       // 0 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  8 2 XTALL8,       // br[8] & ... & br[0F] -> br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTALL8b
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  FF 2 XTMOVI,      // FF -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  0 8 XTALL8,       // br[8] & ... & br[0F] -> br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 1FF
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTALL8c
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  7F 2 XTMOVI,      // 7F -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  0 8 XTALL8,       // br[8] & ... & br[0F] -> br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 7F
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTANY8a
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  0 2 XTMOVI,       // 0 -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  8 2 XTANY8,       // br[8] | ... | br[0F] -> br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 0
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTANY8b
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  FF 2 XTMOVI,      // FF -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  0 8 XTANY8,       // br[8] | ... | br[0F] -> br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 1FF
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTANY8c
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  7F 2 XTMOVI,      // 7F -> ar2
+
+  2 BR XTWSR,       // ar2 -> sr[BR]
+
+  0 8 XTANY8,       // br[8] | ... | br[0F] -> br[2]
+
+  BR 2 XTRSR,       // sr[BR] -> ar2  so ar2 should be 17F
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTSSAIa
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  1F XTSSAI,         // 5 -> SAR
+
+  SAR 2 XTRSR,       // sr[SAR] -> ar2  so ar2 should be 1F
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTSSAIb
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  00 XTSSAI,         // 5 -> SAR
+
+  SAR 2 XTRSR,       // sr[SAR] -> ar2  so ar2 should be 0
+
+  XTRETW.N,
+
+
+HEX
+OSYMBOL testXTMOVIN
+
+  1 0 XTENTRY,   // rsp = ar1  framesize = 0 * 8  no locals needed
+
+  43 2 XTMOVI.N, // 43 -> ar2
+
+  XTRETW.N,
+
+  
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBFa
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 0 2 XTMOVI,   // 0 -> ar2
+
+  ( 6 ) 2 BR XTWSR,   // ar2 -> sr[BR]
+
+  ( 9 ) 3 2 XTBF,     // if br[3] == 0 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBFb
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 8 2 XTMOVI,   // 8 -> ar2
+
+  ( 6 ) 2 BR XTWSR,   // ar2 -> sr[BR]
+
+  ( 9 ) 3 2 XTBF,     // if br[3] == 0 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+OSYMBOL testXTBTa
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 0 2 XTMOVI,   // 0 -> ar2
+
+  ( 6 ) 2 BR XTWSR,   // ar2 -> sr[BR]
+
+  ( 9 ) 3 2 XTBT,     // if br[3] == 1 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBTb
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 8 2 XTMOVI,   // 8 -> ar2
+
+  ( 6 ) 2 BR XTWSR,   // ar2 -> sr[BR]
+
+  ( 9 ) 3 2 XTBT,     // if br[3] == 1 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBALLa
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 35 2 XTMOVI,  // 35 -> ar2
+
+  ( 6 ) 25 3 XTMOVI,  // 25 -> ar3
+
+  ( 9 ) 2 3 2 XTBALL, // if ar3 & notar2 == 0 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBALLb
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 34 2 XTMOVI,  // 34 -> ar2
+
+  ( 6 ) 25 3 XTMOVI,  // 25 -> ar3
+
+  ( 9 ) 2 3 2 XTBALL, // if ar3 & notar2 == 0 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBALLc
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 10 2 XTMOVI,  // 10 -> ar2
+
+  ( 6 ) 25 3 XTMOVI,  // 25 -> ar3
+
+  ( 9 ) 2 3 2 XTBALL, // if ar3 & notar2 == 0 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBANYa
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 35 2 XTMOVI,  // 35 -> ar2
+
+  ( 6 ) 25 3 XTMOVI,  // 25 -> ar3
+
+  ( 9 ) 2 3 2 XTBANY, // if ar3 & ar2 <> 0 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBANYb
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 34 2 XTMOVI,  // 34 -> ar2
+
+  ( 6 ) 25 3 XTMOVI,  // 25 -> ar3
+
+  ( 9 ) 2 3 2 XTBANY, // if ar3 & ar2 <> 0 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBANYc
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 10 2 XTMOVI,  // 10 -> ar2
+
+  ( 6 ) 25 3 XTMOVI,  // 25 -> ar3
+
+  ( 9 ) 2 3 2 XTBANY, // if ar3 & ar2 <> 0 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBBCa
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 05 2 XTMOVI,  // 15 -> ar2
+
+  ( 6 )  4 3 XTMOVI,  //  4 -> ar3
+
+  ( 9 ) 2 3 2 XTBBC,  // if bit ar3 in ar2 == 0 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBBCb
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 15 2 XTMOVI,  // 05 -> ar2
+
+  ( 6 )  4 3 XTMOVI,  //  4 -> ar3
+
+  ( 9 ) 2 3 2 XTBBC,  // if bit ar3 in ar2 == 0 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBBSa
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 05 2 XTMOVI,  // 15 -> ar2
+
+  ( 6 )  4 3 XTMOVI,  //  4 -> ar3
+
+  ( 9 ) 2 3 2 XTBBS,  // if bit ar3 in ar2 == 1 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBBSb
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 15 2 XTMOVI,  // 05 -> ar2
+
+  ( 6 )  4 3 XTMOVI,  //  4 -> ar3
+
+  ( 9 ) 2 3 2 XTBBS,  // if bit ar3 in ar2 == 1 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBGEU
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) 31 3 XTMOVI,  // 31 -> ar3
+
+  ( 9 ) 2 3 2 XTBGEU, // if ar2 >= ar3 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBGEUb
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) -1 2 XTMOVI,  // -1 -> ar2
+
+  ( 6 ) 31 3 XTMOVI,  // 31 -> ar3
+
+  ( 9 ) 2 3 2 XTBGEU, // if ar2 >= ar3 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBGEUc
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 30 2 XTMOVI,  // 30 -> ar2
+
+  ( 6 ) 31 3 XTMOVI,  // 31 -> ar3
+
+  ( 9 ) 2 3 2 XTBGEU, // if ar2 >= ar3 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBNALLa
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 35 2 XTMOVI,  // 35 -> ar2
+
+  ( 6 ) 25 3 XTMOVI,  // 25 -> ar3
+
+  ( 9 ) 2 3 2 XTBNALL, // if ar3 & notar2 <> 0 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBNALLb
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 34 2 XTMOVI,  // 34 -> ar2
+
+  ( 6 ) 25 3 XTMOVI,  // 25 -> ar3
+
+  ( 9 ) 2 3 2 XTBNALL, // if ar3 & notar2 <> 0 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBNALLc
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 10 2 XTMOVI,  // 10 -> ar2
+
+  ( 6 ) 25 3 XTMOVI,  // 25 -> ar3
+
+  ( 9 ) 2 3 2 XTBNALL, // if ar3 & notar2 <> 0 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBNONEa
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 35 2 XTMOVI,  // 35 -> ar2
+
+  ( 6 ) 25 3 XTMOVI,  // 25 -> ar3
+
+  ( 9 ) 2 3 2 XTBNONE, // if ar3 & ar2 == 0 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBNONEb
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 34 2 XTMOVI,  // 34 -> ar2
+
+  ( 6 ) 25 3 XTMOVI,  // 25 -> ar3
+
+  ( 9 ) 2 3 2 XTBNONE, // if ar3 & ar2 == 0 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBNONEc
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 10 2 XTMOVI,  // 10 -> ar2
+
+  ( 6 ) 25 3 XTMOVI,  // 25 -> ar3
+
+  ( 9 ) 2 3 2 XTBNONE, // if ar3 & ar2 == 0 then skip next instruction
+
+  ( 0C ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0F ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTABSS
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  -2 2 XTMOVI,      // -2 -> ar2
+
+  2 0 0 XTFLOAT.S,  // ar2 / (2^0) -> fr0  so fr0 should be -2.0
+
+  0 1 XTABS.S,      // |fr0| -> fr1
+
+  1 2 XTRFR,        // fr1 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTNEGS
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 0 0 XTFLOAT.S,  // ar2 / (2^0) -> fr0  so fr0 should be 2.0
+
+  0 1 XTNEG.S,      // -1 * fr0 -> fr1
+
+  1 2 XTRFR,        // fr1 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTNSA
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  1 3 XTMOVI,       // 1 -> ar3
+
+  3 2 XTNSA,        // shift left amount to normalize signed ar3 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTNSAU
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  1 3 XTMOVI,       // 1 -> ar3
+
+  3 2 XTNSAU,       // shift left amount to normalize unsigned ar3 -> ar2
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTADDEXPS
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 0 0 XTFLOAT.S,  // ar2 / (2^0) -> fr0  so fr0 should be 2.0 (exp=1)
+
+  5 2 XTMOVI,       // 5 -> ar2
+
+  2 0 1 XTFLOAT.S,  // ar2 / (2^0) -> fr1  so fr0 should be 5.0 (exp=2)
+
+  1 0 XTADDEXP.S,   // fr1exp + fr0exp -> fr0exp
+
+  0 2 XTRFR,        // fr0 -> ar2 (so ar2 should be 2^3 = 8)
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTADDEXPMS
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  2 2 XTMOVI,       // 2 -> ar2
+
+  2 0 0 XTFLOAT.S,  // ar2 / (2^0) -> fr0  so fr0 should be 2.0 (exp=1)
+
+  DECIMAL
+  32 14 - 2 XTMOVI, // 32 - 14 -> ar2
+
+  2 SAR XTWSR,      // ar2 -> sr[SAR] 
+
+  130 2 XTMOVI,     // 127 + 3 -> ar2
+
+  HEX
+  2 2 XTSLL,        // ar2 <<14 -> ar2
+
+  2 1 XTWFR,        // ar2 -> fr1
+
+  1 0 XTADDEXPM.S,  // fr1man + fr0exp -> fr0exp
+
+  0 2 XTRFR,        // fr0 -> ar2 (so ar2 should be 2^4 = 16.0)
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTCONSTS
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  3 0 XTCONST.S,    // constval[u4] -> fr0
+
+  0 2 XTRFR,        // fr0 -> ar2 (so ar2 should be 0.5)
+
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTRECIP0S ( fr0 = b; fr1 = r; fr2 = e )  
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  40 2 XTMOVI,      // 40 -> ar2
+
+  2 0 0 XTFLOAT.S,  // ar2 / (2^0) -> fr0  so fr0 should be 64.0; b=fr0 
+
+  0 1 XTRECIP0.S,   // 1.0 / fr0 -> fr1          ( 1/b -> r approximation )
+
+  1 2 XTCONST.S,    // 1.0 -> fr2                ( 1.0 -> e )
+
+  0 1 2 XTMSUB.S,   // fr2 - (fr0 * fr1) -> fr2  ( e - (b*r) -> e )
+
+  1 2 1 XTMADD.S,   // fr1 + (fr1 * fr2) -> fr1  ( r + (r*e) -> r )
+
+  1 2 XTCONST.S,    // 1.0 -> fr2                ( 1.0 -> e )
+
+  0 1 2 XTMSUB.S,   // fr2 - (fr0 * fr1) -> fr2  ( e - (b*r) -> e )
+
+  1 2 1 XTMADDN.S,  // fr1 + (fr1 * fr2) -> fr1  ( r + (r*e) -> r )
+
+  1 2 XTRFR,        // fr1 -> ar2                ( should be 1/64 )
+
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTEXTUI
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  7C0 3 XTMOVI,     // 5C0 -> ar3
+
+  3 4 5 2 XTEXTUI,  // ar3 >>4 and ((2^(1+1)) - 1) -> ar2   
+
+  // ar2 should be 0x3C
+
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTSRAI
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  -100 3 XTMOVI,    // FFFFFFF00 -> ar3
+
+  3 4 2 XTSRAI,     // ar3 >>4 -> ar2   
+
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTMOVSP
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  -100 3 XTMOVI,    // FFFFFFF00 -> ar3
+
+  3 2 XTMOVSP,      // ar3 -> ar2   
+
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBEQZNa
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) 0 3 XTMOVI,   // 0 -> ar3
+
+  ( 9 ) 3 1 XTBEQZ.N, // if ar3 == 0 then skip next instruction
+
+  ( 0B ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0E ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBEQZNb
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) 1 3 XTMOVI,   // 1 -> ar3
+
+  ( 9 ) 3 1 XTBEQZ.N, // if ar3 == 0 then skip next instruction
+
+  ( 0B ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0E ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBEQZNc
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) -1 3 XTMOVI,  // -1 -> ar3
+
+  ( 9 ) 3 1 XTBEQZ.N, // if ar3 == 0 then skip next instruction
+
+  ( 0B ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0E ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBNEZNa
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) 0 3 XTMOVI,   // 0 -> ar3
+
+  ( 9 ) 3 1 XTBNEZ.N, // if ar3 == 0 then skip next instruction
+
+  ( 0B ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0E ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBNEZNb
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) 1 3 XTMOVI,   // 1 -> ar3
+
+  ( 9 ) 3 1 XTBNEZ.N, // if ar3 == 0 then skip next instruction
+
+  ( 0B ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0E ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTBNEZNc
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) -1 3 XTMOVI,  // -1 -> ar3
+
+  ( 9 ) 3 1 XTBNEZ.N, // if ar3 == 0 then skip next instruction
+
+  ( 0B ) 11 2 XTMOVI, // 11 -> ar2
+
+  ( 0E ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testEQZIFa
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) -1 3 XTMOVI,  // -1 -> ar3
+
+  ( 9 ) AR3 EQZ IF, 
+
+  ( 0B )  11 2 XTMOVI, // 11 -> ar2
+
+        THEN,
+
+  ( 0E ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testEQZIFb
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) 0 3 XTMOVI,   // 0 -> ar3
+
+  ( 9 ) AR3 EQZ IF,
+
+  ( 0B )  11 2 XTMOVI, // 11 -> ar2
+
+        THEN,
+
+  ( 0E ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testELSEa
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) -1 3 XTMOVI,  // -1 -> ar3
+
+  ( 9 ) AR3 EQZ IF,
+
+  ( 0B )  11 2 XTMOVI, // 11 -> ar2
+
+        ELSE,
+
+          29 2 XTMOVI, // 29 -> ar2
+
+        THEN,
+
+  ( 0E ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testELSEb
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) 0 3 XTMOVI,   // 0 -> ar3
+
+  ( 9 ) AR3 EQZ IF,
+
+  ( 0B )  11 2 XTMOVI, // 11 -> ar2
+
+        ELSE,
+
+          29 2 XTMOVI, // 29 -> ar2
+
+        THEN,
+
+  ( 0E ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testEQZUNTIL
+
+  1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  0 2 XTMOVI,   // 0 -> ar2
+
+  8 3 XTMOVI,   // 8 -> ar3
+
+  BEGIN,
+
+    2 2 2 XTADDI,
+  
+    3 -1 3 XTADDI,
+
+  3 EQZ UNTIL,
+  
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testNEZWHILEREPEAT
+
+  1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  0 2 XTMOVI,   // 0 -> ar2
+
+  8 3 XTMOVI,   // 8 -> ar3
+
+  BEGIN,
+
+    3 -1 3 XTADDI,
+
+  3 NEZ WHILE,
+  
+    2 2 2 XTADDI,
+
+  REPEAT,
+  
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testNEZIFa
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) -1 3 XTMOVI,  // -1 -> ar3
+
+  ( 9 ) AR3 NEZ IF,
+
+  ( 0B )  11 2 XTMOVI, // 11 -> ar2
+
+        THEN,
+
+  ( 0E ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testNEZIFb
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) 0 3 XTMOVI,   // 0 -> ar3
+
+  ( 9 ) AR3 NEZ IF,
+
+  ( 0B )  11 2 XTMOVI, // 11 -> ar2
+
+        THEN,
+
+  ( 0E ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testNEIFa
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) 31 3 XTMOVI,  // 31 -> ar3
+
+  ( 9 ) AR3 AR2 NE IF,
+
+  ( 0B )  11 2 XTMOVI, // 11 -> ar2
+
+        THEN,
+
+  ( 0E ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testNEIFb
+
+  ( 0 ) 1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  ( 3 ) 31 2 XTMOVI,  // 31 -> ar2
+
+  ( 6 ) -1 3 XTMOVI,  // -1 -> ar3
+
+  ( 9 ) AR3 AR2 NE IF,
+
+  ( 0B )  11 2 XTMOVI, // 11 -> ar2
+
+        THEN,
+
+  ( 0E ) XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testBITFIFa
+
+  1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  0 2 XTMOVI,   // 0 -> ar2
+
+  2 BR XTWSR,   // ar2 -> sr[BR]
+
+  AR3 BITF IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N, // return 11
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testBITFIFb
+
+  AR1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  8 AR2 XTMOVI,   // 8 -> ar2
+
+  AR2 BR XTWSR,   // ar2 -> sr[BR]
+
+  AR3 BITF IF,
+
+    11 AR2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N, // return 08
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testBITTIFa
+
+  1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  0 2 XTMOVI,   // 0 -> ar2
+
+  2 BR XTWSR,   // ar2 -> sr[BR]
+
+  AR3 BITT IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 00
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testBITTIFb
+
+  AR1 0 XTENTRY,  // rsp = ar1  framesize = 0*8
+
+  8 AR2 XTMOVI,   // 8 -> ar2
+
+  AR2 BR XTWSR,   // ar2 -> sr[BR]
+
+  AR3 BITT IF,
+
+    11 AR2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 11
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testLTIFa
+
+  AR1 0 XTENTRY, // rsp = ar1  framesize = 0*8
+
+  0 AR2 XTMOVI,  // 0 -> ar2
+
+  -1 AR3 XTMOVI, // -1 -> ar3
+
+  AR3 AR2 LT IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 11
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testLTIFb
+
+  AR1 0 XTENTRY, // rsp = ar1  framesize = 0*8
+
+  0 AR2 XTMOVI,  // 0 -> ar2
+
+  0 AR3 XTMOVI,  // 0 -> ar3
+
+  AR3 AR2 LT IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 00
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testLTIFc
+
+  AR1 0 XTENTRY, // rsp = ar1  framesize = 0*8
+
+  0 AR2 XTMOVI,  // 0 -> ar2
+
+  1 AR3 XTMOVI,  // 0 -> ar3
+
+  AR3 AR2 LT IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 00
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testGEIFa
+
+  AR1 0 XTENTRY, // rsp = ar1  framesize = 0*8
+
+  0 AR2 XTMOVI,  // 0 -> ar2
+
+  -1 AR3 XTMOVI, // -1 -> ar3
+
+  AR3 AR2 GE IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 00
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testGEIFb
+
+  AR1 0 XTENTRY, // rsp = ar1  framesize = 0*8
+
+  0 AR2 XTMOVI,  // 0 -> ar2
+
+  0 AR3 XTMOVI,  // 0 -> ar3
+
+  AR3 AR2 GE IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 11
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testGEIFc
+
+  AR1 0 XTENTRY, // rsp = ar1  framesize = 0*8
+
+  0 AR2 XTMOVI,  // 0 -> ar2
+
+  1 AR3 XTMOVI,  // 0 -> ar3
+
+  AR3 AR2 GE IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 11
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testLTUIFa
+
+  AR1 0 XTENTRY, // rsp = ar1  framesize = 0*8
+
+  0 AR2 XTMOVI,  // 0 -> ar2
+
+  -1 AR3 XTMOVI, // -1 -> ar3
+
+  AR3 AR2 LTU IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 00
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testLTUIFb
+
+  AR1 0 XTENTRY, // rsp = ar1  framesize = 0*8
+
+  0 AR2 XTMOVI,  // 0 -> ar2
+
+  0 AR3 XTMOVI,  // 0 -> ar3
+
+  AR3 AR2 LTU IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 00
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testLTUIFc
+
+  AR1 0 XTENTRY, // rsp = ar1  framesize = 0*8
+
+  0 AR2 XTMOVI,  // 0 -> ar2
+
+  1 AR3 XTMOVI,  // 0 -> ar3
+
+  AR3 AR2 LTU IF,
+
+    11 2 XTMOVI, // 00 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 00
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testLTUIFd
+
+  AR1 0 XTENTRY, // rsp = ar1  framesize = 0*8
+
+  0 AR2 XTMOVI,  // 0 -> ar2
+
+  1 AR3 XTMOVI,  // 0 -> ar3
+
+  AR2 AR3 LTU IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 11
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testGEUIFa
+
+  AR1 0 XTENTRY, // rsp = ar1  framesize = 0*8
+
+  0 AR2 XTMOVI,  // 0 -> ar2
+
+  -1 AR3 XTMOVI, // -1 -> ar3
+
+  AR3 AR2 GEU IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 11
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testGEUIFb
+
+  AR1 0 XTENTRY, // rsp = ar1  framesize = 0*8
+
+  0 AR2 XTMOVI,  // 0 -> ar2
+
+  0 AR3 XTMOVI,  // 0 -> ar3
+
+  AR3 AR2 GEU IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 11
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testGEUIFc
+
+  AR1 0 XTENTRY, // rsp = ar1  framesize = 0*8
+
+  0 AR2 XTMOVI,  // 0 -> ar2
+
+  1 AR3 XTMOVI,  // 0 -> ar3
+
+  AR3 AR2 GEU IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 11
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testGEUIFd
+
+  AR1 0 XTENTRY, // rsp = ar1  framesize = 0*8
+
+  0 AR2 XTMOVI,  // 0 -> ar2
+
+  1 AR3 XTMOVI,  // 0 -> ar3
+
+  AR2 AR3 GEU IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 00
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testLEIFa
+
+  AR1 0 XTENTRY, // rsp = ar1  framesize = 0*8
+
+  0 AR2 XTMOVI,  // 0 -> ar2
+
+  -1 AR3 XTMOVI, // -1 -> ar3
+
+  AR3 AR2 LE IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 11
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testLEIFb
+
+  AR1 0 XTENTRY, // rsp = ar1  framesize = 0*8
+
+  0 AR2 XTMOVI,  // 0 -> ar2
+
+  0 AR3 XTMOVI,  // 0 -> ar3
+
+  AR3 AR2 LE IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 11
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testLEIFc
+
+  AR1 0 XTENTRY, // rsp = ar1  framesize = 0*8
+
+  0 AR2 XTMOVI,  // 0 -> ar2
+
+  1 AR3 XTMOVI,  // 0 -> ar3
+
+  AR3 AR2 LE IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 00
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testGTIFa
+
+  AR1 0 XTENTRY, // rsp = ar1  framesize = 0*8
+
+  0 AR2 XTMOVI,  // 0 -> ar2
+
+  -1 AR3 XTMOVI, // -1 -> ar3
+
+  AR3 AR2 GT IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 00
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testGTIFb
+
+  AR1 0 XTENTRY, // rsp = ar1  framesize = 0*8
+
+  0 AR2 XTMOVI,  // 0 -> ar2
+
+  0 AR3 XTMOVI,  // 0 -> ar3
+
+  AR3 AR2 GT IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 00
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testGTIFc
+
+  AR1 0 XTENTRY, // rsp = ar1  framesize = 0*8
+
+  0 AR2 XTMOVI,  // 0 -> ar2
+
+  1 AR3 XTMOVI,  // 0 -> ar3
+
+  AR3 AR2 GT IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 11
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testLEUIFa
+
+  AR1 0 XTENTRY, // rsp = ar1  framesize = 0*8
+
+  0 AR2 XTMOVI,  // 0 -> ar2
+
+  -1 AR3 XTMOVI, // -1 -> ar3
+
+  AR3 AR2 LEU IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 00
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testLEUIFb
+
+  AR1 0 XTENTRY, // rsp = ar1  framesize = 0*8
+
+  0 AR2 XTMOVI,  // 0 -> ar2
+
+  0 AR3 XTMOVI,  // 0 -> ar3
+
+  AR3 AR2 LEU IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 11
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testLEUIFc
+
+  AR1 0 XTENTRY, // rsp = ar1  framesize = 0*8
+
+  0 AR2 XTMOVI,  // 0 -> ar2
+
+  1 AR3 XTMOVI,  // 0 -> ar3
+
+  AR3 AR2 LEU IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 00
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testLEUIFd
+
+  AR1 0 XTENTRY, // rsp = ar1  framesize = 0*8
+
+  0 AR2 XTMOVI,  // 0 -> ar2
+
+  1 AR3 XTMOVI,  // 0 -> ar3
+
+  AR2 AR3 LEU IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 11
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testGTUIFa
+
+  AR1 0 XTENTRY, // rsp = ar1  framesize = 0*8
+
+  0 AR2 XTMOVI,  // 0 -> ar2
+
+  -1 AR3 XTMOVI, // -1 -> ar3
+
+  AR3 AR2 GTU IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 11
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testGTUIFb
+
+  AR1 0 XTENTRY, // rsp = ar1  framesize = 0*8
+
+  0 AR2 XTMOVI,  // 0 -> ar2
+
+  0 AR3 XTMOVI,  // 0 -> ar3
+
+  AR3 AR2 GTU IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 00
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testGTUIFc
+
+  AR1 0 XTENTRY, // rsp = ar1  framesize = 0*8
+
+  0 AR2 XTMOVI,  // 0 -> ar2
+
+  1 AR3 XTMOVI,  // 0 -> ar3
+
+  AR3 AR2 GTU IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 11
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testGTUIFd
+
+  AR1 0 XTENTRY, // rsp = ar1  framesize = 0*8
+
+  0 AR2 XTMOVI,  // 0 -> ar2
+
+  1 AR3 XTMOVI,  // 0 -> ar3
+
+  AR2 AR3 GTU IF,
+
+    11 2 XTMOVI, // 11 -> ar2
+
+  THEN,
+
+  XTRETW.N,  // return 00
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTL8UIa
+
+  1 1 XTENTRY,   // rsp = ar1  framesize = 1 * 8  
+  789 2 XTMOVI,  // 789 -> ar2
+  2 1 0 XTS32I,  // ar2 -> [ar1 + 0]
+  1 0 2 XTL8UI,  // [a1 + 0] -> a2  // a2 should be 89
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTL8UIb
+
+  1 1 XTENTRY,   // rsp = ar1  framesize = 1 * 8  
+  789 2 XTMOVI,  // 789 -> ar2
+  2 1 0 XTS32I,  // ar2 -> [ar1 + 0]
+  1 1 2 XTL8UI,  // [a1 + 1] -> a2 // a2 should be 07
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+  ( -4 ) 11218141 CODE-U32,
+OSYMBOL testXTL16SIa
+
+  ( 0 ) 1 1 XTENTRY,   // rsp = ar1  framesize = 1*8
+  ( 3 ) -2 2 XTL32R,   // 11218141 -> ar2
+        2 1 0 XTS32I,  // ar2 -> [ar1 + 0]
+        1 0 2 XTL16SI, // [a1 + 0] -> a2
+        XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+  ( -4 ) 11218141 CODE-U32,
+OSYMBOL testXTL16SIb
+
+  ( 0 ) 1 1 XTENTRY,   // rsp = ar1  framesize = 1*8
+  ( 3 ) -2 2 XTL32R,   // 11218141 -> ar2
+        2 1 0 XTS32I,  // ar2 -> [ar1 + 0]
+        1 1 2 XTL16SI, // [a1 + 2*1] -> a2
+        XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+  ( -4 ) 11218141 CODE-U32,
+OSYMBOL testXTL16UIa
+
+  ( 0 ) 1 1 XTENTRY,   // rsp = ar1  framesize = 1*8
+  ( 3 ) -2 2 XTL32R,   // 11218141 -> ar2
+        2 1 0 XTS32I,  // ar2 -> [ar1 + 0]
+        1 0 2 XTL16UI, // [a1 + 0] -> a2
+        XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+  ( -4 ) 11218141 CODE-U32,
+OSYMBOL testXTL16UIb
+
+  ( 0 ) 1 1 XTENTRY,   // rsp = ar1  framesize = 1*8
+  ( 3 ) -2 2 XTL32R,   // 11218141 -> ar2
+        2 1 0 XTS32I,  // ar2 -> [ar1 + 0]
+        1 1 2 XTL16UI, // [a1 + 2*1] -> a2
+        XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+  ( -4 ) 40000000 CODE-U32,
+OSYMBOL testXTLSI
+
+  ( 0 ) 1 1 XTENTRY,   // rsp = ar1  framesize = 1*8
+  ( 3 ) -2 3 XTL32R,   // 40000000 -> ar3
+        3 1 1 XTS32I,  // ar3 -> [ar1 + 1*4]
+        1 1 4 XTLSI,   // [ar1 + 1*4] -> fr4
+        4 2 XTRFR,     // fr4 -> ar2 // ar2 should be 2.0
+        XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+  ( -4 ) 40000000 CODE-U32,
+OSYMBOL testXTLSIPa
+
+  ( 0 ) 1 1 XTENTRY,   // rsp = ar1  framesize = 1*8
+  ( 3 ) -2 3 XTL32R,   // 40000000 -> ar3
+        3 1 0 XTS32I,  // ar3 -> [ar1 + 0*4]
+        0 3 XTMOVI,    // 0 -> ar3
+        3 1 1 XTS32I,  // ar3 -> [ar1 + 1*4]
+        1 3 XTMOV,     // ar1 -> ar3
+        3 1 4 XTLSIP,  // [ar3] -> fr4; ar3 + 1*4 -> ar3
+        4 2 XTRFR,     // fr4 -> ar2 // ar2 should be 2.0
+        XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+  ( -4 ) 40000000 CODE-U32,
+OSYMBOL testXTLSIPb
+
+  ( 0 ) 1 1 XTENTRY,   // rsp = ar1  framesize = 1*8
+  ( 3 ) -2 3 XTL32R,   // 40000000 -> ar3
+        3 1 0 XTS32I,  // ar3 -> [ar1 + 0*4]
+        0 3 XTMOVI,    // 0 -> ar3
+        3 1 1 XTS32I,  // ar3 -> [ar1 + 1*4]
+        1 3 XTMOV,     // ar1 -> ar3
+        3 1 4 XTLSIP,  // [ar3] -> fr4; ar3 + 1*4 -> ar3
+        3 1 2 XTSUB,   // ar3 - ar1 -> ar2  // ar2 should be 4
+        XTRETW.N,
+
+
+// HEX
+// PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+//  ( -4 ) 40000000 CODE-U32,
+// OSYMBOL testXTLSIUa
+
+//  ( 0 ) 1 1 XTENTRY,   // rsp = ar1  framesize = 1*8
+//  ( 3 ) -2 3 XTL32R,   // 40000000 -> ar3
+//        3 1 1 XTS32I,  // ar3 -> [ar1 + 1*4]
+//        0 3 XTMOVI,    // 0 -> ar3
+//        3 1 0 XTS32I,  // ar3 -> [ar1 + 0*4]
+//        1 3 XTMOV,     // ar1 -> ar3
+//        3 1 4 XTLSIU,  // [ar3 + 1*4] -> fr4; ar3 + 1*4 -> ar3
+//        4 2 XTRFR,     // fr4 -> ar2
+//        XTRETW.N,
+
+
+// HEX
+// PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+//  ( -4 ) 40000000 CODE-U32,
+// OSYMBOL testXTLSIUb
+
+//  ( 0 ) 1 1 XTENTRY,   // rsp = ar1  framesize = 1*8
+//  ( 3 ) -2 3 XTL32R,   // 40000000 -> ar3
+//        3 1 1 XTS32I,  // ar3 -> [ar1 + 1*4]
+//        0 3 XTMOVI,    // 0 -> ar3
+//        3 1 0 XTS32I,  // ar3 -> [ar1 + 0*4]
+//        1 3 XTMOV,     // ar1 -> ar3
+//        3 1 4 XTLSIU,  // [ar3 + 1*4] -> fr4; ar3 + 1*4 -> ar3
+//        3 1 2 XTSUB,   // ar3 - ar1 -> ar2  // ar2 should be 4
+//        XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTS8I
+
+  1 1 XTENTRY,   // rsp = ar1  framesize = 1 * 8  
+  0 2 XTMOVI,    // 0 -> ar2
+  2 1 0 XTS32I,  // ar2 -> [ar1 + 0*4]
+  789 2 XTMOVI,  // 789 -> ar2
+  2 1 3 XTS8I,   // ar2 -> [ar1 + 3]
+  1 0 2 XTL32I,  // [ar1 + 0*4] -> ar2 // ar2 should be 89000000
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+
+OSYMBOL testXTS16I
+
+  1 1 XTENTRY,   // rsp = ar1  framesize = 2 * 8  
+  0 2 XTMOVI,    // 0 -> ar2
+  2 1 0 XTS32I,  // ar2 -> [ar1 + 0*4]
+  2 1 1 XTS32I,  // ar2 -> [ar1 + 1*4]
+  789 2 XTMOVI,  // 789 -> ar2
+  2 1 3 XTS16I,  // ar2 -> [ar1 + 3*2]
+  1 1 2 XTL32I,  // [ar1 + 1*4] -> ar2 // ar2 should be 07890000
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+OSYMBOL testXTSSIPa
+
+  ( 0 ) 1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+  ( 3 ) -9 3 XTMOVI,      // -9 -> ar3
+        3 0 4 XTFLOAT.S,  // ar2 * (2^0) -> fr4
+        1 3 XTMOV,        // ar1 -> ar3
+        4 3 1 XTSSIP,     // fr4 -> [ar3]; ar3 + 1*4 -> ar3
+        4 2 XTRFR,        // fr4 -> ar2
+        XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+OSYMBOL testXTSSIPb
+
+  ( 0 ) 1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+  ( 3 ) -9 3 XTMOVI,      // -9 -> ar3
+        3 0 4 XTFLOAT.S,  // ar2 * (2^0) -> fr4
+        1 3 XTMOV,        // ar1 -> ar3
+        4 3 1 XTSSIP,     // fr4 -> [ar3]; ar3 + 1*4 -> ar3
+        3 1 2 XTSUB,      // ar3 -> ar2
+        XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+OSYMBOL testN32toAR
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+  23974982 AR2 N32->AR,
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+OSYMBOL testNtoARa
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+  0 AR2 N->AR,
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+OSYMBOL testNtoARb
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+  60 AR2 N->AR,
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+OSYMBOL testNtoARc
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+  800 AR2 N->AR,
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+OSYMBOL testARtoAR
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+  231 AR3 N->AR,
+  AR3 AR2 AR->AR,
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+OSYMBOL testARtoF32R
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+  234 AR3 N->AR,
+  AR3 FR0 AR->F32R,
+  FR0 AR2 XTRFR,
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+OSYMBOL testF32RtoF32R
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+  234 AR3 N->AR,
+  AR3 FR0 AR->F32R,
+  FR0 FR1 F32R->F32R,
+  FR0 AR2 XTRFR,
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+OSYMBOL testF32RtoAR
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+  234 AR3 N->AR,
+  AR3 FR0 AR->F32R,
+  FR0 AR2 F32R->AR,
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+OSYMBOL testbracketARtoAR
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+  234 AR3 N->AR,
+  AR3 AR1 0 XTS32I,
+  AR1 AR2 [AR]->AR,
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+OSYMBOL testARtobracketAR
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+  234 AR3 N->AR,
+  AR3 AR1 AR->[AR],
+  AR1 AR2 [AR]->AR,
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+OSYMBOL testU8bracketARtoAR
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+  234 AR3 N->AR,
+  AR3 AR1 AR->[AR],
+  AR1 AR2 U8[AR]->AR, // should be 34
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+OSYMBOL testU16bracketARtoAR
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+  38378234 AR3 N->AR,
+  AR3 AR1 AR->[AR],
+  AR1 AR2 U16[AR]->AR, // should be 8234
+  XTRETW.N, 
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+OSYMBOL testN16bracketARtoAR
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+  38378234 AR3 N->AR,
+  AR3 AR1 AR->[AR],
+  AR1 AR2 N16[AR]->AR, // should be FFFF8234
+  XTRETW.N, 
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+OSYMBOL testARtoU8bracketAR
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+  0 AR3 N->AR,
+  AR3 AR1 AR->[AR],
+  38378234 AR3 N->AR,
+  AR3 AR1 AR->U8[AR],
+  AR1 AR2 [AR]->AR, // should be 34
+  XTRETW.N, 
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+OSYMBOL testARtoU16bracketAR
+
+  1 1 XTENTRY,      // rsp = ar1  framesize = 1*8
+  0 AR3 N->AR,
+  AR3 AR1 AR->[AR],
+  38378234 AR3 N->AR,
+  AR3 AR1 AR->U16[AR],
+  AR1 AR2 [AR]->AR, // should be 8234
+  XTRETW.N,
+
+
+HEX
+-1 PSCRATCHREG !  // so same reg case where you need xtadd, will fail
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+OSYMBOL testARplusNtoARa
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+  235 AR3 N->AR,
+  3 -1 2 AR+N->AR,  // expecting 234
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+OSYMBOL testARplusNtoARb
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+  235 AR3 N->AR,
+  3 0F 2 AR+N->AR,  // expecting 244
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+OSYMBOL testARplusNtoARc
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+  235 AR3 N->AR,
+  3 00 2 AR+N->AR,  // expecting 235
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+OSYMBOL testARplusNtoARd
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+  235 AR3 N->AR,
+  3 10 2 AR+N->AR,  // expecting 245
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+OSYMBOL testARplusNtoARe
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+  235 AR3 N->AR,
+  3 7F 2 AR+N->AR,  // expecting 2B4
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+OSYMBOL testARplusNtoARf
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+  235 AR3 N->AR,
+  3 80 2 AR+N->AR,  // expecting 2B5
+  XTRETW.N,
+
+
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+OSYMBOL testARplusNtoARg
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+  235 AR2 N->AR,
+  2 00 2 AR+N->AR,  // expecting 235
+  XTRETW.N,
+
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+OSYMBOL testARplusNtoARh
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+  235 AR2 N->AR,
+  2 -1 2 AR+N->AR,  // expecting 234
+  XTRETW.N,
+
+
+AR3 PSCRATCHREG ! // so same reg need xtadd, case will succeed
+PCURRENTCOMPILEBUFFER @ alignbufto4 
+OSYMBOL testARplusNtoARi
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+  235 AR2 N->AR,
+  2 80 2 AR+N->AR,  // expecting 2B5
+  XTRETW.N,
+
+
+HEX
+NOREG PSCRATCHREG ! // so same reg need xtadd, case will succeed
+PCURRENTCOMPILEBUFFER @ alignbufto4
+OHERE CONSTANT oTestOffsetA 18936385 CODE-U32,
+
+OSYMBOL testBracketOtoARa
+
+  ( 0 ) 1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+  ( 3 ) oTestOffsetA AR2 [O]->AR,
+  XTRETW.N,
+
+
+HEX
+NOREG PSCRATCHREG ! // so same reg need xtadd, case will succeed
+PCURRENTCOMPILEBUFFER @ alignbufto4
+OHERE CONSTANT oTestOffsetB 18936385 CODE-U32,
+
+OSYMBOL testBracketOtoARb
+
+  ( 0 ) 1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+  ( 3 ) XTNOP.N,
+  ( 5 ) oTestOffsetB AR2 [O]->AR,
+  XTRETW.N,
+
+
+HEX
+NOREG PSCRATCHREG ! // so same reg need xtadd, case will succeed
+PCURRENTCOMPILEBUFFER @ alignbufto4
+OHERE CONSTANT oTestOffsetC 18936385 CODE-U32,
+
+OSYMBOL testBracketOtoARc
+
+  ( 0 ) 1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+  ( 3 ) XTNOP,
+  ( 6 ) oTestOffsetC AR2 [O]->AR,
+  XTRETW.N,
+
+
+HEX
+NOREG PSCRATCHREG ! // so same reg need xtadd, case will succeed
+PCURRENTCOMPILEBUFFER @ alignbufto4
+OHERE CONSTANT oTestOffsetD 18936385 CODE-U32,
+
+OSYMBOL testBracketOtoARd
+
+  ( 0 ) 1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+  ( 3 ) XTNOP.N,
+  ( 5 ) XTNOP.N,
+  ( 7 ) oTestOffsetD AR2 [O]->AR,
+  XTRETW.N,
+
+
+HEX
+NOREG PSCRATCHREG ! // so same reg need xtadd, case will succeed
+PCURRENTCOMPILEBUFFER @ alignbufto4
+OHERE CONSTANT oTestOffsetE 18936385 CODE-U32,
+
+OSYMBOL testBracketOtoARe
+
+  ( 0 ) 1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+  ( 3 ) XTNOP.N,
+  ( 5 ) XTNOP,
+  ( 8 ) oTestOffsetE AR2 [O]->AR,
+  XTRETW.N,
+
+
+// PCURRENTCOMPILEBUFFER @ GETSBUFFER DUMP
+
+PCURRENTCOMPILEBUFFER @ GETSBUFFER EH makeexpdotobuf CONSTANT mydotobufid
+
+mydotobufid $" CrossTest.o" SAVEFILE$
+
+mydotobufid FREEBUFFER
+
+FREE-FLAT-OSYMBOL-BUF
+( // current compile buf is freed )
+( //  and current compile buf is set to the oldcurrentcompilebbuf )
+( oldcurrentcompilebufid -R- )
+( importelementid_importhlistid exportelementid_exporthlistid -EH- )
+
+CRLF ." Finished compiling crosstest.o for ESP32-S3" 
+CRLF
+CRLF ." To run the test on an ESP32-S3:"
+CRLF ." - If you haven't already done so, set up the ESP32-S3 Xtensa build environment"
+CRLF ." - Make a duplicate of the esp/hello_world/ project"
+CRLF ." - Rename the project folder crosstest"
+CRLF ." - Delete the files in /esp/crosstest/main/
+CRLF ." - Copy the files in /mainreplacement/ to project /esp/crosstest/main/
+CRLF ." - Copy CrossTest.o to project /esp/crosstest/main/
+CRLF ." - cd into esp/crosstest/"
+CRLF ." - Initialize the idf.py system with this command:"
+CRLF ." -   . $HOME/esp/esp-idf/export.sh"
+CRLF ." - Then execute these commands:"
+CRLF ." -   idf.py fullclean"
+CRLF ." -   idf.py build"
+CRLF ." -   idf.py flash"
+CRLF ." -   idf.py monitor"
+CRLF CRLF
+
+
+
+// stuff after here is not compiled
+TRUE ?END-EVALUATE
+
+HEX
+PCURRENTCOMPILEBUFFER @ alignbufto4  
+
+OSYMBOL testXTRSQRT0S ( fr0 = a; fr1 = y; fr2 = t1; fr3 = hN; fr4 = t2; fr5 = dN; fr6 = h2; fr7 = R;
+                        fr8 = t5; fr9 = H )  
+
+  1 0 XTENTRY,      // rsp = ar1  framesize = 0*8
+
+  40 2 XTMOVI,      // 40 -> ar2
+
+  2 0 0 XTFLOAT.S,  // ar2 / (2^0) -> fr0  so fr0 should be 64.0; b=fr0 
+
+  0 1 XTSQRT0.S,    // sqrt(fr0) -> fr1          ( sqrt(a) -> y approximation )
+
+  0 2 XTCONST.S,    // 0.0 -> fr2                ( 0.0 -> t1 )
+
+  1 1 2 XTMADDN.S,  // fr2 + (fr1 * fr1) -> fr2  ( t1 + (y*y) -> t1 )
+
+  0 3 XTNEXP01.S,   // negative reduced range (a) -> hN
+
+  3 4 XTCONST.S,    // 0.5 -> fr4  ( 0.5 -> t2 )
+
+  4 3 XTADDEXP.S,   // Half of negative reduced range (t2) -> hN
+
+  2 3 4 XTMADDN.S,  // Error thingy
+
+  0 5 XTNEXP01.S,   // negative reduced range (a) -> dN
+
+  5 6 XTNEG.S,      // reduced range argument dN -> h2
+
+  1 4 1 XTMADDN.S,  // y + (t2 * y) -> y  second recip approx
+
+  0 7 XTCONST.S,    // 0.0 -> R
+
+  0 8 XTCONST.S,    // 0.0 -> t5
+
+  0 9 XTCONST.S,    // 0.0 -> H
+
+  // looks like y2 not declared soo... how can they be using it?
+
+  1 2 XTRFR,        // fr1 -> ar2                ( should be 1/64 )
+
+  XTRETW.N,
+
+
+

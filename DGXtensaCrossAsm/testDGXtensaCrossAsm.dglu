@@ -1,0 +1,692 @@
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2023 James Patrick Norris
+//
+//    This file is part of DGXtensaElfDotoMaker v1.0
+//
+//    DGXtensaElfDotoMaker v1.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DGXtensaElfDotoMaker v1.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DGXtensaElfDotoMaker v1.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// September 28, 2024         //
+// version 1.0                //
+// /////////////////////////////
+
+CRLF ." loading DGXtensa Cross Assembler"
+$" DGXtensaCrossAsm.dglu" INCLUDEFILE$
+
+CRLF ." testing DGXtensa cross assembler"
+
+: TESTOPPOSITEBRANCHCODE ( -- )
+    CRLF ." testing OPPOSITEBRANCHCODE"
+
+    155 ( -- stackmarker )
+
+    BCLR OPPOSITEBRANCHCODE BSET <> IF
+      CRLF ERROR" BCLR did not give BSET " NAME>E EXIT
+    THEN 
+    BSET OPPOSITEBRANCHCODE BCLR <> IF
+      CRLF ERROR" BSET did not give BCLR " NAME>E EXIT
+    THEN
+
+    EQ OPPOSITEBRANCHCODE NE <> IF
+      CRLF ERROR" EQ did not give NE " NAME>E EXIT
+    THEN
+    NE OPPOSITEBRANCHCODE EQ <> IF
+      CRLF ERROR" NE did not give EQ " NAME>E EXIT
+    THEN
+
+    GE OPPOSITEBRANCHCODE LT <> IF
+      CRLF ERROR" GE did not give LT " NAME>E EXIT
+    THEN
+    LT OPPOSITEBRANCHCODE GE <> IF
+      CRLF ERROR" LT did not give GE " NAME>E EXIT
+    THEN
+
+    GEU OPPOSITEBRANCHCODE LTU <> IF
+      CRLF ERROR" GEU did not give LTU " NAME>E EXIT
+    THEN
+    LTU OPPOSITEBRANCHCODE GEU <> IF
+      CRLF ERROR" LTU did not give GEU " NAME>E EXIT
+    THEN
+
+    ALL OPPOSITEBRANCHCODE NALL <> IF
+      CRLF ERROR" ALL did not give NALL " NAME>E EXIT
+    THEN
+    NALL OPPOSITEBRANCHCODE ALL <> IF
+      CRLF ERROR" NALL did not give ALL " NAME>E EXIT
+    THEN
+
+    ANY OPPOSITEBRANCHCODE NONE <> IF
+      CRLF ERROR" ANY did not give NONE " NAME>E EXIT
+    THEN
+    NONE OPPOSITEBRANCHCODE ANY <> IF
+      CRLF ERROR" NONE did not give ANY " NAME>E EXIT
+    THEN
+
+    BITF OPPOSITEBRANCHCODE BITT <> IF
+      CRLF ERROR" BITF did not give BITT " NAME>E EXIT
+    THEN
+    BITT OPPOSITEBRANCHCODE BITF <> IF
+      CRLF ERROR" BITT did not give BITF " NAME>E EXIT
+    THEN
+
+    EQZ OPPOSITEBRANCHCODE NEZ <> IF
+      CRLF ERROR" EQZ did not give NEZ " NAME>E EXIT
+    THEN
+    NEZ OPPOSITEBRANCHCODE EQZ <> IF
+      CRLF ERROR" NEZ did not give EQZ " NAME>E EXIT
+    THEN
+
+    GEZ OPPOSITEBRANCHCODE LTZ <> IF
+      CRLF ERROR" GEZ did not give LTZ " NAME>E EXIT
+    THEN
+    LTZ OPPOSITEBRANCHCODE GEZ <> IF
+      CRLF ERROR" LTZ did not give GEZ " NAME>E EXIT
+    THEN
+
+    ALWAYS OPPOSITEBRANCHCODE NEVER <> IF
+      CRLF ERROR" ALWAYS did not give NEVER " NAME>E EXIT
+    THEN 
+    NEVER OPPOSITEBRANCHCODE ALWAYS <> IF
+      CRLF ERROR" NEVER did not give ALWAYS " NAME>E EXIT
+    THEN
+
+    GT OPPOSITEBRANCHCODE LE <> IF
+      CRLF ERROR" GT did not give LE " NAME>E EXIT
+    THEN
+    LE OPPOSITEBRANCHCODE GT <> IF
+      CRLF ERROR" LE did not give GT " NAME>E EXIT
+    THEN
+
+    GTU OPPOSITEBRANCHCODE LEU <> IF
+      CRLF ERROR" GTU did not give LEU " NAME>E EXIT
+    THEN
+    LEU OPPOSITEBRANCHCODE GTU <> IF
+      CRLF ERROR" LEU did not give GTU " NAME>E EXIT
+    THEN
+
+    155 <> IF 
+      ERROR" stack marker incorrect " NAME>E EXIT 
+    THEN
+;
+
+TESTOPPOSITEBRANCHCODE
+
+HEX
+: TESTSHORTBRANCH, { px | -- } 
+
+    CRLF ." testing SHORTBRANCH,"
+
+    144
+
+    OHERE TO px
+    AR2 0 EQZ SHORTBRANCH, BARHERE <> IF
+      ERROR" EQZ after branch address incorrect " NAME>E
+    THEN
+    OHERE px - 3 <> IF 
+      ERROR" EQZ length incorrect " NAME>E EXIT 
+    THEN
+    px PCURRENTCOMPILEBUFFER @ O>P C@ 16 <> IF
+      ERROR" EQZ opcode incorrect " NAME>E
+      CRLF ." EQZ opcode should be 16, got "
+      px PCURRENTCOMPILEBUFFER @ O>P C@ U.
+      px PCURRENTCOMPILEBUFFER @ O>P 3 DUMP
+      EXIT 
+    THEN
+    px PCURRENTCOMPILEBUFFER @ O>P 1+ C@ 02 <> IF
+      ERROR" EQZ register & hi offset incorrect " NAME>E 
+      CRLF ." EQZ register & hi offset should be 02, got "
+      px PCURRENTCOMPILEBUFFER @ O>P 1+ C@ U.
+      px PCURRENTCOMPILEBUFFER @ O>P 3 DUMP
+      EXIT 
+    THEN
+    px PCURRENTCOMPILEBUFFER @ O>P 2 + C@ 00 <> IF
+      ERROR" EQZ low offset incorrect " NAME>E EXIT 
+    THEN
+
+    OHERE TO px
+    AR2 0 NEZ SHORTBRANCH, BARHERE <> IF
+      ERROR" NEZ after branch address incorrect " NAME>E
+    THEN
+    OHERE px - 3 <> IF 
+      ERROR" NEZ length incorrect " NAME>E EXIT 
+    THEN
+    px PCURRENTCOMPILEBUFFER @ O>P C@ 56 <> IF
+      ERROR" NEZ opcode incorrect " NAME>E
+      CRLF ." NEZ opcode should be 56, got "
+      px PCURRENTCOMPILEBUFFER @ O>P C@ U.
+      px PCURRENTCOMPILEBUFFER @ O>P 3 DUMP
+      EXIT 
+    THEN
+    px PCURRENTCOMPILEBUFFER @ O>P 1+ C@ 02 <> IF
+      ERROR" NEZ register & hi offset incorrect " NAME>E 
+      CRLF ." NEZ register & hi offset should be 02, got "
+      px PCURRENTCOMPILEBUFFER @ O>P 1+ C@ U.
+      px PCURRENTCOMPILEBUFFER @ O>P 3 DUMP
+    EXIT 
+    THEN
+    px PCURRENTCOMPILEBUFFER @ O>P 2 + C@ 00 <> IF
+      ERROR" NEZ low offset incorrect " NAME>E EXIT 
+    THEN
+
+    OHERE TO px
+    AR2 0 GEZ SHORTBRANCH, BARHERE <> IF
+      ERROR" GEZ after branch address incorrect " NAME>E
+    THEN
+    OHERE px - 3 <> IF 
+      ERROR" GEZ length incorrect " NAME>E EXIT 
+    THEN
+    px PCURRENTCOMPILEBUFFER @ O>P C@ D6 <> IF
+      ERROR" GEZ opcode incorrect " NAME>E
+      CRLF ." GEZ opcode should be D6, got "
+      px PCURRENTCOMPILEBUFFER @ O>P C@ U.
+      px PCURRENTCOMPILEBUFFER @ O>P 3 DUMP
+      EXIT 
+    THEN
+    px PCURRENTCOMPILEBUFFER @ O>P 1+ C@ 02 <> IF
+      ERROR" GEZ register & hi offset incorrect " NAME>E 
+      CRLF ." GEZ register & hi offset should be 02, got "
+      px PCURRENTCOMPILEBUFFER @ O>P 1+ C@ U.
+      px PCURRENTCOMPILEBUFFER @ O>P 3 DUMP
+    EXIT 
+    THEN
+    px PCURRENTCOMPILEBUFFER @ O>P 2 + C@ 00 <> IF
+      ERROR" NEZ low offset incorrect " NAME>E EXIT 
+    THEN
+
+    OHERE TO px
+    AR2 0 LTZ SHORTBRANCH, BARHERE <> IF
+      ERROR" LTZ after branch address incorrect " NAME>E
+    THEN
+    OHERE px - 3 <> IF 
+      ERROR" LTZ length incorrect " NAME>E EXIT 
+    THEN
+    px PCURRENTCOMPILEBUFFER @ O>P C@ 96 <> IF
+      ERROR" LTZ opcode incorrect " NAME>E
+      CRLF ." LTZ opcode should be 96, got "
+      px PCURRENTCOMPILEBUFFER @ O>P C@ U.
+      px PCURRENTCOMPILEBUFFER @ O>P 3 DUMP
+      EXIT 
+    THEN
+    px PCURRENTCOMPILEBUFFER @ O>P 1+ C@ 02 <> IF
+      ERROR" LTZ register & hi offset incorrect " NAME>E 
+      CRLF ." LTZ register & hi offset should be 02, got "
+      px PCURRENTCOMPILEBUFFER @ O>P 1+ C@ U.
+      px PCURRENTCOMPILEBUFFER @ O>P 3 DUMP
+    EXIT 
+    THEN
+    px PCURRENTCOMPILEBUFFER @ O>P 2 + C@ 00 <> IF
+      ERROR" NEZ low offset incorrect " NAME>E EXIT 
+    THEN
+
+    OHERE TO px
+    BR2 0 BITF SHORTBRANCH, BARHERE <> IF
+      ERROR" BITF after branch address incorrect " NAME>E
+    THEN
+    OHERE px - 3 <> IF 
+      ERROR" BITF length incorrect " NAME>E EXIT 
+    THEN
+    px PCURRENTCOMPILEBUFFER @ O>P U16@ F0FF AND 0076 <> IF
+      ERROR" BITF opcode incorrect " NAME>E
+      CRLF ." BITF opcode should be 0076, got "
+      px PCURRENTCOMPILEBUFFER @ O>P U16@ F0FF AND U.
+      px PCURRENTCOMPILEBUFFER @ O>P 3 DUMP
+      EXIT 
+    THEN
+    px PCURRENTCOMPILEBUFFER @ O>P 1+ C@ 0F AND 02 <> IF
+      ERROR" BITF register incorrect " NAME>E 
+      CRLF ." BITF register should be 02, got "
+      px PCURRENTCOMPILEBUFFER @ O>P 1+ C@ 0F AND U.
+      px PCURRENTCOMPILEBUFFER @ O>P 3 DUMP
+    EXIT 
+    THEN
+    px PCURRENTCOMPILEBUFFER @ O>P 2 + C@ 00 <> IF
+      ERROR" BITF offset incorrect " NAME>E EXIT 
+    THEN
+
+    OHERE TO px
+    BR2 0 BITT SHORTBRANCH, BARHERE <> IF
+      ERROR" BITT after branch address incorrect " NAME>E
+    THEN
+    OHERE px - 3 <> IF 
+      ERROR" BITT length incorrect " NAME>E EXIT 
+    THEN
+    px PCURRENTCOMPILEBUFFER @ O>P U16@ F0FF AND 1076 <> IF
+      ERROR" BITF opcode incorrect " NAME>E
+      CRLF ." BITF opcode should be 1076, got "
+      px PCURRENTCOMPILEBUFFER @ O>P U16@ F0FF AND U.
+      px PCURRENTCOMPILEBUFFER @ O>P 3 DUMP
+      EXIT 
+    THEN
+    px PCURRENTCOMPILEBUFFER @ O>P 1+ C@ 0F AND 02 <> IF
+      ERROR" BITF register incorrect " NAME>E 
+      CRLF ." BITF register should be 02, got "
+      px PCURRENTCOMPILEBUFFER @ O>P 1+ C@ 0F AND U.
+      px PCURRENTCOMPILEBUFFER @ O>P 3 DUMP
+    EXIT 
+    THEN
+    px PCURRENTCOMPILEBUFFER @ O>P 2 + C@ 00 <> IF
+      ERROR" NEZ offset incorrect " NAME>E EXIT 
+    THEN
+
+    OHERE TO px
+    AR5 AR3 0 LT SHORTBRANCH, BARHERE <> IF
+      ERROR" LT after branch address incorrect " NAME>E
+    THEN
+    OHERE px - 3 <> IF 
+      ERROR" LT length incorrect " NAME>E EXIT 
+    THEN
+    px PCURRENTCOMPILEBUFFER @ O>P U16@ F00F AND 2007 <> IF
+      ERROR" LT opcode incorrect " NAME>E
+      CRLF ." LT opcode should be 2007, got "
+      px PCURRENTCOMPILEBUFFER @ O>P U16@ F00F AND U.
+      px PCURRENTCOMPILEBUFFER @ O>P 3 DUMP
+      EXIT 
+    THEN
+    px PCURRENTCOMPILEBUFFER @ O>P U16@ 0FF0 AND 0530 <> IF
+      ERROR" LT register s & register t incorrect " NAME>E 
+      CRLF ." LT register s & register t should be 0530, got "
+      px PCURRENTCOMPILEBUFFER @ O>P U16@ 0FF0 AND U.
+      px PCURRENTCOMPILEBUFFER @ O>P 3 DUMP
+    EXIT 
+    THEN
+    px PCURRENTCOMPILEBUFFER @ O>P 2 + C@ 00 <> IF
+      ERROR" LT offset incorrect " NAME>E EXIT 
+    THEN
+
+    OHERE TO px
+    0 ALWAYS SHORTBRANCH, BARHERE <> IF
+      ERROR" ALWAYS after branch address incorrect " NAME>E
+    THEN
+    OHERE px - 3 <> IF 
+      ERROR" ALWAYS length incorrect " NAME>E EXIT 
+    THEN
+    px PCURRENTCOMPILEBUFFER @ O>P C@ 3F AND 06 <> IF
+      ERROR" ALWAYS opcode incorrect " NAME>E
+      CRLF ." ALWAYS opcode should be 06, got "
+      px PCURRENTCOMPILEBUFFER @ O>P C@ 3F AND U.
+      px PCURRENTCOMPILEBUFFER @ O>P 3 DUMP
+      EXIT 
+    THEN
+    px PCURRENTCOMPILEBUFFER @ O>P U24@ 6 RSHIFT 0 <> IF
+      ERROR" ALWAYS offset incorrect " NAME>E EXIT 
+    THEN
+
+    OHERE TO px
+    AR5 AR3 0 LE SHORTBRANCH, BARHERE <> IF
+      ERROR" LE after branch address incorrect " NAME>E
+    THEN
+    OHERE px - 3 <> IF 
+      ERROR" LE length incorrect " NAME>E EXIT 
+    THEN
+    px PCURRENTCOMPILEBUFFER @ O>P U16@ F00F AND A007 <> IF
+      ERROR" LE opcode incorrect " NAME>E
+      CRLF ." LE opcode should be A007, got "
+      px PCURRENTCOMPILEBUFFER @ O>P U16@ F00F AND U.
+      px PCURRENTCOMPILEBUFFER @ O>P 3 DUMP
+      EXIT 
+    THEN
+    px PCURRENTCOMPILEBUFFER @ O>P U16@ 0FF0 AND 0350 <> IF
+      ERROR" LE register t & register s incorrect " NAME>E 
+      CRLF ." LE register t & register s should be 0350, got "
+      px PCURRENTCOMPILEBUFFER @ O>P U16@ 0FF0 AND U.
+      px PCURRENTCOMPILEBUFFER @ O>P 3 DUMP
+    EXIT 
+    THEN
+    px PCURRENTCOMPILEBUFFER @ O>P 2 + C@ 00 <> IF
+      ERROR" LE offset incorrect " NAME>E EXIT 
+    THEN
+
+    144 <> IF 
+      .S
+      ERROR" stack marker incorrect " NAME>E EXIT 
+    THEN
+
+;
+
+TESTSHORTBRANCH,
+
+
+: TESTRESOLVE-BRANCH, { px | -- } 
+
+    CRLF ." testing RESOLVE-BRANCH,"
+
+    133
+
+    OHERE TO px
+    ( 0 ) AR4 AR3 0 LT SHORTBRANCH, ( -- afterbranchaddress )
+    ( 3 ) XTNOP, 
+    ( 6 ) XTNOP,
+    ( 9 ) BARHERE SWAP 
+    ( -- targetaddress afterbranchaddress ) RESOLVE-BRANCH, ?ERRORIF NAME>E EXIT THEN
+    px PCURRENTCOMPILEBUFFER @ O>P U24@ 052437 <> IF
+      CRLF ." expected 052437, got " px PCURRENTCOMPILEBUFFER @ O>P U24@ U. 
+      ERROR" LT opcode incorrect " NAME>E EXIT
+    THEN
+
+    OHERE TO px
+    ( 0 ) AR3 0 NEZ SHORTBRANCH, ( -- afterbranchaddress )
+    ( 3 ) XTNOP, 
+    ( 6 ) XTNOP,
+    ( 9 ) BARHERE SWAP 
+    ( -- targetaddress afterbranchaddress ) RESOLVE-BRANCH, ?ERRORIF NAME>E EXIT THEN
+    px PCURRENTCOMPILEBUFFER @ O>P U24@ 005356 <> IF
+      CRLF ." expected 005356, got " px PCURRENTCOMPILEBUFFER @ O>P U24@ U. 
+      ERROR" NEZ opcode incorrect " NAME>E EXIT
+    THEN
+
+    OHERE TO px
+    ( 0 ) 0 ALWAYS SHORTBRANCH, ( -- afterbranchaddress )
+    ( 3 ) XTNOP, 
+    ( 6 ) XTNOP,
+    ( 9 ) BARHERE SWAP 
+    ( -- targetaddress afterbranchaddress ) RESOLVE-BRANCH, ?ERRORIF NAME>E EXIT THEN
+    px PCURRENTCOMPILEBUFFER @ O>P U24@ 000146 <> IF
+      CRLF ." expected 000146, got " px PCURRENTCOMPILEBUFFER @ O>P U24@ U. 
+      ERROR" ALWAYS opcode incorrect " NAME>E EXIT
+    THEN
+
+    133 <> IF 
+      ERROR" stack marker incorrect " NAME>E EXIT 
+    THEN
+;
+
+TESTRESOLVE-BRANCH,
+
+
+: TESTIF, { ox | -- } 
+
+    CRLF ." testing IF,"
+
+    188
+
+    OHERE TO ox
+    ( 0 ) AR3 EQZ IF, ( -- afterbranchaddress )
+    ( 3 ) XTNOP, 
+    ( 6 ) XTNOP,
+    ( 9 ) BARHERE SWAP 
+    ( -- targetaddress afterbranchaddress ) RESOLVE-BRANCH, ?ERRORIF NAME>E EXIT THEN
+    ox PCURRENTCOMPILEBUFFER @ O>P U24@ 005356 <> IF
+      CRLF ." resolved branch opcode wrong, expected 005356, got " 
+      ox PCURRENTCOMPILEBUFFER @ O>P U24@ U. 
+      ERROR" EQZ IF, opcode incorrect " NAME>E EXIT
+    THEN
+
+    188 <> IF 
+      ERROR" stack marker incorrect " NAME>E EXIT 
+    THEN
+;
+
+TESTIF,
+
+
+: TESTTHEN, { px | -- } 
+
+    CRLF ." testing THEN,"
+
+    199
+
+    OHERE TO px
+    ( 0 ) AR3 EQZ IF, ( -- afterbranchaddress )
+    ( 3 ) XTNOP, 
+    ( 6 ) XTNOP,
+    ( 9 ) THEN, 
+    px PCURRENTCOMPILEBUFFER @ O>P U24@ 005356 <> IF
+      CRLF ." expected 005356, got " px PCURRENTCOMPILEBUFFER @ O>P U24@ U. 
+      ERROR" EQZ IF, resolved with THEN, opcode incorrect " NAME>E EXIT
+    THEN
+
+    199 <> IF 
+      ERROR" stack marker incorrect " NAME>E EXIT 
+    THEN
+;
+
+TESTTHEN,
+
+
+: TESTELSE, { ox | -- } 
+
+    CRLF ." testing ELSE,"
+
+    144
+
+    OHERE TO ox
+    ( 00 ) AR3 EQZ IF, ( -- afterbranchaddress )
+    ( 03 )   XTNOP, 
+    ( 06 ) ELSE,
+    ( 09 )   XTNOP,
+    ( 0C )   XTNOP,
+    ( 0F ) THEN,
+
+    ox PCURRENTCOMPILEBUFFER @ O>P U24@ 005356 <> IF
+      CRLF ." expected 005356, got " ox PCURRENTCOMPILEBUFFER @ O>P U24@ U. 
+      ERROR" EQZ IF, resolved with ELSE, opcode incorrect " NAME>E EXIT
+    THEN
+
+    ox 6 + PCURRENTCOMPILEBUFFER @ O>P U24@ 000146 <> IF
+      CRLF ." expected 000146, got " ox 6 + PCURRENTCOMPILEBUFFER @ O>P U24@ U. 
+      ERROR" ELSE, resolved with THEN, opcode incorrect " NAME>E EXIT
+    THEN
+
+    144 <> IF 
+      ERROR" stack marker incorrect " NAME>E EXIT 
+    THEN
+;
+
+TESTELSE,
+
+HEX
+: TEST?UNTILSHORTBRANCH { ox | -- } 
+
+    CRLF ." testing ?UNTILSHORTBRANCH"
+
+    213
+
+
+    BARHERE 3 - AR2 NEZ ?UNTILSHORTBRANCH TRUE <> IF     
+      ERROR" NEZ -7 case did not get TRUE " NAME>E EXIT 
+    THEN 
+    2DROP DROP
+    
+    DUP 213 <> IF 
+      ERROR" stack marker incorrect after NEZ -7 case" NAME>E EXIT 
+    THEN
+
+    BARHERE 7FC - AR2 NEZ ?UNTILSHORTBRANCH TRUE <> IF     
+      ERROR" NEZ -800 case did not get TRUE " NAME>E EXIT 
+    THEN 
+    2DROP DROP
+    
+    DUP 213 <> IF 
+      ERROR" stack marker incorrect after NEZ -800 case" NAME>E EXIT 
+    THEN
+
+    BARHERE 7FD - AR2 NEZ ?UNTILSHORTBRANCH FALSE <> IF     
+      ERROR" NEZ -801 case did not get FALSE " NAME>E EXIT 
+    THEN 
+    2DROP DROP
+    
+    DUP 213 <> IF 
+      ERROR" stack marker incorrect after NEZ -801 case" NAME>E EXIT 
+    THEN
+
+
+    BARHERE 3 - BR2 BITT ?UNTILSHORTBRANCH TRUE <> IF     
+      ERROR" BITT -7 case did not get TRUE " NAME>E EXIT 
+    THEN 
+    2DROP DROP
+    
+    DUP 213 <> IF 
+      ERROR" stack marker incorrect after BITT -7 case" NAME>E EXIT 
+    THEN
+
+    BARHERE 7C - BR2 BITT ?UNTILSHORTBRANCH TRUE <> IF     
+      ERROR" BITT -80 case did not get TRUE " NAME>E EXIT 
+    THEN 
+    2DROP DROP
+    
+    DUP 213 <> IF 
+      ERROR" stack marker incorrect after BITT -80 case" NAME>E EXIT 
+    THEN
+
+    BARHERE 7D - BR2 BITT ?UNTILSHORTBRANCH FALSE <> IF     
+      ERROR" BITT -81 case did not get FALSE " NAME>E EXIT 
+    THEN 
+    2DROP DROP
+    
+    DUP 213 <> IF 
+      ERROR" stack marker incorrect after BITT -80 case" NAME>E EXIT 
+    THEN
+
+
+    BARHERE 3 - AR2 AR3 NE ?UNTILSHORTBRANCH TRUE <> IF     
+      ERROR" NE -7 case did not get TRUE " NAME>E EXIT 
+    THEN 
+    2DROP 2DROP
+    
+    DUP 213 <> IF 
+      ERROR" stack marker incorrect after BITT -7 case" NAME>E EXIT 
+    THEN
+
+    BARHERE 7C - AR2 AR3 NE ?UNTILSHORTBRANCH TRUE <> IF     
+      ERROR" NE -80 case did not get TRUE " NAME>E EXIT 
+    THEN 
+    2DROP 2DROP
+    
+    DUP 213 <> IF 
+      ERROR" stack marker incorrect after BITT -80 case" NAME>E EXIT 
+    THEN
+
+    BARHERE 7D - AR2 AR3 NE ?UNTILSHORTBRANCH FALSE <> IF     
+      ERROR" NE -81 case did not get FALSE " NAME>E EXIT 
+    THEN 
+    2DROP 2DROP
+    
+    DUP 213 <> IF 
+      ERROR" stack marker incorrect after BITT -80 case" NAME>E EXIT 
+    THEN
+
+
+    BARHERE 3 - ALWAYS ?UNTILSHORTBRANCH TRUE <> IF     
+      ERROR" ALWAYS -7 case did not get TRUE " NAME>E EXIT 
+    THEN 
+    2DROP
+    
+    DUP 213 <> IF 
+      ERROR" stack marker incorrect after ALWAYS -7 case" NAME>E EXIT 
+    THEN
+
+    BARHERE 1FFFC - ALWAYS ?UNTILSHORTBRANCH TRUE <> IF     
+      ERROR" ALWAYS -20000 case did not get TRUE " NAME>E EXIT 
+    THEN 
+    2DROP
+    
+    DUP 213 <> IF 
+      ERROR" stack marker incorrect after ALWAYS -20000 case" NAME>E EXIT 
+    THEN
+
+    BARHERE 1FFFD - ALWAYS ?UNTILSHORTBRANCH FALSE <> IF     
+      ERROR" ALWAYS -20001 case did not get FALSE " NAME>E EXIT 
+    THEN 
+    2DROP
+    
+    DUP 213 <> IF 
+      ERROR" stack marker incorrect after ALWAYS -20001 case" NAME>E EXIT 
+    THEN
+
+
+    213 <> IF 
+      ERROR" stack marker incorrect at end" NAME>E EXIT 
+    THEN
+;
+
+TEST?UNTILSHORTBRANCH
+
+: TESTUNTIL, { ox | -- } 
+
+    CRLF ." testing UNTIL,"
+
+    211
+
+    OHERE TO ox
+    ( 0 ) BEGIN, ( -- targetaddress )
+    ( 0 ) XTNOP, 
+    ( 3 ) XTNOP,
+    ( 6 ) AR3 NEZ UNTIL, 
+    ox 6 + PCURRENTCOMPILEBUFFER @ O>P U24@ FF6316 <> IF
+      CRLF ." expected FF6351, got " ox 6 + PCURRENTCOMPILEBUFFER @ O>P U24@ U. 
+      ox PCURRENTCOMPILEBUFFER @ O>P 9 DUMP
+      ERROR" NEZ UNTIL, opcode incorrect " NAME>E EXIT
+    THEN
+
+    OHERE TO ox
+    ( 0 ) BEGIN, ( -- targetaddress )
+    ( 0 ) XTNOP, 
+    ( 3 ) XTNOP,
+    ( 6 ) AR2 AR3 NE UNTIL, 
+    ox 6 + PCURRENTCOMPILEBUFFER @ O>P U24@ F61237 <> IF
+      CRLF ." expected F61237, got " ox 6 + PCURRENTCOMPILEBUFFER @ O>P U24@ U. 
+      ox PCURRENTCOMPILEBUFFER @ O>P 9 DUMP
+      ERROR" NE UNTIL, opcode incorrect " NAME>E EXIT
+    THEN
+
+    OHERE TO ox
+    ( 0 ) BEGIN, ( -- targetaddress )
+    ( 0 ) XTNOP, 
+    ( 3 ) XTNOP,
+    ( 6 ) BR2 BITT UNTIL, 
+    ox 6 + PCURRENTCOMPILEBUFFER @ O>P U24@ F60276 <> IF
+      CRLF ." expected F60276, got " ox 6 + PCURRENTCOMPILEBUFFER @ O>P U24@ U. 
+      ox PCURRENTCOMPILEBUFFER @ O>P 9 DUMP
+      ERROR" BITT UNTIL, opcode incorrect " NAME>E EXIT
+    THEN
+
+    OHERE TO ox
+    ( 0 ) BEGIN, ( -- targetaddress )
+    ( 0 ) XTNOP, 
+    ( 3 ) XTNOP,
+    ( 6 ) NEVER UNTIL, 
+    ox 6 + PCURRENTCOMPILEBUFFER @ O>P U24@ FFFD86 <> IF
+      CRLF ." expected FFFD86, got " ox 6 + PCURRENTCOMPILEBUFFER @ O>P U24@ U. 
+      ox PCURRENTCOMPILEBUFFER @ O>P 9 DUMP
+      ERROR" NEVER UNTIL, opcode incorrect " NAME>E EXIT
+    THEN
+
+    // test assumes compiling NOP, for NEVER UNTIL, 
+    OHERE TO ox
+    ( 0 ) BEGIN, ( -- targetaddress )
+    ( 0 ) XTNOP, 
+    ( 3 ) XTNOP,
+    ( 6 ) ALWAYS UNTIL, 
+    ox 6 + PCURRENTCOMPILEBUFFER @ O>P U24@ NEVER <> IF
+      CRLF ." expected 0020F0, got " ox 6 + PCURRENTCOMPILEBUFFER @ O>P U24@ U. 
+      ox PCURRENTCOMPILEBUFFER @ O>P 9 DUMP
+      ERROR" NEVER UNTIL, opcode incorrect " NAME>E EXIT
+    THEN
+
+    211 <> IF 
+      ERROR" stack marker incorrect " NAME>E EXIT 
+    THEN
+;
+
+TESTUNTIL,
+
+CRLF CRLF ." finished testing DGXtensa cross assembler" CRLF
+
+

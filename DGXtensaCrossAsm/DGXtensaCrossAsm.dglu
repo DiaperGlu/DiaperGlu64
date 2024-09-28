@@ -1,0 +1,1771 @@
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2023 James Patrick Norris
+//
+//    This file is part of DGXTensaCrossAsm v1.0
+//
+//    DGXTensaCrossAsm v1.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DGXTensaCrossAsm v1.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DGXTensaCrossAsm v1.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// September 28, 2024         //
+// version 1.0                //
+// /////////////////////////////
+
+
+// compile guard
+' DGXTENSACROSSASM.DGLU ENDOFWORDLIST = 0= ?END-EVALUATE
+
+HEX
+55 ( for stack check at end )
+
+0 CONSTANT DGXTENSACROSSASM.DGLU
+
+3 CONSTANT SHORTBRANCHSIZE
+
+// address registers
+HEX
+-1 CONSTANT NOREG
+0 CONSTANT AR0
+1 CONSTANT AR1
+2 CONSTANT AR2
+3 CONSTANT AR3
+4 CONSTANT AR4
+5 CONSTANT AR5
+6 CONSTANT AR6
+7 CONSTANT AR7
+8 CONSTANT AR8
+9 CONSTANT AR9
+0A CONSTANT AR10
+0B CONSTANT AR11
+0C CONSTANT AR12
+0D CONSTANT AR13
+0E CONSTANT AR14
+0F CONSTANT AR15
+
+// floating point registers
+HEX
+100 CONSTANT FR0
+101 CONSTANT FR1
+102 CONSTANT FR2
+103 CONSTANT FR3
+104 CONSTANT FR4
+105 CONSTANT FR5
+106 CONSTANT FR6
+107 CONSTANT FR7
+108 CONSTANT FR8
+109 CONSTANT FR9
+10A CONSTANT FR10
+10B CONSTANT FR11
+10C CONSTANT FR12
+10D CONSTANT FR13
+10E CONSTANT FR14
+10F CONSTANT FR15
+
+// bit registers
+HEX
+200 CONSTANT BR0
+201 CONSTANT BR1
+202 CONSTANT BR2
+203 CONSTANT BR3
+204 CONSTANT BR4
+205 CONSTANT BR5
+206 CONSTANT BR6
+207 CONSTANT BR7
+208 CONSTANT BR8
+209 CONSTANT BR9
+20A CONSTANT BR10
+20B CONSTANT BR11
+20C CONSTANT BR12
+20D CONSTANT BR13
+20E CONSTANT BR14
+20F CONSTANT BR15
+
+// special registers
+HEX
+(   0 ) 300 CONSTANT LBEG
+(   1 ) 301 CONSTANT LEND
+(   2 ) 302 CONSTANT LCOUNT
+(   3 ) 303 CONSTANT SAR
+(   4 ) 304 CONSTANT BR
+(   5 ) 305 CONSTANT LITBASE
+(  12 ) 30C CONSTANT SCOMPARE1
+(  16 ) 310 CONSTANT ACCLO
+(  17 ) 311 CONSTANT ACCHI
+(  32 ) 320 CONSTANT M0
+(  33 ) 321 CONSTANT M1
+(  34 ) 322 CONSTANT M2
+(  35 ) 323 CONSTANT M3
+(  72 ) 348 CONSTANT WindowBase
+(  73 ) 349 CONSTANT WindowStart
+(  83 ) 353 CONSTANT PTEVADDR
+(  90 ) 35A CONSTANT RASID
+(  90 ) 35A CONSTANT MPUENB
+(  91 ) 35B CONSTANT ITLBCFG
+(  92 ) 35C CONSTANT MPUCFG
+(  95 ) 35F CONSTANT ERACCESS
+(  96 ) 360 CONSTANT CACHEADRDIS
+(  97 ) 361 CONSTANT MEMCTL
+(  99 ) 363 CONSTANT ATOMCTL
+( 104 ) 368 CONSTANT DDR
+( 106 ) 36A CONSTANT MEPC
+( 107 ) 36B CONSTANT MEPS
+( 108 ) 36C CONSTANT MESAVE
+( 109 ) 36D CONSTANT MESR
+( 10A ) 36E CONSTANT MECR
+( 10B ) 36F CONSTANT MEVADDR
+( 128 ) 380 CONSTANT IBREAKA0
+( 129 ) 381 CONSTANT IBREAKA1
+( 144 ) 390 CONSTANT DBREAKA0
+( 145 ) 391 CONSTANT DBREAKA1
+( 160 ) 3A0 CONSTANT DBREAKC0
+( 161 ) 3A1 CONSTANT DBREAKC1
+( 177 ) 3B1 CONSTANT EPC1
+( 178 ) 3B2 CONSTANT EPC2
+( 179 ) 3B3 CONSTANT EPC3
+( 180 ) 3B4 CONSTANT EPC4
+( 181 ) 3B5 CONSTANT EPC5
+( 182 ) 3B6 CONSTANT EPC6
+( 183 ) 3B7 CONSTANT EPC7
+( 192 ) 3C0 CONSTANT IBREAKC0
+( 193 ) 3C1 CONSTANT IBREAKC2 // ???
+( 192 ) 3C0 CONSTANT DEPC
+( 194 ) 3C2 CONSTANT EPS2
+( 195 ) 3C4 CONSTANT EPS3
+( 196 ) 3C5 CONSTANT EPS4
+( 197 ) 3C6 CONSTANT EPS5
+( 198 ) 3C7 CONSTANT EPS6
+( 199 ) 3C8 CONSTANT EPS7
+( 209 ) 3D1 CONSTANT EXCSAVE1
+( 210 ) 3D2 CONSTANT EXCSAVE2
+( 211 ) 3D3 CONSTANT EXCSAVE3
+( 212 ) 3D4 CONSTANT EXCSAVE4
+( 213 ) 3D5 CONSTANT EXCSAVE5
+( 214 ) 3D6 CONSTANT EXCSAVE6
+( 215 ) 3D7 CONSTANT EXCSAVE7
+( 224 ) 3E0 CONSTANT CPENABLE
+( 226 ) 3E2 CONSTANT INTERRUPT
+( 226 ) 3E2 CONSTANT INTSET
+( 227 ) 3E3 CONSTANT INTCLEAR
+( 228 ) 3E4 CONSTANT INTENABLE
+( 230 ) 3E6 CONSTANT PS
+( 231 ) 3E7 CONSTANT VECBASE
+( 232 ) 3E8 CONSTANT EXCCAUSE
+( 233 ) 3E9 CONSTANT DEBUGCAUSE
+( 234 ) 3EA CONSTANT CCOUNT
+( 235 ) 3EB CONSTANT PRID
+( 236 ) 3EC CONSTANT ICOUNT
+( 237 ) 3ED CONSTANT ICOUNTLEVEL
+( 238 ) 3EE CONSTANT EXCVADDR
+( 240 ) 3F0 CONSTANT CCOMPARE0
+( 241 ) 3F1 CONSTANT CCOMPARE1
+( 242 ) 3F2 CONSTANT CCOMPARE2
+( 244 ) 3F4 CONSTANT MISC0
+( 245 ) 3F5 CONSTANT MISC1
+( 246 ) 3F6 CONSTANT MISC2
+( 247 ) 3F7 CONSTANT MISC3
+
+
+
+HEX
+VARIABLE PBASEADDRESS
+0 PBASEADDRESS !
+
+: +BA ( bufferoffset -- baraddress )
+    PBASEADDRESS @ +
+;
+
+: -BA ( baraddress -- bufferoffset )
+    PBASEADDRESS @ - 
+;
+
+// base address relative here
+: BARHERE OHERE +BA ;
+
+
+: BARALIGN32 ( -- ) 4 BARHERE 3 AND - 3 AND CODE-ALLOT ;
+
+
+: U24! ( value addr -- )
+    // assumes little endian
+      2DUP U16! // low 16 bits 
+      2 + SWAP 10 RSHIFT SWAP C! // hi 8 bits
+;
+
+: U24@ ( addr -- value )
+    // assumes little endian
+      DUP U16@ // low 16 bits
+      SWAP 2 + C@ 10 LSHIFT OR 
+;
+
+: BARU24@ ( data baraddress -- )
+    -BA PCURRENTCOMPILEBUFFER @ O>P U24@
+;
+
+: BARU24! ( data baraddress -- )
+    -BA PCURRENTCOMPILEBUFFER @ O>P U24!
+;
+
+: U4>U4[I] ( U4 U I -- U' )
+    4 *    ( U4 U I*4 -- )
+    SWAP   ( U4 I*4 U -- )
+    3      ( U4 I*4 U 3 -- )
+    2 PICK ( U4 I*4 U 3 I*4 -- )
+    LSHIFT ( U4 I*4 U MASK -- )
+    INVERT ( U4 I*4 U ~MASK -- )
+    AND    ( U4 I*4 U' -- )
+    SWAP   ( U4 U' I*4 -- )
+    ROT    ( U' I*4 U4 -- )
+    0F AND ( U' I*4 U4 -- )
+    LSHIFT ( U' U4SHIFTED -- )
+    OR     ( U'' -- )
+; 
+
+: IMM6>U16 ( imm6 u16 -- )
+    SWAP DUP ( -- u16 imm6 imm6 ) 
+    0F AND 0C LSHIFT
+    SWAP 30 AND ( already in correct position ) 
+    OR OR
+;
+
+: IMM12>U24 ( imm12 u24 -- )
+    SWAP
+    0FFF AND 
+    0C LSHIFT OR
+;
+
+: IMM12>U24B ( imm12 u24 -- u24' )
+    OVER 
+    FF AND 
+    10 LSHIFT OR
+    SWAP F00 AND OR
+;
+
+: IMM8>U24 ( imm8 u24 -- )
+    SWAP
+    0FF AND
+    10 LSHIFT OR
+;
+
+: IMM18>U24 ( imm24 u24 -- u24')
+    SWAP
+    3FFFF AND
+    6 LSHIFT OR
+;
+
+: U5>U24[4-7:12] ( imm5 u24 -- u24' )
+    SWAP DUP ( u24 imm5 imm5 -- )
+    0F AND 4 LSHIFT ( u24 imm5 imm5bits3-0 -- )
+    SWAP 10 AND 8 LSHIFT 
+    OR OR
+;
+
+: IMM5>U24[20-23:16] ( imm5 u24 -- u24' )
+    SWAP DUP ( u24 imm5 imm5 -- )
+    0F AND 14 LSHIFT ( u24 imm5 imm5bits3-0 -- )
+    SWAP 10 AND 0C LSHIFT 
+    OR OR
+;
+
+HEX
+: U5>U24[4-7:20] ( imm5 u24 -- u24' )
+    SWAP DUP ( u24 imm5 imm5 -- )
+    0F AND 4 LSHIFT ( u24 imm5 imm5bits3-0 -- )
+    SWAP 10 AND 10 LSHIFT 
+    OR OR
+;
+
+: U5>U24[8-11:16] ( imm5 u24 -- u24' )
+    SWAP DUP ( u24 imm5 imm5 -- )
+    0F AND 8 LSHIFT ( u24 imm5 imm5bits3-0 -- )
+    SWAP 10 AND 0C LSHIFT 
+    OR OR
+;
+
+: U5>U24[8-11:20] ( imm5 u24 -- u24' )
+    SWAP DUP ( u24 imm5 imm5 -- )
+    0F AND 8 LSHIFT ( u24 imm5 imm5bits3-0 -- )
+    SWAP 10 AND 10 LSHIFT 
+    OR OR
+;
+
+: U5>U24[8-11:4] ( imm5 u24 -- u24' )
+    SWAP DUP ( u24 imm5 imm5 -- )
+    0F AND 8 LSHIFT ( u24 imm5 imm5bits3-0 -- )
+    SWAP 10 AND 
+    OR OR
+;
+
+: IMM16>U24 ( imm16 u24 -- u24' )
+    SWAP
+    FFFF AND
+    8 LSHIFT OR
+;
+
+: IMM7>U16 ( imm7 u16 -- u16' )
+    OVER
+    0F AND
+    0C LSHIFT OR
+    SWAP
+    70 AND OR
+;
+
+: W>U24 ( w u24 -- u24' )
+    SWAP 3 AND
+    0C LSHIFT OR
+;
+
+: T>U24 ( t u24 -- u24' )
+    SWAP 0F AND
+    4 LSHIFT OR
+;
+
+: S>U24 ( s u24 -- u24' )
+    SWAP 0F AND
+    8 LSHIFT OR
+;
+
+: R>U24 ( s u24 -- u24' )
+    SWAP 0F AND
+    0C LSHIFT OR
+;
+
+: OP2>U24 ( op2 u24 -- u24' )
+    SWAP 0F AND
+    14 LSHIFT OR
+;
+
+: Y>U24 ( y u24 -- u24' )
+    SWAP 1 AND
+    6 LSHIFT OR
+;
+
+: X>U24 ( x u24 -- u24' )
+    SWAP 1 AND
+    0E LSHIFT OR
+;
+
+: Q>U24 ( sr u24 -- u24' ) // calling it Q to avoid name conflict
+    SWAP FF AND
+    8 LSHIFT OR
+;
+
+: V>U24 ( st u24 -- u24' ) // calling it V to avoid name conflict
+    SWAP FF AND
+    4 LSHIFT OR
+;
+
+VARIABLE PXTEMP
+
+: CODE-U24, ( u24 -- )
+    PXTEMP !
+    PXTEMP 3 CODE-S,
+;
+
+HEX
+: ?N8 ( displacement -- displacement flag )
+    DUP 80 + 100 U<
+;
+
+: ?U8 ( displacement -- displacement flag )
+    DUP 100 U<
+;
+
+: ?ERRORU8 ( imm8 -- imm8 )
+    ?U8 IF EXIT THEN
+    ERROR" unsigned value larger than u8"
+;
+
+: ?ERRORN8 ( imm8 -- imm8 )
+    ?N8 IF EXIT THEN
+    ERROR" signed displacement larger than n8"
+;
+
+HEX
+: ?N4b ( n -- n flag )  // -1; 1h to 0Fh
+    DUP 1+ ( n n+1 -- )
+    DUP 1 = IF DROP FALSE EXIT THEN
+    11 U<
+;
+
+: ?N7b ( displacement -- displacement flag )  // -32 to 95; -20h to 60h
+    DUP 20 + 80 U<
+;
+
+: ?N12 ( displacement -- displacement flag )
+    DUP 800 + 1000 U<
+;
+
+HEX
+: ?N18 ( displacement -- displacement flag )
+    DUP 20000 + 40000 U<
+;
+
+: ?U12 ( displacement -- displacement flag )
+    DUP 1000 U<
+;
+
+: ?ERRORU12 ( u12 -- u12 )
+    ?U12 IF EXIT THEN
+    ERROR" unsigned value larger than u12"
+;
+
+: ?ERRORN12 ( n12 -- n12 )
+    ?N12 IF EXIT THEN
+    ERROR" signed displacement larger than n12"
+;
+
+HEX
+: ?256*N8 { | n32 -- n32 flag }
+    n32 FF AND 0= 
+    n32 100 /
+    80 + 100 U< AND
+    n32 SWAP
+;
+
+HEX
+: BRANCHU32>U4 ( u32 -- u4 )
+    DUP 0= IF DROP -1 EXIT THEN
+    DUP 9 U< IF EXIT THEN
+    DUP 0A = IF DROP 09 EXIT THEN
+    DUP 0C = IF DROP 0A EXIT THEN
+    DUP 10 = IF DROP 0B EXIT THEN
+    DUP 20 = IF DROP 0C EXIT THEN
+    DUP 40 = IF DROP 0D EXIT THEN
+    DUP 80 = IF DROP 0E EXIT THEN
+    100 = IF 0F EXIT THEN
+    ERROR" constant value must be one of: -1, 1-8, 0a, 0c, 10, 20, 40, 80, 100"
+    NAME>E
+;
+
+: XTCLREX, ( -- ) 003120 CODE-U24, ;
+: XTDSYNC, ( -- ) 002030 CODE-U24, ;
+: XTESYNC, ( -- ) 002020 CODE-U24, ;
+: XTEXCW,  ( -- ) 002080 CODE-U24, ;
+: XTEXTW,  ( -- ) 0020D0 CODE-U24, ;
+: XTILL,   ( -- ) 000000 CODE-U24, ;
+: XTISYNC, ( -- ) 002000 CODE-U24, ;
+: XTMEMW,  ( -- ) 0020C0 CODE-U24, ;
+: XTNOP,   ( -- ) ( does nothing ) 0020F0 CODE-U24, ;
+: XTRET,   ( -- ) 000080 CODE-U24, ;
+: XTRFDD,  ( -- ) F1E010 CODE-U24, ;
+: XTRFDE,  ( -- ) 003200 CODE-U24, ;
+: XTRFDO,  ( -- ) F1E000 CODE-U24, ;
+: XTRFDO.0,  ( -- ) F1E000 CODE-U24, ;
+: XTRFDO.1,  ( -- ) F1E100 CODE-U24, ;
+: XTRFE,   ( -- ) 003000 CODE-U24, ;
+: XTRFME,  ( -- ) 003020 CODE-U24, ;
+: XTRFUE,  ( -- ) 003100 CODE-U24, ;
+: XTRFWO,  ( -- ) 003400 CODE-U24, ;
+: XTRFWU,  ( -- ) 003500 CODE-U24, ;
+: XTRSYNC, ( -- ) 002010 CODE-U24, ;
+: XTSIMCALL, ( -- ) 005100 CODE-U24, ;
+
+: XTILL.N,  ( -- ) F06D CODE-U16, ;
+: XTNOP.N,  ( -- ) F03D CODE-U16, ;
+: XTRET.N,  ( -- ) F00D CODE-U16, ;
+: XTRETW.N, ( -- ) F01D CODE-U16, ;
+
+: FORMATTSR,   ( t   s   r   opmask -- )  
+    R>U24
+    S>U24
+    T>U24  
+    CODE-U24, 
+;
+
+: FORMATSSR,   ( s   r   opmask -- )  
+    R>U24
+    >R DUP R>
+    S>U24
+    T>U24  
+    CODE-U24, 
+;
+
+: FORMATSTR,   ( s   t   r   opmask -- )  
+    R>U24
+    T>U24
+    S>U24  
+    CODE-U24, 
+;
+
+: FORMATRST,   ( r   s   t   opmask -- )
+    T>U24
+    S>U24
+    R>U24  
+    CODE-U24, 
+;
+
+: FORMATSRT,   ( s   r   t   opmask -- )
+    T>U24
+    R>U24
+    S>U24  
+    CODE-U24, 
+;
+
+: FORMATTRS,   ( t   r   s   opmask -- )
+    S>U24
+    R>U24
+    T>U24  
+    CODE-U24, 
+;
+
+: XTADD,      ( at as ar -- ) ( at + as -> ar )                         800000 FORMATTSR, ;
+: XTADD.D,    ( fr fs ft -- ) ( ft + fs -> fr )                         0F0000 FORMATTSR, ; // can't test on esp32s3
+: XTADD.S,    ( ft fs fr -- ) ( ft + fs -> fr )                         0A0000 FORMATTSR, ;
+: XTADDX2,    ( at as ar -- ) ( at + as -> ar )                         900000 FORMATTSR, ;
+: XTADDX4,    ( at as ar -- ) ( at + as -> ar )                         A00000 FORMATTSR, ;
+: XTADDX8,    ( at as ar -- ) ( at + as -> ar )                         B00000 FORMATTSR, ;
+: XTAND,      ( at as ar -- ) ( at and as -> ar )                       100000 FORMATTSR, ;
+: XTANDB,     ( bt bs br -- ) ( bt and bs -> br )                       020000 FORMATTSR, ;
+: XTANDBC,    ( bt bs br -- ) ( notbt and bs -> br )                    120000 FORMATTSR, ; 
+: XTCEIL.D,   ( fs u4 ar -- ) ( fs * 2^u4 -> ar )                       BF0000 FORMATSTR, ; // can't test on esp32s3
+: XTCEIL.S,   ( fs u4 ar -- ) ( fs * 2^u4 -> ar )                       BA0000 FORMATSTR, ; 
+: XTCLAMPS,   ( as u4 ar -- ) ( if as fits in u4+7 bits then as->ar )   330000 FORMATSTR, ; 
+: XTDIVN.D,   ( fs ft fr -- ) ( fs * ft + fr special -> fr )            7F0000 FORMATRST, ; // can't test on esp32s3
+: XTDIVN.S,   ( fs ft fr -- ) ( fs * ft + fr special -> fr )            7A0000 FORMATRST, ; // * 
+: XTFLOAT.D,  ( fs u4 fr -- ) ( as*2^{-u4} int>float-> fr )             CF0000 FORMATSTR, ; 
+: XTFLOAT.S,  ( fs u4 fr -- ) ( as*2^{-u4} int>float-> fr )             CA0000 FORMATSTR, ; 
+: XTFLOOR.D,  ( fs u4 fr -- ) ( fs * {2^u4} float>-inf>int -> ar )      AF0000 FORMATSTR, ; 
+: XTFLOOR.S,  ( fs u4 fr -- ) ( fs * {2^u4} float>-inf>int -> ar )      AA0000 FORMATSTR, ; 
+: XTL32E,     ( at as u4 -- ) ( may need a 4 / here )                   090000 FORMATTSR, ;
+: XTLDX,      ( as at fr -- ) ( mem64[as + at] -> fr )                  280000 FORMATSTR, ; // can't test on esp32s3
+: XTLDXP,     ( as ar at -- ) ( mem64[as] -> ar; as + at -> ar )        380000 FORMATSTR, ; // can't test on esp32s3
+: XTLSX,      ( fr as at -- ) ( mem32[as + at] -> fr )                  080000 FORMATSTR, ; 
+: XTLSXP,     ( fr as at -- ) ( mem32[as] -> fr; as + at -> ar )        180000 FORMATSTR, ; 
+: XTLSXU,     ( as at fr -- ) ( mem32[as + at] -> fr; as + at -> as )   180000 FORMATSTR, ; 
+: XTMADD.D,   ( ft fs fr -- ) ( ft * fs + fr -> fr )                    4F0000 FORMATTSR, ; // can't test on esp32s3
+: XTMADD.S,   ( ft fs fr -- ) ( ft * fs + fr -> fr )                    4A0000 FORMATTSR, ;
+: XTMADDN.D,  ( ft fs fr -- ) ( ft * fs + fr -> fr )                    6F0000 FORMATTSR, ; // can't test on esp32s3
+: XTMADDN.S,  ( ft fs fr -- ) ( ft * fs + fr -> fr )                    6A0000 FORMATTSR, ;
+: XTMAX,      ( at as ar -- ) ( at max as -> ar )                       530000 FORMATTSR, ;
+: XTMAXU,     ( at as ar -- ) ( at umax as -> ar )                      730000 FORMATTSR, ;
+: XTMIN,      ( at as ar -- ) ( at min as -> ar )                       430000 FORMATTSR, ;
+: XTMINU,     ( at as ar -- ) ( at umin as -> ar )                      630000 FORMATTSR, ;
+: XTMOV,      ( as ar -- )    ( as -> ar )                              200000 FORMATSSR, ;
+: XTMOVEQZ,   ( as ar at -- ) ( if at==0 then fs -> fr )                830000 FORMATSRT, ;
+: XTMOVEQZ.D, ( fs fr at -- ) ( if at==0 then fs -> fr )                8B0000 FORMATSRT, ; // can't test on esp32s3
+: XTMOVEQZ.S, ( fs fr at -- ) ( if at==0 then fs -> fr )                8B0000 FORMATSRT, ;
+: XTMOVF,     ( as ar bt -- ) ( if bt==0 then as -> ar )                C30000 FORMATSRT, ;
+: XTMOVF.D,   ( fs fr bt -- ) ( if bt==0 then fs -> fr )                CB0000 FORMATSRT, ; // can't test on esp32s3
+: XTMOVF.S,   ( fs fr bt -- ) ( if bt==0 then fs -> fr )                CB0000 FORMATSRT, ;
+: XTMOVGEZ,   ( as ar at -- ) ( if at>=0 then as -> ar )                B30000 FORMATSRT, ;
+: XTMOVGEZ.D, ( fs fr at -- ) ( if at>=0 then fs -> fr )                BB0000 FORMATSRT, ; // can't test on esp32s3
+: XTMOVGEZ.S, ( fs fr at -- ) ( if at>=0 then fs -> fr )                BB0000 FORMATSRT, ;
+: XTMOVLTZ,   ( as ar at -- ) ( if at<0 then as -> ar )                 A30000 FORMATSRT, ;
+: XTMOVLTZ.D, ( fr fs at -- ) ( if at<0 then fs -> fr )                 AB0000 FORMATSRT, ; // can't test on esp32s3
+: XTMOVLTZ.S, ( fr fs at -- ) ( if at<0 then fs -> fr )                 AB0000 FORMATSRT, ;
+: XTMOVNEZ,   ( as ar at -- ) ( if at<>0 then as -> ar )                930000 FORMATSRT, ;
+: XTMOVNEZ.D, ( fr fs at -- ) ( if at<>0 then fs -> fr )                9B0000 FORMATSRT, ; // can't test on esp32s3
+: XTMOVNEZ.S, ( fr fs at -- ) ( if at<>0 then fs -> fr )                9B0000 FORMATSRT, ;
+: XTMOVT,     ( as ar bt -- ) ( if bt==1 then as -> ar )                D30000 FORMATSRT, ;
+: XTMOVT.D,   ( fs fr bt -- ) ( if bt==1 then fs -> fr )                DB0000 FORMATSRT, ; // can't test on esp32s3
+: XTMOVT.S,   ( fs fr bt -- ) ( if bt==1 then fs -> fr )                DB0000 FORMATSRT, ;
+: XTMSUB.D,   ( ft fs fr -- ) ( fr - {ft * fs} -> fr )                  5F0000 FORMATTSR, ; // can't test on esp32s3
+: XTMSUB.S,   ( ft fs fr -- ) ( fr - {ft * fs} -> fr )                  5A0000 FORMATTSR, ;
+: XTMUL.D,    ( ft fs fr -- ) ( ft * fs -> fr )                         2F0000 FORMATTSR, ; // can't test on esp32s3
+: XTMUL.S,    ( ft fs fr -- ) ( ft * fs -> fr )                         2A0000 FORMATTSR, ;
+: XTMUL16S,   ( at as ar -- ) ( atl * asl -> ar )                       D10000 FORMATTSR, ;
+: XTMUL16U,   ( at as ar -- ) ( atl U* asl -> ar )                      C10000 FORMATTSR, ;
+: XTMULL,     ( at as ar -- ) ( at * as low32-> ar )                    820000 FORMATTSR, ;
+: XTMULSH,    ( at as ar -- ) ( at * as hi32-> ar )                     B20000 FORMATTSR, ;
+: XTMULUH,    ( at as ar -- ) ( at * as uhi32-> ar )                    A20000 FORMATTSR, ;
+: XTOEQ.D,    ( fs ft br -- ) ( if fs == ft then 1 -> br else 0 -> br ) 2E0000 FORMATSTR, ; // can't test on esp32s3
+: XTOEQ.S,    ( fs ft br -- ) ( if fs == ft then 1 -> br else 0 -> br ) 2B0000 FORMATSTR, ;
+: XTOLE.D,    ( fs ft br -- ) ( if fs <= ft then 1 -> br else 0 -> br ) 6E0000 FORMATSTR, ; // can't test on esp32s3
+: XTOLE.S,    ( fs ft br -- ) ( if fs <= ft then 1 -> br else 0 -> br ) 6B0000 FORMATSTR, ;
+: XTOLT.D,    ( fs ft br -- ) ( if fs < ft then 1 -> br else 0 -> br )  4E0000 FORMATSTR, ; // can't test on esp32s3
+: XTOLT.S,    ( fs ft br -- ) ( if fs < ft then 1 -> br else 0 -> br )  4B0000 FORMATSTR, ;
+: XTOR,       ( at as ar -- ) ( at or as -> ar )                        200000 FORMATTSR, ;
+: XTORB,      ( bt bs br -- ) ( bt or bs -> br )                        220000 FORMATTSR, ;
+: XTORBC,     ( bt bs br -- ) ( notbt or bs -> br )                     320000 FORMATTSR, ;
+: XTQUOS,     ( as at ar -- ) ( as / at -> ar )                         D20000 FORMATSTR, ;
+: XTQUOU,     ( as at ar -- ) ( as U/ at -> ar )                        C20000 FORMATSTR, ;
+: XTREMS,     ( as at ar -- ) ( as / at rem-> ar )                      F20000 FORMATSTR, ;
+: XTREMU,     ( as at ar -- ) ( as U/ at rem-> ar )                     E20000 FORMATSTR, ;
+: XTROUND.D,  ( fs u4 ar -- ) ( fs * {2^u4} floatround>int -> ar )      8F0000 FORMATSTR, ; 
+: XTROUND.S,  ( fs u4 ar -- ) ( fs * {2^u4} floatround>int -> ar )      8A0000 FORMATSTR, ; 
+
+: XTS32E,     ( at as n4 -- ) 490000 FORMATTSR, ; // n4 becomes -4*(n4+1) // *
+: XTS32NB,    ( at as u4 -- ) 590000 FORMATTSR, ; // u4 becomes 4*u4      // *
+
+: XTSALT,     ( as at ar -- ) ( if as < at then ar = 1 else ar = 0 )    720000 FORMATSTR, ;
+: XTSALTU,    ( as at ar -- ) ( if as U< at then ar = 1 else ar = 0 )   620000 FORMATSTR, ;
+: XTSDX,      ( fr as at -- ) ( fr -> mem64[as + at] )                  680000 FORMATRST, ; // can't test on esp32s3
+: XTSDXP,     ( fr as at -- ) ( fr -> mem64[as]; as + at -> as )        780000 FORMATRST, ; // can't test on esp32s3
+: XTSEXT,     ( as u4 ar -- ) ( as with bit u4+7 extended -> ar )       230000 FORMATSTR, ; 
+: XTSRC,      ( at as ar -- ) ( athi:aslo >>SAR -> ar )                 810000 FORMATTSR, ;
+: XTSRLI,     ( at ar u4 -- ) ( at >>u4 -> ar )                         410000 FORMATTRS, ;
+: XTSSX,      ( fr as at -- ) ( fr -> mem32[as + at] )                  480000 FORMATRST, ;
+: XTSSXP,     ( fr as at -- ) ( fr -> mem32[as]; as + at -> as )        580000 FORMATRST, ;
+: XTSSXU,     ( fr as at -- ) ( fr -> mem32[as + at]; as + at -> as )   580000 FORMATRST, ;
+: XTSUB,      ( as at ar -- ) ( as - at -> ar )                         C00000 FORMATSTR, ;
+: XTSUB.D,    ( fs ft fr -- ) ( fs - ft -> fr )                         1F0000 FORMATSTR, ;
+: XTSUB.S,    ( fs ft fr -- ) ( fs - ft -> fr )                         1A0000 FORMATSTR, ;
+: XTSUBX2,    ( as at ar -- ) ( 2*as - at -> ar )                       D00000 FORMATSTR, ;
+: XTSUBX4,    ( as at ar -- ) ( 4*as - at -> ar )                       E00000 FORMATSTR, ;
+: XTSUBX8,    ( as at ar -- ) ( 8*as - at -> ar )                       F00000 FORMATSTR, ;
+: XTTRUNC.D,  ( ar as u4 -- ) ( fs * {2^u4} floattrunc>int -> ar )      9F0000 FORMATSTR, ; 
+: XTTRUNC.S,  ( ar as u4 -- ) ( fs * {2^u4} floattrunc>int -> ar )      9A0000 FORMATSTR, ; 
+: XTUEQ.D,    ( fs ft br -- ) ( if fs == ft then 1 -> br else 0 -> br )    3E0000 FORMATSTR, ; // not supported on esp32s3
+: XTUEQ.S,    ( fs ft br -- ) ( if fs == ft then 1 -> br else 0 -> br )    3B0000 FORMATSTR, ;
+: XTUFLOAT.D, ( as u4 fr -- ) ( as*2^{-u4} uint>float-> fr )               DF0000 FORMATSTR, ; // not supported on esp32s3
+: XTUFLOAT.S, ( as u4 fr -- ) ( as*2^{-u4} uint>float-> fr )               DA0000 FORMATSTR, ;
+: XTULE.D,    ( fs ft br -- ) ( if fs U<= ft then 1 -> br else 0 -> br )   7E0000 FORMATSTR, ; // not supported on esp32s3
+: XTULE.S,    ( fs ft br -- ) ( if fs U<= ft then 1 -> br else 0 -> br )   7B0000 FORMATSTR, ;
+: XTULT.D,    ( fs ft br -- ) ( if fs U< ft then 1 -> br else 0 -> br )    5E0000 FORMATSTR, ; // not supported on esp32s3
+: XTULT.S,    ( fs ft br -- ) ( if fs U< ft then 1 -> br else 0 -> br )    5B0000 FORMATSTR, ;
+: XTUN.D,     ( fs ft br -- ) ( if fs or ft is nan then 1->br else 0->br ) 1E0000 FORMATSTR, ; // not supported on esp32s3
+: XTUN.S,     ( fs ft br -- ) ( if fs or ft is nan then 1->br else 0->br ) 1B0000 FORMATSTR, ;
+: XTUTRUNC.D, ( ar fs u4 -- ) ( fs * {2^u4} floatutrunc>int -> ar )        EF0000 FORMATRST, ; // can't test on esp32s3
+: XTUTRUNC.S, ( ar fs u4 -- ) ( fs * {2^u4} floatutrunc>int -> ar )        EA0000 FORMATRST, ; 
+: XTWFRD,     ( at as fr -- ) ( ashi:atlo -> fr )                          8E0000 FORMATTSR, ; // can't test on esp32s3
+: XTXOR,      ( at as ar -- ) ( at xor as -> ar )                          300000 FORMATTSR, ;
+: XTXORB,     ( bt bs br -- ) ( bt xor bs -> br )                          420000 FORMATTSR, ;
+
+
+: FORMATTR, ( t   r   opmask -- )
+    R>U24
+    T>U24 
+    CODE-U24,
+;
+
+: XTABS, ( at ar -- ) ( src dest -- )     600100 FORMATTR, ;
+: XTNEG, ( at ar -- ) ( 0 - at -> ar )    600000 FORMATTR, ;
+: XTSRA, ( at ar -- ) ( at sar>> -> ar )  B10000 FORMATTR, ;
+: XTSRL, ( at ar -- ) ( at saru>> -> ar ) 910000 FORMATTR, ;
+
+
+: FORMATTS, ( t   s   opmask -- )
+    S>U24
+    T>U24 
+    CODE-U24,
+;
+
+: FORMATST, ( as   at   opmask -- )
+    T>U24 
+    S>U24
+    CODE-U24,
+;
+
+: XTALL4,    ( s t -- ) ( br[s] & br[s+1] & br[s+2] & br[s+3] -> br[t] ) 009000 FORMATST, ; // s must be mult of 4
+: XTALL8,    ( s t -- ) ( br[s] & br[s+1] & ...     & br[s+7] -> br[t] ) 00B000 FORMATST, ; // s must be mult of 8
+: XTANY4,    ( s t -- ) ( br[s] | br[s+1] | br[s+2] | br[s+3] -> br[t] ) 008000 FORMATST, ; // s must be mult of 4
+: XTANY8,    ( s t -- ) ( br[s] | br[s+1] | ...     | br[s+7] -> br[t] ) 00A000 FORMATST, ; // s must be mult of 8
+
+: XTBREAK,   ( it is -- ) 004000 FORMATTS, ;  // not sure if it's bt bs or bs bt...
+: XTDHI.B,   ( as bt -- ) 199000 FORMATST, ;
+: XTDHWB.B,  ( as at -- ) 19A000 FORMATST, ;
+: XTDHWBI.B, ( as at -- ) 19B000 FORMATST, ;
+: XTDPFM.B,  ( as at -- ) 193000 FORMATST, ;
+: XTDPFM.BF, ( as at -- ) 197000 FORMATST, ;
+: XTDPFR.B,  ( as at -- ) 191000 FORMATST, ;
+: XTDPFR.BF, ( as at -- ) 195000 FORMATST, ;
+: XTDPFW.B,  ( as at -- ) 192000 FORMATST, ;
+: XTDPFW.BF, ( as at -- ) 196000 FORMATST, ;
+: XTL32EX    ( as at -- ) F14000 FORMATST, ;
+: XTLDCT,    ( as at -- ) F18000 FORMATST, ;
+: XTLDCW,    ( as at -- ) F1A000 FORMATST, ;
+: XTLDDEC,   ( mw as -- ) SWAP 3 AND SWAP 900004 FORMATTS, ; // could make a W>U24 ...
+: XTLDINC,   ( mw as -- ) SWAP 3 AND SWAP 800004 FORMATTS, ; // could make a W>U24 ...
+: XTMOVSP,   ( as at -- ) ( as -> at ) 001000 FORMATST, ;
+
+: XTMUL.AA.LL, ( as at -- ) 740004 FORMATST, ;
+: XTMUL.AA.HL, ( as at -- ) 750004 FORMATST, ;
+: XTMUL.AA.LH, ( as at -- ) 760004 FORMATST, ;
+: XTMUL.AA.HH, ( as at -- ) 770004 FORMATST, ;
+: XTMULA.AA.LL, ( as at -- ) 780004 FORMATST, ;
+: XTMULA.AA.HL, ( as at -- ) 790004 FORMATST, ;
+: XTMULA.AA.LH, ( as at -- ) 7A0004 FORMATST, ;
+: XTMULA.AA.HH, ( as at -- ) 7B0004 FORMATST, ;
+: XTMULS.AA.LL, ( as at -- ) 7C0004 FORMATST, ;
+: XTMULS.AA.HL, ( as at -- ) 7C0004 FORMATST, ;
+: XTMULS.AA.LH, ( as at -- ) 7C0004 FORMATST, ;
+: XTMULS.AA.HH, ( as at -- ) 7C0004 FORMATST, ;
+
+: XTNSA,        ( as at -- ) ( shift amount to normalize signed as -> at )    40E000 FORMATST, ;
+: XTNSAU,       ( as at -- ) ( shift amount to normalize unsigned as -> at )  40F000 FORMATST, ;
+: XTPDTLB,      ( as at -- ) 50D000 FORMATST, ;
+: XTPITLB,      ( as at -- ) 505000 FORMATST, ;
+: XTPPTLB,      ( as at -- ) 50D000 FORMATST, ;
+: XTRDTLB0,     ( as at -- ) 50B000 FORMATST, ;
+: XTRDTLB1,     ( as at -- ) 50F000 FORMATST, ;
+: XTRER,        ( as at -- ) 406000 FORMATST, ;
+: XTRITLB0,     ( as at -- ) 503000 FORMATST, ;
+: XTRITLB1,     ( as at -- ) 507000 FORMATST, ;
+: XTRPTLB0,     ( as at -- ) 50B000 FORMATST, ;
+: XTRPTLB1,     ( as at -- ) 50F000 FORMATST, ;
+: XTRSIL,       ( u4 at -- ) 006000 FORMATST, ;
+: XTS32EX,      ( at as -- ) F15000 FORMATTS, ;
+: XTSICT,       ( as at -- ) F11000 FORMATST, ;
+: XTSICW,       ( as at -- ) F13000 FORMATST, ;
+: XTUMUL.AA.LL, ( as at -- ) 700004 FORMATST, ;
+: XTUMUL.AA.HL, ( as at -- ) 710004 FORMATST, ;
+: XTUMUL.AA.LH, ( as at -- ) 720004 FORMATST, ;
+: XTUMUL.AA.HH, ( as at -- ) 730004 FORMATST, ;
+: XTWDTLB,      ( as at -- ) 50E000 FORMATST, ;
+: XTWER,        ( at as -- ) 407000 FORMATTS, ;
+: XTWITLB,      ( at as -- ) 506000 FORMATTS, ;
+: XTWPTLB,      ( at as -- ) 50E000 FORMATTS, ;
+
+
+: FORMATSR, ( s   r   opmask -- )
+    R>U24
+    S>U24 
+    CODE-U24,
+;
+
+: XTABS.D,     ( fs fr -- ) ( |fs| -> fr )              FF0010 FORMATSR, ; // not supported on esp32s3
+: XTABS.S,     ( fs fr -- ) ( |fs| -> fr )              FA0010 FORMATSR, ;
+: XTADDEXP.D,  ( fs fr -- ) ( fsexp + fresp -> fresp )  FF00E0 FORMATSR, ; // not supported on esp32s3
+: XTADDEXP.S,  ( fs fr -- ) ( fsexp + fresp -> fresp )  FA00E0 FORMATSR, ;
+: XTADDEXPM.D, ( fs fr -- ) ( fsman + fresp -> fresp )  FF00F0 FORMATSR, ; // not supported on esp32s3
+: XTADDEXPM.S, ( fs fr -- ) ( fsman + fresp -> fresp )  FA00F0 FORMATSR, ;
+: XTCONST.D,   ( u4 fr -- ) FF0030 FORMATSR, ; 
+    // u4 represents: 0 for 0.0, 1 for 1.0, 2 for 2.0, 3 for 0.5
+: XTCONST.S,   ( u4 fr -- ) FA0030 FORMATSR, ; // docs say fr is double, but is probably single...
+    // u4 represents: 0 for 0.0, 1 for 1.0, 2 for 2.0, 3 for 0.5
+: XTCVTD.S,    ( fs fr -- ) FA0020 FORMATSR, ; // probably not supported on esp32s3
+: XTCVTS.D,    ( fs fr -- ) FF0020 FORMATSR, ; // probably not supported on esp32s3
+: XTDIV0.D,    ( fs fr -- ) FF0070 FORMATSR, ;
+: XTDIV0.S,    ( fs fr -- ) FA0070 FORMATSR, ;
+: XTMKDADJ.D,  ( fs fr -- ) FF00D0 FORMATSR, ;
+: XTMKDADJ.S,  ( fs fr -- ) FA00D0 FORMATSR, ;
+: XTMKSADJ.D,  ( fs fr -- ) FF00C0 FORMATSR, ;
+: XTMKSADJ.S,  ( fs fr -- ) FA00C0 FORMATSR, ;
+: XTMOV.D,     ( fs fr -- ) ( fs -> fr ) FF0000 FORMATSR, ; // probably can't test on esp32s3
+: XTMOV.S,     ( fs fr -- ) ( fs -> fr ) FA0000 FORMATSR, ;
+: XTMOV.A,     ( s r -- ) FF0000 FORMATSR, ; // ?
+: XTNEG.D,     ( fs fr -- ) ( -1 * fs -> fr ) FF0060 FORMATSR, ; // not supported on esp32s3
+: XTNEG.S,     ( fs fr -- ) ( -1 * fs -> fr ) FA0060 FORMATSR, ;
+: XTNEXP01.D,  ( fs fr -- ) FF00B0 FORMATSR, ;
+: XTNEXP01.S,  ( fs fr -- ) FA00B0 FORMATSR, ;
+: XTRECIP0.D,  ( fs fr -- ) ( 1/fs -> fr )   FF0080 FORMATSR, ;
+: XTRECIP0.S,  ( fs fr -- ) ( 1/fs -> fr )   FA0080 FORMATSR, ;
+: XTRFR,       ( fs ar -- ) ( fs -> ar )     FA0040 FORMATSR, ;
+: XTRFRD,      ( fs ar -- ) ( fshi32 -> ar ) FF0040 FORMATSR, ; // not sure if supported on esp32s3
+: XTRSQRT0.D,  ( fs fr -- ) FF00A0 FORMATSR, ;
+: XTRSQRT0.D,  ( fs fr -- ) FA00A0 FORMATSR, ;
+: XTSLL,       ( as ar -- ) ( as <<32-sar -> ar ) A10000 FORMATSR, ;
+: XTSQRT0.D,   ( fs fr -- ) FF0090 FORMATSR, ;
+: XTSQRT0.S,   ( fs fr -- ) FA0090 FORMATSR, ;
+: XTWFR,       ( as fr -- ) ( as -> fr ) FA0050 FORMATSR, ;
+
+: FORMATSI4, ( s imm4 opmask -- )
+    OP2>U24 
+    S>U24
+    CODE-U24,
+;
+
+: XTDCI,   ( as u4 -- )  017082 FORMATSI4, ;
+: XTDCWB,  ( as u4 -- )  067082 FORMATSI4, ;
+: XTDCWBI, ( as u4 -- )  077082 FORMATSI4, ;
+: XTDHU,   ( as u4 -- )  027082 FORMATSI4, ;
+: XTDIU,   ( as u4 -- )  037082 FORMATSI4, ;
+: XTDIWB,  ( as u4 -- )  047082 FORMATSI4, ;
+: XTDIWBI, ( as u4 -- )  057082 FORMATSI4, ;
+: XTDPFL,  ( as u4 -- )  007082 FORMATSI4, ;
+: XTIHU,   ( as u4 -- )  0270D2 FORMATSI4, ;
+: XTIIU,   ( as u4 -- )  0370D2 FORMATSI4, ;
+: XTIPFL,  ( as u4 -- )  0070D2 FORMATSI4, ;
+
+: FORMATTSI8,   ( t   s   imm8 opmask -- )    
+    IMM8>U24
+    S>U24
+    T>U24  
+    CODE-U24,
+;
+
+: FORMATSI8T,   ( s   imm8  t   opmask -- )    
+    T>U24 
+    IMM8>U24
+    S>U24 
+    CODE-U24,
+;
+
+: XTADDI,  ( as n8 at -- ) ( as + n8 -> at )     OVER ?ERRORN8 DROP ?ERRORIF EXIT THEN 00C002 FORMATSI8T, ;
+: XTADDMI, ( as n8 at -- ) ( as + 256*n8 -> at ) OVER ?ERRORN8 DROP ?ERRORIF EXIT THEN 00D002 FORMATSI8T, ;
+
+: FORMATSTI8,   ( s   t   imm8 opmask -- )    
+    IMM8>U24
+    T>U24
+    S>U24  
+    CODE-U24,
+;
+
+// need these...
+: XTL8UI,   ( as u8 at -- ) ( [as+u8] -uext8> at )   OVER ?ERRORU8 ?ERRORIF EXIT THEN DROP 000002 FORMATSI8T, ;
+: XTL16SI,  ( as u8 at -- ) ( [as+n8] -sext16 at )   OVER ?ERRORU8 ?ERRORIF EXIT THEN DROP 009002 FORMATSI8T, ;
+: XTL16UI,  ( as u8 at -- ) ( [as+u8] -uext16> at )  OVER ?ERRORU8 ?ERRORIF EXIT THEN DROP 001002 FORMATSI8T, ;
+: XTL32AI,  ( as u8 at -- ) ( [as+u8] -> at )        OVER ?ERRORU8 ?ERRORIF EXIT THEN DROP 00B002 FORMATSI8T, ; // *
+: XTL32I,   ( as u8 at -- ) ( [as+u8] -> at )        OVER ?ERRORU8 ?ERRORIF EXIT THEN DROP 002002 FORMATSI8T, ; 
+
+: XTLDI,    ( as u8 ft -- ) ( [as+u8*8] -> f64t ) OVER ?ERRORU8 ?ERRORIF EXIT THEN DROP 001003 FORMATSI8T, ; // can't test
+: XTLDIP,   ( as u8 ft -- ) ( [as] -> f64t; as+u8*8 -> as ) 
+                                                  OVER ?ERRORU8 ?ERRORIF EXIT THEN DROP 009003 FORMATSI8T, ; // can't test
+
+: XTLSI,    ( as u8 ft -- ) ( [as+u8*4] -> f32t ) OVER ?ERRORU8 ?ERRORIF EXIT THEN DROP 000003 FORMATSI8T, ;
+: XTLSIP,   ( as u8 ft -- ) ( [as] -> f32t; as+u8*4 -> as ) 
+                                                  OVER ?ERRORU8 ?ERRORIF EXIT THEN DROP 008003 FORMATSI8T, ;
+: XTLSIU,   ( as u8 ft -- ) ( [as+u8*4] -> f32t; as+u8*4 -> as ) // esp32s3 comes with XTLSIP, not XTLSIU
+                                                  OVER ?ERRORU8 ?ERRORIF EXIT THEN DROP 008003 FORMATSI8T, ;
+
+: XTS8I,    ( at as u8 -- ) ( a8t -> [as+u8] )    ?ERRORU8 ?ERRORIF EXIT THEN 004002 FORMATTSI8, ;
+: XTS16I,   ( at as u8 -- ) ( a16t -> [as+u8*2] ) ?ERRORU8 ?ERRORIF EXIT THEN 005002 FORMATTSI8, ;
+: XTS32C1I, ( at as u8 -- ) ( a32t -> [as+u8*4] maybe ) ( [as+u8*4] -n32> at ) 
+                                                  ?ERRORU8 ?ERRORIF EXIT THEN 00E002 FORMATTSI8, ; // *
+: XTS32I,   ( at as u8 -- ) ( a32t -> [as+u8*4] ) ?ERRORU8 ?ERRORIF EXIT THEN 006002 FORMATTSI8, ;
+: XTS32RI,  ( at as u8 -- ) ( a32t -> [as+u8*4] ) ?ERRORU8 ?ERRORIF EXIT THEN 00F002 FORMATTSI8, ; // *
+
+: XTSDI,    ( ft as u8 -- ) ( f64t -> [as+u8*8] )                ?ERRORU8 ?ERRORIF EXIT THEN 005003 FORMATTSI8, ; // can't test
+: XTSDIP,   ( ft as u8 -- ) ( f64t -> [as]; as+u8*8 -> as )      ?ERRORU8 ?ERRORIF EXIT THEN 00D003 FORMATTSI8, ; // can't test
+: XTSSI,    ( ft as u8 -- ) ( f32t -> [as+u8*4] )                ?ERRORU8 ?ERRORIF EXIT THEN 04003 FORMATTSI8, ;
+: XTSSIP,   ( ft as u8 -- ) ( f32t -> [as]; as+u8*4 -> as )      ?ERRORU8 ?ERRORIF EXIT THEN 00C003 FORMATTSI8, ;
+: XTSSIU,   ( ft as u8 -- ) ( f32t -> [as+u8*4]; as+u8*4 -> as ) ?ERRORU8 ?ERRORIF EXIT THEN 00C003 FORMATTSI8, ; // not on esp32s3
+
+
+: FORMATSI8, ( s imm8 opmask -- )
+    IMM8>U24
+    S>U24 
+    CODE-U24,
+;
+
+: XTBF,       ( as n8 -- ) 000076 FORMATSI8, ; // tested
+: XTBT,       ( as n8 -- ) 001076 FORMATSI8, ; // tested
+: XTDHI,      ( as u8 -- ) 007062 FORMATSI8, ;
+: XTDHWB,     ( as u8 -- ) 007042 FORMATSI8, ;
+: XTDHWBI,    ( as u8 -- ) 007052 FORMATSI8, ;
+: XTDII,      ( as u8 -- ) 007072 FORMATSI8, ;
+: XTDPFR,     ( as u8 -- ) 007002 FORMATSI8, ;
+: XTDPFRO,    ( as u8 -- ) 007022 FORMATSI8, ;
+: XTDPFW,     ( as u8 -- ) 007012 FORMATSI8, ;
+: XTDPFWO,    ( as u8 -- ) 007032 FORMATSI8, ;
+: XTIHI,      ( as u8 -- ) 0070E2 FORMATSI8, ;
+: XTIII,      ( as u8 -- ) 0070F2 FORMATSI8, ;
+: XTIPF,      ( as u8 -- ) 0070C2 FORMATSI8, ;
+: XTLOOP,     ( as u8 -- ) 008076 FORMATSI8, ;
+: XTLOOPGTZ,  ( as u8 -- ) 00A076 FORMATSI8, ;
+: XTLOOPNEZ,  ( as u8 -- ) 009076 FORMATSI8, ;
+
+
+: FORMATSI5I8,   ( s   bbi5     imm8 opmask -- )
+    //             2   1&3bit0  4-5  0&3bits1-3 
+    IMM8>U24
+    U5>U24[4-7:12]  
+    S>U24      // was S>U4
+    CODE-U24,
+;
+
+: XTBBCI,    ( as u5 n8 -- )  006007 FORMATSI5I8, ;
+: XTBBCI.L,  ( as u5 n8 -- )  006007 FORMATSI5I8, ;
+: XTBBSI,    ( as u5 n8 -- )  00E007 FORMATSI5I8, ;
+: XTBBSI.L,  ( as u5 n8 -- )  00E007 FORMATSI5I8, ;
+
+: FORMATI16T,   ( imm16  t    op0  -- )
+    T>U24  
+    IMM16>U24
+    CODE-U24, 
+;
+
+: XTL32R, ( imm16 art -- ) 000001 FORMATI16T, ;
+
+
+: FORMATTQ,   ( t   sr  opmask -- )  // calling it Q to avoid name conflict
+    //          1   2-3 0&4&5
+    Q>U24  
+    T>U24  
+    CODE-U24,
+;
+
+: FORMATQT,   ( sr   t   opmask -- )  // calling it Q to avoid name conflict
+    //          1   2-3 0&4&5
+    T>U24
+    Q>U24    
+    CODE-U24,
+;
+
+: XTRSR, ( u8 at -- ) ( sr[u8] -> at ) 030000 FORMATQT, ;
+: XTWSR, ( at u8 -- ) ( at -> sr[u8] ) 130000 FORMATTQ, ;
+: XTWUR, ( at u8 -- ) F30000 FORMATTQ, ;
+: XTXSR, ( at u8 -- ) ( at <-> sr[u8] ) 610000 FORMATTQ, ;
+
+
+: FORMATRV,   ( r  st   opmask -- )  // calling it V to avoid name conflict
+    V>U24
+    R>U24  
+    CODE-U24,
+;
+
+: XTRUR, ( ar u16 -- ) E30000 FORMATRV, ; 
+
+
+: >OFFSET&N ( n offset -- )
+    3FFFF AND
+    2 LSHIFT 
+    SWAP 3 AND OR 
+;
+
+: FORMATN18,   ( n18 opmask  -- )  // looks like n is the low 2 bits
+    IMM18>U24
+    CODE-U24,
+;
+
+: XTCALL0,  ( n18 -- ) 000005 FORMATN18, ;
+: XTCALL4,  ( n18 -- ) 000015 FORMATN18, ;
+: XTCALL8,  ( n18 -- ) 000025 FORMATN18, ;
+: XTCALL12, ( n18 -- ) 000035 FORMATN18, ;
+: XTJ,      ( n18 -- ) 000006 FORMATN18, ;
+: XTJ.L,    ( n18 -- ) 000006 FORMATN18, ;
+
+: FORMATS,   ( s   opmask -- )
+    S>U24
+    CODE-U24,
+;
+
+: XTCALLX0,   ( as -- ) 0000C0 FORMATS, ;
+: XTCALLX4,   ( as -- ) 0000D0 FORMATS, ;
+: XTCALLX8,   ( as -- ) 0000E0 FORMATS, ;
+: XTCALLX12,  ( as -- ) 0000F0 FORMATS, ;
+: XTDIWBUI.P, ( as -- ) 0F7082 FORMATS, ;
+: XTIDTLB,    ( as -- ) 50C000 FORMATS, ;
+: XTIITLB,    ( as -- ) 504000 FORMATS, ;
+: XTJX,       ( as -- ) 0000A0 FORMATS, ;
+: XTLDDR32.P, ( as -- ) 0070E0 FORMATS, ;
+: XTRFI,      ( u4 -- ) 003010 FORMATS, ;
+: XTSDDR32.P, ( as -- ) 0070F0 FORMATS, ;
+: XTSSA8B,    ( as -- ) 403000 FORMATS, ;
+: XTSSA8L,    ( as -- ) 402000 FORMATS, ;
+: XTSSL,      ( as -- ) 401000 FORMATS, ;
+: XTSSR,      ( as -- ) 400000 FORMATS, ;
+: XTWAITI,    ( u4 -- ) 007000 FORMATS, ;
+
+: FORMATT, ( at opmask -- ) 
+    T>U24
+    CODE-U24,
+;
+
+: XTGETEX,   ( at -- ) 40A000 FORMATT, ;
+: XTROTW,    ( u4 -- ) 408000 FORMATT, ;
+: XTSYSCALL, ( u4 -- ) 005000 FORMATT, ;
+
+: FORMATSI4bI8, ( as i4b n8   opmask -- )  // gonna pull BRANCHU32>U4 out...
+    IMM8>U24
+    BRANCHU32>U4 ?ERRORIF NAME>E EXIT THEN R>U24
+    S>U24
+    CODE-U24,
+;
+
+: XTBEQI,  ( as ar n8 -- ) ?ERRORU8 ?ERRORIF EXIT THEN 000026 FORMATSI4bI8, ;
+: XTBGEI,  ( as ar n8 -- ) ?ERRORU8 ?ERRORIF EXIT THEN 0000E6 FORMATSI4bI8, ;
+: XTBGEUI, ( as ar n8 -- ) ?ERRORU8 ?ERRORIF EXIT THEN 0000F6 FORMATSI4bI8, ;
+: XTBLTI,  ( as ar n8 -- ) ?ERRORU8 ?ERRORIF EXIT THEN 0000A6 FORMATSI4bI8, ;
+: XTBLTUI, ( as ar n8 -- ) ?ERRORU8 ?ERRORIF EXIT THEN 0000B6 FORMATSI4bI8, ;
+: XTBNEI,  ( as ar n8 -- ) ?ERRORU8 ?ERRORIF EXIT THEN 000066 FORMATSI4bI8, ;
+
+: FORMATSI12, ( s   imm12 opmask -- )    
+    IMM12>U24
+    S>U24
+    CODE-U24,
+;
+
+: XTENTRY, ( s n12 -- ) 000036 FORMATSI12, ;
+
+: FORMATTSR.N, ( t s r op0 -- )
+    R>U24
+    S>U24
+    T>U24
+    CODE-U16,
+;
+
+: FORMATSRT.N, ( s r t op0 -- )
+    T>U24
+    R>U24
+    S>U24
+    CODE-U16,
+;
+
+: FORMATSTR.N, ( s t r op0 -- )
+    R>U24
+    T>U24
+    S>U24
+    CODE-U16,
+;
+
+: XTADD.N,  ( at as ar -- )  ( at + as -> ar )     000A FORMATTSR.N, ;
+: XTADDI.N, ( as u4' ar -- ) ( as + u4' -> ar )    000B FORMATSTR.N, ; // if u4' is 0, u4 represents -1
+: XTL32I.N, ( as u4 at -- )  ( [as + u4*4] -> at ) 0008 FORMATSRT.N, ; 
+: XTS32I.N, ( at as u4 -- )  ( at -> [as + u4*4] ) 0009 FORMATTSR.N, ; 
+
+: FORMATS.N, ( s opmask -- ) 
+    S>U24 
+    CODE-U16, ;
+
+: BREAK.N, ( s -- ) F02D FORMATS.N, ;
+
+: FORMATSI6.N, ( s   imm6   opmask -- )
+    //         2   3      0&1bits2-3
+    IMM6>U16
+    S>U24
+    CODE-U16,
+;
+
+: XTBEQZ.N, ( as n6 -- ) ( if as == 0 then pc + 4 + n6 -> pc ) 008C FORMATSI6.N, ;
+: XTBNEZ.N, ( as n6 -- ) ( if as <> 0 then pc + 4 + n6 -> pc ) 00CC FORMATSI6.N, ;
+
+: FORMATSRI5T, ( as u4maskcnt-1 u5shift at opmask -- )
+    T>U24
+    IMM5>U24[20-23:16]
+    R>U24
+    S>U24
+    CODE-U24,
+;
+
+: XTDEPBITS, ( as u4maskcnt-1 u5shift at -- ) 
+    ( replace u4maskcnt+1 bits of at starting with bit u5shift
+      with u4maskcnt+1 lobits of as ) 
+    0A0000 FORMATSRI5T, ;
+
+HEX
+: FORMATTI5[8-11:16]OP2R, ( t u5shift u4maskbits-1 r -- )
+    R>U24
+    OP2>U24
+    U5>U24[8-11:16]
+    T>U24
+    CODE-U24,
+;
+
+: XTEXTUI, ( t u5shift u4mask r -- ) 040000 FORMATTI5[8-11:16]OP2R, ;
+
+: FORMATTI5[8-11:20]R, ( t imm5 r opmask -- )
+    R>U24
+    U5>U24[8-11:20]
+    T>U24
+    CODE-U24,
+;
+
+: XTSRAI,  ( t u5 r -- ) ( at >>u5 -> ar ) 210000 FORMATTI5[8-11:20]R, ;
+
+: FORMATSI5[4-7:20]R, ( s imm5 r opmask -- )
+    R>U24
+    U5>U24[4-7:20]
+    S>U24
+    CODE-U24,
+;
+
+: XTSLLI, ( as u5 ar -- ) ( as * 2^u5 -> ar ) 010000 FORMATSI5[4-7:20]R, ;
+
+: FORMATI5[8-11:4], ( u5 opmask -- ) 
+    U5>U24[8-11:4]
+    CODE-U24,
+;
+
+: XTSSAI, ( u5 -- ) ( u5 -> sar ) 404000 FORMATI5[8-11:4], ;
+
+: FORMATI3, ( imm3 opmask -- )
+    SWAP 
+    7 AND 8 LSHIFT
+    OR
+    CODE-U24,
+;
+
+: XTFSYNC, ( imm3 -- ) 002800 FORMATI3, ;
+
+: FORMATI12T, ( imm12 t -- )
+    T>U24
+    IMM12>U24B
+    CODE-U24,
+;
+
+: XTMOVI, ( n12 t -- ) ( n12 -> at ) 00A002 FORMATI12T, ;
+
+: FORMATST.N, ( s t -- )
+    T>U24
+    S>U24
+    CODE-U16,
+;
+
+: XTMOV.N, ( s t -- ) ( as -> at ) 000D FORMATST.N, ;
+
+: FORMATI7S, ( imm7 s opmask -- )
+    S>U24
+    IMM7>U16
+    CODE-U16,
+;
+
+: XTMOVI.N, ( n7' as -- ) ( n7' -> as ) 000C FORMATI7S, ; // n7 sign extended only if bits 6 & 7 are both 1
+
+: FORMATSY, ( s y -- )
+    Y>U24
+    S>U24
+    CODE-U24,
+;
+
+: XTMUL.AD.LL ( as my -- ) 340004 FORMATSY, ;  
+    // docs are confusing about which registers y represents, m2/m3 or m1/m2?
+    //  probably... m2/m3 and example description shows m2 choice...
+: XTMUL.AD.HL ( as my -- ) 350004 FORMATSY, ; 
+: XTMUL.AD.LH ( as my -- ) 360004 FORMATSY, ; 
+: XTMUL.AD.HH ( as my -- ) 370004 FORMATSY, ; 
+
+: XTMULA.AD.LL ( as my -- ) 380004 FORMATSY, ;  
+    // docs are confusing about which registers y represents, m2/m3 or m1/m2?
+    //  probably... m2/m3 and example description shows m2 choice...
+: XTMULA.AD.HL ( as my -- ) 390004 FORMATSY, ; 
+: XTMULA.AD.LH ( as my -- ) 3A0004 FORMATSY, ; 
+: XTMULA.AD.HH ( as my -- ) 3B0004 FORMATSY, ; 
+
+: XTMULS.AD.LL ( as my -- ) 3C0004 FORMATSY, ;  
+: XTMULS.AD.HL ( as my -- ) 3D0004 FORMATSY, ; 
+: XTMULS.AD.LH ( as my -- ) 3E0004 FORMATSY, ; 
+: XTMULS.AD.HH ( as my -- ) 3F0004 FORMATSY, ; 
+
+: FORMATXT, ( x t -- )
+    T>U24
+    X>U24
+    CODE-U24,
+;
+
+: XTMUL.DA.LL ( mx at -- ) 640004 FORMATXT, ;
+: XTMUL.DA.HL ( mx at -- ) 650004 FORMATXT, ;
+: XTMUL.DA.LH ( mx at -- ) 660004 FORMATXT, ;
+: XTMUL.DA.HH ( mx at -- ) 670004 FORMATXT, ;
+
+: XTMULA.DA.LL ( mx at -- ) 680004 FORMATXT, ;
+: XTMULA.DA.HL ( mx at -- ) 690004 FORMATXT, ;
+: XTMULA.DA.LH ( mx at -- ) 6A0004 FORMATXT, ;
+: XTMULA.DA.HH ( mx at -- ) 6B0004 FORMATXT, ;
+
+: XTMULS.DA.LL ( mx at -- ) 6C0004 FORMATXT, ;
+: XTMULS.DA.HL ( mx at -- ) 6D0004 FORMATXT, ;
+: XTMULS.DA.LH ( mx at -- ) 6E0004 FORMATXT, ;
+: XTMULS.DA.HH ( mx at -- ) 6F0004 FORMATXT, ;
+
+: FORMATWSXT, ( w s x t opmask -- )
+    X>U24
+    W>U24
+    S>U24
+    T>U24
+    CODE-U24,
+;
+
+: XTMULA.DA.LL.LDDEC, ( mw as mx at -- ) 580004 FORMATWSXT, ;
+: XTMULA.DA.HL.LDDEC, ( mw as mx at -- ) 590004 FORMATWSXT, ;
+: XTMULA.DA.LH.LDDEC, ( mw as mx at -- ) 5A0004 FORMATWSXT, ;
+: XTMULA.DA.HH.LDDEC, ( mw as mx at -- ) 5B0004 FORMATWSXT, ;
+
+: XTMULA.DA.LL.LDINC, ( mw as mx at -- ) 480004 FORMATWSXT, ;
+: XTMULA.DA.HL.LDINC, ( mw as mx at -- ) 490004 FORMATWSXT, ;
+: XTMULA.DA.LH.LDINC, ( mw as mx at -- ) 4A0004 FORMATWSXT, ;
+: XTMULA.DA.HH.LDINC, ( mw as mx at -- ) 4B0004 FORMATWSXT, ;
+
+: FORMATXY, ( x y opmask -- )
+    Y>U24
+    X>U24
+    CODE-U24,
+;
+
+: XTMUL.DD.LL ( mx my -- ) 440004 FORMATXY, ;
+: XTMUL.DD.HL ( mx my -- ) 450004 FORMATXY, ;
+: XTMUL.DD.LH ( mx my -- ) 460004 FORMATXY, ;
+: XTMUL.DD.HH ( mx my -- ) 470004 FORMATXY, ;
+
+: XTMULA.DD.LL ( mx my -- ) 480004 FORMATXY, ;
+: XTMULA.DD.HL ( mx my -- ) 490004 FORMATXY, ;
+: XTMULA.DD.LH ( mx my -- ) 4A0004 FORMATXY, ;
+: XTMULA.DD.HH ( mx my -- ) 4B0004 FORMATXY, ;
+
+: XTMULS.DD.LL ( mx my -- ) 4C0004 FORMATXY, ;
+: XTMULS.DD.HL ( mx my -- ) 4D0004 FORMATXY, ;
+: XTMULS.DD.LH ( mx my -- ) 4E0004 FORMATXY, ;
+: XTMULS.DD.HH ( mx my -- ) 4F0004 FORMATXY, ;
+
+: FORMATWSXY, ( w s x y opmask -- )
+    Y>U24
+    X>U24
+    S>U24
+    W>U24
+    CODE-U24,
+;
+
+: XTMULA.DD.LL.LDDEC ( mw as mx my -- ) 180004 FORMATWSXY, ;
+: XTMULA.DD.HL.LDDEC ( mw as mx my -- ) 190004 FORMATWSXY, ;
+: XTMULA.DD.LH.LDDEC ( mw as mx my -- ) 1A0004 FORMATWSXY, ;
+: XTMULA.DD.HH.LDDEC ( mw as mx my -- ) 1B0004 FORMATWSXY, ;
+
+: XTMULA.DD.LL.LDINC ( mw as mx my -- ) 080004 FORMATWSXY, ;
+: XTMULA.DD.HL.LDINC ( mw as mx my -- ) 090004 FORMATWSXY, ;
+: XTMULA.DD.LH.LDINC ( mw as mx my -- ) 0A0004 FORMATWSXY, ;
+: XTMULA.DD.HH.LDINC ( mw as mx my -- ) 0B0004 FORMATWSXY, ;
+
+: XTBEQZ,    ( as n12 -- ) ?ERRORU12 ?ERRORIF NAME>E EXIT THEN 000016 FORMATSI12, ; // tested
+: XTBGEZ,    ( as n12 -- ) ?ERRORU12 ?ERRORIF NAME>E EXIT THEN 0000D6 FORMATSI12, ; // tested
+: XTBLTZ,    ( as n12 -- ) ?ERRORU12 ?ERRORIF NAME>E EXIT THEN 000096 FORMATSI12, ; // tested
+: XTBNEZ,    ( as n12 -- ) ?ERRORU12 ?ERRORIF NAME>E EXIT THEN 000056 FORMATSI12, ; // tested
+
+: XTBF,      ( as n8 -- )  ?ERRORU8 ?ERRORIF NAME>E EXIT THEN 000076 FORMATSI8, ; // tested
+: XTBT,      ( as n8 -- )  ?ERRORU8 ?ERRORIF NAME>E EXIT THEN 001076 FORMATSI8, ; // tested
+
+: XTBALL,  ( as at n8 -- ) ?ERRORU8 ?ERRORIF NAME>E EXIT THEN 004007 FORMATSTI8, ; // tested
+: XTBANY,  ( as at n8 -- ) ?ERRORU8 ?ERRORIF NAME>E EXIT THEN 008007 FORMATSTI8, ; // tested
+: XTBBC,   ( as at n8 -- ) ?ERRORU8 ?ERRORIF NAME>E EXIT THEN 005007 FORMATSTI8, ; // tested
+: XTBBS,   ( as at n8 -- ) ?ERRORU8 ?ERRORIF NAME>E EXIT THEN 00D007 FORMATSTI8, ; // tested
+: XTBEQ,   ( as at n8 -- ) ?ERRORU8 ?ERRORIF NAME>E EXIT THEN 001007 FORMATSTI8, ; // tested
+: XTBGE,   ( as at n8 -- ) ?ERRORU8 ?ERRORIF NAME>E EXIT THEN 00A007 FORMATSTI8, ; // tested
+: XTBGEU,  ( as at n8 -- ) ?ERRORU8 ?ERRORIF NAME>E EXIT THEN 00B007 FORMATSTI8, ; // tested
+: XTBLT,   ( as at n8 -- ) ?ERRORU8 ?ERRORIF NAME>E EXIT THEN 002007 FORMATSTI8, ; // tested
+: XTBLTU,  ( as at n8 -- ) ?ERRORU8 ?ERRORIF NAME>E EXIT THEN 003007 FORMATSTI8, ; // tested
+: XTBNALL, ( as at n8 -- ) ?ERRORU8 ?ERRORIF NAME>E EXIT THEN 00C007 FORMATSTI8, ; // tested
+: XTBNE,   ( as at n8 -- ) ?ERRORU8 ?ERRORIF NAME>E EXIT THEN 009007 FORMATSTI8, ; // tested
+: XTBNONE, ( as at n8 -- ) ?ERRORU8 ?ERRORIF NAME>E EXIT THEN 000007 FORMATSTI8, ; // tested
+
+: FORMATI18, ( n18 opcode -- ) SWAP 3FFFF AND 6 LSHIFT OR CODE-U24, ;
+: FORMATI8,  ( n8  opcode -- ) SWAP FF AND 10 LSHIFT OR CODE-U24, ;
+
+: XTJ,     ( n18 -- ) ( pc + n18 + 4 -> pc ) 6 FORMATI18, ;
+
+// condition codes for BRANCH,
+
+( as at n8 -- )
+005007 CONSTANT BCLR // can't use BC because it's a hex number
+00D007 CONSTANT BSET 
+
+001007 CONSTANT EQ
+009007 CONSTANT NE
+
+00A007 CONSTANT GE // signed
+002007 CONSTANT LT // signed
+
+// LE GT get converted to GE LT
+00200F CONSTANT GT // signed
+00A00F CONSTANT LE // signed
+
+
+00B007 CONSTANT GEU // unsigned
+003007 CONSTANT LTU // unsigned
+
+// LEU GTU get converted to GEU LTU
+00300F CONSTANT GTU // unsigned
+00B00F CONSTANT LEU // unsigned
+
+004007 CONSTANT ALL  // branches if all the masked bits are set
+00C007 CONSTANT NALL // branches if not all the masked bits are set
+
+008007 CONSTANT ANY  // branches if any of the masked bits are set
+000007 CONSTANT NONE // branches if none of the masked bits are set
+
+( as n8 -- )
+000076 CONSTANT BITF // can't use BF because it's a hex number
+001076 CONSTANT BITT
+
+( as n12 -- )
+000016 CONSTANT EQZ
+000056 CONSTANT NEZ
+
+0000D6 CONSTANT GEZ
+000096 CONSTANT LTZ
+
+000006 CONSTANT ALWAYS
+0020F0 CONSTANT NEVER  
+
+: OPPOSITEBRANCHCODE ( opcode -- opcode' )
+   
+    DUP ALWAYS = IF
+       DROP NEVER
+       EXIT
+     THEN
+
+    DUP NEVER = IF
+      DROP ALWAYS
+      EXIT
+    THEN
+
+    // BCLR BSET EQ NE GE LT GEU LTU ALL NALL ANY NONE 
+    DUP ( -- opcode opcode ) 
+    FF AND 7 = IF
+      8000 XOR
+      EXIT
+    THEN
+
+    // GT LE GTU LEU
+    DUP ( -- opcode opcode ) 
+    FF AND 0F = IF
+      8000 XOR
+      EXIT
+    THEN
+
+    // BITF BITT
+    DUP ( -- opcode opcode )
+    FF AND 76 = IF
+      1000 XOR
+      EXIT
+    THEN
+
+    // EQZ NEZ GEZ LTZ
+    DUP
+    3F AND 16 = IF
+      40 XOR
+      EXIT
+    THEN
+
+    // error case leaves it alone
+    ERROR" unknown branch opcode"
+    NAME>E
+;
+
+
+: SHORTBRANCH, ( ars art n8 opcode -- afterbranchaddr )
+               ( brs n8 opcode -- afterbranchaddr )
+               ( ars n12 opcode -- afterbranchaddr )
+
+    DUP BITF = ( -- ... opcode flag )
+    OVER BITT = ( -- ... opcode flag flag2 )
+    OR ( -- ... opcode flag )
+    IF ( -- ... opcode )
+      ( as n8 opcode -- ) FORMATSI8,
+      BARHERE
+      EXIT
+    THEN
+
+    DUP EQZ =
+    OVER GEZ = OR
+    OVER LTZ = OR
+    OVER NEZ = OR 
+    IF 
+      ( as i12 opcode -- ) FORMATSI12,
+      BARHERE
+      EXIT
+    THEN
+
+    DUP ALWAYS =
+    IF
+      ( i18 opcode -- ) FORMATI18,
+      BARHERE
+      EXIT
+    THEN
+
+    DUP NEVER =
+    IF
+      // offset is ignored...
+      ( i8 opcode -- ) // FORMATI8,
+      CODE-U24, DROP // could just do NOP,
+      BARHERE
+      EXIT
+    THEN
+
+    DUP 0F AND 07 =
+    IF 
+      // EQ NE GE LT GEU LTU ALL NALL ANY NONE
+      ( ars art i8 opcode -- ) FORMATSTI8,
+      BARHERE
+      EXIT
+    THEN
+
+    DUP 0F AND 0F =  // note: some incorrect branch codes will not give an error
+    IF
+      // GT LE GTU LEU 
+      
+      ( ars art i8 opcode -- ) 
+      >R >R SWAP R> R> // swaps ars and art
+      FFFFFFF7 AND // converts fake opcode to a branch opcode
+      FORMATSTI8,
+      BARHERE
+      EXIT
+    THEN
+
+    ERROR" unknown branch opcode" NAME>E
+;
+
+// need to check opcodes to do this right...
+: ?SHORTBRANCH 
+    { branchdistance branchopcode | targetaddress afterbranchaddress -- flag }
+
+    targetaddress afterbranchaddress - 1- TO branchdistance
+    afterbranchaddress 3 - BARU24@ TO branchopcode
+
+    branchopcode 0000FF AND EQZ =
+    branchopcode 0000FF AND GEZ = OR
+    branchopcode 0000FF AND LTZ = OR
+    branchopcode 0000FF AND NEZ = OR  
+    IF 
+      branchdistance ?N12 SWAP DROP EXIT
+    THEN
+
+    branchopcode 00F0FF AND BITF =
+    branchopcode 00F0FF AND BITT = OR
+    branchopcode 00F00F AND EQ = OR
+    branchopcode 00F00F AND NE = OR
+    branchopcode 00F00F AND GE = OR
+    branchopcode 00F00F AND LT = OR
+    branchopcode 00F00F AND GEU = OR
+    branchopcode 00F00F AND LTU = OR
+    branchopcode 00F00F AND ALL = OR
+    branchopcode 00F00F AND NALL = OR
+    branchopcode 00F00F AND ANY = OR
+    branchopcode 00F00F AND NONE = OR
+    IF
+      branchdistance ?N8 SWAP DROP EXIT
+    THEN
+
+    branchopcode 00003F AND ALWAYS =
+    IF
+      branchdistance ?N18 SWAP DROP EXIT
+    THEN
+
+    branchopcode NEVER =
+    IF
+      ( ignoring distance ) EXIT
+    THEN
+
+    // default case
+    ERROR" unknown branch opcode"
+    NAME>E
+   ;
+
+HEX
+: RESOLVE-BRANCH, { branchdistance branchopcode | targetaddress afterbranchaddress -- }
+    targetaddress afterbranchaddress - 1- TO branchdistance
+    
+    afterbranchaddress 3 - BARU24@ TO branchopcode
+
+    branchopcode 0000FF AND EQZ =
+    branchopcode 0000FF AND GEZ = OR
+    branchopcode 0000FF AND LTZ = OR
+    branchopcode 0000FF AND NEZ = OR  
+    IF 
+      branchdistance ?N12 IF
+        0C LSHIFT branchopcode 000FFF AND OR 
+        afterbranchaddress 3 - BARU24!
+      ELSE
+        DROP
+        ERROR" branch too far"
+        NAME>E
+      THEN
+      EXIT
+    THEN
+
+    branchopcode 00F0FF AND BITF =
+    branchopcode 00F0FF AND BITT = OR
+    branchopcode 00F00F AND EQ = OR
+    branchopcode 00F00F AND NE = OR
+    branchopcode 00F00F AND GE = OR
+    branchopcode 00F00F AND LT = OR
+    branchopcode 00F00F AND GEU = OR
+    branchopcode 00F00F AND LTU = OR
+    branchopcode 00F00F AND ALL = OR
+    branchopcode 00F00F AND NALL = OR
+    branchopcode 00F00F AND ANY = OR
+    branchopcode 00F00F AND NONE = OR
+    IF
+      branchdistance ?N8 IF
+        10 LSHIFT branchopcode 00FFFF AND OR 
+        afterbranchaddress 3 - BARU24!
+      ELSE
+        DROP
+        ERROR" branch too far"
+        NAME>E
+      THEN
+      EXIT
+    THEN
+
+    branchopcode 00003F AND ALWAYS =
+    IF
+      branchdistance ?N18 IF
+        6 LSHIFT branchopcode 00003F AND OR 
+        afterbranchaddress 3 - BARU24!
+      ELSE
+        DROP
+        ERROR" branch too far"
+        NAME>E
+      THEN
+      EXIT
+    THEN
+
+    branchopcode NEVER =
+    IF
+      // branch distance doesn't matter
+      EXIT
+    THEN
+
+    // default case
+    ERROR" unknown branch opcode"
+    NAME>E
+;
+
+
+: LONGBRANCH, ( ... branchopcode -- afterbranchaddr )
+    { | displacement branchopcode }
+    // need to compile an opposite shortbranch over a jump 0
+    // short branch displacement should be 2
+
+    2 branchopcode OPPOSITEBRANCHCODE SHORTBRANCH,
+    // forward branch displacement won't matter
+    // but a backwards one needs adjustment... going 3 more
+    //   or maybe we shouldn't add anything at all to the distance...
+    displacement 3 + XTJ, // adding 3 for the short branch we just compiled
+    BARHERE
+;
+
+: IF, ( conditioncode -- afterbranchaddr )
+   OPPOSITEBRANCHCODE 0 SWAP SHORTBRANCH,
+;
+
+: LONGIF, ( conditioncode -- afterbranchaddr )
+    OPPOSITEBRANCHCODE 0 SWAP LONGBRANCH,
+;
+
+: THEN, ( afterbranchaddr -- )
+    BARHERE SWAP RESOLVE-BRANCH,
+;
+
+: LONGTHEN, ( afterbranchoaddr -- )
+    BARHERE SWAP RESOLVE-BRANCH,
+;
+
+: ELSE, ( iffaddr -- )
+    ( ALWAYS BRANCH, )
+    0 ALWAYS SHORTBRANCH, >R
+    THEN,
+    R>
+;
+
+: LONGELSE, ( iffaddr -- )
+    0 ALWAYS LONGBRANCH, >R
+    LONGTHEN,
+    R>
+;
+
+: WHILE, ( beginaddr cc -- whileaddr beginaddr )
+    IF, SWAP
+;
+
+: LONGWHILE, ( beginaddr cc -- whileaddr beginaddr )
+    LONGIF, SWAP
+;
+
+: BEGIN, ( -- beginaddr )
+    BARHERE
+;
+
+: LONGBEGIN, ( -- beginaddr )
+    BARHERE
+;
+
+
+// need to take into number of parameters based on branchopcode 
+: ?UNTILSHORTBRANCH  { | branchopcode }
+    ( beginaddr ... branchopcode -- beginaddr ... branchopcode beginaddr )
+    branchopcode 0000FF AND EQZ =
+    branchopcode 0000FF AND GEZ = OR
+    branchopcode 0000FF AND LTZ = OR
+    branchopcode 0000FF AND NEZ = OR  
+    IF 
+      ( beginaddr ar -- )
+      branchopcode 2 PICK ( beginaddr ar branchopcode beginaddr -- )
+      BARHERE - 4 - ?N12 SWAP DROP
+      EXIT
+    THEN
+
+    branchopcode 00F0FF AND BITF =
+    branchopcode 00F0FF AND BITT = OR
+    IF 
+      ( beginaddr ar -- )
+      branchopcode 2 PICK ( beginaddr ar branchopcode beginaddr -- )
+      BARHERE - 4 - ?N8 SWAP DROP
+      EXIT
+    THEN
+
+    branchopcode 00F00F AND EQ =
+    branchopcode 00F00F AND NE = OR
+    branchopcode 00F00F AND GE = OR
+    branchopcode 00F00F AND LT = OR
+    branchopcode 00F00F AND GEU = OR
+    branchopcode 00F00F AND LTU = OR
+    branchopcode 00F00F AND ALL = OR
+    branchopcode 00F00F AND NALL = OR
+    branchopcode 00F00F AND ANY = OR
+    branchopcode 00F00F AND NONE = OR
+    IF
+      ( beginaddr ar ar -- )
+      branchopcode 3 PICK
+      BARHERE - 4 - ?N8 SWAP DROP
+      EXIT
+    THEN
+
+    branchopcode 00003F AND ALWAYS =
+    IF 
+      ( beginaddr -- )
+      branchopcode OVER
+      BARHERE - 4 - ?N18 SWAP DROP
+      // hmm... don't have a longer branch yet...
+      EXIT
+    THEN
+
+    branchopcode NEVER =
+    IF
+      ( beginaddr -- )
+      branchopcode TRUE
+      EXIT
+    THEN
+
+    // default case
+    ERROR" unknown branch opcode"
+    NAME>E
+;
+
+HEX
+: UNTIL, ( beginaddr ... branchcode -- )
+    OPPOSITEBRANCHCODE ( beginaddr ... oppositebranchcode -- )
+    
+    ?UNTILSHORTBRANCH ( beginaddr ... oppositebranchcode flag -- ) IF
+      0 SWAP ( beginaddr ... imm8 oppositebranchcode -- )
+      SHORTBRANCH, ( beginaddr afterbranchaddr -- ) 
+      RESOLVE-BRANCH,
+    ELSE
+      ( beginaddr ... branchcode -- )
+      0 SWAP LONGBRANCH, RESOLVE-BRANCH,
+    THEN
+;
+
+
+: REPEAT, ( whileaddr beginaddr -- )
+    NEVER UNTIL,
+    THEN,
+;
+
+: LONGREPEAT, ( whileaddr beginaddr -- )
+    NEVER UNTIL,
+    LONGTHEN,
+;
+
+: N32->AR, { | n32 ar -- } // br br | br br br br | n8 n8 n8 n8 | lr lr lr lr lr lr
+    NEVER IF, 
+      BARALIGN32 n32 CODE-U32,
+    THEN,
+    -1 ar XTL32R, 
+;
+
+: N->AR, ( n ar -- )
+    OVER ( n ar n -- ) 
+    ?N7b IF DROP XTMOVI.N, EXIT THEN
+    ?N12 IF DROP XTMOVI, EXIT THEN
+    DROP N32->AR,  
+;
+
+
+VARIABLE PSCRATCHREG
+-1 PSCRATCHREG ! // -1 means none
+
+// not using the return stack for this function since the return stack
+//   register is not known, so to use this function you have to
+//   handle setting up the scratch reg yourself
+: AR+N->AR, { | srcar n destar -- } 
+    n ?N4b  IF DROP srcar n -1 = IF 0 ELSE n THEN destar XTADDI.N, EXIT THEN
+    ?N8     IF DROP srcar n destar XTADDI, EXIT THEN
+    ?256*N8 IF DROP srcar n 100 / destar XTADDMI, EXIT THEN
+    DROP
+    srcar destar = IF
+      PSCRATCHREG @ -1 = IF
+        ERROR" src reg same as dest reg and scratch reg not defined"
+        NAME>E
+        EXIT
+      THEN
+      PSCRATCHREG @ srcar <> IF
+        n PSCRATCHREG @ N->AR,
+        srcar PSCRATCHREG @ destar XTADD, // srcar and destar are the same
+        EXIT
+      THEN
+      ERROR" scratch reg, src reg, and dest reg is the same" 
+      NAME>E
+      EXIT 
+    THEN
+    n destar N->AR, // compile mov n->destar
+    srcar destar destar XTADD, // compile destar + srcar -> destar
+; 
+    
+
+: AR->AR,     ( srcar destar -- )     XTMOV.N, ;
+: AR->F32R,   ( srcar destf32r -- )   XTWFR, ;
+: F32R->AR,   ( srcf32r destar -- )   XTRFR, ;
+: F32R->F32R, ( srcf32r destf32r -- ) XTMOV.S, ;
+
+: [AR]->AR, ( srcar destar -- ) 0 SWAP XTL32I, ;
+: AR->[AR], ( srcar destar -- ) 0 XTS32I, ;
+
+: U8[AR]->AR,  ( srcar destar -- ) 0 SWAP XTL8UI, ;
+: N16[AR]->AR, ( srcar destar -- ) 0 SWAP XTL16SI, ;
+: U16[AR]->AR, ( srcar destar -- ) 0 SWAP XTL16UI, ;
+: AR->U8[AR],  ( srcar destar -- ) 0 XTS8I, ;
+: AR->U16[AR], ( srcar destar -- ) 0 XTS16I, ;
+
+: [O]->AR, { n | o destar -- } // only previous offsets are ok...
+    // assumes base address is 32 bit aligned
+    // PBASEADDRESS @ 3 AND 0<> IF
+    //   ERROR" base address must be 32 bit aligned" NAME>E EXIT
+    // THEN
+    // o must be 32 bit aligned
+    o 3 AND 0<> IF
+      ERROR" O must be 32 bit aligned" NAME>E EXIT
+    THEN
+    // (O - ((OHERE + 3) and FFFFFFFC)) / 4 = n
+    o OHERE - 3 - 4 / TO n
+    n -10000 U< IF
+      ERROR" offset must be negative and be <= 16 bits"
+      EXIT
+    THEN
+    n destar XTL32R,
+; 
+
+// HEX
+// 800000 CONSTANT OPADD
+// C00000 CONSTANT OPSUB
+// 100000 CONSTANT OPAND
+// 200000 CONSTANT OPOR
+// 300000 CONSTANT OPXOR
+// 530000 CONSTANT OPMAX
+// 730000 CONSTANT OPUMAX 
+// 430000 CONSTANT OPMIN 
+// 630000 CONSTANT OPUMIN
+ 
+// ARAR->AROP,   ( src1ar src2ar destar op -- ) FORMATTSR, ;
+
+// [AR]AR->AROP, { | src1ar src2ar destar op -- }
+//   src1ar src1ar AR->[AR],
+//   src1ar src2ar destar op ARAR->AROP, ;
+// AR[AR]->AROP, { | src1ar src2ar destar op -- }
+//   src2ar src2ar AR->[AR],
+//   src1ar src2ar destar op ARAR->AROP, ;
+// NAR->AROP, { | n srcar destar op -- }
+//   n destar N->AR,
+//   destar srcar destar op ARAR->OP, ;
+// ARN->AROP, { | srcar n destar op -- }
+//   n destar N->AR,
+//   srcar destar destar op ARAR->OP, ;
+// [AR+N]AR->AROP, { | src1ar n src2ar destar op -- }
+//   src1ar n destar AR+N->AR, // assumes src2ar and destar are different...
+//   destar [AR]->AR,
+//   destar src2ar destar op ARAR->OP, ;
+   
+
+
+HEX
+: CHECKSTACK 55 <> IF 
+    ERROR" stack check failed after compiling xtensa esp32 cross assembler"
+    TRUE ?END-EVALUATE // I think the error does this, so TRUE ?END-EVALUATE is not needed
+  THEN
+;
+CHECKSTACK
+

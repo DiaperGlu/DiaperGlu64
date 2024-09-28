@@ -1,0 +1,2551 @@
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2023 James Patrick Norris
+//
+//    This file is part of DGXtensaElfDotoMaker v1.0
+//
+//    DGXtensaElfDotoMaker v1.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DGXtensaElfDotoMaker v1.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DGXtensaElfDotoMaker v1.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// September 28, 2024         //
+// version 1.0                //
+// /////////////////////////////
+
+HEX
+: U8! C! ;
+: U8@ C@ ;
+
+: U24! ( value addr -- )
+    // assumes little endian
+      2DUP U16! // low 16 bits 
+      2 + SWAP 10 RSHIFT SWAP U8! // hi 8 bits
+;
+
+: U24@ ( addr -- value )
+    // assumes little endian
+      DUP U16@ // low 16 bits
+      SWAP 2 + U8@ 10 LSHIFT OR 
+;
+
+VARIABLE X 8 ALLOT
+
+HEX
+: TESTU24!
+    -1 X ! 
+    01020304 X U24!
+    X C@ 04 <> IF CRLF ERROR" - TESTU24! byte 0 incorrect" EXIT THEN
+    X 1+ C@ 03 <> IF CRLF ERROR" - TESTU24! byte 1 incorrect" EXIT THEN
+    X 2 + C@ 02 <> IF CRLF ERROR" - TESTU24! byte 2 incorrect" EXIT THEN
+    X 3 + C@ FF <> IF CRLF ERROR" - TESTU24! byte 3 incorrect" EXIT THEN
+    X 4 + C@ FF <> IF CRLF ERROR" - TESTU24! byte 4 incorrect" EXIT THEN
+;
+
+TESTU24!
+
+HEX
+: TESTU24@
+    1122334455667788 X !
+    X U24@ 667788 <> IF CRLF ERROR" - TESTU24@ result incorrect" EXIT THEN
+;
+
+TESTU24@
+
+: POL! ( value paddr offset length -- )
+       { | length -- }
+    + 
+
+    length 0= IF
+      2DROP EXIT
+    THEN
+
+    length 1 = IF
+      C! EXIT
+    THEN
+
+    length 2 = IF
+      U16! EXIT
+    THEN
+
+    length 3 = IF // asssumes little endian
+      U24! EXIT
+    THEN
+
+    length 4 = IF
+      U32! EXIT
+    THEN
+
+    length 8 = IF
+      U64! EXIT
+    THEN
+
+    ERROR" - unsupported length"
+;
+
+HEX
+: TESTPOL!
+    
+    -1 X ! 
+    01020304 X 0 1 POL!
+    X     C@ 04 <> IF CRLF ERROR" - 01020304 X 0 1 POL! byte 0 incorrect" EXIT THEN
+    X 1+  C@ FF <> IF CRLF ERROR" - 01020304 X 0 1 POL! byte 1 incorrect" EXIT THEN
+    X 2 + C@ FF <> IF CRLF ERROR" - 01020304 X 0 1 POL! byte 2 incorrect" EXIT THEN
+
+    -1 X ! 
+    01020304 X 1 1 POL!
+    X     C@ FF <> IF CRLF ERROR" - 01020304 X 1 1 POL! byte 0 incorrect" EXIT THEN
+    X 1+  C@ 04 <> IF CRLF ERROR" - 01020304 X 1 1 POL! byte 1 incorrect" EXIT THEN
+    X 2 + C@ FF <> IF CRLF ERROR" - 01020304 X 1 1 POL! byte 2 incorrect" EXIT THEN
+
+    -1 X ! 
+    01020304 X 2 1 POL!
+    X     C@ FF <> IF CRLF ERROR" - 01020304 X 2 1 POL! byte 0 incorrect" EXIT THEN
+    X 1+  C@ FF <> IF CRLF ERROR" - 01020304 X 2 1 POL! byte 1 incorrect" EXIT THEN
+    X 2 + C@ 04 <> IF CRLF ERROR" - 01020304 X 2 1 POL! byte 2 incorrect" EXIT THEN
+
+    -1 X ! 
+    01020304 X 0 2 POL!
+    X     C@ 04 <> IF CRLF ERROR" - 01020304 X 0 2 POL! byte 0 incorrect" EXIT THEN
+    X 1+  C@ 03 <> IF CRLF ERROR" - 01020304 X 0 2 POL! byte 1 incorrect" EXIT THEN
+    X 2 + C@ FF <> IF CRLF ERROR" - 01020304 X 0 2 POL! byte 2 incorrect" EXIT THEN
+    X 3 + C@ FF <> IF CRLF ERROR" - 01020304 X 0 2 POL! byte 3 incorrect" EXIT THEN
+
+    -1 X ! 
+    01020304 X 1 2 POL!
+    X     C@ FF <> IF CRLF ERROR" - 01020304 X 1 2 POL! byte 0 incorrect" EXIT THEN
+    X 1+  C@ 04 <> IF CRLF ERROR" - 01020304 X 1 2 POL! byte 1 incorrect" EXIT THEN
+    X 2 + C@ 03 <> IF CRLF ERROR" - 01020304 X 1 2 POL! byte 2 incorrect" EXIT THEN
+    X 3 + C@ FF <> IF CRLF ERROR" - 01020304 X 1 2 POL! byte 3 incorrect" EXIT THEN
+
+    -1 X ! 
+    01020304 X 2 2 POL!
+    X     C@ FF <> IF CRLF ERROR" - 01020304 X 2 2 POL! byte 0 incorrect" EXIT THEN
+    X 1+  C@ FF <> IF CRLF ERROR" - 01020304 X 2 2 POL! byte 1 incorrect" EXIT THEN
+    X 2 + C@ 04 <> IF CRLF ERROR" - 01020304 X 2 2 POL! byte 2 incorrect" EXIT THEN
+    X 3 + C@ 03 <> IF CRLF ERROR" - 01020304 X 2 2 POL! byte 3 incorrect" EXIT THEN
+
+    -1 X ! 
+    01020304 X 0 3 POL!
+    X     C@ 04 <> IF CRLF ERROR" - 01020304 X 0 3 POL! byte 0 incorrect" EXIT THEN
+    X 1+  C@ 03 <> IF CRLF ERROR" - 01020304 X 0 3 POL! byte 1 incorrect" EXIT THEN
+    X 2 + C@ 02 <> IF CRLF ERROR" - 01020304 X 0 3 POL! byte 2 incorrect" EXIT THEN
+    X 3 + C@ FF <> IF CRLF ERROR" - 01020304 X 0 3 POL! byte 3 incorrect" EXIT THEN
+    X 4 + C@ FF <> IF CRLF ERROR" - 01020304 X 0 3 POL! byte 4 incorrect" EXIT THEN
+
+    -1 X ! 
+    01020304 X 1 3 POL!
+    X     C@ FF <> IF CRLF ERROR" - 01020304 X 1 3 POL! byte 0 incorrect" EXIT THEN
+    X 1+  C@ 04 <> IF CRLF ERROR" - 01020304 X 1 3 POL! byte 1 incorrect" EXIT THEN
+    X 2 + C@ 03 <> IF CRLF ERROR" - 01020304 X 1 3 POL! byte 2 incorrect" EXIT THEN
+    X 3 + C@ 02 <> IF CRLF ERROR" - 01020304 X 1 3 POL! byte 3 incorrect" EXIT THEN
+    X 4 + C@ FF <> IF CRLF ERROR" - 01020304 X 1 3 POL! byte 4 incorrect" EXIT THEN
+    X 5 + C@ FF <> IF CRLF ERROR" - 01020304 X 1 3 POL! byte 5 incorrect" EXIT THEN
+
+    -1 X ! 
+    01020304 X 2 3 POL!
+    X     C@ FF <> IF CRLF ERROR" - 01020304 X 2 3 POL! byte 0 incorrect" EXIT THEN
+    X 1+  C@ FF <> IF CRLF ERROR" - 01020304 X 2 3 POL! byte 1 incorrect" EXIT THEN
+    X 2 + C@ 04 <> IF CRLF ERROR" - 01020304 X 2 3 POL! byte 2 incorrect" EXIT THEN
+    X 3 + C@ 03 <> IF CRLF ERROR" - 01020304 X 2 3 POL! byte 3 incorrect" EXIT THEN
+    X 4 + C@ 02 <> IF CRLF ERROR" - 01020304 X 2 3 POL! byte 4 incorrect" EXIT THEN
+    X 5 + C@ FF <> IF CRLF ERROR" - 01020304 X 2 3 POL! byte 5 incorrect" EXIT THEN
+
+    -1 X ! 
+    01020304 X 0 4 POL!
+    X     C@ 04 <> IF CRLF ERROR" - 01020304 X 0 4 POL! byte 0 incorrect" EXIT THEN
+    X 1+  C@ 03 <> IF CRLF ERROR" - 01020304 X 0 4 POL! byte 1 incorrect" EXIT THEN
+    X 2 + C@ 02 <> IF CRLF ERROR" - 01020304 X 0 4 POL! byte 2 incorrect" EXIT THEN
+    X 3 + C@ 01 <> IF CRLF ERROR" - 01020304 X 0 4 POL! byte 3 incorrect" EXIT THEN
+    X 4 + C@ FF <> IF CRLF ERROR" - 01020304 X 0 4 POL! byte 4 incorrect" EXIT THEN
+    X 5 + C@ FF <> IF CRLF ERROR" - 01020304 X 0 4 POL! byte 5 incorrect" EXIT THEN
+
+    -1 X ! 
+    01020304 X 1 4 POL!
+    X     C@ FF <> IF CRLF ERROR" - 01020304 X 1 4 POL! byte 0 incorrect" EXIT THEN
+    X 1+  C@ 04 <> IF CRLF ERROR" - 01020304 X 1 4 POL! byte 1 incorrect" EXIT THEN
+    X 2 + C@ 03 <> IF CRLF ERROR" - 01020304 X 1 4 POL! byte 2 incorrect" EXIT THEN
+    X 3 + C@ 02 <> IF CRLF ERROR" - 01020304 X 1 4 POL! byte 3 incorrect" EXIT THEN
+    X 4 + C@ 01 <> IF CRLF ERROR" - 01020304 X 1 4 POL! byte 4 incorrect" EXIT THEN
+    X 5 + C@ FF <> IF CRLF ERROR" - 01020304 X 1 4 POL! byte 5 incorrect" EXIT THEN
+
+    -1 X !   -1 X 8 + ! 
+    0102030405060708 X 0 8 POL!
+    X     C@ 08 <> IF CRLF ERROR" - 0102030405060708 X 0 8 POL! byte 0 incorrect" EXIT THEN
+    X 1+  C@ 07 <> IF CRLF ERROR" - 0102030405060708 X 0 8 POL! byte 1 incorrect" EXIT THEN
+    X 2 + C@ 06 <> IF CRLF ERROR" - 0102030405060708 X 0 8 POL! byte 2 incorrect" EXIT THEN
+    X 3 + C@ 05 <> IF CRLF ERROR" - 0102030405060708 X 0 8 POL! byte 3 incorrect" EXIT THEN
+    X 4 + C@ 04 <> IF CRLF ERROR" - 0102030405060708 X 0 8 POL! byte 4 incorrect" EXIT THEN
+    X 5 + C@ 03 <> IF CRLF ERROR" - 0102030405060708 X 0 8 POL! byte 5 incorrect" EXIT THEN
+    X 6 + C@ 02 <> IF CRLF ERROR" - 0102030405060708 X 0 8 POL! byte 6 incorrect" EXIT THEN
+    X 7 + C@ 01 <> IF CRLF ERROR" - 0102030405060708 X 0 8 POL! byte 7 incorrect" EXIT THEN
+    X 8 + C@ FF <> IF CRLF ERROR" - 0102030405060708 X 0 8 POL! byte 8 incorrect" EXIT THEN
+
+    -1 X !   -1 X 8 + ! 
+    0102030405060708 X 1 8 POL!
+    X     C@ FF <> IF CRLF ERROR" - 0102030405060708 X 0 8 POL! byte 0 incorrect" EXIT THEN
+    X 1+  C@ 08 <> IF CRLF ERROR" - 0102030405060708 X 0 8 POL! byte 1 incorrect" EXIT THEN
+    X 2 + C@ 07 <> IF CRLF ERROR" - 0102030405060708 X 0 8 POL! byte 2 incorrect" EXIT THEN
+    X 3 + C@ 06 <> IF CRLF ERROR" - 0102030405060708 X 0 8 POL! byte 3 incorrect" EXIT THEN
+    X 4 + C@ 05 <> IF CRLF ERROR" - 0102030405060708 X 0 8 POL! byte 4 incorrect" EXIT THEN
+    X 5 + C@ 04 <> IF CRLF ERROR" - 0102030405060708 X 0 8 POL! byte 5 incorrect" EXIT THEN
+    X 6 + C@ 03 <> IF CRLF ERROR" - 0102030405060708 X 0 8 POL! byte 6 incorrect" EXIT THEN
+    X 7 + C@ 02 <> IF CRLF ERROR" - 0102030405060708 X 0 8 POL! byte 7 incorrect" EXIT THEN
+    X 8 + C@ 01 <> IF CRLF ERROR" - 0102030405060708 X 0 8 POL! byte 8 incorrect" EXIT THEN
+    X 9 + C@ FF <> IF CRLF ERROR" - 0102030405060708 X 0 8 POL! byte 9 incorrect" EXIT THEN
+;
+
+TESTPOL!
+
+
+HEX
+CREATEOC obpropsection
+  00000000 CODE-U32,
+  00000000 CODE-U32,
+  00002804 CODE-U32,
+  00000000 CODE-U32,
+  0000000D CODE-U32,
+  00000002 CODE-U32,
+  0000000D CODE-U32,
+  00000000 CODE-U32,
+  00000008 CODE-U32,
+  OHERE obpropsection DROP - CONSTANT propsection.length
+
+: spropsection ( -- addr length ) obpropsection O>P propsection.length ;
+
+
+// declaring elf 32 header structure
+WORDLIST DUP ( -- structwid structwid )
+( structwid -- ) [>ORDER]CONSTANT [Elf32_Ehdr] 
+( structwid -- ) >CURRENT   ( ... -searchorder- ... structwid )
+  SIZED-CONSTANTS< 
+    4 e_ident.magic 
+    1 e_ident.class
+    1 e_ident.data 
+    1 e_ident.version
+    1 e_ident.osabi
+    1 e_ident.abiversion
+    7 e_ident.pad
+    2 e_type
+    2 e_machine
+    4 e_version
+    4 e_entry
+    4 e_phoff
+    4 e_shoff
+    4 e_flags
+    2 e_ehsize
+    2 e_phentsize
+    2 e_phnum
+    2 e_shentsize
+    2 e_shnum
+    2 e_shstrndx
+    0 size
+  >
+( ... structwid -searchorder- ... ) CURRENT> DROP
+
+
+// declaring elf 32 symbol structure
+WORDLIST DUP [>ORDER]CONSTANT [Elf32_Sym] >CURRENT 
+  SIZED-CONSTANTS<
+    4 st_name
+    4 st_value
+    4 st_size
+    1 st_info
+    1 st_other
+    2 st_shndx
+    0 size
+  >
+CURRENT> DROP
+
+
+// declaring elf 32 relocation structure
+WORDLIST DUP [>ORDER]CONSTANT [Elf32_Rela] >CURRENT 
+  SIZED-CONSTANTS<
+    4 r_offset
+    1 r_info.type
+    3 r_info.symbol
+    4 r_addend
+    0 size
+  >
+CURRENT> DROP
+
+[Elf32_Rela] 
+  size DROP CONSTANT rela.size
+SEARCH-ORDER> DROP 
+
+// declaring elf 32 symbol header structure
+WORDLIST DUP [>ORDER]CONSTANT [Elf32_Shdr] >CURRENT 
+  SIZED-CONSTANTS<
+    4 sh_name
+    4 sh_type
+    4 sh_flags
+    4 sh_addr
+    4 sh_offset
+    4 sh_size
+    4 sh_link
+    4 sh_info
+    4 sh_addralign
+    4 sh_entsize
+    0 size
+  >
+CURRENT> DROP
+
+
+// make an initializer for a 32 bit elf header structure -- assumes elf header hasn't changed
+HEX
+CREATEOC obdefaultelf32header  ( -- offset bufferid ) // creates definition for current compile buffer 
+
+  7F CODE-U8, $" ELF" 0 GETS$[ND] CODE-S, DROP$ // e_ident.magic
+  01 CODE-U8,   // e_ident.class
+  01 CODE-U8,   // e_ident.data
+  01 CODE-U8,   // e_ident.version
+  00 CODE-U8,   // e_ident.osabi
+  00 CODE-U8,   // e_ident.abiversion
+  0 7 FILL-NEW$ 0 GETS$[ND] CODE-S, DROP$ // e_ident.pad
+  01 CODE-U16,  // e_type
+  5E CODE-U16,  // e_machine
+  01 CODE-U32,  // e_version
+  0 CODE-U32,   // e_entry
+  0 CODE-U32,   // e_phoff
+  0 CODE-U32,   // e_shoff // will be section header table offset
+  300 CODE-U32, // e_flags
+  [Elf32_Ehdr] size DROP SEARCH-ORDER> DROP CODE-U16, // e_ehsize
+  0 CODE-U16,   // e_phentsize
+  0 CODE-U16,   // e_phnum
+  [Elf32_Shdr] size DROP SEARCH-ORDER> DROP CODE-U16, // e_shentsize
+  0 CODE-U16,   // e_shnum // will be number of section headers
+  0 CODE-U16,   // e_shstrndx / will be number of section header name strings
+
+OHERE obdefaultelf32header DROP - CONSTANT obdefaultelf32header.size
+
+
+: sdefaultelf32header ( -- addr length )
+    obdefaultelf32header O>P obdefaultelf32header.size
+;
+
+: testsdefaultelf32header 
+    sdefaultelf32header DROP obdefaultelf32header O>P <>
+    IF CRLF ERROR" - sdefaultelf32header address incorrect" EXIT THEN
+    sdefaultelf32header SWAP DROP [Elf32_Ehdr] size DROP [ SEARCH-ORDER> DROP ] <>
+    IF CRLF ERROR" - sdefaultelf32header size incorrect" EXIT THEN
+;
+
+testsdefaultelf32header
+
+: initelf32header ( outputbufferid -- ) // assumes empty buffer
+    sdefaultelf32header ROT S>BUF
+;
+
+
+HEX
+CREATEOC obdefaultelf32symbol  ( -- offset bufferid )
+
+  0 CODE-U32,  // name
+  0 CODE-U32,  // value
+  0 CODE-U32,  // size
+  0 CODE-U8,   // info
+  0 CODE-U8,   // other
+  0 CODE-U16,  // shndx
+
+OHERE obdefaultelf32symbol DROP - CONSTANT obdefaultelf32symbol.size
+ 
+
+: sdefaultelf32symbol ( -- addr length )
+    obdefaultelf32symbol O>P obdefaultelf32symbol.size  
+;
+
+: testsdefaultelf32symbol
+    sdefaultelf32symbol DROP obdefaultelf32symbol O>P <>
+    IF CRLF ERROR" - sdefaultelf32symbol address incorrect" EXIT THEN
+    sdefaultelf32symbol SWAP DROP [Elf32_Sym] size DROP [ SEARCH-ORDER> DROP ] <>
+    IF CRLF ERROR" - sdefaultelf32symbol size incorrect" EXIT THEN
+;
+
+testsdefaultelf32symbol
+
+: initelf32symbol ( symbolbufferid -- ) // appends to end of symbol buffer
+    sdefaultelf32symbol ROT S>BUF
+;
+
+HEX
+: testinitelf32symbol { testbufid }
+    1000 -1 NEWBUFFER TO testbufid
+    testbufid initelf32symbol
+    testbufid GETBUFFERLENGTH obdefaultelf32symbol.size <>
+    IF CRLF ERROR" - initelf32symbol destination buffer size not correct" EXIT THEN
+    0 testbufid O>P U32@ 0 <>
+    IF CRLF ERROR" - initelf32symbol destination buffer first u32 not correct" EXIT THEN
+    4 testbufid O>P U32@ 0 <>
+    IF CRLF ERROR" - initelf32symbol destination buffer second u32 not correct" EXIT THEN
+    testbufid FREEBUFFER
+;
+
+testinitelf32symbol
+
+
+: s.text ( -- addr length ) S" .text" ;
+: s.data ( -- addr length ) S" .data" ;
+: s.bss ( -- addr length ) S" .bss" ;
+: s.symtab ( -- addr length ) S" .symtab" ;
+: s.strtab ( -- addr length ) S" .strtab" ;
+: s.shstrtab ( -- addr length ) S" .shstrtab" ;
+: s.comment ( -- addr length ) S" .comment" ;
+: s.note ( -- addr length ) S" .note" ;
+: s.xtensainfo ( -- addr length ) S" .xtensa.info" ;
+: s.xtprop ( -- addr length ) S" .xt.prop" ;
+: s.rela ( -- addr length ) S" .rela.xt.prop" ;
+
+
+HEX
+CREATEOC obdefaulttextsectionheader  ( -- offset bufferid )
+
+  00 CODE-U32,  // string table offset
+  01 CODE-U32,  // type = program data
+  06 CODE-U32,  // flags = 6 alloc execinstr
+  00 CODE-U32,  // section mem load addr = 0
+  00 CODE-U32,  // section file offset
+  00 CODE-U32,  // section size in file
+  00 CODE-U32,  // link
+  00 CODE-U32,  // info
+  04 CODE-U32,  // addrlign
+  00 CODE-U32,  // entsize
+
+OHERE obdefaulttextsectionheader DROP - CONSTANT obdefaulttextsectionheader.size
+
+
+HEX
+CREATEOC obdefaultdatasectionheader  ( -- offset bufferid )
+
+  00 CODE-U32,  // string table offset
+  01 CODE-U32,  // type = program data
+  03 CODE-U32,  // flags = write alloc
+  00 CODE-U32,  // section mem load addr = 0
+  00 CODE-U32,  // section file offset
+  00 CODE-U32,  // section size in file
+  00 CODE-U32,  // link
+  00 CODE-U32,  // info
+  01 CODE-U32,  // addrlign
+  00 CODE-U32,  // entsize
+
+
+HEX
+CREATEOC obdefaultbsssectionheader  ( -- offset bufferid )
+
+  00 CODE-U32,  // string table offset
+  08 CODE-U32,  // type = program space with no data (bss)
+  03 CODE-U32,  // flags = write alloc
+  00 CODE-U32,  // section mem load addr = 0
+  00 CODE-U32,  // section file offset
+  00 CODE-U32,  // section size in file
+  00 CODE-U32,  // link
+  00 CODE-U32,  // info
+  01 CODE-U32,  // addrlign
+  00 CODE-U32,  // entsize
+
+
+HEX
+CREATEOC obdefaultsymtabsectionheader  ( -- offset bufferid )
+
+  00 CODE-U32,  // string table offset
+  02 CODE-U32,  // type = symboltable
+  00 CODE-U32,  // flags = none
+  00 CODE-U32,  // section mem load addr = 0
+  00 CODE-U32,  // section file offset
+  00 CODE-U32,  // section size in file
+  09 CODE-U32,  // link
+  08 CODE-U32,  // info
+  04 CODE-U32,  // addrlign
+  10 CODE-U32,  // entsize
+
+
+HEX
+CREATEOC obdefaultstrtabsectionheader  ( -- offset bufferid )
+CREATEOC obdefaultshstrtabsectionheader  ( -- offset bufferid )
+
+  00 CODE-U32,  // string table offset
+  03 CODE-U32,  // type = stringtable
+  00 CODE-U32,  // flags = none
+  00 CODE-U32,  // section mem load addr = 0
+  00 CODE-U32,  // section file offset
+  00 CODE-U32,  // section size in file
+  00 CODE-U32,  // link
+  00 CODE-U32,  // info
+  01 CODE-U32,  // addrlign
+  00 CODE-U32,  // entsize
+
+
+HEX
+CREATEOC obdefaultcommentsectionheader  ( -- offset bufferid )
+
+  00 CODE-U32,  // string table offset
+  01 CODE-U32,  // type = program data
+  30 CODE-U32,  // flags = 30 unknown
+  00 CODE-U32,  // section mem load addr = 0
+  00 CODE-U32,  // section file offset
+  00 CODE-U32,  // section size in file
+  00 CODE-U32,  // link
+  00 CODE-U32,  // info
+  01 CODE-U32,  // addrlign
+  01 CODE-U32,  // entsize
+
+
+HEX
+CREATEOC obdefaultnotesectionheader  ( -- offset bufferid )
+
+  00 CODE-U32,  // string table offset
+  07 CODE-U32,  // type = note
+  00 CODE-U32,  // flags = none
+  00 CODE-U32,  // section mem load addr = 0
+  00 CODE-U32,  // section file offset
+  00 CODE-U32,  // section size in file
+  00 CODE-U32,  // link
+  00 CODE-U32,  // info
+  01 CODE-U32,  // addrlign
+  00 CODE-U32,  // entsize
+
+
+HEX
+CREATEOC obdefaultxtensainfosectionheader  ( -- offset bufferid )
+
+  00 CODE-U32,  // string table offset
+  07 CODE-U32,  // type = note
+  00 CODE-U32,  // flags = none
+  00 CODE-U32,  // section mem load addr = 0
+  00 CODE-U32,  // section file offset
+  00 CODE-U32,  // section size in file
+  00 CODE-U32,  // link
+  00 CODE-U32,  // info
+  01 CODE-U32,  // addrlign
+  00 CODE-U32,  // entsize
+
+
+HEX
+CREATEOC obdefaultxtpropsectionheader  ( -- offset bufferid )
+
+  00 CODE-U32,  // string table offset
+  01 CODE-U32,  // type = program data
+  00 CODE-U32,  // flags = none
+  00 CODE-U32,  // section mem load addr = 0
+  00 CODE-U32,  // section file offset
+  00 CODE-U32,  // section size in file
+  00 CODE-U32,  // link
+  00 CODE-U32,  // info
+  01 CODE-U32,  // addrlign
+  00 CODE-U32,  // entsize
+
+
+HEX
+CREATEOC obdefaultrelasectionheader  ( -- offset bufferid )
+
+  00 CODE-U32,  // string table offset
+  04 CODE-U32,  // type = rela?
+  40 CODE-U32,  // flags = unknown?
+  00 CODE-U32,  // section mem load addr = 0
+  00 CODE-U32,  // section file offset
+  00 CODE-U32,  // section size in file
+  00 CODE-U32,  // link
+  06 CODE-U32,  // info
+  04 CODE-U32,  // addrlign
+  0C CODE-U32,  // entsize
+
+
+HEX
+CREATEOC obdefaultemptysectionheader  ( -- offset bufferid )
+
+  00 CODE-U32,  // string table offset
+  00 CODE-U32,  // type = rela?
+  00 CODE-U32,  // flags = unknown?
+  00 CODE-U32,  // section mem load addr = 0
+  00 CODE-U32,  // section file offset
+  00 CODE-U32,  // section size in file
+  00 CODE-U32,  // link
+  00 CODE-U32,  // info
+  00 CODE-U32,  // addrlign
+  00 CODE-U32,  // entsize
+
+
+// this uses:
+//   final output buffer
+//   intermediate section name$ string table buffer
+//   intermediate section header array buffer
+
+
+// pushing a section
+//   given addr length of source section, addr length of source section name$, 
+//   pointer to the default section header you are using
+//   given output buffer, section name offset, section header array buffer
+
+//   get length of output buffer... this is offset of section
+//   get length of .shstrtab buffer... this is offset of section name$
+//   push section name$ to .shstrtab
+//   push source section to output buffer
+//   push default section header to section array
+//   set section header's string table offset
+//   set section header's section file offset
+//   set section header's section size in file
+//   set section header's mem load address and bump current mem load address with size
+//   increment number of section headers and number of section headername strings
+
+
+: addsectionname$ { oldshstrbuflength | pname namelength shstrtabbufid -- nameoffset }
+
+  shstrtabbufid LENGTHBUF TO oldshstrbuflength
+
+  // push section name string to section name string buffer 
+  // - has to be before pushing section so that pushing name section name string section will work
+  pname namelength shstrtabbufid S>BUF
+  // append c style null terminator
+  0 shstrtabbufid C>BUF
+  oldshstrbuflength
+;
+
+HEX
+: testaddsectionname$ ( -- )
+
+    { shstrtabbufid }
+
+    1000 -1 NEWBUFFER TO shstrtabbufid
+
+    s.text     // section name
+    shstrtabbufid
+    addsectionname$
+
+    0 <>
+    IF CRLF ERROR" - addsectionname$ 1st test - name string start offset" EXIT THEN
+    0 shstrtabbufid O>P s.text SWAP OVER COMPARE 0 <>
+    IF CRLF ERROR" - addsectionname$ 1st test - string buffer not correct" EXIT THEN
+    5 shstrtabbufid O>P C@ 0 <>
+    IF CRLF ERROR" - addsectionname$ 1st test - string buffer null terminator missing" EXIT THEN
+
+    s.text     // section name
+    shstrtabbufid
+    addsectionname$
+
+    s.text 1+ SWAP DROP <>
+    IF CRLF ERROR" - addsectionname$ 2nd test - name string start offset not correct" EXIT THEN
+    6 shstrtabbufid O>P s.text SWAP OVER COMPARE 0 <>
+    IF CRLF ERROR" - addsectionname$ 2nd test - string buffer not correct" 
+      ." - expected .text got " 7 shstrtabbufid O>P s.text SWAP DROP TYPE EXIT THEN
+    0B shstrtabbufid O>P C@ 0 <>
+    IF CRLF ERROR" - addsectionname$ 2nd test - string buffer null terminator missing" EXIT THEN
+    
+    shstrtabbufid FREEBUFFER
+;
+
+// testaddsectionname$
+
+[Elf32_Shdr]
+: addsection { 
+    oldoutputbuflength oldsectionarraybuflength psectionheader | 
+    nameoffset
+    psection sectionlength
+    memloadoffset
+    pdefaultsectionheader
+    shstrtabbufid sectionarraybufid outbufid -- 
+  }
+  
+  // get end offsets of the section array buffer and section name string buffer
+  outbufid LENGTHBUF TO oldoutputbuflength
+  // shstrtabbufid LENGTHBUF TO oldshstrbuflength
+  sectionarraybufid LENGTHBUF TO oldsectionarraybuflength
+
+  // push section name string to section name string buffer 
+  // - has to be before pushing section so that pushing name section name string section will work
+  // pname namelength shstrtabbufid S>BUF
+  // append c style null terminator
+  // 0 shstrtabbufid C>BUF
+
+  // push section to output buffer
+  psection sectionlength outbufid S>BUF
+
+  // push default section header to section header array 
+  pdefaultsectionheader size DROP sectionarraybufid S>BUF
+
+  // get pointer to section header
+  oldsectionarraybuflength sectionarraybufid O>P TO psectionheader
+
+  // set section name string start offset
+  nameoffset psectionheader sh_name ( value paddr offset length -- ) POL!
+
+  // set section's output buffer start offset in section header 
+  oldoutputbuflength psectionheader sh_offset POL!
+
+  // set section's length in section header
+  sectionlength psectionheader sh_size POL!
+
+  // need to set section's mem load address...
+  memloadoffset psectionheader sh_addr POL!
+
+  // could increment number of sections..
+  //  but I'm calculating it when I push the section header array
+;
+SEARCH-ORDER> DROP
+
+HEX
+: testaddsection ( -- )
+
+    { shstrtabbufid sectionarraybufid outbufid }
+
+    1000 -1 NEWBUFFER TO shstrtabbufid
+    1000 -1 NEWBUFFER TO sectionarraybufid
+    1000 -1 NEWBUFFER TO outbufid
+
+    // make test source output section
+    7593920183028434 X !
+    9283857592873548 X 8 + !
+
+    s.text     // section name
+    shstrtabbufid
+    addsectionname$ // section name offset
+
+    X 10       // section data
+    3A40       // mem load offset
+    obdefaulttextsectionheader O>P
+    shstrtabbufid sectionarraybufid outbufid
+    addsection
+
+    outbufid GETBUFFERLENGTH 10 <>
+    IF CRLF ERROR" - addsection 1st test - output buffer size not correct" EXIT THEN
+    0 outbufid O>P @ 7593920183028434 <>
+    IF CRLF ERROR" - addsection 1st test - output buffer [0] not correct" EXIT THEN
+    8 outbufid O>P @ 9283857592873548 <>
+    IF CRLF ERROR" - addsection 1st test - output buffer [8] not correct" EXIT THEN
+    shstrtabbufid GETBUFFERLENGTH s.text SWAP DROP 1+ <>
+    IF CRLF ERROR" - addsection 1st test - section header array buffer size not correct" EXIT THEN
+    0 shstrtabbufid O>P s.text SWAP OVER COMPARE 0 <>
+    IF CRLF ERROR" - addsection 1st test - string buffer not correct" EXIT THEN
+    5 shstrtabbufid O>P C@ 0 <>
+    IF CRLF ERROR" - addsection 1st test - string buffer null terminator missing" EXIT THEN
+    sectionarraybufid GETBUFFERLENGTH obdefaulttextsectionheader.size <>
+    IF CRLF ERROR" - addsection 1st test - section header array buffer size not correct" EXIT THEN
+    0 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addsection 1st test - section header string table offset not correct" EXIT THEN
+    4 sectionarraybufid O>P U32@ 1 <>
+    IF CRLF ERROR" - addsection 1st test - section header type not correct" EXIT THEN
+    8 sectionarraybufid O>P U32@ 6 <>
+    IF CRLF ERROR" - addsection 1st test - section header flags not correct" EXIT THEN
+    0C sectionarraybufid O>P U32@ 3A40 <>
+    IF CRLF ERROR" - addsection 1st test - section header mem load offset not correct" EXIT THEN
+    10 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addsection 1st test - section header section file offset not correct" EXIT THEN
+    14 sectionarraybufid O>P U32@ 10 <>
+    IF CRLF ERROR" - addsection 1st test - section header section size not correct" EXIT THEN
+    18 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addsection 1st test - section header link not correct" EXIT THEN
+    1C sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addsection 1st test - section header link info correct" EXIT THEN
+    20 sectionarraybufid O>P U32@ 4 <>
+    IF CRLF ERROR" - addsection 1st test - section header link address align correct" EXIT THEN
+    24 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addsection 1st test - section header link entsize correct" EXIT THEN
+
+    1122334455667788 X !
+    1222324252627282 X 8 + !
+
+    s.text     // section name
+    shstrtabbufid
+    addsectionname$ // section name offset
+
+    X 10       // section data
+    1C08       // mem load offset
+    obdefaulttextsectionheader O>P
+    shstrtabbufid sectionarraybufid outbufid
+    addsection
+
+    outbufid GETBUFFERLENGTH 20 <>
+    IF CRLF ERROR" - addsection 2nd test - output buffer size not correct" EXIT THEN
+    10 outbufid O>P @ 1122334455667788 <>
+    IF CRLF ERROR" - addsection 2nd test - output buffer [10] not correct" EXIT THEN
+    18 outbufid O>P @ 1222324252627282 <>
+    IF CRLF ERROR" - addsection 2nd test - output buffer [18] not correct" EXIT THEN
+    shstrtabbufid GETBUFFERLENGTH s.text SWAP DROP 1+ 2* <>
+    IF CRLF ERROR" - addsection 2nd test - section header array buffer size not correct" EXIT THEN
+    6 shstrtabbufid O>P s.text SWAP OVER COMPARE 0 <>
+    IF CRLF ERROR" - addsection 2nd test - string buffer not correct" 
+      ." - expected .text got " 7 shstrtabbufid O>P s.text SWAP DROP TYPE EXIT THEN
+    0B shstrtabbufid O>P C@ 0 <>
+    IF CRLF ERROR" - addsection 2nd test - string buffer null terminator missing" EXIT THEN
+    sectionarraybufid GETBUFFERLENGTH obdefaulttextsectionheader.size 2* <>
+    IF CRLF ERROR" - addsection 2nd test - section header array buffer size not correct" EXIT THEN
+    28 sectionarraybufid O>P U32@ 6 <>
+    IF CRLF ERROR" - addsection 2nd test - section header string table offset not correct" 
+      ." string table offset - expected 6, got " 2C sectionarraybufid O>P U32@ U. EXIT THEN
+    2C sectionarraybufid O>P U32@ 1 <>
+    IF CRLF ERROR" - addsection 2nd test - section header type not correct" EXIT THEN
+    30 sectionarraybufid O>P U32@ 6 <>
+    IF CRLF ERROR" - addsection 2nd test - section header flags not correct" EXIT THEN
+    34 sectionarraybufid O>P U32@ 1C08 <>
+    IF CRLF ERROR" - addsection 2nd test - section header mem load offset not correct" EXIT THEN
+    38 sectionarraybufid O>P U32@ 10 <>
+    IF CRLF ERROR" - addsection 2nd test - section header section file offset not correct" EXIT THEN
+    3C sectionarraybufid O>P U32@ 10 <>
+    IF CRLF ERROR" - addsection 2nd test - section header section size not correct" EXIT THEN
+    40 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addsection 2nd test - section header link not correct" EXIT THEN
+    44 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addsection 2nd test - section header link info correct" EXIT THEN
+    48 sectionarraybufid O>P U32@ 4 <>
+    IF CRLF ERROR" - addsection 2nd test - section header link address align correct" EXIT THEN
+    4C sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addsection 2nd test - section header link entsize correct" EXIT THEN
+
+    shstrtabbufid FREEBUFFER
+    sectionarraybufid FREEBUFFER
+    outbufid FREEBUFFER
+;
+
+// testaddsection 
+
+
+[Elf32_Shdr]
+: addsectionandname { 
+    oldshstrbuflength oldoutputbuflength oldsectionarraybuflength psectionheader | 
+    pname namelength 
+    psection sectionlength
+    memloadoffset
+    pdefaultsectionheader
+    shstrtabbufid sectionarraybufid outbufid -- 
+  }
+  
+  // get end offsets of the section array buffer and section name string buffer
+  outbufid LENGTHBUF TO oldoutputbuflength
+  shstrtabbufid LENGTHBUF TO oldshstrbuflength
+  sectionarraybufid LENGTHBUF TO oldsectionarraybuflength
+
+  // push section name string to section name string buffer 
+  // - has to be before pushing section so that pushing name section name string section will work
+  pname namelength shstrtabbufid S>BUF
+  // append c style null terminator
+  0 shstrtabbufid C>BUF
+
+  // push section to output buffer
+  psection sectionlength outbufid S>BUF
+
+  // push default section header to section header array 
+  pdefaultsectionheader size DROP sectionarraybufid S>BUF
+
+  // get pointer to section header
+  oldsectionarraybuflength sectionarraybufid O>P TO psectionheader
+
+  // set section name string start offset
+  oldshstrbuflength psectionheader sh_name ( value paddr offset length -- ) POL!
+
+  // set section's output buffer start offset in section header 
+  oldoutputbuflength psectionheader sh_offset POL!
+
+  // set section's length in section header
+  sectionlength psectionheader sh_size POL!
+
+  // need to set section's mem load address...
+  memloadoffset psectionheader sh_addr POL!
+
+  // could increment number of sections..
+;
+SEARCH-ORDER> DROP
+
+
+HEX
+: testaddsectionandname ( -- )
+
+    { shstrtabbufid sectionarraybufid outbufid }
+
+    1000 -1 NEWBUFFER TO shstrtabbufid
+    1000 -1 NEWBUFFER TO sectionarraybufid
+    1000 -1 NEWBUFFER TO outbufid
+
+    // make test source output section
+    7593920183028434 X !
+    9283857592873548 X 8 + !
+
+    s.text     // section name
+    X 10       // section data
+    3A40       // mem load offset
+    obdefaulttextsectionheader O>P
+    shstrtabbufid sectionarraybufid outbufid
+    addsectionandname
+
+    outbufid GETBUFFERLENGTH 10 <>
+    IF CRLF ERROR" - addsectionandname 1st test - output buffer size not correct" EXIT THEN
+    0 outbufid O>P @ 7593920183028434 <>
+    IF CRLF ERROR" - addsectionandname 1st test - output buffer [0] not correct" EXIT THEN
+    8 outbufid O>P @ 9283857592873548 <>
+    IF CRLF ERROR" - addsectionandname 1st test - output buffer [8] not correct" EXIT THEN
+    shstrtabbufid GETBUFFERLENGTH s.text SWAP DROP 1+ <>
+    IF CRLF ERROR" - addsectionandname 1st test - section header array buffer size not correct" EXIT THEN
+    0 shstrtabbufid O>P s.text SWAP OVER COMPARE 0 <>
+    IF CRLF ERROR" - addsectionandname 1st test - string buffer not correct" EXIT THEN
+    5 shstrtabbufid O>P C@ 0 <>
+    IF CRLF ERROR" - addsectionandname 1st test - string buffer null terminator missing" EXIT THEN
+    sectionarraybufid GETBUFFERLENGTH obdefaulttextsectionheader.size <>
+    IF CRLF ERROR" - addsectionandname 1st test - section header array buffer size not correct" EXIT THEN
+    0 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addsectionandname 1st test - section header string table offset not correct" EXIT THEN
+    4 sectionarraybufid O>P U32@ 1 <>
+    IF CRLF ERROR" - addsectionandname 1st test - section header type not correct" EXIT THEN
+    8 sectionarraybufid O>P U32@ 6 <>
+    IF CRLF ERROR" - addsectionandname 1st test - section header flags not correct" EXIT THEN
+    0C sectionarraybufid O>P U32@ 3A40 <>
+    IF CRLF ERROR" - addsectionandname 1st test - section header mem load offset not correct" EXIT THEN
+    10 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addsectionandname 1st test - section header section file offset not correct" EXIT THEN
+    14 sectionarraybufid O>P U32@ 10 <>
+    IF CRLF ERROR" - addsectionandname 1st test - section header section size not correct" EXIT THEN
+    18 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addsectionandname 1st test - section header link not correct" EXIT THEN
+    1C sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addsectionandname 1st test - section header link info correct" EXIT THEN
+    20 sectionarraybufid O>P U32@ 4 <>
+    IF CRLF ERROR" - addsectionandname 1st test - section header link address align correct" EXIT THEN
+    24 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addsectionandname 1st test - section header link entsize correct" EXIT THEN
+
+    1122334455667788 X !
+    1222324252627282 X 8 + !
+
+    s.text     // section name
+    X 10       // section data
+    1C08       // mem load offset
+    obdefaulttextsectionheader O>P
+    shstrtabbufid sectionarraybufid outbufid
+    addsectionandname
+
+    outbufid GETBUFFERLENGTH 20 <>
+    IF CRLF ERROR" - addsectionandname 2nd test - output buffer size not correct" EXIT THEN
+    10 outbufid O>P @ 1122334455667788 <>
+    IF CRLF ERROR" - addsectionandname 2nd test - output buffer [10] not correct" EXIT THEN
+    18 outbufid O>P @ 1222324252627282 <>
+    IF CRLF ERROR" - addsectionandname 2nd test - output buffer [18] not correct" EXIT THEN
+    shstrtabbufid GETBUFFERLENGTH s.text SWAP DROP 1+ 2* <>
+    IF CRLF ERROR" - addsectionandname 2nd test - section header array buffer size not correct" EXIT THEN
+    6 shstrtabbufid O>P s.text SWAP OVER COMPARE 0 <>
+    IF CRLF ERROR" - addsectionandname 2nd test - string buffer not correct" 
+      ." - expected .text got " 7 shstrtabbufid O>P s.text SWAP DROP TYPE EXIT THEN
+    0B shstrtabbufid O>P C@ 0 <>
+    IF CRLF ERROR" - addsectionandname 2nd test - string buffer null terminator missing" EXIT THEN
+    sectionarraybufid GETBUFFERLENGTH obdefaulttextsectionheader.size 2* <>
+    IF CRLF ERROR" - addsectionandname 2nd test - section header array buffer size not correct" EXIT THEN
+    28 sectionarraybufid O>P U32@ 6 <>
+    IF CRLF ERROR" - addsectionandname 2nd test - section header string table offset not correct" 
+      ." string table offset - expected 6, got " 2C sectionarraybufid O>P U32@ U. EXIT THEN
+    2C sectionarraybufid O>P U32@ 1 <>
+    IF CRLF ERROR" - addsectionandname 2nd test - section header type not correct" EXIT THEN
+    30 sectionarraybufid O>P U32@ 6 <>
+    IF CRLF ERROR" - addsectionandname 2nd test - section header flags not correct" EXIT THEN
+    34 sectionarraybufid O>P U32@ 1C08 <>
+    IF CRLF ERROR" - addsectionandname 2nd test - section header mem load offset not correct" EXIT THEN
+    38 sectionarraybufid O>P U32@ 10 <>
+    IF CRLF ERROR" - addsectionandname 2nd test - section header section file offset not correct" EXIT THEN
+    3C sectionarraybufid O>P U32@ 10 <>
+    IF CRLF ERROR" - addsectionandname 2nd test - section header section size not correct" EXIT THEN
+    40 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addsectionandname 2nd test - section header link not correct" EXIT THEN
+    44 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addsectionandname 2nd test - section header link info correct" EXIT THEN
+    48 sectionarraybufid O>P U32@ 4 <>
+    IF CRLF ERROR" - addsectionandname 2nd test - section header link address align correct" EXIT THEN
+    4C sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addsectionandname 2nd test - section header link entsize correct" EXIT THEN
+
+    shstrtabbufid FREEBUFFER
+    sectionarraybufid FREEBUFFER
+    outbufid FREEBUFFER
+;
+
+// testaddsectionandname 
+
+
+: addemptysection { 
+    | shstrtabbufid sectionarraybufid outbufid -- 
+  }
+
+  s.text ( -- pname namelength ) DROP 0
+
+  OVER 0 
+    ( -- pname namelength psection sectionlength )
+
+  0 // assumes there is only 1 .text section
+    ( -- pname namelength psection sectionlength memloadoffset )
+
+  obdefaultemptysectionheader O>P
+    ( -- pname namelength 
+         psection sectionlength 
+         memloadoffset 
+         odefaultsectionheader defaultsectionheaderbufid )
+
+  shstrtabbufid sectionarraybufid outbufid
+    ( -- pname namelength 
+         psection sectionlength 
+         memloadoffset  
+         odefaultsectionheader defaultsectionheaderbufid 
+         shstrtabbufid sectionarraybufid outbufid )   
+
+  addsectionandname
+;
+
+   
+// pushing a specific section
+//   given addr length of source section
+//   given output buffer, section name$ .shstrtab buffer, section header array buffer 
+//   use .text section name,
+//   push section
+
+: addtextsection { 
+    | ptextsection textsectionlength shstrtabbufid sectionarraybufid outbufid -- 
+  }
+
+  s.text ( -- pname namelength )
+
+  ptextsection textsectionlength  
+    ( -- pname namelength psection sectionlength )
+
+  0 // assumes there is only 1 .text section
+    ( -- pname namelength psection sectionlength memloadoffset )
+
+  obdefaulttextsectionheader O>P
+    ( -- pname namelength 
+         psection sectionlength 
+         memloadoffset 
+         odefaultsectionheader defaultsectionheaderbufid )
+
+  shstrtabbufid sectionarraybufid outbufid
+    ( -- pname namelength 
+         psection sectionlength 
+         memloadoffset  
+         odefaultsectionheader defaultsectionheaderbufid 
+         shstrtabbufid sectionarraybufid outbufid )   
+
+  addsectionandname
+;
+
+HEX
+: testaddtextsection ( -- )
+
+    { shstrtabbufid sectionarraybufid outbufid }
+
+    1000 -1 NEWBUFFER TO shstrtabbufid
+    1000 -1 NEWBUFFER TO sectionarraybufid
+    1000 -1 NEWBUFFER TO outbufid
+
+    // make test source output section
+    7593920183028434 X !
+    9283857592873548 X 8 + !
+
+    X 10       // section data
+    shstrtabbufid sectionarraybufid outbufid
+    addtextsection
+
+    outbufid GETBUFFERLENGTH 10 <>
+    IF CRLF ERROR" - addtextsection 1st test - output buffer size not correct" EXIT THEN
+    0 outbufid O>P @ 7593920183028434 <>
+    IF CRLF ERROR" - addtextsection 1st test - output buffer [0] not correct" EXIT THEN
+    8 outbufid O>P @ 9283857592873548 <>
+    IF CRLF ERROR" - addtextsection 1st test - output buffer [8] not correct" EXIT THEN
+    shstrtabbufid GETBUFFERLENGTH s.text SWAP DROP 1+ <>
+    IF CRLF ERROR" - addtextsection 1st test - section header array buffer size not correct" EXIT THEN
+    0 shstrtabbufid O>P s.text SWAP OVER COMPARE 0 <>
+    IF CRLF ERROR" - addtextsection 1st test - string buffer not correct" EXIT THEN
+    5 shstrtabbufid O>P C@ 0 <>
+    IF CRLF ERROR" - addtextsection 1st test - string buffer null terminator missing" EXIT THEN
+    sectionarraybufid GETBUFFERLENGTH obdefaulttextsectionheader.size <>
+    IF CRLF ERROR" - addtextsection 1st test - section header array buffer size not correct" EXIT THEN
+    0 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addtextsection 1st test - section header string table offset not correct" EXIT THEN
+    4 sectionarraybufid O>P U32@ 1 <>
+    IF CRLF ERROR" - addtextsection 1st test - section header type not correct" EXIT THEN
+    8 sectionarraybufid O>P U32@ 6 <>
+    IF CRLF ERROR" - addtextsection 1st test - section header flags not correct" EXIT THEN
+    0C sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addtextsection 1st test - section header mem load offset not correct" EXIT THEN
+    10 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addtextsection 1st test - section header section file offset not correct" EXIT THEN
+    14 sectionarraybufid O>P U32@ 10 <>
+    IF CRLF ERROR" - addtextsection 1st test - section header section size not correct" EXIT THEN
+    18 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addtextsection 1st test - section header link not correct" EXIT THEN
+    1C sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addtextsection 1st test - section header link info correct" EXIT THEN
+    20 sectionarraybufid O>P U32@ 4 <>
+    IF CRLF ERROR" - addtextsection 1st test - section header link address align correct" EXIT THEN
+    24 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addtextsection 1st test - section header link entsize correct" EXIT THEN
+
+    1122334455667788 X !
+    1222324252627282 X 8 + !
+
+    X 10       // section data
+    shstrtabbufid sectionarraybufid outbufid
+    addtextsection
+
+    outbufid GETBUFFERLENGTH 20 <>
+    IF CRLF ERROR" - addtextsection 2nd test - output buffer size not correct" EXIT THEN
+    10 outbufid O>P @ 1122334455667788 <>
+    IF CRLF ERROR" - addtextsection 2nd test - output buffer [10] not correct" EXIT THEN
+    18 outbufid O>P @ 1222324252627282 <>
+    IF CRLF ERROR" - addtextsection 2nd test - output buffer [18] not correct" EXIT THEN
+    shstrtabbufid GETBUFFERLENGTH s.text SWAP DROP 1+ 2* <>
+    IF CRLF ERROR" - addtextsection 2nd test - section header array buffer size not correct" EXIT THEN
+    6 shstrtabbufid O>P s.text SWAP OVER COMPARE 0 <>
+    IF CRLF ERROR" - addtextsection 2nd test - string buffer not correct" 
+      ." - expected .text got " 6 shstrtabbufid O>P s.text SWAP DROP TYPE EXIT THEN
+    0B shstrtabbufid O>P C@ 0 <>
+    IF CRLF ERROR" - addtextsection 2nd test - string buffer null terminator missing" EXIT THEN
+    sectionarraybufid GETBUFFERLENGTH obdefaulttextsectionheader.size 2* <>
+    IF CRLF ERROR" - addtextsection 2nd test - section header array buffer size not correct" EXIT THEN
+    28 sectionarraybufid O>P U32@ 6 <>
+    IF CRLF ERROR" - addtextsection 2nd test - section header string table offset not correct" 
+      ." string table offset - expected 6, got " 2C sectionarraybufid O>P U32@ U. EXIT THEN
+    2C sectionarraybufid O>P U32@ 1 <>
+    IF CRLF ERROR" - addtextsection 2nd test - section header type not correct" EXIT THEN
+    30 sectionarraybufid O>P U32@ 6 <>
+    IF CRLF ERROR" - addtextsection 2nd test - section header flags not correct" EXIT THEN
+    34 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addtextsection 2nd test - section header mem load offset not correct" EXIT THEN
+    38 sectionarraybufid O>P U32@ 10 <>
+    IF CRLF ERROR" - addtextsection 2nd test - section header section file offset not correct" EXIT THEN
+    3C sectionarraybufid O>P U32@ 10 <>
+    IF CRLF ERROR" - addtextsection 2nd test - section header section size not correct" EXIT THEN
+    40 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addtextsection 2nd test - section header link not correct" EXIT THEN
+    44 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addtextsection 2nd test - section header link info correct" EXIT THEN
+    48 sectionarraybufid O>P U32@ 4 <>
+    IF CRLF ERROR" - addtextsection 2nd test - section header link address align correct" EXIT THEN
+    4C sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addtextsection 2nd test - section header link entsize correct" EXIT THEN
+
+    shstrtabbufid FREEBUFFER
+    sectionarraybufid FREEBUFFER
+    outbufid FREEBUFFER
+;
+
+testaddtextsection 
+
+: adddatasection { 
+    | shstrtabbufid sectionarraybufid outbufid -- 
+  }
+
+  s.data ( -- pname namelength )
+
+  ( pdatasection datasectionlength ) 0 0  
+    ( -- pname namelength psection sectionlength )
+
+  0 // assumes there is only 1 .data section
+    ( -- pname namelength psection sectionlength memloadoffset )
+
+  obdefaultdatasectionheader O>P
+    ( -- pname namelength 
+         psection sectionlength 
+         memloadoffset 
+         odefaultsectionheader defaultsectionheaderbufid )
+
+  shstrtabbufid sectionarraybufid outbufid
+    ( -- pname namelength 
+         psection sectionlength 
+         memloadoffset  
+         odefaultsectionheader defaultsectionheaderbufid 
+         shstrtabbufid sectionarraybufid outbufid )   
+
+  addsectionandname
+;
+
+
+HEX
+: testadddatasection ( -- )
+
+    { shstrtabbufid sectionarraybufid outbufid }
+
+    1000 -1 NEWBUFFER TO shstrtabbufid
+    1000 -1 NEWBUFFER TO sectionarraybufid
+    1000 -1 NEWBUFFER TO outbufid
+
+    // make test source output section
+    7593920183028434 X !
+    9283857592873548 X 8 + !
+
+    // X 10       // section data
+    shstrtabbufid sectionarraybufid outbufid
+    adddatasection
+
+    outbufid GETBUFFERLENGTH 0 <>
+    IF CRLF ERROR" - adddatasection 1st test - output buffer size not correct" EXIT THEN
+    // 0 outbufid O>P @ 7593920183028434 <>
+    // IF CRLF ERROR" - adddatasection 1st test - output buffer [0] not correct" EXIT THEN
+    // 8 outbufid O>P @ 9283857592873548 <>
+    // IF CRLF ERROR" - adddatasection 1st test - output buffer [8] not correct" EXIT THEN
+    shstrtabbufid GETBUFFERLENGTH s.data SWAP DROP 1+ <>
+    IF CRLF ERROR" - adddatasection 1st test - section header array buffer size not correct" EXIT THEN
+    0 shstrtabbufid O>P s.data SWAP OVER COMPARE 0 <>
+    IF CRLF ERROR" - adddatasection 1st test - string buffer not correct" EXIT THEN
+    5 shstrtabbufid O>P C@ 0 <>
+    IF CRLF ERROR" - adddatasection 1st test - string buffer null terminator missing" EXIT THEN
+    sectionarraybufid GETBUFFERLENGTH obdefaulttextsectionheader.size <>
+    IF CRLF ERROR" - adddatasection 1st test - section header array buffer size not correct" EXIT THEN
+    0 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - adddatasection 1st test - section header string table offset not correct" EXIT THEN
+    4 sectionarraybufid O>P U32@ 1 <>
+    IF CRLF ERROR" - adddatasection 1st test - section header type not correct" EXIT THEN
+    8 sectionarraybufid O>P U32@ 3 <>
+    IF CRLF ERROR" - adddatasection 1st test - section header flags not correct" EXIT THEN
+    0C sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - adddatasection 1st test - section header mem load offset not correct" EXIT THEN
+    10 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - adddatasection 1st test - section header section file offset not correct" EXIT THEN
+    14 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - adddatasection 1st test - section header section size not correct" EXIT THEN
+    18 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - adddatasection 1st test - section header link not correct" EXIT THEN
+    1C sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - adddatasection 1st test - section header link info correct" EXIT THEN
+    20 sectionarraybufid O>P U32@ 1 <>
+    IF CRLF ERROR" - adddatasection 1st test - section header link address align correct" EXIT THEN
+    24 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - adddatasection 1st test - section header link entsize correct" EXIT THEN
+
+    1122334455667788 X !
+    1222324252627282 X 8 + !
+
+    // X 10       // section data
+    shstrtabbufid sectionarraybufid outbufid
+    adddatasection
+
+    outbufid GETBUFFERLENGTH 0 <>
+    IF CRLF ERROR" - adddatasection 2nd test - output buffer size not correct" EXIT THEN
+    // 10 outbufid O>P @ 1122334455667788 <>
+    // IF CRLF ERROR" - adddatasection 2nd test - output buffer [10] not correct" EXIT THEN
+    // 18 outbufid O>P @ 1222324252627282 <>
+    // IF CRLF ERROR" - adddatasection 2nd test - output buffer [18] not correct" EXIT THEN
+    shstrtabbufid GETBUFFERLENGTH s.data SWAP DROP 1+ 2* <>
+    IF CRLF ERROR" - adddatasection 2nd test - section header array buffer size not correct" EXIT THEN
+    6 shstrtabbufid O>P s.data SWAP OVER COMPARE 0 <>
+    IF CRLF ERROR" - adddatasection 2nd test - string buffer not correct" 
+      ." - expected .data got " 6 shstrtabbufid O>P s.text SWAP DROP TYPE EXIT THEN
+    0B shstrtabbufid O>P C@ 0 <>
+    IF CRLF ERROR" - adddatasection 2nd test - string buffer null terminator missing" EXIT THEN
+    sectionarraybufid GETBUFFERLENGTH obdefaulttextsectionheader.size 2* <>
+    IF CRLF ERROR" - adddatasection 2nd test - section header array buffer size not correct" EXIT THEN
+    28 sectionarraybufid O>P U32@ 6 <>
+    IF CRLF ERROR" - adddatasection 2nd test - section header string table offset not correct" 
+      ." string table offset - expected 6, got " 2C sectionarraybufid O>P U32@ U. EXIT THEN
+    2C sectionarraybufid O>P U32@ 1 <>
+    IF CRLF ERROR" - adddatasection 2nd test - section header type not correct" EXIT THEN
+    30 sectionarraybufid O>P U32@ 3 <>
+    IF CRLF ERROR" - adddatasection 2nd test - section header flags not correct" EXIT THEN
+    34 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - adddatasection 2nd test - section header mem load offset not correct" EXIT THEN
+    38 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - adddatasection 2nd test - section header section file offset not correct" EXIT THEN
+    3C sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - adddatasection 2nd test - section header section size not correct" EXIT THEN
+    40 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - adddatasection 2nd test - section header link not correct" EXIT THEN
+    44 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - adddatasection 2nd test - section header link info correct" EXIT THEN
+    48 sectionarraybufid O>P U32@ 1 <>
+    IF CRLF ERROR" - adddatasection 2nd test - section header link address align correct" EXIT THEN
+    4C sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - adddatasection 2nd test - section header link entsize correct" EXIT THEN
+
+    shstrtabbufid FREEBUFFER
+    sectionarraybufid FREEBUFFER
+    outbufid FREEBUFFER
+;
+
+// testadddatasection
+
+: addbsssection { 
+    | shstrtabbufid sectionarraybufid outbufid -- 
+  }
+
+  s.bss ( -- pname namelength )
+
+  ( pbsssection bsssectionlength ) 0 0  
+    ( -- pname namelength psection sectionlength )
+
+  0 // no memory data
+    ( -- pname namelength psection sectionlength memloadoffset )
+
+  obdefaultbsssectionheader O>P
+    ( -- pname namelength 
+         psection sectionlength 
+         memloadoffset 
+         odefaultsectionheader defaultsectionheaderbufid )
+
+  shstrtabbufid sectionarraybufid outbufid
+    ( -- pname namelength 
+         psection sectionlength 
+         memloadoffset  
+         odefaultsectionheader defaultsectionheaderbufid 
+         shstrtabbufid sectionarraybufid outbufid )   
+
+  addsectionandname
+;
+
+
+HEX
+: testaddbsssection ( -- )
+
+    { shstrtabbufid sectionarraybufid outbufid }
+
+    1000 -1 NEWBUFFER TO shstrtabbufid
+    1000 -1 NEWBUFFER TO sectionarraybufid
+    1000 -1 NEWBUFFER TO outbufid
+
+    // make test source output section
+    7593920183028434 X !
+    9283857592873548 X 8 + !
+
+    // X 10       // section data
+    shstrtabbufid sectionarraybufid outbufid
+    addbsssection
+
+    outbufid GETBUFFERLENGTH 0 <>
+    IF CRLF ERROR" - addbsssection 1st test - output buffer size not correct" EXIT THEN
+    // 0 outbufid O>P @ 7593920183028434 <>
+    // IF CRLF ERROR" - addbsssection 1st test - output buffer [0] not correct" EXIT THEN
+    // 8 outbufid O>P @ 9283857592873548 <>
+    // IF CRLF ERROR" - addbsssection 1st test - output buffer [8] not correct" EXIT THEN
+    shstrtabbufid GETBUFFERLENGTH s.bss SWAP DROP 1+ <>
+    IF CRLF ERROR" - addbsssection 1st test - section header array buffer size not correct" EXIT THEN
+    0 shstrtabbufid O>P s.bss SWAP OVER COMPARE 0 <>
+    IF CRLF ERROR" - addbsssection 1st test - string buffer not correct" EXIT THEN
+    4 shstrtabbufid O>P C@ 0 <>
+    IF CRLF ERROR" - addbsssection 1st test - string buffer null terminator missing" EXIT THEN
+    sectionarraybufid GETBUFFERLENGTH obdefaulttextsectionheader.size <>
+    IF CRLF ERROR" - addbsssection 1st test - section header array buffer size not correct" EXIT THEN
+    0 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addbsssection 1st test - section header string table offset not correct" EXIT THEN
+    4 sectionarraybufid O>P U32@ 8 <>
+    IF CRLF ERROR" - addbsssection 1st test - section header type not correct" EXIT THEN
+    8 sectionarraybufid O>P U32@ 3 <>
+    IF CRLF ERROR" - addbsssection 1st test - section header flags not correct" EXIT THEN
+    0C sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addbsssection 1st test - section header mem load offset not correct" EXIT THEN
+    10 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addbsssection 1st test - section header section file offset not correct" EXIT THEN
+    14 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addbsssection 1st test - section header section size not correct" EXIT THEN
+    18 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addbsssection 1st test - section header link not correct" EXIT THEN
+    1C sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addbsssection 1st test - section header link info correct" EXIT THEN
+    20 sectionarraybufid O>P U32@ 1 <>
+    IF CRLF ERROR" - addbsssection 1st test - section header link address align correct" EXIT THEN
+    24 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addbsssection 1st test - section header link entsize correct" EXIT THEN
+
+    1122334455667788 X !
+    1222324252627282 X 8 + !
+
+    // X 10       // section data
+    shstrtabbufid sectionarraybufid outbufid
+    addbsssection
+
+    outbufid GETBUFFERLENGTH 0 <>
+    IF CRLF ERROR" - addbsssection 2nd test - output buffer size not correct" EXIT THEN
+    // 10 outbufid O>P @ 1122334455667788 <>
+    // IF CRLF ERROR" - addbsssection 2nd test - output buffer [10] not correct" EXIT THEN
+    // 18 outbufid O>P @ 1222324252627282 <>
+    // IF CRLF ERROR" - addbsssection 2nd test - output buffer [18] not correct" EXIT THEN
+    shstrtabbufid GETBUFFERLENGTH s.bss SWAP DROP 1+ 2* <>
+    IF CRLF ERROR" - addbsssection 2nd test - section header array buffer size not correct" EXIT THEN
+    5 shstrtabbufid O>P s.bss SWAP OVER COMPARE 0 <>
+    IF CRLF ERROR" - addbsssection 2nd test - string buffer not correct" 
+      ." - expected .bss got " 5 shstrtabbufid O>P s.text SWAP DROP TYPE EXIT THEN
+    09 shstrtabbufid O>P C@ 0 <>
+    IF CRLF ERROR" - addbsssection 2nd test - string buffer null terminator missing" EXIT THEN
+    sectionarraybufid GETBUFFERLENGTH obdefaulttextsectionheader.size 2* <>
+    IF CRLF ERROR" - addbsssection 2nd test - section header array buffer size not correct" EXIT THEN
+    28 sectionarraybufid O>P U32@ 5 <>
+    IF CRLF ERROR" - addbsssection 2nd test - section header string table offset not correct" 
+      ." string table offset - expected 6, got " 2C sectionarraybufid O>P U32@ U. EXIT THEN
+    2C sectionarraybufid O>P U32@ 8 <>
+    IF CRLF ERROR" - addbsssection 2nd test - section header type not correct" EXIT THEN
+    30 sectionarraybufid O>P U32@ 3 <>
+    IF CRLF ERROR" - addbsssection 2nd test - section header flags not correct" EXIT THEN
+    34 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addbsssection 2nd test - section header mem load offset not correct" EXIT THEN
+    38 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addbsssection 2nd test - section header section file offset not correct" EXIT THEN
+    3C sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addbsssection 2nd test - section header section size not correct" EXIT THEN
+    40 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addbsssection 2nd test - section header link not correct" EXIT THEN
+    44 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addbsssection 2nd test - section header link info correct" EXIT THEN
+    48 sectionarraybufid O>P U32@ 1 <>
+    IF CRLF ERROR" - addbsssection 2nd test - section header link address align correct" EXIT THEN
+    4C sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addbsssection 2nd test - section header link entsize correct" EXIT THEN
+
+    shstrtabbufid FREEBUFFER
+    sectionarraybufid FREEBUFFER
+    outbufid FREEBUFFER
+;
+
+// testaddbsssection
+
+
+: addsymtabsection { 
+    | symbufid shstrtabbufid sectionarraybufid outbufid -- 
+  }
+
+  s.symtab ( -- pname namelength )
+
+  symbufid GETSBUFFER 
+    ( -- pname namelength psection sectionlength )
+
+  0 // assumes there is only 1 .data section
+    ( -- pname namelength psection sectionlength memloadoffset )
+
+  obdefaultsymtabsectionheader O>P
+    ( -- pname namelength 
+         psection sectionlength 
+         memloadoffset 
+         odefaultsectionheader defaultsectionheaderbufid )
+
+  shstrtabbufid sectionarraybufid outbufid
+    ( -- pname namelength 
+         psection sectionlength 
+         memloadoffset  
+         odefaultsectionheader defaultsectionheaderbufid 
+         shstrtabbufid sectionarraybufid outbufid )   
+
+  addsectionandname
+;
+
+
+HEX
+: testsymtabsection ( -- )
+
+    { symbufid shstrtabbufid sectionarraybufid outbufid }
+
+    1000 -1 NEWBUFFER TO symbufid
+    1000 -1 NEWBUFFER TO shstrtabbufid
+    1000 -1 NEWBUFFER TO sectionarraybufid
+    1000 -1 NEWBUFFER TO outbufid
+
+    // make test source output section
+    7593920183028434 X !
+    9283857592873548 X 8 + !
+
+    X 10       // section data
+    symbufid S>BUF
+    symbufid shstrtabbufid sectionarraybufid outbufid
+    addsymtabsection
+
+    outbufid GETBUFFERLENGTH 10 <>
+    IF CRLF ERROR" - addsymtabsection 1st test - output buffer size not correct" EXIT THEN
+    0 outbufid O>P @ 7593920183028434 <>
+    IF CRLF ERROR" - addsymtabsection 1st test - output buffer [0] not correct" EXIT THEN
+    8 outbufid O>P @ 9283857592873548 <>
+    IF CRLF ERROR" - addsymtabsection 1st test - output buffer [8] not correct" EXIT THEN
+    shstrtabbufid GETBUFFERLENGTH s.symtab SWAP DROP 1+ <>
+    IF CRLF ERROR" - addsymtabsection 1st test - section header array buffer size not correct" EXIT THEN
+    0 shstrtabbufid O>P s.symtab SWAP OVER COMPARE 0 <>
+    IF CRLF ERROR" - addsymtabsection 1st test - string buffer not correct" EXIT THEN
+    7 shstrtabbufid O>P C@ 0 <>
+    IF CRLF ERROR" - addsymtabsection 1st test - string buffer null terminator missing" EXIT THEN
+    sectionarraybufid GETBUFFERLENGTH obdefaulttextsectionheader.size <>
+    IF CRLF ERROR" - addsymtabsection 1st test - section header array buffer size not correct" EXIT THEN
+    0 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addsymtabsection 1st test - section header string table offset not correct" EXIT THEN
+    4 sectionarraybufid O>P U32@ 2 <>
+    IF CRLF ERROR" - addsymtabsection 1st test - section header type not correct" EXIT THEN
+    8 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addsymtabsection 1st test - section header flags not correct" EXIT THEN
+    0C sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addsymtabsection 1st test - section header mem load offset not correct" EXIT THEN
+    10 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addsymtabsection 1st test - section header section file offset not correct" EXIT THEN
+    14 sectionarraybufid O>P U32@ 10 <>
+    IF CRLF ERROR" - addsymtabsection 1st test - section header section size not correct" EXIT THEN
+    18 sectionarraybufid O>P U32@ 9 <>
+    IF CRLF ERROR" - addsymtabsection 1st test - section header link not correct" EXIT THEN
+    1C sectionarraybufid O>P U32@ 8 <>
+    IF CRLF ERROR" - addsymtabsection 1st test - section header link info correct" EXIT THEN
+    20 sectionarraybufid O>P U32@ 4 <>
+    IF CRLF ERROR" - addsymtabsection 1st test - section header link address align correct" EXIT THEN
+    24 sectionarraybufid O>P U32@ 10 <>
+    IF CRLF ERROR" - addsymtabsection 1st test - section header link entsize correct" EXIT THEN
+
+    // 1122334455667788 X !
+    // 1222324252627282 X 8 + !
+
+    // X 10       // section data
+    // symbufid S>BUF
+    symbufid shstrtabbufid sectionarraybufid outbufid
+    addsymtabsection
+
+    outbufid GETBUFFERLENGTH 20 <>
+    IF 
+      CRLF ERROR" - addsymtabsection 2nd test - output buffer size not correct" 
+      EXIT 
+    THEN
+    10 outbufid O>P @ 7593920183028434 <>
+    IF 
+      CRLF ERROR" - addsymtabsection 2nd test - output buffer [10] not correct" 
+      EXIT 
+    THEN
+    18 outbufid O>P @ 9283857592873548 <>
+    IF CRLF ERROR" - addsymtabsection 2nd test - output buffer [18] not correct" EXIT THEN
+    shstrtabbufid GETBUFFERLENGTH s.symtab SWAP DROP 1+ 2* <>
+    IF CRLF ERROR" - addsymtabsection 2nd test - section header array buffer size not correct" EXIT THEN
+    8 shstrtabbufid O>P s.symtab SWAP OVER COMPARE 0 <>
+    IF CRLF ERROR" - addsymtabsection 2nd test - string buffer not correct" 
+      ." - expected .bss got " 5 shstrtabbufid O>P s.text SWAP DROP TYPE EXIT THEN
+    0F shstrtabbufid O>P C@ 0 <>
+    IF CRLF ERROR" - addsymtabsection 2nd test - string buffer null terminator missing" EXIT THEN
+    sectionarraybufid GETBUFFERLENGTH obdefaulttextsectionheader.size 2* <>
+    IF CRLF ERROR" - addsymtabsection 2nd test - section header array buffer size not correct" EXIT THEN
+    28 sectionarraybufid O>P U32@ 8 <>
+    IF CRLF ERROR" - addsymtabsection 2nd test - section header string table offset not correct" 
+      ." string table offset - expected 6, got " 2C sectionarraybufid O>P U32@ U. EXIT THEN
+    2C sectionarraybufid O>P U32@ 2 <>
+    IF CRLF ERROR" - addsymtabsection 2nd test - section header type not correct" EXIT THEN
+    30 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addsymtabsection 2nd test - section header flags not correct" EXIT THEN
+    34 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addsymtabsection 2nd test - section header mem load offset not correct" EXIT THEN
+    38 sectionarraybufid O>P U32@ 10 <>
+    IF 
+      CRLF ERROR" - addsymtabsection 2nd test - section header section file offset not correct" 
+      ." - addsymtabsection 2nd test - section header section file offset not correct, got "
+      38 sectionarraybufid O>P U32@ U.
+      EXIT 
+    THEN
+    3C sectionarraybufid O>P U32@ 10 <>
+    IF CRLF ERROR" - addsymtabsection 2nd test - section header section size not correct" EXIT THEN
+    40 sectionarraybufid O>P U32@ 9 <>
+    IF CRLF ERROR" - addsymtabsection 2nd test - section header link not correct" EXIT THEN
+    44 sectionarraybufid O>P U32@ 8 <>
+    IF CRLF ERROR" - addsymtabsection 2nd test - section header link info correct" EXIT THEN
+    48 sectionarraybufid O>P U32@ 4 <>
+    IF CRLF ERROR" - addsymtabsection 2nd test - section header link address align correct" EXIT THEN
+    4C sectionarraybufid O>P U32@ 10 <>
+    IF CRLF ERROR" - addsymtabsection 2nd test - section header link entsize correct" EXIT THEN
+
+    shstrtabbufid FREEBUFFER
+    sectionarraybufid FREEBUFFER
+    outbufid FREEBUFFER
+;
+
+// testsymtabsection
+
+: addstrtabsection { 
+    | strtabbufid shstrtabbufid sectionarraybufid outbufid -- 
+  }
+
+  s.strtab ( -- pname namelength )
+
+  strtabbufid GETSBUFFER  
+    ( -- pname namelength psection sectionlength )
+
+  0 // assumes there is only 1 .data section
+    ( -- pname namelength psection sectionlength memloadoffset )
+
+  obdefaultstrtabsectionheader O>P
+    ( -- pname namelength 
+         psection sectionlength 
+         memloadoffset 
+         odefaultsectionheader defaultsectionheaderbufid )
+
+  shstrtabbufid sectionarraybufid outbufid
+    ( -- pname namelength 
+         psection sectionlength 
+         memloadoffset  
+         odefaultsectionheader defaultsectionheaderbufid 
+         shstrtabbufid sectionarraybufid outbufid )   
+
+  addsectionandname
+;
+
+
+HEX
+: teststrtabsection ( -- )
+
+    { strtabbufid shstrtabbufid sectionarraybufid outbufid }
+
+    1000 -1 NEWBUFFER TO strtabbufid
+    1000 -1 NEWBUFFER TO shstrtabbufid
+    1000 -1 NEWBUFFER TO sectionarraybufid
+    1000 -1 NEWBUFFER TO outbufid
+
+    // make test source output section
+    7593920183028434 X !
+    9283857592873548 X 8 + !
+
+    X 10       // section data
+    strtabbufid S>BUF
+    strtabbufid shstrtabbufid sectionarraybufid outbufid
+    addstrtabsection
+
+    outbufid GETBUFFERLENGTH 10 <>
+    IF CRLF ERROR" - addstrtabsection 1st test - output buffer size not correct" EXIT THEN
+    0 outbufid O>P @ 7593920183028434 <>
+    IF CRLF ERROR" - addstrtabsection 1st test - output buffer [0] not correct" EXIT THEN
+    8 outbufid O>P @ 9283857592873548 <>
+    IF CRLF ERROR" - addstrtabsection 1st test - output buffer [8] not correct" EXIT THEN
+    shstrtabbufid GETBUFFERLENGTH s.strtab SWAP DROP 1+ <>
+    IF CRLF ERROR" - addstrtabsection 1st test - section header array buffer size not correct" EXIT THEN
+    0 shstrtabbufid O>P s.strtab SWAP OVER COMPARE 0 <>
+    IF CRLF ERROR" - addstrtabsection 1st test - string buffer not correct" EXIT THEN
+    7 shstrtabbufid O>P C@ 0 <>
+    IF CRLF ERROR" - addstrtabsection 1st test - string buffer null terminator missing" EXIT THEN
+    sectionarraybufid GETBUFFERLENGTH obdefaulttextsectionheader.size <>
+    IF CRLF ERROR" - addstrtabsection 1st test - section header array buffer size not correct" EXIT THEN
+    0 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addstrtabsection 1st test - section header string table offset not correct" EXIT THEN
+    4 sectionarraybufid O>P U32@ 3 <>
+    IF CRLF ERROR" - addstrtabsection 1st test - section header type not correct" EXIT THEN
+    8 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addstrtabsection 1st test - section header flags not correct" EXIT THEN
+    0C sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addstrtabsection 1st test - section header mem load offset not correct" EXIT THEN
+    10 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addstrtabsection 1st test - section header section file offset not correct" EXIT THEN
+    14 sectionarraybufid O>P U32@ 10 <>
+    IF CRLF ERROR" - addstrtabsection 1st test - section header section size not correct" EXIT THEN
+    18 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addstrtabsection 1st test - section header link not correct" EXIT THEN
+    1C sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addstrtabsection 1st test - section header link info correct" EXIT THEN
+    20 sectionarraybufid O>P U32@ 1 <>
+    IF CRLF ERROR" - addstrtabsection 1st test - section header link address align correct" EXIT THEN
+    24 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addstrtabsection 1st test - section header link entsize correct" EXIT THEN
+
+    1122334455667788 X !
+    1222324252627282 X 8 + !
+
+    // X 10       // section data
+    // strtabbufid S>BUF
+    strtabbufid shstrtabbufid sectionarraybufid outbufid
+    addstrtabsection
+
+    outbufid GETBUFFERLENGTH 20 <>
+    IF CRLF ERROR" - addstrtabsection 2nd test - output buffer size not correct" EXIT THEN
+    10 outbufid O>P @ 7593920183028434 <>
+    IF CRLF ERROR" - addstrtabsection 2nd test - output buffer [10] not correct" EXIT THEN
+    18 outbufid O>P @ 9283857592873548 <>
+    IF CRLF ERROR" - addstrtabsection 2nd test - output buffer [18] not correct" EXIT THEN
+    shstrtabbufid GETBUFFERLENGTH s.symtab SWAP DROP 1+ 2* <>
+    IF CRLF ERROR" - addstrtabsection 2nd test - section header array buffer size not correct" EXIT THEN
+    8 shstrtabbufid O>P s.strtab SWAP OVER COMPARE 0 <>
+    IF CRLF ERROR" - addstrtabsection 2nd test - string buffer not correct" 
+      ." - expected .strtab got " 8 shstrtabbufid O>P s.text SWAP DROP TYPE EXIT THEN
+    0F shstrtabbufid O>P C@ 0 <>
+    IF CRLF ERROR" - addstrtabsection 2nd test - string buffer null terminator missing" EXIT THEN
+    sectionarraybufid GETBUFFERLENGTH obdefaulttextsectionheader.size 2* <>
+    IF CRLF ERROR" - addstrtabsection 2nd test - section header array buffer size not correct" EXIT THEN
+    28 sectionarraybufid O>P U32@ 8 <>
+    IF CRLF ERROR" - addstrtabsection 2nd test - section header string table offset not correct" 
+      ." string table offset - expected 6, got " 2C sectionarraybufid O>P U32@ U. EXIT THEN
+    2C sectionarraybufid O>P U32@ 3 <>
+    IF CRLF ERROR" - addstrtabsection 2nd test - section header type not correct" EXIT THEN
+    30 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addstrtabsection 2nd test - section header flags not correct" EXIT THEN
+    34 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addstrtabsection 2nd test - section header mem load offset not correct" EXIT THEN
+    38 sectionarraybufid O>P U32@ 10 <>
+    IF CRLF ERROR" - addstrtabsection 2nd test - section header section file offset not correct" EXIT THEN
+    3C sectionarraybufid O>P U32@ 10 <>
+    IF CRLF ERROR" - addstrtabsection 2nd test - section header section size not correct" EXIT THEN
+    40 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addstrtabsection 2nd test - section header link not correct" EXIT THEN
+    44 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addstrtabsection 2nd test - section header link info correct" EXIT THEN
+    48 sectionarraybufid O>P U32@ 1 <>
+    IF CRLF ERROR" - addstrtabsection 2nd test - section header link address align correct" EXIT THEN
+    4C sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addstrtabsection 2nd test - section header link entsize correct" EXIT THEN
+
+    shstrtabbufid FREEBUFFER
+    sectionarraybufid FREEBUFFER
+    outbufid FREEBUFFER
+;
+
+// teststrtabsection
+
+
+: addcommentsection { 
+    | shstrtabbufid sectionarraybufid outbufid -- 
+  }
+
+  s.comment ( -- pname namelength )
+
+  ( psymtabsection symtabsectionlength ) 0 0
+  // NEW$ 0 C>$ $" p.GCC: (crosstool-NG esp-12.2.0_20230208) 12.2.0" $>$ 0 C>$ 0 GETS$[ND]  
+    ( -- pname namelength psection sectionlength )
+
+  0 // assumes there is only 1 .data section
+    ( -- pname namelength psection sectionlength memloadoffset )
+
+  obdefaultcommentsectionheader O>P
+    ( -- pname namelength 
+         psection sectionlength 
+         memloadoffset 
+         odefaultsectionheader defaultsectionheaderbufid )
+
+  shstrtabbufid sectionarraybufid outbufid
+    ( -- pname namelength 
+         psection sectionlength 
+         memloadoffset  
+         odefaultsectionheader defaultsectionheaderbufid 
+         shstrtabbufid sectionarraybufid outbufid )   
+
+  addsectionandname
+
+  // DROP$
+;
+
+HEX
+: addnotesection { 
+    | shstrtabbufid sectionarraybufid outbufid -- 
+  }
+
+  s.note
+  ( -- pname namelength )
+
+  ( psymtabsection symtabsectionlength ) 0 0  
+   // NEW$ 200000000C >$ 1 C>$ 0 C>$ 0 C>$ 0 C>$ 
+  // $" Xtensa_Info.USE_ABSOLUTE_LITERALS=0" 
+  // $>$ 0A C>$ 0 C>$ 0 C>$ 0 GETS$[ND]
+    ( -- pname namelength psection sectionlength )
+
+  0 // assumes there is only 1 .data section
+    ( -- pname namelength psection sectionlength memloadoffset )
+
+  obdefaultnotesectionheader O>P
+    ( -- pname namelength 
+         psection sectionlength 
+         memloadoffset 
+         odefaultsectionheader defaultsectionheaderbufid )
+
+  shstrtabbufid sectionarraybufid outbufid
+    ( -- pname namelength 
+         psection sectionlength 
+         memloadoffset  
+         odefaultsectionheader defaultsectionheaderbufid 
+         shstrtabbufid sectionarraybufid outbufid )   
+
+  addsectionandname
+
+  // DROP$
+;
+
+
+: addxtensainfosection { 
+    | shstrtabbufid sectionarraybufid outbufid -- 
+  }
+
+  s.xtensainfo ( -- pname namelength )
+
+  ( psymtabsection symtabsectionlength ) 0 0  
+    ( -- pname namelength psection sectionlength )
+
+  0 // assumes there is only 1 .data section
+    ( -- pname namelength psection sectionlength memloadoffset )
+
+  obdefaultxtensainfosectionheader O>P
+    ( -- pname namelength 
+         psection sectionlength 
+         memloadoffset 
+         odefaultsectionheader defaultsectionheaderbufid )
+
+  shstrtabbufid sectionarraybufid outbufid
+    ( -- pname namelength 
+         psection sectionlength 
+         memloadoffset  
+         odefaultsectionheader defaultsectionheaderbufid 
+         shstrtabbufid sectionarraybufid outbufid )   
+
+  addsectionandname
+;
+
+
+: addxtpropsection { 
+    | shstrtabbufid sectionarraybufid outbufid -- 
+  }
+
+  s.xtprop ( -- pname namelength )
+
+  ( psymtabsection symtabsectionlength ) 0 0 
+  // spropsection 
+    ( -- pname namelength psection sectionlength )
+
+  0 // assumes there is only 1 .data section
+    ( -- pname namelength psection sectionlength memloadoffset )
+
+  obdefaultxtpropsectionheader O>P
+    ( -- pname namelength 
+         psection sectionlength 
+         memloadoffset 
+         odefaultsectionheader defaultsectionheaderbufid )
+
+  shstrtabbufid sectionarraybufid outbufid
+    ( -- pname namelength 
+         psection sectionlength 
+         memloadoffset  
+         odefaultsectionheader defaultsectionheaderbufid 
+         shstrtabbufid sectionarraybufid outbufid )   
+
+  addsectionandname
+;
+
+
+
+: addrelasection { 
+    | relabufid shstrtabbufid sectionarraybufid outbufid -- 
+  }
+
+  s.rela ( -- pname namelength )
+
+  ( psymtabsection symtabsectionlength ) relabufid GETSBUFFER 
+    ( -- pname namelength psection sectionlength )
+
+  0 // assumes there is only 1 .data section
+    ( -- pname namelength psection sectionlength memloadoffset )
+
+  obdefaultrelasectionheader O>P
+    ( -- pname namelength 
+         psection sectionlength 
+         memloadoffset 
+         odefaultsectionheader defaultsectionheaderbufid )
+
+  shstrtabbufid sectionarraybufid outbufid
+    ( -- pname namelength 
+         psection sectionlength 
+         memloadoffset  
+         odefaultsectionheader defaultsectionheaderbufid 
+         shstrtabbufid sectionarraybufid outbufid )   
+
+  addsectionandname
+;
+
+
+: numberofsections ( shbufid -- numberofsections )
+    LENGTHBUF obdefaulttextsectionheader.size /
+;
+
+: lastaddedshndx ( shbufid -- lastaddedsectionid )
+    numberofsections 1-
+;
+
+[Elf32_Ehdr]
+: addshstrtabsection { 
+    | shstrtabbufid sectionarraybufid outbufid -- 
+  }
+
+  s.shstrtab ( -- pname namelength )
+  shstrtabbufid
+  addsectionname$ ( -- nameoffset )
+
+  shstrtabbufid GETSBUFFER // have to get pointer after pushing section name string
+    ( -- nameoffset psection sectionlength )
+
+  0 // assumes there is only 1 .data section
+    ( -- nameoffset psection sectionlength memloadoffset )
+
+  obdefaultshstrtabsectionheader O>P
+    ( -- nameoffset 
+         psection sectionlength 
+         memloadoffset 
+         odefaultsectionheader defaultsectionheaderbufid )
+
+  shstrtabbufid sectionarraybufid outbufid
+    ( -- nameoffset 
+         psection sectionlength 
+         memloadoffset  
+         odefaultsectionheader defaultsectionheaderbufid 
+         shstrtabbufid sectionarraybufid outbufid )   
+
+  addsection
+
+  // *** need to add number of section header strings to the ehdr
+   sectionarraybufid lastaddedshndx outbufid GETSBUFFER DROP e_shstrndx POL! 
+  
+;
+SEARCH-ORDER> DROP
+
+HEX
+: testshstrtabsection ( -- )
+
+    { shstrtabbufid sectionarraybufid outbufid }
+
+    1000 -1 NEWBUFFER TO shstrtabbufid
+    1000 -1 NEWBUFFER TO sectionarraybufid
+    1000 -1 NEWBUFFER TO outbufid
+
+    // make test source output section
+    7593920183028434 X !
+    9283857592873548 X 8 + !
+
+    // X 10       // section data
+    shstrtabbufid sectionarraybufid outbufid
+    addshstrtabsection
+
+    outbufid GETBUFFERLENGTH shstrtabbufid GETBUFFERLENGTH <>
+    IF CRLF ERROR" - addshstrtabsection 1st test - output buffer size not correct" EXIT THEN
+    // 0 outbufid O>P @ 7593920183028434 <>
+    // IF CRLF ERROR" - addshstrtabsection 1st test - output buffer [0] not correct" EXIT THEN
+    // 8 outbufid O>P @ 9283857592873548 <>
+    // IF CRLF ERROR" - addshstrtabsection 1st test - output buffer [8] not correct" EXIT THEN
+    shstrtabbufid GETBUFFERLENGTH s.shstrtab SWAP DROP 1+ <>
+    IF CRLF ERROR" - addshstrtabsection 1st test - section header array buffer size not correct" EXIT THEN
+    0 shstrtabbufid O>P s.shstrtab SWAP OVER COMPARE 0 <>
+    IF CRLF ERROR" - addshstrtabsection 1st test - string buffer not correct" EXIT THEN
+    9 shstrtabbufid O>P C@ 0 <>
+    IF CRLF ERROR" - addshstrtabsection 1st test - string buffer null terminator missing" EXIT THEN
+    sectionarraybufid GETBUFFERLENGTH obdefaulttextsectionheader.size <>
+    IF CRLF ERROR" - addshstrtabsection 1st test - section header array buffer size not correct" EXIT THEN
+    0 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addshstrtabsection 1st test - section header string table offset not correct" EXIT THEN
+    4 sectionarraybufid O>P U32@ 3 <>
+    IF CRLF ERROR" - addshstrtabsection 1st test - section header type not correct" EXIT THEN
+    8 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addshstrtabsection 1st test - section header flags not correct" EXIT THEN
+    0C sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addshstrtabsection 1st test - section header mem load offset not correct" EXIT THEN
+    10 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addshstrtabsection 1st test - section header section file offset not correct" EXIT THEN
+    14 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addshstrtabsection 1st test - section header section size not correct" EXIT THEN
+    18 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addshstrtabsection 1st test - section header link not correct" EXIT THEN
+    1C sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addshstrtabsection 1st test - section header link info correct" EXIT THEN
+    20 sectionarraybufid O>P U32@ 1 <>
+    IF CRLF ERROR" - addshstrtabsection 1st test - section header link address align correct" EXIT THEN
+    24 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addshstrtabsection 1st test - section header link entsize correct" EXIT THEN
+
+    1122334455667788 X !
+    1222324252627282 X 8 + !
+
+    // X 10       // section data
+    shstrtabbufid sectionarraybufid outbufid
+    addshstrtabsection
+
+    outbufid GETBUFFERLENGTH shstrtabbufid GETBUFFERLENGTH <>
+    IF CRLF ERROR" - addshstrtabsection 2nd test - output buffer size not correct" EXIT THEN
+    // 10 outbufid O>P @ 1122334455667788 <>
+    // IF CRLF ERROR" - addshstrtabsection 2nd test - output buffer [10] not correct" EXIT THEN
+    // 18 outbufid O>P @ 1222324252627282 <>
+    // IF CRLF ERROR" - addshstrtabsection 2nd test - output buffer [18] not correct" EXIT THEN
+    shstrtabbufid GETBUFFERLENGTH s.shstrtab SWAP DROP 1+ 2* <>
+    IF CRLF ERROR" - addshstrtabsection 2nd test - section header array buffer size not correct" EXIT THEN
+    0A shstrtabbufid O>P s.shstrtab SWAP OVER COMPARE 0 <>
+    IF CRLF ERROR" - addshstrtabsection 2nd test - string buffer not correct" 
+      ." - expected .shstrtab got " 0A shstrtabbufid O>P s.text SWAP DROP TYPE EXIT THEN
+    13 shstrtabbufid O>P C@ 0 <>
+    IF CRLF ERROR" - addshstrtabsection 2nd test - string buffer null terminator missing" EXIT THEN
+    sectionarraybufid GETBUFFERLENGTH obdefaulttextsectionheader.size 2* <>
+    IF CRLF ERROR" - addshstrtabsection 2nd test - section header array buffer size not correct" EXIT THEN
+    28 sectionarraybufid O>P U32@ 8 <>
+    IF CRLF ERROR" - addshstrtabsection 2nd test - section header string table offset not correct" 
+      ." string table offset - expected 6, got " 2C sectionarraybufid O>P U32@ U. EXIT THEN
+    2C sectionarraybufid O>P U32@ 3 <>
+    IF CRLF ERROR" - addshstrtabsection 2nd test - section header type not correct" EXIT THEN
+    30 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addshstrtabsection 2nd test - section header flags not correct" EXIT THEN
+    34 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addshstrtabsection 2nd test - section header mem load offset not correct" EXIT THEN
+    38 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addshstrtabsection 2nd test - section header section file offset not correct" EXIT THEN
+    3C sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addshstrtabsection 2nd test - section header section size not correct" EXIT THEN
+    40 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addshstrtabsection 2nd test - section header link not correct" EXIT THEN
+    44 sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addshstrtabsection 2nd test - section header link info correct" EXIT THEN
+    48 sectionarraybufid O>P U32@ 1 <>
+    IF CRLF ERROR" - addshstrtabsection 2nd test - section header link address align correct" EXIT THEN
+    4C sectionarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addshstrtabsection 2nd test - section header link entsize correct" EXIT THEN
+
+    shstrtabbufid FREEBUFFER
+    sectionarraybufid FREEBUFFER
+    outbufid FREEBUFFER
+;
+
+teststrtabsection
+
+
+// pushing a symbol
+//   given symbol name$  value  length  info  type  and section
+//   get current length of .strtab
+//   push symbol name to .strtab buffer
+//   push symbol to symbol buffer and fill it with all the data
+
+
+HEX
+[Elf32_Sym]
+: addsymbol { 
+    oldstrtabbuflength oldsymbuflength psymbol 
+    | pname namelength value length info type shndx strtabbufid symbufid -- }
+
+    // get current end offset of old symbol name string buffer
+    strtabbufid LENGTHBUF TO oldstrtabbuflength
+
+    // push symbol name string to symbol name string buffer
+    pname namelength strtabbufid S>BUF
+
+    // add a null to the symbol name string
+    0 strtabbufid C>BUF
+
+    // get current end offset of symbol array buffer
+    symbufid LENGTHBUF TO oldsymbuflength
+
+    // add new initialized symbol to symbol array buffer
+    symbufid initelf32symbol
+
+    // get a pointer to the new symbol 
+    oldsymbuflength symbufid O>P TO psymbol 
+
+    // set the parameters for the new symbol
+    oldstrtabbuflength psymbol st_name POL!
+    value psymbol st_value POL!
+    length psymbol st_size POL!
+    info 10 * type + psymbol st_info POL!
+    // other is always 0
+    shndx psymbol st_shndx POL!
+;
+SEARCH-ORDER> DROP
+
+
+HEX
+: testaddsymbol ( -- )
+
+    { strtabbufid symbolarraybufid pfirstsymbol firstsymbollength psecondsymbol secondsymbollength }
+
+    1000 -1 NEWBUFFER TO strtabbufid
+    1000 -1 NEWBUFFER TO symbolarraybufid
+
+    S" firstsymbol" ( pname namelength  -- ) TO firstsymbollength TO pfirstsymbol
+    S" secondsymbol" ( pname namelength  -- ) TO secondsymbollength TO psecondsymbol
+
+    pfirstsymbol firstsymbollength ( pname namelength -- )
+    3AC0B416 24 2 4 3 ( pname namelength value length info type shndx -- )
+    strtabbufid symbolarraybufid
+    addsymbol
+
+    strtabbufid GETBUFFERLENGTH firstsymbollength 1+ <>
+    IF CRLF ERROR" - addsymbol 1st test - string table buffer size not correct" EXIT THEN
+    0 strtabbufid O>P firstsymbollength pfirstsymbol firstsymbollength COMPARE 0 <>
+    IF CRLF ERROR" - addsymbol 1st test - string table buffer not correct" EXIT THEN
+    firstsymbollength strtabbufid O>P C@ 0 <>
+    IF CRLF ERROR" - addsymbol 1st test - string table buffer null terminator missing" EXIT THEN
+
+    symbolarraybufid GETBUFFERLENGTH obdefaultelf32symbol.size <> 
+    IF CRLF ERROR" - addsymbol 1st test - symbol array buffer size not correct" EXIT THEN
+    0 symbolarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addymbol 1st test - symbol name offset not correct" EXIT THEN
+    4 symbolarraybufid O>P U32@ 3AC0B416 <>
+    IF CRLF ERROR" - addymbol 1st test - symbol value not correct" EXIT THEN
+    8 symbolarraybufid O>P U32@ 24 <>
+    IF CRLF ERROR" - addymbol 1st test - symbol size not correct" EXIT THEN
+    0C symbolarraybufid O>P C@ 24 <>
+    IF CRLF ERROR" - addymbol 1st test - symbol info type not correct" EXIT THEN
+    0D symbolarraybufid O>P C@ 0 <>
+    IF CRLF ERROR" - addymbol 1st test - symbol other not correct" EXIT THEN
+    0E symbolarraybufid O>P U16@ 3 <>
+    IF CRLF ERROR" - addymbol 1st test - symbol section header index not correct" EXIT THEN
+
+    psecondsymbol secondsymbollength ( pname namelength -- )
+    263787A1 30 6 8 13 ( pname namelength value length info type shndx -- )
+    strtabbufid symbolarraybufid
+    addsymbol
+
+    strtabbufid GETBUFFERLENGTH firstsymbollength 1+ secondsymbollength + 1+ <>
+    IF CRLF ERROR" - addsymbol 2nd test - strint table buffer size not correct" EXIT THEN
+    firstsymbollength 1+ strtabbufid O>P secondsymbollength psecondsymbol secondsymbollength COMPARE 0 <>
+    IF CRLF ERROR" - addsymbol 2nd test - string table buffer not correct" EXIT THEN
+    firstsymbollength 1+ secondsymbollength + strtabbufid O>P C@ 0 <>
+    IF CRLF ERROR" - addsymbol 2nd test - string table buffer null terminator missing" EXIT THEN
+
+    symbolarraybufid GETBUFFERLENGTH obdefaultelf32symbol.size 2* <> 
+    IF CRLF ERROR" - addsymbol 2nd test - symbol array buffer size not correct" EXIT THEN
+    0 obdefaultelf32symbol.size + symbolarraybufid O>P U32@ firstsymbollength 1+ <>
+    IF CRLF ERROR" - addymbol 2nd test - symbol name offset not correct" EXIT THEN
+    4 obdefaultelf32symbol.size + symbolarraybufid O>P U32@ 263787A1 <>
+    IF CRLF ERROR" - addymbol 2nd test - symbol value not correct" EXIT THEN
+    8 obdefaultelf32symbol.size + symbolarraybufid O>P U32@ 30 <>
+    IF CRLF ERROR" - addymbol 2nd test - symbol size not correct" EXIT THEN
+    0C obdefaultelf32symbol.size + symbolarraybufid O>P C@ 68 <>
+    IF CRLF ERROR" - addymbol 2nd test - symbol info type not correct" EXIT THEN
+    0D obdefaultelf32symbol.size + symbolarraybufid O>P C@ 0 <>
+    IF CRLF ERROR" - addymbol 2nd test - symbol other not correct" EXIT THEN
+    0E obdefaultelf32symbol.size + symbolarraybufid O>P U16@ 13 <>
+    IF CRLF ERROR" - addymbol 2nd test - symbol section header index not correct" EXIT THEN
+
+    strtabbufid FREEBUFFER
+    symbolarraybufid FREEBUFFER
+;
+
+[Elf32_Rela] 
+: addrela { oldrelabuflength pnewrela | address relabufid }
+    relabufid GETBUFFERLENGTH TO oldrelabuflength
+    size DROP relabufid GROWBUFFER
+    oldrelabuflength relabufid O>P TO pnewrela
+    address pnewrela r_offset POL!
+    1 pnewrela r_info.type POL!
+    2 pnewrela r_info.symbol POL! // for .text section
+    0 pnewrela r_addend POL!      // no addend... so then why is this needed?
+;
+SEARCH-ORDER> DROP
+
+HEX
+: testaddrela ( -- )
+
+    { relabufid }
+
+    1000 -1 NEWBUFFER TO relabufid
+
+    334AF relabufid
+    addrela
+
+    relabufid GETBUFFERLENGTH rela.size <>
+    IF
+      CRLF ." addrela 1st test - rela buffer size should be C, got "
+      relabufid GETBUFFERLENGTH U. 
+      CRLF ERROR" - addrela 1st test - rela buffer size not correct" EXIT 
+    THEN
+    0 relabufid O>P U32@ 334AF <>
+    IF CRLF ERROR" - addrela 1st test - rela offset not correct" EXIT THEN
+    4 relabufid O>P C@ 1 <>
+    IF CRLF ERROR" - addrela 1st test - rela type not correct" EXIT THEN
+    5 relabufid O>P U24@ 2 <>
+    IF CRLF ERROR" - addrela 1st test - rela symbol not correct" EXIT THEN
+    8 relabufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addrela 1st test - rela addned not correct" EXIT THEN
+
+    129754 relabufid
+    addrela
+
+    relabufid GETBUFFERLENGTH rela.size 2* <>
+    IF CRLF ERROR" - addrela 2nd test - rela buffer size not correct" EXIT THEN
+    0 rela.size + relabufid O>P U32@ 129754 <>
+    IF CRLF ERROR" - addrela 2nd test - rela offset not correct" EXIT THEN
+    4 rela.size + relabufid O>P C@ 1 <>
+    IF CRLF ERROR" - addrela 2nd test - rela type not correct" EXIT THEN
+    5 rela.size + relabufid O>P U32@ FFFFFF AND 2 <>
+    IF CRLF ERROR" - addrela 2nd test - rela symbol not correct" EXIT THEN
+    8 rela.size + relabufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addrela 2nd test - rela addned not correct" EXIT THEN
+
+    relabufid FREEBUFFER
+;
+
+// testaddrela
+
+: VALUE$>VALUE ( VALUE$ -$- ) ( -- VALUE ) // assumes first 8 bytes is a U64
+    0 GETS$[ND] 8 U< IF DROP 0 EXIT THEN // if length of value$ too small return 0
+    @ DROP$
+;
+
+: getsname$valuesize { sizeelementid | elementid hlistid -- pname namelength value size }
+    ( -$- name$ ) // must drop name$ after using name$.... might be better to just get a pointer to the original name$
+    elementid hlistid GET-ELEMENT-NAME$ 0 GETS$[ND]
+    elementid hlistid GET-ELEMENT-VALUE$ VALUE$>VALUE
+    $" size" elementid hlistid FIND-ELEMENT-CHILD-BY-NAME$ TO sizeelementid
+    sizeelementid -1 = IF 0 EXIT THEN
+    sizeelementid hlistid VALUE$>VALUE
+;
+
+
+// pushing an exported symbol
+//   given symbol name$  value  length
+//   given symbol array buffer
+//   given symbol string name buffer
+//   given .text section number
+//   use info = 1, type = 2
+//   push a symbol
+
+
+// *** --> I think I need to add a .rela for each function entry
+
+// section 7 - .rela section
+
+//             00 00 00 00  // r_offset        // I think this is the relocation for function entry
+//             01           // r_info.type 
+//             02 00 00     // r_info.symbol    ......... symbol 2 is for .text section
+// 100779180 - 00 00 00 00  // r_addend
+
+: addexportsymbol { | pname namelength value length textshndx strtabbufid symbufid relabufid -- }
+    pname namelength value length 1 2 textshndx strtabbufid symbufid addsymbol
+    value relabufid addrela
+;
+
+
+// pushing an export symbol list of name value pairs
+//   given elementid hlistid of export symbol list (in addition to name and value, also need length)
+//   given .text section number
+//   given symbol array buffer
+//   given symbol string name buffer
+
+// kind of slow way to do this... be nice if there was a get
+: addexportsymbols { 
+    xeid i n 
+    | exportelementid exporthlistid textshndx strtabbufid symbufid relabufid -- }
+
+    ( parentelementid parenthlistid -eh- parentelementid parenthlistid )
+
+    // for each child of exportelementid do:
+    //   get pname, value, and value of a child with name 'size'
+    //   (if there is no child with name 'size' the size is 0)
+    //   addexportsymbol
+
+    0 TO i
+    exportelementid exporthlistid GET-ELEMENT-NUMBER-OF-SORTED-CHILDREN TO n
+    n 0= IF EXIT THEN
+    BEGIN
+      i n U<
+    WHILE
+      i exportelementid exporthlistid FIND-ELEMENT-CHILD-N TO xeid
+      xeid exporthlistid getsname$valuesize ( -- pname namelength value size ) ( -$- name$ )
+      // { | pname namelength value length textshndx strtabbufid symbufid -- } 
+      textshndx strtabbufid symbufid relabufid addexportsymbol ( -- ) ( -$- name$ )
+      DROP$ ( -- ) ( -$- )
+      i 1+ TO i
+    REPEAT
+;
+
+HEX
+: testaddexportsymbols { exportelementid exporthlistid strtabbufid symbolarraybufid relabufid }
+    NEW-HLIST TO exporthlistid
+    ENDOFLIST exporthlistid NEW$ $" root" NEW-ELEMENT TO exportelementid
+      // children get sorted by name
+      exportelementid exporthlistid 472813 >NEW$ $" symbol1" NEW-ELEMENT DROP
+      exportelementid exporthlistid 28343 >NEW$ $" xsym2" NEW-ELEMENT DROP
+
+    1000 -1 NEWBUFFER TO strtabbufid
+    1000 -1 NEWBUFFER TO symbolarraybufid
+    1000 -1 NEWBUFFER TO relabufid
+
+    exportelementid exporthlistid 1 ( textshndx ) strtabbufid symbolarraybufid relabufid
+    addexportsymbols
+
+    exporthlistid FREE-HLIST 
+
+    // CRLF ." strtabbufid" CRLF
+    // strtabbufid GETSBUFFER DUMP
+
+    // CRLF ." symbolarraybufid" CRLF
+    // symbolarraybufid GETSBUFFER DUMP
+
+    strtabbufid GETBUFFERLENGTH 0E <>
+    IF CRLF ERROR" - addexportsymbols 1st test - string table buffer size not correct" EXIT THEN
+    0 strtabbufid O>P 7 S" symbol1" COMPARE 0 <>
+    IF CRLF ERROR" - addexportsymbols 1st test - string table buffer not correct" EXIT THEN
+    7 strtabbufid O>P C@ 0 <>
+    IF CRLF ERROR" - addexportsymbols 1st test - string table buffer null terminator missing" EXIT THEN
+
+    relabufid GETBUFFERLENGTH rela.size 2* <>
+    IF CRLF ERROR" - addexportsymbols 1st test - rela buffer size not correct" EXIT THEN
+    0 relabufid O>P U32@ 472813 <>
+    IF CRLF ERROR" - addexportsymbols 1st test - rela 1st symbol value not correct" EXIT THEN
+    rela.size relabufid O>P U32@ 28343 <>
+    IF CRLF ERROR" - addexportsymbols 1st test - rela 2nd symbol value not correct" EXIT THEN
+    
+    symbolarraybufid GETBUFFERLENGTH obdefaultelf32symbol.size 2* <> 
+    IF CRLF ERROR" - addexportsymbols 1st test - symbol array buffer size not correct" EXIT THEN
+    0 symbolarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addexportsymbols 1st test - symbol name offset not correct" EXIT THEN
+    4 symbolarraybufid O>P U32@ 472813 <>
+    IF CRLF ERROR" - addexportsymbols 1st test - symbol value not correct" EXIT THEN
+    8 symbolarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addexportsymbols 1st test - symbol size not correct" EXIT THEN
+    0C symbolarraybufid O>P C@ 12 <>
+    IF CRLF ERROR" - addexportsymbols 1st test - symbol info type not correct" EXIT THEN
+    0D symbolarraybufid O>P C@ 0 <>
+    IF CRLF ERROR" - addexportsymbols 1st test - symbol other not correct" EXIT THEN
+    0E symbolarraybufid O>P U16@ 1 <>
+    IF CRLF ERROR" - addexportsymbols 1st test - symbol section header index not correct" EXIT THEN
+
+    strtabbufid FREEBUFFER
+    symbolarraybufid FREEBUFFER
+    relabufid FREEBUFFER
+;
+
+// CRLF ." testing addexportsymbols"
+// testaddexportsymbols
+// CRLF ." done testing addexportsymbols
+
+// making export only .o file
+//   given source code buffer
+//   given source export name$ value symbol list
+//   make output buffer
+//   make .strtab symbol name string buffer
+//   make .symtab section header array buffer
+//   make .shstrtab section name$ buffer
+//   make symbol array buffer
+//   make section header buffer
+//   push initial elf header in output buffer
+//   add null string to .strtab buffer (and null symbol to symbol array buffer)
+//   add null string to .shstrtab buffer
+//   push text section
+//   add exported symbol names ( you need .text section number for this part )
+//   (push .data section... but will be empty)
+//   (push .bss section... but will be empty)
+//   (push .comment section)
+//   (push .extensa.info section)
+//   (push .xt.prop section)
+//   (push .rela or .rela.xt.prop section)
+//   push .symtab section
+//   push .strtab section
+//   push .shstrtab
+//   push section headers
+//   delete .strtab buffer
+//   delete .symtab buffer
+//   delete .shstrtab buffer
+//   delete symbol array buffer
+//   delete section header array buffer
+//   return bufferid of output buffer
+
+[Elf32_Ehdr] 
+: addsectionheaderarray { | shbufid outbufid -- }
+    outbufid LENGTHBUF 
+    outbufid GETSBUFFER DROP 
+    e_shoff ( value paddr offset length -- ) POL!
+    shbufid GETSBUFFER outbufid S>BUF
+    shbufid numberofsections outbufid GETSBUFFER DROP e_shnum POL!
+;
+SEARCH-ORDER> DROP
+
+
+: alignbufto4 { | bufid }
+    BEGIN
+      bufid GETBUFFERLENGTH 3 AND 0 <>
+    WHILE
+      0 bufid C>BUF
+    REPEAT
+;
+
+HEX
+: alignbufto16 { | bufid }
+    BEGIN
+      bufid GETBUFFERLENGTH 0F AND 0 <>
+    WHILE
+      0 bufid C>BUF
+    REPEAT
+;
+
+HEX
+: makeexpdotobuf { 
+    strtabbufid shstrtabbufid outbufid symbolarraybufid shbufid relabufid
+    | pcode codelength expsymtbleid expsymtblhid 
+    -- dotobuf }
+
+    1000 -1 NEWBUFFER TO outbufid
+    1000 -1 NEWBUFFER TO strtabbufid
+    1000 -1 NEWBUFFER TO shstrtabbufid
+    1000 -1 NEWBUFFER TO symbolarraybufid
+    1000 -1 NEWBUFFER TO shbufid
+    1000 -1 NEWBUFFER TO relabufid
+    ?ERRORIF ERROR" error initializing buffers" NAME>E EXIT THEN
+
+    obdefaultelf32header O>P obdefaultelf32header.size outbufid S>BUF
+    ?ERRORIF ERROR" error pushing default elf header" NAME>E EXIT THEN
+    // CRLF ." after header outbuf length = " outbufid GETBUFFERLENGTH U. 
+
+    ( pname namelength value length info type shndx strtabbufid symbolarraybufid -- )
+    obdefaultelf32header O>P 0 0 0 0 0 0 strtabbufid symbolarraybufid 
+      // using obdefaultelf32header O>P as a null pointer
+    addsymbol
+    ?ERRORIF ERROR" error adding null symbol" NAME>E EXIT THEN
+
+    ( pname namelength value length info type shndx strtabbufid symbufid -- )
+    S" test.cpp" 0 0 0 4 FFF1 strtabbufid symbolarraybufid
+    addsymbol
+    ?ERRORIF ERROR" error adding filename symbol" NAME>E EXIT THEN
+
+    // section 0 null
+    shstrtabbufid shbufid outbufid addemptysection
+    ?ERRORIF ERROR" error adding empty section" NAME>E EXIT THEN
+
+    // section 1 .text
+    pcode codelength shstrtabbufid shbufid outbufid
+    addtextsection
+    ?ERRORIF ERROR" error adding text section" NAME>E EXIT THEN
+    // CRLF ." after text section outbuf length = " outbufid GETBUFFERLENGTH U.
+
+    // symbol for section 1
+    ( pname namelength value length info type shndx strtabbufid symbolarraybufid -- )
+    obdefaultelf32header O>P 0 0 0 0 3 shbufid lastaddedshndx ( 1 ) strtabbufid symbolarraybufid 
+      // using obdefaultelf32header O>P as a null pointer
+    addsymbol
+    ?ERRORIF ERROR" error adding symbol for section 1" NAME>E EXIT THEN
+ 
+    // section 2 .data
+    ( shstrtabbufid sectionarraybufid outbufid -- )
+    shstrtabbufid shbufid outbufid
+    adddatasection
+    ?ERRORIF ERROR" error adding data section" NAME>E EXIT THEN
+
+    // symbol for section 2
+    ( pname namelength value length info type shndx strtabbufid symbolarraybufid -- )
+    obdefaultelf32header O>P 0 0 0 0 3 shbufid lastaddedshndx ( 2 ) strtabbufid symbolarraybufid 
+      // using obdefaultelf32header O>P as a null pointer
+    addsymbol
+    ?ERRORIF ERROR" error adding symbol for section 2" NAME>E EXIT THEN
+
+    // section 3 .bss
+    shstrtabbufid shbufid outbufid
+    addbsssection
+    ?ERRORIF ERROR" error adding bss section" NAME>E EXIT THEN
+
+    // symbol for section 3
+    ( pname namelength value length info type shndx strtabbufid symbolarraybufid -- )
+    obdefaultelf32header O>P 0 0 0 0 3 shbufid lastaddedshndx ( 3 ) strtabbufid symbolarraybufid 
+      // using obdefaultelf32header O>P as a null pointer
+    addsymbol
+    ?ERRORIF ERROR" error adding symbol for section 3" NAME>E EXIT THEN
+
+    // section 4 .comment
+    shstrtabbufid shbufid outbufid
+    addcommentsection
+    ?ERRORIF ERROR" error adding comment section" NAME>E EXIT THEN
+
+    // symbol for section 4
+    ( pname namelength value length info type shndx strtabbufid symbolarraybufid -- )
+    obdefaultelf32header O>P 0 0 0 0 3 shbufid lastaddedshndx ( 4 ) strtabbufid symbolarraybufid 
+      // using obdefaultelf32header O>P as a null pointer
+    addsymbol
+    ?ERRORIF ERROR" error adding symbol for section 4" NAME>E EXIT THEN
+
+    // section 5 .note
+    shstrtabbufid shbufid outbufid
+    addnotesection
+    ?ERRORIF ERROR" error adding note section" NAME>E EXIT THEN
+
+    // symbol for section 5
+    ( pname namelength value length info type shndx strtabbufid symbolarraybufid -- )
+    obdefaultelf32header O>P 0 0 0 0 3 shbufid lastaddedshndx ( 5 ) strtabbufid symbolarraybufid 
+      // using obdefaultelf32header O>P as a null pointer
+    addsymbol
+    ?ERRORIF ERROR" error adding symbol for section 5" NAME>E EXIT THEN
+
+    // section 6 .xt.prop
+    shstrtabbufid shbufid outbufid
+    addxtpropsection
+    ?ERRORIF ERROR" error adding xtprop section" NAME>E EXIT THEN
+
+    // symbol for section 6
+    ( pname namelength value length info type shndx strtabbufid symbolarraybufid -- )
+    obdefaultelf32header O>P 0 0 0 0 3 shbufid lastaddedshndx ( 6 ) strtabbufid symbolarraybufid 
+      // using obdefaultelf32header O>P as a null pointer
+    addsymbol
+    ?ERRORIF ERROR" error adding symbol for section 6" NAME>E EXIT THEN
+   
+    // section 8 symbol table
+    ( exportelementid exporthlistid textshndx strtabbufid symbufid relabufid -- )
+    expsymtbleid expsymtblhid 1 strtabbufid symbolarraybufid relabufid
+    addexportsymbols
+    ?ERRORIF ERROR" error adding export symbols" NAME>E EXIT THEN
+    // CRLF ." after export section outbuf length = " outbufid GETBUFFERLENGTH U.
+
+    // function exit rela
+    ( address relabufid -- )
+    // 0C relabufid addrela
+
+    // no idea...
+    ( address relabufid -- )
+    // 18 relabufid addrela 
+
+    // section 7 .rela 
+    relabufid shstrtabbufid shbufid outbufid
+    addrelasection
+    ?ERRORIF ERROR" error adding rela section" NAME>E EXIT THEN
+
+    outbufid alignbufto16
+
+    symbolarraybufid shstrtabbufid shbufid outbufid
+    addsymtabsection
+    ?ERRORIF ERROR" error adding symtab section" NAME>E EXIT THEN 
+
+    // section 9 symbol table strings
+    strtabbufid shstrtabbufid shbufid outbufid
+    addstrtabsection
+    ?ERRORIF ERROR" error adding strtab section" NAME>E EXIT THEN   
+
+    // shstrtabbufid shbufid outbufid
+    // addxtensainfosection
+    // ?ERRORIF ERROR" error adding xtensainfo section" NAME>E EXIT THEN
+
+    // section 10 section name strings
+    shstrtabbufid shbufid outbufid
+    addshstrtabsection
+    ?ERRORIF ERROR" error adding shstrtab section" NAME>E EXIT THEN
+
+    // align to 4 for section header array
+    outbufid alignbufto4
+
+    // section header array
+    shbufid outbufid
+    addsectionheaderarray
+    ?ERRORIF ERROR" error adding section header array section" NAME>E EXIT THEN
+
+    strtabbufid FREEBUFFER
+    shstrtabbufid FREEBUFFER
+    symbolarraybufid FREEBUFFER
+    shbufid FREEBUFFER
+    relabufid FREEBUFFER
+
+    outbufid
+;
+
+TRUE ?END-EVALUATE
+
+HEX
+CREATEOC obtestcode
+  36 CODE-U8,
+  61 CODE-U8,
+  00 CODE-U8,
+  7D CODE-U8,
+  01 CODE-U8,
+  29 CODE-U8,
+  07 CODE-U8,
+  28 CODE-U8,
+  07 CODE-U8,
+  1B CODE-U8,
+  22 CODE-U8,
+  1D CODE-U8,
+  F0 CODE-U8,
+  OHERE obtestcode DROP - CONSTANT testcode.length
+
+: stestcode ( -- addr length ) obtestcode O>P testcode.length ;
+
+
+CRLF ." testcode.length = " testcode.length U.
+
+
+NEW-HLIST CONSTANT exporthlistid
+ENDOFLIST exporthlistid NEW$ $" root" NEW-ELEMENT CONSTANT exportelementid
+exportelementid exporthlistid 0 >NEW$ $" testexportfunction" NEW-ELEMENT DROP
+
+stestcode exportelementid exporthlistid makeexpdotobuf CONSTANT mydotobufid
+
+mydotobufid $" testfunction.o" SAVEFILE$
+
+exporthlistid FREE-HLIST
+
+// CRLF ." mytest.o" CRLF
+// mydotobufid GETSBUFFER DUMP
+mydotobufid FREEBUFFER
+
+
+
