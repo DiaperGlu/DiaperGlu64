@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.12.
+//    This file is part of DiaperGlu v5.13.
 //
-//    DiaperGlu v5.12 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.12 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.12; if not, write to the Free Software
+//    along with DiaperGlu v5.13; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 24, 2023              //
-// version 5.12               //
+// February 2, 2025           //
+// version 5.13               //
 // /////////////////////////////
 
 #include <sys/mman.h>
@@ -308,17 +308,17 @@ UINT64 dg_getmicrosecondssince1970Jan01()
 
 void dg_initpbharrayhead(Bufferhandle* pBHarrayhead)
 {
-	pBHarrayhead->growby = BHarraygrowby;
-	pBHarrayhead->maxsize = BHarraymaxsize;
-	pBHarrayhead->nextfreeindex = 0;
-	pBHarrayhead->nextunusedbyte = 0;
-	pBHarrayhead->pbuf = badbufferhandle;
-	pBHarrayhead->size = 0;
-	pBHarrayhead->id = BHarrayheadid;
-	pBHarrayhead->pisapiecb = badbufferhandle;
-	pBHarrayhead->errorcount = 0;
-	pBHarrayhead->currentoffset = 0;
-    pBHarrayhead->pfunctbl = dg_functiontable;
+    pBHarrayhead->growby = BHarraygrowby;
+    pBHarrayhead->maxsize = BHarraymaxsize;
+    pBHarrayhead->nextfreeindex = 0;
+    pBHarrayhead->nextunusedbyte = 0;
+    pBHarrayhead->pbuf = badbufferhandle;
+    pBHarrayhead->size = 0;
+    pBHarrayhead->id = BHarrayheadid;
+    pBHarrayhead->pisapiecb = badbufferhandle;
+    pBHarrayhead->errorcount = 0;
+    pBHarrayhead->currentoffset = 0;
+    // pBHarrayhead->pfunctbl = dg_functiontable;
     // pBHarrayhead->diaperflags = 0;
 }
 
@@ -3456,30 +3456,30 @@ void dg_forthfindlibrarysymbol (Bufferhandle* pBHarrayhead)
 const char* dg_callbuffername = "dg_callbuffer";
 
 UINT64 dg_callbuffer (
-	Bufferhandle* pBHarrayhead,
-	UINT64 bufferid,
-	UINT64 offset)
+    Bufferhandle* pBHarrayhead,
+    UINT64 bufferid,
+    UINT64 offset)
 {
-	unsigned char* addr;
+    unsigned char* addr;
     UINT64 result = (UINT64)-1;   
 
-	UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 	
-	if (baderrorcount == olderrorcount)
-	{
-		return(result);
-	}
+    if (baderrorcount == olderrorcount)
+    {
+        return(result);
+    }
 	
-	addr = dg_getpbufferoffset(
+    addr = dg_getpbufferoffset(
         pBHarrayhead,
         bufferid,
         offset);
 
-	if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-	{
-		dg_pusherror(pBHarrayhead, dg_callbuffername);
-		return(result);
-	}
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_callbuffername);
+        return(result);
+    }
     
     result = dg_callcoreforthroutine(
         pBHarrayhead,

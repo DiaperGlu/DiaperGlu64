@@ -3,20 +3,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.12.
+//    This file is part of DiaperGlu v5.13.
 //
-//    DiaperGlu v5.12 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.12 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.12; if not, write to the Free Software
+//    along with DiaperGlu v5.13; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 24, 2023              //
-// version 5.12               //
+// February 2, 2025           //
+// version 5.13               //
 // /////////////////////////////
 -->
 
@@ -69,11 +69,11 @@
       <a href=cwordlist.htm#dg_createocompilebufdef           >dg_createocompilebufdef</a>
       <a href=cwordlist.htm#dg_createsubthreaddef             >dg_createsubthreaddef</a>
       <a href=cwordlist.htm#dg_createvariabledef              >dg_createvariabledef</a>
+      <a href=cwordlist.htm#dg_createcodepointerdef           >dg_createcodepointerdef</a>
       <a href=cwordlist.htm#dg_createdconstantdef             >dg_createdconstantdef</a>
       <a href=cwordlist.htm#dg_createconstantdef              >dg_createconstantdef</a>
       <a href=cwordlist.htm#dg_getlatestdefinition            >dg_getlatestdefinition</a>
       <a href=cwordlist.htm#dg_getnextdefinition              >dg_getnextdefinition</a>
-      <a href=cwordlist.htm#dg_executedefinition              >dg_executedefinition</a>
       <a href=cwordlist.htm#dg_finddefinwordlist              >dg_finddefinwordlist</a>
       <a href=cwordlist.htm#dg_finddefinsearchorder           >dg_finddefinsearchorder</a>
       <a href=cwordlist.htm#dg_changelatestcompileroutine     >dg_changelatestcompileroutine</a>
@@ -82,6 +82,11 @@
       <a href=cwordlist.htm#dg_findcopyandrenameword          >dg_findcopyandrenameword</a>
       <a href=cwordlist.htm#dg_emptywordlist                  >dg_emptywordlist</a>
       <a href=cwordlist.htm#dg_createbrackettoorderconstantdef>dg_createbrackettoorderconstantdef</a>
+      <a href=cwordlist.htm#dg_dodefinitionstate              >dg_dodefinitionstate</a>
+      <a href=cwordlist.htm#dg_interpretdefinition            >dg_interpretdefinition</a>
+      <a href=cwordlist.htm#dg_compiledefinition              >dg_compiledefinition</a>
+      <a href=cwordlist.htm#dg_executedefinition              >dg_executedefinition</a>
+      <a href=cwordlist.htm#dg_safecompiledefinition          >dg_safecompiledefinition</a>
     </div>
 
     <div id=pagestuff>
@@ -545,6 +550,48 @@
       </div>
 
 
+      <div class=word id=dg_createcodepointerdef>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_createcodepointerdef
+//
+// C prototype:
+//  UINT64 dg_createcodepointerdef (
+//   Bufferhandle* pBHarrayhead,
+//   unsigned char* pname,
+//   UINT64 namelength)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored
+//  unsigned char* pname             pointer to name string
+//  UINT64   namelength        number of characters (bytes) in the name
+//
+// Outputs:
+//  UINT64   return            execution token (or definition id) of the new definition
+//
+// Action:
+//  Creates a new code pointer definition with the name specified
+//  The compile type will be calculate and push address to the data stack in execute 
+//   mode or compile calculate and push address to the data stack in compile mode
+//  The data pointer for this definition will point to the next available offset in 
+//   the current new compile (code space) buffer
+//  Links the definition to the current new definition word list
+//
+// Failure cases:
+//  error getting current new compile buffer id
+//  error getting current new compile buffer length
+//  error getting current new definition word list id (current compile word list)
+//  error creating the new definition
+//  error linking the definition to the current new definition word list
+//   
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
       <div class=word id=dg_createdconstantdef>
 <pre>
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -695,40 +742,6 @@
 // Failure cases:
 //  error getting pointer to the definition
 //  circular or broken word list error
-//   
-// //////////////////////////////////////////////////////////////////////////////////////
-</pre>
-      </div>
-
-
-      <div class=word id=dg_executedefinition>
-<pre>
-// //////////////////////////////////////////////////////////////////////////////////////
-//
-// dg_executedefinition
-//
-// C prototype:
-//  void dg_executedefinition (
-//   Bufferhandle* pBHarrayhead,
-//   UINT64 definitionid)
-//
-// Inputs:
-//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
-//                                    used as the bufferhandle for the array where the 
-//                                    other bufferhandles are stored
-//  UINT64         definitionid      execution token of a definition           
-//
-// Outputs:
-//  none
-//
-// Action:
-//  executes the definition by passing the databuf and data offset on the data stack to 
-//   the compile type routine 
-//
-// Failure cases:
-//  error getting pointer to the definition
-//  error pushing the data offset
-//  error pushing the data buffer
 //   
 // //////////////////////////////////////////////////////////////////////////////////////
 </pre>
@@ -1037,6 +1050,176 @@
 //  If you push something to the search order stack that is not a wordlist, script
 //   parsing errors out, so the script engine will get stuck. This behavior may
 //   change in the future... 1/8/2021 J.N.
+//
+// Failure cases:
+//   
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_dodefinitionstate>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_dodefinitionstate
+//
+// C prototype:
+//  void dg_dodefinitionstate (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 definitionid,
+//   const char* state)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored 
+//  UINT64 definitionid              a word's execution token
+//  const char* state                the state action to do
+//
+// Outputs:
+//  none
+//
+// Action:
+//  This routine does the state action associated with an execution token.
+//  In more detail, it pushes the execution token's data field offset and buffer id
+//   to the data stack which will be used to get the PFA, the pushes the state to the 
+//   data stack, and then calls the execution token's code routine.
+//
+// Failure cases:
+//   
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_interpretdefinition>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_interpretdefinition
+//
+// C prototype:
+//  void dg_interpretdefinition (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 definitionid)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored 
+//  UINT64 definitionid              a word's execution token
+//
+// Outputs:
+//  none
+//
+// Action:
+//  This routine does the state action associated with an execution token for the 
+//   state in the system STATE variable.
+//  In more detail, it pushes the execution token's data field offset and buffer id
+//   to the data stack which will be used to get the PFA, the pushes the state from
+//   the STATE variable to the data stack, and then calls the execution token's code 
+//   routine.
+//
+// Failure cases:
+//   
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_compiledefinition>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_compiledefinition
+//
+// C prototype:
+//  void dg_compiledefinition (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 definitionid)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored 
+//  UINT64 definitionid              a word's execution token
+//
+// Outputs:
+//  none
+//
+// Action:
+//  This routine does the compile state action associated with an execution token.
+//  In more detail, it pushes the execution token's data field offset and buffer id
+//   to the data stack which will be used to get the PFA, the pushes the compile
+//   state to the data stack, and then calls the execution token's code routine.
+//
+// Failure cases:
+//   
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_executedefinition>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_executedefinition
+//
+// C prototype:
+//  void dg_executedefinition (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 definitionid)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored 
+//  UINT64 definitionid              a word's execution token
+//
+// Outputs:
+//  none
+//
+// Action:
+//  This routine does the execute state action associated with an execution token.
+//  In more detail, it pushes the execution token's data field offset and buffer id
+//   to the data stack which will be used to get the PFA, the pushes the execute
+//   state to the data stack, and then calls the execution token's code routine.
+//
+// Failure cases:
+//   
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_safecompiledefinition>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_safecompiledefinition
+//
+// C prototype:
+//  void dg_safecompiledefinition (
+//   Bufferhandle* pBHarrayhead,
+//   UINT64 definitionid)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the 
+//                                    other bufferhandles are stored 
+//  UINT64 definitionid              a word's execution token
+//
+// Outputs:
+//  none
+//
+// Action:
+//  This routine does the compile state action associated with an execution token,
+//   but only for compile type subroutine and safe subroutine. All other types are
+//   errors. In other words only regular Forth words like DUP and safe words are
+//   supported.
+//  In more detail, it compiles a safe call to the definition's PFA.
 //
 // Failure cases:
 //   

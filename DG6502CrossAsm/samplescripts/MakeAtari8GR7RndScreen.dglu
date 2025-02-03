@@ -1,0 +1,145 @@
+
+// This script cross compiles an Atari 8 bit computer .atr disk image
+
+
+// /////////////////////////////////////////////////
+// Boiler plate to initialize the cross assembler //
+// /////////////////////////////////////////////////
+
+
+// compile the 6502 cross assembler
+$" DG6502CrossAsm.dglu" INCLUDEFILE$
+
+// compile the .atr disk file maker
+$" BufToATR.dglu" INCLUDEFILE$
+
+
+HEX 
+
+// Atari OS labels needed for this program
+230 CONSTANT SDLSTL
+2C4 CONSTANT COLOR0
+2C5 CONSTANT COLOR1
+2C6 CONSTANT COLOR2
+2C7 CONSTANT COLOR3
+D20A CONSTANT RANDOM
+80 CONSTANT PUSERPG0
+0F CONSTANT NUMPAGESPERSCREEN
+9000 CONSTANT SCREENSTART
+
+
+// Initialize the cross assembler. This makes the disk image buffer.
+//   600 NEWCROSSBUFFER means make a new current compile buffer using relative base address 600
+HEX 
+600 NEWCROSSBUFFER  
+
+
+
+// /////////////////////////////////////////////////////
+// This is where your assembly language program goes. //
+// /////////////////////////////////////////////////////
+
+
+// Cross compile the Atari810 Disk Header 
+
+( 0x600 ) 0 CC,           // probably has to be 0 ( disassemble OS to find out for sure )
+OHERE CONSTANT oNumberOfBootSectors  // this makes a label so the script can automatically set the correct number of sectors
+( 0x601 ) 1 CC,           // number of boot sectors
+( 0x602 ) 600 CODE-U16,   // boot load address
+( 0x604 ) 606 CODE-U16,   // boot init routine address
+
+( 0x606 )
+
+// Cross compile the program
+
+//   Branching over data
+//   Using IF, assumes data length is <= 7F because it uses a short branch
+//     For data larger than 7F use LONGIF, LONGTHEN,
+//   Using Forth style branch instructions eliminates the need for branch labels
+
+CLC, CS LONGIF, ( using LONGIF so we can have more than 7f bytes of data & subroutines )
+
+  ( 0x60C )
+  // Graphics 7 display list 160 x 96 pixel 4 color mode
+  BARHERE CONSTANT DLSTART
+  HEX
+  70 CC, 70 CC, 70 CC,
+  (   0 ) 4D CC, SCREENSTART FF AND CC, SCREENSTART 100 / FF AND CC,
+          0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC,
+  (   8 ) 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC,
+  (  10 ) 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC,
+  (  18 ) 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC,
+  (  20 ) 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC,
+  (  28 ) 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC,
+  (  30 ) 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC,
+  (  38 ) 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC,
+  (  40 ) 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC,
+  (  48 ) 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC,
+  (  50 ) 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC,
+  (  58 ) 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC, 0D CC,
+  41 CC, DLSTART FF AND CC, DLSTART 100 / FF AND CC,
+
+  BARHERE CONSTANT rndcolors
+
+    RANDOM [U16] LDA,
+    COLOR0 [U16] STA,
+    RANDOM [U16] LDA,
+    COLOR1 [U16] STA,
+    RANDOM [U16] LDA,
+    COLOR2 [U16] STA,
+    RANDOM [U16] LDA,
+    COLOR3 [U16] STA,
+    RTS,
+    
+  BARHERE CONSTANT rndscreen
+
+    SCREENSTART FF AND U8 LDA,
+    PUSERPG0 [U8] STA,
+    SCREENSTART 100 / FF AND U8 LDA,
+    PUSERPG0 1+ [U8] STA,
+
+    00 U8 LDY,
+    NUMPAGESPERSCREEN U8 LDX,
+    BEGIN,
+      BEGIN,
+        RANDOM [U16] LDA,
+        PUSERPG0 [[U8]+Y] STA,
+        INY,
+      EQ UNTIL,
+      PUSERPG0 1+ [U8] INC,
+      DEX,
+    EQ UNTIL,
+    RTS,
+    
+LONGTHEN,
+
+DLSTART FF AND U8 LDA,
+SDLSTL [U16] STA,
+DLSTART 100 / FF AND U8 LDA,
+SDLSTL 1+ [U16] STA,
+
+// Busy Wait Forever
+BEGIN,
+  rndcolors U16 JSR,
+  rndscreen U16 JSR,
+CLC, CS UNTIL,
+
+
+// //////////////////////////////////
+// End of where your program goes. //
+// //////////////////////////////////
+
+
+// This calculates and sets the number of boot sectors automatically
+//   I didn't fully test this calculation...
+OHERE SectorSize ROUNDUP SectorSize /   // calculate number of sectors needed
+oNumberOfBootSectors PCURRENTCOMPILEBUFFER @ O>P C!
+
+
+// This converts the program into a .ATR disk image and saves it to a file
+$" GR7RndScreen.atr" PCURRENTCOMPILEBUFFER @ Buf>ATRFile
+
+
+
+
+

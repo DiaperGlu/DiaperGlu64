@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.12.
+//    This file is part of DiaperGlu v5.13.
 //
-//    DiaperGlu v5.12 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.12 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.12; if not, write to the Free Software
+//    along with DiaperGlu v5.13; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 24, 2023              //
-// version 5.12               //
+// February 2, 2025           //
+// version 5.13               //
 // /////////////////////////////
 
 #if !defined(_INC_diapergluforth)
@@ -336,6 +336,8 @@ enum dg_cpux86regs {
 #define dg_param3reg dg_r8
 #define dg_param4reg dg_r9
 
+#define dg_iretreg dg_rax
+
     DGLU_API extern const UINT64 dg_localsregs[];
     DGLU_API extern const UINT64 dg_paramintregs[];
     DGLU_API extern const UINT64 dg_paramfloatregs[];
@@ -446,6 +448,8 @@ enum dg_cpux86regs {
 
 #define dg_shadowsize (4 * sizeof(UINT64))
 
+#define dg_safereturnalignn (6)
+
     DGLU_API extern UINT64 intparameterslookuptable[4];
     DGLU_API extern UINT64 floatparameterslookuptable[4];
     DGLU_API extern UINT64 intreturnparameterstable[1];
@@ -536,6 +540,8 @@ enum dg_cpux86regs {
 #define dg_param3reg dg_rdx
 #define dg_param4reg dg_rcx
 
+#define dg_iretreg dg_rax
+
 #if !defined(NULL)
 #define NULL (0)
 #endif
@@ -614,6 +620,8 @@ enum dg_cpux86regs {
 
 #define dg_shadowsize (0)
 
+#define dg_safereturnalignn (7)
+
     DGLU_API extern const UINT64 dg_localsregs[];
     DGLU_API extern const UINT64 dg_paramintregs[];
     DGLU_API extern const UINT64 dg_paramfloatregs[];
@@ -661,11 +669,11 @@ enum dg_cpux86regs {
     // presorted wordlist sizes  //
     // ////////////////////////////
 
-#define dg_presortedcorewordlistsize (298)
+#define dg_presortedcorewordlistsize (311)
 #define dg_presortedenvwordlistsize (21)
 // #define dg_presortedstringwordlistsize (0)
 // #define dg_presortederrorwordlistsize (0)
-#define dg_prestoredbufferwordlistsize (671)
+#define dg_prestoredbufferwordlistsize (754)
 // #define dg_presortedoswordlistsize (0)
 #define dg_presortedx86wordlistsize (1310)
 
@@ -683,7 +691,7 @@ enum dg_cpux86regs {
 #define largestsignedint   (0x7FFFFFFFFFFFFFFF)
 
 
-#define maxwordlength      (255)  // dg_forth standard specifies max counted string length is one character cell which is a byte
+#define maxwordlength      (255)  // Forth standard specifies max counted string length is one character cell which is a byte
 #define dg_maxholdbufferlength (200)
 #define dg_maxpadbufferlength (4096) 
 #define dg_addressunitbits    (64)
@@ -726,27 +734,34 @@ enum dg_cpux86regs {
 
 #define jumpbufferlength             (80)
     
-#define colonnonamemarker  (0xFFFEFFFFFFFFFFF9)
-#define colonsysmarker  (0xFFFEFFFFFFFFFFF8)
+#define colonnonamemarker (0xFFFEFFFFFFFFFFF9)
+#define colonsysmarker (0xFFFEFFFFFFFFFFF8)
 #define dg_codesysmarker (0xFFFEFFFFFFFFFFF7)
 #define dg_subparamscommamarker (0xFFFEFFFFFFFFFFF6)
 
 
+#define dg_case_sys         (0xFFFFFFFFFFFFFFFE)
+#define dg_after_end_of     (0xFFFFFFFFFFFFFFFD)
+#define dg_after_of         (0xFFFFFFFFFFFFFFFC)
+#define dg_after_default_of (0xFFFFFFFFFFFFFFFB)
+#define dg_codemes_sys      (0xFFFFFFFFFFFFFFFA)
+#define dg_end_codemes_sys  (0xFFFFFFFFFFFFFFFA)
+#define dg_codemes_case_sys (0xFFFFFFFFFFFFFFF9)
+#define dg_codemes_jump_sys (0xFFFFFFFFFFFFFFF8)
+
+
 #define dg_writebuffersize (0x10000)
-    
-    
-    enum dg_wordlistids
+
+    enum dg_colorstates
     {
-        //DG_CORE_WORDLISTID        = 0,
-        //DG_ENVIRONMENT_WORDLISTID = 1,
-        //DG_BUFFER_WORDLISTID      = 2,
-        //DG_STRING_WORDLISTID      = 3,
-        //DG_OS_WORDLISTID          = 4,
-        //DG_USER_WORDLISTID        = 5,
-        //DG_ERROR_WORDLISTID       = 6,
-//        DG_SYSTEM_WORDLISTID      = 0xFFFFFFF5
-        DG_MAX_WORDLISTID         = 0xFFFFFFFFFFFFFFF4
+        DG_COLORSTATE_INTERPRET     = 0,
+        DG_COLORSTATE_EXECUTE,
+        DG_COLORSTATE_COMPILE,
+        DG_COLORSTATE_POSTPONE,
+        DG_COLORSTATE_COMMENT
     };
+
+#define DG_MAX_WORDLISTID    (0xFFFFFFFFFFFFFFF4)
     
     enum dg_bufferids
     {
@@ -1138,9 +1153,10 @@ enum dg_cpux86regs {
 #define lastnotfoundword             (0x1D8) // this is 256 characters (bytes) long.. needs to be maxwordlength long which is 255.. I added 1
 
 #define dg_quitsavedstate            (0x2D8) // this is 9*4 = 36 bytes long, rounding up to 0x30  ... looks like it is only 0x18...
- 
+#define dg_colorstate                (0x308)
+#define dg_colorvocabid              (0x310)
 // put more variables here and increase initialsizeofvariablebuffer
-#define initialsizeofvariablebuffer  (0x308)
+#define initialsizeofvariablebuffer  (0x318)
 
 #define dg_cparameterregisterslength    (0x4)   // in number of parameters, Windows needs 4
 #define dg_cparameteronstackflag        (0x0100000000000000)
@@ -1190,7 +1206,7 @@ enum dg_cpux86regs {
         UINT64 id;               // 72 Bufferhandle Array Head has id of "dglu".
         UINT64 argc;             // 80 argc passed in to main
         char** argv;             // 88 argv passed in to main
-        UINT64* pfunctbl;        // 96 pointer to diaperglu function table
+        // UINT64 *pfunctbl;        // 96 pointer to diaperglu function table
         // UINT64 diaperflags;      // 104 if 0 the diaper is on (may add more flags later)
         //    Generic bufferhandle has id of "bufr"
     };
@@ -1390,7 +1406,7 @@ enum dg_cpux86regs {
     
     #define DG_NUMBEROFFUNCTIONTABLEIDS (2)
 
-    DGLU_API extern UINT64 dg_functiontable[];
+    DGLU_API extern const UINT64 dg_functiontable[];
  
     DGLU_API extern unsigned char dg_glufunctionnames[];
     DGLU_API extern UINT64 dg_glufunctionnameoffsets[dg_numberofglufunctions];
@@ -1412,6 +1428,7 @@ enum dg_cpux86regs {
 
     // Forth Core Extension Names
     DGLU_API extern const char dg_forthfalsename[];
+    DGLU_API extern const char dg_forthwithinname[];
     
     
     // forth show wordlist names
@@ -1594,7 +1611,7 @@ enum dg_cpux86regs {
     DGLU_API extern const char dg_forthdocompiletypebrackettoordername[];
     DGLU_API extern const char dg_forthdocompiletypebracketwordlistdotname[];
     DGLU_API extern const char dg_forthdocompiletypebracketlibdotname[];
-    DGLU_API extern const char dg_forthdocompiletypecompilepushlocalname[];
+    // DGLU_API extern const char dg_forthdocompiletypecompilepushlocalname[];
     DGLU_API extern const char dg_forthodocompiletypevaluename[];
     DGLU_API extern const char dg_forthodocompiletypetwovaluename[];
     DGLU_API extern const char dg_forthodocompiletypefvaluename[];
@@ -1618,7 +1635,6 @@ enum dg_cpux86regs {
     DGLU_API extern const char dg_forthcompilecallsamebuffername[];
     DGLU_API extern const char dg_forthcompilecallbuffername[];
     DGLU_API extern const char dg_forthcompilesafecallbuffername[];
-    
     
     // forth definition word names
     DGLU_API extern const char dg_forthsafename[];
@@ -1656,7 +1672,8 @@ enum dg_cpux86regs {
     DGLU_API extern const char dg_forthwordlistdotname[];  
     DGLU_API extern const char dg_forthlibdotname[];
     DGLU_API extern const char dg_forthcreatebracketwordlistdotname[];
-    DGLU_API extern const char dg_forthcreatebracketlibdotname[]; 
+    DGLU_API extern const char dg_forthcreatebracketlibdotname[];
+    DGLU_API extern const char dg_forthcodecreatename[]; 
     
     
     // forth miscellaneous word names
@@ -1770,6 +1787,66 @@ enum dg_cpux86regs {
     DGLU_API extern const char dg_forthulessthanequalsname[];
     DGLU_API extern const char dg_forthugreaterthanequalsname[];
 
+    DGLU_API extern const char dg_forthtoxtpcommaname[];
+
+    DGLU_API extern const char dg_forthciname[];
+    DGLU_API extern const char dg_forthcleftbracketname[];
+    DGLU_API extern const char dg_forthcrightbracketname[];
+    DGLU_API extern const char dg_forthcpname[];
+    DGLU_API extern const char dg_forthcleftparenname[];
+    DGLU_API extern const char dg_forthcodemescommaname[];
+    DGLU_API extern const char dg_forthcodemecommaname[];
+    DGLU_API extern const char dg_forthendcodemescommaname[];
+    DGLU_API extern const char dg_forthquerynotequalsname[];
+    DGLU_API extern const char dg_forthqueryulessthanname[];
+    DGLU_API extern const char dg_forthqueryulessthanequalsname[];
+    DGLU_API extern const char dg_forthqueryugreaterthanname[];
+    DGLU_API extern const char dg_forthqueryugreaterthanequalsname[];
+    DGLU_API extern const char dg_forthquerylessthanname[];
+    DGLU_API extern const char dg_forthquerylessthanequalsname[];
+    DGLU_API extern const char dg_forthquerygreaterthanname[];
+    DGLU_API extern const char dg_forthquerygreaterthanequalsname[];
+    DGLU_API extern const char dg_forthbeginsystopcommaname[];
+    DGLU_API extern const char dg_forthnumbercodemesname[];
+    DGLU_API extern const char dg_forthcodemescurrentplusplusname[];
+    DGLU_API extern const char dg_forthquerycodemescurrentname[];
+    DGLU_API extern const char dg_forthcodemeuifsysname[];
+    DGLU_API extern const char dg_forthcodemeubeginsysname[];
+    DGLU_API extern const char dg_forthcodemesdropname[]; 
+    DGLU_API extern const char dg_forthcodemesresolvestartname[]; 
+    DGLU_API extern const char dg_forthcodemesresolveendsname[]; 
+    DGLU_API extern const char dg_forthcodemescasecommaname[]; 
+    DGLU_API extern const char dg_forthcodemesofcommaname[]; 
+    DGLU_API extern const char dg_forthcodemesendcasecommaname[];
+    DGLU_API extern const char dg_forthcodemescasescommaname[]; 
+    DGLU_API extern const char dg_forthcodemesjumpscommaname[];
+    DGLU_API extern const char dg_forthcodemealwaysjumpcommaname[];
+    DGLU_API extern const char dg_forthxcodemevsjumpcommaname[];
+    DGLU_API extern const char dg_forthxcodemenvjumpcommaname[];
+    DGLU_API extern const char dg_forthxcodemeulessthanjumpcommaname[];
+    DGLU_API extern const char dg_forthxcodemeugreaterthanequaljumpcommaname[];
+    DGLU_API extern const char dg_forthxcodemeequaljumpcommaname[];
+    DGLU_API extern const char dg_forthxcodemenotequaljumpcommaname[];
+    DGLU_API extern const char dg_forthxcodemeulessthanequaljumpcommaname[];
+    DGLU_API extern const char dg_forthxcodemeugreaterthanjumpcommaname[];
+    DGLU_API extern const char dg_forthxcodememijumpcommaname[];
+    DGLU_API extern const char dg_forthxcodemepljumpcommaname[];
+    DGLU_API extern const char dg_forthxcodemepsjumpcommaname[];
+    DGLU_API extern const char dg_forthxcodemenpjumpcommaname[];
+    DGLU_API extern const char dg_forthxcodemelessthanjumpcommaname[];
+    DGLU_API extern const char dg_forthxcodemegreaterthanjumpcommaname[];
+    DGLU_API extern const char dg_forthxcodemelessthanequaljumpcommaname[];
+    DGLU_API extern const char dg_forthxcodemegreaterthanequaljumpcommaname[];
+    DGLU_API extern const char dg_forthxcodemecsjumpcommaname[];
+    DGLU_API extern const char dg_forthxcodemencjumpcommaname[];
+    DGLU_API extern const char dg_forthxycodemewithinjumpcommaname[];
+    DGLU_API extern const char dg_forthdefaultjumpcommaname[];
+    DGLU_API extern const char dg_forthdefaultdropjumpcommaname[];
+    DGLU_API extern const char dg_forthcodemesjumptablecommaname[];
+    DGLU_API extern const char dg_forthjumptableujumpcommaname[];
+    DGLU_API extern const char dg_forthcodemesujumpcommaname[];
+    DGLU_API extern const char dg_forthcodemesendjumpscommaname[];
+    
     DGLU_API extern const char dg_forthgetpoststringname[];
     DGLU_API extern const char dg_forthqueryzerostringtostringname[];
 
@@ -3188,6 +3265,14 @@ enum dg_cpux86regs {
 
     DGLU_API UINT64 dg_getulowestbitsmask (UINT64 ucount);
 
+    DGLU_API UINT64 dg_compareforconditionsub (
+        UINT64 usrc, 
+        UINT64 udest);
+
+    DGLU_API UINT64 dg_compareforucondition (
+        UINT64 usrc, 
+        UINT64 udest, 
+        UINT64 flagandmask);
 
 
     // ///////////////////////////////////////
@@ -3428,6 +3513,21 @@ enum dg_cpux86regs {
     DGLU_API UINT64 dg_usenextunusedlocalsfloatreg(Bufferhandle* pBHarrayhead);
     
     DGLU_API void dg_bumpdisplacementsizeifneeded (struct dg_Sibformatter* psf);
+
+    DGLU_API extern const char* dg_compiletorname;
+    DGLU_API void dg_compileotor(
+        Bufferhandle* pBHarrayhead,
+        UINT64 o,
+        UINT64 r);
+
+    DGLU_API extern const char* dg_compilemovbracketrplussrplusd32torname;;
+    DGLU_API void dg_compilemovbracketrplussrplusd32tor(
+        Bufferhandle* pBHarrayhead,
+        UINT64 basereg,
+        UINT64 scale, // 0=1* 1=2* 2=4* 3=8*
+        UINT64 indexreg,
+        INT64 displacement,
+        UINT64 destreg);
     
     DGLU_API extern const char* dg_forthraxjumpcommaname;
     DGLU_API void dg_compilejumptorax (Bufferhandle* pBHarrayhead);
@@ -3691,6 +3791,9 @@ enum dg_cpux86regs {
     DGLU_API void dg_compilecalloffsetinsamebuffer (
         Bufferhandle* pBHarrayhead,
         INT64 targetoffset);
+
+    DGLU_API void dg_compilecallrax (
+        Bufferhandle* pBHarrayhead);
     
     DGLU_API void dg_compilecalladdress (
         Bufferhandle* pBHarrayhead,
@@ -3716,7 +3819,7 @@ enum dg_cpux86regs {
         Bufferhandle* pBHarrayhead,
         UINT64 reg);
         
-    DGLU_API void dg_compileaddnlocalstocallsubsframe (
+    DGLU_API UINT64 dg_compileaddnlocalstocallsubsframe (
         Bufferhandle* pBHarrayhead,
         UINT64 n);
         
@@ -3786,11 +3889,16 @@ enum dg_cpux86regs {
 
     DGLU_API extern const char dg_forthshadowcommaname[];
     DGLU_API void dg_forthshadowcomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthsafecallgpboaligncomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthsafecallgpbounaligncomma (Bufferhandle* pBHarrayhead);
     
     DGLU_API extern const char* dg_compilecallcorename;
     DGLU_API void dg_compilecallcore (
         Bufferhandle* pBHarrayhead,
         UINT64 addr);
+
+    DGLU_API extern const char* dg_compiledgframecallretregname;
+    DGLU_API void dg_compiledgframecallretreg (Bufferhandle* pBHarrayhead);
 
     DGLU_API extern const char* dg_compilecallcoreoneuparamname;
     DGLU_API void dg_compilecallcoreoneuparam (
@@ -3804,6 +3912,17 @@ enum dg_cpux86regs {
         UINT64 addr,
         UINT64 uparam1,
         UINT64 uparam2);
+
+    DGLU_API extern const char* dg_compiledgframecalloffsetinsamebuffername;;
+    DGLU_API void dg_compiledgframecalloffsetinsamebuffer (
+        Bufferhandle* pBHarrayhead, 
+        UINT64 offset);
+
+    DGLU_API extern const char* dg_compiledgframecallbuffername;
+    DGLU_API void dg_compiledgframecallbuffer (
+        Bufferhandle* pBHarrayhead, 
+        UINT64 offset,
+        UINT64 bufferid);
 
 /*
     DGLU_API void dg_compilecallcorepreserveregs (
@@ -3841,8 +3960,59 @@ enum dg_cpux86regs {
         Bufferhandle* pBHarrayhead,
         UINT64 afterbranchoffset,
         UINT64 targetoffset);
-    
+
+    DGLU_API extern const char* dg_compilecompareir64ir64name;
+
+    DGLU_API void dg_compilecompareir64ir64(
+        Bufferhandle* pBHarrayhead,
+        UINT64 srcreg,
+        UINT64 destreg);
+
+    DGLU_API extern const char* dg_compilecomparenbracketrbpplusnname;
+
+    DGLU_API void dg_compilecomparenbracketrbpplusn (
+        Bufferhandle* pBHarrayhead,
+        UINT64 nsrc,
+        INT64 ndisplacement);
+
+    DGLU_API extern const char* dg_compilecomparenregname;
+
+    DGLU_API void dg_compilecomparenreg (
+        Bufferhandle* pBHarrayhead,
+        UINT64 srcn,
+        UINT64 destreg);
+
+    DGLU_API extern const char* dg_compilesubbracketrbpplusnregname;
+
+    DGLU_API void dg_compilesubbracketrbpplusnreg (
+        Bufferhandle* pBHarrayhead,
+        UINT64 ndisplacement,
+        UINT64 destreg);
+
+    DGLU_API extern const char* dg_compilecompareiretu64name;
+
+    DGLU_API void dg_compilecompareiretu64(
+        Bufferhandle* pBHarrayhead,
+        UINT64 n);
+
+    DGLU_API extern const char* dg_compilecompareiretu64branchname;
+
+    DGLU_API void dg_compilecompareiretu64branch (
+        Bufferhandle* pBHarrayhead,
+        UINT64 u,
+        UINT64 conditioncode,
+        UINT64 beginoffset);
+
+    DGLU_API extern const char* dg_compilequeryuequalsbranchname;
+
+    DGLU_API void dg_compilequeryuequalsbranch (
+        Bufferhandle* pBHarrayhead,
+        UINT64 u,
+        UINT64 conditioncode,
+        UINT64 beginoffset);
+
     DGLU_API extern const char* dg_compilecomparename;
+
     DGLU_API void dg_compilecompare(
         Bufferhandle* pBHarrayhead,
         UINT64 n);
@@ -3869,7 +4039,8 @@ enum dg_cpux86regs {
     DGLU_API extern const UINT64 dg_regnottrashedduringaligment;
     
     DGLU_API void dg_compilepushdatastack (Bufferhandle* pBHarrayhead);
-    
+
+    DGLU_API extern const char* dg_compilepushntodatastackname;
     DGLU_API void dg_compilepushntodatastack (
         Bufferhandle* pBHarrayhead,
         UINT64 n);
@@ -3961,7 +4132,42 @@ enum dg_cpux86regs {
     DGLU_API FLOAT64 dg_forthfsfrom (Bufferhandle* pBHarrayhead);
     
     DGLU_API FLOAT32 dg_forthf32from (Bufferhandle* pBHarrayhead);
+
+    DGLU_API UINT64 dg_compilesafereturn(Bufferhandle* pBHarrayhead);
+
+
+    DGLU_API extern const char* dg_compilesafecallbuffername;
+
+    DGLU_API void dg_compilesafecallbuffer (
+        Bufferhandle* pBHarrayhead,
+        UINT64 offset,
+        UINT64 bufferid);
+
+
+    DGLU_API extern const char dg_forthcompilesafecallbuffername[];
+
+    DGLU_API void dg_forthcompilesafecallbuffer (Bufferhandle* pBHarrayhead);
+
+
+    DGLU_API extern const char* dg_compilesafecallcorename;
+
+    DGLU_API void dg_compilesafecallcore (
+        Bufferhandle* pBHarrayhead,
+        UINT64 addr);
+
     
+    DGLU_API extern const char* dg_compilesafecallsamebuffername;
+
+    DGLU_API void dg_compilesafecallsamebuffer (
+        Bufferhandle* pBHarrayhead,
+        UINT64 targetoffset);
+
+
+    DGLU_API void dg_compilesafecallforth (
+        Bufferhandle* pBHarrayhead,
+        UINT64 offset,
+        UINT64 bufferid);
+
     
     //////////////////////
     // C Error Routines //
@@ -4086,7 +4292,7 @@ enum dg_cpux86regs {
     DGLU_API void dg_clearbuffer (
         Bufferhandle* pBHarrayhead,
         UINT64 bufferid);
-    
+   
     DGLU_API extern const char* dg_getpbuffersegmentname;
     DGLU_API unsigned char* dg_getpbuffersegment (
         Bufferhandle* pBHarrayhead,
@@ -5234,6 +5440,14 @@ enum dg_cpux86regs {
         Bufferhandle* pBHarrayhead,
         unsigned char* pname,
         UINT64 namelength);
+
+
+    DGLU_API extern const char* dg_createcodepointerdefname;
+
+    DGLU_API UINT64 dg_createcodepointerdef (
+        Bufferhandle* pBHarrayhead,
+        unsigned char* pname,
+        UINT64 namelength);
     
     
     DGLU_API extern const char* dg_createdconstantdefname;
@@ -5287,12 +5501,77 @@ enum dg_cpux86regs {
         UINT64 currentdefinition);
       
       
-    DGLU_API extern const char* dg_executedefinitionname;       
+    DGLU_API extern const char* dg_interpretdefinitionname;       
       
+    DGLU_API void dg_interpretdefinition (
+        Bufferhandle* pBHarrayhead,
+        UINT64 definitionid);
+
+
+    DGLU_API extern const char* dg_dodefinitionstatename;
+
+    DGLU_API void dg_dodefinitionstate (
+        Bufferhandle* pBHarrayhead,
+        UINT64 definitionid,
+        const char* state);
+
+
+    DGLU_API extern const char* dg_parsefinddodefinitionstatename;
+
+    DGLU_API void dg_parsefinddodefinitionstate (
+        Bufferhandle* pBHarrayhead,
+        UINT64 wordlistid,
+        const char* state);
+
+
+    // DGLU_API extern const char* dg_compiledefinitionname;
+
+    DGLU_API void dg_compiledefinition (
+        Bufferhandle* pBHarrayhead,
+        UINT64 definitionid);
+
+
+    DGLU_API extern const char* dg_safecompiledefinitionname;
+
+    DGLU_API void dg_safecompiledefinition (
+        Bufferhandle* pBHarrayhead,
+        UINT64 definitionid);
+
+
+    // DGLU_API extern const char* dg_executedefinitionname;
+
     DGLU_API void dg_executedefinition (
         Bufferhandle* pBHarrayhead,
         UINT64 definitionid);
-      
+
+
+    DGLU_API void dg_postponedefinition (
+        Bufferhandle* pBHarrayhead,
+        UINT64 definitionid);
+
+    // DGLU_API extern const char* dg_docolorstatedefinitionname;
+
+    DGLU_API void dg_docolorstatedefinition (
+        Bufferhandle* pBHarrayhead,
+        UINT64 definitionid,
+        UINT64 colorstate);
+
+
+    DGLU_API extern const char* dg_docolorstatenname;
+
+    DGLU_API void dg_docolorstaten (
+        Bufferhandle* pBHarrayhead,
+        UINT64 n,
+        UINT64 colorstate);
+
+
+    DGLU_API extern const char* dg_docolorstatef64name;
+
+    DGLU_API void dg_docolorstatef64 (
+        Bufferhandle* pBHarrayhead,
+        FLOAT64 f64,
+        UINT64 colorstate);
+
       
     DGLU_API extern const char* dg_finddefinwordlistname; 
       
@@ -6777,23 +7056,66 @@ enum dg_cpux86regs {
     DGLU_API extern const char dg_forthagainname[];
 
     DGLU_API void dg_forthagain (Bufferhandle* pBHarrayhead);
+
+
+    DGLU_API extern const char dg_forthaheadname[];
+
+    DGLU_API void dg_forthahead (Bufferhandle* pBHarrayhead);
     
     
     DGLU_API extern const char dg_forthnotequalsname[];
     
     DGLU_API void dg_forthnotequals (Bufferhandle* pBHarrayhead);
-    //             ( n1 n2 -- flag )
+
+    
+    // DGLU_API extern const char dg_forthcasesysname[];
+    // DGLU_API extern const char dg_forthafterendofname[];
+    // DGLU_API extern const char dg_forthafterofname[];
+    // DGLU_API extern const char dg_forthafterdefaultofname[];
+    DGLU_API extern const char dg_forthcasename[];
+    
+    DGLU_API void dg_forthcase (Bufferhandle* pBHarrayhead);
+
+
+    DGLU_API extern const char dg_forthcompilecommaname[];
+    
+    DGLU_API void dg_forthcompilecomma (Bufferhandle* pBHarrayhead);
+
+
+    DGLU_API extern const char dg_forthsafecompilecommaname[];
+    
+    DGLU_API void dg_forthsafecompilecomma (Bufferhandle* pBHarrayhead);
+
+
+    DGLU_API extern const char dg_forthdefaultofname[];
+    
+    DGLU_API void dg_forthdefaultof (Bufferhandle* pBHarrayhead);
     
     
     DGLU_API extern const char dg_fortherasename[];
     
     DGLU_API void dg_fortherase (Bufferhandle* pBHarrayhead);
+
+
+    DGLU_API extern const char dg_forthendcasename[];
+    
+    DGLU_API void dg_forthendcase (Bufferhandle* pBHarrayhead);
+
+    
+    DGLU_API extern const char dg_forthendofname[];
+    
+    DGLU_API void dg_forthendof (Bufferhandle* pBHarrayhead);
     
     
     DGLU_API void dg_forthhex (Bufferhandle* pBHarrayhead);
     
     
     DGLU_API void dg_forthnip (Bufferhandle* pBHarrayhead);
+
+
+    DGLU_API extern const char dg_forthofname[];
+    
+    DGLU_API void dg_forthof (Bufferhandle* pBHarrayhead);
     
     
     DGLU_API void dg_forthpad (Bufferhandle* pBHarrayhead);
@@ -6803,15 +7125,15 @@ enum dg_cpux86regs {
     
     
     DGLU_API void dg_forthugreaterthan (Bufferhandle* pBHarrayhead);     
-    //             ( u1 u2 -- flag )
+
     
+    DGLU_API void dg_forthwithin (Bufferhandle* pBHarrayhead);
+
 
     DGLU_API void dg_forthtib (Bufferhandle* pBHarrayhead);
-    //             ( -- a-addr )
     
     
     DGLU_API void dg_forthtuck (Bufferhandle* pBHarrayhead);
-    //             ( u1 u2 -- u2 u1 u2 )
     
     
     // //////////////////////
@@ -7191,6 +7513,9 @@ enum dg_cpux86regs {
 
     
     DGLU_API void dg_forthcreatebracketlibdot(Bufferhandle* pBHarrayhead);
+
+
+    DGLU_API void dg_forthcodecreate (Bufferhandle* pBHarrayhead);
     
          
     // /////////////////////////////////
@@ -7644,7 +7969,7 @@ enum dg_cpux86regs {
         Bufferhandle* pBHarrayhead,
         UINT64 bufferid,
         UINT64 offset);
-    
+   
     
     // DGLU_API void jmpbuffer (DGLU_API void);
     //             ( offset bufferid pBHarrayhead -ret- ) 
@@ -7653,21 +7978,21 @@ enum dg_cpux86regs {
     
     DGLU_API void dg_initjumpbuffer (Bufferhandle* pBHarrayhead);
     
+
     DGLU_API extern const char* dg_stateexecute;  // setting the state variable to this puts script interpreter into execute mode
     
     DGLU_API extern const char dg_statecompile[];  // setting the state variable to this puts script interpreter into compile mode
-    
+
+    DGLU_API extern const char dg_statecolorcompile[];  
+
     
     DGLU_API const char* dg_initbuffers(Bufferhandle* pBHarrayhead);
-    
-    
+       
     DGLU_API void dg_initvariables (Bufferhandle* pBHarrayhead);
-    
     
     DGLU_API UINT64 dg_isnegative (UINT64 x);
     
-    
-    
+       
     // ////////////////////////////
     // Forth Compiling Routines  //
     // ////////////////////////////
@@ -7724,9 +8049,6 @@ enum dg_cpux86regs {
     //                     ( bufferoffset bufferid -- )
     
     
-    DGLU_API void dg_forthcompilesafecallbuffer (Bufferhandle* pBHarrayhead);
-    //                     ( bufferoffset bufferid -- )
-    
     
     // /////////////////////////
     // Compile Type Routines  //
@@ -7776,7 +8098,7 @@ enum dg_cpux86regs {
     
     DGLU_API void dg_forthdocompiletypebracketlibdot(Bufferhandle* pBHarrayhead);
 
-    DGLU_API void dg_forthdocompiletypecompilepushlocal(Bufferhandle* pBHarrayhead);
+    // DGLU_API void dg_forthdocompiletypecompilepushlocal(Bufferhandle* pBHarrayhead);
 
     DGLU_API void dg_forthdocompiletypevalue(Bufferhandle* pBHarrayhead);
 
@@ -7794,19 +8116,22 @@ enum dg_cpux86regs {
     DGLU_API void dg_docompiletypeostore (
         Bufferhandle* pBHarrayhead,
         UINT64 bufferid,
-        UINT64 offset);
+        UINT64 offset,
+        const char* state);
 
     DGLU_API extern const char* dg_docompiletypeof64storename;
     DGLU_API void dg_docompiletypeof64store (
         Bufferhandle* pBHarrayhead,
         UINT64 bufferid,
-        UINT64 offset);
+        UINT64 offset,
+        const char* state);
 
     DGLU_API extern const char* dg_docompiletypeotwostorename;
     DGLU_API void dg_docompiletypeotwostore (
         Bufferhandle* pBHarrayhead,
         UINT64 bufferid,
-        UINT64 offset);
+        UINT64 offset,
+        const char* state);
     
     
     // ////////////////////////////
@@ -8222,6 +8547,64 @@ enum dg_cpux86regs {
     DGLU_API void dg_forthulessthanequals (Bufferhandle* pBHarrayhead);
     DGLU_API void dg_forthugreaterthanequals (Bufferhandle* pBHarrayhead);
 
+    DGLU_API void dg_forthtoxtpcomma (Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthci (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthcleftbracket (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthcrightbracket (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthcp (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthcleftparen (Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthcodemescomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthcodemecomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthendcodemescomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthquerynotequals (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthqueryulessthan (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthqueryulessthanequals (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthqueryugreaterthan (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthqueryugreaterthanequals (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthquerylessthan (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthquerylessthanequals (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthquerygreaterthan (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthquerygreaterthanequals (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthbeginsystopcomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthnumbercodemes (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthcodemescurrentplusplus (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthquerycodemescurrent (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthcodemeuifsys (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthcodemeubeginsys (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthcodemesdrop (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthcodemesresolvestart (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthcodemesresolveends (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthcodemescasecomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthcodemesofcomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthcodemesendcasecomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthcodemescasescomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthcodemesjumpscomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthcodemealwaysjumpcomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthxcodemevsjumpcomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthxcodemenvjumpcomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthxcodemeulessthanjumpcomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthxcodemeugreaterthanequaljumpcomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthxcodemeequaljumpcomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthxcodemenotequaljumpcomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthxcodemeulessthanequaljumpcomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthxcodemeugreaterthanjumpcomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthxcodememijumpcomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthxcodemepljumpcomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthxcodemepsjumpcomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthxcodemenpjumpcomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthxcodemelessthanjumpcomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthxcodemegreaterthanjumpcomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthxcodemelessthanequaljumpcomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthxcodemegreaterthanequaljumpcomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthxycodemewithinjumpcomma(Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthdefaultjumpcomma(Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthdefaultdropjumpcomma(Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthcodemesjumptablecomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthjumptableujumpcomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthcodemesujumpcomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthcodemesendjumpscomma (Bufferhandle* pBHarrayhead);
     
     DGLU_API void dg_forthqueryposttoeh (Bufferhandle* pBHarrayhead);
     

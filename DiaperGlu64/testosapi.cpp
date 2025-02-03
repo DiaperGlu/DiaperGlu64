@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.12.
+//    This file is part of DiaperGlu v5.13.
 //
-//    DiaperGlu v5.12 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.12 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.12; if not, write to the Free Software
+//    along with DiaperGlu v5.13; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 24, 2023              //
-// version 5.12               //
+// February 2, 2025           //
+// version 5.13               //
 // /////////////////////////////
 
 #include <stdio.h>
@@ -36,6 +36,55 @@
 #endif
 
 unsigned char megabuf[0x10000]; // a test does not need to be re-entrant
+
+void testdg_compareforconditionsub ()
+{
+    UINT64 x;
+    UINT32 xlo, xhi;
+
+    printf("testing dg_compareforconditionsub\n");
+
+    x = dg_compareforconditionsub(0, 0);
+
+    if ((x & 0x40) != 0x40)
+    {
+        printf(" - FAIL! dg_compareforconditionsub(0, 0) & 0x40 did not give 0x40, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+
+    x = dg_compareforconditionsub(0, 1);
+
+    if ((x & 0x40) != 0)
+    {
+        printf(" - FAIL! dg_compareforconditionsub(0, 1,) & 0x40 did not give 0, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_compareforconditionsub(0x10, 0x11);
+
+    if ((x & 0x1) != 0x0)
+    {
+        printf(" - FAIL! dg_compareforconditionsub(0x10, 0x11) & 0x1 did not give 0x0, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+
+    x = dg_compareforconditionsub(0x11, 0x10);
+
+    if ((x & 0x1) != 0x1)
+    {
+        printf(" - FAIL! dg_compareforconditionsub(0x11, 0x10) & 0x1 did not give 0x1, got ");
+        xlo = x & 0xffffffff;
+        xhi = (x >> 32) & 0xffffffff;
+        printf("%08x%08x\n", xhi, xlo);
+    }
+}
 
 void testdg_getulowestbitsmask ()
 {
@@ -14616,6 +14665,8 @@ testdg_scanforuthsetbit();
 testdg_getulowestsetbits();
 testdg_getulowestbits();
 testdg_getulowestbitsmask();
+
+testdg_compareforconditionsub();
 
 
 

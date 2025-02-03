@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.12.
+//    This file is part of DiaperGlu v5.13.
 //
-//    DiaperGlu v5.12 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.12 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.12; if not, write to the Free Software
+//    along with DiaperGlu v5.13; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 24, 2023              //
-// version 5.12               //
+// February 2, 2025           //
+// version 5.13               //
 // /////////////////////////////
 
 
@@ -644,9 +644,10 @@ void dg_forthreadwaitforntobuffer(Bufferhandle* pBHarrayhead)
 }
 
 
-////////////////////////////////////////////////////
-// dg_forthcompilesafecallbuffer is in cpux86.cpp //
-////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+// dg_forthcompilesafecallbuffer is in each processor specific file //
+//////////////////////////////////////////////////////////////////////
+
 
 
 void dg_forthcscan (Bufferhandle* pBHarrayhead)
@@ -770,15 +771,22 @@ void dg_forthscan (Bufferhandle* pBHarrayhead)
 void dg_forthdoprompt (Bufferhandle* pBHarrayhead)
 {
     unsigned char* pok = (unsigned char*)"\nOK>"; 
+    unsigned char* pcolorok = (unsigned char*)"\nCOLOR-OK>"; 
 
     unsigned char* perrorsok = (unsigned char*)"items on error stack, error(s) with trace.\n use SHOW-ERRORS or .ES to see\n use EMPTY-ERRORS or EES to clear\n use .ERRORLINE or .EL to see the line that caused the error\n\nOK>"; 
 
     const char* pstate;
-    
+    UINT64 colorstate;
 
     if (dg_geterrorcount(pBHarrayhead) != 0)
     {
         // got an error - force interpret state and display error prompt
+        dg_putbufferuint64(
+            pBHarrayhead,
+            DG_DATASPACE_BUFFERID,
+            dg_colorstate,
+            DG_COLORSTATE_INTERPRET);
+
         dg_putbufferuint64(
             pBHarrayhead,
             DG_DATASPACE_BUFFERID,
@@ -812,12 +820,31 @@ void dg_forthdoprompt (Bufferhandle* pBHarrayhead)
             return;
         }
 
+        colorstate = dg_getbufferuint64(
+            pBHarrayhead,
+            DG_DATASPACE_BUFFERID,
+            dg_colorstate);
+    
+        if (dg_geterrorcount(pBHarrayhead) != 0)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthdopromptname);
+            return;
+        }
+
         // if in interpret state, need to display OK>
-        if (pstate == dg_stateexecute)
+        if ( (colorstate == DG_COLORSTATE_INTERPRET) && (pstate == dg_stateexecute) )
         {
             dg_printzerostring(
                 pBHarrayhead,
                 pok);
+        }
+
+        // if in color execute state, need to display COLOR-OK>
+        if (colorstate == DG_COLORSTATE_EXECUTE)
+        {
+            dg_printzerostring(
+                pBHarrayhead,
+                pcolorok);
         }
     }
 }
@@ -6240,6 +6267,2979 @@ void dg_forthgetpoststring (Bufferhandle* pBHarrayhead)
 }
 
 
+void dg_forthtoxtpcomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_compilecallcore (
+        pBHarrayhead,
+        (UINT64)&dg_popdatastack);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthtoxtpcommaname);
+        return;
+    }
+
+    dg_compilejumptorax (pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthtoxtpcommaname);
+        return;
+    }
+}
+
+
+void dg_forthci (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_putbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_colorstate,
+        DG_COLORSTATE_INTERPRET);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthciname);
+        return;
+    }
+}
+
+
+void dg_forthcleftbracket (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_putbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_colorstate,
+        DG_COLORSTATE_EXECUTE);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthcleftbracketname);
+        return;
+    }
+}
+
+
+void dg_forthcrightbracket (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_putbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_colorstate,
+        DG_COLORSTATE_COMPILE);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthcrightbracketname);
+        return;
+    }
+}
+
+
+void dg_forthcp (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_putbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_colorstate,
+        DG_COLORSTATE_POSTPONE);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthcpname);
+        return;
+    }
+}
+
+
+void dg_forthcleftparen (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_putbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_colorstate,
+        DG_COLORSTATE_COMMENT);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthcleftparenname);
+        return;
+    }
+}
+
+
+void dg_forthcodemescomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64 afterbranchoffset;
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    afterbranchoffset = dg_compilebranch (
+        pBHarrayhead,
+        DG_BRANCHTYPE_ALWAYS);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthcodemescommaname);
+        return;
+    }
+
+    dg_pushdatastack(
+        pBHarrayhead,
+        afterbranchoffset);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthcodemescommaname);
+        return;
+    }
+
+    dg_pushdatastack(
+        pBHarrayhead,
+        1);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthcodemescommaname);
+        return;
+    }
+
+    dg_pushdatastack(
+        pBHarrayhead,
+        dg_codemes_sys);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthcodemescommaname);
+        return;
+    }
+
+}
+
+
+void dg_forthcodemecomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64 blockcount;
+    UINT64 blocksysmarker;
+    UINT64 afterbranchoffset;
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    blocksysmarker = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthcodemecommaname);
+        return;
+    }
+
+    if (blocksysmarker != dg_codemes_sys)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"CODEME-SYS missing\n");
+        dg_pusherror(pBHarrayhead, dg_forthcodemecommaname);
+        return;
+    }
+
+    afterbranchoffset = dg_compilebranch (
+        pBHarrayhead,
+        DG_BRANCHTYPE_ALWAYS);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthcodemecommaname);
+        return;
+    }
+
+    blockcount = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthcodemecommaname);
+        return;
+    }
+
+    dg_pushdatastack(
+        pBHarrayhead,
+        afterbranchoffset);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthcodemecommaname);
+        return;
+    }
+
+    dg_pushdatastack(
+        pBHarrayhead,
+        blockcount + 1); // gonna assume it won't overflow
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthcodemecommaname);
+        return;
+    }
+
+    dg_pushdatastack(
+        pBHarrayhead,
+        dg_codemes_sys);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthcodemecommaname);
+        return;
+    }
+
+}
+
+
+void dg_forthendcodemescomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64 blockcount;
+    UINT64 blocksysmarker;
+    UINT64 afterbranchoffset;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    blocksysmarker = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthendcodemescommaname);
+        return;
+    }
+
+    if (blocksysmarker != dg_codemes_sys)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"CODEMES-SYS missing\n");
+        dg_pusherror(pBHarrayhead, dg_forthendcodemescommaname);
+        return;
+    }
+
+    afterbranchoffset = dg_compilebranch (
+        pBHarrayhead,
+        DG_BRANCHTYPE_ALWAYS);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthendcodemescommaname);
+        return;
+    }
+
+    blockcount = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthendcodemescommaname);
+        return;
+    }
+
+    dg_pushdatastack(
+        pBHarrayhead,
+        afterbranchoffset);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthendcodemescommaname);
+        return;
+    }
+
+    dg_pushdatastack(
+        pBHarrayhead,
+        blockcount); // gonna assume it won't overflow
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthendcodemescommaname);
+        return;
+    }
+
+    dg_pushdatastack(
+        pBHarrayhead,
+        0); 
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthendcodemescommaname);
+        return;
+    }
+
+    dg_pushdatastack(
+        pBHarrayhead,
+        dg_end_codemes_sys);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthendcodemescommaname);
+        return;
+    }
+}
+
+
+void dg_forthquerynotequals (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    UINT64* pints;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthquerynotequalsname);
+        return;
+    }
+
+    if (*pbuflength < (2*sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthquerynotequalsname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+
+    pints = (UINT64*)(pdatastack + *pbuflength - (2*sizeof(UINT64)));
+
+    if (pints[0] != pints[1])
+    {
+        pints[1] = FORTH_TRUE;
+    }
+    else
+    {
+        pints[0] = FORTH_FALSE;
+        *pbuflength = *pbuflength - sizeof(UINT64);
+    }
+}
+
+
+void dg_forthqueryugreaterthan (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    UINT64* pints;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthqueryugreaterthanname);
+        return;
+    }
+
+    if (*pbuflength < (2*sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthqueryugreaterthanname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+
+    pints = (UINT64*)(pdatastack + *pbuflength - (2*sizeof(UINT64)));
+
+    if (pints[0] > pints[1])
+    {
+        pints[1] = FORTH_TRUE;
+    }
+    else
+    {
+        pints[0] = FORTH_FALSE;
+        *pbuflength = *pbuflength - sizeof(UINT64);
+    }
+}
+
+
+void dg_forthquerygreaterthan (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    INT64* pints;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthquerygreaterthanname);
+        return;
+    }
+
+    if (*pbuflength < (2*sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthquerygreaterthanname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+
+    pints = (INT64*)(pdatastack + *pbuflength - (2*sizeof(INT64)));
+
+    if (pints[0] > pints[1])
+    {
+        pints[1] = FORTH_TRUE;
+    }
+    else
+    {
+        pints[0] = FORTH_FALSE;
+        *pbuflength = *pbuflength - sizeof(INT64);
+    }
+}
+
+
+void dg_forthqueryugreaterthanequals (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    UINT64* pints;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthqueryugreaterthanequalsname);
+        return;
+    }
+
+    if (*pbuflength < (2*sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthqueryugreaterthanequalsname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+
+    pints = (UINT64*)(pdatastack + *pbuflength - (2*sizeof(UINT64)));
+
+    if (pints[0] >= pints[1])
+    {
+        pints[1] = FORTH_TRUE;
+    }
+    else
+    {
+        pints[0] = FORTH_FALSE;
+        *pbuflength = *pbuflength - sizeof(UINT64);
+    }
+}
+
+
+void dg_forthquerygreaterthanequals (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    INT64* pints;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthquerygreaterthanequalsname);
+        return;
+    }
+
+    if (*pbuflength < (2*sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthquerygreaterthanequalsname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+
+    pints = (INT64*)(pdatastack + *pbuflength - (2*sizeof(INT64)));
+
+    if (pints[0] >= pints[1])
+    {
+        pints[1] = FORTH_TRUE;
+    }
+    else
+    {
+        pints[0] = FORTH_FALSE;
+        *pbuflength = *pbuflength - sizeof(UINT64);
+    }
+}
+
+
+void dg_forthqueryulessthan (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    UINT64* pints;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthqueryulessthanname);
+        return;
+    }
+
+    if (*pbuflength < (2*sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthqueryulessthanname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+
+    pints = (UINT64*)(pdatastack + *pbuflength - (2*sizeof(UINT64)));
+
+    if (pints[0] < pints[1])
+    {
+        pints[1] = FORTH_TRUE;
+    }
+    else
+    {
+        pints[0] = FORTH_FALSE;
+        *pbuflength = *pbuflength - sizeof(UINT64);
+    }
+}
+
+
+void dg_forthquerylessthan (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    INT64* pints;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthquerylessthanname);
+        return;
+    }
+
+    if (*pbuflength < (2*sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthquerylessthanname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+
+    pints = (INT64*)(pdatastack + *pbuflength - (2*sizeof(INT64)));
+
+    if (pints[0] < pints[1])
+    {
+        pints[1] = FORTH_TRUE;
+    }
+    else
+    {
+        pints[0] = FORTH_FALSE;
+        *pbuflength = *pbuflength - sizeof(UINT64);
+    }
+}
+
+
+void dg_forthqueryulessthanequals (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    UINT64* pints;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthqueryulessthanequalsname);
+        return;
+    }
+
+    if (*pbuflength < (2*sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthqueryulessthanequalsname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+
+    pints = (UINT64*)(pdatastack + *pbuflength - (2*sizeof(UINT64)));
+
+    if (pints[0] <= pints[1])
+    {
+        pints[1] = FORTH_TRUE;
+    }
+    else
+    {
+        pints[0] = FORTH_FALSE;
+        *pbuflength = *pbuflength - sizeof(UINT64);
+    }
+}
+
+
+void dg_forthquerylessthanequals (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    INT64* pints;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthqueryulessthanequalsname);
+        return;
+    }
+
+    if (*pbuflength < (2*sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthqueryulessthanequalsname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+
+    pints = (INT64*)(pdatastack + *pbuflength - (2*sizeof(INT64)));
+
+    if (pints[0] <= pints[1])
+    {
+        pints[1] = FORTH_TRUE;
+    }
+    else
+    {
+        pints[0] = FORTH_FALSE;
+        *pbuflength = *pbuflength - sizeof(UINT64);
+    }
+}
+
+
+void dg_forthbeginsystopcomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64 ccbufid;
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    ccbufid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthbeginsystopcommaname);
+        return;
+    }
+
+    dg_compilepushntodatastack(
+        pBHarrayhead,
+        ccbufid);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthbeginsystopcommaname);
+        return;
+    }
+
+    dg_compilecallcore (
+        pBHarrayhead,
+        (UINT64)&dg_forthgetpbufferoffset);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthbeginsystopcommaname);
+        return;
+    }
+}
+
+
+void dg_forthnumbercodemes (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    UINT64* pints;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthnumbercodemesname);
+        return;
+    }
+
+    if (*pbuflength < (3*sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthnumbercodemesname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+
+    pints = (UINT64*)(pdatastack + *pbuflength - (3*sizeof(UINT64)));
+
+    dg_pushdatastack(
+        pBHarrayhead,
+        pints[0]);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthnumbercodemesname);
+        return;
+    }
+}
+
+
+void dg_forthcodemescurrentplusplus (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    UINT64* pints;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthcodemescurrentplusplusname);
+        return;
+    }
+
+    if (*pbuflength < (2*sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthcodemescurrentplusplusname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+
+    pints = (UINT64*)(pdatastack + *pbuflength - (2*sizeof(UINT64)));
+
+    (pints[0])++;
+}
+
+
+void dg_forthquerycodemescurrent (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    UINT64* pints;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthquerycodemescurrentname);
+        return;
+    }
+
+    if (*pbuflength < (3*sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthquerycodemescurrentname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+
+    pints = (UINT64*)(pdatastack + *pbuflength - (3*sizeof(UINT64)));
+
+    if (pints[2] >= pints[1])
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"Current block is not in blocks table. (Probably too many CODEMES-OF,)");
+        dg_pusherror(pBHarrayhead, dg_forthquerycodemescurrentname);
+        return;
+    }
+}
+
+
+void dg_forthcodemeuifsys (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    UINT64* pints;
+    UINT64 numberofcodemes;
+    UINT64 codemetopick;
+    UINT64 x;
+    UINT64 depth;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthcodemeuifsysname);
+        return;
+    }
+
+    if (*pbuflength < (4*sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthcodemeuifsysname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+
+    pints = (UINT64*)(pdatastack + *pbuflength - (4*sizeof(UINT64)));
+
+    numberofcodemes = pints[0];
+    codemetopick = pints[3];
+
+    if ( (codemetopick >= numberofcodemes) && (codemetopick != (UINT64)-1) )
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"- codeme index too high");
+        dg_pusherror(pBHarrayhead, dg_forthcodemeuifsysname);
+        return;
+    }
+
+    depth = (*pbuflength)/sizeof(UINT64);
+    
+    pints[3] = ((UINT64*)pdatastack)[(depth + codemetopick) - (numberofcodemes+4)];   
+}
+
+
+void dg_forthcodemeubeginsys (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    UINT64* pints;
+    UINT64 numberofcodemes;
+    UINT64 codemetopick;
+    UINT64 x;
+    UINT64 depth;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthcodemeubeginsysname);
+        return;
+    }
+
+    if (*pbuflength < (4*sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthcodemeubeginsysname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+
+    pints = (UINT64*)(pdatastack + *pbuflength - (4*sizeof(UINT64)));
+
+    numberofcodemes = pints[0];
+    codemetopick = pints[3];
+
+    if (codemetopick >= numberofcodemes)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"- codeme index too high");
+        dg_pusherror(pBHarrayhead, dg_forthcodemeubeginsysname);
+        return;
+    }
+
+    depth = (*pbuflength)/sizeof(UINT64);
+    
+    pints[3] = ((UINT64*)pdatastack)[(depth + codemetopick) - (numberofcodemes+5)];   
+}
+
+
+void dg_forthcodemesdrop (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    UINT64* pints;
+    UINT64 numberofcodemes;
+    UINT64 depth;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthcodemesdropname);
+        return;
+    }
+
+    if (*pbuflength < (3*sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthcodemesdropname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+
+    pints = (UINT64*)(pdatastack + *pbuflength - (3*sizeof(UINT64)));
+
+    numberofcodemes = pints[0];
+
+    depth = (*pbuflength)/sizeof(UINT64);
+    
+    if ((numberofcodemes + 4) > depth)
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthcodemesdropname);
+        return;
+    }  
+
+    (*pbuflength) -= ((numberofcodemes + 4) * sizeof(UINT64));  
+}
+
+
+void dg_forthcodemesresolvestart (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_pushdatastack(
+        pBHarrayhead, 
+        (UINT64)-1);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthcodemesresolvestartname);
+        return;
+    }
+
+    dg_forthcodemeuifsys(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthcodemesresolvestartname);
+        return;
+    }
+
+    dg_forththen(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthcodemesresolvestartname);
+        return;
+    }
+}
+
+
+void dg_forthcodemesresolveends (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    UINT64* pints;
+    UINT64 numberofcodemes;
+    
+    UINT64 x, i;
+    UINT64 depth;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthcodemesresolveendsname);
+        return;
+    }
+
+    if (*pbuflength < (3*sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthcodemesresolveendsname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+
+    pints = (UINT64*)(pdatastack + *pbuflength - (3*sizeof(UINT64)));
+
+    numberofcodemes = pints[0];
+
+    depth = (*pbuflength)/sizeof(UINT64);
+
+    if ((numberofcodemes + 3) > depth)
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthcodemesresolveendsname);
+        return;
+    }
+    
+    pints = (UINT64*)(pdatastack + *pbuflength - ((numberofcodemes +3)*sizeof(UINT64)));
+
+    for (i = 0; i < numberofcodemes; i++)
+    {
+        x = pints[i];
+
+        dg_pushdatastack(
+            pBHarrayhead,
+            x);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {       
+            dg_pusherror(pBHarrayhead, dg_forthcodemesresolveendsname);
+            return;
+        }
+
+        dg_forththen(pBHarrayhead);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {       
+            dg_pusherror(pBHarrayhead, dg_forthcodemesresolveendsname);
+            return;
+        }
+    } 
+}
+
+
+void dg_forthcodemescasecomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64 x;
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    x = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthcodemescasecommaname);
+        return;
+    }
+
+    if (x != dg_end_codemes_sys)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"END-CODEMES-SYS missing.");
+        dg_pusherror(pBHarrayhead, dg_forthcodemescasecommaname);
+        return;
+    }
+
+    dg_pushdatastack(
+        pBHarrayhead, 
+        dg_codemes_case_sys);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthcodemescasecommaname);
+        return;
+    }
+
+    dg_forthcodemesresolvestart(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthcodemescasecommaname);
+        return;
+    }
+}
+
+
+const char* dg_codemesquerybranchcommaname = "dg_codemesquerybranchcomma";
+
+void dg_codemesquerybranchcomma (
+    Bufferhandle* pBHarrayhead,
+    UINT64 branchcode)
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    UINT64* pints;
+    UINT64 numberofcodemes;
+    
+    UINT64 x, i;
+    UINT64 depth;
+    UINT64 codemestablestate;
+    UINT64 codemescurrent;
+    UINT64 casevalue;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_codemesquerybranchcommaname);
+        return;
+    }
+
+    if (*pbuflength < (4*sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_codemesquerybranchcommaname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+
+    pints = (UINT64*)(pdatastack + *pbuflength - (4*sizeof(UINT64)));
+
+    numberofcodemes = pints[0];
+    codemescurrent = pints[1];
+    codemestablestate = pints[2];
+    casevalue = pints[3];
+
+    depth = (*pbuflength)/sizeof(UINT64);
+
+    if ((numberofcodemes + 4) > depth)
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_codemesquerybranchcommaname);
+        return;
+    }
+    
+    if (codemestablestate != dg_codemes_case_sys)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"BLOCKS-CASE-SYS missing");
+        dg_pusherror(pBHarrayhead, dg_codemesquerybranchcommaname);
+        return;
+    }
+
+    if (codemescurrent >= numberofcodemes)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"Current codeme not in table. (too many CODEMES-OF,s)");
+        dg_pusherror(pBHarrayhead, dg_codemesquerybranchcommaname);
+        return;
+    }
+
+    // can do the next couple more efficiently in assembler
+    //   put codemescurrent on top for dg_forthcodemeubeginsys
+    pints[3] = codemescurrent;
+
+    dg_forthcodemeubeginsys(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_codemesquerybranchcommaname);
+        return;
+    }
+
+    dg_compilequeryuequalsbranch (
+        pBHarrayhead,
+        casevalue,
+        branchcode,
+        pints[3]); // pints[3] now holds begin-sys
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_codemesquerybranchcommaname);
+        return;
+    }
+    
+    // increment current block
+    pints[1]++;
+
+    // drop casevalue
+    *pbuflength -= sizeof(UINT64);
+}
+
+
+void dg_forthcodemesofcomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_codemesquerybranchcomma (
+        pBHarrayhead,
+        DG_BRANCHTYPE_EQUAL);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthcodemesofcommaname);
+        return;
+    }
+}
+
+
+void dg_forthcodemesendcasecomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64 x;
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    x = dg_getuint64stackelement (
+            pBHarrayhead,
+            DG_DATASTACK_BUFFERID,
+            0);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthcodemesendcasecommaname);
+        return;
+    }
+
+    if (x != dg_codemes_case_sys)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"CODEMES-CASE-SYS missing.");
+        dg_pusherror(pBHarrayhead, dg_forthcodemesendcasecommaname);
+        return;
+    }
+
+    dg_forthcodemesresolveends(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthcodemesendcasecommaname);
+        return;
+    }
+
+    dg_forthcodemesdrop(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthcodemesendcasecommaname);
+        return;
+    }
+}
+
+
+void dg_forthcodemescasescomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    UINT64* pints;
+    UINT64 numberofcodemes;
+    UINT64 numberofcases;
+    
+    
+    UINT64 x, i;
+    UINT64 depth;
+
+    UINT64 ccbufid;
+    UINT64 ccbuflength;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthcodemescasescommaname);
+        return;
+    }
+
+    if ( *pbuflength < (1*sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthcodemescasescommaname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+    
+    depth = (*pbuflength)/sizeof(UINT64);
+    pints = (UINT64*)pdatastack;
+
+    numberofcases = pints[depth-1];
+
+    if ( ((2*numberofcases) + 5) > depth)
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthcodemescasescommaname);
+        return;
+    }
+
+    if (pints[depth - (numberofcases + 2)] != dg_end_codemes_sys)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"END-BLOCKS-SYS marker missing");
+        dg_pusherror(pBHarrayhead, dg_forthcodemescasescommaname);
+        return;
+    }
+    
+    numberofcodemes = pints[depth - (numberofcases + 4)];
+
+    if (numberofcodemes != numberofcases)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"number of codemes does not equal number of cases");
+        dg_pusherror(pBHarrayhead, dg_forthcodemescasescommaname);
+        return;
+    }
+
+    // need to resolve start
+    ccbufid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodemescasescommaname);
+        return;
+    }
+    
+    ccbuflength = dg_getbufferlength(
+        pBHarrayhead,
+        ccbufid);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodemescasescommaname);
+        return;
+    }
+
+    // 11 10 9 8   7 6      5 4 3 2   1 0
+    // -1  0 1 2 u=3 i marker 0 1 2 u=3
+    dg_resolvecompiledbranch (
+        pBHarrayhead,
+        pints[depth - ((numberofcases*2)+ 5)], // afterbranchoffset,
+        ccbuflength); // targetoffset)
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodemescasescommaname);
+        return;
+    }
+
+    // get switch value into iret reg
+    dg_compilecallcoretwouparams (
+        pBHarrayhead, 
+        (UINT64)&dg_popbufferuint64, 
+        DG_DATASTACK_BUFFERID,
+        0); // get stack top
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodemescasescommaname);
+        return;
+    }
+
+    for (i = 0; i < numberofcases; i++)
+    {
+        x = numberofcases - (i+1);
+
+        dg_compilecompareiretu64branch (
+            pBHarrayhead,
+            pints[depth - (x+2)], // casevalue
+            DG_BRANCHTYPE_EQUAL,
+            pints[depth - (x+numberofcases+6)]); // begin-sys
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthcodemescasescommaname);
+            return;
+        }
+    }
+
+    dg_compilemovregtoreg(
+         pBHarrayhead,
+         dg_iretreg,
+         dg_param2reg);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodemescasescommaname);
+        return;
+    }
+
+    dg_compilecallcore (
+        pBHarrayhead, 
+        (UINT64)&dg_pushdatastack); 
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodemescasescommaname);
+        return;
+    }
+
+    *pbuflength -= (numberofcases + 1)*sizeof(UINT64);
+    depth -= (numberofcases + 1);
+
+    // need to make top of stack codemes-case-sys
+    pints[depth - 1] = dg_codemes_case_sys;
+}
+
+
+void dg_forthcodemesjumpscomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    UINT64* pints;
+
+    UINT64 depth;
+
+    UINT64 ccbufid;
+    UINT64 ccbuflength;
+
+    UINT64 numberofcases;
+
+    UINT64 rsdepth;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthcodemesjumpscommaname);
+        return;
+    }
+
+    if ( *pbuflength < (3*sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthcodemesjumpscommaname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+    
+    depth = (*pbuflength)/sizeof(UINT64);
+    pints = (UINT64*)pdatastack;
+
+    if (pints[depth - 1] != dg_end_codemes_sys)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"END-CODEMES-SYS marker missing");
+        dg_pusherror(pBHarrayhead, dg_forthcodemesjumpscommaname);
+        return;
+    }
+
+    // need to resolve start
+    ccbufid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodemesjumpscommaname);
+        return;
+    }
+    
+    ccbuflength = dg_getbufferlength(
+        pBHarrayhead,
+        ccbufid);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodemesjumpscommaname);
+        return;
+    }
+
+    numberofcases = pints[depth - 3];
+
+    //  7  6 5 4   3 2      1 0
+    // -1  0 1 2 u=3 i marker
+    dg_resolvecompiledbranch (
+        pBHarrayhead,
+        pints[depth - (numberofcases + 4)], // afterbranchoffset,
+        ccbuflength); // targetoffset)
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodemesjumpscommaname);
+        return;
+    }
+
+    rsdepth = dg_compileaddnlocalstocallsubsframe (
+        pBHarrayhead,
+        1);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodemesjumpscommaname);
+        return;
+    }
+
+    // get switch value into new return stack local variable
+    // rsdepth = dg_getbufferuint64(
+    //    pBHarrayhead,
+    //    DG_DATASPACE_BUFFERID,
+    //    dg_returnstackdepth);
+
+    // if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    // {
+    //    dg_pusherror(pBHarrayhead, dg_forthcodemesjumpscommaname);
+    //    return;
+    // }
+
+    // if there is any chance the rsdepth might change.... like for instance
+    //   if you nest block-jump statements... need to save it
+    pints[depth - 2] = rsdepth * (-1) * sizeof(UINT64);
+
+    dg_compilecallcoretwouparams (
+        pBHarrayhead, 
+        (UINT64)&dg_popbufferuint64,
+        DG_DATASTACK_BUFFERID,
+        0); // get stack top
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodemesjumpscommaname);
+        return;
+    }
+
+    dg_compilemovregtobracketrbpd (
+        pBHarrayhead,
+        dg_iretreg,
+        rsdepth * (-1) * sizeof(UINT64));
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodemesjumpscommaname);
+        return;
+    }
+
+    // need to make top of stack blocks-case-sys
+    pints[depth - 1] = dg_codemes_jump_sys;
+}
+
+
+const char* dg_xcodemeconditionjumpcommaname = "dg_xcodemeconditionjumpcomma";
+
+void dg_xcodemeconditionjumpcomma (
+    Bufferhandle* pBHarrayhead,
+    UINT64 branchtype)
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    UINT64* pints;
+
+    UINT64 depth;
+
+    UINT64 numberofcodemes;
+    INT64 switchvaluedisplacement;
+    UINT64 destinationcodeme;
+    UINT64 casevalue;
+
+    UINT64 afterbranchoffset;
+    UINT64 beginoffset;
+    UINT64 x;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_xcodemeconditionjumpcommaname);
+        return;
+    }
+
+    if ( *pbuflength < (5*sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_xcodemeconditionjumpcommaname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+    
+    depth = (*pbuflength)/sizeof(UINT64);
+    pints = (UINT64*)pdatastack;
+
+    if (pints[depth - 3] != dg_codemes_jump_sys)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"CODEMES-JUMPS-SYS marker missing");
+        dg_pusherror(pBHarrayhead, dg_xcodemeconditionjumpcommaname);
+        return;
+    }
+
+    
+    destinationcodeme = pints[depth - 1];
+    casevalue = pints[depth-2];
+    switchvaluedisplacement = pints[depth - 4];
+    numberofcodemes = pints[depth - 5];
+
+/*
+    dg_compilemovntoreg(
+        pBHarrayhead,
+        casevalue,
+        dg_iretreg);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_xcodemeconditionjumpcommaname);
+        return;
+    }
+
+    // once I add compare [rbp + n] with reg, I can combine these
+    dg_compilemovbracketrbpdtoreg (
+        pBHarrayhead,
+        dg_param1reg,
+        switchvaluedisplacement);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_xcodemeconditionjumpcommaname);
+        return;
+    }
+
+    dg_compilecompareir64ir64(
+        pBHarrayhead,
+        dg_iretreg,    // srcreg,
+        dg_param1reg); // destreg)
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_xcodemeconditionjumpcommaname);
+        return;
+    }
+*/
+
+    dg_compilecomparenbracketrbpplusn (
+        pBHarrayhead,
+        casevalue, //nsrc,
+        switchvaluedisplacement); // ndisplacement)
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_xcodemeconditionjumpcommaname);
+        return;
+    }
+
+    afterbranchoffset = dg_compilebranch (
+        pBHarrayhead,
+        branchtype);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_xcodemeconditionjumpcommaname);
+        return;
+    }
+
+    // -9  -8  -7  -6  -5                -4 -3     -2        -1                0
+    // bo0 bo1 bo2 eo2 numberofcodemes=3 i  marker casevalue destinationcodeme
+
+    if (destinationcodeme >= numberofcodemes)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"destination codeme is not in codeme table");
+        dg_pusherror(pBHarrayhead, dg_xcodemeconditionjumpcommaname);
+        return;
+    } 
+
+    if ((numberofcodemes + 6) > depth)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"data stack depth seems too small to hold the whole codeme table");
+        dg_pusherror(pBHarrayhead, dg_xcodemeconditionjumpcommaname);
+        return;
+    }
+
+    x = ( (numberofcodemes + 6) - destinationcodeme );
+
+    dg_resolvecompiledbranch (
+        pBHarrayhead,
+        afterbranchoffset,
+        pints[depth - x]);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_xcodemeconditionjumpcommaname);
+        return;
+    }
+
+    *pbuflength -= 2*sizeof(UINT64);
+}
+
+
+void dg_forthcodemealwaysjumpcomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    UINT64* pints;
+
+    UINT64 depth;
+
+    UINT64 numberofcodemes;
+    UINT64 destinationcodeme;
+
+    UINT64 afterbranchoffset;
+    UINT64 beginoffset;
+    UINT64 x;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthcodemealwaysjumpcommaname);
+        return;
+    }
+
+    if ( *pbuflength < (5*sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthcodemealwaysjumpcommaname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+    
+    depth = (*pbuflength)/sizeof(UINT64);
+    pints = (UINT64*)pdatastack;
+
+    if (pints[depth - 2] != dg_codemes_jump_sys)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"CODEMES-JUMPS-SYS marker missing");
+        dg_pusherror(pBHarrayhead, dg_forthcodemealwaysjumpcommaname);
+        return;
+    }
+
+    destinationcodeme = pints[depth - 1];
+    numberofcodemes = pints[depth - 4];
+
+    afterbranchoffset = dg_compilebranch (
+        pBHarrayhead,
+        DG_BRANCHTYPE_ALWAYS);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodemealwaysjumpcommaname);
+        return;
+    }
+
+    // -8  -7  -6  -5  -4                -3 -2     -1                0
+    // bo0 bo1 bo2 eo2 numberofcodemes=3 i  marker destinationcodeme
+
+    if (destinationcodeme >= numberofcodemes)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"destination codeme is not in codeme table");
+        dg_pusherror(pBHarrayhead, dg_forthcodemealwaysjumpcommaname);
+        return;
+    } 
+
+    if ((numberofcodemes + 5) > depth)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"data stack depth seems too small to hold the whole codeme table");
+        dg_pusherror(pBHarrayhead, dg_forthcodemealwaysjumpcommaname);
+        return;
+    }
+
+    x = ( (numberofcodemes + 5) - destinationcodeme );
+
+    dg_resolvecompiledbranch (
+        pBHarrayhead,
+        afterbranchoffset,
+        pints[depth - x]);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodemealwaysjumpcommaname);
+        return;
+    }
+
+    *pbuflength -= 1*sizeof(UINT64);
+}
 
 
 
+void dg_forthxcodemevsjumpcomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_xcodemeconditionjumpcomma (
+        pBHarrayhead,
+        DG_BRANCHTYPE_OVERFLOW);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthxcodemevsjumpcommaname);
+        return;
+    }
+}
+
+void dg_forthxcodemenvjumpcomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_xcodemeconditionjumpcomma (
+        pBHarrayhead,
+        DG_BRANCHTYPE_NOOVERFLOW);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthxcodemenvjumpcommaname);
+        return;
+    }
+}
+
+void dg_forthxcodemeulessthanjumpcomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_xcodemeconditionjumpcomma (
+        pBHarrayhead,
+        DG_BRANCHTYPE_ULESSTHAN);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthxcodemeulessthanjumpcommaname);
+        return;
+    }
+}
+
+void dg_forthxcodemeugreaterthanequaljumpcomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_xcodemeconditionjumpcomma (
+        pBHarrayhead,
+        DG_BRANCHTYPE_UGREATERTHANOREQUAL);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthxcodemeugreaterthanequaljumpcommaname);
+        return;
+    }
+}
+
+void dg_forthxcodemeequaljumpcomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_xcodemeconditionjumpcomma (
+        pBHarrayhead,
+        DG_BRANCHTYPE_EQUAL);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthxcodemeequaljumpcommaname);
+        return;
+    }
+}
+
+void dg_forthxcodemenotequaljumpcomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_xcodemeconditionjumpcomma (
+        pBHarrayhead,
+        DG_BRANCHTYPE_NOTEQUAL);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthxcodemenotequaljumpcommaname);
+        return;
+    }
+}
+
+void dg_forthxcodemeulessthanequaljumpcomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_xcodemeconditionjumpcomma (
+        pBHarrayhead,
+        DG_BRANCHTYPE_ULESSTHANOREQUAL);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthxcodemeulessthanequaljumpcommaname);
+        return;
+    }
+}
+
+void dg_forthxcodemeugreaterthanjumpcomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_xcodemeconditionjumpcomma (
+        pBHarrayhead,
+        DG_BRANCHTYPE_UGREATERTHAN);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthxcodemeugreaterthanjumpcommaname);
+        return;
+    }
+}
+
+void dg_forthxcodememijumpcomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_xcodemeconditionjumpcomma (
+        pBHarrayhead,
+        DG_BRANCHTYPE_MINUS);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthxcodememijumpcommaname);
+        return;
+    }
+}
+
+void dg_forthxcodemepljumpcomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_xcodemeconditionjumpcomma (
+        pBHarrayhead,
+        DG_BRANCHTYPE_PLUS);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthxcodemepljumpcommaname);
+        return;
+    }
+}
+
+void dg_forthxcodemepsjumpcomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_xcodemeconditionjumpcomma (
+        pBHarrayhead,
+        DG_BRANCHTYPE_PARITYEVEN);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthxcodemepsjumpcommaname);
+        return;
+    }
+}
+
+void dg_forthxcodemenpjumpcomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_xcodemeconditionjumpcomma (
+        pBHarrayhead,
+        DG_BRANCHTYPE_PARITYODD);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthxcodemenpjumpcommaname);
+        return;
+    }
+}
+
+void dg_forthxcodemelessthanjumpcomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_xcodemeconditionjumpcomma (
+        pBHarrayhead,
+        DG_BRANCHTYPE_LESSTHAN);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthxcodemelessthanjumpcommaname);
+        return;
+    }
+}
+
+void dg_forthxcodemegreaterthanjumpcomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_xcodemeconditionjumpcomma (
+        pBHarrayhead,
+        DG_BRANCHTYPE_GREATERTHAN);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthxcodemegreaterthanjumpcommaname);
+        return;
+    }
+}
+
+void dg_forthxcodemelessthanequaljumpcomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_xcodemeconditionjumpcomma (
+        pBHarrayhead,
+        DG_BRANCHTYPE_LESSTHANOREQUAL);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthxcodemelessthanequaljumpcommaname);
+        return;
+    }
+}
+
+void dg_forthxcodemegreaterthanequaljumpcomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_xcodemeconditionjumpcomma (
+        pBHarrayhead,
+        DG_BRANCHTYPE_GREATERTHANOREQUAL);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthxcodemegreaterthanequaljumpcommaname);
+        return;
+    }
+}
+
+
+void dg_forthcodemesendjumpscomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64 codemesstatemarker;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    codemesstatemarker = dg_getuint64stackelement(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        0);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodemesendjumpscommaname);
+        return;
+    }
+
+    if (codemesstatemarker != dg_codemes_jump_sys)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"CODEMES_JUMP_SYS state marker missing");
+        dg_pusherror(pBHarrayhead, dg_forthcodemesendjumpscommaname);
+        return;
+    }
+
+    dg_forthcodemesresolveends(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodemesendjumpscommaname);
+        return;
+    }
+
+    dg_forthcodemesdrop(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodemesendjumpscommaname);
+        return;
+    }
+}
+
+
+void dg_forthxycodemewithinjumpcomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    UINT64* pints;
+
+    UINT64 depth;
+
+    UINT64 numberofcodemes;
+    INT64 switchvaluedisplacement;
+    UINT64 destinationcodeme;
+    UINT64 casevaluelo;
+    UINT64 casevaluehi;
+
+    UINT64 afterbranchoffset;
+    UINT64 beginoffset;
+    UINT64 x;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthxycodemewithinjumpcommaname);
+        return;
+    }
+
+    if ( *pbuflength < (6*sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthxycodemewithinjumpcommaname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+    
+    depth = (*pbuflength)/sizeof(UINT64);
+    pints = (UINT64*)pdatastack;
+
+    if (pints[depth - 4] != dg_codemes_jump_sys)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"CODEMES-JUMPS-SYS marker missing");
+        dg_pusherror(pBHarrayhead, dg_forthxycodemewithinjumpcommaname);
+        return;
+    }
+
+    
+    destinationcodeme = pints[depth - 1];
+    casevaluehi = pints[depth-2];
+    casevaluelo = pints[depth-3] - 1;
+    switchvaluedisplacement = pints[depth - 5];
+    numberofcodemes = pints[depth - 6];
+
+    dg_compilemovntoreg(
+        pBHarrayhead,
+        casevaluelo,
+        dg_param1reg);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthxycodemewithinjumpcommaname);
+        return;
+    }
+
+    dg_compilesubbracketrbpplusnreg (
+        pBHarrayhead,
+        switchvaluedisplacement,
+        dg_param1reg);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthxycodemewithinjumpcommaname);
+        return;
+    }
+
+    dg_compilecomparenreg(
+        pBHarrayhead,
+        (UINT64)(casevaluelo - casevaluehi),   // srcn,
+        dg_param1reg);               // destreg)
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthxycodemewithinjumpcommaname);
+        return;
+    }
+
+    afterbranchoffset = dg_compilebranch (
+        pBHarrayhead,
+        DG_BRANCHTYPE_UGREATERTHAN);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_xcodemeconditionjumpcommaname);
+        return;
+    }
+
+    // -10 -9  -8  -7  -6                -5 -4     -3          -2                -1                0
+    // bo0 bo1 bo2 eo2 numberofcodemes=3 i  marker casevaluelo casevaluehi       destinationcodeme
+
+    if (destinationcodeme >= numberofcodemes)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"destination codeme is not in codeme table");
+        dg_pusherror(pBHarrayhead, dg_xcodemeconditionjumpcommaname);
+        return;
+    } 
+
+    if ((numberofcodemes + 7) > depth)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"data stack depth seems too small to hold the whole codeme table");
+        dg_pusherror(pBHarrayhead, dg_xcodemeconditionjumpcommaname);
+        return;
+    }
+
+    x = ( (numberofcodemes + 7) - destinationcodeme );
+
+    dg_resolvecompiledbranch (
+        pBHarrayhead,
+        afterbranchoffset,
+        pints[depth - x]);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_xcodemeconditionjumpcommaname);
+        return;
+    }
+
+    *pbuflength -= 3*sizeof(UINT64);
+}
+
+
+void dg_forthdefaultjumpcomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    UINT64* pints;
+
+    UINT64 depth;
+
+    INT64 switchvaluedisplacement;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthdefaultjumpcommaname);
+        return;
+    }
+
+    if ( *pbuflength < (2*sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthdefaultjumpcommaname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+    
+    depth = (*pbuflength)/sizeof(UINT64);
+    pints = (UINT64*)pdatastack;
+
+    if (pints[depth - 1] != dg_codemes_jump_sys)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"CODEMES-JUMPS-SYS marker missing");
+        dg_pusherror(pBHarrayhead, dg_forthdefaultjumpcommaname);
+        return;
+    }
+
+    switchvaluedisplacement = pints[depth - 2];
+
+    dg_compilemovbracketrbpdtoreg(
+        pBHarrayhead,
+        dg_param2reg,
+        switchvaluedisplacement);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdefaultjumpcommaname);
+        return;
+    }
+
+    dg_compilecallcore (
+        pBHarrayhead,
+        (UINT64)&dg_pushdatastack);  // shouldn't trash dg_param2reg
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdefaultjumpcommaname);
+        return;
+    }
+}
+
+
+void dg_forthdefaultdropjumpcomma (Bufferhandle* pBHarrayhead)
+{
+    // does nothing since the DiaperGlu version does the drop during CODEMES-JUMPS,
+}
+
+void dg_forthcodemesjumptablecomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    UINT64* pints;
+
+    UINT64 depth;
+    UINT64 numberofcodemes;
+    UINT64 u, x;
+    UINT64 ccbufid;
+    UINT64 ohere;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthcodemesjumptablecommaname);
+        return;
+    }
+
+    if ( *pbuflength < (3*sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthcodemesjumptablecommaname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+    
+    depth = (*pbuflength)/sizeof(UINT64);
+    pints = (UINT64*)pdatastack;
+
+    if (pints[depth - 1] != dg_end_codemes_sys)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"END-CODEMES-SYS marker missing");
+        dg_pusherror(pBHarrayhead, dg_forthcodemesjumptablecommaname);
+        return;
+    }
+
+    numberofcodemes = pints[depth-3];
+
+    if ((numberofcodemes + 5) > depth)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"data stack depth seems too small to hold the whole codeme table");
+        dg_pusherror(pBHarrayhead, dg_forthcodemesjumptablecommaname);
+        return;
+    }
+
+    ccbufid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodemesjumptablecommaname);
+        return;
+    }
+
+    ohere = dg_getbufferlength(
+        pBHarrayhead,
+        ccbufid);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodemesjumptablecommaname);
+        return;
+    }
+    
+    // -7     -6     -5     -4   -3         -2 -1                      0
+    // begin0 begin1 begin2 end2 #codemes=3 0  codemetablestateemarker
+    for (u = 0; u < numberofcodemes; u++)
+    {
+        x = numberofcodemes - (u + 1);
+
+        dg_pushbufferuint64(
+            pBHarrayhead,
+            ccbufid,
+            pints[depth - (x+5)]);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthcodemesjumptablecommaname);
+            return;
+        }
+    }
+
+    dg_pushdatastack(
+        pBHarrayhead,
+        ohere);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodemesjumptablecommaname);
+        return;
+    }    
+}
+
+// JUMPTABLE-UJUMP,
+void dg_forthjumptableujumpcomma (Bufferhandle* pBHarrayhead)
+{
+    unsigned char* pdatastack;
+    UINT64* pbuflength;
+    UINT64 depth;
+    INT64 switchvaluedisplacement;
+    UINT64* pints;
+
+    UINT64 numberofcodemes;
+    UINT64 afterbranchoffset;
+
+    UINT64 otable;
+    UINT64 ccbufid;
+    UINT64 ccbuflength;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthjumptableujumpcommaname);
+        return;
+    }
+
+    if ( *pbuflength < (4*sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthjumptableujumpcommaname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+    
+    depth = (*pbuflength)/sizeof(UINT64);
+    pints = (UINT64*)pdatastack;
+
+    if (pints[depth - 2] != dg_codemes_jump_sys)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"CODEMES-JUMPS-SYS marker missing");
+        dg_pusherror(pBHarrayhead, dg_forthjumptableujumpcommaname);
+        return;
+    }
+
+    otable = pints[depth-1];
+    switchvaluedisplacement = pints[depth - 3];
+    numberofcodemes = pints[depth-4];
+
+    // need to check if u >= #codemes
+    dg_compilemovbracketrbpdtoreg (
+        pBHarrayhead,
+        dg_iretreg,
+        switchvaluedisplacement);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthjumptableujumpcommaname);
+        return;
+    }
+
+    dg_compilecomparenreg (
+        pBHarrayhead,
+        numberofcodemes,
+        dg_iretreg);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthjumptableujumpcommaname);
+        return;
+    }
+
+    afterbranchoffset = dg_compilebranch (
+        pBHarrayhead,
+        DG_BRANCHTYPE_UGREATERTHANOREQUAL);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthjumptableujumpcommaname);
+        return;
+    }
+
+    // pccbufid->param1reg
+    dg_compileotor(
+        pBHarrayhead,
+        0,
+        dg_param1reg);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthjumptableujumpcommaname);
+        return;
+    } 
+
+    // [param1reg + 8*iretreg + otable] -> iretreg 
+    dg_compilemovbracketrplussrplusd32tor(
+        pBHarrayhead,
+        dg_param1reg,
+        3, // scale8*
+        dg_iretreg,
+        otable,
+        dg_iretreg);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthjumptableujumpcommaname);
+        return;
+    } 
+ 
+    dg_compileaddregtoreg(
+        pBHarrayhead,
+        dg_param1reg,
+        dg_iretreg);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthjumptableujumpcommaname);
+        return;
+    } 
+
+    dg_compilejumptorax(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthjumptableujumpcommaname);
+        return;
+    } 
+
+    ccbufid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthjumptableujumpcommaname);
+        return;
+    } 
+
+    ccbuflength = dg_getbufferlength(
+        pBHarrayhead,
+        ccbufid);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthjumptableujumpcommaname);
+        return;
+    } 
+
+    dg_resolvecompiledbranch (
+        pBHarrayhead,
+        afterbranchoffset,
+        ccbuflength);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthjumptableujumpcommaname);
+        return;
+    }
+
+    *pbuflength -= sizeof(UINT64);
+}
+
+void dg_forthcodemesujumpcomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_forthcodemesjumptablecomma(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodemesujumpcommaname);
+        return;
+    }
+
+    dg_forthtor(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodemesujumpcommaname);
+        return;
+    }
+
+    dg_forthcodemesjumpscomma(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodemesujumpcommaname);
+        return;
+    }
+
+    dg_forthrfrom(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodemesujumpcommaname);
+        return;
+    }
+
+    dg_forthjumptableujumpcomma(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodemesujumpcommaname);
+        return;
+    }
+}

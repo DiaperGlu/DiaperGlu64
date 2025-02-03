@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.12.
+//    This file is part of DiaperGlu v5.13.
 //
-//    DiaperGlu v5.12 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.12 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.12; if not, write to the Free Software
+//    along with DiaperGlu v5.13; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 24, 2023              //
-// version 5.12               //
+// February 2, 2025           //
+// version 5.13               //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -10407,7 +10407,7 @@ void testdg_forthbrackettoorderconstant ()
         return;
     }
     
-    dg_executedefinition (
+    dg_interpretdefinition (
         &BHarrayhead,
         wordid);   
         
@@ -12540,9 +12540,4642 @@ void testdg_forthugreaterthanequals ()
 }
 
 
+void testdg_forthdocompiletypealwaysexecute ()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 x;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthdocompiletypealwaysexecute\n");
+
+    // execute DUP success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0x11234);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypealwaysexecute execute DUP success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, (UINT64)&dg_forthdup);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypealwaysexecute execute DUP success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, (UINT64)DG_CORE_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypealwaysexecute execute DUP success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, (UINT64)dg_stateexecute);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypealwaysexecute execute DUP success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_forthdocompiletypealwaysexecute (&BHarrayhead);
 
 
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypealwaysexecute execute DUP success case - got an error popping first result from datastack\n" );
+    }
+ 
+    if (x != 0x11234)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypealwaysexecute execute DUP success case - got wrong first result, expected 0x11234, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypealwaysexecute execute DUP success case - got an error popping second result from datastack\n" );
+    }
+
+    if (x != 0x11234)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypealwaysexecute execute DUP success case - got wrong second result, expected 0x11234, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypealwaysexecute execute DUP success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
 
 
+    // compile DUP success case
+    dg_initbuffers(&BHarrayhead);
 
+    dg_pushdatastack(&BHarrayhead, 0x11234);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypealwaysexecute compile DUP success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, (UINT64)&dg_forthdup);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypealwaysexecute compile DUP success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, (UINT64)DG_CORE_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypealwaysexecute compile DUP success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, (UINT64)dg_statecompile);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypealwaysexecute compile DUP success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_forthdocompiletypealwaysexecute (&BHarrayhead);
+
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypealwaysexecute compile DUP success case - got an error popping first result from datastack\n" );
+    }
+ 
+    if (x != 0x11234)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypealwaysexecute compile DUP success case - got wrong first result, expected 0x11234, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypealwaysexecute compile DUP success case - got an error popping second result from datastack\n" );
+    }
+
+    if (x != 0x11234)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypealwaysexecute compile DUP success case - got wrong second result, expected 0x11234, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypealwaysexecute compile DUP success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+}
+
+
+void testdg_forthdocompiletypesubroutine()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 x;
+    UINT64 mystartoffset;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthdocompiletypesubroutine\n");
+
+    // execute DUP success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0x11234);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypesubroutine execute DUP success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, (UINT64)&dg_forthdup);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypesubroutine execute DUP success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, (UINT64)DG_CORE_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypesubroutine execute DUP success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, (UINT64)dg_stateexecute);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypesubroutine execute DUP success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_forthdocompiletypesubroutine (&BHarrayhead);
+
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypesubroutine execute DUP success case - got an error popping first result from datastack\n" );
+    }
+ 
+    if (x != 0x11234)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypesubroutine execute DUP success case - got wrong first result, expected 0x11234, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypesubroutine execute DUP success case - got an error popping second result from datastack\n" );
+    }
+
+    if (x != 0x11234)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypesubroutine execute DUP success case - got wrong second result, expected 0x11234, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypesubroutine execute DUP success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // compile DUP success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypesubroutine compile DUP success case - got error getting start offset\n");
+        return;
+    }
+
+    dg_compileinitlocals(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypesubroutine compile DUP success case - got error compiling start offset\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        (UINT64)&dg_forthdup);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypesubroutine compile DUP success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        (UINT64)DG_CORE_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypesubroutine compile DUP success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        (UINT64)dg_statecompile);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypesubroutine compile DUP success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_forthdocompiletypesubroutine (&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypesubroutine compile DUP success case - got error doing compile type subroutine\n");
+        return;
+    }
+
+    dg_compileexitlocals(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypesubroutine compile DUP success case - got error compiling exit locals\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        0x11234);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypesubroutine compile DUP success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_callbuffer(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        mystartoffset);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypesubroutine compile DUP success case - got error calling compiled subrouine\n");
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypesubroutine compile DUP success case - got an error popping first result from datastack\n" );
+    }
+ 
+    if (x != 0x11234)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypesubroutine compile DUP success case - got wrong first result, expected 0x11234, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypesubroutine compile DUP success case - got an error popping second result from datastack\n" );
+    }
+
+    if (x != 0x11234)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypesubroutine compile DUP success case - got wrong second result, expected 0x11234, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypesubroutine compile DUP success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+}
+
+
+void testdg_forthdocompiletypedpushn()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 x;
+    UINT64 mystartoffset;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthdocompiletypedpushn\n");
+
+    // execute success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0x2873462983);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushn execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0x287324863);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushn execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, (UINT64)dg_stateexecute);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushn execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_forthdocompiletypedpushn (&BHarrayhead);
+
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushn execute success case - got an error popping first result from datastack\n" );
+    }
+ 
+    if (x != 0x2873462983)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushn execute success case - got wrong first result, expected 0x11234, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushn execute success case - got an error getting data stack depth\n" );
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushn execute success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // compile success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushn compile success case - got error getting start offset\n");
+        return;
+    }
+
+    dg_compileinitlocals(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushn compile success case - got error compiling start offset\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        0x2873462983);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushn compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        0x287324863);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushn compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        (UINT64)dg_statecompile);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushn compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_forthdocompiletypedpushn (&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushn compile success case - got error doing compile type subroutine\n");
+        return;
+    }
+
+    dg_compileexitlocals(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushn compile success case - got error compiling exit locals\n");
+        return;
+    }
+
+    dg_callbuffer(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        mystartoffset);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushn compile success case - got error calling compiled subrouine\n");
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushn compile success case - got an error popping first result from datastack\n" );
+    }
+ 
+    if (x != 0x2873462983)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushn compile success case - got wrong first result, expected 0x11234, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushn compile success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+}
+
+
+void testdg_forthdocompiletypedpushdn()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 x;
+    UINT64 mystartoffset;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthdocompiletypedpushdn\n");
+
+    // execute success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, 0x2873462983);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushdn( execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0x287324863);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushdn( execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, (UINT64)dg_stateexecute);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushdn( execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_forthdocompiletypedpushdn(&BHarrayhead);
+
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushdn( execute success case - got an error popping first result from datastack\n" );
+    }
+ 
+    if (x != 0x287324863)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushdn( execute success case - got wrong first result, expected 0x11234, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushdn( execute success case - got an error popping second result from datastack\n" );
+    }
+
+
+    if (x != 0x2873462983)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushdn( execute success case - got wrong first result, expected 0x11234, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushdn( execute success case - got an error getting data stack depth\n" );
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushdn( execute success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // compile success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushdn( compile success case - got error getting start offset\n");
+        return;
+    }
+
+    dg_compileinitlocals(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushdn( compile success case - got error compiling start offset\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        0x2873462983);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushdn( compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        0x287324863);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushdn( compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        (UINT64)dg_statecompile);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushdn( compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_forthdocompiletypedpushdn(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushdn( compile success case - got error doing compile type subroutine\n");
+        return;
+    }
+
+    dg_compileexitlocals(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushdn( compile success case - got error compiling exit locals\n");
+        return;
+    }
+
+    dg_callbuffer(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        mystartoffset);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushdn( compile success case - got error calling compiled subrouine\n");
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushdn( compile success case - got an error popping first result from datastack\n" );
+    }
+ 
+    if (x != 0x287324863)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushdn( compile success case - got wrong first result, expected 0x11234, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushdn( compile success case - got an error popping first result from datastack\n" );
+    }
+ 
+    if (x != 0x2873462983)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushdn( compile success case - got wrong first result, expected 0x11234, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushdn( compile success case - got an error getting data stack depth\n" );
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushdn( compile success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+}
+
+
+void testdg_forthdocompiletypedpushp()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 x, p;
+    UINT64 mystartoffset;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthdocompiletypedpushp\n");
+
+    // execute success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, currentvariablebuffer);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushp execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, DG_DATASPACE_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushp execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, (UINT64)dg_stateexecute);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushp execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_forthdocompiletypedpushp (&BHarrayhead);
+
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushp execute success case - got an error popping first result from datastack\n" );
+    }
+
+    p = (UINT64)dg_getpbufferoffset(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentvariablebuffer);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushp execute success case - got an error getting pointer\n" );
+    }
+
+ 
+    if (x != p)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushp execute success case - got wrong first result, expected pointer, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushp execute success case - got an error getting data stack depth\n" );
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushp execute success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // compile success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushp compile success case - got error getting start offset\n");
+        return;
+    }
+
+    dg_compileinitlocals(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushp compile success case - got error compiling start offset\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        currentvariablebuffer);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushp compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        DG_DATASPACE_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushp compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        (UINT64)dg_statecompile);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushp compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_forthdocompiletypedpushp (&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushp compile success case - got error doing compile type subroutine\n");
+        return;
+    }
+
+    dg_compileexitlocals(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushp compile success case - got error compiling exit locals\n");
+        return;
+    }
+
+    dg_callbuffer(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        mystartoffset);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushp compile success case - got error calling compiled subrouine\n");
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    p = (UINT64)dg_getpbufferoffset(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentvariablebuffer);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushp compile success case - got an error getting pointern" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushp compile success case - got an error popping first result from datastack\n" );
+    }
+ 
+    if (x != p)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushp compile success case - got wrong first result, expected pointer, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushp compile success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+}
+
+
+void testdg_forthdocompiletypedpushs()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 x, p;
+    UINT64 mystartoffset;
+    UINT64 tibid;
+    const char* pError;
+    unsigned char* pstring;
+    UINT64 stringlength;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthdocompiletypedpushs\n");
+
+    // execute success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    tibid = dg_newbuffer(
+        &BHarrayhead,
+        0x1000,
+        (UINT64)-1,
+        &pError,
+        FORTH_FALSE);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushs execute success case - got error making new interpret bufferk\n");
+        return;
+    }
+
+    dg_pushbuffersegment (
+        &BHarrayhead,
+        tibid,
+        3, // length,
+        (unsigned char*)"cow"); // psrc)
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushs execute success case - got error pushing string to new interpret buffer\n");
+        return;
+    }
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentinterpretbuffer,
+        tibid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushs execute success case - got error setting current interpret buffer\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushs execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushs execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, (UINT64)dg_stateexecute);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushs execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_forthdocompiletypedpushs (&BHarrayhead);
+
+
+    x = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushs execute success case - got an error getting string stack depth\n" );
+    }
+
+    if (x != 1)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushs execute success case - string stack not depth 1 after test, got depth " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    pstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, //  stringid,
+        &stringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushs execute success case - got an error getting address and length of string stack top\n" );
+    }
+
+    if (stringlength != 3)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushs execute success case - string length not 3\n" );
+        return;
+    }
+
+    if ( (pstring[0] != 'c') ||
+         (pstring[1] != 'o') ||
+         (pstring[2] != 'w') )
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushs execute success case - string characters wrong\n" );
+        return;
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushs execute success case - got an error getting data stack depth\n" );
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushs execute success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // compile success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    tibid = dg_newbuffer(
+        &BHarrayhead,
+        0x1000,
+        (UINT64)-1,
+        &pError,
+        FORTH_FALSE);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushs compile success case - got error making new interpret bufferk\n");
+        return;
+    }
+
+    dg_pushbuffersegment (
+        &BHarrayhead,
+        tibid,
+        3, // length,
+        (unsigned char*)"cow"); // psrc)
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushs compile success case - got error pushing string to new interpret buffer\n");
+        return;
+    }
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentinterpretbuffer,
+        tibid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushs compile success case - got error setting current interpret buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushs compile success case - got error getting start offset\n");
+        return;
+    }
+
+    dg_compileinitlocals(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushs compile success case - got error compiling start offset\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushs compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushs compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        (UINT64)dg_statecompile);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushs compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_forthdocompiletypedpushs (&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushs compile success case - got error doing compile type subroutine\n");
+        return;
+    }
+
+    dg_compileexitlocals(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushs compile success case - got error compiling exit locals\n");
+        return;
+    }
+
+    dg_callbuffer(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        mystartoffset);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushs compile success case - got error calling compiled subrouine\n");
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    
+    x = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushs compile success case - got an error getting string stack depth\n" );
+    }
+
+    if (x != 1)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushs compile success case - string stack not depth 1 after test, got depth " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    pstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, //  stringid,
+        &stringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushs compile success case - got an error getting address and length of string stack top\n" );
+    }
+
+    if (stringlength != 3)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushs compile success case - string length not 3\n" );
+        return;
+    }
+
+    if ( (pstring[0] != 'c') ||
+         (pstring[1] != 'o') ||
+         (pstring[2] != 'w') )
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypedpushs compile success case - string characters wrong\n" );
+        return;
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypedpushs compile success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+}
+
+
+void testdg_forthdocompiletypewordsstringquotes()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 x, p;
+    UINT64 mystartoffset;
+    UINT64 tibid;
+    const char* pError;
+    unsigned char* pstring;
+    UINT64 stringlength;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthdocompiletypewordsstringquotes\n");
+
+    // execute success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    tibid = dg_newbuffer(
+        &BHarrayhead,
+        0x1000,
+        (UINT64)-1,
+        &pError,
+        FORTH_FALSE);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes execute success case - got error making new interpret bufferk\n");
+        return;
+    }
+
+    dg_pushbuffersegment (
+        &BHarrayhead,
+        tibid,
+        14, // length,
+        (unsigned char*)"cow deer\"moose"); // psrc)
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes execute success case - got error pushing string to new interpret buffer\n");
+        return;
+    }
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentinterpretbuffer,
+        tibid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes execute success case - got error setting current interpret buffer\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        (UINT64)dg_stateexecute);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_forthdocompiletypewordsstringquotes (&BHarrayhead);
+
+
+    x = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes execute success case - got an error getting string stack depth\n" );
+    }
+
+    if (x != 2)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes execute success case - string stack not depth 2 after test, got depth " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    pstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, //  stringid,
+        &stringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes execute success case - got an error getting address and length of string stack top\n" );
+    }
+
+    if (stringlength != 3)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes execute success case - string length not 3\n" );
+        return;
+    }
+
+    if ( (pstring[0] != 'c') ||
+         (pstring[1] != 'o') ||
+         (pstring[2] != 'w') )
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes execute success case - string characters wrong\n" );
+        return;
+    }
+
+    pstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, //  stringid,
+        &stringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes execute success case - got an error getting address and length of 2nd string on stack\n" );
+    }
+
+    if (stringlength != 4)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes execute success case - 2nd string length not 4\n" );
+        return;
+    }
+
+    if ( (pstring[0] != 'd') ||
+         (pstring[1] != 'e') ||
+         (pstring[2] != 'e') ||
+         (pstring[3] != 'r') )
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes execute success case - 2nd string characters wrong\n" );
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes execute success case - got an error popping number pushed to string stack\n" );
+        return;
+    }
+
+    if (x != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes execute success case - number pushed to data stack wrong, expected 2\n" );
+        return;
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes execute success case - got an error getting data stack depth\n" );
+        return;
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes execute success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // compile success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    tibid = dg_newbuffer(
+        &BHarrayhead,
+        0x1000,
+        (UINT64)-1,
+        &pError,
+        FORTH_FALSE);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes compile success case - got error making new interpret bufferk\n");
+        return;
+    }
+
+    dg_pushbuffersegment (
+        &BHarrayhead,
+        tibid,
+        10, // length,
+        (unsigned char*)"cow deer\"t"); // psrc)
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes compile success case - got error pushing string to new interpret buffer\n");
+        return;
+    }
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentinterpretbuffer,
+        tibid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes compile success case - got error setting current interpret buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes compile success case - got error getting start offset\n");
+        return;
+    }
+
+    dg_compileinitlocals(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes compile success case - got error compiling start offset\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        (UINT64)dg_statecompile);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_forthdocompiletypewordsstringquotes (&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes compile success case - got error doing compile type subroutine\n");
+        return;
+    }
+
+    dg_compileexitlocals(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes compile success case - got error compiling exit locals\n");
+        return;
+    }
+
+    dg_callbuffer(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        mystartoffset);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes compile success case - got error calling compiled subrouine\n");
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    
+    x = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes compile success case - got an error getting string stack depth\n" );
+    }
+
+    if (x != 2)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes compile success case - string stack not depth 2 after test, got depth " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    pstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, //  stringid,
+        &stringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes compile success case - got an error getting address and length of string stack top\n" );
+    }
+
+    if (stringlength != 3)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes compile success case - string length not 3\n" );
+        return;
+    }
+
+    if ( (pstring[0] != 'c') ||
+         (pstring[1] != 'o') ||
+         (pstring[2] != 'w') )
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes compile success case - string characters wrong\n" );
+        return;
+    }
+
+    pstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, //  stringid,
+        &stringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes compile success case - got an error getting address and length of string stack top\n" );
+    }
+
+    if (stringlength != 4)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes compile success case - string length not 4\n" );
+        return;
+    }
+
+    if ( (pstring[0] != 'd') ||
+         (pstring[1] != 'e') ||
+         (pstring[2] != 'e') ||
+         (pstring[3] != 'r') )
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes compile success case - string characters wrong\n" );
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes compile success case - got an error popping number pushed to string stack\n" );
+        return;
+    }
+
+    if (x != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes compile success case - number pushed to data stack wrong, expected 2\n" );
+        return;
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypewordsstringquotes compile success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+}
+
+
+void testdg_forthdocompiletypewords0stringquotes()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 x, p;
+    UINT64 mystartoffset;
+    UINT64 tibid;
+    const char* pError;
+    unsigned char* pstring;
+    UINT64 stringlength;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthdocompiletypewords0stringquotes\n");
+
+    // execute success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    tibid = dg_newbuffer(
+        &BHarrayhead,
+        0x1000,
+        (UINT64)-1,
+        &pError,
+        FORTH_FALSE);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes execute success case - got error making new interpret bufferk\n");
+        return;
+    }
+
+    dg_pushbuffersegment (
+        &BHarrayhead,
+        tibid,
+        14, // length,
+        (unsigned char*)"cow deer\"moose"); // psrc)
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes execute success case - got error pushing string to new interpret buffer\n");
+        return;
+    }
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentinterpretbuffer,
+        tibid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes execute success case - got error setting current interpret buffer\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        (UINT64)dg_stateexecute);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_forthdocompiletypewords0stringquotes (&BHarrayhead);
+
+
+    x = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes execute success case - got an error getting string stack depth\n" );
+    }
+
+    if (x != 2)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes execute success case - string stack not depth 2 after test, got depth " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    pstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, //  stringid,
+        &stringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes execute success case - got an error getting address and length of string stack top\n" );
+    }
+
+    if (stringlength != 4)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes execute success case - string length not 4\n" );
+        return;
+    }
+
+    if ( (pstring[0] != 'c') ||
+         (pstring[1] != 'o') ||
+         (pstring[2] != 'w') ||
+         (pstring[3] != 0) )
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes execute success case - string characters wrong\n" );
+        return;
+    }
+
+    pstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, //  stringid,
+        &stringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes execute success case - got an error getting address and length of 2nd string on stack\n" );
+    }
+
+    if (stringlength != 5)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes execute success case - 2nd string length not 5\n" );
+        return;
+    }
+
+    if ( (pstring[0] != 'd') ||
+         (pstring[1] != 'e') ||
+         (pstring[2] != 'e') ||
+         (pstring[3] != 'r') ||
+         (pstring[4] != 0) )
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes execute success case - 2nd string characters wrong\n" );
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes execute success case - got an error popping number pushed to string stack\n" );
+        return;
+    }
+
+    if (x != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes execute success case - number pushed to data stack wrong, expected 2\n" );
+        return;
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes execute success case - got an error getting data stack depth\n" );
+        return;
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes execute success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // compile success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    tibid = dg_newbuffer(
+        &BHarrayhead,
+        0x1000,
+        (UINT64)-1,
+        &pError,
+        FORTH_FALSE);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes compile success case - got error making new interpret bufferk\n");
+        return;
+    }
+
+    dg_pushbuffersegment (
+        &BHarrayhead,
+        tibid,
+        10, // length,
+        (unsigned char*)"cow deer\"t"); // psrc)
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes compile success case - got error pushing string to new interpret buffer\n");
+        return;
+    }
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentinterpretbuffer,
+        tibid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes compile success case - got error setting current interpret buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes compile success case - got error getting start offset\n");
+        return;
+    }
+
+    dg_compileinitlocals(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes compile success case - got error compiling start offset\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        (UINT64)dg_statecompile);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_forthdocompiletypewords0stringquotes (&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes compile success case - got error doing compile type subroutine\n");
+        return;
+    }
+
+    dg_compileexitlocals(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes compile success case - got error compiling exit locals\n");
+        return;
+    }
+
+    dg_callbuffer(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        mystartoffset);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes compile success case - got error calling compiled subrouine\n");
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    
+    x = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes compile success case - got an error getting string stack depth\n" );
+    }
+
+    if (x != 2)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes compile success case - string stack not depth 2 after test, got depth " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    pstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, //  stringid,
+        &stringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes compile success case - got an error getting address and length of string stack top\n" );
+    }
+
+    if (stringlength != 4)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes compile success case - string length not 4\n" );
+        return;
+    }
+
+    if ( (pstring[0] != 'c') ||
+         (pstring[1] != 'o') ||
+         (pstring[2] != 'w') ||
+         (pstring[3] != 0) )
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes compile success case - string characters wrong\n" );
+        return;
+    }
+
+    pstring = dg_getplstring(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, //  stringid,
+        &stringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes compile success case - got an error getting address and length of string stack top\n" );
+    }
+
+    if (stringlength != 5)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes compile success case - string length not 5\n" );
+        return;
+    }
+
+    if ( (pstring[0] != 'd') ||
+         (pstring[1] != 'e') ||
+         (pstring[2] != 'e') ||
+         (pstring[3] != 'r') ||
+         (pstring[4] != 0) )
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes compile success case - string characters wrong\n" );
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes compile success case - got an error popping number pushed to string stack\n" );
+        return;
+    }
+
+    if (x != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes compile success case - number pushed to data stack wrong, expected 2\n" );
+        return;
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes compile success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+}
+
+
+void testdg_forthdocompiletypecdecl()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 x, p;
+    UINT64 mystartoffset;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthdocompiletypecdecl\n");
+
+    // execute core success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        0x28723745);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdecl execute core success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        1);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdecl execute core success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        (UINT64)&dg_testasm);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdecl execute core success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        DG_CORE_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdecl execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        (UINT64)dg_stateexecute);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdecl execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_forthdocompiletypecdecl (&BHarrayhead);
+
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypecdecl execute success case - got an error popping result\n" );
+        return;
+    }
+
+    if (x != 0x28723746)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypecdecl execute success case - resultwrong, expected 0x28723746\n" );
+        return;
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypecdecl execute success case - got an error getting data stack depth\n" );
+        return;
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypecdecl execute success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // compile success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdecl compile success case - got error getting start offset\n");
+        return;
+    }
+
+    dg_compileinitlocals(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdecl compile success case - got error compiling start offset\n");
+        return;
+    }
+
+    dg_compilepushntodatastack (
+        &BHarrayhead,
+        0x98287346);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdecl compile success case - got error compiling push to data stack\n");
+        return;
+    }
+
+    dg_compilepushntodatastack (
+        &BHarrayhead,
+        1);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdecl compile success case - got error compiling push to data stack\n");
+        return;
+    }
+    
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        (UINT64)&dg_testasm);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdecl compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        DG_CORE_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdecl compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        (UINT64)dg_statecompile);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdecl compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_forthdocompiletypecdecl (&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdecl compile success case - got error doing compile type subroutine\n");
+        return;
+    }
+
+    dg_compileexitlocals(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdecl compile success case - got error compiling exit locals\n");
+        return;
+    }
+
+    dg_callbuffer(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        mystartoffset);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdecl compile success case - got error calling compiled subrouine\n");
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypecdecl compile success case - got an error popping result\n" );
+        return;
+    }
+
+    if (x != 0x98287347)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypecdecl compile success case - result wrong, expected 0x98287347\n" );
+        return;
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypecdecl compile success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+}
+
+
+void testdg_forthdocompiletypecdeclretuint128()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 x, p;
+    UINT64 mystartoffset;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthdocompiletypecdeclretuint128\n");
+
+    // execute core success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        0x28723745);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdeclretuint128 execute core success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        1);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdeclretuint128 execute core success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        (UINT64)&dg_testasmretuint128);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdeclretuint128 execute core success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        DG_CORE_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdeclretuint128 execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        (UINT64)dg_stateexecute);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdeclretuint128 execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_forthdocompiletypecdeclretuint128 (&BHarrayhead);
+
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypecdeclretuint128 execute success case - got an error popping hi result\n" );
+        return;
+    }
+
+    if (x != 0x28723744)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypecdeclretuint128 execute success case - hi result wrong, expected 0x28723744\n" );
+        return;
+    }
+
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdeclretuint128 execute success case - got an error popping lo result\n" );
+        return;
+    }
+
+    if (x != 0x28723746)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdeclretuint128 execute success case - lo result wrong, expected 0x28723746\n" );
+        return;
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdeclretuint128 execute success case - got an error getting data stack depth\n" );
+        return;
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdeclretuint128 execute success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // compile success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdeclretuint128 compile success case - got error getting start offset\n");
+        return;
+    }
+
+    dg_compileinitlocals(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdeclretuint128 compile success case - got error compiling start offset\n");
+        return;
+    }
+
+    dg_compilepushntodatastack (
+        &BHarrayhead,
+        0x98287346);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdeclretuint128 compile success case - got error compiling push to data stack\n");
+        return;
+    }
+
+    dg_compilepushntodatastack (
+        &BHarrayhead,
+        1);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdeclretuint128 compile success case - got error compiling push to data stack\n");
+        return;
+    }
+    
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        (UINT64)&dg_testasmretuint128);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdeclretuint128 compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        DG_CORE_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdeclretuint128 compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        (UINT64)dg_statecompile);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdeclretuint128 compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_forthdocompiletypecdeclretuint128 (&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdeclretuint128 compile success case - got error doing compile type subroutine\n");
+        return;
+    }
+
+    dg_compileexitlocals(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdeclretuint128 compile success case - got error compiling exit locals\n");
+        return;
+    }
+
+    dg_callbuffer(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        mystartoffset);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypecdeclretuint128 compile success case - got error calling compiled subrouine\n");
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypecdeclretuint128 compile success case - got an error popping hi result\n" );
+        return;
+    }
+
+    if (x != 0x98287345)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypecdeclretuint128 compile success case - hi result wrong, expected 0x98287345\n" );
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypecdeclretuint128 compile success case - got an error popping lo result" );
+        return;
+    }
+
+    if (x != 0x98287347)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypecdeclretuint128 compile success case - lo result wrong, expected 0x98287347\n" );
+        return;
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypecdeclretuint128 compile success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+}
+
+
+void testdg_forthdocompiletypeftcolon()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 x;
+    UINT64 mystartoffset;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthdocompiletypeftcolon\n");
+
+    // execute core success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        0x28723745);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypeftcolon execute core success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        1);  // function 1 is DUP
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypeftcolon execute core success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        0); // not used
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypeftcolon execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        (UINT64)dg_stateexecute);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypeftcolon execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_forthdocompiletypeftcolon (&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypeftcolon execute success case - got an error doing dg_forthdocompiletypeftcolon\n" );
+        return;
+    }
+
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypeftcolon execute success case - got an error popping result\n" );
+        return;
+    }
+
+    if (x != 0x28723745)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypeftcolon execute success case - 1st result wrong, expected 0x28723746\n" );
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypeftcolon execute success case - got an error popping result\n" );
+        return;
+    }
+
+    if (x != 0x28723745)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypeftcolon execute success case - 2nd result wrong, expected 0x28723746\n" );
+        return;
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypeftcolon execute success case - got an error getting data stack depth\n" );
+        return;
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypeftcolon execute success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // compile success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypeftcolon compile success case - got error getting start offset\n");
+        return;
+    }
+
+    dg_compileinitlocals(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypeftcolon compile success case - got error compiling start offset\n");
+        return;
+    }
+
+    dg_compilepushntodatastack (
+        &BHarrayhead,
+        0x98287346);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypeftcolon compile success case - got error compiling push to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        1);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypeftcolon compile success case - got error pushing function index to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypeftcolon compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        (UINT64)dg_statecompile);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypeftcolon compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_forthdocompiletypeftcolon (&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypeftcolon compile success case - got error doing dg_forthdocompiletypeftcolon\n");
+        return;
+    }
+
+    dg_compileexitlocals(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypeftcolon compile success case - got error compiling exit locals\n");
+        return;
+    }
+
+    dg_callbuffer(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        mystartoffset);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypeftcolon compile success case - got error calling compiled subrouine\n");
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypeftcolon compile success case - got an error popping 1st result\n" );
+        return;
+    }
+
+    if (x != 0x98287346)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypeftcolon compile success case - 1st result wrong, expected 0x98287347\n" );
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypeftcolon compile success case - got an error popping 2nd result\n" );
+        return;
+    }
+
+    if (x != 0x98287346)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypeftcolon compile success case - 2nd result wrong, expected 0x98287347\n" );
+        return;
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypeftcolon compile success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+}
+
+
+void testdg_forthdocompiletypebracketwordlistdot()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 x;
+    UINT64 mystartoffset;
+
+    UINT64 mywordlistid;
+    UINT64 mywordid;
+
+    UINT64 tibid;
+    const char* pError;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthdocompiletypebracketwordlistdot\n");
+
+    // execute core success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+    dg_inithlists(&BHarrayhead);
+
+    mywordlistid = dg_newwordlist(
+        &BHarrayhead,
+        DG_ENDOFLIST);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot execute core success case - got error making new wordlist\n");
+        return;
+    }
+
+    mywordid = dg_new0stringnamecoreword (
+        &BHarrayhead, 
+        (UINT64)&dg_forthdocompiletypesubroutine,
+        (UINT64)&dg_forthdup, // databufoffset,
+        (unsigned char*)"DUP");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot execute core success case - got error making new word\n");
+        return;
+    }
+
+    dg_linkdefinition (
+        &BHarrayhead,
+        mywordlistid, // wordlistid,
+        mywordid);  // newwordid)
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot execute core success case - got error linking word to wordlist\n");
+        return;
+    }
+
+    tibid = dg_newbuffer(
+        &BHarrayhead,
+        0x1000,
+        (UINT64)-1,
+        &pError,
+        FORTH_FALSE);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes execute success case - got error making new interpret bufferk\n");
+        return;
+    }
+
+    dg_pushbuffersegment (
+        &BHarrayhead,
+        tibid,
+        3, // length,
+        (unsigned char*)"DUP"); // psrc)
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes execute success case - got error pushing string to new interpret buffer\n");
+        return;
+    }
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentinterpretbuffer,
+        tibid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes execute success case - got error setting current interpret buffer\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        0x982364); 
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot execute core success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        mywordlistid); 
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot execute core success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        0); // not used
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        (UINT64)dg_stateexecute);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_forthdocompiletypebracketwordlistdot (&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot execute success case - got an error doing dg_forthdocompiletypebracketwordlistdot\n" );
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot execute success case - got an error popping 1st result from data stack\n" );
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    if (x != 0x982364)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot execute success case - got wrong 1st result\n" );
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot execute success case - got an error popping 2nd result from data stack\n" );
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    if (x != 0x982364)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot execute success case - got wrong 2nd result\n" );
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot execute success case - got an error getting data stack depth\n" );
+        return;
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot execute success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // compile core success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+    dg_inithlists(&BHarrayhead);
+
+    mywordlistid = dg_newwordlist(
+        &BHarrayhead,
+        DG_ENDOFLIST);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot compile core success case - got error making new wordlist\n");
+        return;
+    }
+
+    mywordid = dg_new0stringnamecoreword (
+        &BHarrayhead, 
+        (UINT64)&dg_forthdocompiletypesubroutine,
+        (UINT64)&dg_forthdup, // databufoffset,
+        (unsigned char*)"DUP");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot compile core success case - got error making new word\n");
+        return;
+    }
+
+    dg_linkdefinition (
+        &BHarrayhead,
+        mywordlistid, // wordlistid,
+        mywordid);  // newwordid)
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot compile core success case - got error linking word to wordlist\n");
+        return;
+    }
+
+    tibid = dg_newbuffer(
+        &BHarrayhead,
+        0x1000,
+        (UINT64)-1,
+        &pError,
+        FORTH_FALSE);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes compile success case - got error making new interpret bufferk\n");
+        return;
+    }
+
+    dg_pushbuffersegment (
+        &BHarrayhead,
+        tibid,
+        3, // length,
+        (unsigned char*)"DUP"); // psrc)
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes compile success case - got error pushing string to new interpret buffer\n");
+        return;
+    }
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentinterpretbuffer,
+        tibid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypewords0stringquotes compile success case - got error setting current interpret buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot compile success case - got error getting start offset\n");
+        return;
+    }
+
+    dg_compileinitlocals(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot compile success case - got error compiling start offset\n");
+        return;
+    }
+
+    dg_compilepushntodatastack (
+        &BHarrayhead,
+        0x982364);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot compile success case - got error compiling push to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        mywordlistid);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot compile success case - got error pushing function index to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        (UINT64)dg_statecompile);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    //   make sure compile type passes compile state and doesn't use the STATE variable
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        statevariable,
+        (UINT64)dg_stateexecute);
+
+     if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot compile success case - got error setting state\n");
+        return;
+    }
+
+
+    dg_forthdocompiletypebracketwordlistdot (&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot compile success case - got error doing dg_forthdocompiletypebracketwordlistdot\n");
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    dg_compileexitlocals(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot compile success case - got error compiling exit locals\n");
+        return;
+    }
+
+    dg_callbuffer(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        mystartoffset);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot compile success case - got error calling compiled subrouine\n");
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot compile success case - got an error popping 1st result from data stack\n" );
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    if (x != 0x982364)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot compile success case - got wrong 1st result\n" );
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot compile success case - got an error popping 2nd result from data stack\n" );
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    if (x != 0x982364)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot compile success case - got wrong 2nd result\n" );
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot compile success case - got an error getting data stack depth\n" );
+        return;
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypebracketwordlistdot compile success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+}
+
+
+void testdg_forthdocompiletypevalue()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 x;
+    UINT64 mystartoffset;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthdocompiletypevalue\n");
+
+    // execute success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, basevariable);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypevalue execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, DG_DATASPACE_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypevalue execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, (UINT64)dg_stateexecute);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypevalue execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        basevariable,
+        0x10);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypevalue execute success case - got setting base variable\n");
+        return;
+    }
+
+    dg_forthdocompiletypevalue (&BHarrayhead);
+
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypevalue execute success case - got an error popping first result from datastack\n" );
+    }
+ 
+    if (x != 0x10)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypevalue execute success case - got wrong result, expected 0x10, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypevalue execute success case - got an error getting data stack depth\n" );
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypevalue execute success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // compile success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypevalue compile success case - got error getting start offset\n");
+        return;
+    }
+
+    dg_compileinitlocals(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypevalue compile success case - got error compiling start offset\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        basevariable);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypevalue compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        DG_DATASPACE_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypevalue compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        (UINT64)dg_statecompile);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypevalue compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_forthdocompiletypevalue (&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypevalue compile success case - got error doing compile type subroutine\n");
+        return;
+    }
+
+    dg_compileexitlocals(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypevalue compile success case - got error compiling exit locals\n");
+        return;
+    }
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        basevariable,
+        0x10);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypevalue compile success case - got setting base variable\n");
+        return;
+    }
+
+    dg_callbuffer(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        mystartoffset);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypevalue compile success case - got error calling compiled subrouine\n");
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypevalue compile success case - got an error popping first result from datastack\n" );
+    }
+ 
+    if (x != 0x10)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypevalue compile success case - got wrong first result, expected 0x10, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypevalue compile success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+}
+
+
+void testdg_forthdocompiletypefvalue()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 x;
+    UINT64 mystartoffset;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthdocompiletypefvalue\n");
+
+    // execute success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    dg_pushdatastack(&BHarrayhead, basevariable);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypefvalue execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, DG_DATASPACE_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypefvalue execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, (UINT64)dg_stateexecute);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypefvalue execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        basevariable,
+        0x10);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypefvalue execute success case - got setting base variable\n");
+        return;
+    }
+
+    dg_forthdocompiletypefvalue (&BHarrayhead);
+
+
+    x = dg_popbufferuint64(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypefvalue execute success case - got an error popping first result from datastack\n" );
+    }
+ 
+    if (x != 0x10)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypefvalue execute success case - got wrong result, expected 0x10, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypefvalue execute success case - got an error getting data stack depth\n" );
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypefvalue execute success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypefvalue execute success case - got an error getting f64 stack depth\n" );
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypefvalue execute success case - f64 stack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // compile success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypefvalue compile success case - got error getting start offset\n");
+        return;
+    }
+
+    dg_compileinitlocals(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypefvalue compile success case - got error compiling start offset\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        basevariable);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypefvalue compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        DG_DATASPACE_BUFFERID);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypefvalue compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        (UINT64)dg_statecompile);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypefvalue compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_forthdocompiletypefvalue (&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypefvalue compile success case - got error doing compile type subroutine\n");
+        return;
+    }
+
+    dg_compileexitlocals(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypefvalue compile success case - got error compiling exit locals\n");
+        return;
+    }
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        basevariable,
+        0x10);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypefvalue compile success case - got setting base variable\n");
+        return;
+    }
+
+    dg_callbuffer(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        mystartoffset);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypefvalue compile success case - got error calling compiled subrouine\n");
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    x = dg_popbufferuint64(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypefvalue compile success case - got an error popping first result from datastack\n" );
+    }
+ 
+    if (x != 0x10)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypefvalue compile success case - got wrong first result, expected 0x10, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypevalue compile success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_F64STACK_BUFFERID);
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypevalue compile success case - floating point stack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+}
+
+
+void testdg_forthdocompiletypetwovalue()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 x;
+    UINT64 mystartoffset;
+    UINT64 testbufferid;
+    const char* pError;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthdocompiletypetwovalue\n");
+
+    // execute success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    testbufferid = dg_newbuffer (
+        &BHarrayhead,
+        0x1000,
+        (UINT64)-1,
+        &pError,
+        FORTH_FALSE);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypetwovalue execute success case - got error making test buffer\n");
+        return;
+    }
+
+    dg_pushbufferuint64(
+        &BHarrayhead,
+        testbufferid,
+        0x09287);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypetwovalue execute success case - got error pushing to testbuffer\n");
+        return;
+    }
+
+    dg_pushbufferuint64(
+        &BHarrayhead,
+        testbufferid,
+        0x29834);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypetwovalue execute success case - got error pushing to testbuffer\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypetwovalue execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, testbufferid);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypetwovalue execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, (UINT64)dg_stateexecute);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypetwovalue execute success case - got error pushing to data stack\n");
+        return;
+    }
+
+
+    dg_forthdocompiletypetwovalue(&BHarrayhead);
+
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypetwovalue execute success case - got an error popping hi result from datastack\n" );
+    }
+ 
+    if (x != 0x09287)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypetwovalue execute success case - got wrong hi result, expected 0x09287, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypetwovalue execute success case - got an error popping lo result from datastack\n" );
+    }
+ 
+    if (x != 0x29834)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypetwovalue execute success case - got wrong lo result, expected 0x29834, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypetwovalue execute success case - got an error getting data stack depth\n" );
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypetwovalue execute success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+    // compile success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    testbufferid = dg_newbuffer (
+        &BHarrayhead,
+        0x1000,
+        (UINT64)-1,
+        &pError,
+        FORTH_FALSE);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypetwovalue compile success case - got error making test buffer\n");
+        return;
+    }
+
+    dg_pushbufferuint64(
+        &BHarrayhead,
+        testbufferid,
+        0x09287);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypetwovalue compile success case - got error pushing to testbuffer\n");
+        return;
+    }
+
+    dg_pushbufferuint64(
+        &BHarrayhead,
+        testbufferid,
+        0x29834);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypetwovalue compile success case - got error pushing to testbuffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypetwovalue compile success case - got error getting start offset\n");
+        return;
+    }
+
+    dg_compileinitlocals(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypetwovalue compile success case - got error compiling start offset\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        0);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypetwovalue( compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        testbufferid);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypetwovalue compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead, 
+        (UINT64)dg_statecompile);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypetwovalue compile success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_forthdocompiletypetwovalue(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypetwovalue compile success case - got error doing compile type subroutine\n");
+        return;
+    }
+
+    dg_compileexitlocals(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypetwovalue compile success case - got error compiling exit locals\n");
+        return;
+    }
+
+    dg_callbuffer(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        mystartoffset);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypetwovalue compile success case - got error calling compiled subrouine\n");
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypetwovalue( compile success case - got an error popping hi result from datastack\n" );
+    }
+ 
+    if (x != 0x09287)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypetwovalue( compile success case - got wrong hi result, expected 0x09287, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypetwovalue( compile success case - got an error popping lo result from datastack\n" );
+    }
+ 
+    if (x != 0x29834)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_forthdocompiletypetwovalue( compile success case - got wrong lo result, expected 0x29834, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthdocompiletypetwovalue( compile success case - datastack not empty after test, got length " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+}
 

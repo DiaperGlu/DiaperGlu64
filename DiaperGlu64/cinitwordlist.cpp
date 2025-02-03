@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.12.
+//    This file is part of DiaperGlu v5.13.
 //
-//    DiaperGlu v5.12 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.12 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.12; if not, write to the Free Software
+//    along with DiaperGlu v5.13; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 24, 2023              //
-// version 5.12               //
+// February 2, 2025           //
+// version 5.13               //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -62,9 +62,12 @@ void dg_initwordlists (Bufferhandle* pBHarrayhead)
     // UINT64 errorvocabid;
     UINT64 localsvocabid;
     UINT64 x86vocabid;
+    UINT64 colorvocabid;
     
     Premadeword* ppremadewordlist;
-    
+
+
+    // forth standard words    
     ppremadewordlist = dg_getppresortedcorewords(pBHarrayhead);
     
     if ((Premadeword*)badbufferhandle == ppremadewordlist)
@@ -73,13 +76,14 @@ void dg_initwordlists (Bufferhandle* pBHarrayhead)
         return;
     }
     
-    // freebsd 6.2 doesn't link to the structures when in a dll correctly, so
-    //  switched to a function
+    // freebsd 6.2 doesn't link to the structures when in a dll correctly, so I switched to a function
     forthvocabid = dg_newpresortedwordlist (
         pBHarrayhead,
         ppremadewordlist, // &(mypresortedcorewords[0]),
         dg_presortedcorewordlistsize);
 
+
+    // forth environment words
     ppremadewordlist = dg_getppresortedenvironmentwords();
     
     if ((Premadeword*)badbufferhandle == ppremadewordlist)
@@ -93,6 +97,8 @@ void dg_initwordlists (Bufferhandle* pBHarrayhead)
         ppremadewordlist, // &(mypresortedenvironmentwords[0]),
         dg_presortedenvwordlistsize);
 
+
+    // non forth standard words
     ppremadewordlist = dg_getppresortedbufferwords(pBHarrayhead);
     
     if ((Premadeword*)badbufferhandle == ppremadewordlist)
@@ -106,54 +112,17 @@ void dg_initwordlists (Bufferhandle* pBHarrayhead)
         ppremadewordlist, // &(mypresortedbufferwords[0]),
         dg_prestoredbufferwordlistsize);
 
-/*
-    ppremadewordlist = dg_getppresortedstringwords();
-    
-    if ((Premadeword*)badbufferhandle == ppremadewordlist)
-    {
-        dg_printzerostring(pBHarrayhead, (unsigned char*)"Unable to initialize string premade wordlist, buffer size incorrect\n");
-        return;
-    }
-
-
-    stringstackvocabid = dg_newpresortedwordlist (
-        pBHarrayhead,
-        ppremadewordlist, // &(mypresortedstringwords[0]),
-        dg_presortedstringwordlistsize);
-*/
-/*
-    ppremadewordlist = dg_getppresortedoswords();
-    
-    if ((Premadeword*)badbufferhandle == ppremadewordlist)
-    {
-        dg_printzerostring(pBHarrayhead, (unsigned char*)"Unable to initialize os premade wordlist, buffer size incorrect\n");
-        return;
-    }
-
-    operatingsystemvocabid = dg_newpresortedwordlist (
-        pBHarrayhead,
-        ppremadewordlist, // &(mypresortedoswords[0]),
-        dg_presortedoswordlistsize);
-*/
-/*
-    ppremadewordlist = dg_getppresortederrorwords();
-    
-    if ((Premadeword*)badbufferhandle == ppremadewordlist)
-    {
-        dg_printzerostring(pBHarrayhead, (unsigned char*)"Unable to initialize error premade wordlist, buffer size incorrect\n");
-        return;
-    }
-
-    errorvocabid = dg_newpresortedwordlist (
-        pBHarrayhead,
-        ppremadewordlist, // &(mypresortederrorwords[0]),
-        dg_presortederrorwordlistsize);
-*/
 
     uservocabid = dg_newwordlist(pBHarrayhead, 0);
+
     
     localsvocabid = dg_newwordlist(pBHarrayhead, 0);
 
+
+    colorvocabid = dg_newwordlist(pBHarrayhead, 0);
+
+
+    // x86 assembler words
     ppremadewordlist = dg_getppresortedx86words();
     
     if ((Premadeword*)badbufferhandle == ppremadewordlist)
@@ -167,14 +136,14 @@ void dg_initwordlists (Bufferhandle* pBHarrayhead)
         ppremadewordlist,
         dg_presortedx86wordlistsize);
 
+
     dg_putbufferuint64(pBHarrayhead, DG_DATASPACE_BUFFERID, dg_corewordlistid, forthvocabid);
     dg_putbufferuint64(pBHarrayhead, DG_DATASPACE_BUFFERID, dg_environmentwordlistid, environmentvocabid);
     dg_putbufferuint64(pBHarrayhead, DG_DATASPACE_BUFFERID, dg_bufferwordlistid, buffervocabid);
-    // dg_putbufferuint64(pBHarrayhead, DG_DATASPACE_BUFFERID, dg_stringwordlistid, stringstackvocabid);
-    // dg_putbufferuint64(pBHarrayhead, DG_DATASPACE_BUFFERID, dg_oswordlistid, operatingsystemvocabid);
     dg_putbufferuint64(pBHarrayhead, DG_DATASPACE_BUFFERID, dg_userwordlistid, uservocabid);
     dg_putbufferuint64(pBHarrayhead, DG_DATASPACE_BUFFERID, dg_localswordlistid, localsvocabid);
     dg_putbufferuint64(pBHarrayhead, DG_DATASPACE_BUFFERID, dg_cpux86vocabid, x86vocabid);
+    dg_putbufferuint64(pBHarrayhead, DG_DATASPACE_BUFFERID, dg_colorvocabid, colorvocabid);
 
     dg_initcpux86wordlist(pBHarrayhead);
 
@@ -194,10 +163,6 @@ void dg_initwordlists (Bufferhandle* pBHarrayhead)
     dg_pushbufferuint64(pBHarrayhead, DG_SEARCHORDERSTACK_BUFFERID, forthvocabid); // core word list will be searched second last
 
     dg_pushbufferuint64(pBHarrayhead, DG_SEARCHORDERSTACK_BUFFERID, buffervocabid);
-
-    // dg_pushbufferuint64(pBHarrayhead, DG_SEARCHORDERSTACK_BUFFERID, stringstackvocabid);
-
-    // dg_pushbufferuint64(pBHarrayhead, DG_SEARCHORDERSTACK_BUFFERID, operatingsystemvocabid);
 
     dg_pushbufferuint64(pBHarrayhead, DG_SEARCHORDERSTACK_BUFFERID, uservocabid); // user vocab will be searched first
  
@@ -314,25 +279,7 @@ void dg_initwordlists (Bufferhandle* pBHarrayhead)
       (UINT64)(buffervocabid), 
       (unsigned char*)dg_forthbufferwordlistname);
 
-    dg_linkdefinition(pBHarrayhead, forthvocabid, definition);
-/* 
-    definition = dg_new0stringnamecoreword(
-      pBHarrayhead,
-      (UINT64)(&dg_forthdocompiletypedpushn),
-      (UINT64)(stringstackvocabid),
-      (unsigned char*)dg_forthstringwordlistname);
-
-    dg_linkdefinition(pBHarrayhead, forthvocabid, definition);
-*/
-/*    
-    definition = dg_new0stringnamecoreword(
-        pBHarrayhead,
-        (UINT64)(&dg_forthdocompiletypedpushn),
-        (UINT64)(operatingsystemvocabid),
-        (unsigned char*)dg_forthwindowswordlistname);
-
-    dg_linkdefinition(pBHarrayhead, forthvocabid, definition);
-*/    
+    dg_linkdefinition(pBHarrayhead, forthvocabid, definition); 
     
     definition = dg_new0stringnamecoreword(
         pBHarrayhead, 
@@ -341,6 +288,7 @@ void dg_initwordlists (Bufferhandle* pBHarrayhead)
         (unsigned char*)dg_forthfunctblofnname);
 
     dg_linkdefinition(pBHarrayhead, buffervocabid, definition);
+
     
     definition = dg_new0stringnamecoreword(
         pBHarrayhead, 
@@ -534,6 +482,63 @@ void dg_initwordlists (Bufferhandle* pBHarrayhead)
     if (dg_geterrorcount(pBHarrayhead) != 0)
     {
         dg_pusherror(pBHarrayhead, (const char*)"got error initializing user wordlist\n");
+        return;
+    }
+
+
+    /////////////////////////////
+    // Set up color wordlist   //
+    /////////////////////////////
+
+
+    definition = dg_new0stringnamecoreword(
+        pBHarrayhead, 
+        (UINT64)(&dg_forthdocompiletypesubroutine),
+        (UINT64)(&dg_forthci),
+        (unsigned char*)dg_forthciname);
+
+    dg_linkdefinition(pBHarrayhead, colorvocabid, definition);
+
+
+    definition = dg_new0stringnamecoreword(
+        pBHarrayhead, 
+        (UINT64)(&dg_forthdocompiletypesubroutine),
+        (UINT64)(&dg_forthcleftbracket),
+        (unsigned char*)dg_forthcleftbracketname);
+
+    dg_linkdefinition(pBHarrayhead, colorvocabid, definition);
+
+
+    definition = dg_new0stringnamecoreword(
+        pBHarrayhead, 
+        (UINT64)(&dg_forthdocompiletypesubroutine),
+        (UINT64)(&dg_forthcrightbracket),
+        (unsigned char*)dg_forthcrightbracketname);
+
+    dg_linkdefinition(pBHarrayhead, colorvocabid, definition);
+
+
+    definition = dg_new0stringnamecoreword(
+        pBHarrayhead, 
+        (UINT64)(&dg_forthdocompiletypesubroutine),
+        (UINT64)(&dg_forthcp),
+        (unsigned char*)dg_forthcpname);
+
+    dg_linkdefinition(pBHarrayhead, colorvocabid, definition);
+
+
+    definition = dg_new0stringnamecoreword(
+        pBHarrayhead, 
+        (UINT64)(&dg_forthdocompiletypesubroutine),
+        (UINT64)(&dg_forthcleftparen),
+        (unsigned char*)dg_forthcleftparenname);
+
+    dg_linkdefinition(pBHarrayhead, colorvocabid, definition);
+
+
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)"got error initializing color wordlist\n");
         return;
     }
 

@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.12.
+//    This file is part of DiaperGlu v5.13.
 //
-//    DiaperGlu v5.12 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.12 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.12; if not, write to the Free Software
+//    along with DiaperGlu v5.13; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 24, 2023              //
-// version 5.12               //
+// February 2, 2025           //
+// version 5.13               //
 // /////////////////////////////
 
   
@@ -169,6 +169,17 @@ void dg_compileinitlocals (Bufferhandle* pBHarrayhead)
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
         dg_colonreturnstackdepth,
+        4); // for -0x20
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcompileentername);
+    }
+
+    dg_putbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_returnstackdepth,
         4); // for -0x20
 
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
@@ -3232,6 +3243,46 @@ void dg_forthshadowcomma (Bufferhandle* pBHarrayhead)
     }
 }
 
+void dg_forthsafecallgpboaligncomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_compilesubn8fromrsp(
+        pBHarrayhead,
+        0x28); // for 4 shadow regs and +1 to align otherwise dg_getpbufferoffset call will trash the stack
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthshadowcommaname);
+        return;
+    }
+}
+
+void dg_forthsafecallgpbounaligncomma (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_compileaddn8torsp(
+        pBHarrayhead,
+        0x28); // drop shadow regs so that the stack pointer point to the return to jump buffer return address
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthshadowcommaname);
+        return;
+    }
+}
+
 
 const char* dg_compilentoparametername = "dg_compilentoparameter";
 
@@ -3265,7 +3316,7 @@ void dg_compilentoparameter (
         n);
 }
 
-
+/*
 void dg_forthcompilesafecallbuffer (Bufferhandle* pBHarrayhead)
 //     ( bufferoffset bufferid -- )
 {
@@ -3393,39 +3444,7 @@ void dg_forthcompilesafecallbuffer (Bufferhandle* pBHarrayhead)
         pBHarrayhead,
         pints[0],
         dg_r8); // target offset  // was rdx
-    /*
-    // show the compiled code so far
-    finalccbuflength = dg_getbufferlength(
-        pBHarrayhead,
-        compilebufid);
 
-    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-    {
-        dg_pusherror(pBHarrayhead, dg_forthcompilesafecallbuffername);
-        return;
-    }
-
-    dg_hexdumpsegment(
-        pBHarrayhead,
-        (unsigned char*)dg_getpbuffer(pBHarrayhead, compilebufid, &pbuflength),
-        finalccbuflength);
-
-    dg_printzerostring(pBHarrayhead, (unsigned char*)"target bufferid = ");
-    dg_writestdoutuint64tohex(pBHarrayhead, pints[1]);
-    dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
-
-    dg_printzerostring(pBHarrayhead, (unsigned char*)"target offset = ");
-    dg_writestdoutuint64tohex(pBHarrayhead, pints[0]);
-    dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
-
-    dg_printzerostring(pBHarrayhead, (unsigned char*)"dg_forthgrowbuffer address = ");
-    dg_writestdoutuint64tohex(pBHarrayhead, (UINT64)&dg_forthgrowbuffer);
-    dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
-
-    dg_printzerostring(pBHarrayhead, (unsigned char*)"address from compile time dg_getpbufferoffset = ");
-    dg_writestdoutuint64tohex(pBHarrayhead, (UINT64)dg_getpbufferoffset(pBHarrayhead, DG_CORE_BUFFERID, (UINT64)&dg_forthgrowbuffer));
-    dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
-    */
     dg_compilemovbracketrbpd8toreg (
         pBHarrayhead,
         dg_rcx,  // was rdi
@@ -3442,48 +3461,7 @@ void dg_forthcompilesafecallbuffer (Bufferhandle* pBHarrayhead)
     dg_compileaddn8torsp(
         pBHarrayhead,
         0x28); // drop shadow regs so that the stack pointer point to the return to jump buffer return address
-    
-    /*
-    // show calculated address
-    dg_compilemovntoreg(
-        pBHarrayhead,
-        dg_rax,
-        dg_rdx);
 
-    dg_compilemovbracketrbpd8toreg(
-        pBHarrayhead,
-        dg_rcx,  // was rdi
-        -0x10); // pBHarrayhead from frame
-
-    dg_compilesubn8fromrsp(
-        pBHarrayhead,
-        0x20); // for 4 shadow regs otherwise dg_getpbufferoffset call will trash the stack
-
-    dg_compilecalladdress(
-        pBHarrayhead,
-        (UINT64)&dg_writestdoutuint64tohex); // target address
-
-    dg_compileaddn8torsp(
-        pBHarrayhead,
-        0x20); // drop shadow regs so that the stack pointer point to the return to jump buffer return address
-
-    dg_compilemovbracketrbpd8toreg(
-        pBHarrayhead,
-        dg_rcx,  // was rdi
-        -0x10); // pBHarrayhead from frame
-
-    dg_compilesubn8fromrsp(
-        pBHarrayhead,
-        0x20); // for 4 shadow regs otherwise dg_getpbufferoffset call will trash the stack
-
-    dg_compilecalladdress(
-        pBHarrayhead,
-        (UINT64)&dg_forthcr); // target address
-
-    dg_compileaddn8torsp(
-        pBHarrayhead,
-        0x20); // drop shadow regs so that the stack pointer point to the return to jump buffer return address
-    */
     // setting 1st parameter to pBHarrayhead
     dg_compilemovbracketrbpd8toreg (
         pBHarrayhead,
@@ -3517,7 +3495,184 @@ void dg_forthcompilesafecallbuffer (Bufferhandle* pBHarrayhead)
     
     (*pbuflength) -= (2 * sizeof(UINT64));
 }
+*/
 
+/*
+const char dg_forthcompilesafecallbufferinstatecompilename[] = "dg_forthcompilesafecallbufferinstatecompile";
+
+void dg_forthcompilesafecallbufferinstatecompile (Bufferhandle* pBHarrayhead)
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+    
+    UINT64* pints;
+    
+    UINT64 compilebufid;
+    
+    UINT64 ccbuflength;
+    UINT64 finalccbuflength;
+    
+    UINT64 x;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+    
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthcompilesafecallbuffername);
+        return;
+    }
+    
+    if (*pbuflength < (2 * sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthcompilesafecallbuffername);
+        return;
+    }
+    
+    // could check for misaligned data stack here
+    
+    pints = (UINT64*)(pdatastack + *pbuflength - (2 * sizeof(UINT64)));
+    
+    compilebufid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
+        dg_pusherror(pBHarrayhead, dg_forthcompilesafecallbuffername);
+        return;
+    }
+    
+    // safe call to forth routine
+//  rcx <- pBHarrayhead    0x48 0x8B 0x7D 0xF0
+//  push return offset (don't know it yet...)
+//  push return bufferid
+//  rsp <- rsp - 20   // for shadow regs
+//  push address of jump buffer (this is where forth routine returns)
+//  r8 <- target offset
+//  rdx <- target bufferid
+//  rax <- &dg_callbufferinstatecompile
+//  jmp rax
+
+    dg_compilealignretstack(
+        pBHarrayhead,
+        6);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcompilesafecallbuffername);
+        return;
+    }
+
+    ccbuflength = dg_getbufferlength(
+        pBHarrayhead,
+        compilebufid);
+
+    // push offset
+    dg_compilemovntorax ( // "\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x00" 10 bytes
+        pBHarrayhead,
+        0); // return offset
+    
+    dg_compilepushregtoret( // "\x50" 2 bytes
+        pBHarrayhead,
+        dg_rax);  // return offset
+    
+    // push bufferid
+    dg_compilemovntorax ( // "\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x00" 10 bytes
+        pBHarrayhead,
+        compilebufid); // return bufferid (which is current compile bufferid)
+    
+    dg_compilepushregtoret( // "\x50" 2 bytes
+        pBHarrayhead,
+        dg_rax);   // return bufferid 
+
+    // allocate space for 4 shadow regs
+    dg_compilesubn8fromrsp(
+        pBHarrayhead,
+        0x20);
+
+    // stack is 16 byte aligned
+    
+    // push address of jump buffer as return address
+    dg_compilemovbracketrbpd8toreg (
+        pBHarrayhead,
+        dg_rax,
+        -0x10); // -0x10
+    
+    dg_compileaddn32torax (
+        pBHarrayhead,
+        sizeof(Bufferhandle));
+    
+    dg_compilepushregtoret( // "\x50" 2 bytes
+        pBHarrayhead,
+        dg_rax);  // push pBHarrayhead + sizeof(Bufferhandle) .. this is the return address to the jump buffer
+
+    // call forth routine at offset and bufferid on the data stack
+
+    dg_compilemovntoreg ( // "\x48\xBE\x00\x00\x00\x00\x00\x00\x00\x00" 10 bytes
+        pBHarrayhead,
+        pints[1],
+        dg_rdx); // target bufferid  // was rsi
+    
+    dg_compilemovntoreg ( // "\x48\xBA\x00\x00\x00\x00\x00\x00\x00\x00" 10 bytes
+        pBHarrayhead,
+        pints[0],
+        dg_r8); // target offset  // was rdx
+    
+    dg_compilemovbracketrbpd8toreg (
+        pBHarrayhead,
+        dg_rcx,  // was rdi
+        -0x10); // pBHarrayhead from frame
+
+    dg_compilesubn8fromrsp(
+        pBHarrayhead,
+        0x28); // for 4 shadow regs and +1 to align otherwise dg_getpbufferoffset call will trash the stack
+
+    dg_compilemovntoreg ( // "\x48\xBA\x00\x00\x00\x00\x00\x00\x00\x00" 10 bytes
+        pBHarrayhead,
+        (UINT64)&dg_callbufferinstatecompile,
+        dg_rax); // target offset  // was rdx   
+    
+    dg_compilejumptorax(pBHarrayhead); // "\xFF\xE0" 2 bytes
+    
+    // could put here to targetoffset location
+    finalccbuflength = dg_getbufferlength(
+        pBHarrayhead,
+        compilebufid);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcompilesafecallbuffername);
+        return;
+    }
+    
+    dg_putbufferuint64(
+        pBHarrayhead,
+        compilebufid,
+        ccbuflength+2,
+        finalccbuflength);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcompilesafecallbuffername);
+        return;
+    }
+
+    dg_compileaddn8torsp(
+        pBHarrayhead,
+        0x28); // drop shadow regs so that the stack pointer point to the return to jump buffer return address
+    
+    (*pbuflength) -= (2 * sizeof(UINT64));
+}
+*/
 
 const char* dg_initjumpbuffername = "dg_initjumpbuffer";
 

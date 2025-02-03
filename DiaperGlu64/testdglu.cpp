@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.12.
+//    This file is part of DiaperGlu v5.13.
 //
-//    DiaperGlu v5.12 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.12 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.12; if not, write to the Free Software
+//    along with DiaperGlu v5.13; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 24, 2023              //
-// version 5.12               //
+// February 2, 2025           //
+// version 5.13               //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -33,56 +33,56 @@
 
 void dg_forthselftest ()
 {
-	// test C error routines
-	// printf("... entering self test\n");
+    // test C error routines
+    // printf("... entering self test\n");
     
-	testdg_initerrors();
-	testdg_pusherror();
-	testdg_geterror();
-	testdg_poperror();
-	testdg_geterrorcount();
-	testdg_checkerrorsonstack();
-	testdg_clearerrors();
+    testdg_initerrors();
+    testdg_pusherror();
+    testdg_geterror();
+    testdg_poperror();
+    testdg_geterrorcount();
+    testdg_checkerrorsonstack();
+    testdg_clearerrors();
     testdg_replaceerrors();
     
-	// test C buffer routines
-	testdg_newbuffer();     // these three originally were at the top
-	testdg_growbuffer();
-	testdg_shrinkbuffer();
+    // test C buffer routines
+    testdg_newbuffer();     // these three originally were at the top
+    testdg_growbuffer();
+    testdg_shrinkbuffer();
     
-	testdg_getpbuffersegment();
-	testdg_getpbuffer();
+    testdg_getpbuffersegment();
+    testdg_getpbuffer();
     
     
-	testdg_getbuffersegment();
+    testdg_getbuffersegment();
     testdg_putbuffersegment();
-	testdg_pushbuffersegment();
+    testdg_pushbuffersegment();
     
-	testdg_popbuffersegment();
-	testdg_pickbuffersegment();
+    testdg_popbuffersegment();
+    testdg_pickbuffersegment();
 
-	testdg_getbufferbyte();
-	testdg_putbufferbyte();
-	testdg_popbufferbyte();
-	testdg_pushbufferbyte();
+    testdg_getbufferbyte();
+    testdg_putbufferbyte();
+    testdg_popbufferbyte();
+    testdg_pushbufferbyte();
     
     testdg_getbufferuint32();
     testdg_putbufferuint32();
     testdg_pushbufferuint32();
     testdg_popbufferuint32();
     
-	testdg_getbufferuint64();
-	testdg_putbufferuint64();
-	testdg_pushbufferuint64();
-	testdg_popbufferuint64();
+    testdg_getbufferuint64();
+    testdg_putbufferuint64();
+    testdg_pushbufferuint64();
+    testdg_popbufferuint64();
+ 
+    testdg_insertinbuffer();
+    testdg_deleteinbuffer();
 
-	testdg_insertinbuffer();
-	testdg_deleteinbuffer();
+    testdg_getbufferlength();
 
-	testdg_getbufferlength();
-
-	testdg_push0stringtobuffersegment();
-	testdg_getpbufferhandle();
+    testdg_push0stringtobuffersegment();
+    testdg_getpbufferhandle();
 
     testdg_checkbuffer();
 
@@ -118,23 +118,23 @@ void dg_forthselftest ()
     testdg_popdatastacktou128bracketob();
     testdg_ubufferalign();
 
-	//need dg_clearbuffer
-	//need dg_getpbufferoffset
-	//need dg_getpbufferhandle
+    //need dg_clearbuffer
+    //need dg_getpbufferoffset
+    //need dg_getpbufferhandle
 
-	// test C lstring words
-	testdg_getlstringstartoffset();
-	testdg_getlstringlength();
-	testdg_getnumberoflstringsonstack();
+    // test C lstring words
+    testdg_getlstringstartoffset();
+    testdg_getlstringlength();
+    testdg_getnumberoflstringsonstack();
     testdg_getplstring();
-	testdg_getlstring();
-	testdg_poplstring();
-	testdg_pushlstring();
-	testdg_growlstring();
-	testdg_picklstring();
-	testdg_droplstring();
-	testdg_deletelstring();
-	testdg_insertlstring();
+    testdg_getlstring();
+    testdg_poplstring();
+    testdg_pushlstring();
+    testdg_growlstring();
+    testdg_picklstring();
+    testdg_droplstring();
+    testdg_deletelstring();
+    testdg_insertlstring();
     testdg_deleteinlstring();
     testdg_insertinlstring();
     testdg_catlstringn();
@@ -142,7 +142,7 @@ void dg_forthselftest ()
     testdg_pushstolstringn();
     testdg_copysfromlstringn();
     testdg_setlengthlstringn();
-	testdg_replacelstringn();
+    testdg_replacelstringn();
     testdg_copylstringntoreplacelstringn();
     testdg_copytoinsertlstrntom();
     testdg_makesurelstringnexists();
@@ -235,35 +235,43 @@ void dg_forthselftest ()
     testdg_namestringtovaluestring();
     testdg_namestringtovaluestringflag();
 
-	// C number conversion
+    // C number conversion
 
 
-	// test C wordlist words
-	testdg_newwordlist();
-	testdg_newword();
-	testdg_getpdefinition();
-	testdg_linkdefinition();
-	testdg_createsubthreaddef();
-	testdg_createvariabledef();
-	testdg_createconstantdef();
-	testdg_getlatestdefinition();
-	testdg_getnextdefinition();
-	testdg_executedefinition();
-	testdg_finddefinwordlist();
-	testdg_findefinsearchorder();
-	//need change latest compile routine
+    // test C wordlist words
+    testdg_newwordlist();
+    testdg_newword();
+    testdg_getpdefinition();
+    testdg_linkdefinition();
+    testdg_createsubthreaddef();
+    testdg_createvariabledef();
+    testdg_createconstantdef();
+    testdg_getlatestdefinition();
+    testdg_getnextdefinition();
+    testdg_interpretdefinition();
+    testdg_finddefinwordlist();
+    testdg_findefinsearchorder();
+    //need change latest compile routine
     testdg_newpresortedwordlist();
     testdg_copyandrenamewordid();
     testdg_findcopyandrenameword();
     testdg_createbrackettoorderconstantdef();
 
-	// test C evaluate
-	testdg_evaluatebuffer();
+    testdg_safecompiledefinition();
+
+    // test C evaluate
+    testdg_evaluatebuffer();
     testdg_hibit();   
     
     // test c compiling routines
+    testdg_compilemovbracketrplussrplusd32tor();
+    testdg_compileotor();
     testdg_bumpdisplacementsizeifneeded();
     testdg_compilemovregtoreg();
+    testdg_compilecompareir64ir64();
+    testdg_compilecompareiretu64();
+    testdg_compilecomparenreg();
+    testdg_compilecomparenbracketrbpplusn();
     testdg_compilemovfregtofreg();
     testdg_compilenegatereg();
     testdg_compileaddregtoreg();
@@ -329,28 +337,49 @@ void dg_forthselftest ()
     testdg_compiledatastacktobracketrbpd();
     testdg_compilecallcoreoneuparam();
     testdg_compilecallcoretwouparams();
+
+    testdg_compiledgframecallbuffer();
+
     // testdg_compilebracketobtoptodatastack();
     testdg_compileopreg64tobracketrsp();
     testdg_getcallsubsframepreservedregoffset();
 
-    
-    
-    
-
     testdg_initjumpbuffer();
-	testdg_compilesafecall();
-/*	testdg_forthcompilegetolderrorcount();
+    testdg_compilesafecallcore();
+    testdg_compilesafecallsamebuffer();
+    testdg_compilesafecallbuffer();
+    testdg_forthcompilesafecallbuffer();
+    testdg_compilesafecallforth();
+
+/*  testdg_forthcompilegetolderrorcount();
     
-	testdg_packmodrslashm();
-	testdg_packsib();
+    testdg_packmodrslashm();
+    testdg_packsib();
 */
-	testdg_forthsquotes();
-	testdg_forthosquotes();
-	testdg_fortho0quotes();
+    testdg_forthsquotes();
+    testdg_forthosquotes();
+    testdg_fortho0quotes();
     testdg_packtwobytevex();
     testdg_packthreebytevex();
     testdg_compilevex();
     testdg_compileaddnlocalstocallsubsframe();
+
+    // test compile types
+    testdg_forthdocompiletypealwaysexecute();
+    testdg_forthdocompiletypesubroutine();
+    testdg_forthdocompiletypedpushn();
+    testdg_forthdocompiletypedpushdn();
+    testdg_forthdocompiletypedpushp();
+    testdg_forthdocompiletypedpushs();
+    testdg_forthdocompiletypewordsstringquotes();
+    testdg_forthdocompiletypewords0stringquotes();
+    testdg_forthdocompiletypecdecl();
+    testdg_forthdocompiletypecdeclretuint128();
+    testdg_forthdocompiletypeftcolon();
+    testdg_forthdocompiletypebracketwordlistdot();
+    testdg_forthdocompiletypevalue();
+    testdg_forthdocompiletypefvalue();
+    testdg_forthdocompiletypetwovalue();
     
 /*
     // test C sorted list routines
@@ -440,6 +469,7 @@ void dg_forthselftest ()
 	testdg_forthcstore();
 	testdg_forthccomma();
 	testdg_forthcfetch();
+        testdg_forthcase();
 	testdg_forthcellplus();
 	testdg_forthcells();
 	testdg_forthchar();
@@ -519,17 +549,18 @@ void dg_forthselftest ()
 	// [CHAR] not tested here
 	testdg_forthrightbracket();
 
-	// test Forth Core Extension Words
+    // test Forth Core Extension Words
     testdg_forthzeronotequals();
     testdg_forthzerogreater();	
     testdg_forthnotequals();
+    testdg_forthcompilecomma();
     testdg_fortherase();
-	testdg_forthhex();
+    testdg_forthhex();
     testdg_forthnip();
-	testdg_forthpick();
+    testdg_forthpick();
     testdg_forthroll();
-    
     testdg_forthugreaterthan();
+    testdg_forthwithin();
     testdg_forthminusrot ();
     
     // not sure what category

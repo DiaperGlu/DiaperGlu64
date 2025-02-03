@@ -1,4 +1,100 @@
 Changelog for Diaperglu
+   2 February 2025
+     Released v5.13
+
+   1 February 2025
+     Made dg_forthdocompiletypeftcolon use the function table directly
+      in compile mode to match what execute mode was doing. Also removed
+      the pBHarrayhead pointer to the function table and the compile functions
+      that used it. Also I don't know how to export a pointer to const UINT64
+      array on Windows without putting the array in the header file.
+      (Note: the ftcolon mode was an experiment that was not used. I went with
+       glulists instead.)
+     I didn't use my normal code test document process for parts of this release
+      and instead of doing one small thing at a time, I made a lot of changes at
+      once and then went back to test. It's possible I may have missed some
+      things.
+
+   25 January 2025
+     Added CODEMES, CODEME, END-CODEMES, EMES, EME, ENDEMES,
+     Added ?<>
+     Added #CODEMES CODEMES-CURRENT CODEMES-CURRENT++ ?CODEMES_CURRENT
+     Added CODEMEU-IF-SYS CODEMEU-BEGIN-SYS
+     Added CODEMES-DROP CODEMES-RESOLVE-START CODEMES-RESOLVE-ENDS
+     Added CODEMES-CASE, CODEMES-OF, CODEMES-END-CASE, 
+     Added CODEMES-CASES, CASES, ENDCASES,
+     Added CODEMES-JUMPS, CODEME-ALWAYSJUMP, JUMPS, ALWAYSJUMP,
+     Added X-CODEME-VSJUMP, X-CODEME-NVJUMP, VSJUMP, NVJUMP,
+     Added X-CODEME-U<JUMP, X-CODEME-U>=JUMP, U<JUMP, U>=JUMP,
+     Added X-CODEME-=JUMP, X-CODEME-<>JUMP, =JUMP, <>JUMP,
+     Added X-CODEME-U<=JUMP, X-CODEME-U>JUMP, U<=JUMP, U>JUMP,
+     Added X-CODEME-MIJUMP, X-CODEME-PLJUMP, MIJUMP, PLJUMP,
+     Added X-CODEME-PSJUMP, X-CODEME-NPJUMP, PSJUMP, NPJUMP,
+     Added X-CODEME-<JUMP, X-CODEME->JUMP, <JUMP, >JUMP,
+     Added X-CODEME-<=JUMP, X-CODEME->=JUMP, <=JUMP, >=JUMP,
+     Added X-CODEME-CSJUMP, X-CODEME-NCJUMP, CSJUMP, NCJUMP,
+     Added X-Y-CODEME-WITHINJUMP, WITHINJUMP,
+     Added DEFAULTJUMP, DEFAULTDROPJUMP,
+     Added CODEMES-JUMPTABLE,
+     Added JUMPTABLE-UJUMP,
+     Added CODEMES-UJUMP, UJUMP,
+     Added CODEMES-END-JUMPS, ENDJUMPS, ENDUJUMP,
+     Added ?< ?<= ?> ?>= ?U< ?U<= ?U> ?U>= 
+     Added CI C[ C] CP C( colorforth state change words
+       and a search first always execute wordlist to hold these words
+     Added colorforth state processing to the main interpret loop
+
+   28 December 2024
+     Added BEGIN-SYS>P,
+
+   17 December 2024
+     Added WITHIN
+
+   14 December 2024
+     Added >XTP,
+
+   6 December 2024
+     Removed OCRPRESERVEREGS documentation
+
+   1 December 2024
+     Added dg_compilesafereturn
+     Added dg_compilesafecallbuffer
+     Changed dg_forthcompilesafecallbuffer to use dg_compilesafecallbuffer
+     Added dg_compilesafecallcore
+     Added dg_compilesafecallsamebuffer
+     Added dg_compilesafecallforth // picks most efficient call
+     Changed dg_forthdocompiletypesafesubroutine to use dg_compilesafecallforth
+     Added dg_safecompiledefinition
+     Added dg_forthsafecompilecomma
+
+   20 November 2024
+     Added dg_executedefinition which does the execute state action of a definition
+     Added dg_compiledefinition which does the compile state action of a definition
+     Fixed EXECUTE to only do the execute state action of an execution token
+     Added COMPILE,
+     Changed POSTPONE to compile a call to a definition's compile state action
+
+   19 November 2024
+     Renamed dg_executedefinition to dg_interpretdefinition
+
+   16 November 2024
+     Added CASE OF ENDOF DEFAULTOF ENDCASE
+     Added CASESYS AFTEROFSYS AFTERENDOFSYS AFTERDEFAULTOFSYS
+ 
+   11 November 2024
+     Added AHEAD
+
+   09 November 2024
+     Updated documentation for SAFE.
+     
+   3 November 2024
+     Added CODE-CREATE
+     Added COMPILE->XTP
+
+   6 October 2024
+     Documentation fix for dg_forthcomma. Changed n1 comment to refer to data space buffer.
+
+
    24 June 2023
      Released v5.12
 

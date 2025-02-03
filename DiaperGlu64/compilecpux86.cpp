@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.12.
+//    This file is part of DiaperGlu v5.13.
 //
-//    DiaperGlu v5.12 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.12 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.12; if not, write to the Free Software
+//    along with DiaperGlu v5.13; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,11 +23,677 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 24, 2023              //
-// version 5.12               //
+// February 2, 2025           //
+// version 5.13               //
 // /////////////////////////////
 
 #include "diapergluforth.h"
+
+/*
+enum dg_branchtypes {
+    DG_BRANCHTYPE_OVERFLOW = 0,
+    DG_BRANCHTYPE_NOOVERFLOW,
+    DG_BRANCHTYPE_ULESSTHAN,
+    DG_BRANCHTYPE_UGREATERTHANOREQUAL,
+    DG_BRANCHTYPE_EQUAL,
+    DG_BRANCHTYPE_NOTEQUAL,
+    DG_BRANCHTYPE_ULESSTHANOREQUAL,
+    DG_BRANCHTYPE_UGREATERTHAN,
+    DG_BRANCHTYPE_MINUS,
+    DG_BRANCHTYPE_PLUS,
+    DG_BRANCHTYPE_PARITYEVEN,
+    DG_BRANCHTYPE_PARITYODD,
+    DG_BRANCHTYPE_LESSTHAN,
+    DG_BRANCHTYPE_GREATERTHANOREQUAL,
+    DG_BRANCHTYPE_LESSTHANOREQUAL,
+    DG_BRANCHTYPE_GREATERTHAN,
+    DG_BRANCHTYPE_ALWAYS,
+    DG_BRANCHTYPE_NEVER,
+    DG_BRANCHTYPE_CARRYSET = 2,
+    DG_BRANCHTYPE_CARRYCLEAR = 3,
+    DG_BRANCHTYPE_ZERO = 4,
+    DG_BRANCHTYPE_NOTZERO = 5
+};
+*/
+/*
+UINT64 dg_conditionandmask[16] = {
+    0x200, // vs
+    0x200, // nv
+    0x001, // cs
+    0x001, // nc
+    0x040, // zs
+    0x040, // nz
+    0x041, // ule
+    0x041, // ugt
+    0x080, // mi
+    0x080, // pl
+    0x004, // ps
+    0x004, // np
+} // need sign flag (0x80) xor overflow flag (0x200) for signed stuff...
+*/    
+/*
+UINT64 dg_compareforucondition (
+    UINT64 usrc, 
+    UINT64 udest, 
+    UINT64 flagandmask)
+{
+    UINT64 x;
+
+    x = flagandmask & dg_compareforconditionsub(usrc, udest);
+    
+    return(x != 0);
+}
+
+UINT64 dg_comparefornotucondition (
+    UINT64 usrc, 
+    UINT64 udest, 
+    UINT64 flagandmask)
+{
+    UINT64 x;
+
+    x = flagandmask & dg_compareforconditionsub(usrc, udest);
+    
+    return(x != 0);
+}
+
+UINT64 dg_compareforncondition (
+    UINT64 usrc, 
+    UINT64 udest, 
+    UINT64 flagandmask)
+{
+    UINT64 x, y;
+
+    x = dg_compareforconditionsub(usrc, udest);
+    y = (x >> 2) ^ x; 
+    x = (y & 0x80) | (x & flagandmask);   
+    return(x != 0);
+}
+
+UINT64 dg_comparefornotncondition (
+    UINT64 usrc, 
+    UINT64 udest, 
+    UINT64 flagandmask)
+{
+    UINT64 x, y;
+
+    x = dg_compareforconditionsub(usrc, udest);
+    y = (x >> 2) ^ x; 
+    x = (y & 0x80) | (x & flagandmask);   
+    return(x == 0);
+}
+
+
+const char* dg_comparetopforuconditionname = "dg_comparetopforucondition";
+
+UINT64 dg_comparetopforucondition (
+    Bufferhandle* pBHarrayhead,
+    UINT64 udest,
+    UINT64 flagandmask)
+{   
+    UINT64 usrc;
+    UINT64 flag = 0;
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return(flag);
+    }
+
+    usrc = dg_getuint64stackelement(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        0);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_comparetopforuconditionname);
+        return(flag);
+    }
+
+    flag = dg_compareforucondition(
+        usrc,
+        udest,
+        flagandmask);
+
+     return(flag);
+}
+
+
+const char* dg_comparetopfornotuconditionname = "dg_comparetopfornotucondition";
+
+UINT64 dg_comparetopfornotucondition (
+    Bufferhandle* pBHarrayhead,
+    UINT64 udest,
+    UINT64 flagandmask)
+{   
+    UINT64 usrc;
+    UINT64 flag;
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return(flag);
+    }
+
+    usrc = dg_getuint64stackelement(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        0);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_comparetopforuconditionname);
+        return(flag);
+    }
+
+    flag = dg_comparefornotucondition(
+        usrc,
+        udest,
+        flagandmask);
+
+     return(flag);
+}
+*/
+
+// 48 8B 84 00 00 FF FF FF  [RAX+1*RAX+-100] -> RAX
+// 49 8B 84 00 00 FF FF FF  [R8+1*RAX+-100] ->RAX
+// 4A 8B 84 00 00 FF FF FF  [RAX+1*R8+-100] ->RAX
+// 4C 8B 84 00 00 FF FF FF  [RAX+1*RAX+-100] ->R8
+
+// 48 8B 84 01 00 FF FF FF  [RCX+1*RAX+-100] -> RAX
+// 48 8B 84 C0 00 FF FF FF  [RAX+8*RAX+-100] -> RAX
+// 48 8B 84 08 00 FF FF FF  [RAX+1*RCX+-100] -> RAX
+// 48 8B 8C 00 00 FF FF FF  [RAX+1*RAX+-100] -> RCX
+
+const char* dg_compilemovbracketrplussrplusd32torname = "dg_compilemovbracketrplussrplusd32tor";
+
+void dg_compilemovbracketrplussrplusd32tor(
+    Bufferhandle* pBHarrayhead,
+    UINT64 basereg,
+    UINT64 scale, // 0=1* 1=2* 2=4* 3=8*
+    UINT64 indexreg,
+    INT64 displacement,
+    UINT64 destreg)
+{
+    unsigned char pbuf[9] = "\x48\x8B\x84\x00\x00\x00\x00\x00"; 
+    UINT64 ccbufid;
+    UINT64 ccbuflength;
+    INT32 n;
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pbuf[2] = pbuf[2] | ((destreg & 7) << 3);
+    pbuf[3] = (basereg & 7) | ((indexreg & 7) << 3) | ((scale & 3) << 6) ;
+
+    if (basereg < dg_rax)
+    {
+        pbuf[0] = pbuf[0] | 1;
+    }
+
+    if (indexreg < dg_rax)
+    {
+        pbuf[0] = pbuf[0] | 2;
+    }
+
+    if (destreg < dg_rax)
+    {
+        pbuf[0] = pbuf[0] | 4;
+    }
+
+    if (((UINT64)(displacement + 0x80000000)) >= 0x100000000)
+    {
+        dg_pusherror(pBHarrayhead, dg_signedvaluetoobigerror);
+        dg_pusherror(pBHarrayhead, dg_compilemovbracketrplussrplusd32torname);
+        return;
+    }
+
+    *((UINT32*)(&(pbuf[4]))) = (UINT32)displacement;
+
+    dg_compilesegment(
+        pBHarrayhead,
+        (const char*)pbuf,
+         8);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilemovbracketrplussrplusd32torname);
+    }
+
+    return;
+
+}
+
+
+// 48 8D 05 01 FF FF FF - RAX
+// 48 8D 0D 01 FF FF FF - RCX
+// 4C 8D 05 01 FF FF FF - R8
+
+const char* dg_compileotorname = "dg_compileotor";
+
+void dg_compileotor(
+    Bufferhandle* pBHarrayhead,
+    UINT64 o,
+    UINT64 r)
+{
+    unsigned char pbuf[8] = "\x48\x8D\x05\x00\x00\x00\x00"; 
+    UINT64 ccbufid;
+    UINT64 ccbuflength;
+    INT32 n;
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    ccbufid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    ccbuflength = dg_getbufferlength(
+        pBHarrayhead, 
+        ccbufid);
+
+    
+    if (r < dg_rax)
+    {
+        pbuf[0] = pbuf[0] | 4;
+    }
+    
+    pbuf[2] = pbuf[2] | ((r & 7) << 3);
+
+    n = o - (ccbuflength + 7);
+
+    if (((UINT64)(n + 0x80000000)) >= 0x100000000)
+    {
+        dg_pusherror(pBHarrayhead, dg_signedvaluetoobigerror);
+        dg_pusherror(pBHarrayhead, dg_compileotorname);
+        return;
+    }
+    
+    *((UINT32*)(&(pbuf[3]))) = (UINT32)n;
+
+    dg_compilesegment(
+        pBHarrayhead,
+        (const char*)pbuf,
+         7);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compileotorname);
+    }
+
+    return;
+}
+
+// need dg_forthsafecompilecomma...
+//   - alwaysexecute - executes
+//   - subroutine - compiles safe call
+//   - safe       - compiles safe call
+//   - other ? give error I guess... unsupported compile type
+
+// dg_compilesafeframecallcore
+// dg_compilesafeframecallbuffer
+
+// align
+// offset
+// bufferid
+// return
+
+UINT64 dg_compilesafereturn(Bufferhandle* pBHarrayhead)
+{
+    UINT64 afteroffsetoffset;
+    UINT64 ccbufid;
+
+    ccbufid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    dg_compilealignretstack(
+        pBHarrayhead,
+        dg_safereturnalignn); // want just the and rsp... to get multiple of 16
+
+    // push offset
+    dg_compilemovntorax ( // "\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x00" 10 bytes
+        pBHarrayhead,
+        0); // return offset
+
+    afteroffsetoffset = dg_getbufferlength(
+        pBHarrayhead,
+        ccbufid);
+    
+    dg_compilepushregtoret( // "\x50" 2 bytes
+        pBHarrayhead,
+        dg_rax);
+    
+    // push bufferid
+    dg_compilemovntorax ( // "\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x00" 10 bytes
+        pBHarrayhead,
+        ccbufid); // return bufferid (which is current compile bufferid)
+    
+    dg_compilepushregtoret( // "\x50" 2 bytes
+        pBHarrayhead,
+        dg_rax);// push pBHarrayhead + sizeof(Bufferhandle) .. this is the return address
+
+    dg_forthshadowcomma(pBHarrayhead);
+
+    dg_compilemovbracketrbpd8toreg (
+        pBHarrayhead,
+        dg_rax,
+        -0x10); // -0x10
+    
+    dg_compileaddn32torax (
+        pBHarrayhead,
+        sizeof(Bufferhandle));
+    
+    dg_compilepushregtoret( // "\x50" 2 bytes
+        pBHarrayhead,
+        dg_rax);
+
+    return(afteroffsetoffset);
+}
+
+// combined version
+const char* dg_compilesafecallbuffername = "dg_compilesafecallbuffer";
+
+void dg_compilesafecallbuffer (
+    Bufferhandle* pBHarrayhead,
+    UINT64 offset,
+    UINT64 bufferid)
+{   
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    UINT64 afteroffsetoffset;
+    UINT64 finalccbuflength;
+
+    UINT64 ccbufid;
+
+    ccbufid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+    
+    afteroffsetoffset = dg_compilesafereturn(pBHarrayhead);
+
+    // can't do this because the align will mess things up
+    // dg_compilecallcoretwouparams (
+    //    pBHarrayhead, 
+    //    (UINT64)&dg_getpbufferoffset),
+    //    bufferid,
+    //    offfset);
+
+    // compiling call to dg_getpbufferoffset
+    dg_compilemovntoreg ( // "\x48\xBE\x00\x00\x00\x00\x00\x00\x00\x00" 10 bytes
+        pBHarrayhead,
+        bufferid,
+        dg_param2reg); // target bufferid
+    
+    dg_compilemovntoreg ( // "\x48\xBA\x00\x00\x00\x00\x00\x00\x00\x00" 10 bytes
+        pBHarrayhead,
+        offset,
+        dg_param3reg); // target offset
+    
+    dg_compilemovbracketrbpd8toreg (
+        pBHarrayhead,
+        dg_param1reg,
+        -0x10); // pBHarrayhead from frame
+
+    dg_forthsafecallgpboaligncomma (pBHarrayhead); // includes win64 shadow
+    
+    dg_compilecalladdress ( // "\xFF\x15\x02\x00\x00\x00\xEB\x08\x00\x00\x00\x00\x00\x00\x00\x00" 16 bytes
+        pBHarrayhead,
+        (UINT64)&dg_getpbufferoffset); // target address
+
+    dg_forthsafecallgpbounaligncomma (pBHarrayhead); // includes win64 shadow
+
+    // compiling jump to current address of offset bufferid    
+    dg_compilemovbracketrbpd8toreg (
+        pBHarrayhead,
+        dg_param1reg,
+        -0x10); // pBHarrayhead from frame
+    
+    dg_compilejumptorax(pBHarrayhead); // "\xFF\xE0" 2 bytes
+    
+    // could put here to targetoffset location
+    finalccbuflength = dg_getbufferlength(
+        pBHarrayhead,
+        ccbufid);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilesafecallbuffername);
+        return;
+    }
+    
+    dg_putbufferuint64(
+        pBHarrayhead,
+        ccbufid,
+        afteroffsetoffset-8,
+        finalccbuflength);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilesafecallbuffername);
+        return;
+    }
+}
+
+void dg_forthcompilesafecallbuffer (Bufferhandle* pBHarrayhead)
+//     ( bufferoffset bufferid -- )
+{
+    UINT64 offset, bufferid;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    bufferid = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcompilesafecallbuffername);
+        return;
+    }
+
+    offset = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcompilesafecallbuffername);
+        return;
+    }
+
+    dg_compilesafecallbuffer (
+        pBHarrayhead,
+        offset,
+        bufferid);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcompilesafecallbuffername);
+        return;
+    }
+}
+
+
+const char* dg_compilesafecallcorename = "dg_compilesafecallcore";
+
+void dg_compilesafecallcore (
+    Bufferhandle* pBHarrayhead,
+    UINT64 addr)
+{   
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    UINT64 afteroffsetoffset;
+    UINT64 finalccbuflength;
+
+    UINT64 ccbufid;
+
+    ccbufid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+    
+    afteroffsetoffset = dg_compilesafereturn(pBHarrayhead);
+
+    // compiling jump to current address of offset bufferid    
+    dg_compilemovbracketrbpd8toreg (
+        pBHarrayhead,
+        dg_param1reg,
+        -0x10); // pBHarrayhead from frame
+
+    dg_compilemovntoreg(
+        pBHarrayhead,
+        addr,
+        dg_rax);
+    
+    dg_compilejumptorax(pBHarrayhead); // "\xFF\xE0" 2 bytes
+    
+    // could put here to targetoffset location
+    finalccbuflength = dg_getbufferlength(
+        pBHarrayhead,
+        ccbufid);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilesafecallcorename);
+        return;
+    }
+    
+    dg_putbufferuint64(
+        pBHarrayhead,
+        ccbufid,
+        afteroffsetoffset-8,
+        finalccbuflength);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilesafecallcorename);
+        return;
+    }
+}
+
+
+const char* dg_compilesafecallsamebuffername = "dg_compilesafecallsamebuffer";
+
+void dg_compilesafecallsamebuffer (
+    Bufferhandle* pBHarrayhead,
+    UINT64 targetoffset)
+{   
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    UINT64 afteroffsetoffset;
+    UINT64 finalccbuflength;
+
+    UINT64 afterbranchoffset;
+
+    UINT64 ccbufid;
+
+    ccbufid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+    
+    afteroffsetoffset = dg_compilesafereturn(pBHarrayhead);
+
+    // compiling jump to current address of offset bufferid    
+    dg_compilemovbracketrbpd8toreg (
+        pBHarrayhead,
+        dg_param1reg,
+        -0x10); // pBHarrayhead from frame
+
+    afterbranchoffset = dg_compilebranch (
+        pBHarrayhead,
+        DG_BRANCHTYPE_ALWAYS);
+
+    dg_resolvecompiledbranch (
+        pBHarrayhead,
+        afterbranchoffset,
+        targetoffset);
+    
+    // could put here to targetoffset location
+    finalccbuflength = dg_getbufferlength(
+        pBHarrayhead,
+        ccbufid);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilesafecallsamebuffername);
+        return;
+    }
+    
+    dg_putbufferuint64(
+        pBHarrayhead,
+        ccbufid,
+        afteroffsetoffset-8,
+        finalccbuflength);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilesafecallsamebuffername);
+        return;
+    }
+}
+
+
+void dg_compilesafecallforth (
+    Bufferhandle* pBHarrayhead,
+    UINT64 offset,
+    UINT64 bufferid)
+{
+    UINT64 ccbufid;
+
+    if (DG_CORE_BUFFERID == bufferid)
+    {
+        dg_compilesafecallcore (
+            pBHarrayhead,
+            offset);
+        return;
+    }
+
+    ccbufid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (bufferid == ccbufid) // and branch isn't too far...
+    {
+        dg_compilesafecallsamebuffer (
+            pBHarrayhead,
+            offset);
+        return;
+    }
+    
+    dg_compilesafecallbuffer (
+        pBHarrayhead,
+        offset,
+        bufferid);
+    
+}
 
 // when do you need REX?
 //  only in 64 bit mode
@@ -89,6 +755,51 @@ void dg_compilecallcore (
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
         dg_pusherror(pBHarrayhead, dg_compilecallcorename);
+        return;
+    }
+}
+
+
+const char* dg_compiledgframecallretregname = "dg_compiledgframecallretreg";
+
+void dg_compiledgframecallretreg (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_compilealignretstack(pBHarrayhead, 1); // align for 1 paramater
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledgframecallretregname);
+        return;
+    }
+
+    dg_compilepushpBHarrayheadtoret(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledgframecallretregname);
+        return;
+    }
+
+    dg_forthshadowcomma(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledgframecallretregname);
+        return;
+    }
+
+    dg_compilecallrax (pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledgframecallretregname);
         return;
     }
 }
@@ -168,7 +879,7 @@ void dg_compilecallcoretwouparams (
         return;
     }
     
-    dg_compilealignretstack(pBHarrayhead, 3); // align for 1 paramater
+    dg_compilealignretstack(pBHarrayhead, 3); // align for 3 paramaters
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -214,7 +925,9 @@ void dg_compilecallcoretwouparams (
         return;
     }
     
-    dg_compilecalladdress (pBHarrayhead, addr);
+    dg_compilecalladdress (
+        pBHarrayhead, 
+        addr);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -224,6 +937,91 @@ void dg_compilecallcoretwouparams (
 }
 
 
+const char* dg_compiledgframecalloffsetinsamebuffername = "dg_compiledgframecalloffsetinsamebuffer";
+
+void dg_compiledgframecalloffsetinsamebuffer (
+    Bufferhandle* pBHarrayhead, 
+    UINT64 offset)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_compilealignretstack(pBHarrayhead, 1); // align for 1 paramater
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledgframecalloffsetinsamebuffername);
+        return;
+    }
+
+    dg_compilepushpBHarrayheadtoret(pBHarrayhead);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledgframecalloffsetinsamebuffername);
+        return;
+    }
+
+    dg_forthshadowcomma(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledgframecalloffsetinsamebuffername);
+        return;
+    }
+
+    dg_compilecalloffsetinsamebuffer (
+        pBHarrayhead,
+        offset);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledgframecalloffsetinsamebuffername);
+        return;
+    }
+}
+
+
+const char* dg_compiledgframecallbuffername = "dg_compiledgframecallbuffer";
+
+void dg_compiledgframecallbuffer (
+    Bufferhandle* pBHarrayhead, 
+    UINT64 offset,
+    UINT64 bufferid)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_compilecallcoretwouparams (
+        pBHarrayhead, 
+        (UINT64)&dg_getpbufferoffset,
+        bufferid,
+        offset);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledgframecallbuffername);
+        return;
+    }
+
+    dg_compiledgframecallretreg(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compiledgframecallbuffername);
+        return;
+    }
+}
+
+/*
 const char* dg_compilecallftcolonname = "dg_compilecallftcolon";
 
 void dg_compilecallftcolon (
@@ -265,7 +1063,7 @@ void dg_compilecallftcolon (
         return;
     }
 }
-
+*/
 
 // this compile call routine allows for removing two parameters on return instead of just one
 // this routine assumes code compiled just before this code leaves n on the return stack
@@ -336,9 +1134,6 @@ void dg_compilepushdatastack (Bufferhandle* pBHarrayhead)
 }
 
 
-// this compile call routine allows for removing two parameters on return instead of just one
-// this routine assumes code compiled just before this code leaves n in the rsi register
-// might be simpler to just write this out in the routines that use this
 const char* dg_compilepushntodatastackname = "dg_compilepushntodatastack";
 
 void dg_compilepushntodatastack (
@@ -396,9 +1191,6 @@ void dg_compilepushntodatastack (
 }
 
 
-// this compile call routine allows for removing two parameters on return instead of just one
-// this routine assumes code compiled just before this code leaves n in the rsi register
-// might be simpler to just write this out in the routines that use this
 const char* dg_compilepushntof64stackname = "dg_compilepushntof64stack";
 
 void dg_compilepushntof64stack (
@@ -2061,7 +2853,7 @@ void dg_compilesubnfromrsp(
 
 const char* dg_compileaddnlocalstocallsubsframename = "dg_compileaddnlocalstocallsubsframe";
 
-void dg_compileaddnlocalstocallsubsframe(
+UINT64 dg_compileaddnlocalstocallsubsframe(
     Bufferhandle* pBHarrayhead,
     UINT64 n)
 {
@@ -2076,18 +2868,18 @@ void dg_compileaddnlocalstocallsubsframe(
     // movq  rsp -> [rbp-0x20]                0x48 0x89 0x65 0xE0  // seems rex is needed
 
     INT64 offset;
-    UINT64 returnstackdepth;
+    UINT64 returnstackdepth = (UINT64)-1;
 
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
 
     if (baderrorcount == olderrorcount)
     {
-        return;
+        return ((UINT64)-1);
     }
 
     if (0 == n)
     {
-        return;
+        return ((UINT64)-1);
     }
 
     returnstackdepth = dg_getbufferuint64(
@@ -2098,7 +2890,7 @@ void dg_compileaddnlocalstocallsubsframe(
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
         dg_pusherror(pBHarrayhead, dg_compileaddnlocalstocallsubsframename);
-        return;
+        return((UINT64)-1);
     }
 
     returnstackdepth += n;
@@ -2112,7 +2904,7 @@ void dg_compileaddnlocalstocallsubsframe(
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
         dg_pusherror(pBHarrayhead, dg_compileaddnlocalstocallsubsframename);
-        return;
+        return((UINT64)-1);
     }
 
     unsigned char n8string[13] = "\x48\x8B\x65\xE0\x48\x83\xEC\x00\x48\x89\x65\xE0";
@@ -2123,7 +2915,7 @@ void dg_compileaddnlocalstocallsubsframe(
     {
         dg_pusherror(pBHarrayhead, dg_invalidparametererror);
         dg_pusherror(pBHarrayhead, dg_compileaddnlocalstocallsubsframename);
-        return;
+        return((UINT64)-1);
     }
 
     offset = (((INT64)n) * sizeof(UINT64));
@@ -2143,9 +2935,10 @@ void dg_compileaddnlocalstocallsubsframe(
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
         {
             dg_pusherror(pBHarrayhead, dg_compileaddnlocalstocallsubsframename);
+            return((UINT64)-1);
         }
 
-        return;
+        return(returnstackdepth);
     }
 
     // mac os x c compiler does the wrong thing if you give it -0x80000000 - 3/30/2022 J.N.
@@ -2162,13 +2955,15 @@ void dg_compileaddnlocalstocallsubsframe(
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
         {
             dg_pusherror(pBHarrayhead, dg_compileaddnlocalstocallsubsframename);
+            return((UINT64)-1);
         }
 
-        return;
+        return(returnstackdepth);
     }
 
     dg_pusherror(pBHarrayhead, dg_signedvaluetoobigerror);
     dg_pusherror(pBHarrayhead, dg_compileaddnlocalstocallsubsframename);
+    return((UINT64)-1);
 }
 
 
@@ -5755,7 +6550,7 @@ void dg_compilecopystonew0string (
     // pop length to parameter 1 out of 0 to 2
     dg_compilepopregfromret(
         pBHarrayhead,
-        dg_rsi);
+        dg_param2reg);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -5776,7 +6571,7 @@ void dg_compilecopystonew0string (
     dg_compilemovntoreg(
         pBHarrayhead,
         stringlength,
-        dg_rdx);
+        dg_param3reg);
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -5952,6 +6747,18 @@ void dg_compilejumptoaddress (
 }
 */
 
+void dg_compilecallrax (Bufferhandle* pBHarrayhead)
+{
+    // call rax      0xFF 0xD0  ( ff /2 )
+    
+    unsigned char pbuf[3] = "\xFF\xD0";
+    
+    dg_compilesegment (
+        pBHarrayhead, 
+        (const char*)pbuf, 
+        2);
+}
+
 void dg_compilecalladdress (
     Bufferhandle* pBHarrayhead,
     UINT64 addr)
@@ -6013,7 +6820,7 @@ void dg_compilecalladdresspreserveregs (
 
 // what about 2 [RIP+N] CALL, NEVER IF, address to call THEN, 
 
-
+/*
 // this compiles a push pBHarrayhead to the return stack before the call
 void dg_compilecallfunctblfunction (
     Bufferhandle* pBHarrayhead,
@@ -6033,13 +6840,13 @@ void dg_compilecallfunctblfunction (
     // pbuf[6] = bufferhandleppfunctbloffset; // assumes offset to function table < 0x100
     
     // *(UINT64*)(&(pbuf[9])) = functionindex * 4;
-    
-    
-    // RDI oftbl [R+N] RAX MOV,      0x48 0x8B 0x47 oftbl
+
+    // dg_param1reg oftbl [R+N] RAX MOV,      0x48 0x8B 0x47 oftbl
     // RAX findex 8 * [R+N] CALL,    0xFF 0x90 0x00 0x00 0x00 0x00
 
-    unsigned char pbuf[11] = "\x48\x8B\x47\x00\xFF\x90\x00\x00\x00\x00";
+    unsigned char pbuf[11] = "\x48\x8B\x40\x00\xFF\x90\x00\x00\x00\x00";
     
+    pbuf[2] = 0x40 | (dg_param1reg & 0x7);
     pbuf[3] = bufferhandleppfunctbloffset; // assumes offset to function table < 0x100
     
     // might want to check to see if the result is positive
@@ -6052,7 +6859,7 @@ void dg_compilecallfunctblfunction (
         (const char*)pbuf, 
         10);
 }
-
+*/
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -7124,6 +7931,567 @@ void dg_resolvecompiled8bitbranch(
 }
 
 
+const char* dg_compilecompareir64ir64name = "dg_compilecompareir64ir64";
+
+void dg_compilecompareir64ir64(
+    Bufferhandle* pBHarrayhead,
+    UINT64 srcreg,
+    UINT64 destreg)
+{
+    // cmp destreg - srcreg -> flags
+    unsigned char pbuf[4] = "\x48\x3B\xC0";
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    
+    pbuf[2] = 0xC0 | (srcreg & 7) | ((destreg & 7) << 3);
+
+    dg_compilesegment(pBHarrayhead, (const char*)pbuf, 3);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecompareir64ir64name);
+        return;
+    }
+}
+
+/*
+const char* dg_compilecompareregbracketrbpplusn8name = "dg_compilecompareregbracketrbpplusn8name";
+
+void dg_compilecompareregbracketrbpplusn8name(
+    Bufferhandle* pBHarrayhead,
+    UINT64 reg,
+    INT64 n)
+{
+    // cmp rax - nnnnnnnn 
+    unsigned char pbuf[5] = "\x48\x39\x45\x00";
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    pbuf[3] = (UINT8)(n & 0xff);    
+    
+    pbuf[2] = ((reg & 7) <<  3) | 0x45;
+
+    dg_compilesegment(pBHarrayhead, (const char*)pbuf, 4);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecompareregbracketrbpplusn8name);
+        return;
+    }
+}
+
+
+const char* dg_compilecompareregbracketrbpplusn32name = "dg_compilecompareregbracketrbpplusn32name";
+
+void dg_compilecompareregbracketrbpplusn32name(
+    Bufferhandle* pBHarrayhead,
+    UINT64 reg,
+    INT64 n)
+{
+    // cmp rax - nnnnnnnn 
+    unsigned char pbuf[8] = "\x48\x39\x85\x00\x00\x00\x00";
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    *(INT32*)(&(pbuf[3])) = n & 0xFFFFFFFF;
+    
+    pbuf[2] = ((reg & 7) <<  3) | 0x85;
+
+    dg_compilesegment(pBHarrayhead, (const char*)pbuf, 4);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecompareregbracketrbpplusn32name);
+        return;
+    }
+}
+*/
+
+const char* dg_compilecomparenbracketrbpplusnname = "dg_compilecomparenbracketrbpplusn";
+
+void dg_compilecomparenbracketrbpplusn (
+    Bufferhandle* pBHarrayhead,
+    UINT64 destn,
+    INT64 ndisplacement)
+{
+    struct Twotargetopcodestrings mycmpopcodes;
+
+    dg_Sibformatter firsttarget; // destination
+    dg_Sibformatter secondtarget; // source
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    dg_fill2targetmathoptbl (
+        pBHarrayhead,
+        &mycmpopcodes,
+        7);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecomparenbracketrbpplusnname);
+        return;
+    }
+    
+    dg_initSibformatter(&firsttarget);
+    dg_initSibformatter(&secondtarget);
+
+    firsttarget.immediatesize = 0; 
+    firsttarget.immediatevalue = destn;
+    firsttarget.memmode = dg_memmodeimmediate;
+
+    secondtarget.displacementsize = 0;
+    secondtarget.displacement = ndisplacement;
+    secondtarget.memmode = dg_memmodemodrslashm;
+    secondtarget.basereg = dg_rbp;
+
+    dg_compiletwotargets (
+        pBHarrayhead,
+        &mycmpopcodes,
+        &firsttarget, // top on stack
+        &secondtarget); // second on stack
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecomparenbracketrbpplusnname);
+        return;
+    }
+}
+
+
+const char*dg_compilecomparenregname = "dg_compilecomparenreg";
+
+void dg_compilecomparenreg (
+    Bufferhandle* pBHarrayhead,
+    UINT64 srcn,
+    UINT64 destreg)
+{
+    struct Twotargetopcodestrings mycmpopcodes;
+
+    dg_Sibformatter firsttarget; // destination
+    dg_Sibformatter secondtarget; // source
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    dg_fill2targetmathoptbl (
+        pBHarrayhead,
+        &mycmpopcodes,
+        7);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecomparenregname);
+        return;
+    }
+    
+    dg_initSibformatter(&firsttarget);
+    dg_initSibformatter(&secondtarget);
+
+    firsttarget.basereg = destreg;
+    firsttarget.memmode = dg_memmodereg;
+    firsttarget.size = dg_getsizefromreg (destreg);
+                
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecomparenregname);
+        return;
+    }  
+
+    secondtarget.immediatesize = 0; 
+    secondtarget.immediatevalue = srcn;
+    secondtarget.memmode = dg_memmodeimmediate;
+
+    dg_compiletwotargets (
+        pBHarrayhead,
+        &mycmpopcodes,
+        &firsttarget, // top on stack
+        &secondtarget); // second on stack
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecomparenregname);
+        return;
+    }
+}
+
+
+const char* dg_compilesubbracketrbpplusnregname = "dg_compilesubbracketrbpplusnreg";
+
+void dg_compilesubbracketrbpplusnreg (
+    Bufferhandle* pBHarrayhead,
+    UINT64 ndisplacement,
+    UINT64 destreg)
+{
+    struct Twotargetopcodestrings mysubopcodes;
+
+    dg_Sibformatter firsttarget; // destination
+    dg_Sibformatter secondtarget; // source
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    dg_fill2targetmathoptbl (
+        pBHarrayhead,
+        &mysubopcodes,
+        5);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilesubbracketrbpplusnregname);
+        return;
+    }
+    
+    dg_initSibformatter(&firsttarget);
+    dg_initSibformatter(&secondtarget);
+
+    firsttarget.basereg = destreg;
+    firsttarget.memmode = dg_memmodereg;
+    firsttarget.size = dg_getsizefromreg (destreg);
+                
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilesubbracketrbpplusnregname);
+        return;
+    }  
+
+    secondtarget.displacementsize = 0;
+    secondtarget.displacement = ndisplacement;
+    secondtarget.memmode = dg_memmodemodrslashm;
+    secondtarget.basereg = dg_rbp;
+               
+    dg_compiletwotargets (
+        pBHarrayhead,
+        &mysubopcodes,
+        &firsttarget, // top on stack
+        &secondtarget); // second on stack
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilesubbracketrbpplusnregname);
+        return;
+    }
+}
+
+// so is (casevalue - lo) U< (hi - lo)
+// or is (lo - casevalue) U> (lo - hi)
+
+const char* dg_compilecompareiretu64name = "dg_compilecompareiretu64";
+
+void dg_compilecompareiretu64(
+    Bufferhandle* pBHarrayhead,
+    UINT64 n)
+{
+    // cmp rax - nnnnnnnn 
+    unsigned char pbuf[7] = "\x48\x3D\x00\x00\x00\x00";
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    // could check and compile smaller opcodes for n=0
+    
+    // check to see if n > max INT32
+    if ((n + 0x80000000) >= 0x100000000)
+    {
+        // could compile mov n -> param1reg and compare rax with param1reg
+        dg_compilemovntoreg(
+            pBHarrayhead,
+            n,
+            dg_param1reg);
+
+        dg_compilecompareir64ir64(
+            pBHarrayhead,
+            dg_param1reg, // src
+            dg_rax);      // dest
+
+        return;
+    }
+    
+    *(UINT32*)(&(pbuf[2])) = n;
+
+    dg_compilesegment(pBHarrayhead, (const char*)pbuf, 6);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecompareiretu64name);
+        return;
+    }
+}
+
+const char* dg_compilecompareiretu64branchname = "dg_compilecompareiretu64branch";
+
+void dg_compilecompareiretu64branch (
+    Bufferhandle* pBHarrayhead,
+    UINT64 u,
+    UINT64 conditioncode,
+    UINT64 beginoffset)
+{
+    UINT64 afterbranchoffset, afterbranchoffset2;
+    UINT64 ccbufid, ccbuflength;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_compilecompareiretu64(
+        pBHarrayhead,
+        u);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecompareiretu64branchname);
+        return;
+    }
+
+    afterbranchoffset = dg_compilebranch(
+        pBHarrayhead, 
+        conditioncode);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecompareiretu64branchname);
+        return;
+    }
+
+    dg_resolvecompiledbranch(
+        pBHarrayhead, 
+        afterbranchoffset, 
+        beginoffset);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecompareiretu64branchname);
+        return;
+    }
+}
+
+
+const char* dg_compilecompareiretu64branchbname = "dg_compilecompareiretu64branchb";
+
+void dg_compilecompareiretu64branchb (
+    Bufferhandle* pBHarrayhead,
+    UINT64 u,
+    UINT64 conditioncode,
+    UINT64 beginoffset)
+{
+    UINT64 afterbranchoffset, afterbranchoffset2;
+    UINT64 ccbufid, ccbuflength;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_compilecompareiretu64(
+        pBHarrayhead,
+        u);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecompareiretu64branchbname);
+        return;
+    }
+
+    afterbranchoffset = dg_compilebranch(
+        pBHarrayhead, 
+        conditioncode ^ 1);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecompareiretu64branchbname);
+        return;
+    }
+
+    dg_compilecallcore (
+        pBHarrayhead, 
+        (UINT64)&dg_forthdrop);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecompareiretu64branchbname);
+        return;
+    }
+
+    afterbranchoffset2 = dg_compilebranch(
+        pBHarrayhead, 
+        DG_BRANCHTYPE_ALWAYS);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecompareiretu64branchbname);
+        return;
+    }
+
+    dg_resolvecompiledbranch(
+        pBHarrayhead, 
+        afterbranchoffset2, 
+        beginoffset);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecompareiretu64branchbname);
+        return;
+    }
+
+    ccbufid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecompareiretu64branchbname);
+        return;
+    }
+
+    ccbuflength = dg_getbufferlength(
+        pBHarrayhead,
+        ccbufid);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecompareiretu64branchbname);
+        return;
+    }
+
+    dg_resolvecompiledbranch(
+        pBHarrayhead, 
+        afterbranchoffset, 
+        ccbuflength);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecompareiretu64branchbname);
+        return;
+    }
+}
+
+
+// RAX RBP 0 [R+N] CMP,  // [RBP+0] - RAX
+// 48 39 45 00
+
+// RCX RBP 0 [R+N] CMP,   // [RBP+0] - RCX
+// 48 39 4D 00
+
+const char* dg_compilecomparebracketrbpplusn8ir64name = "dg_compilecomparebracketrbpplusn8ir64";
+
+void dg_compilecomparebracketrbpplusn8ir64(
+    Bufferhandle* pBHarrayhead,
+    UINT64 srcreg,
+    UINT64 destn8)
+{
+    // cmp dest[rbp+n8] - srcreg -> flags
+    unsigned char pbuf[5] = "\x48\x39\x45\x00";
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    
+    pbuf[2] = 0x45 | ((srcreg & 7) << 3);
+    pbuf[3] = destn8 & 0xFF;
+
+    dg_compilesegment(pBHarrayhead, (const char*)pbuf, 4);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecomparebracketrbpplusn8ir64name);
+        return;
+    }
+}
+
+//  RAX RBP 80 [R+N] CMP,
+//  48 39 85 80 00 00 00
+
+// RCX RBP 80 [R+N] CMP,
+// 48 39 8D 80 00 00 00
+
+const char* dg_compilecomparebracketrbpplusn32ir64name = "dg_compilecomparebracketrbpplusn32ir64";
+
+void dg_compilecomparebracketrbpplusn32ir64(
+    Bufferhandle* pBHarrayhead,
+    UINT64 srcreg,
+    UINT64 destn32)
+{
+    // cmp dest[rbp+n32] - srcreg -> flags
+    unsigned char pbuf[8] = "\x48\x39\x85\x00\x00\x00\x00";
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    
+    pbuf[2] = 0x85 | ((srcreg & 7) << 3);
+    *((INT32*)(pbuf + 3)) = destn32 & 0xFFFFFFFF;
+
+    dg_compilesegment(pBHarrayhead, (const char*)pbuf, 7);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecomparebracketrbpplusn32ir64name);
+        return;
+    }
+}
+
+// need compilebracketrbpplusnir64
+//   if n8 use u8
+//   if n32 use n32
+//   if n64 (won't happen) push error
+
+const char* dg_compilequeryuequalsbranchname = "dg_compilequeryuequalsbranch";
+
+void dg_compilequeryuequalsbranch(
+    Bufferhandle* pBHarrayhead,
+    UINT64 u,
+    UINT64 conditioncode,
+    UINT64 beginoffset)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_compilecallcoretwouparams (
+        pBHarrayhead, 
+        (UINT64)&dg_getuint64stackelement,
+        DG_DATASTACK_BUFFERID,
+        0); // get stack top
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecompareiretu64branchname);
+        return;
+    }
+
+    dg_compilecompareiretu64branchb (
+        pBHarrayhead,
+        u,
+        conditioncode,
+        beginoffset);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_compilecompareiretu64branchname);
+        return;
+    }
+}
+
+
 const char* dg_compilecomparename = "dg_compilecompare";
 
 void dg_compilecompare(
@@ -7264,196 +8632,6 @@ UINT64 dg_compilepushntoret (
     return (targetoffset);
 }
 
-
-/*
-void dg_forthcompilesafecallbuffer (Bufferhandle* pBHarrayhead)
-//     ( bufferoffset bufferid -- )
-{
-    UINT64* pbuflength;
-    unsigned char* pdatastack;
-    
-    UINT64* pints;
-    
-    UINT64 compilebufid;
-    
-    UINT64 ccbuflength;
-    UINT64 finalccbuflength;
-    
-    UINT64 x;
-    
-    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
-    
-    dg_compilealignretstack(
-        pBHarrayhead,
-        7); // want just the and rsp... to get multiple of 16
-    
-    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-    {
-        dg_pusherror(pBHarrayhead, dg_forthcompilesafecallbuffername);
-        return;
-    }
-    
-    pdatastack = dg_getpbuffer(
-        pBHarrayhead,
-        DG_DATASTACK_BUFFERID,
-        &pbuflength);
-    
-    if (pdatastack == (unsigned char*)badbufferhandle)
-    {
-        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-        dg_pusherror(pBHarrayhead, dg_forthcompilesafecallbuffername);
-        return;
-    }
-    
-    if (*pbuflength < (2 * sizeof(UINT64)) )
-    {
-        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
-        dg_pusherror(pBHarrayhead, dg_forthcompilesafecallbuffername);
-        return;
-    }
-    
-    // could check for misaligned data stack here
-    
-    pints = (UINT64*)(pdatastack + *pbuflength - (2 * sizeof(UINT64)));
-    
-    compilebufid = dg_getbufferuint64(
-        pBHarrayhead,
-        DG_DATASPACE_BUFFERID,
-        currentcompilebuffer);
-    
-    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-    {
-        dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
-        dg_pusherror(pBHarrayhead, dg_forthcompilesafecallbuffername);
-        return;
-    }
-    
-    ccbuflength = dg_getbufferlength(
-        pBHarrayhead,
-        compilebufid);
-    
-    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-    {
-        dg_pusherror(pBHarrayhead, dg_forthcompilesafecallbuffername);
-        return;
-    }
-    
-    // safe call to forth routine
-//  rdi <- pBHarrayhead    0x48 0x8B 0x7D 0xF0
-//  push return offset (don't know it yet...)
-//  push return bufferid
-//  push address of jump buffer (this is where forth routine returns)
-//  rdx <- target offset
-//  rsi <- target bufferid
-//  rax <- &getpbufferoffset
-//  jmp rax OR do the RIP [R] JMP, thing
-
-    // push offset
-    dg_compilemovntorax ( // "\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x00" 10 bytes
-        pBHarrayhead,
-        0); // return offset
-    
-    dg_compilepushregtoret( // "\x50" 2 bytes
-        pBHarrayhead,
-        dg_rax);
-    
-    // dg_compilemovregtobracketrbpd8(
-    //    pBHarrayhead,
-    //    dg_rax,
-    //    -0x30); // return offset
-    
-    // push bufferid
-    dg_compilemovntorax ( // "\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x00" 10 bytes
-        pBHarrayhead,
-        compilebufid); // return bufferid (which is current compile bufferid)
-    
-    // dg_compilemovregtobracketrbpd8(
-    //    pBHarrayhead,
-    //    dg_rax,
-    //    -0x38); // return bufferid
-    
-    dg_compilepushregtoret( // "\x50" 2 bytes
-        pBHarrayhead,
-        dg_rax);// push pBHarrayhead + sizeof(Bufferhandle) .. this is the return address
-    
-    dg_compilemovbracketrbpd8toreg (
-        pBHarrayhead,
-        dg_rax,
-        -0x10); // -0x10
-    
-    dg_compileaddn32torax (
-        pBHarrayhead,
-        sizeof(Bufferhandle));
-    
-    // dg_compilemovregtobracketrbpd8(
-    //    pBHarrayhead,
-    //    dg_rax,
-    //    -0x40); // return bufferid
-    
-    dg_compilepushregtoret( // "\x50" 2 bytes
-        pBHarrayhead,
-        dg_rax);
-    
-    dg_compilemovntoreg ( // "\x48\xBE\x00\x00\x00\x00\x00\x00\x00\x00" 10 bytes
-        pBHarrayhead,
-        pints[1],
-        dg_param2reg); // target bufferid
-    
-    dg_compilemovntoreg ( // "\x48\xBA\x00\x00\x00\x00\x00\x00\x00\x00" 10 bytes
-        pBHarrayhead,
-        pints[0],
-        dg_param3reg); // target offset
-    
-    dg_compilemovbracketrbpd8toreg (
-        pBHarrayhead,
-        dg_rdi,
-        -0x10); // pBHarrayhead from frame
-
-    dg_forthshadowcomma(pBHarrayhead);
-    
-    dg_compilecalladdress ( // "\xFF\x15\x02\x00\x00\x00\xEB\x08\x00\x00\x00\x00\x00\x00\x00\x00" 16 bytes
-        pBHarrayhead,
-        (UINT64)&dg_getpbufferoffset); // target address
-    
-    // dg_compilepushbracketrbpd8 (
-    //    pBHarrayhead,
-    //    -0x40);
-    
-    dg_compilemovbracketrbpd8toreg (
-        pBHarrayhead,
-        dg_rdi,
-        -0x10); // pBHarrayhead from frame
-    
-    dg_compilejumptorax(pBHarrayhead); // "\xFF\xE0" 2 bytes
-    
-    // dg_compilecalltorax(pBHarrayhead);
-    
-    // could put here to targetoffset location
-    finalccbuflength = dg_getbufferlength(
-        pBHarrayhead,
-        compilebufid);
-    
-    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-    {
-        dg_pusherror(pBHarrayhead, dg_forthcompilesafecallbuffername);
-        return;
-    }
-    
-    dg_putbufferuint64(
-        pBHarrayhead,
-        compilebufid,
-        ccbuflength+2,
-        finalccbuflength);
-    
-    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-    {
-        dg_pusherror(pBHarrayhead, dg_forthcompilesafecallbuffername);
-        return;
-    }
-    
-    (*pbuflength) -= (2 * sizeof(UINT64));
-}
-*/
 
 // normal call to forth routine
 //  rsp <- rsp - 8
@@ -81119,6 +82297,7 @@ void dg_forthccallcommacurly (Bufferhandle* pBHarrayhead)
     // push call,< wordlist to search order stack 
 }
 */
+
 
 // CALL,<  -- not sure on name
 //  set cintparams to 0

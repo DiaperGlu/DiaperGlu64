@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.12.
+//    This file is part of DiaperGlu v5.13.
 //
-//    DiaperGlu v5.12 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.12 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.12; if not, write to the Free Software
+//    along with DiaperGlu v5.13; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 24, 2023              //
-// version 5.12               //
+// February 2, 2025           //
+// version 5.13               //
 // /////////////////////////////
 
 
@@ -3666,6 +3666,7 @@ const char* dg_initbuffers( Bufferhandle* pBHarrayhead )
 // according to the standard, dg_stateexecute needs to be NULL
 const char* dg_stateexecute = NULL;      // setting the state variable to this puts script interpreter into execute mode
 const char dg_statecompile[] = "compile"; // setting the state variable to this puts script interpreter into compile mode
+const char dg_statecolorcompile[] = "colorcompile";
 
 
 // //////////////////////////////////////////////////////////////////////
@@ -3946,6 +3947,15 @@ void dg_initvariables (Bufferhandle* pBHarrayhead)
         dg_pusherror(pBHarrayhead, dg_initvariablesname);
         return;
     }
+
+    dg_putbufferuint64(pBHarrayhead, DG_DATASPACE_BUFFERID, dg_colorstate, DG_COLORSTATE_INTERPRET); 
+    
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_pusherror(pBHarrayhead, dg_initvariablesname);
+        return;
+    }
+
 }
 
 
@@ -4298,7 +4308,198 @@ UINT64 dg_getnoscriptfileid (Bufferhandle* pBHarrayhead)
     return (fileid);
 }
 
+/*
+const char* dg_appendscriptnamepathname = "dg_appendscriptnamepath";
 
+void dg_appendscriptnamepath(Bufferhandle* pBHarrayhead)
+{
+    // Feb 2, 2025
+    // dg_appendscriptnamepath is probably not needed, and will probably
+    //  break things. I forgot how IIS works.
+    // The document root is C:\inetpub\wwwroot\
+    // I made a special directory for CGI named myphysicaldirectory
+    // you need to use the path to the physical directory for both diaperglu.exe
+    //   and the script filename in ? mode. So you do this:
+    // http://localhost/myphysicaldirectory/diaperglu.exe?myphysicaldirectory/helloworld.dglu
+
+    unsigned char* pscriptfilenamebuf;
+    UINT64* pscriptfilenamebuflength;
+
+    UINT64 i, n, nmax, oldlength;
+    unsigned char c;
+
+    const char* perror;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    oldlength = dg_getbufferlength(
+        pBHarrayhead,
+        DG_SCRIPTFILENAME_BUFFERID);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_appendscriptnamepathname);
+        return;
+    }
+
+    dg_pushenvtobuf(
+        pBHarrayhead, 
+        DG_SCRIPTFILENAME_BUFFERID, 
+        "SCRIPT_NAME");
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        // could push error containing name of buffer here
+        dg_pusherror(pBHarrayhead, dg_appendscriptnamepathname);
+        return;
+    }
+
+    pscriptfilenamebuf = dg_getpbuffer(
+        pBHarrayhead, 
+        DG_SCRIPTFILENAME_BUFFERID, 
+        &pscriptfilenamebuflength);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_appendscriptnamepathname);
+        return;
+    }
+
+    if (*pscriptfilenamebuflength <= oldlength)
+    {
+        return;
+    }
+
+    // remove trailing \ or / so we can scan for last \ or /
+    c = pscriptfilenamebuf[(*pscriptfilenamebuflength) - 1];
+
+    if (('/' == c) || ('\\' == c))
+    {
+       (*pscriptfilenamebuflength) -= 1;
+    }  
+
+    if (*pscriptfilenamebuflength <= oldlength)
+    {
+        return;
+    }       
+
+    // remove leading \ or /
+   if (('/' == pscriptfilenamebuf[oldlength]) || ('\\' == pscriptfilenamebuf[oldlength]))
+   {
+        dg_deleteinbuffer (
+            pBHarrayhead,
+            DG_SCRIPTFILENAME_BUFFERID,
+            oldlength, // in bytes
+            1);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_appendscriptnamepathname);
+            return;
+        }
+    }
+
+    if (*pscriptfilenamebuflength <= oldlength)
+    {
+        return;
+    }  
+
+    // look for last slash, if found remove the slash and everything after
+    //   don't need to get the buffer pointer again since I only adjusted the length
+    //   deleteinbuffer does not move the buffer as of v5.13
+
+    i = 0;
+   
+    nmax = (*pscriptfilenamebuflength) - oldlength;
+
+    n = 0;
+
+    while (n < nmax)
+    {
+        n = nmax - i;
+
+        perror = dg_scanforbyte (
+            (void*)(pscriptfilenamebuf + oldlength + i),
+            &n,
+            '/');
+
+        if (perror != dg_success)
+        {
+            dg_pusherror(pBHarrayhead, perror);
+            dg_pusherror(pBHarrayhead, dg_scanforbytename);
+            dg_pusherror(pBHarrayhead, dg_appendscriptnamepathname);
+            return;
+        }
+
+        if (n < nmax)
+        {
+            i = n + 1;
+        }
+        else
+        {
+            n = nmax - i;
+
+            perror = dg_scanforbyte (
+                (void*)(pscriptfilenamebuf + oldlength+ i),
+                &n,
+                '\\');
+
+            if (perror != dg_success)
+            {
+                dg_pusherror(pBHarrayhead, perror);
+                dg_pusherror(pBHarrayhead, dg_scanforbytename);
+                dg_pusherror(pBHarrayhead, dg_appendscriptnamepathname);
+                return;
+            }
+
+            if (n < nmax)
+            {
+                i = n + 1;
+            }
+            else
+            {
+                // not found case
+                // n will be >= nmax which will cause loop to exit
+                // but we want it to be nmax 
+                n = nmax; // just in case n > nmax
+            } 
+        }   
+    }
+
+    // if i == 0 then no slashes were found
+    // if i > 0 then oldlength + i - i is index of the slash
+    // i should never be maxlength because I removed the trailing slash and checked
+    //   for empty string
+    if (i > 0)
+    {
+        *pscriptfilenamebuflength = oldlength + i - 1;
+    }
+
+    // put the trailing backslash back on
+    if (*pscriptfilenamebuflength > oldlength)
+    {
+        dg_pushbufferbyte(
+            pBHarrayhead,
+            DG_SCRIPTFILENAME_BUFFERID,
+            DG_PATH_SLASH_SYMBOL);
+
+        if (pBHarrayhead->errorcount != olderrorcount)
+        {
+            // could push error containing name of buffer here
+            dg_pusherror(pBHarrayhead, dg_appendscriptnamepathname);
+            return;
+        }
+    }
+}
+*/
+
+
+// in IIS10.0 need path_translated + \script_name - stuff after last / + query_string
 const char* dg_getiisquerystringfileidname = "dg_getiisquerystringfileid";
 
 UINT64 dg_getiisquerystringfileid (
@@ -4380,6 +4581,11 @@ UINT64 dg_getiisquerystringfileid (
         }
     }
 
+    // You do not need to automatically add the directory. You can do this:
+    //   http://localhost/myphysicaldirectory/diaperglu.exe?myphysicaldirectory/helloworld.dglu
+    // You need to specify the path from the document root which is C:\inetpub\wwwroot\
+    // dg_appendscriptnamepath(pBHarrayhead);
+
     // if first character of file name is / or \ then we want to skip it
     if (('/' == pname[0]) || ('\\' == pname[0]))
     {
@@ -4407,6 +4613,12 @@ UINT64 dg_getiisquerystringfileid (
         pBHarrayhead,
         DG_SCRIPTFILENAME_BUFFERID,
         0);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_getiisquerystringfileidname);
+        return (badfilehandle);
+    }
 
     if (pBHarrayhead->errorcount != olderrorcount)
     {

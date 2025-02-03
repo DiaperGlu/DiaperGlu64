@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.12.
+//    This file is part of DiaperGlu v5.13.
 //
-//    DiaperGlu v5.12 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.12 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.12; if not, write to the Free Software
+//    along with DiaperGlu v5.13; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 24, 2023              //
-// version 5.12               //
+// February 2, 2025           //
+// version 5.13               //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -4595,7 +4595,7 @@ void testdg_forthdoes ()
 	
 	// now I'm gonna execute the new definition.. it no longer has state behavior and will always do @ 1+
 	//  this is the same as if the definition's name PMYTESTVARIABLE was parsed from the script
-	dg_executedefinition(&BHarrayhead, mydefinition);
+	dg_interpretdefinition(&BHarrayhead, mydefinition);
 	
 	if (BHarrayhead.errorcount != 0)
 	{
@@ -4772,7 +4772,7 @@ void testdg_forthdoes ()
 	
 	// now I'm gonna execute the new definition.. it no longer has state behavior and will always do @ 1+
 	//  this is the same as if the definition's name PMYTESTVARIABLE was parsed from the script
-	dg_executedefinition(&BHarrayhead, mydefinition);
+	dg_interpretdefinition(&BHarrayhead, mydefinition);
 	
 	if (BHarrayhead.errorcount != 0)
 	{
@@ -13216,6 +13216,1371 @@ void testdg_forthcfetch()
     
 
     
+}
+
+
+void testdg_forthcase ()
+{
+	Bufferhandle BHarrayhead;
+
+	dg_initpbharrayhead(&BHarrayhead);
+	BHarrayhead.maxsize = BHarraymaxsize;
+	BHarrayhead.nextfreeindex = 0;
+	BHarrayhead.nextunusedbyte = 0;
+	BHarrayhead.pbuf = (void*)-1;
+	BHarrayhead.size = 0;
+	BHarrayhead.errorcount = 0;
+	BHarrayhead.id = BHarrayheadid;
+
+	const char* pError = NULL;
+	UINT64 myccbufid;
+
+        unsigned char* pbuffer;
+        UINT64* pbufferlength;
+
+        UINT64 mystartoffset;
+        UINT64 x;
+
+	dg_printzerostring(&BHarrayhead, (unsigned char*)"testing CASE\n");
+
+        // success case
+	dg_initbuffers(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+            dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! CASE success case - unable to initialize buffers");
+            return;
+	}
+
+        dg_initvariables(&BHarrayhead);
+
+	if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+            dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! CASE success case - unable to initialize variables");
+            return;
+	}
+          
+        // default compile buffer is locked down so no need for safe
+
+	myccbufid = dg_getbufferuint64(
+            &BHarrayhead,
+            DG_DATASPACE_BUFFERID, 
+            currentcompilebuffer);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - unable to get current compile buffer");
+             return;
+	}
+
+        pbuffer = dg_getpbuffer(
+            &BHarrayhead,
+            myccbufid,
+            &pbufferlength);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - unable to get pointer to current compile buffer");
+             return;
+	}
+
+        mystartoffset = *pbufferlength;
+
+        dg_pushdatastack(&BHarrayhead, 55); // stack marker
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error pushing stack marker to data stack");
+             return;
+	}
+
+        dg_compileinitlocals(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - unable to compile init locals");
+             return;
+	}
+
+        dg_forthcase(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error doing CASE");
+             return;
+	}
+
+        // compile 5 case
+        dg_compilepushntodatastack (
+            &BHarrayhead,
+            5);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error compiling code to push 5 for case 5 to data stack");
+             return;
+	}
+
+        dg_forthof(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error doing OF for case 5");
+             return;
+	}
+
+        dg_compilepushntodatastack (
+            &BHarrayhead,
+            0x105);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error compiling code to push 105 to data stack");
+             return;
+	}
+
+        dg_forthendof(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error doing END-OF for case 5");
+             return;
+	}
+
+        // compile 9 case
+        dg_compilepushntodatastack (
+            &BHarrayhead,
+            9);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error compiling code to push 9 for case 9 to data stack");
+             return;
+	}
+
+        dg_forthof(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error doing OF for case 9");
+             return;
+	}
+
+        dg_compilepushntodatastack (
+            &BHarrayhead,
+            0x109);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error compiling code to push 109 to data stack");
+             return;
+	}
+
+        dg_forthendof(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error doing END-OF for case 9");
+             return;
+	}
+
+        // compile default case
+        dg_compilepushntodatastack (
+            &BHarrayhead,
+            0x102);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error compiling code to push 2 for case default to data stack");
+             return;
+	}
+
+        dg_compilecallcore(
+            &BHarrayhead,
+            (UINT64)&dg_forthswap);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error compiling code to do a SWAP for case default to data stack");
+             return;
+	}
+
+        dg_forthendcase(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error doing END-CASE");
+             return;
+	}
+
+        dg_compileexitlocals(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error compiling exit locals");
+             return;
+	}
+
+        x = dg_popdatastack(&BHarrayhead);
+
+        if (x != 55)
+        {
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - 55 stack marker missing after compiling CASE statement");
+             return;
+	}
+
+        dg_pushdatastack(&BHarrayhead, 56);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error pushing 56 stack marker to data stack");
+             return;
+	}
+
+        dg_pushdatastack(&BHarrayhead, 5);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error pushing 5 case value to data stack");
+             return;
+	}
+
+        dg_callbuffer(
+            &BHarrayhead,
+            myccbufid,
+            mystartoffset);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error calling compiled case statement");
+             return;
+	}
+
+        x = dg_popdatastack(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error popping result from case 5 from data stack");
+             return;
+	}
+
+        if (x != 0x105)
+        {
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - got wrong result from case 5");
+             return;
+	}
+
+        x = dg_popdatastack(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error popping stack marker from case 5 from data stack");
+             return;
+	}
+
+        if (x != 56)
+        {
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - stack marker missing from case 5, got ");
+             dg_writestdoutuint64tohex(&BHarrayhead, x);
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"\n");
+             return;
+	}
+
+        dg_pushdatastack(&BHarrayhead, 56);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error pushing 56 stack marker to data stack for case 9");
+             return;
+	}
+
+        dg_pushdatastack(&BHarrayhead, 9);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error pushing 9 case value to data stack");
+             return;
+	}
+
+        dg_callbuffer(
+            &BHarrayhead,
+            myccbufid,
+            mystartoffset);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error calling compiled case statement for case 9");
+             return;
+	}
+
+        x = dg_popdatastack(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error popping result from case 9 from data stack");
+             return;
+	}
+
+        if (x != 0x109)
+        {
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - got wrong result from case 9");
+             return;
+	}
+
+        x = dg_popdatastack(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error popping stack marker from case 9 from data stack");
+             return;
+	}
+
+        if (x != 56)
+        {
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - stack marker missing from case default");
+             return;
+	}
+
+        dg_pushdatastack(&BHarrayhead, 56);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error pushing 56 stack marker to data stack for case default");
+             return;
+	}
+
+        dg_pushdatastack(&BHarrayhead, 19);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error pushing 19 default case value to data stack");
+             return;
+	}
+
+        dg_callbuffer(
+            &BHarrayhead,
+            myccbufid,
+            mystartoffset);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error calling compiled case statement for case default");
+             return;
+	}
+
+        x = dg_popdatastack(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error popping result from case default from data stack");
+             return;
+	}
+
+        if (x != 0x102)
+        {
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - got wrong result from case default");
+             return;
+	}
+
+        x = dg_popdatastack(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - error popping stack marker from case default from data stack");
+             return;
+	}
+
+        if (x != 56)
+        {
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case - stack marker missing from case default");
+             return;
+	}
+
+	dg_clearerrors(&BHarrayhead);
+
+	dg_freeallbuffers(&BHarrayhead);
+
+
+        // //////////////////////////////////
+        // success case b using DEFAULT_OF //
+        // //////////////////////////////////
+
+	dg_initbuffers(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+            dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! CASE success case b - unable to initialize buffers");
+            return;
+	}
+
+        dg_initvariables(&BHarrayhead);
+
+	if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+            dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! CASE success case b - unable to initialize variables");
+            return;
+	}
+          
+        // default compile buffer is locked down so no need for safe
+
+	myccbufid = dg_getbufferuint64(
+            &BHarrayhead,
+            DG_DATASPACE_BUFFERID, 
+            currentcompilebuffer);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - unable to get current compile buffer");
+             return;
+	}
+
+        pbuffer = dg_getpbuffer(
+            &BHarrayhead,
+            myccbufid,
+            &pbufferlength);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - unable to get pointer to current compile buffer");
+             return;
+	}
+
+        mystartoffset = *pbufferlength;
+
+        dg_pushdatastack(&BHarrayhead, 55); // stack marker
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error pushing stack marker to data stack");
+             return;
+	}
+
+        dg_compileinitlocals(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - unable to compile init locals");
+             return;
+	}
+
+        dg_forthcase(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error doing CASE");
+             return;
+	}
+
+        // compile 5 case
+        dg_compilepushntodatastack (
+            &BHarrayhead,
+            5);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error compiling code to push 5 for case 5 to data stack");
+             return;
+	}
+
+        dg_forthof(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error doing OF for case 5");
+             return;
+	}
+
+        dg_compilepushntodatastack (
+            &BHarrayhead,
+            0x105);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error compiling code to push 105 to data stack");
+             return;
+	}
+
+        dg_forthendof(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error doing END-OF for case 5");
+             return;
+	}
+
+        // compile 9 case
+        dg_compilepushntodatastack (
+            &BHarrayhead,
+            9);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error compiling code to push 9 for case 9 to data stack");
+             return;
+	}
+
+        dg_forthof(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error doing OF for case 9");
+             return;
+	}
+
+        dg_compilepushntodatastack (
+            &BHarrayhead,
+            0x109);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error compiling code to push 109 to data stack");
+             return;
+	}
+
+        dg_forthendof(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error doing END-OF for case 9");
+             return;
+	}
+
+        // compile default case
+        dg_forthdefaultof(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error doing DEFAULT-OF\n");
+             return;
+	}
+
+        dg_compilepushntodatastack (
+            &BHarrayhead,
+            0x102);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error compiling code to push 2 for case default to data stack");
+             return;
+	}
+
+        dg_forthendcase(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error doing END-CASE");
+             return;
+	}
+
+        dg_compileexitlocals(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error compiling exit locals");
+             return;
+	}
+
+        x = dg_popdatastack(&BHarrayhead);
+
+        if (x != 55)
+        {
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - 55 stack marker missing after compiling CASE statement");
+             return;
+	}
+
+        dg_pushdatastack(&BHarrayhead, 56);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error pushing 56 stack marker to data stack");
+             return;
+	}
+
+        dg_pushdatastack(&BHarrayhead, 5);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error pushing 5 case value to data stack");
+             return;
+	}
+
+        dg_callbuffer(
+            &BHarrayhead,
+            myccbufid,
+            mystartoffset);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error calling compiled case statement");
+             return;
+	}
+
+        x = dg_popdatastack(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error popping result from case 5 from data stack");
+             return;
+	}
+
+        if (x != 0x105)
+        {
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - got wrong result from case 5");
+             return;
+	}
+
+        x = dg_popdatastack(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error popping stack marker from case 5 from data stack");
+             return;
+	}
+
+        if (x != 56)
+        {
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - stack marker missing from case 5, got ");
+             dg_writestdoutuint64tohex(&BHarrayhead, x);
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"\n");
+             return;
+	}
+
+        dg_pushdatastack(&BHarrayhead, 56);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error pushing 56 stack marker to data stack for case 9");
+             return;
+	}
+
+        dg_pushdatastack(&BHarrayhead, 9);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error pushing 9 case value to data stack");
+             return;
+	}
+
+        dg_callbuffer(
+            &BHarrayhead,
+            myccbufid,
+            mystartoffset);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error calling compiled case statement for case 9");
+             return;
+	}
+
+        x = dg_popdatastack(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error popping result from case 9 from data stack");
+             return;
+	}
+
+        if (x != 0x109)
+        {
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - got wrong result from case 9, got ");
+             dg_writestdoutuint64tohex(
+               &BHarrayhead,
+               x);
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"\n");
+             dg_forthdots(&BHarrayhead);
+             return;
+	}
+
+        x = dg_popdatastack(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error popping stack marker from case 9 from data stack");
+             return;
+	}
+
+        if (x != 56)
+        {
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - stack marker missing from case default");
+             return;
+	}
+
+        dg_pushdatastack(&BHarrayhead, 56);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error pushing 56 stack marker to data stack for case default");
+             return;
+	}
+
+        dg_pushdatastack(&BHarrayhead, 19);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error pushing 19 default case value to data stack");
+             return;
+	}
+
+        dg_callbuffer(
+            &BHarrayhead,
+            myccbufid,
+            mystartoffset);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error calling compiled case statement for case default");
+             return;
+	}
+
+        x = dg_popdatastack(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error popping result from case default from data stack");
+             return;
+	}
+
+        if (x != 0x102)
+        {
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - got wrong result from case default");
+             return;
+	}
+
+        x = dg_popdatastack(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error popping stack marker from case default from data stack");
+             return;
+	}
+
+        if (x != 56)
+        {
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - stack marker missing from case default");
+             return;
+	}
+
+	dg_clearerrors(&BHarrayhead);
+
+	dg_freeallbuffers(&BHarrayhead);
+
+
+        // /////////////////////////////////////////////
+        // success case b using DEFAULT_OF and END_OF //
+        // /////////////////////////////////////////////
+
+	dg_initbuffers(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+            dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! CASE success case c - unable to initialize buffers");
+            return;
+	}
+
+        dg_initvariables(&BHarrayhead);
+
+	if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+            dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! CASE success case c - unable to initialize variables");
+            return;
+	}
+          
+        // default compile buffer is locked down so no need for safe
+
+	myccbufid = dg_getbufferuint64(
+            &BHarrayhead,
+            DG_DATASPACE_BUFFERID, 
+            currentcompilebuffer);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - unable to get current compile buffer");
+             return;
+	}
+
+        pbuffer = dg_getpbuffer(
+            &BHarrayhead,
+            myccbufid,
+            &pbufferlength);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - unable to get pointer to current compile buffer");
+             return;
+	}
+
+        mystartoffset = *pbufferlength;
+
+        dg_pushdatastack(&BHarrayhead, 55); // stack marker
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case b - error pushing stack marker to data stack");
+             return;
+	}
+
+        dg_compileinitlocals(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - unable to compile init locals");
+             return;
+	}
+
+        dg_forthcase(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error doing CASE");
+             return;
+	}
+
+        // compile 5 case
+        dg_compilepushntodatastack (
+            &BHarrayhead,
+            5);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error compiling code to push 5 for case 5 to data stack");
+             return;
+	}
+
+        dg_forthof(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error doing OF for case 5");
+             return;
+	}
+
+        dg_compilepushntodatastack (
+            &BHarrayhead,
+            0x105);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error compiling code to push 105 to data stack");
+             return;
+	}
+
+        dg_forthendof(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error doing END-OF for case 5");
+             return;
+	}
+
+        // compile 9 case
+        dg_compilepushntodatastack (
+            &BHarrayhead,
+            9);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error compiling code to push 9 for case 9 to data stack");
+             return;
+	}
+
+        dg_forthof(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error doing OF for case 9");
+             return;
+	}
+
+        dg_compilepushntodatastack (
+            &BHarrayhead,
+            0x109);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error compiling code to push 109 to data stack");
+             return;
+	}
+
+        dg_forthendof(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error doing END-OF for case 9");
+             return;
+	}
+
+        // compile default case
+        dg_forthdefaultof(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error doing DEFAULT-OF\n");
+             return;
+	}
+
+        dg_compilepushntodatastack (
+            &BHarrayhead,
+            0x102);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error compiling code to push 2 for case default to data stack");
+             return;
+	}
+
+        dg_forthendof(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error doing END-OF");
+             return;
+	}
+
+        dg_forthendcase(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error doing END-CASE");
+             return;
+	}
+
+        dg_compileexitlocals(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error compiling exit locals");
+             return;
+	}
+
+        x = dg_popdatastack(&BHarrayhead);
+
+        if (x != 55)
+        {
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - 55 stack marker missing after compiling CASE statement");
+             return;
+	}
+
+        dg_pushdatastack(&BHarrayhead, 56);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error pushing 56 stack marker to data stack");
+             return;
+	}
+
+        dg_pushdatastack(&BHarrayhead, 5);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error pushing 5 case value to data stack");
+             return;
+	}
+
+        dg_callbuffer(
+            &BHarrayhead,
+            myccbufid,
+            mystartoffset);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error calling compiled case statement");
+             return;
+	}
+
+        x = dg_popdatastack(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error popping result from case 5 from data stack");
+             return;
+	}
+
+        if (x != 0x105)
+        {
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - got wrong result from case 5");
+             return;
+	}
+
+        x = dg_popdatastack(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error popping stack marker from case 5 from data stack");
+             return;
+	}
+
+        if (x != 56)
+        {
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - stack marker missing from case 5, got ");
+             dg_writestdoutuint64tohex(&BHarrayhead, x);
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"\n");
+             return;
+	}
+
+        dg_pushdatastack(&BHarrayhead, 56);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error pushing 56 stack marker to data stack for case 9");
+             return;
+	}
+
+        dg_pushdatastack(&BHarrayhead, 9);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error pushing 9 case value to data stack");
+             return;
+	}
+
+        dg_callbuffer(
+            &BHarrayhead,
+            myccbufid,
+            mystartoffset);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error calling compiled case statement for case 9");
+             return;
+	}
+
+        x = dg_popdatastack(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error popping result from case 9 from data stack");
+             return;
+	}
+
+        if (x != 0x109)
+        {
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - got wrong result from case 9, got ");
+             dg_writestdoutuint64tohex(
+               &BHarrayhead,
+               x);
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"\n");
+             dg_forthdots(&BHarrayhead);
+             return;
+	}
+
+        x = dg_popdatastack(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error popping stack marker from case 9 from data stack");
+             return;
+	}
+
+        if (x != 56)
+        {
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - stack marker missing from case default");
+             return;
+	}
+
+        dg_pushdatastack(&BHarrayhead, 56);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error pushing 56 stack marker to data stack for case default");
+             return;
+	}
+
+        dg_pushdatastack(&BHarrayhead, 19);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error pushing 19 default case value to data stack");
+             return;
+	}
+
+        dg_callbuffer(
+            &BHarrayhead,
+            myccbufid,
+            mystartoffset);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error calling compiled case statement for case default");
+             return;
+	}
+
+        x = dg_popdatastack(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error popping result from case default from data stack");
+             return;
+	}
+
+        if (x != 0x102)
+        {
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - got wrong result from case default");
+             return;
+	}
+
+        x = dg_popdatastack(&BHarrayhead);
+
+        if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - error popping stack marker from case default from data stack");
+             return;
+	}
+
+        if (x != 56)
+        {
+             dg_printzerostring(
+                 &BHarrayhead, 
+                 (unsigned char*)"FAIL! CASE success case c - stack marker missing from case default");
+             return;
+	}
+
+	dg_clearerrors(&BHarrayhead);
+
+	dg_freeallbuffers(&BHarrayhead);
 }
 
 
@@ -21830,237 +23195,335 @@ void testdg_forthover ()
 
 void testdg_forthpostpone ()
 {
-	Bufferhandle BHarrayhead;
+    Bufferhandle* pBHarrayhead; // need room for the jump buffer
 
-	dg_initpbharrayhead(&BHarrayhead);
-	BHarrayhead.maxsize = BHarraymaxsize;
-	BHarrayhead.nextfreeindex = 0;
-	BHarrayhead.nextunusedbyte = 0;
-	BHarrayhead.pbuf = (void*)-1;
-	BHarrayhead.size = 0;
-	BHarrayhead.errorcount = 0;
-	BHarrayhead.id = BHarrayheadid;
+    const char* pError = NULL;
 
-	const char* pError = NULL;
+    UINT64* plength = NULL;
+    unsigned char* pbuffer = NULL;
 
-	UINT64* plength = NULL;
-	unsigned char* pbuffer = NULL;
+    UINT64 length = 0;
+    UINT64 length2 = 0;
+    UINT64 length3 = 0;
 
-	UINT64 length = 0;
+    UINT64 x = 0;
     
     UINT64 wordlist1;
     UINT64 word1;
 
-	dg_printzerostring(&BHarrayhead, (unsigned char*)"testing POSTPONE\n");
+    pBHarrayhead = dg_initwithoutwordlists(0, NULL);
+    dg_printzerostring(pBHarrayhead, (unsigned char*)"testing POSTPONE\n");
+    dg_cleanup(pBHarrayhead);
+
 #ifndef DGLU_NO_DIAPER
-	// error doing ' case
-	dg_initbuffers(&BHarrayhead);
 
-	dg_initvariables(&BHarrayhead);
-
-	dg_forthpostpone(&BHarrayhead); // terminal input buffer is empty - no name error from tick
-
-    pError = dg_poperror(&BHarrayhead);
-
-	if (pError != dg_forthpostponename)
-	{
-		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! POSTPONE error doing ' case - got wrong error on top, got ");
-        dg_printzerostring(&BHarrayhead, (unsigned char*) pError);
-        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
-	}
-
-    pError = dg_poperror(&BHarrayhead);
-
-	if (pError != dg_forthtickname)
-	{
-		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! POSTPONE error doing ' case - got wrong error 1 below top, got ");
-        dg_printzerostring(&BHarrayhead, (unsigned char*) pError);
-        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
-	}
-
-	dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
-
+    // error doing ' case
     
+    // need jumpbuffer for safe call.. actually don't since I took it out...
+    pBHarrayhead = dg_initwithoutwordlists(0, NULL);
 
-    
+    dg_forthpostpone(pBHarrayhead); // terminal input buffer is empty - no name error from tick
 
-	// can't get error popping definition token if ' worked
+    pError = dg_poperror(pBHarrayhead);
 
-	// word not found error
-	dg_initbuffers(&BHarrayhead);
+    if (pError != dg_forthpostponename)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! POSTPONE error doing ' case - got wrong error on top, got ");
+        dg_printzerostring(pBHarrayhead, (unsigned char*) pError);
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+    }
 
-	dg_initvariables(&BHarrayhead);
-    
-    dg_inithlists (&BHarrayhead);
+    pError = dg_poperror(pBHarrayhead);
 
-	//dg_initwordlists(&BHarrayhead);
-    wordlist1 = dg_newwordlist(&BHarrayhead, 0);
+    if (pError != dg_forthtickname)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! POSTPONE error doing ' case - got wrong error 1 below top, got ");
+        dg_printzerostring(pBHarrayhead, (unsigned char*) pError);
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+    }
+
+    dg_cleanup(pBHarrayhead);
+
+
+    // can't get error popping definition token if ' worked
+
+    // word not found error
+    pBHarrayhead = dg_initwithoutwordlists(0, NULL);
+
+    wordlist1 = dg_newwordlist(pBHarrayhead, 0);
     
     word1 = dg_new0stringnamecoreword(
-        &BHarrayhead, 
-		(UINT64)(&dg_forthdocompiletypesubroutine),
-		(UINT64)(&dg_forthstar),
-		(unsigned char*)dg_forthstarname);
+        pBHarrayhead, 
+        (UINT64)(&dg_forthdocompiletypesubroutine),
+        (UINT64)(&dg_forthstar),
+        (unsigned char*)dg_forthstarname);
 
-	dg_linkdefinition(&BHarrayhead, wordlist1, word1);
+    dg_linkdefinition(pBHarrayhead, wordlist1, word1);
     
-    dg_pushbufferuint64(&BHarrayhead, DG_SEARCHORDERSTACK_BUFFERID, wordlist1);
+    dg_pushbufferuint64(pBHarrayhead, DG_SEARCHORDERSTACK_BUFFERID, wordlist1);
     
 
-	dg_putbufferuint64(&BHarrayhead, DG_DATASPACE_BUFFERID, currentinterpretbuffer, DG_TERMINALINPUT_BUFFERID);
+    dg_putbufferuint64(pBHarrayhead, DG_DATASPACE_BUFFERID, currentinterpretbuffer, DG_TERMINALINPUT_BUFFERID);
 
-	dg_pushbuffersegment(&BHarrayhead, DG_TERMINALINPUT_BUFFERID, 8, (unsigned char*)"hi there");
+    dg_pushbuffersegment(pBHarrayhead, DG_TERMINALINPUT_BUFFERID, 8, (unsigned char*)"hi there");
 
-	dg_forthpostpone(&BHarrayhead); // hi not in wordlists
+    dg_forthpostpone(pBHarrayhead); // hi not in wordlists
 
-	pError = dg_poperror(&BHarrayhead);
+    pError = dg_poperror(pBHarrayhead);
 
-	if (pError != dg_forthpostponename)
-	{
-		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! POSTPONE word not found case - got wrong error on top, got ");
-        dg_printzerostring(&BHarrayhead, (unsigned char*) pError);
-        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
-	}
+    if (pError != dg_forthpostponename)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! POSTPONE word not found case - got wrong error on top, got ");
+        dg_printzerostring(pBHarrayhead, (unsigned char*) pError);
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+    }
 
-    pError = dg_poperror(&BHarrayhead);
+    pError = dg_poperror(pBHarrayhead);
 
-	if (pError != dg_wordnotfoundinsearchordererror)
-	{
-		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! POSTPONE word not found case - got wrong error 1 below top, got ");
-        dg_printzerostring(&BHarrayhead, (unsigned char*) pError);
-        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
-	}
+    if (pError != dg_wordnotfoundinsearchordererror)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! POSTPONE word not found case - got wrong error 1 below top, got ");
+        dg_printzerostring(pBHarrayhead, (unsigned char*) pError);
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+    }
 
-	dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+    dg_cleanup(pBHarrayhead);
+
 #endif
-    
 
-    
+    // success case [
+    pBHarrayhead = dg_initwithoutwordlists(0, NULL);
 
-	// if i was able to get the definition, dg_getpdefinition should work... 	
-
-	// success case [
-	dg_initbuffers(&BHarrayhead);
-
-	dg_initvariables(&BHarrayhead);
-
-	dg_putbufferuint64(&BHarrayhead, DG_DATASPACE_BUFFERID, currentinterpretbuffer, DG_TERMINALINPUT_BUFFERID);
+    dg_putbufferuint64(pBHarrayhead, DG_DATASPACE_BUFFERID, currentinterpretbuffer, DG_TERMINALINPUT_BUFFERID);
 	
-	dg_putbufferuint64(&BHarrayhead, DG_DATASPACE_BUFFERID, currentcompilebuffer, DG_DATASPACE_BUFFERID);
+    dg_putbufferuint64(pBHarrayhead, DG_DATASPACE_BUFFERID, currentcompilebuffer, DG_DATASPACE_BUFFERID);
 
-	dg_forthrightbracket(&BHarrayhead);
+    dg_forthrightbracket(pBHarrayhead);
 
-	dg_pushbuffersegment(&BHarrayhead, DG_TERMINALINPUT_BUFFERID, 7, (unsigned char*)"[ there");
-
-    dg_inithlists (&BHarrayhead);
+    dg_pushbuffersegment(pBHarrayhead, DG_TERMINALINPUT_BUFFERID, 7, (unsigned char*)"[ there");
     
-	//dg_initwordlists(&BHarrayhead);
-    wordlist1 = dg_newwordlist(&BHarrayhead, 0);
+ 
+    wordlist1 = dg_newwordlist(pBHarrayhead, 0);
     
     word1 = dg_new0stringnamecoreword(
-        &BHarrayhead, 
-		(UINT64)(&dg_forthdocompiletypealwaysexecute),
-		(UINT64)(&dg_forthleftbracket),
-		(unsigned char*)dg_forthleftbracketname);
+        pBHarrayhead, 
+        (UINT64)(&dg_forthdocompiletypealwaysexecute),
+        (UINT64)(&dg_forthleftbracket),
+        (unsigned char*)dg_forthleftbracketname);
 
-	dg_linkdefinition(&BHarrayhead, wordlist1, word1);
+    dg_linkdefinition(pBHarrayhead, wordlist1, word1);
     
-    dg_pushbufferuint64(&BHarrayhead, DG_SEARCHORDERSTACK_BUFFERID, wordlist1);
-    
-
-	length = dg_getbufferlength(&BHarrayhead, DG_DATASPACE_BUFFERID);
-
-	dg_forthpostpone(&BHarrayhead); // should have compiled a call to dg_forthexecute
-
-	if (dg_geterrorcount(&BHarrayhead) != 0)
-	{
-		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! POSTPONE success case [ - error count not 0\n");
-	}
-
-	pbuffer = dg_getpbuffer(&BHarrayhead, DG_DATASPACE_BUFFERID, &plength);
-
-	//if (*plength != length + 14)
-	//{
-	//	dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! POSTPONE success case - expected 14 compiled bytes\n");
-	//}
-
-	//if (*((UINT64*)(pbuffer + length + 5)) != (UINT64)&dg_forthleftbracket)
-	//{
-	//	dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! POSTPONE success case - expected compilation of dg_forthrightbracket address\n"); 
-	//}
-
-	if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
-	{
-		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! OR -1 OR 1 success case [ - data  stack not empty after calculation\n");
-	}
-
-	dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
-
+    dg_pushbufferuint64(pBHarrayhead, DG_SEARCHORDERSTACK_BUFFERID, wordlist1);
     
 
-    
+    // compile a word that has POSTPONE [
+    length = dg_getbufferlength(pBHarrayhead, DG_DATASPACE_BUFFERID);
 
-	// success case DUP
-	dg_initbuffers(&BHarrayhead);
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! POSTPONE success case [ - error getting first compile buffer length\n");
+    }
 
-	dg_initvariables(&BHarrayhead);
+    dg_compileinitlocals(pBHarrayhead);
 
-	dg_putbufferuint64(&BHarrayhead, DG_DATASPACE_BUFFERID, currentinterpretbuffer, DG_TERMINALINPUT_BUFFERID);
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! POSTPONE success case [ - error compiling init locals\n");
+    }
+
+    dg_forthpostpone(pBHarrayhead); // should compile a call to dg_forthleftbracket compile action (which sets the state to execute)
+
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! POSTPONE success case [ - error postponing {\n");
+    }
+
+    dg_compileexitlocals(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! POSTPONE success case [ - error compiling exit locals\n");
+    }
+
+    length2 = dg_getbufferlength(pBHarrayhead, DG_DATASPACE_BUFFERID);
+
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! POSTPONE success case [ - error getting second compile buffer length\n");
+    }
+
+    dg_forthrightbracket(pBHarrayhead); // set state to compile
+
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! POSTPONE success case [ - error doing ]\n");
+    }
+
+    // this should set the state to execute... since [ is immediate... (should use ['s xt to pass ['s DFA to always execute)
+    dg_callbuffer(pBHarrayhead, DG_DATASPACE_BUFFERID, length); 
+
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! POSTPONE success case [ - error calling compiled code which should compile a call to [\n");
+    }
+
+    length3 = dg_getbufferlength(pBHarrayhead, DG_DATASPACE_BUFFERID);
+
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! POSTPONE success case [ - error getting second compile buffer length\n");
+    }
+
+    if (length2 != length3)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! POSTPONE success case [ - length changed calling ['s compile time action\n");
+    }
+
+    x = dg_getbufferuint64(pBHarrayhead, DG_DATASPACE_BUFFERID, statevariable);
+
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! POSTPONE success case [ - error getting state variable\n");
+    }
+
+    // state should still be compile... only a call to left bracket was compiled, the call was not executed
+    if (x != (UINT64)dg_stateexecute)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! POSTPONE success case [ - state not changed to execute, got ");
+        dg_printzerostring(pBHarrayhead, (unsigned char*)x);
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"\n");
+
+    }
+
+    if (dg_getbufferlength(pBHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! OR -1 OR 1 success case [ - data  stack not empty after calculation\n");
+    }
+
+    dg_cleanup(pBHarrayhead);
+
+  
+
+    // success case DUP
+    pBHarrayhead = dg_initwithoutwordlists(0, NULL);
+
+    dg_putbufferuint64(pBHarrayhead, DG_DATASPACE_BUFFERID, currentinterpretbuffer, DG_TERMINALINPUT_BUFFERID);
 	
-	dg_putbufferuint64(&BHarrayhead, DG_DATASPACE_BUFFERID, currentcompilebuffer, DG_DATASPACE_BUFFERID);
+    dg_putbufferuint64(pBHarrayhead, DG_DATASPACE_BUFFERID, currentcompilebuffer, DG_DATASPACE_BUFFERID);
 
-	dg_forthrightbracket(&BHarrayhead);
+    dg_forthrightbracket(pBHarrayhead);
 
-	dg_pushbuffersegment(&BHarrayhead, DG_TERMINALINPUT_BUFFERID, 9, (unsigned char*)"DUP there");
-
-    dg_inithlists (&BHarrayhead);
+    dg_pushbuffersegment(pBHarrayhead, DG_TERMINALINPUT_BUFFERID, 9, (unsigned char*)"DUP there");
     
-	//dg_initwordlists(&BHarrayhead);
-    
-    wordlist1 = dg_newwordlist(&BHarrayhead, 0);
+    wordlist1 = dg_newwordlist(pBHarrayhead, 0);
     
     word1 = dg_new0stringnamecoreword(
-        &BHarrayhead, 
-		(UINT64)(&dg_forthdocompiletypesubroutine),
-		(UINT64)(&dg_forthdup),
-		(unsigned char*)dg_forthdupname);
+        pBHarrayhead, 
+        (UINT64)(&dg_forthdocompiletypesubroutine),
+        (UINT64)(&dg_forthdup),
+        (unsigned char*)dg_forthdupname);
 
-	dg_linkdefinition(&BHarrayhead, wordlist1, word1);
+    dg_linkdefinition(pBHarrayhead, wordlist1, word1);
     
-    dg_pushbufferuint64(&BHarrayhead, DG_SEARCHORDERSTACK_BUFFERID, wordlist1);
-    
-
-	length = dg_getbufferlength(&BHarrayhead, DG_DATASPACE_BUFFERID);
-
-	dg_forthpostpone(&BHarrayhead); // should have compiled a call to dg_forthleftbracket
-
-	if (dg_geterrorcount(&BHarrayhead) != 0)
-	{
-		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! POSTPONE success case DUP - error count not 0\n");
-	}
-
-	pbuffer = dg_getpbuffer(&BHarrayhead, DG_DATASPACE_BUFFERID, &plength);
-
-	//if (*plength != length + 14)
-	//{
-	//	dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! POSTPONE success case DUP - expected 14 compiled bytes\n");
-	//}
-
-	//if (*((UINT64*)(pbuffer + length + 5)) != (UINT64)&dg_forthdup)
-	//{
-	//	dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! POSTPONE success case DUP - expected compilation of dg_forthrightbracket address\n"); 
-	//}
-
-	if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
-	{
-		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! POSTPONE success case DUP - data  stack not empty after calculation\n");
-	}
-
-	dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
-
+    dg_pushbufferuint64(pBHarrayhead, DG_SEARCHORDERSTACK_BUFFERID, wordlist1);
     
 
+    length = dg_getbufferlength(pBHarrayhead, DG_DATASPACE_BUFFERID);
+
+
+    dg_compileinitlocals(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! POSTPONE success case DUP - error compiling init locals\n");
+    }
+
+    dg_forthpostpone(pBHarrayhead); // should have compiled a safe call to code that will compile a call to dg_forthleftbracket
+
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! POSTPONE success case DUP - error count not 0\n");
+    }
+
+    dg_compileexitlocals(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! POSTPONE success case DUP - error compiling exit locals\n");
+    }
+
+    length2 = dg_getbufferlength(pBHarrayhead, DG_DATASPACE_BUFFERID);
+
+    dg_compileinitlocals(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! POSTPONE success case DUP - error compiling 2nd init locals\n");
+    }
+
+    // this should compile a call to DUP
+    dg_callbuffer(pBHarrayhead, DG_DATASPACE_BUFFERID, length);
+
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! POSTPONE success case DUP - error calling compiling word\n");
+    }
+
+    dg_compileexitlocals(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! POSTPONE success case DUP - error compiling 2nd exit locals\n");
+    }
+
+    dg_pushdatastack(pBHarrayhead, 0x783);
+
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! POSTPONE success case DUP - error pushing to the data stack\n");
+    }
     
+    // this should call the function with the call to dup in it
+    dg_callbuffer(pBHarrayhead, DG_DATASPACE_BUFFERID, length2);
+
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! POSTPONE success case DUP - error calling function with DUP in it\n");
+    }
+
+    x = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! POSTPONE success case DUP - error popping first number from data stack\n");
+    }
+
+    if (x != 0x783)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! POSTPONE success case DUP - top number on stack from DUP not correct\n");
+    }
+
+    x = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! POSTPONE success case DUP - error popping second number from data stack\n");
+    }
+
+    if (x != 0x783)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! POSTPONE success case DUP - 2nd number on stack from DUP not correct\n");
+    }
+
+    pbuffer = dg_getpbuffer(pBHarrayhead, DG_DATASTACK_BUFFERID, &plength);
+
+    if (*plength != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! POSTPONE success case DUP - data stack not empty after test\n");
+    }
+
+    dg_cleanup(pBHarrayhead);
+
 }
 
 
@@ -28908,6 +30371,143 @@ void testdg_forthudmslashmod ()
 }
 
 
+void testdg_forthcompilecomma ()
+{
+    Bufferhandle* pBHarrayhead; // need room for the jump buffer
+
+    const char* pError = NULL;
+
+    UINT64* plength = NULL;
+    unsigned char* pbuffer = NULL;
+
+    UINT64 length = 0;
+    UINT64 length2 = 0;
+    UINT64 length3 = 0;
+
+    UINT64 x = 0;
+    
+    UINT64 wordlist1;
+    UINT64 word1;
+
+    // success case DUP
+    pBHarrayhead = dg_initwithoutwordlists(
+        0, 
+        NULL);
+
+    dg_printzerostring(pBHarrayhead, (unsigned char*)"testing COMPILE,\n");
+	
+    dg_putbufferuint64(
+        pBHarrayhead, 
+        DG_DATASPACE_BUFFERID, 
+        currentcompilebuffer, 
+        DG_DATASPACE_BUFFERID);    
+ 
+    wordlist1 = dg_newwordlist(pBHarrayhead, 0);
+    
+    word1 = dg_new0stringnamecoreword(
+        pBHarrayhead, 
+        (UINT64)(&dg_forthdocompiletypesubroutine),
+        (UINT64)(&dg_forthdup),
+        (unsigned char*)dg_forthdupname);
+    
+
+    // use COMPILE, with DUP
+    length = dg_getbufferlength(
+        pBHarrayhead, 
+        DG_DATASPACE_BUFFERID);
+
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! COMPILE, success case DUP - error getting first compile buffer length\n");
+    }
+
+    dg_compileinitlocals(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(
+           pBHarrayhead, 
+           (unsigned char*)"FAIL! COMPILE, success case DUP - error compiling init locals\n");
+    }
+
+    dg_pushdatastack(
+        pBHarrayhead,
+        word1);
+
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! COMPILE, success case DUP - error pushing DUP's xt datastack\n");
+    }
+
+    dg_forthcompilecomma(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! COMPILE, success case DUP - error doing COMPILE,\n");
+    }
+
+    dg_compileexitlocals(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! COMPILE, success case DUP - error compiling exit locals\n");
+    }
+
+    dg_pushdatastack(
+        pBHarrayhead,
+        0x92983982);
+
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! COMPILE, success case DUP - error pushing n to data stack\n");
+    }
+
+    dg_callbuffer(
+        pBHarrayhead, 
+        DG_DATASPACE_BUFFERID, 
+        length); 
+
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! COMPILE, success case DUP - error calling compiled code which should do DUP\n");
+    }
+
+    x = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! COMPILE, success case DUP - error popping data stack 1st time\n");
+    }
+
+    if (x != 0x92983982)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! COMPILE, success case DUP - top of data stack wrong after test\n");
+    }
+
+    x = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! COMPILE, success case DUP - error popping data stack 2nd time\n");
+    }
+
+    if (x != 0x92983982)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! COMPILE, success case DUP - 2nd on data stack wrong after test\n");
+    }
+
+    if (dg_getbufferlength(pBHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! COMPILE, success case DUP - data stack not empty after test\n");
+    }
+
+    dg_cleanup(pBHarrayhead);
+
+}
+
+
 void testdg_forthcompiles()
 {
 	Bufferhandle BHarrayhead;
@@ -30659,4 +32259,169 @@ void testdg_forthsynonym ()
     }
     
     dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_forthwithin()
+{
+	Bufferhandle BHarrayhead;
+
+	dg_initpbharrayhead(&BHarrayhead);
+	BHarrayhead.maxsize = BHarraymaxsize;
+	BHarrayhead.nextfreeindex = 0;
+	BHarrayhead.nextunusedbyte = 0;
+	BHarrayhead.pbuf = (void*)-1;
+	BHarrayhead.size = 0;
+	BHarrayhead.errorcount = 0;
+	BHarrayhead.id = BHarrayheadid;
+
+	const char* pError = NULL;
+	UINT64 testint = 0;
+
+	dg_printzerostring(&BHarrayhead, (unsigned char*)"testing WITHIN\n");
+
+	// -2 -1 1 WITHIN success case 
+	dg_initbuffers(&BHarrayhead);
+
+	dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)-2);
+	dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)-1);
+        dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)1);
+
+	dg_forthwithin(&BHarrayhead);
+
+	if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! -2 -1 1 WITHIN success case - error count not 0");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID);
+
+	if (testint != FORTH_FALSE)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! -2 -1 1 WITHIN success case - got wrong answer \n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! -2 -1 1 WITHIN success case - data  stack not empty after calculation\n");
+	}
+
+	dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+        // -1 -1 1 WITHIN success case 
+	dg_initbuffers(&BHarrayhead);
+
+	dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)-1);
+	dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)-1);
+        dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)1);
+
+	dg_forthwithin(&BHarrayhead);
+
+	if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! -1 -1 1 WITHIN success case - error count not 0");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID);
+
+	if (testint != FORTH_TRUE)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! -1 -1 1 WITHIN success case - got wrong answer \n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! -1 -1 1 WITHIN success case - data  stack not empty after calculation\n");
+	}
+
+	dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+        // 0 -1 1 WITHIN success case 
+	dg_initbuffers(&BHarrayhead);
+
+	dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)0);
+	dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)-1);
+        dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)1);
+
+	dg_forthwithin(&BHarrayhead);
+
+	if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! 0 -1 1 WITHIN success case - error count not 0");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID);
+
+	if (testint != FORTH_TRUE)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! 0 -1 1 WITHIN success case - got wrong answer \n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! 0 -1 1 WITHIN success case - data  stack not empty after calculation\n");
+	}
+
+	dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+        // 1 -1 1 WITHIN success case 
+	dg_initbuffers(&BHarrayhead);
+
+	dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)1);
+	dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)-1);
+        dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)1);
+
+	dg_forthwithin(&BHarrayhead);
+
+	if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! 1 -1 1 WITHIN success case - error count not 0");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID);
+
+	if (testint != FORTH_FALSE)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! 1 -1 1 WITHIN success case - got wrong answer \n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! 1 -1 1 WITHIN success case - data  stack not empty after calculation\n");
+	}
+
+	dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+
+       // 2 -1 1 WITHIN success case 
+	dg_initbuffers(&BHarrayhead);
+
+	dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)2);
+	dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)-1);
+        dg_pushbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)1);
+
+	dg_forthwithin(&BHarrayhead);
+
+	if (dg_geterrorcount(&BHarrayhead) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! 2 -1 1 WITHIN success case - error count not 0");
+	}
+
+	testint = dg_popbufferuint64(&BHarrayhead, DG_DATASTACK_BUFFERID);
+
+	if (testint != FORTH_FALSE)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! 2 -1 1 WITHIN success case - got wrong answer \n");
+	}
+
+	if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! 2 -1 1 WITHIN success case - data  stack not empty after calculation\n");
+	}
+
+	dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
 }

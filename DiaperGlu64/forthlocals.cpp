@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.12.
+//    This file is part of DiaperGlu v5.13.
 //
-//    DiaperGlu v5.12 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.12 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.12; if not, write to the Free Software
+//    along with DiaperGlu v5.13; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 24, 2023              //
-// version 5.12               //
+// February 2, 2025           //
+// version 5.13               //
 // /////////////////////////////
 
 
@@ -364,7 +364,7 @@ void dg_forthtolocals(Bufferhandle* pBHarrayhead)
 const char* dg_forthdocompiletypelocalname = "dg_forthdocompiletypelocal";
 
 void dg_forthdocompiletypelocal (Bufferhandle* pBHarrayhead)
-//                         ( dataoffset databufid -- )
+//                         ( dataoffset databufid state -- )
 {
     UINT64 n;
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
@@ -374,7 +374,7 @@ void dg_forthdocompiletypelocal (Bufferhandle* pBHarrayhead)
         return;
     }
 
-    dg_forthdrop(pBHarrayhead);
+    dg_forthtwodrop(pBHarrayhead); // changed to 2DUP to drop state too on Dec 4, 2024
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -441,7 +441,7 @@ void dg_forthdocompiletypelocal (Bufferhandle* pBHarrayhead)
     */
 }
 
-
+/*
 const char* dg_forthdocompiletypetofastlocalname = "dg_forthdocompiletypetofastlocal";
 
 void dg_forthdocompiletypetofastlocal (Bufferhandle* pBHarrayhead)
@@ -455,7 +455,9 @@ void dg_forthdocompiletypetofastlocal (Bufferhandle* pBHarrayhead)
         return;
     }
 
-    dg_forthdrop(pBHarrayhead);
+    dg_forthtwodrop(pBHarrayhead);
+
+    // changed to also drop state 12/4/2024
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -481,12 +483,12 @@ void dg_forthdocompiletypetofastlocal (Bufferhandle* pBHarrayhead)
         return;
     }
 }
-
+*/
 
 const char* dg_forthdocompiletypefastlocalfromname = "dg_forthdocompiletypefastlocalfrom";
 
 void dg_forthdocompiletypefastlocalfrom (Bufferhandle* pBHarrayhead)
-//                         ( dataoffset databufid -- )
+//                         ( dataoffset databufid state -- )
 {
     UINT64 n;
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
@@ -498,7 +500,7 @@ void dg_forthdocompiletypefastlocalfrom (Bufferhandle* pBHarrayhead)
 
     // dg_printzerostring(pBHarrayhead, (unsigned char*)"\ndoing fast local\n");
 
-    dg_forthdrop(pBHarrayhead);
+    dg_forthtwodrop(pBHarrayhead); // changed to also drop state 12/4/2024
     
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -1196,7 +1198,8 @@ void dg_forthcurlybrace (Bufferhandle* pBHarrayhead)
         dg_getbufferuint64(
             pBHarrayhead,
             DG_DATASPACE_BUFFERID,
-            dg_colonreturnstackdepth);
+            dg_returnstackdepth);
+            // dg_colonreturnstackdepth); // changed 1/13/2025
 
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -1361,17 +1364,18 @@ void dg_forthcurlybrace (Bufferhandle* pBHarrayhead)
         }
     }
 
-    dg_putbufferuint64(
-        pBHarrayhead,
-        DG_DATASPACE_BUFFERID,
-        dg_colonreturnstackdepth,
-        startreturnstackdepth + numberoflocals);
+    // dg_putbufferuint64(
+    //    pBHarrayhead,
+    //     DG_DATASPACE_BUFFERID,
+        // dg_colonreturnstackdepth, // changed 1/13/2025
+    //    dg_returnstackdepth, 
+    //    startreturnstackdepth + numberoflocals);
 
-    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-    {
-        dg_pusherror(pBHarrayhead, dg_forthcurlybracename);
-        return;
-    }
+    // if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    // {
+    //    dg_pusherror(pBHarrayhead, dg_forthcurlybracename);
+    //    return;
+    // }
 }
 
 // dg_forthto
@@ -1385,12 +1389,11 @@ void dg_forthto (Bufferhandle* pBHarrayhead) // maybe make it always execute....
 {
     unsigned char* pname;
     UINT64 namelength;
+    UINT64 state;
 
     UINT64 wordid;
 
     Definitionheader* pdefinition;
-
-    const char* state;
 
     UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
     
@@ -1442,7 +1445,7 @@ void dg_forthto (Bufferhandle* pBHarrayhead) // maybe make it always execute....
          ((UINT64)&dg_forthdocompiletypedpushp == pdefinition->compileroutineoffset) )
     {
         // variable and probably any others...
-        dg_executedefinition (
+        dg_interpretdefinition (
             pBHarrayhead,
             wordid);
 
@@ -1466,6 +1469,26 @@ void dg_forthto (Bufferhandle* pBHarrayhead) // maybe make it always execute....
             pBHarrayhead,
             (UINT64)DG_CORE_BUFFERID);
         
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthtoname);
+            return;
+        }
+
+        // added push state 12/4/2024
+        state = dg_getbufferuint64(
+            pBHarrayhead,
+            DG_DATASPACE_BUFFERID,
+            statevariable);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthtoname);
+            return;
+        }
+
+        dg_pushdatastack(pBHarrayhead, state);
+
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
         {
             dg_pusherror(pBHarrayhead, dg_forthtoname);
@@ -1516,7 +1539,7 @@ void dg_forthto (Bufferhandle* pBHarrayhead) // maybe make it always execute....
         // fast local
         // throw error in execute state.... I think...
         
-        state = (const char*)dg_getbufferuint64(
+        state = dg_getbufferuint64(
             pBHarrayhead,
             DG_DATASPACE_BUFFERID,
             statevariable);
@@ -1528,7 +1551,7 @@ void dg_forthto (Bufferhandle* pBHarrayhead) // maybe make it always execute....
             return;
         }
 
-        if (state == dg_statecompile)
+        if (state == (UINT64)dg_statecompile)
         {
             dg_compiledatastacktobracketrbpd(
                 pBHarrayhead,
@@ -1543,7 +1566,7 @@ void dg_forthto (Bufferhandle* pBHarrayhead) // maybe make it always execute....
             return;
         }
 
-        if (state == dg_stateexecute)
+        if (state == (UINT64)dg_stateexecute)
         {
             dg_pusherror(pBHarrayhead, (const char*)" fast local only supported in compile state");
             dg_pusherror(pBHarrayhead, dg_forthtoname);
@@ -1556,11 +1579,23 @@ void dg_forthto (Bufferhandle* pBHarrayhead) // maybe make it always execute....
     if ( (DG_CORE_BUFFERID == pdefinition->compileroutinebuf) &&
          ((UINT64)&dg_forthdocompiletypevalue == pdefinition->compileroutineoffset) )
     {
+        state = dg_getbufferuint64(
+            pBHarrayhead,
+            DG_DATASPACE_BUFFERID,
+            statevariable);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthtoname);
+            return;
+        }
+
         // be faster if I didn't pass parameters on the data stack...
         dg_docompiletypeostore(
             pBHarrayhead,
             pdefinition->databuf,
-            pdefinition->dataoffset);
+            pdefinition->dataoffset,
+            (const char*)state);
 
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
         {
@@ -1575,10 +1610,22 @@ void dg_forthto (Bufferhandle* pBHarrayhead) // maybe make it always execute....
     if ( (DG_CORE_BUFFERID == pdefinition->compileroutinebuf) &&
          ((UINT64)&dg_forthdocompiletypefvalue == pdefinition->compileroutineoffset) )
     {
+        state = dg_getbufferuint64(
+            pBHarrayhead,
+            DG_DATASPACE_BUFFERID,
+            statevariable);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthtoname);
+            return;
+        }
+
         dg_docompiletypeof64store(
             pBHarrayhead,
             pdefinition->databuf,
-            pdefinition->dataoffset);
+            pdefinition->dataoffset,
+            (const char*)state);
 
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
         {
@@ -1592,11 +1639,23 @@ void dg_forthto (Bufferhandle* pBHarrayhead) // maybe make it always execute....
     if ( (DG_CORE_BUFFERID == pdefinition->compileroutinebuf) &&
          ((UINT64)&dg_forthdocompiletypetwovalue == pdefinition->compileroutineoffset) )
     {
+        state = dg_getbufferuint64(
+            pBHarrayhead,
+            DG_DATASPACE_BUFFERID,
+            statevariable);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthtoname);
+            return;
+        }
+
         // be faster if I didn't pass parameters on the data stack...
         dg_docompiletypeotwostore(
             pBHarrayhead,
             pdefinition->databuf,
-            pdefinition->dataoffset);
+            pdefinition->dataoffset,
+            (const char*)state);
 
         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
         {
@@ -1608,7 +1667,9 @@ void dg_forthto (Bufferhandle* pBHarrayhead) // maybe make it always execute....
     }
 
     
-    dg_pusherror(pBHarrayhead, (const char*)" only VARIABLE VALUE FVALUE 2VALUE LOCALS| locals and { locals supported for now 2022 Jun 25");
+    dg_pusherror(
+        pBHarrayhead, 
+        (const char*)" only VARIABLE VALUE FVALUE 2VALUE LOCALS| locals and { locals supported for now 2022 Jun 25");
     dg_pusherror(pBHarrayhead, dg_forthtoname);
     return;
 }

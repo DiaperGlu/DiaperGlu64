@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.12.
+//    This file is part of DiaperGlu v5.13.
 //
-//    DiaperGlu v5.12 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.12 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.12; if not, write to the Free Software
+//    along with DiaperGlu v5.13; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 24, 2023              //
-// version 5.12               //
+// February 2, 2025           //
+// version 5.13               //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -1114,7 +1114,7 @@ void testdg_getnextdefinition()
 }
 
 
-void testdg_executedefinition()
+void testdg_interpretdefinition()
 {
 	Bufferhandle BHarrayhead;
 
@@ -1127,7 +1127,7 @@ void testdg_executedefinition()
 
 	const char* pError = NULL;
 
-	dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_executedefinition\n");
+	dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_interpretdefinition\n");
 
 	// dg_getpdefinition error
 	dg_initbuffers(&BHarrayhead);
@@ -1136,20 +1136,20 @@ void testdg_executedefinition()
     
     dg_inithlists (&BHarrayhead);
 
-	dg_executedefinition(&BHarrayhead, 38); // definition 38 doesn't exist yet so this is an error
+	dg_interpretdefinition(&BHarrayhead, 38); // definition 38 doesn't exist yet so this is an error
 
 	pError = dg_poperror(&BHarrayhead);
 
-	if (pError != dg_executedefinitionname)
+	if (pError != dg_interpretdefinitionname)
 	{
-		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_executedefinition dg_getpdefinition case - got wrong error on top");
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_interpretdefinition dg_getpdefinition case - got wrong error on top");
 	}
 
     pError = dg_poperror(&BHarrayhead);
 
 	if (pError != dg_getpdefinitionname)
 	{
-		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_executedefinition dg_getpdefinition case - got wrong error 1 below top");
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_interpretdefinition dg_getpdefinition case - got wrong error 1 below top");
 	}
 
     dg_clearerrors(&BHarrayhead);
@@ -1179,20 +1179,20 @@ void testdg_executedefinition()
 	pBH->maxsize = 0;
 	pBH->growby = 0;
 
-	dg_executedefinition(&BHarrayhead, 0);
+	dg_interpretdefinition(&BHarrayhead, 0);
 
 	pError = dg_poperror(&BHarrayhead);
 
-	if (pError != dg_executedefinitionname)
+	if (pError != dg_interpretdefinitionname)
 	{
-		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_executedefinition push data offset error case - got wrong error on top");
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_interpretdefinition push data offset error case - got wrong error on top");
 	}
 
     pError = dg_poperror(&BHarrayhead);
 
 	if (pError != dg_pushbufferuint64name)
 	{
-		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_executedefinition push data offset error case - got wrong error 1 below top");
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_interpretdefinition push data offset error case - got wrong error 1 below top");
 	}
 
     dg_clearerrors(&BHarrayhead);
@@ -1222,20 +1222,20 @@ void testdg_executedefinition()
 	pBH->maxsize = sizeof (UINT64);
 	pBH->growby  = sizeof (UINT64);
 
-	dg_executedefinition(&BHarrayhead, 0);
+	dg_interpretdefinition(&BHarrayhead, 0);
 
 	pError = dg_poperror(&BHarrayhead);
 
-	if (pError != dg_executedefinitionname)
+	if (pError != dg_interpretdefinitionname)
 	{
-		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_executedefinition push data buf case - got wrong error on top");
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_interpretdefinition push data buf case - got wrong error on top");
 	}
 
     pError = dg_poperror(&BHarrayhead);
 
 	if (pError != dg_pushbufferuint64name)
 	{
-		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_executedefinition push data buf case - got wrong error 1 below top");
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_interpretdefinition push data buf case - got wrong error 1 below top");
 	}
 
     dg_clearerrors(&BHarrayhead);
@@ -1261,13 +1261,13 @@ void testdg_executedefinition()
 
 	//pdefinition->compileroutinebuf = 88; // invalid buffer
 
-	//dg_executedefinition(&BHarrayhead, 0);
+	//dg_interpretdefinition(&BHarrayhead, 0);
 
 	//pError = dg_poperror(&BHarrayhead);
 
-	//if (pError != dg_executedefinitiondg_callbuffererror)
+	//if (pError != dg_interpretdefinitiondg_callbuffererror)
 	//{
-	//	dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_executedefinition error in called routines case - got wrong error");
+	//	dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_interpretdefinition error in called routines case - got wrong error");
 	//}
 
 	//dg_freeallbuffers(&BHarrayhead);
@@ -1293,11 +1293,11 @@ void testdg_executedefinition()
 	definition = dg_createconstantdef(&BHarrayhead, 66, (unsigned char*)"hi", 2); // 1
 	definition = dg_createconstantdef(&BHarrayhead, 777, (unsigned char*)"ho", 2); // 2
 
-	dg_executedefinition(&BHarrayhead, 0);
+	dg_interpretdefinition(&BHarrayhead, 0);
 
 	if (dg_geterrorcount(&BHarrayhead) != 0)
 	{
-		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_executedefinition dg_success case - got an error\n");
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_interpretdefinition dg_success case - got an error\n");
 	}
 
     dg_clearerrors(&BHarrayhead);
@@ -2228,7 +2228,7 @@ void testdg_createbrackettoorderconstantdef()
         dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
 	}
  
-    dg_executedefinition (
+    dg_interpretdefinition (
         &BHarrayhead,
         definition);   
         
@@ -2259,3 +2259,337 @@ void testdg_createbrackettoorderconstantdef()
 	dg_freeallbuffers(&BHarrayhead);
 }
 
+
+void testdg_safecompiledefinition()
+{
+    Bufferhandle myfakebharrayhead; // for the first couple dg_printzerostrings
+    const char* pError = NULL;
+    Bufferhandle* pBHarrayhead;
+	
+    UINT64 pagesize = dg_getpagesize();
+    UINT64 truesize;   // gets size of memory needed to hold buffer handle array head + jump buffer
+	
+    // mac os x requires memory to be used in units of system pagesize
+    // windows does now too
+    truesize = dg_gettruesize();
+    UINT64 mycurrentcompilebuffer = 0;
+    UINT64 mystartoffset = 0;
+    UINT64 mystartoffset2 = 0;
+
+    UINT64 definition;
+    UINT64 definition2;
+
+    UINT64 vocabid;
+    
+    UINT64 x; 
+
+    dg_initpbharrayhead(&myfakebharrayhead);
+	
+    dg_printzerostring(
+        &myfakebharrayhead,  
+        (unsigned char*)"testing dg_safecompiledefinition\n");
+
+    // need a dg_malloc buffer for BHarrayhead and jumpbuffer in order to get execute permission for both windows and mac
+    pError = dg_malloc(
+        (void**)&pBHarrayhead,
+        truesize,
+        dg_success);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(
+            &myfakebharrayhead, 
+            (unsigned char*)"FAIL! testing safe compile definition - got error allocating memory for test \n");
+    }
+
+    dg_initpbharrayhead(pBHarrayhead);
+	
+    // success case
+    dg_initbuffers(pBHarrayhead);
+	
+    dg_initvariables(pBHarrayhead);
+	
+    dg_initjumpbuffer(pBHarrayhead);
+
+    dg_inithlists (pBHarrayhead);
+
+    vocabid = dg_newwordlist(
+        pBHarrayhead, 
+        0); // default +1 0 based
+
+    dg_putbufferuint64(
+        pBHarrayhead, 
+        DG_DATASPACE_BUFFERID, 
+        currentcompilewordlist, 
+        vocabid);
+
+    definition = dg_new0stringnamecoreword (
+        pBHarrayhead, 
+        (UINT64)&dg_forthdocompiletypesubroutine, // compilebufoffset,
+        (UINT64)&dg_forthdup, // databufoffset,
+        (unsigned char*)"DUP");
+
+    if (dg_geterrorcount(pBHarrayhead) != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing safe compile definition success case - got an error doing the dg_new0stringnamecoreword\n" );
+    }
+
+    definition2 = dg_new0stringnamecoreword (
+        pBHarrayhead, 
+        (UINT64)&dg_forthdocompiletypesafesubroutine, // compilebufoffset,
+        (UINT64)&dg_forthdup, // databufoffset,
+        (unsigned char*)"DUP");
+	
+    // change current compile buffer to one I know the size of
+    mycurrentcompilebuffer = dg_newbuffer(
+        pBHarrayhead, 
+        dg_getpagesize(), 
+        8 * dg_getpagesize(), 
+        &pError, 
+        FORTH_FALSE);
+	
+    if (pError != dg_success)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing safe compile definition success case - could not get current compile buffer\n");
+        return;
+    }
+	
+    dg_putbufferuint64(
+        pBHarrayhead, 
+        DG_DATASPACE_BUFFERID, 
+        currentcompilebuffer, 
+        mycurrentcompilebuffer);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing safe compile definition success case - could not get current compile buffer\n");
+        return;
+    }
+	
+    mystartoffset = dg_getbufferlength(
+        pBHarrayhead, 
+        mycurrentcompilebuffer);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing safe compile definition success case - could not get current compile buffer's length\n");
+        return;
+    }
+	
+    // compiling safe call to definition's pfa
+    dg_compileinitlocals(pBHarrayhead);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing safe compile definition success case - could not compile init locals\n");
+        return;
+    }
+
+    if (dg_getbufferlength(pBHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing safe compile definition success case - data stack not at start\n");
+        return;
+    }
+    
+    dg_compilepushntodatastack(
+        pBHarrayhead,
+        0x1287349955887722);
+
+    dg_safecompiledefinition (
+        pBHarrayhead,
+        definition);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing safe compile definition success case - could not safe compile definition\n");
+        return;
+    }
+	
+    dg_compileexitlocals(pBHarrayhead);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing safe compile definition success case- could not compile exit locals\n");
+        return;
+    }
+
+    if (dg_getbufferlength(pBHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing safe compile definition success case - data stack not empty before test\n");
+        return;
+    }
+		
+    dg_callbuffer(
+        pBHarrayhead, 
+        mycurrentcompilebuffer, 
+        mystartoffset);
+	
+    x = dg_popdatastack(pBHarrayhead);
+    
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing safe compile definition success - got an error popping the data stack\n");
+        return;
+    }
+    
+    if (x != 0x1287349955887722)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing safe compile definition success - 1st result of compiled safe called forth routine incorrect\n");
+        return;
+    }
+
+    x = dg_popdatastack(pBHarrayhead);
+    
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing safe compile definition success - got an error popping the data stack\n");
+        return;
+    }
+    
+    if (x != 0x1287349955887722)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing safe compile definition success - 2nd result of compiled safe called forth routine incorrect\n");
+        return;
+    }
+
+    if (dg_getbufferlength(pBHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing safe compile definition success case - data stack not empty after test\n");
+        return;
+    }
+
+
+    mystartoffset2 = dg_getbufferlength(
+        pBHarrayhead, 
+        mycurrentcompilebuffer);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing safe compile definition 2nd success case - could not get current compile buffer's length\n");
+        return;
+    }
+	
+    // compiling safe call to definition's pfa
+    dg_compileinitlocals(pBHarrayhead);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing safe compile definition 2nd success case - could not compile init locals\n");
+        return;
+    }
+
+    if (dg_getbufferlength(pBHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing safe compile definition 2nd success case - data stack not at start\n");
+        return;
+    }
+    
+    dg_compilepushntodatastack(
+        pBHarrayhead,
+        0x1287349955887722);
+
+    dg_safecompiledefinition (
+        pBHarrayhead,
+        definition2);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing safe compile definition 2nd success case - could not safe compile definition\n");
+        return;
+    }
+	
+    dg_compileexitlocals(pBHarrayhead);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing safe compile definition 2nd success case- could not compile exit locals\n");
+        return;
+    }
+
+    if (dg_getbufferlength(pBHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing safe compile definition 2nd success case - data stack not empty before test\n");
+        return;
+    }
+		
+    dg_callbuffer(
+        pBHarrayhead, 
+        mycurrentcompilebuffer, 
+        mystartoffset);
+	
+    x = dg_popdatastack(pBHarrayhead);
+    
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing safe compile definition 2nd success case - got an error popping the data stack\n");
+        return;
+    }
+    
+    if (x != 0x1287349955887722)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing safe compile definition 2nd success case - 1st result of compiled safe called forth routine incorrect\n");
+        return;
+    }
+
+    x = dg_popdatastack(pBHarrayhead);
+    
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing safe compile definition 2nd success case - got an error popping the data stack\n");
+        return;
+    }
+    
+    if (x != 0x1287349955887722)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing safe compile definition 2nd success case - 2nd result of compiled safe called forth routine incorrect\n");
+        return;
+    }
+
+    if (dg_getbufferlength(pBHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing safe compile definition 2nd success case - data stack not empty after test\n");
+        return;
+    }
+
+
+    dg_printzerostring(
+        pBHarrayhead, 
+        (unsigned char*)" ... test done\n");
+    
+    dg_clearerrors(pBHarrayhead);
+	
+    dg_freeallbuffers(pBHarrayhead);
+
+    pError = dg_free(
+        (void*)pBHarrayhead, 
+        truesize, 
+        dg_success);
+}
+
+// need testdg_parsefinddodefinitionstate

@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.12.
+//    This file is part of DiaperGlu v5.13.
 //
-//    DiaperGlu v5.12 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.12 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.12; if not, write to the Free Software
+//    along with DiaperGlu v5.13; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 24, 2023              //
-// version 5.12               //
+// February 2, 2025           //
+// version 5.13               //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -1551,6 +1551,229 @@ void testdg_bumpdisplacementsizeifneeded()
         return;
     }
 }
+
+
+void testdg_compileotor()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    UINT64 mycurrentcompilebuffer = 0;
+    UINT64 mystartoffset = 0;
+    UINT64 x;
+
+    unsigned char* pbuffer;
+    UINT64* pbufferlength;
+
+    UINT64(*pfunct)();
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_compileotor\n");
+
+    // o=0 rax success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileotor o=0 rax success case  - could not get current compile buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileotor o=0 rax success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_compileotor(
+        &BHarrayhead,
+        0,
+        dg_rax);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileotor o=0 rax success case  - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileotor o=0 rax success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    pbuffer = dg_getpbuffer(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        &pbufferlength);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileotor o=0 rax success case  - error getting pbuffer\n");
+        return;
+    }
+
+    if (x != (UINT64)pbuffer)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovregtoreg o=0 rax succes case - return not pcurrentcompilebuffer, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" when pbuffer was ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)pbuffer);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    // o=5 rax success case
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileotor o=0 rax success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_compileotor(
+        &BHarrayhead,
+        5,
+        dg_rax);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileotor o=5 rax success case  - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileotor o=5 rax success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    pbuffer = dg_getpbuffer(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        &pbufferlength);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileotor o=5 rax success case  - error getting pbuffer\n");
+        return;
+    }
+
+    if (x != (UINT64)(pbuffer + 5))
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileotor o=5 rax succes case - return not pcurrentcompilebuffer, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" when pbuffer + 5 was ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)(pbuffer + 5));
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    
+    // o=0 rcx success case
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileotor o=0 rcx success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_compileotor(
+        &BHarrayhead,
+        0,
+        dg_rcx);
+
+    dg_compilemovregtoreg(
+        &BHarrayhead,
+        dg_rcx,
+        dg_rax);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileotor o=0 rcx success case  - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileotor o=0 rcx success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    pbuffer = dg_getpbuffer(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        &pbufferlength);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileotor o=0 rcx success case  - error getting pbuffer\n");
+        return;
+    }
+
+    if (x != (UINT64)pbuffer)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compileotor o=0 rcx success succes case - return not pcurrentcompilebuffer, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)" when pbuffer was ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (UINT64)pbuffer);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"  ... test done\n");
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
 
 void testdg_compilemovregtoreg()
 {
@@ -4821,6 +5044,121 @@ void testdg_callbuffer()
 	
 	dg_freeallbuffers(&BHarrayhead);
 }
+
+void dg_getstate(Bufferhandle* pBHarrayhead)
+{
+    UINT64 mystate;
+
+    mystate = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        statevariable);
+
+     dg_pushdatastack(pBHarrayhead, mystate);
+}
+
+/*
+void testdg_callbufferinstatecompile()
+{
+    Bufferhandle BHarrayhead;
+	
+    dg_initpbharrayhead(&BHarrayhead);
+    BHarrayhead.maxsize = BHarraymaxsize;
+    BHarrayhead.nextfreeindex = 0;
+    BHarrayhead.nextunusedbyte = 0;
+    BHarrayhead.pbuf = (void*)-1;
+    BHarrayhead.size = 0;
+    BHarrayhead.errorcount = 0;
+    BHarrayhead.id = BHarrayheadid;
+	
+    UINT64 mycurrentcompilebuffer = 0;
+    UINT64 mystartoffset = 0;
+
+    UINT64 myresult;
+
+    dg_printzerostring(
+        &BHarrayhead,  
+        (unsigned char*)"testing dg_callbufferinstatecompile and whether os lies about allocating executable memory\n");
+	
+    // success case not requiring alignment
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    dg_pushbufferuint64(
+        &BHarrayhead, 
+        DG_DATASTACK_BUFFERID, 
+        0);
+
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead, 
+        DG_DATASPACE_BUFFERID, 
+        currentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_callbufferinstatecompile success case - could not get current compile buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead, 
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_callbufferinstatecompile success case - could not get current compile buffer's length\n");
+        return;
+    }
+
+    // need to return state
+    dg_compileinitlocals(&BHarrayhead);
+
+    dg_compilecallcore(
+        &BHarrayhead,
+        (UINT64)(&dg_getstate));
+
+    dg_compileexitlocals(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_callbufferinstatecompile success case - could not compile ret\n");
+        return;
+    }
+
+    dg_forthexecute(&BHarrayhead);
+
+    // now the real test, does it crash?
+    dg_callbufferinstatecompile(
+        &BHarrayhead, 
+        mycurrentcompilebuffer, 
+        mystartoffset);
+
+    myresult = dg_popdatastack(&BHarrayhead);
+
+    if (myresult != (UINT64)dg_statecompile)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_callbufferinstatecompile success case - state compile not returned from test function\n");
+        return;
+    }
+        
+    dg_printzerostring(
+        &BHarrayhead, 
+        (unsigned char*)"  ... test done\n");
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+*/
 
 UINT64 dg_returntestuint64 ()
 {
@@ -9605,26 +9943,735 @@ void testdg_initjumpbuffer()
 
 
 // if this test fails any part, it will leak memory
-void testdg_compilesafecall()
+void testdg_compilesafecallcore()
 {
     Bufferhandle myfakebharrayhead; // for the first couple dg_printzerostrings
-	const char* pError = NULL;
-	Bufferhandle* pBHarrayhead;
+    const char* pError = NULL;
+    Bufferhandle* pBHarrayhead;
 	
-	UINT64 pagesize = dg_getpagesize();
-	UINT64 truesize;   // gets size of memory needed to hold buffer handle array head + jump buffer
+    UINT64 pagesize = dg_getpagesize();
+    UINT64 truesize;   // gets size of memory needed to hold buffer handle array head + jump buffer
 	
-	// mac os x requires memory to be used in units of system pagesize
+    // mac os x requires memory to be used in units of system pagesize
     // windows does now too
     truesize = dg_gettruesize();
-	UINT64 mycurrentcompilebuffer = 0;
-	UINT64 mystartoffset = 0;
+    UINT64 mycurrentcompilebuffer = 0;
+    UINT64 mystartoffset = 0;
     
     UINT64 x; 
 
     dg_initpbharrayhead(&myfakebharrayhead);
 	
-	dg_printzerostring(&myfakebharrayhead,  (unsigned char*)"testing compile safe call\n");
+    dg_printzerostring(
+        &myfakebharrayhead,  
+        (unsigned char*)"testing compile safe call core\n");
+
+    // need a dg_malloc buffer for BHarrayhead and jumpbuffer in order to get execute permission for both windows and mac
+    pError = dg_malloc(
+        (void**)&pBHarrayhead,
+        truesize,
+        dg_success);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(
+            &myfakebharrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call - got error allocating memory for test \n");
+    }
+
+    dg_initpbharrayhead(pBHarrayhead);
+	
+    // success case
+    dg_initbuffers(pBHarrayhead);
+	
+    dg_initvariables(pBHarrayhead);
+	
+    dg_initjumpbuffer(pBHarrayhead);
+	
+    // change current compile buffer to one I know the size of
+    mycurrentcompilebuffer = dg_newbuffer(
+        pBHarrayhead, 
+        dg_getpagesize(), 
+        8 * dg_getpagesize(), 
+        &pError, 
+        FORTH_FALSE);
+	
+    if (pError != dg_success)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call success case - could not get current compile buffer\n");
+        return;
+    }
+	
+    dg_putbufferuint64(
+        pBHarrayhead, 
+        DG_DATASPACE_BUFFERID, 
+        currentcompilebuffer, 
+        mycurrentcompilebuffer);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call success case - could not get current compile buffer\n");
+        return;
+    }
+	
+    mystartoffset = dg_getbufferlength(
+        pBHarrayhead, 
+        mycurrentcompilebuffer);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call success case - could not get current compile buffer's length\n");
+        return;
+    }
+	
+    // compiling a forth routine to safe call a core routine that moves (by growing to more than the current size) the current compile buffer
+    //  since this routine is executing in the current compile buffer, a safe call is necessary for the core routine to return
+    //  to the correct address
+    dg_compileinitlocals(pBHarrayhead);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - could not compile init locals\n");
+        return;
+    }
+
+    // dg_compilecallcore(pBHarrayhead, (UINT64)(&dg_forthgothere));
+	
+    // seeing if frame changed during safe call
+    // dg_compilecallcore(pBHarrayhead, (UINT64)(&dg_showframe));
+
+    // dg_compilecallcore(pBHarrayhead, (UINT64)(&dg_forthgothere));
+
+    dg_compilesafecallcore (
+        pBHarrayhead,
+        (UINT64)&dg_forthgrowbuffer);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - could not push core buffer id to data stack\n");
+        return;
+    }
+    
+    if (dg_getbufferlength(pBHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - data stack not empty after call\n");
+        return;
+    }
+    
+    dg_compilepushntodatastack(
+        pBHarrayhead,
+        0x1287349955887722);
+
+    // dg_compilecallcore(pBHarrayhead, (UINT64)(&dg_forthgothere));
+	
+    // dg_compilecallcore(pBHarrayhead, (UINT64)(&dg_showframe));
+	
+    // if calling dg_growbuffer does not change the buffer's base address, you might be able to manually use a new buffer, and copy the data from one to the other
+	
+    dg_compileexitlocals(pBHarrayhead);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compiles success case - could not compile exit locals\n");
+        return;
+    }
+	
+    // now the real test, does it crash? pushing parameters and making the call
+    dg_pushbufferuint64(
+        pBHarrayhead, 
+        DG_DATASTACK_BUFFERID, 
+        dg_getpagesize()); // growby
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call success case - could not push growby to data stack\n");
+        return;
+    }
+	
+    dg_pushbufferuint64(
+        pBHarrayhead, 
+        DG_DATASTACK_BUFFERID, 
+        mycurrentcompilebuffer); // buffer id
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call success case - could not push current compile buffer id to data stack\n");
+        return;
+    }
+		
+    dg_callbuffer(
+        pBHarrayhead, 
+        mycurrentcompilebuffer, 
+        mystartoffset);
+	
+    // if it didn't crash, it worked
+    //   could also check to make sure base address of buffer changed and if it didnt, do an alternate test where buffer contents are copied to new address
+	
+    x = dg_popdatastack(pBHarrayhead);
+    
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call success case - got an error popping the data stack\n");
+        return;
+    }
+    
+    if (x != 0x1287349955887722)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call success case - result of compiled safe called forth routine incorrect\n");
+        return;
+    }
+
+    dg_printzerostring(
+        pBHarrayhead, 
+        (unsigned char*)" ... test done\n");
+    
+    dg_clearerrors(pBHarrayhead);
+	
+    dg_freeallbuffers(pBHarrayhead);
+
+    pError = dg_free(
+        (void*)pBHarrayhead, 
+        truesize, 
+        dg_success);
+}
+
+
+// if this test fails any part, it will leak memory
+void testdg_compilesafecallsamebuffer()
+{
+    Bufferhandle myfakebharrayhead; // for the first couple dg_printzerostrings
+    const char* pError = NULL;
+    Bufferhandle* pBHarrayhead;
+	
+    UINT64 pagesize = dg_getpagesize();
+    UINT64 truesize;   // gets size of memory needed to hold buffer handle array head + jump buffer
+	
+    // mac os x requires memory to be used in units of system pagesize
+    // windows does now too
+    truesize = dg_gettruesize();
+    UINT64 mycurrentcompilebuffer = 0;
+    UINT64 mystartoffset = 0;
+    UINT64 mystartoffset2 = 0;
+    
+    UINT64 x; 
+
+    dg_initpbharrayhead(&myfakebharrayhead);
+	
+    dg_printzerostring(
+        &myfakebharrayhead,  
+        (unsigned char*)"testing compile safe call same buffer\n");
+
+    // need a dg_malloc buffer for BHarrayhead and jumpbuffer in order to get execute permission for both windows and mac
+    pError = dg_malloc(
+        (void**)&pBHarrayhead,
+        truesize,
+        dg_success);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(
+            &myfakebharrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call - got error allocating memory for test \n");
+    }
+
+    dg_initpbharrayhead(pBHarrayhead);
+	
+    // success case
+    dg_initbuffers(pBHarrayhead);
+	
+    dg_initvariables(pBHarrayhead);
+	
+    dg_initjumpbuffer(pBHarrayhead);
+	
+    // change current compile buffer to one I know the size of
+    mycurrentcompilebuffer = dg_newbuffer(
+        pBHarrayhead, 
+        dg_getpagesize(), 
+        8 * dg_getpagesize(), 
+        &pError, 
+        FORTH_FALSE);
+	
+    if (pError != dg_success)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call success case - could not get current compile buffer\n");
+        return;
+    }
+	
+    dg_putbufferuint64(
+        pBHarrayhead, 
+        DG_DATASPACE_BUFFERID, 
+        currentcompilebuffer, 
+        mycurrentcompilebuffer);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call success case - could not get current compile buffer\n");
+        return;
+    }
+	
+    mystartoffset = dg_getbufferlength(
+        pBHarrayhead, 
+        mycurrentcompilebuffer);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call success case - could not get current compile buffer's length\n");
+        return;
+    }
+	
+    // compiling a forth routine to safe call a core routine that moves (by growing to more than the current size) the current compile buffer
+    //  since this routine is executing in the current compile buffer, a safe call is necessary for the core routine to return
+    //  to the correct address
+    dg_compileinitlocals(pBHarrayhead);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - could not compile init locals\n");
+        return;
+    }
+
+    // dg_compilecallcore(pBHarrayhead, (UINT64)(&dg_forthgothere));
+	
+    // seeing if frame changed during safe call
+    // dg_compilecallcore(pBHarrayhead, (UINT64)(&dg_showframe));
+
+    // dg_compilecallcore(pBHarrayhead, (UINT64)(&dg_forthgothere));
+
+    dg_compilesafecallcore (
+        pBHarrayhead,
+        (UINT64)&dg_forthgrowbuffer);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - could not push core buffer id to data stack\n");
+        return;
+    }
+    
+    if (dg_getbufferlength(pBHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - data stack not empty after call\n");
+        return;
+    }
+    
+    dg_compilepushntodatastack(
+        pBHarrayhead,
+        0x1287349955887722);
+
+    // dg_compilecallcore(pBHarrayhead, (UINT64)(&dg_forthgothere));
+	
+    // dg_compilecallcore(pBHarrayhead, (UINT64)(&dg_showframe));
+	
+    // if calling dg_growbuffer does not change the buffer's base address, you might be able to manually use a new buffer, and copy the data from one to the other
+	
+    dg_compileexitlocals(pBHarrayhead);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compiles success case - could not compile exit locals\n");
+        return;
+    }
+
+
+    // compile routine that calls routine in same buffer that grows same buffer
+    mystartoffset2 = dg_getbufferlength(
+        pBHarrayhead, 
+        mycurrentcompilebuffer);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call success case - could not get current compile buffer's length\n");
+        return;
+    }
+	
+    // compiling a forth routine to safe call a core routine that moves (by growing to more than the current size) the current compile buffer
+    //  since this routine is executing in the current compile buffer, a safe call is necessary for the core routine to return
+    //  to the correct address
+    dg_compileinitlocals(pBHarrayhead);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - could not compile init locals\n");
+        return;
+    }
+
+    // dg_compilecallcore(pBHarrayhead, (UINT64)(&dg_forthgothere));
+	
+    // seeing if frame changed during safe call
+    // dg_compilecallcore(pBHarrayhead, (UINT64)(&dg_showframe));
+
+    // dg_compilecallcore(pBHarrayhead, (UINT64)(&dg_forthgothere));
+
+    dg_compilesafecallsamebuffer (
+        pBHarrayhead,
+        mystartoffset);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - could not push core buffer id to data stack\n");
+        return;
+    }
+    
+    if (dg_getbufferlength(pBHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - data stack not empty after call\n");
+        return;
+    }
+    
+    dg_compilepushntodatastack(
+        pBHarrayhead,
+        0x287364932);
+
+    // dg_compilecallcore(pBHarrayhead, (UINT64)(&dg_forthgothere));
+	
+    // dg_compilecallcore(pBHarrayhead, (UINT64)(&dg_showframe));
+	
+    // if calling dg_growbuffer does not change the buffer's base address, you might be able to manually use a new buffer, and copy the data from one to the other
+	
+    dg_compileexitlocals(pBHarrayhead);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compiles success case - could not compile exit locals\n");
+        return;
+    }
+
+	
+    // now the real test, does it crash? pushing parameters and making the call
+    dg_pushbufferuint64(
+        pBHarrayhead, 
+        DG_DATASTACK_BUFFERID, 
+        dg_getpagesize()); // growby
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call success case - could not push growby to data stack\n");
+        return;
+    }
+	
+    dg_pushbufferuint64(
+        pBHarrayhead, 
+        DG_DATASTACK_BUFFERID, 
+        mycurrentcompilebuffer); // buffer id
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call success case - could not push current compile buffer id to data stack\n");
+        return;
+    }
+		
+    dg_callbuffer(
+        pBHarrayhead, 
+        mycurrentcompilebuffer, 
+        mystartoffset2);
+	
+    // if it didn't crash, it worked
+    //   could also check to make sure base address of buffer changed and if it didnt, do an alternate test where buffer contents are copied to new address
+
+    x = dg_popdatastack(pBHarrayhead);
+    
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call success case - got an error popping the data stack\n");
+        return;
+    }
+    
+    if (x != 0x287364932)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call success case - result2 of compiled safe called forth routine incorrect\n");
+        return;
+    }
+	
+    x = dg_popdatastack(pBHarrayhead);
+    
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call success case - got an error popping the data stack\n");
+        return;
+    }
+    
+    if (x != 0x1287349955887722)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call success case - result of compiled safe called forth routine incorrect\n");
+        return;
+    }
+
+    dg_printzerostring(
+        pBHarrayhead, 
+        (unsigned char*)" ... test done\n");
+    
+    dg_clearerrors(pBHarrayhead);
+	
+    dg_freeallbuffers(pBHarrayhead);
+
+    pError = dg_free(
+        (void*)pBHarrayhead, 
+        truesize, 
+        dg_success);
+}
+
+
+// if this test fails any part, it will leak memory
+void testdg_compilesafecallbuffer()
+{
+    Bufferhandle myfakebharrayhead; // for the first couple dg_printzerostrings
+    const char* pError = NULL;
+    Bufferhandle* pBHarrayhead;
+	
+    UINT64 pagesize = dg_getpagesize();
+    UINT64 truesize;   // gets size of memory needed to hold buffer handle array head + jump buffer
+	
+    // mac os x requires memory to be used in units of system pagesize
+    // windows does now too
+    truesize = dg_gettruesize();
+    UINT64 mycurrentcompilebuffer = 0;
+    UINT64 mystartoffset = 0;
+    
+    UINT64 x; 
+
+    dg_initpbharrayhead(&myfakebharrayhead);
+	
+    dg_printzerostring(
+        &myfakebharrayhead,  
+        (unsigned char*)"testing compile safe call buffer\n");
+
+    // need a dg_malloc buffer for BHarrayhead and jumpbuffer in order to get execute permission for both windows and mac
+    pError = dg_malloc(
+        (void**)&pBHarrayhead,
+        truesize,
+        dg_success);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(
+            &myfakebharrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call - got error allocating memory for test \n");
+    }
+
+    dg_initpbharrayhead(pBHarrayhead);
+	
+    // success case
+    dg_initbuffers(pBHarrayhead);
+	
+    dg_initvariables(pBHarrayhead);
+	
+    dg_initjumpbuffer(pBHarrayhead);
+	
+    // change current compile buffer to one I know the size of
+    mycurrentcompilebuffer = dg_newbuffer(
+        pBHarrayhead, 
+        dg_getpagesize(), 
+        8 * dg_getpagesize(), 
+        &pError, 
+        FORTH_FALSE);
+	
+    if (pError != dg_success)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call success case - could not get current compile buffer\n");
+        return;
+    }
+	
+    dg_putbufferuint64(
+        pBHarrayhead, 
+        DG_DATASPACE_BUFFERID, 
+        currentcompilebuffer, 
+        mycurrentcompilebuffer);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call success case - could not get current compile buffer\n");
+        return;
+    }
+	
+    mystartoffset = dg_getbufferlength(pBHarrayhead, mycurrentcompilebuffer);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call success case - could not get current compile buffer's length\n");
+        return;
+    }
+	
+    // compiling a forth routine to safe call a core routine that moves (by growing to more than the current size) the current compile buffer
+    //  since this routine is executing in the current compile buffer, a safe call is necessary for the core routine to return
+    //  to the correct address
+    dg_compileinitlocals(pBHarrayhead);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - could not compile init locals\n");
+        return;
+    }
+
+    // dg_compilecallcore(pBHarrayhead, (UINT64)(&dg_forthgothere));
+	
+    // seeing if frame changed during safe call
+    // dg_compilecallcore(pBHarrayhead, (UINT64)(&dg_showframe));
+
+    // dg_compilecallcore(pBHarrayhead, (UINT64)(&dg_forthgothere));
+	
+    dg_compilesafecallbuffer(
+        pBHarrayhead, 
+        (UINT64)&dg_forthgrowbuffer, 
+        DG_CORE_BUFFERID);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - could not push core buffer id to data stack\n");
+        return;
+    }
+    
+    if (dg_getbufferlength(pBHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - data stack not empty after call\n");
+        return;
+    }
+    
+    dg_compilepushntodatastack(
+        pBHarrayhead,
+        0x1287349955887722);
+
+    // dg_compilecallcore(pBHarrayhead, (UINT64)(&dg_forthgothere));
+	
+    // dg_compilecallcore(pBHarrayhead, (UINT64)(&dg_showframe));
+	
+    // if calling dg_growbuffer does not change the buffer's base address, you might be able to manually use a new buffer, and copy the data from one to the other
+	
+    dg_compileexitlocals(pBHarrayhead);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compiles success case - could not compile exit locals\n");
+        return;
+    }
+	
+    // now the real test, does it crash? pushing parameters and making the call
+    dg_pushbufferuint64(
+        pBHarrayhead, 
+        DG_DATASTACK_BUFFERID, 
+        dg_getpagesize()); // growby
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call success case - could not push growby to data stack\n");
+        return;
+    }
+	
+    dg_pushbufferuint64(
+        pBHarrayhead, 
+        DG_DATASTACK_BUFFERID, 
+        mycurrentcompilebuffer); // buffer id
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call success case - could not push current compile buffer id to data stack\n");
+        return;
+    }
+		
+    dg_callbuffer(
+        pBHarrayhead, 
+        mycurrentcompilebuffer, 
+        mystartoffset);
+	
+    // if it didn't crash, it worked
+    //   could also check to make sure base address of buffer changed and if it didnt, do an alternate test where buffer contents are copied to new address
+	
+    x = dg_popdatastack(pBHarrayhead);
+    
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call success case - got an error popping the data stack\n");
+        return;
+    }
+    
+    if (x != 0x1287349955887722)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call success case - result of compiled safe called forth routine incorrect\n");
+        return;
+    }
+
+    dg_printzerostring(
+        pBHarrayhead, 
+        (unsigned char*)" ... test done\n");
+    
+    dg_clearerrors(pBHarrayhead);
+	
+    dg_freeallbuffers(pBHarrayhead);
+
+    pError = dg_free(
+        (void*)pBHarrayhead, 
+        truesize, 
+        dg_success);
+}
+
+
+// if this test fails any part, it will leak memory
+void testdg_forthcompilesafecallbuffer()
+{
+    Bufferhandle myfakebharrayhead; // for the first couple dg_printzerostrings
+    const char* pError = NULL;
+    Bufferhandle* pBHarrayhead;
+	
+    UINT64 pagesize = dg_getpagesize();
+    UINT64 truesize;   // gets size of memory needed to hold buffer handle array head + jump buffer
+	
+    // mac os x requires memory to be used in units of system pagesize
+    // windows does now too
+    truesize = dg_gettruesize();
+    UINT64 mycurrentcompilebuffer = 0;
+    UINT64 mystartoffset = 0;
+    
+    UINT64 x; 
+
+    dg_initpbharrayhead(&myfakebharrayhead);
+	
+    dg_printzerostring(&myfakebharrayhead,  (unsigned char*)"testing forth compile safe call buffer\n");
 
     // need a dg_malloc buffer for BHarrayhead and jumpbuffer in order to get execute permission for both windows and mac
     pError = dg_malloc(
@@ -9639,85 +10686,85 @@ void testdg_compilesafecall()
 
     dg_initpbharrayhead(pBHarrayhead);
 	
-	// success case
-	dg_initbuffers(pBHarrayhead);
+    // success case
+    dg_initbuffers(pBHarrayhead);
 	
-	dg_initvariables(pBHarrayhead);
+    dg_initvariables(pBHarrayhead);
 	
-	dg_initjumpbuffer(pBHarrayhead);
+    dg_initjumpbuffer(pBHarrayhead);
 	
-	// change current compile buffer to one I know the size of
-	mycurrentcompilebuffer = dg_newbuffer(pBHarrayhead, dg_getpagesize(), 8 * dg_getpagesize(), &pError, FORTH_FALSE);
+    // change current compile buffer to one I know the size of
+    mycurrentcompilebuffer = dg_newbuffer(pBHarrayhead, dg_getpagesize(), 8 * dg_getpagesize(), &pError, FORTH_FALSE);
 	
-	if (pError != dg_success)
-	{
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - could not get current compile buffer\n");
-		return;
-	}
+    if (pError != dg_success)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - could not get current compile buffer\n");
+        return;
+    }
 	
-	dg_putbufferuint64(pBHarrayhead, DG_DATASPACE_BUFFERID, currentcompilebuffer, mycurrentcompilebuffer);
+    dg_putbufferuint64(pBHarrayhead, DG_DATASPACE_BUFFERID, currentcompilebuffer, mycurrentcompilebuffer);
 	
-	if (pBHarrayhead->errorcount != 0)
-	{
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - could not get current compile buffer\n");
-		return;
-	}
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - could not get current compile buffer\n");
+        return;
+    }
 	
-	mystartoffset = dg_getbufferlength(pBHarrayhead, mycurrentcompilebuffer);
+    mystartoffset = dg_getbufferlength(pBHarrayhead, mycurrentcompilebuffer);
 	
-	if (pBHarrayhead->errorcount != 0)
-	{
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - could not get current compile buffer's length\n");
-		return;
-	}
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - could not get current compile buffer's length\n");
+        return;
+    }
 	
-	// compiling a forth routine to safe call a core routine that moves (by growing to more than the current size) the current compile buffer
-	//  since this routine is executing in the current compile buffer, a safe call is necessary for the core routine to return
-	//  to the correct address
-	dg_compileinitlocals(pBHarrayhead);
+    // compiling a forth routine to safe call a core routine that moves (by growing to more than the current size) the current compile buffer
+    //  since this routine is executing in the current compile buffer, a safe call is necessary for the core routine to return
+    //  to the correct address
+    dg_compileinitlocals(pBHarrayhead);
 	
-	if (pBHarrayhead->errorcount != 0)
-	{
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - could not compile init locals\n");
-		return;
-	}
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - could not compile init locals\n");
+        return;
+    }
 
     // dg_compilecallcore(pBHarrayhead, (UINT64)(&dg_forthgothere));
 	
-	dg_pushbufferuint64(pBHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)&dg_forthgrowbuffer); // bufferoffset
+    dg_pushbufferuint64(pBHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)&dg_forthgrowbuffer); // bufferoffset
     // dg_pushbufferuint64(pBHarrayhead, DG_DATASTACK_BUFFERID, (UINT64)&dg_forthgothere); // bufferoffset
 	
-	if (pBHarrayhead->errorcount != 0)
-	{
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - could not push address of dg_forthgrowbuffer to data stack\n");
-		return;
-	}
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - could not push address of dg_forthgrowbuffer to data stack\n");
+        return;
+    }
 		
-	dg_pushbufferuint64(pBHarrayhead, DG_DATASTACK_BUFFERID, DG_CORE_BUFFERID); // bufferid
+    dg_pushbufferuint64(pBHarrayhead, DG_DATASTACK_BUFFERID, DG_CORE_BUFFERID); // bufferid
 	
-	if (pBHarrayhead->errorcount != 0)
-	{
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - could not push core buffer id to data stack\n");
-		return;
-	}
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - could not push core buffer id to data stack\n");
+        return;
+    }
 	
-	//seeing if frame changed during safe call
-	//dg_compilecallcore(pBHarrayhead, (UINT64)(&dg_showframe));
+    //seeing if frame changed during safe call
+    //dg_compilecallcore(pBHarrayhead, (UINT64)(&dg_showframe));
 
     // dg_compilecallcore(pBHarrayhead, (UINT64)(&dg_forthgothere));
 	
-	dg_forthcompilesafecallbuffer(pBHarrayhead);
+    dg_forthcompilesafecallbuffer(pBHarrayhead);
 	
-	if (pBHarrayhead->errorcount != 0)
-	{
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - could not push core buffer id to data stack\n");
-		return;
-	}
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - could not push core buffer id to data stack\n");
+        return;
+    }
     
     if (dg_getbufferlength(pBHarrayhead, DG_DATASTACK_BUFFERID) != 0)
     {
         dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - data stack not empty after call\n");
-		return;
+        return;
     }
     
     dg_compilepushntodatastack(
@@ -9726,61 +10773,618 @@ void testdg_compilesafecall()
 
     // dg_compilecallcore(pBHarrayhead, (UINT64)(&dg_forthgothere));
 	
-	//dg_compilecallcore(pBHarrayhead, (UINT64)(&dg_showframe));
+    //dg_compilecallcore(pBHarrayhead, (UINT64)(&dg_showframe));
 	
-	// if calling dg_growbuffer does not change the buffer's base address, you might be able to manually use a new buffer, and copy the data from one to the other
+    // if calling dg_growbuffer does not change the buffer's base address, you might be able to manually use a new buffer, and copy the data from one to the other
 	
-	dg_compileexitlocals(pBHarrayhead);
+    dg_compileexitlocals(pBHarrayhead);
 	
-	if (pBHarrayhead->errorcount != 0)
-	{
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compiles success case - could not compile exit locals\n");
-		return;
-	}
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compiles success case - could not compile exit locals\n");
+        return;
+    }
 	
-	// now the real test, does it crash? pushing parameters and making the call
-	dg_pushbufferuint64(pBHarrayhead, DG_DATASTACK_BUFFERID, dg_getpagesize()); // growby
+    // now the real test, does it crash? pushing parameters and making the call
+    dg_pushbufferuint64(pBHarrayhead, DG_DATASTACK_BUFFERID, dg_getpagesize()); // growby
 	
-	if (pBHarrayhead->errorcount != 0)
-	{
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - could not push growby to data stack\n");
-		return;
-	}
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - could not push growby to data stack\n");
+        return;
+    }
 	
-	dg_pushbufferuint64(pBHarrayhead, DG_DATASTACK_BUFFERID, mycurrentcompilebuffer); // buffer id
+    dg_pushbufferuint64(pBHarrayhead, DG_DATASTACK_BUFFERID, mycurrentcompilebuffer); // buffer id
 	
-	if (pBHarrayhead->errorcount != 0)
-	{
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - could not push current compile buffer id to data stack\n");
-		return;
-	}
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - could not push current compile buffer id to data stack\n");
+        return;
+    }
 		
-	dg_callbuffer(pBHarrayhead, mycurrentcompilebuffer, mystartoffset);
+    dg_callbuffer(pBHarrayhead, mycurrentcompilebuffer, mystartoffset);
 	
-	// if it didn't crash, it worked
-	//   could also check to make sure base address of buffer changed and if it didnt, do an alternate test where buffer contents are copied to new address
+    // if it didn't crash, it worked
+    //   could also check to make sure base address of buffer changed and if it didnt, do an alternate test where buffer contents are copied to new address
 	
     x = dg_popdatastack(pBHarrayhead);
     
     if (pBHarrayhead->errorcount != 0)
-	{
-		dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - got an error popping the data stack\n");
-		return;
-	}
+    {
+        dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - got an error popping the data stack\n");
+        return;
+    }
     
     if (x != 0x1287349955887722)
     {
         dg_printzerostring(pBHarrayhead, (unsigned char*)"FAIL! testing compile safe call success case - result of compiled safe called forth routine incorrect\n");
-		return;
+        return;
     }
 
     dg_printzerostring(pBHarrayhead, (unsigned char*)" ... test done\n");
     
-	dg_clearerrors(pBHarrayhead);
+    dg_clearerrors(pBHarrayhead);
 	
-	dg_freeallbuffers(pBHarrayhead);
+    dg_freeallbuffers(pBHarrayhead);
 
     pError = dg_free((void*)pBHarrayhead, truesize, dg_success);
+}
+
+
+// if this test fails any part, it will leak memory
+void testdg_compilesafecallforth()
+{
+    Bufferhandle myfakebharrayhead; // for the first couple dg_printzerostrings
+    const char* pError = NULL;
+    Bufferhandle* pBHarrayhead;
+	
+    UINT64 pagesize = dg_getpagesize();
+    UINT64 truesize;   // gets size of memory needed to hold buffer handle array head + jump buffer
+	
+    // mac os x requires memory to be used in units of system pagesize
+    // windows does now too
+    truesize = dg_gettruesize();
+    UINT64 mycurrentcompilebuffer = 0;
+    UINT64 mystartoffset = 0;
+    UINT64 mystartoffset2 = 0;
+    UINT64 myalternatecompilebuffer = 0;
+    UINT64 mystartoffset3 = 0;
+    
+    UINT64 x; 
+
+    dg_initpbharrayhead(&myfakebharrayhead);
+	
+    dg_printzerostring(
+        &myfakebharrayhead,  
+        (unsigned char*)"testing compile safe call forth\n");
+
+    // need a dg_malloc buffer for BHarrayhead and jumpbuffer in order to get execute permission for both windows and mac
+    pError = dg_malloc(
+        (void**)&pBHarrayhead,
+        truesize,
+        dg_success);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(
+            &myfakebharrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth - got error allocating memory for test \n");
+    }
+
+    dg_initpbharrayhead(pBHarrayhead);
+	
+    // core success case
+    dg_initbuffers(pBHarrayhead);
+	
+    dg_initvariables(pBHarrayhead);
+	
+    dg_initjumpbuffer(pBHarrayhead);
+	
+    // change current compile buffer to one I know the size of
+    mycurrentcompilebuffer = dg_newbuffer(
+        pBHarrayhead, 
+        dg_getpagesize(), 
+        8 * dg_getpagesize(), 
+        &pError, 
+        FORTH_FALSE);
+	
+    if (pError != dg_success)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth core success case - could not get current compile buffer\n");
+        return;
+    }
+
+    myalternatecompilebuffer = dg_newbuffer(
+        pBHarrayhead, 
+        dg_getpagesize(), 
+        8 * dg_getpagesize(), 
+        &pError, 
+        FORTH_FALSE);
+	
+    if (pError != dg_success)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth core success case - could not get alternate compile buffer\n");
+        return;
+    }
+	
+    dg_putbufferuint64(
+        pBHarrayhead, 
+        DG_DATASPACE_BUFFERID, 
+        currentcompilebuffer, 
+        mycurrentcompilebuffer);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth core success case - could not get current compile buffer\n");
+        return;
+    }
+	
+    mystartoffset = dg_getbufferlength(
+        pBHarrayhead, 
+        mycurrentcompilebuffer);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth core success case - could not get current compile buffer's length\n");
+        return;
+    }
+	
+    // compiling a forth routine to safe call a core routine that moves 
+    //  (by growing to more than the current size) the current compile buffer
+    //  since this routine is executing in the current compile buffer, 
+    //  a safe call is necessary for the core routine to return
+    //  to the correct address
+    dg_compileinitlocals(pBHarrayhead);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth core success case - could not compile init locals\n");
+        return;
+    }
+	
+    dg_compilesafecallforth(
+        pBHarrayhead, 
+        (UINT64)&dg_forthgrowbuffer, 
+        DG_CORE_BUFFERID);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth core success case - could not push core buffer id to data stack\n");
+        return;
+    }
+    
+    if (dg_getbufferlength(pBHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth core success case - data stack not empty after call\n");
+        return;
+    }
+    
+    dg_compilepushntodatastack(
+        pBHarrayhead,
+        0x1287349955887722);
+	
+    dg_compileexitlocals(pBHarrayhead);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth core success case - could not compile exit locals\n");
+        return;
+    }
+
+    dg_pushbufferuint64(
+        pBHarrayhead, 
+        DG_DATASTACK_BUFFERID, 
+        dg_getpagesize()); // growby
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth core success case - could not push growby to data stack\n");
+        return;
+    }
+	
+    dg_pushbufferuint64(
+        pBHarrayhead, 
+        DG_DATASTACK_BUFFERID, 
+        mycurrentcompilebuffer); // buffer id
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth core success case - could not push current compile buffer id to data stack\n");
+        return;
+    }
+	
+    dg_callbuffer(
+        pBHarrayhead, 
+        mycurrentcompilebuffer, 
+        mystartoffset);
+	
+    x = dg_popdatastack(pBHarrayhead);
+    
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth core success case - got an error popping the data stack\n");
+        dg_forthdoterrors(pBHarrayhead);
+        return;
+    }
+    
+    if (x != 0x1287349955887722)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth core success case - result of compiled safe called forth routine incorrect\n");
+        return;
+    }
+
+
+    mystartoffset2 = dg_getbufferlength(
+        pBHarrayhead, 
+        mycurrentcompilebuffer);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth same buffer success case - could not get current compile buffer's length\n");
+        return;
+    }
+	
+    // compiling a forth routine to safe call a core routine that moves 
+    //  (by growing to more than the current size) the current compile buffer
+    //  since this routine is executing in the current compile buffer, 
+    //  a safe call is necessary for the core routine to return
+    //  to the correct address
+    dg_compileinitlocals(pBHarrayhead);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth same buffer success case - could not compile init locals\n");
+        return;
+    }
+	
+    dg_compilesafecallforth(
+        pBHarrayhead, 
+        mystartoffset, 
+        mycurrentcompilebuffer);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth same buffer success case - could not push core buffer id to data stack\n");
+        return;
+    }
+    
+    if (dg_getbufferlength(pBHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth same buffer success case - data stack not empty after call\n");
+        return;
+    }
+    
+    dg_compilepushntodatastack(
+        pBHarrayhead,
+        0x981286312786);
+	
+    dg_compileexitlocals(pBHarrayhead);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth same buffer success case - could not compile exit locals\n");
+        return;
+    }
+
+    dg_pushbufferuint64(
+        pBHarrayhead, 
+        DG_DATASTACK_BUFFERID, 
+        dg_getpagesize()); // growby
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth same buffer success case - could not push growby to data stack\n");
+        return;
+    }
+	
+    dg_pushbufferuint64(
+        pBHarrayhead, 
+        DG_DATASTACK_BUFFERID, 
+        mycurrentcompilebuffer); // buffer id
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth same buffer success case - could not push current compile buffer id to data stack\n");
+        return;
+    }
+	
+    dg_callbuffer(
+        pBHarrayhead, 
+        mycurrentcompilebuffer, 
+        mystartoffset2);
+
+    x = dg_popdatastack(pBHarrayhead);
+    
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth same buffer success case - got an error popping top from the data stack\n");
+        return;
+    }
+    
+    if (x != 0x981286312786)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth same buffer success case - 1st result of compiled safe called forth routine incorrect\n");
+        return;
+    }
+	
+    x = dg_popdatastack(pBHarrayhead);
+    
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth same buffer success case - got an error popping 2nd from the data stack\n");
+        return;
+    }
+    
+    if (x != 0x1287349955887722)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth same buffer success case - 2nd result of compiled safe called forth routine incorrect\n");
+        return;
+    }
+
+
+    // compile grow from alternate buffer
+    //   start offset is 0
+    dg_putbufferuint64(
+        pBHarrayhead, 
+        DG_DATASPACE_BUFFERID, 
+        currentcompilebuffer, 
+        myalternatecompilebuffer);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth buffer success case - could not set current compile buffer 1st time\n");
+        return;
+    }
+
+    dg_compileinitlocals(pBHarrayhead);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth buffer success case - could not compile init locals\n");
+        return;
+    }
+
+    // safe call not needed - alternate buffer won't move
+    dg_compilecallcore(
+        pBHarrayhead, 
+        (UINT64)&dg_forthgrowbuffer);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth buffer success case - could not push core buffer id to data stack\n");
+        return;
+    }
+    
+    if (dg_getbufferlength(pBHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth buffer success case - data stack not empty after call\n");
+        return;
+    }
+    
+    dg_compilepushntodatastack(
+        pBHarrayhead,
+        0x1287349955887722);
+	
+    dg_compileexitlocals(pBHarrayhead);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth buffer success case - could not compile exit locals\n");
+        return;
+    }
+
+    dg_putbufferuint64(
+        pBHarrayhead, 
+        DG_DATASPACE_BUFFERID, 
+        currentcompilebuffer, 
+        mycurrentcompilebuffer);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth buffer success case - could not set current compile buffer 2nd time\n");
+        return;
+    }
+
+    mystartoffset3 = dg_getbufferlength(
+        pBHarrayhead, 
+        mycurrentcompilebuffer);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth buffer success case - could not get current compile buffer's length\n");
+        return;
+    }
+
+    // compiling a forth routine to safe call a core routine that moves 
+    //  (by growing to more than the current size) the current compile buffer
+    //  since this routine is executing in the current compile buffer, 
+    //  a safe call is necessary for the core routine to return
+    //  to the correct address
+    dg_compileinitlocals(pBHarrayhead);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth buffer success case - could not compile init locals\n");
+        return;
+    }
+	
+    dg_compilesafecallforth(
+        pBHarrayhead, 
+        0, 
+        myalternatecompilebuffer);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth buffer success case - could not push core buffer id to data stack\n");
+        return;
+    }
+    
+    if (dg_getbufferlength(pBHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth buffer success case - data stack not empty after call\n");
+        return;
+    }
+    
+    dg_compilepushntodatastack(
+        pBHarrayhead,
+        0x981286312786);
+	
+    dg_compileexitlocals(pBHarrayhead);
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth buffer success case - could not compile exit locals\n");
+        return;
+    }
+
+    dg_pushbufferuint64(
+        pBHarrayhead, 
+        DG_DATASTACK_BUFFERID, 
+        dg_getpagesize()); // growby
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth buffer success case - could not push growby to data stack\n");
+        return;
+    }
+	
+    dg_pushbufferuint64(
+        pBHarrayhead, 
+        DG_DATASTACK_BUFFERID, 
+        mycurrentcompilebuffer); // buffer id
+	
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth buffer success case - could not push current compile buffer id to data stack\n");
+        return;
+    }
+	
+    dg_callbuffer(
+        pBHarrayhead, 
+        mycurrentcompilebuffer, 
+        mystartoffset3);
+
+    x = dg_popdatastack(pBHarrayhead);
+    
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth buffer success case - got an error popping top from the data stack\n");
+        return;
+    }
+    
+    if (x != 0x981286312786)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth buffer success case - 1st result of compiled safe called forth routine incorrect\n");
+        return;
+    }
+	
+    x = dg_popdatastack(pBHarrayhead);
+    
+    if (pBHarrayhead->errorcount != 0)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth buffer success case - got an error popping 2nd from the data stack\n");
+        return;
+    }
+    
+    if (x != 0x1287349955887722)
+    {
+        dg_printzerostring(
+            pBHarrayhead, 
+            (unsigned char*)"FAIL! testing compile safe call forth buffer success case - 2nd result of compiled safe called forth routine incorrect\n");
+        return;
+    }
+
+
+    dg_printzerostring(
+        pBHarrayhead, 
+        (unsigned char*)" ... test done\n");
+    
+    dg_clearerrors(pBHarrayhead);
+	
+    dg_freeallbuffers(pBHarrayhead);
+
+    pError = dg_free(
+        (void*)pBHarrayhead, 
+        truesize, 
+        dg_success);
 }
 
 
@@ -31795,6 +33399,1830 @@ void testdg_getcallsubsframepreservedregoffset ()
 
     dg_freeallbuffers(&BHarrayhead);
 }
+
+
+void testdg_compiledgframecallbuffer()
+{
+    Bufferhandle BHarrayhead;
+	
+    dg_initpbharrayhead(&BHarrayhead);
+    BHarrayhead.maxsize = BHarraymaxsize;
+    BHarrayhead.nextfreeindex = 0;
+    BHarrayhead.nextunusedbyte = 0;
+    BHarrayhead.pbuf = (void*)-1;
+    BHarrayhead.size = 0;
+    BHarrayhead.errorcount = 0;
+    BHarrayhead.id = BHarrayheadid;
+	
+    UINT64 mycurrentcompilebuffer = 0;
+    UINT64 mystartoffset1 = 0;
+    UINT64 mybufferid1 = 0;
+    UINT64 mystartoffset2 = 0;
+    UINT64 x = 0;
+
+    UINT64 secondbufferid;
+    const char* pError;
+	
+    dg_printzerostring(&BHarrayhead,  (unsigned char*)"testing dg_compiledgframecallbuffer\n");
+	
+    // success case
+    dg_initbuffers(&BHarrayhead);
+	
+    dg_initvariables(&BHarrayhead);
+	
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead, 
+        DG_DATASPACE_BUFFERID, 
+        currentcompilebuffer);
+	
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! testing dg_compiledgframecallbuffer success case - could not get current compile buffer\n");
+            return;
+    }
+
+    mybufferid1 = mycurrentcompilebuffer;
+	
+    mystartoffset1 = dg_getbufferlength(
+        &BHarrayhead, 
+        mycurrentcompilebuffer);
+	
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! testing dg_compiledgframecallbuffer success case - could not get current compile buffer's length\n");
+        return;
+    }
+	
+    // compiling a forth routine to call that does ( : unnamed DUP ; )
+    dg_compileinitlocals(&BHarrayhead);
+	
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! testing dg_compiledgframecallbuffer success case - could not compile init locals\n");
+        return;
+    }
+	
+    dg_compilecallcore(&BHarrayhead, (UINT64)(&dg_forthdup));
+	
+    dg_compileexitlocals(&BHarrayhead);
+	
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! dg_compiledgframecallbuffer success case - could not compile exit locals\n");
+        return;
+    }
+
+    secondbufferid = dg_newbuffer (
+        &BHarrayhead,
+        0x1000, // growby,
+        (UINT64)-1, // maxsize,
+        &pError,
+        FORTH_FALSE);  // forceoutofmemory)
+
+        if (pError != dg_success)
+        {
+            dg_printzerostring(
+                &BHarrayhead, 
+                (unsigned char*)"FAIL! testing dg_compiledgframecallbuffer success case - could not allocate second buffer\n");
+		return;
+        }
+	
+	mystartoffset2 = dg_getbufferlength(
+            &BHarrayhead, 
+            secondbufferid); // should be 0
+	
+	if (BHarrayhead.errorcount != 0)
+	{
+		dg_printzerostring(
+                    &BHarrayhead, 
+                    (unsigned char*)"FAIL! testing dg_compiledgframecallbuffer success case - could not get current compile buffer's length\n");
+		return;
+	}
+
+        dg_putbufferuint64(
+            &BHarrayhead, 
+            DG_DATASPACE_BUFFERID, 
+            currentcompilebuffer,
+            secondbufferid);
+
+        if (BHarrayhead.errorcount != 0)
+	{
+		dg_printzerostring(
+                    &BHarrayhead, 
+                    (unsigned char*)"FAIL! testing dg_compiledgframecallbuffer success case - could not set current compile buffer to new buffer\n");
+		return;
+	}
+	
+	// compiling a forth routine to call the forth routine that was just compiled
+	dg_compileinitlocals(&BHarrayhead);
+	
+	if (BHarrayhead.errorcount != 0)
+	{
+		dg_printzerostring(
+                    &BHarrayhead, 
+                    (unsigned char*)"FAIL! testing dg_compiledgframecallbuffer success case - could not compile init locals\n");
+		return;
+	}
+
+	dg_compiledgframecallbuffer(
+            &BHarrayhead,
+            mystartoffset1,
+            mybufferid1);
+
+        if (BHarrayhead.errorcount != 0)
+	{
+		dg_printzerostring(
+                    &BHarrayhead, 
+                    (unsigned char*)"FAIL! testing dg_compiledgframecallbuffer success case - could not compile init locals\n");
+		return;
+	}
+	
+	dg_compileexitlocals(&BHarrayhead);
+	
+	if (BHarrayhead.errorcount != 0)
+	{
+		dg_printzerostring(
+                    &BHarrayhead, 
+                    (unsigned char*)"FAIL! testing dg_compiledgframecallbuffer success case - could not compile exit locals\n");
+		return;
+	}
+	
+	// setting data stack up for test
+	x = dg_getbufferlength(
+            &BHarrayhead, 
+            DG_DATASTACK_BUFFERID);
+	
+	if (x != 0)
+	{
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! testing dg_compiledgframecallbuffer success case - data stack not empty for test as expected\n");
+		return;
+	}
+	
+	dg_pushbufferuint64(
+            &BHarrayhead, 
+            DG_DATASTACK_BUFFERID, 
+            0x76757473);
+	
+	if (BHarrayhead.errorcount != 0)
+	{
+		dg_printzerostring(
+                    &BHarrayhead, 
+                    (unsigned char*)"FAIL! testing dg_compiledgframecallbuffer success case - could not push test number to data stack\n");
+		return;
+	}
+	
+	// now the real test, does it crash?
+	dg_callbuffer(
+            &BHarrayhead, 
+            secondbufferid, 
+            mystartoffset2);
+	
+	// seeing if it worked
+	x = dg_getbufferlength(
+            &BHarrayhead, 
+            DG_DATASTACK_BUFFERID);
+	
+	if (x != 2*sizeof(UINT64))
+	{
+            dg_printzerostring(
+                &BHarrayhead, 
+                (unsigned char*)"FAIL! testing dg_compiledgframecallbuffer success case - data stack length not correct after call\n");
+		return;
+	}
+	
+	x = dg_popbufferuint64(
+            &BHarrayhead, 
+            DG_DATASTACK_BUFFERID);
+	
+    if (x != 0x76757473)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! testing compiled call routine at offset in same buffer success case - top number on data stack after calling compiled call to DUP incorrect\n");
+        return;
+    }
+	
+    x = dg_popbufferuint64(
+        &BHarrayhead, 
+        DG_DATASTACK_BUFFERID);
+	
+    if (x != 0x76757473)
+    {
+        dg_printzerostring(
+            &BHarrayhead, 
+            (unsigned char*)"FAIL! testing compiled call routine at offset in same buffer success case - top number on data stack after calling compiled call to DUP incorrect\n");
+        return;
+    }
+
+    dg_printzerostring(
+        &BHarrayhead, 
+        (unsigned char*)" ... test done\n");
+	
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_compilecompareir64ir64()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    UINT64 mycurrentcompilebuffer = 0;
+    UINT64 mystartoffset = 0;
+    UINT64 x;
+
+    UINT64(*pfunct)(UINT64, UINT64);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_compilecompareir64ir64\n");
+
+    // compare rcx - rax success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecompareir64ir64 rcx - rax success case  - could not get current compile buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecompareir64ir64 rcx - rax success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_compilemovregtoreg(
+        &BHarrayhead,
+        dg_param1reg,
+        dg_rax);
+
+    dg_compilemovregtoreg(
+        &BHarrayhead,
+        dg_param2reg,
+        dg_rcx);
+
+    dg_compilecompareir64ir64(
+        &BHarrayhead,
+        dg_rax,
+        dg_rcx);
+
+    // pushf poprax ...
+    dg_compilesegment (&BHarrayhead, (const char*)"\x9C\x58", 2);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecompareir64ir64 rcx - rax success case  - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)(UINT64, UINT64))dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecompareir64ir64 rcx - rax success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct(0x20, 0x20);
+
+    if ((x & 0x41) != 0x40) // zset, nocarry
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecompareir64ir64 rcx - rax success case - 0x20 - 0x20 return not 0x40, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (x & 0x41));
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    x = pfunct(0x20, 0x21);
+
+    if ((x & 0x41) != 0x00) // zclear, nocarry
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecompareir64ir64 rcx - rax success case - 0x21 - 0x20 return not 0x00, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (x & 0x41));
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    x = pfunct(0x21, 0x20);
+
+    if ((x & 0x41) != 0x01) // znotset, carryset
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecompareir64ir64 rcx - rax success case - 0x20 - 0x21 return not 0x01, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (x & 0x41));
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"  ... test done\n");
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_compilecompareiretu64()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    UINT64 mycurrentcompilebuffer = 0;
+    UINT64 mystartoffset = 0;
+    UINT64 x;
+
+    UINT64(*pfunct)(UINT64);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_compilecompareiretu64\n");
+
+    // compare rax - 1 success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecompareiretu64 rax - n success case  - could not get current compile buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecompareiretu64 rax - n success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_compilemovregtoreg(
+        &BHarrayhead,
+        dg_param1reg,
+        dg_rax);
+
+    dg_compilecompareiretu64(
+        &BHarrayhead,
+        1);
+
+    // pushf poprax ...
+    dg_compilesegment (&BHarrayhead, (const char*)"\x9C\x58", 2);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecompareiretu64 rax - n success case  - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)(UINT64))dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecompareiretu64 rax - n success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct(1);
+
+    if ((x & 0x41) != 0x40) // zset, nocarry
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecompareiretu64 rax - n success case - 1 - 1 return not 0x40, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (x & 0x41));
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    x = pfunct(2);
+
+    if ((x & 0x41) != 0x00) // zclear, nocarry
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecompareiretu64 rax - n success case - 2 - 1 return not 0x00, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (x & 0x41));
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    x = pfunct(0);
+
+    if ((x & 0x41) != 0x01) // znotset, carryset
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecompareiretu64 rax - n success case - 0 - 1 return not 0x01, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (x & 0x41));
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    // dg_printzerostring(&BHarrayhead, (unsigned char*)"  ... test done\n");
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+
+
+    // compare rax - 0x4000000000000000 success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecompareiretu64 rax - 0x4000000000000000 success case  - could not get current compile buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecompareiretu64 rax - 0x4000000000000000 success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_compilemovregtoreg(
+        &BHarrayhead,
+        dg_param1reg,
+        dg_rax);
+
+    dg_compilecompareiretu64(
+        &BHarrayhead,
+        0x4000000000000000);
+
+    // pushf poprax ...
+    dg_compilesegment (&BHarrayhead, (const char*)"\x9C\x58", 2);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecompareiretu64 rax - 0x4000000000000000 success case  - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)(UINT64))dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecompareiretu64 rax - 0x4000000000000000 success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct(0x4000000000000000);
+
+    if ((x & 0x41) != 0x40) // zset, nocarry
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecompareiretu64 rax - 0x4000000000000000 success case - 0x4000000000000000 - 0x4000000000000000 return not 0x40, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (x & 0x41));
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    x = pfunct(0x4000000000000001);
+
+    if ((x & 0x41) != 0x00) // zclear, nocarry
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecompareiretu64 rax - 0x4000000000000000 success case - 0x4000000000000001 - 0x4000000000000000 return not 0x00, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (x & 0x41));
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    x = pfunct(0x3FFFFFFFFFFFFFFF);
+
+    if ((x & 0x41) != 0x01) // znotset, carryset
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecompareiretu64 rax - 0x4000000000000000 success case - 0x3FFFFFFFFFFFFFFF - 0x4000000000000000 return not 0x01, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (x & 0x41));
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"  ... test done\n");
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_compilecomparenreg()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    UINT64 mycurrentcompilebuffer = 0;
+    UINT64 mystartoffset = 0;
+    UINT64 x;
+
+    UINT64(*pfunct)(UINT64);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing testdg_compilecomparenreg\n");
+
+    // compare rax - 1 success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! testdg_compilecomparenreg rax - n success case  - could not get current compile buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! testdg_compilecomparenreg rax - n success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_compilemovregtoreg(
+        &BHarrayhead,
+        dg_param1reg,
+        dg_rax);
+
+    dg_compilecomparenreg(
+        &BHarrayhead,
+        1,
+        dg_rax);
+
+    // pushf poprax ...
+    dg_compilesegment (&BHarrayhead, (const char*)"\x9C\x58", 2);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! testdg_compilecomparenreg rax - n success case  - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)(UINT64))dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! testdg_compilecomparenreg rax - n success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct(1);
+
+    if ((x & 0x41) != 0x40) // zset, nocarry
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! testdg_compilecomparenreg rax - n success case - 1 - 1 return not 0x40, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (x & 0x41));
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    x = pfunct(2);
+
+    if ((x & 0x41) != 0x00) // zclear, nocarry
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! testdg_compilecomparenreg rax - n success case - 2 - 1 return not 0x00, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (x & 0x41));
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    x = pfunct(0);
+
+    if ((x & 0x41) != 0x01) // znotset, carryset
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! testdg_compilecomparenreg rax - n success case - 0 - 1 return not 0x01, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (x & 0x41));
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    // dg_printzerostring(&BHarrayhead, (unsigned char*)"  ... test done\n");
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+
+
+    // compare rax - 0x4000000000000000 success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! testdg_compilecomparenreg rax - 0x4000000000000000 success case  - could not get current compile buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! testdg_compilecomparenreg rax - 0x4000000000000000 success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_compilemovregtoreg(
+        &BHarrayhead,
+        dg_param1reg,
+        dg_rax);
+
+    dg_compilecomparenreg(
+        &BHarrayhead,
+        0x4000000000000000,
+        dg_rax);
+
+    // pushf poprax ...
+    dg_compilesegment (&BHarrayhead, (const char*)"\x9C\x58", 2);
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! testdg_compilecomparenreg rax - 0x4000000000000000 success case  - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)(UINT64))dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! testdg_compilecomparenreg rax - 0x4000000000000000 success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct(0x4000000000000000);
+
+    if ((x & 0x41) != 0x40) // zset, nocarry
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! testdg_compilecomparenreg rax - 0x4000000000000000 success case - 0x4000000000000000 - 0x4000000000000000 return not 0x40, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (x & 0x41));
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    x = pfunct(0x4000000000000001);
+
+    if ((x & 0x41) != 0x00) // zclear, nocarry
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! testdg_compilecomparenreg rax - 0x4000000000000000 success case - 0x4000000000000001 - 0x4000000000000000 return not 0x00, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (x & 0x41));
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    x = pfunct(0x3FFFFFFFFFFFFFFF);
+
+    if ((x & 0x41) != 0x01) // znotset, carryset
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! testdg_compilecomparenreg rax - 0x4000000000000000 success case - 0x3FFFFFFFFFFFFFFF - 0x4000000000000000 return not 0x01, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (x & 0x41));
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"  ... test done\n");
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_compilecomparenbracketrbpplusn()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    UINT64 mycurrentcompilebuffer = 0;
+    UINT64 mystartoffset = 0;
+    UINT64 x;
+    UINT64 numberoflocals;
+
+    UINT64(*pfunct)(UINT64);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_compilecomparenbracketrbpplusn\n");
+
+    // compare rax - 1 success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecomparenbracketrbpplusn rax - n success case  - could not get current compile buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecomparenbracketrbpplusn rax - n success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_forthentercallsubsframecomma(&BHarrayhead);
+
+    numberoflocals = dg_compileaddnlocalstocallsubsframe (
+        &BHarrayhead,
+        1);
+
+    dg_compilemovregtobracketrbpd8 (
+        &BHarrayhead,
+        dg_param1reg,
+        numberoflocals * (-1) * sizeof(UINT64));
+
+    dg_compilecomparenbracketrbpplusn(
+        &BHarrayhead,
+        1,
+        numberoflocals * (-1) * sizeof(UINT64));
+
+    // pushf poprax ...
+    dg_compilesegment (&BHarrayhead, (const char*)"\x9C\x58", 2);
+
+    dg_compileexitlocals(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecomparenbracketrbpplusn rax - n success case  - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)(UINT64))dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecomparenbracketrbpplusn rax - n success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct(1);
+
+    if ((x & 0x41) != 0x40) // zset, nocarry
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecomparenbracketrbpplusn rax - n success case - 1 - 1 return not 0x40, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (x & 0x41));
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    x = pfunct(2);
+
+    if ((x & 0x41) != 0x00) // zclear, nocarry
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecomparenbracketrbpplusn rax - n success case - 2 - 1 return not 0x00, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (x & 0x41));
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    x = pfunct(0);
+
+    if ((x & 0x41) != 0x01) // znotset, carryset
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecomparenbracketrbpplusn rax - n success case - 0 - 1 return not 0x01, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (x & 0x41));
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    // dg_printzerostring(&BHarrayhead, (unsigned char*)"  ... test done\n");
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+
+
+    // compare rax - 0x4000000000000000 success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecomparenbracketrbpplusn rax - 0x4000000000000000 success case  - could not get current compile buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecomparenbracketrbpplusn rax - 0x4000000000000000 success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_forthentercallsubsframecomma(&BHarrayhead);
+
+    numberoflocals = dg_compileaddnlocalstocallsubsframe (
+        &BHarrayhead,
+        1);
+
+    dg_compilemovregtobracketrbpd8 (
+        &BHarrayhead,
+        dg_param1reg,
+        numberoflocals * (-1) * sizeof(UINT64));
+
+    dg_compilecomparenbracketrbpplusn(
+        &BHarrayhead,
+        0x4000000000000000,
+        numberoflocals * (-1) * sizeof(UINT64));
+
+    // pushf poprax ...
+    dg_compilesegment (&BHarrayhead, (const char*)"\x9C\x58", 2);
+
+    dg_compileexitlocals(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecomparenbracketrbpplusn rax - 0x4000000000000000 success case  - error compiling test routine\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)(UINT64))dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecomparenbracketrbpplusn rax - 0x4000000000000000 success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct(0x4000000000000000);
+
+    if ((x & 0x41) != 0x40) // zset, nocarry
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecomparenbracketrbpplusn rax - 0x4000000000000000 success case - 0x4000000000000000 - 0x4000000000000000 return not 0x40, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (x & 0x41));
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    x = pfunct(0x4000000000000001);
+
+    if ((x & 0x41) != 0x00) // zclear, nocarry
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecomparenbracketrbpplusn rax - 0x4000000000000000 success case - 0x4000000000000001 - 0x4000000000000000 return not 0x00, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (x & 0x41));
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    x = pfunct(0x3FFFFFFFFFFFFFFF);
+
+    if ((x & 0x41) != 0x01) // znotset, carryset
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilecomparenbracketrbpplusn rax - 0x4000000000000000 success case - 0x3FFFFFFFFFFFFFFF - 0x4000000000000000 return not 0x01, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, (x & 0x41));
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"  ... test done\n");
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_compilemovbracketrplussrplusd32tor()
+{
+    Bufferhandle BHarrayhead;
+
+    UINT64 ptable[8] = {0x8000, 0x8001, 0x8002, 0x8003, 0x8004, 0x8005, 0x8006, 0x8007};
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    UINT64 mycurrentcompilebuffer = 0;
+    UINT64 mystartoffset = 0;
+    UINT64 x;
+    UINT64 numberoflocals;
+
+    UINT64(*pfunct)();
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_compilemovbracketrplussrplusd32tor\n");
+
+    // [RCX+1*RAX+0] -> RAX success case
+    dg_initbuffers(&BHarrayhead);
+
+    dg_initvariables(&BHarrayhead);
+
+    mycurrentcompilebuffer = dg_getbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] -> RAX success case  - could not get current compile buffer\n");
+        return;
+    }
+
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] -> RAX success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        (UINT64)ptable,
+        dg_rcx);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] -> RAX success case  - could not do compilemovntoreg\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0,
+        dg_rax);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] -> RAX success case  - could not do compilemovntoreg\n");
+        return;
+    }
+
+    dg_compilemovbracketrplussrplusd32tor(
+        &BHarrayhead,
+        dg_rcx, // basereg,
+        0, // scale, // 0=1* 1=2* 2=4* 3=8*
+        dg_rax, // indexreg,
+        0, // displacement,
+        dg_rax); // destreg)
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] -> RAX success case  - could not do dg_compilemovbracketrplussrplusd32tor\n");
+        return;
+    }
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] -> RAX success case  - could not do dg_compilereturn\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] -> RAX success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    if (x != 0x8000) 
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] -> RAX success case return not 0x8000, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    // [RCX+1*RAX+0] -> RAX success case b 
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] b -> RAX success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        (UINT64)ptable,
+        dg_rcx);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] b -> RAX success case  - could not do compilemovntoreg\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        8,
+        dg_rax);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] b -> RAX success case  - could not do compilemovntoreg\n");
+        return;
+    }
+
+    dg_compilemovbracketrplussrplusd32tor(
+        &BHarrayhead,
+        dg_rcx, // basereg,
+        0, // scale, // 0=1* 1=2* 2=4* 3=8*
+        dg_rax, // indexreg,
+        0, // displacement,
+        dg_rax); // destreg)
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] b -> RAX success case  - could not do dg_compilemovbracketrplussrplusd32tor\n");
+        return;
+    }
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] b -> RAX success case  - could not do dg_compilereturn\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] b -> RAX success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    if (x != 0x8001) 
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] b -> RAX success case return not 0x8001, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    // [RCX+1*RAX+0] -> RAX success case c 
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] c -> RAX success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        (UINT64)ptable,
+        dg_rcx);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] c -> RAX success case  - could not do compilemovntoreg\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        1,
+        dg_rax);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] c -> RAX success case  - could not do compilemovntoreg\n");
+        return;
+    }
+
+    dg_compilemovbracketrplussrplusd32tor(
+        &BHarrayhead,
+        dg_rcx, // basereg,
+        3, // scale, // 0=1* 1=2* 2=4* 3=8*
+        dg_rax, // indexreg,
+        0, // displacement,
+        dg_rax); // destreg)
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] c -> RAX success case  - could not do dg_compilemovbracketrplussrplusd32tor\n");
+        return;
+    }
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] c -> RAX success case  - could not do dg_compilereturn\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] c -> RAX success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    if (x != 0x8001) 
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] c -> RAX success case return not 0x8001, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    // [RCX+1*RAX+0] -> RAX success case d 
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] d -> RAX success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        (UINT64)ptable,
+        dg_rcx);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] d -> RAX success case  - could not do compilemovntoreg\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        1,
+        dg_rax);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] d -> RAX success case  - could not do compilemovntoreg\n");
+        return;
+    }
+
+    dg_compilemovbracketrplussrplusd32tor(
+        &BHarrayhead,
+        dg_rcx, // basereg,
+        3, // scale, // 0=1* 1=2* 2=4* 3=8*
+        dg_rax, // indexreg,
+        0x10, // displacement,
+        dg_rax); // destreg)
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] d -> RAX success case  - could not do dg_compilemovbracketrplussrplusd32tor\n");
+        return;
+    }
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] d -> RAX success case  - could not do dg_compilereturn\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] d -> RAX success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    if (x != 0x8003) 
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] d -> RAX success case return not 0x8001, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+    // [RCX+1*RAX+0] -> RDX success case 
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] -> RDX success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        (UINT64)ptable,
+        dg_rcx);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] -> RDX success case  - could not do compilemovntoreg\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        1,
+        dg_rax);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] -> RDX success case  - could not do compilemovntoreg\n");
+        return;
+    }
+
+    dg_compilemovbracketrplussrplusd32tor(
+        &BHarrayhead,
+        dg_rcx, // basereg,
+        3, // scale, // 0=1* 1=2* 2=4* 3=8*
+        dg_rax, // indexreg,
+        0x10, // displacement,
+        dg_rdx); // destreg)
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] -> RDX success case  - could not do dg_compilemovbracketrplussrplusd32tor\n");
+        return;
+    }
+
+    dg_compilemovregtoreg(
+        &BHarrayhead,
+        dg_rdx,
+        dg_rax);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] -> RDX success case  - could not do dg_compilemovregtoreg\n");
+        return;
+    }
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] -> RDX success case  - could not do dg_compilereturn\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] -> RDX success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    if (x != 0x8003) 
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [RCX+1*RAX+0] d -> RDX success case return not 0x8003, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    // [R9+1*RAX+0] -> RDX success case 
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*RAX+0] -> RDX success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        (UINT64)ptable,
+        dg_r9);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*RAX+0] -> RDX success case  - could not do compilemovntoreg\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0,
+        dg_rcx);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*RAX+0] -> RDX success case  - could not do compilemovntoreg\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        1,
+        dg_rax);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*RAX+0] -> RDX success case  - could not do compilemovntoreg\n");
+        return;
+    }
+
+    dg_compilemovbracketrplussrplusd32tor(
+        &BHarrayhead,
+        dg_r9, // basereg,
+        3, // scale, // 0=1* 1=2* 2=4* 3=8*
+        dg_rax, // indexreg,
+        0x10, // displacement,
+        dg_rdx); // destreg)
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*RAX+0] -> RDX success case  - could not do dg_compilemovbracketrplussrplusd32tor\n");
+        return;
+    }
+
+    dg_compilemovregtoreg(
+        &BHarrayhead,
+        dg_rdx,
+        dg_rax);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*RAX+0] -> RDX success case  - could not do dg_compilemovregtoreg\n");
+        return;
+    }
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*RAX+0] -> RDX success case  - could not do dg_compilereturn\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*RAX+0] -> RDX success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    if (x != 0x8003) 
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*RAX+0] d -> RDX success case return not 0x8001, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    // [R9+1*RAX+0] -> RDX success case 
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*RAX+0] -> RDX success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        (UINT64)ptable,
+        dg_r9);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*RAX+0] -> RDX success case  - could not do compilemovntoreg\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0,
+        dg_rcx);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*RAX+0] -> RDX success case  - could not do compilemovntoreg\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        1,
+        dg_rax);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*RAX+0] -> RDX success case  - could not do compilemovntoreg\n");
+        return;
+    }
+
+    dg_compilemovbracketrplussrplusd32tor(
+        &BHarrayhead,
+        dg_r9, // basereg,
+        3, // scale, // 0=1* 1=2* 2=4* 3=8*
+        dg_rax, // indexreg,
+        0x10, // displacement,
+        dg_rdx); // destreg)
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*RAX+0] -> RDX success case  - could not do dg_compilemovbracketrplussrplusd32tor\n");
+        return;
+    }
+
+    dg_compilemovregtoreg(
+        &BHarrayhead,
+        dg_rdx,
+        dg_rax);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*RAX+0] -> RDX success case  - could not do dg_compilemovregtoreg\n");
+        return;
+    }
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*RAX+0] -> RDX success case  - could not do dg_compilereturn\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*RAX+0] -> RDX success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    if (x != 0x8003) 
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*RAX+0] d -> RDX success case return not 0x8001, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    // [R9+1*R8+0] -> RDX success case 
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*R8+0] -> RDX success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        (UINT64)ptable,
+        dg_r9);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*R8+0] -> RDX success case  - could not do compilemovntoreg\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0,
+        dg_rcx);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*R8+0] -> RDX success case  - could not do compilemovntoreg\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        1,
+        dg_r8);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*R8+0] -> RDX success case  - could not do compilemovntoreg\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0,
+        dg_rax);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*R8+0] -> RDX success case  - could not do compilemovntoreg\n");
+        return;
+    }
+
+    dg_compilemovbracketrplussrplusd32tor(
+        &BHarrayhead,
+        dg_r9, // basereg,
+        3, // scale, // 0=1* 1=2* 2=4* 3=8*
+        dg_r8, // indexreg,
+        0x10, // displacement,
+        dg_rdx); // destreg)
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*R8+0] -> RDX success case  - could not do dg_compilemovbracketrplussrplusd32tor\n");
+        return;
+    }
+
+    dg_compilemovregtoreg(
+        &BHarrayhead,
+        dg_rdx,
+        dg_rax);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*R8+0] -> RDX success case  - could not do dg_compilemovregtoreg\n");
+        return;
+    }
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*R8+0] -> RDX success case  - could not do dg_compilereturn\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*R8+0] -> RDX success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    if (x != 0x8003) 
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*R8+0] d -> RDX success case return not 0x8001, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    // [R9+1*R8+0] -> R8 success case 
+    mystartoffset = dg_getbufferlength(
+        &BHarrayhead,
+        mycurrentcompilebuffer);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*R8+0] -> R8 success case  - could not get current compile buffer's length\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        (UINT64)ptable,
+        dg_r9);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*R8+0] -> R8 success case  - could not do compilemovntoreg\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0,
+        dg_rcx);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*R8+0] -> R8 success case  - could not do compilemovntoreg\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        1,
+        dg_r8);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*R8+0] -> R8 success case  - could not do compilemovntoreg\n");
+        return;
+    }
+
+    dg_compilemovntoreg(
+        &BHarrayhead,
+        0,
+        dg_rax);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*R8+0] -> R8 success case  - could not do compilemovntoreg\n");
+        return;
+    }
+
+    dg_compilemovbracketrplussrplusd32tor(
+        &BHarrayhead,
+        dg_r9, // basereg,
+        3, // scale, // 0=1* 1=2* 2=4* 3=8*
+        dg_r8, // indexreg,
+        0x10, // displacement,
+        dg_r8); // destreg)
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*R8+0] -> R8 success case  - could not do dg_compilemovbracketrplussrplusd32tor\n");
+        return;
+    }
+
+    dg_compilemovregtoreg(
+        &BHarrayhead,
+        dg_r8,
+        dg_rax);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*R8+0] -> R8 success case  - could not do dg_compilemovregtoreg\n");
+        return;
+    }
+
+    dg_compilereturn(&BHarrayhead);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*R8+0] -> R8 success case  - could not do dg_compilereturn\n");
+        return;
+    }
+
+    pfunct = (UINT64(*)())dg_getpbufferoffset(
+        &BHarrayhead,
+        mycurrentcompilebuffer,
+        mystartoffset);
+
+    if (BHarrayhead.errorcount != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*R8+0] -> R8 success case  - error getting start address of test function\n");
+        return;
+    }
+
+    x = pfunct();
+
+    if (x != 0x8003) 
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_compilemovbracketrplussrplusd32tor [R9+1*R8+0] -> R8 success case return not 0x8001, got ");
+        dg_writestdoutuint64tohex(&BHarrayhead, x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        return;
+    }
+
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"  ... test done\n");
+
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
 
 
 // probably good idea to test the whole frame...

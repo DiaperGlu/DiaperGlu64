@@ -2,20 +2,20 @@
 ; //
 ; //    Copyright 2023 James Patrick Norris
 ; // 
-; //    This file is part of Diaperglu v5.12.
+; //    This file is part of Diaperglu v5.13.
 ; //
-; //    Diaperglu v5.12 is free software; you can redistribute it and/or modify 
+; //    Diaperglu v5.13 is free software; you can redistribute it and/or modify 
 ; //    it under the terms of the GNU General PUBLIC License as published by
 ; //    the Free Software Foundation; either version 2 of the License, or
 ; //    (at your option) any later version.
 ; //
-; //    Diaperglu v5.12 is distributed in the hope that it will be useful,
+; //    Diaperglu v5.13 is distributed in the hope that it will be useful,
 ; //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ; //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ; //    GNU General PUBLIC License for more details.
 ; //
 ; //    You should have received a copy of the GNU General PUBLIC License
-; //    along with Diaperglu v5.12; if not, write to the Free Software
+; //    along with Diaperglu v5.13; if not, write to the Free Software
 ; //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ; //
 ; ////////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 ; ///////////////////////////////
 ; // James Patrick Norris      //
 ; // www.rainbarrel.com        //
-; // June 24, 2023             //
-; // version 5.12              //
+; // February 2, 2025          //
+; // version 5.13              //
 ; ///////////////////////////////
 
 ; MS x86-64 calling convention
@@ -3662,6 +3662,19 @@ dg_getulowestbitsmask PROC EXPORT
      
 dg_getulowestbitsmask ENDP
 
+
+; // rcx = usrc
+; // rdx = udest
+; // does:
+; //   dest - src -> flags
+dg_compareforconditionsub PROC EXPORT
+    
+    cmp rdx, rcx 
+    pushfq
+    pop rax
+    ret
+
+dg_compareforconditionsub ENDP
+
+
 END
-
-

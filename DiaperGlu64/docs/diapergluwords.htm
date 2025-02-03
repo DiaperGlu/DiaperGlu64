@@ -3,20 +3,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.12.
+//    This file is part of DiaperGlu v5.13.
 //
-//    DiaperGlu v5.12 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.12 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.12; if not, write to the Free Software
+//    along with DiaperGlu v5.13; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 24, 2023              //
-// version 5.12               //
+// February 2, 2025           //
+// version 5.13               //
 // /////////////////////////////
 -->
 
@@ -1130,6 +1130,20 @@
           <td>calls x</td>
           <td><a href=forthcore.htm#dg_forthagain>dg_forthagain</a></td>
         </tr>
+
+        <tr>
+          <td>AHEAD</td> 
+          <td>calls x</td> 
+          <td>calls x</td>
+          <td><a href=forthcore.htm#dg_forthahead>dg_forthahead</a></td>
+        </tr>
+
+        <tr>
+          <td>COMPILE,</td> 
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthcore.htm#dg_forthcompilecomma>dg_forthcompilecomma</a></td>
+        </tr>
         
         <tr>
           <td>ERASE</td>
@@ -1257,6 +1271,13 @@
           <td>compiles a call to x</td>
           <td><a href=forthcore.htm#dg_forthvalue>dg_forthvalue</a></td>
         </tr>
+
+        <tr>
+          <td>WITHIN</td> 
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthcore.htm#dg_forthwithin>dg_forthwithin</a></td>
+        </tr>
         
         <tr>
           <td>\</td> 
@@ -1304,9 +1325,14 @@
           <td>compiles a call to x</td>
           <td><a href=forthprogrammingtools.htm#dg_forthbye>dg_forthbye</a></td>
         </tr>
-        
-        
-        
+
+        <tr>
+          <td>SYNONYM</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthprogrammingtools.htm#dg_forthsynonym>dg_forthsynonym</a></td>
+        </tr>
+           
       </table>
 
       <hr>
@@ -4650,13 +4676,6 @@
           <td>compiles code to push offset and bufferid of x to the data stack</td>
           <td><a href=forthcompiletype.htm#dg_forthdocompiletypesubroutine>dg_forthdocompiletypesubroutine</a></td>
         </tr>
-        
-        <tr>
-          <td>&gt;REGS</td>
-          <td>pushes offset and bufferid of x to the data stack</td> 
-          <td>compiles code to push offset and bufferid of x to the data stack</td>
-          <td><a href=forthcompiletype.htm#dg_forthdocompiletypepreserveregs>dg_forthdocompiletypepreserveregs</a></td>
-        </tr>
 
         <tr>
           <td>OCRSAFEEXECUTE</td>
@@ -4726,6 +4745,20 @@
           <td>pushes offset and bufferid of x to the data stack</td> 
           <td>compiles code to push offset and bufferid of x to the data stack</td>
           <td><a href=forthcompiletype.htm#dg_forthdocompiletypecall>dg_forthdocompiletypecall </a></td>
+        </tr>
+
+        <tr>
+          <td>OCR[WORDLIST.]</td>
+          <td>pushes offset and bufferid of x to the data stack</td> 
+          <td>compiles code to push offset and bufferid of x to the data stack</td>
+          <td><a href=forthcompiletype.htm#dg_forthdocompiletypebracketwordlistdot>dg_forthdocompiletypebracketwordlistdot</a></td>
+        </tr>
+
+        <tr>
+          <td>OCR[LIB.]</td>
+          <td>pushes offset and bufferid of x to the data stack</td> 
+          <td>compiles code to push offset and bufferid of x to the data stack</td>
+          <td><a href=forthcompiletype.htm#dg_forthdocompiletypebracketlibdot>dg_forthdocompiletypebracketlibdot</a></td>
         </tr>
 
       </table>
@@ -4940,10 +4973,31 @@
           </tr>
 
           <tr>
-              <td>CREATE-[WORDLIST.].</td>
+              <td>CREATE-[WORDLIST.]</td>
               <td>calls x</td>
               <td>compiles a call to x</td>
               <td><a href=forthwordlist.htm#dg_forthcreatebracketwordlistdot>dg_forthcreatebracketwordlistdot</a></td>
+          </tr>
+
+          <tr>
+              <td>LIB.</td>
+              <td>calls x</td>
+              <td>compiles a call to x</td>
+              <td><a href=forthwordlist.htm#dg_forthlibdot>dg_forthlibdot</a></td>
+          </tr>
+
+          <tr>
+              <td>CREATE-[LIB.]</td>
+              <td>calls x</td>
+              <td>compiles a call to x</td>
+              <td><a href=forthwordlist.htm#dg_forthcreatebracketlibdot>dg_forthcreatebracketlibdot</a></td>
+          </tr>
+
+          <tr>
+              <td>CODE-CREATE</td>
+              <td>calls x</td>
+              <td>compiles a call to x</td>
+              <td><a href=forthwordlist.htm#dg_forthcodecreate>dg_forthcodecreate</a></td>
           </tr>
 
           <tr>
@@ -5268,6 +5322,13 @@
           <td>calls x</td> 
           <td>compiles a safe call to x</td>
           <td><a href=forthmiscellaneous.htm#dg_forthcompilesafecallbuffer>dg_forthcompilesafecallbuffer</a></td>
+        </tr>
+
+        <tr>
+          <td>COMPILE-&gt;XTP</td>
+          <td>calls x</td> 
+          <td>compiles a safe call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcompiletoxtp>dg_forthcompiletoxtp</a></td>
         </tr>
         
         <tr>
@@ -5744,6 +5805,568 @@
           <td>calls x</td> 
           <td>compiles a call to x</td>
           <td><a href=forthmiscellaneous.htm#dg_forthn32tocell>dg_forthn32tocell</a></td>
+        </tr>
+
+        <tr>
+          <td>&gt;XTP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthtoxtpcomma>dg_forthtoxtpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>BEGIN-SYS&gt;P,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthbeginsystopcomma>dg_forthbeginsystopcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>CODEMES,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcodemescomma>dg_forthcodemescomma</a></td>
+        </tr>
+
+        <tr>
+          <td>EMES,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcodemescomma>dg_forthcodemescomma</a></td>
+        </tr>
+
+        <tr>
+          <td>CODEME,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcodemecomma>dg_forthcodemecomma</a></td>
+        </tr>
+
+        <tr>
+          <td>EME,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcodemecomma>dg_forthcodemecomma</a></td>
+        </tr>
+
+        <tr>
+          <td>END-CODEMES,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthendcodemescomma>dg_forthendcodemescomma</a></td>
+        </tr>
+
+        <tr>
+          <td>ENDEMES,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthendcodemescomma>dg_forthendcodemescomma</a></td>
+        </tr>
+
+        <tr>
+          <td>#CODEMES</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthnumbercodemes>dg_forthnumbercodemes</a></td>
+        </tr>
+
+        <tr>
+          <td>CODEMES-CURRENT</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcodemescurrent>dg_forthcodemescurrent</a></td>
+        </tr>
+
+        <tr>
+          <td>?CODEMES-CURRENT</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthquerycodemescurrent>dg_forthquerycodemescurrent</a></td>
+        </tr>
+
+        <tr>
+          <td>CODEMESU-IFSYS</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcodemesuifsys>dg_forthcodemesuifsys</a></td>
+        </tr>
+
+        <tr>
+          <td>CODEMESU-BEGINSYS</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcodemesubeginsys>dg_forthcodemesubeginsys</a></td>
+        </tr>
+
+        <tr>
+          <td>CODEMES-DROP</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcodemesdrop>dg_forthcodemesdrop</a></td>
+        </tr>
+
+        <tr>
+          <td>CODEMES-RESOLVE-START</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcodemesresolvestart>dg_forthcodemesresolvestart</a></td>
+        </tr>
+
+        <tr>
+          <td>CODEMES-RESOLVE-ENDS</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcodemesresolveends>dg_forthcodemesresolveends</a></td>
+        </tr>
+
+        <tr>
+          <td>CODEMES-CASE,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcodemescasecomma>dg_forthcodemescasecomma</a></td>
+        </tr>
+
+        <tr>
+          <td>CODEMES-OF,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcodemesofcomma>dg_forthcodemesofcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>CODEMES-ENDCASE,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcodemesendcasecomma>dg_forthcodemesendcasecomma</a></td>
+        </tr>
+
+        <tr>
+          <td>CODEMES-CASES,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcodemescasescomma>dg_forthcodemescasescomma</a></td>
+        </tr>
+
+        <tr>
+          <td>CASES,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcodemescasescomma>dg_forthcodemescasescomma</a></td>
+        </tr>
+
+        <tr>
+          <td>CODEMES-JUMPS,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcodemesjumpscomma>dg_forthcodemesjumpscomma</a></td>
+        </tr>
+
+        <tr>
+          <td>JUMPS,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcodemesjumpscomma>dg_forthcodemesjumpscomma</a></td>
+        </tr>
+
+        <tr>
+          <td>ALWAYSJUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcodemealwaysjumpcomma>dg_forthcodemealwaysjumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>X-CODEME-=JUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemeequaljumpcomma>dg_forthxcodemeequaljumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>=JUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemeequaljumpcomma>dg_forthxcodemeequaljumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>X-CODEME-&lt;&gt;JUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemenotequaljumpcomma>dg_forthxcodemenotequaljumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>&lt;&gt;JUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemenotequaljumpcomma>dg_forthxcodemenotequaljumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>X-CODEME-U&lt;JUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemeulessthanjumpcomma>dg_forthxcodemeulessthanjumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>U&lt;JUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemeulessthanjumpcomma>dg_forthxcodemeulessthanjumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>X-CODEME-U&lt;=JUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemeulessthanequaljumpcomma>dg_forthxcodemeulessthanequaljumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>U&lt;=JUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemeulessthanequaljumpcomma>dg_forthxcodemeulessthanequaljumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>X-CODEME-U&gt;JUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemeugreaterthanjumpcomma>dg_forthxcodemeugreaterthanjumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>U&gt;JUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemeugreaterthanjumpcomma>dg_forthxcodemeugreaterthanjumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>X-CODEME-U&gt;=JUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemeugreaterthanequaljumpcomma>dg_forthxcodemeugreaterthanequaljumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>U&gt;=JUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemeugreaterthanequaljumpcomma>dg_forthxcodemeugreaterthanequaljumpcomma</a></td>
+        </tr>
+
+
+        <tr>
+          <td>X-CODEME-&lt;JUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemelessthanjumpcomma>dg_forthxcodemelessthanjumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>&lt;JUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemelessthanjumpcomma>dg_forthxcodemelessthanjumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>X-CODEME-&lt;=JUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemelessthanequaljumpcomma>dg_forthxcodemelessthanequaljumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>&lt;=JUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemelessthanequaljumpcomma>dg_forthxcodemelessthanequaljumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>X-CODEME-&gt;JUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemegreaterthanjumpcomma>dg_forthxcodemegreaterthanjumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>&gt;JUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemegreaterthanjumpcomma>dg_forthxcodemegreaterthanjumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>X-CODEME-&gt;=JUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemegreaterthanequaljumpcomma>dg_forthxcodemegreaterthanequaljumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>&gt;=JUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemegreaterthanequaljumpcomma>dg_forthxcodemegreaterthanequaljumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>X-CODEME-MIJUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodememijumpcomma>dg_forthxcodememijumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>MIJUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodememijumpcomma>dg_forthxcodememijumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>X-CODEME-PLJUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemepljumpcomma>dg_forthxcodemepljumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>PLJUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemepljumpcomma>dg_forthxcodemepljumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>X-CODEME-VSJUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemevsjumpcomma>dg_forthxcodemevsjumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>VSJUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemevsjumpcomma>dg_forthxcodemevsjumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>X-CODEME-NVJUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemenvjumpcomma>dg_forthxcodemenvjumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>NVJUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemenvjumpcomma>dg_forthxcodemenvjumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>X-CODEME-PSJUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemepsjumpcomma>dg_forthxcodemepsjumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>PSJUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemepsjumpcomma>dg_forthxcodemepsjumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>X-CODEME-NPJUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemenpjumpcomma>dg_forthxcodemenpjumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>NPJUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxcodemenpjumpcomma>dg_forthxcodemenpjumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>X-Y-CODEME-WITHINJUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxycodemewithinjumpcomma>dg_forthxycodemewithinjumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>WITHINJUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthxycodemewithinjumpcomma>dg_forthxycodemewithinjumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>DEFAULTJUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthdefaultjumpcomma>dg_forthdefaultjumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>DEFAULTDROPJUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthdefaultdropjumpcomma>dg_forthdefaultdropjumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>CODEMES-ENDJUMPS,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcodemesendjumpscomma>dg_forthcodemesendjumpscomma</a></td>
+        </tr>
+
+        <tr>
+          <td>ENDJUMPS,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcodemesendjumpscomma>dg_forthcodemesendjumpscomma</a></td>
+        </tr>
+
+        <tr>
+          <td>CODEMES-JUMPTABLE,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcodemesjumptablecomma>dg_forthcodemesjumptablecomma</a></td>
+        </tr>
+
+        <tr>
+          <td>JUMPTABLE- UJUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthjumptableujumpcomma>dg_forthjumptableujumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>CODEMES-UJUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcodemesujumpcomma>dg_forthcodemesujumpcomma</a></td>
+        </tr>
+
+        <tr>
+          <td>UJUMP,</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcodemesujumpcomma>dg_forthcodemesujumpcomma</a></td>
+        </tr>
+
+
+        <tr>
+          <td>?&lt;&gt;</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthquerynotequals>dg_forthquerynotequals</a></td>
+        </tr>
+
+        <tr>
+          <td>?&lt;</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthquerylessthan>dg_forthquerylessthan</a></td>
+        </tr>
+
+        <tr>
+          <td>?&lt;=</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthquerylessthanequal>dg_forthquerylessthanequal</a></td>
+        </tr>
+
+        <tr>
+          <td>?U&lt;</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthqueryulessthan>dg_forthqueryulessthan</a></td>
+        </tr>
+
+        <tr>
+          <td>?U&lt;=</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthqueryulessthanequal>dg_forthqueryulessthanequal</a></td>
+        </tr>
+
+         <tr>
+          <td>?&gt;</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthquerygreaterthan>dg_forthquerygreaterthan</a></td>
+        </tr>
+
+        <tr>
+          <td>?&gt;=</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthquerygreaterthanequal>dg_forthquerygreaterthanequal</a></td>
+        </tr>
+
+        <tr>
+          <td>?U&gt;</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthqueryugreaterthan>dg_forthqueryugreaterthan</a></td>
+        </tr>
+
+        <tr>
+          <td>?U&gt;=</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthqueryugreaterthanequal>dg_forthqueryugreaterthanequal</a></td>
+        </tr>
+
+        <tr>
+          <td>C[/td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcleftbracket>dg_forthcleftbracket</a></td>
+        </tr>
+
+        <tr>
+          <td>C]</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcrightbracket>dg_forthcrightbracket</a></td>
+        </tr>
+
+        <tr>
+          <td>CI</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthci>dg_forthci</a></td>
+        </tr>
+
+        <tr>
+          <td>CP</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcp>dg_forthcp</a></td>
+        </tr>
+
+        <tr>
+          <td>C(</td>
+          <td>calls x</td> 
+          <td>compiles a call to x</td>
+          <td><a href=forthmiscellaneous.htm#dg_forthcleftparen>dg_forthcleftparen</a></td>
         </tr>
         
         <tr>

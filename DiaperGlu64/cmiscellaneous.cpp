@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.12.
+//    This file is part of DiaperGlu v5.13.
 //
-//    DiaperGlu v5.12 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.12 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.12; if not, write to the Free Software
+//    along with DiaperGlu v5.13; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 24, 2023              //
-// version 5.12               //
+// February 2, 2025           //
+// version 5.13               //
 // /////////////////////////////
 
 
@@ -62,6 +62,9 @@ void dg_evaluatebuffersub (
     FLOAT64 fnumber; 
     UINT64 x;  
 
+    UINT64 colorwordlistid;
+    UINT64 colorstate;
+
 
     Bufferhandle* pBH;
 
@@ -69,6 +72,17 @@ void dg_evaluatebuffersub (
     
     if (baderrorcount == olderrorcount)
     {
+        return;
+    }
+
+    colorwordlistid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_colorvocabid);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
         return;
     }
     
@@ -152,17 +166,20 @@ void dg_evaluatebuffersub (
                 return;
             }
 
-            // Standard says we have to try to look up definition before trying number conversion
-            //  even though this can be really slow
-            definition = dg_finddefinsearchorder(
+            // to support color forth states...
+            //  find def in special color wordlist which gets search first no matter what
+            //  if found... do the definition's execute state
+            
+            definition =  dg_finddefinwordlist (
                 pBHarrayhead,
+                colorwordlistid,
                 pname,
                 namelength);
 
             if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
             {
                 dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
-                return; // may remove this return so the system can still try to execute the word if a vocabulary is broken
+                // color vocab is broken.... going to ignore error and keep going...
             }
 
             if (definition != DG_ENDOFWORDLIST)
@@ -170,137 +187,134 @@ void dg_evaluatebuffersub (
                 dg_executedefinition(
                     pBHarrayhead,
                     definition);
-                
-                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-                {
-                    return;
-                }
-    
-                dg_putbufferuint64(pBHarrayhead,
-                    DG_DATASPACE_BUFFERID,
-                    currentinterpretbuffer,
-                    bufferid);
-
-                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-                {
-                    dg_pusherror(pBHarrayhead, dg_forthpcurrentinputbuffername);
-                    dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
-                    return;
-                }            
-
-                // what if the executed word frees the current input buffer???
-                // then my pointer is invalid - may need to dg_getpbuffer every time through just in case, 
-                // and make sure the buffer length didn't change. Could check it right here...
-                pbuffer = dg_getpbuffer(
-                    pBHarrayhead,
-                    bufferid,
-                    &pbufferlength);
-
-                if (pbuffer == (unsigned char*)badbufferhandle)
-                {
-                    dg_pusherror(pBHarrayhead, dg_forthpcurrentinputbuffername);
-                    dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
-                    return;
-                }
-                
-                if (*pbufferlength != u)
-                {
-                    if (bufferid != DG_TERMINALINPUT_BUFFERID)
-                    {
-                        dg_pusherror(pBHarrayhead, dg_inputbufferlengthchangederror);
-                        dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
-                        return;
-                    }
-                    else
-                    {
-                        u = *pbufferlength;
-                    }
-                }
             }
             else
             {
 
-                // this is a signed conversion, a - sign in front of the number is acceptable
-                base = dg_getbufferuint64(
+                colorstate = dg_getbufferuint64(
                     pBHarrayhead,
                     DG_DATASPACE_BUFFERID,
-                    basevariable);
+                    dg_colorstate);
 
-                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                // don't need to do anything if in color state comment
+                if (colorstate != DG_COLORSTATE_COMMENT)
                 {
-                    dg_pusherror(pBHarrayhead, dg_forthbasename);
-                    dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
-                    return;
-                }
-
-                number = dg_pchartonumber(
-                    pname,
-                    namelength,
-                    base,
-                    &flag); // this routine doesn't return errors
-
-                if (flag != FORTH_FALSE)
-                {
-                    // we have a number, need to do the number
-                    // push the number to the data stack
-                    // if in compile mode, do literal
-                    dg_pushbufferuint64(
+                    // Standard says we have to try to look up definition before trying number conversion
+                    //  even though this can be really slow
+                    definition = dg_finddefinsearchorder(
                         pBHarrayhead,
-                        DG_DATASTACK_BUFFERID,
-                        number);
+                        pname,
+                        namelength);
 
                     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
                     {
-                        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
                         dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
-                        return;
-                    }    
-
-                    pstate = (const char*)dg_getbufferuint64(
-                        pBHarrayhead,
-                        DG_DATASPACE_BUFFERID,
-                        statevariable);
-
-                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-                    {    
-                        dg_pusherror(pBHarrayhead, dg_forthstatename);
-                        dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
-                        return;
+                        return; // may remove this return so the system can still try to execute the word if a vocabulary is broken
                     }
 
-                    if (pstate == dg_statecompile)
+                    if (definition != DG_ENDOFWORDLIST)
                     {
-                        dg_forthliteral(pBHarrayhead);
+                        // dg_interpretdefinition(
+                        //    pBHarrayhead,
+                        //    definition);
+                
+                        dg_docolorstatedefinition(
+                            pBHarrayhead,
+                            definition,
+                            colorstate);
 
                         if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-                        {    
+                        {
+                            return;
+                        }
+    
+                        dg_putbufferuint64(pBHarrayhead,
+                            DG_DATASPACE_BUFFERID,
+                            currentinterpretbuffer,
+                            bufferid);
+
+                        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                        {
+                            dg_pusherror(pBHarrayhead, dg_forthpcurrentinputbuffername);
+                            dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
+                            return;
+                        }            
+
+                        // what if the executed word frees the current input buffer???
+                        // then my pointer is invalid - may need to dg_getpbuffer every time through just in case, 
+                        // and make sure the buffer length didn't change. Could check it right here...
+                        pbuffer = dg_getpbuffer(
+                            pBHarrayhead,
+                            bufferid,
+                            &pbufferlength);
+
+                        if (pbuffer == (unsigned char*)badbufferhandle)
+                        {
+                            dg_pusherror(pBHarrayhead, dg_forthpcurrentinputbuffername);
                             dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
                             return;
                         }
+                
+                        if (*pbufferlength != u)
+                        {
+                            if (bufferid != DG_TERMINALINPUT_BUFFERID)
+                            {
+                                dg_pusherror(pBHarrayhead, dg_inputbufferlengthchangederror);
+                                dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
+                                return;
+                            }
+                            else
+                            {
+                                u = *pbufferlength;
+                            }
+                        }
                     }
-                }
-                else 
-                {
-                    if (base == 10)
+                    else
                     {
-                        fnumber = dg_pchartof64 (
-                            pname,        // pnumber,
-                            namelength,   // length,
-                            &flag);
-                            
+                        // this is a signed conversion, a - sign in front of the number is acceptable
+                        base = dg_getbufferuint64(
+                            pBHarrayhead,
+                            DG_DATASPACE_BUFFERID,
+                            basevariable);
+
+                        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                        {
+                            dg_pusherror(pBHarrayhead, dg_forthbasename);
+                            dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
+                            return;
+                        }
+
+                        number = dg_pchartonumber(
+                            pname,
+                            namelength,
+                            base,
+                            &flag); // this routine doesn't return errors
+
                         if (flag != FORTH_FALSE)
                         {
-                            // we have a floating point number, need to do the number
+                            dg_docolorstaten (
+                                pBHarrayhead,
+                                number,
+                                colorstate);
+
+                            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                            {
+                                dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
+                                return;
+                            } 
+
+                            /*
+                            // we have a number, need to do the number
                             // push the number to the data stack
                             // if in compile mode, do literal
                             dg_pushbufferuint64(
                                 pBHarrayhead,
-                                DG_F64STACK_BUFFERID,
-                                *((UINT64*)(&fnumber))); // cast used to avoid conversion
+                                DG_DATASTACK_BUFFERID,
+                                number);
 
                             if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
                             {
-                                // dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+                                dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
                                 dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
                                 return;
                             }    
@@ -314,106 +328,165 @@ void dg_evaluatebuffersub (
                             {    
                                 dg_pusherror(pBHarrayhead, dg_forthstatename);
                                 dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
-                                return;
+                               return;
                             }
 
-                            if (pstate == dg_statecompile)
+                            if (pstate == dg_statecompile) 
                             {
-                                dg_forthfliteral(pBHarrayhead);  
-
+                                dg_forthliteral(pBHarrayhead);
+  
                                 if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
                                 {    
                                     dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
                                     return;
                                 }
                             }
+                            */
                         }
-                        else
+                        else 
                         {
-                            // base is 10 and word is not found
-                            if (namelength > maxwordlength)
+                            if (base == 10)
                             {
-                                namelength = maxwordlength;
-                            }
-
-                            dg_putbuffersegment(
-                                pBHarrayhead,
-                                DG_DATASPACE_BUFFERID,
-                                lastnotfoundword,
-                                namelength,
-                                pname);
-
-                            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-                            {    
-                                dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
-                                return;
-                            }
-
-                            dg_putbufferbyte(
-                                pBHarrayhead,
-                                DG_DATASPACE_BUFFERID,
-                                lastnotfoundword + namelength,
-                                0);
-
-                            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-                            {    
-                                dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
-                                return;
-                            }
-
-                            // word is not found - standard says we can do what we want in this case so...
-                            //  I want the script to stop what it's doing and tell me which word wasn't found
-                            //  Copying last word not found to a buffer as a 0 string and pushing pointer
-                            //  to copy to error stack so it will show up on error stack.
-                            dg_pusherror(
-                                pBHarrayhead,
-                                dg_evaluatebufferwordnotfounderror);
+                                fnumber = dg_pchartof64 (
+                                    pname,        // pnumber,
+                                    namelength,   // length,
+                                    &flag);
                             
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        // base is not 10 and word is not found
-                        if (namelength > maxwordlength)
-                        {
-                            namelength = maxwordlength;
-                        }
+                                if (flag != FORTH_FALSE)
+                                {
+                                    dg_docolorstatef64 (
+                                        pBHarrayhead,
+                                        fnumber,
+                                        colorstate);
 
-                        dg_putbuffersegment(
-                            pBHarrayhead,
-                            DG_DATASPACE_BUFFERID,
-                            lastnotfoundword,
-                            namelength,
-                            pname);
+                                    /*
+                                    // we have a floating point number, need to do the number
+                                    // push the number to the data stack
+                                    // if in compile mode, do literal
+                                    dg_pushbufferuint64(
+                                        pBHarrayhead,
+                                        DG_F64STACK_BUFFERID,
+                                        *((UINT64*)(&fnumber))); // cast used to avoid conversion
 
-                        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-                        {    
-                            dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
-                            return;
-                        }
+                                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                                    {
+                                        // dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+                                        dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
+                                        return;
+                                    }    
 
-                        dg_putbufferbyte(
-                            pBHarrayhead,
-                            DG_DATASPACE_BUFFERID,
-                            lastnotfoundword + namelength,
-                            0);
+                                    pstate = (const char*)dg_getbufferuint64(
+                                        pBHarrayhead,
+                                        DG_DATASPACE_BUFFERID,
+                                       statevariable);
 
-                        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-                        {    
-                            dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
-                            return;
-                        }
+                                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                                    {    
+                                        dg_pusherror(pBHarrayhead, dg_forthstatename);
+                                        dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
+                                        return;
+                                    }
 
-                        // word is not found - standard says we can do what we want in this case so...
-                        //  I want the script to stop what it's doing and tell me which word wasn't found
-                        //  Copying last word not found to a buffer as a 0 string and pushing pointer
-                        //  to copy to error stack so it will show up on error stack.
-                        dg_pusherror(
-                            pBHarrayhead,
-                            dg_evaluatebufferwordnotfounderror);
+                                    if (pstate == dg_statecompile)
+                                    {
+                                        dg_forthfliteral(pBHarrayhead);  
+  
+                                        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                                        {    
+                                            dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
+                                            return;
+                                        }
+                                    }
+                                    */
+                                }
+                                else
+                                {
+                                    // base is 10 and word is not found
+                                    if (namelength > maxwordlength)
+                                    {
+                                        namelength = maxwordlength;
+                                    }
+ 
+                                    dg_putbuffersegment(
+                                        pBHarrayhead,
+                                        DG_DATASPACE_BUFFERID,
+                                        lastnotfoundword,
+                                        namelength,
+                                        pname);
+
+                                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                                    {    
+                                        dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
+                                        return;
+                                    }
+
+                                    dg_putbufferbyte(
+                                        pBHarrayhead,
+                                        DG_DATASPACE_BUFFERID,
+                                        lastnotfoundword + namelength,
+                                        0);
+
+                                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                                    {    
+                                        dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
+                                        return;
+                                    }
+
+                                    // word is not found - standard says we can do what we want in this case so...
+                                    //  I want the script to stop what it's doing and tell me which word wasn't found
+                                    //  Copying last word not found to a buffer as a 0 string and pushing pointer
+                                    //  to copy to error stack so it will show up on error stack.
+                                    dg_pusherror(
+                                        pBHarrayhead,
+                                        dg_evaluatebufferwordnotfounderror);
+                            
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                // base is not 10 and word is not found
+                                if (namelength > maxwordlength)
+                                {
+                                    namelength = maxwordlength;
+                                }
+
+                                dg_putbuffersegment(
+                                    pBHarrayhead,
+                                    DG_DATASPACE_BUFFERID,
+                                    lastnotfoundword,
+                                    namelength,
+                                    pname);
+
+                                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                                {    
+                                    dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
+                                    return;
+                                }
+
+                                dg_putbufferbyte(
+                                    pBHarrayhead,
+                                    DG_DATASPACE_BUFFERID,
+                                    lastnotfoundword + namelength,
+                                    0);
+
+                                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                                {    
+                                    dg_pusherror(pBHarrayhead, dg_evaluatebuffername);
+                                    return;
+                                }
+
+                                // word is not found - standard says we can do what we want in this case so...
+                                //  I want the script to stop what it's doing and tell me which word wasn't found
+                                //  Copying last word not found to a buffer as a 0 string and pushing pointer
+                                //  to copy to error stack so it will show up on error stack.
+                                dg_pusherror(
+                                    pBHarrayhead,
+                                    dg_evaluatebufferwordnotfounderror);
                         
-                        return;
+                                return;
+                            }
+                        }
                     }
                 } 
             }
@@ -993,7 +1066,8 @@ void dg_sendnoscriptfilepage (Bufferhandle* pBHarrayhead)
     dg_printzerostring(pBHarrayhead,  (unsigned char*)"<p>For example:</p>");
     dg_printzerostring(pBHarrayhead,  (unsigned char*)"<p>http://www.whereeverthisis.com/cgi-bin/diaperglu?scriptfilename.dglu</p>");
     dg_printzerostring(pBHarrayhead,  (unsigned char*)"<p>or http://www.whereeverthisis.com/diaperglu.exe?scriptfilename.dglu</p>");
-    dg_printzerostring(pBHarrayhead,  (unsigned char*)"<p>or just http://www.whereeverthisis.com/cgi-bin/scriptfilename.dglu</p>");
+    dg_printzerostring(pBHarrayhead,  (unsigned char*)"<p>or http://www.whereeverthisis.com/cgi-bin/scriptfilename.dglu</p>");
+    dg_printzerostring(pBHarrayhead,  (unsigned char*)"<p>or http://www.whereeverthisis.com/myscriptdirectory/diaperglu.exe?myscriptdirectory/scriptfilename.dglu</p>");
     dg_printzerostring(pBHarrayhead,  (unsigned char*)"</body></html>\r\n");
 }
 
@@ -1754,7 +1828,7 @@ void dg_doinputstuff (
     dg_showerrorspage(pBHarrayhead);
 }
 
-UINT64 dg_functiontable[] = {
+const UINT64 dg_functiontable[] = {
     (UINT64)&dg_pushdatastack,
     (UINT64)&dg_forthdup
 };

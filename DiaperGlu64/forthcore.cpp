@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.12.
+//    This file is part of DiaperGlu v5.13.
 //
-//    DiaperGlu v5.12 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.12 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.12; if not, write to the Free Software
+//    along with DiaperGlu v5.13; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 24, 2023              //
-// version 5.12               //
+// February 2, 2025           //
+// version 5.13               //
 // /////////////////////////////
 
 
@@ -4146,6 +4146,16 @@ void dg_forthdoes (Bufferhandle* pBHarrayhead)
         dg_pusherror(pBHarrayhead, dg_forthdoesname);
         return;
     }
+
+    dg_compilecallcore(
+        pBHarrayhead,
+        (UINT64)&dg_forthdrop); // drop the state... which means POSTPONE won't work with DOES> words
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdoesname);
+        return;
+    }
     
     dg_compilecallcore(
         pBHarrayhead,
@@ -4499,7 +4509,9 @@ void dg_forthexecute (Bufferhandle* pBHarrayhead)
         return;
     }
 
-    dg_executedefinition(pBHarrayhead, executetoken);
+    dg_executedefinition(
+        pBHarrayhead, 
+        executetoken);
     
     // should we really check for an error here?
     //if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
@@ -5769,12 +5781,23 @@ void dg_forthover (Bufferhandle* pBHarrayhead)
     }
 }
 
+// going to have a separate postpone for compiling SAFE code
+// check compile type,
+//   if it's always execute or subroutine, 
+//     simply compile code to compile a call to the DFA
+//   if it's a compile type that looks at state,
+//     compile code to compile a call to the DFA in state compile
+//     and to only restore the original state if the called code 
+//     left the state in compile... this covers every case except
+//     for when the compiled code is not used in compile and changes 
+//     the state to compile... but I don't think there are any of
+//     these kinds of words amomg the non execute or subroutine compile modes
+//
 
 void dg_forthpostpone (Bufferhandle* pBHarrayhead)
 //     (compile mode)
 //       ( "<spaces>word<spaces>morestuff" -currentinputbuffer- "<spaces>morestuff" )
-{
-    
+{   
     Definitionheader* pdefinition;
 
     UINT64 definitionid;
@@ -5813,73 +5836,10 @@ void dg_forthpostpone (Bufferhandle* pBHarrayhead)
         return;
     }
 
-    pdefinition = dg_getpdefinition(
-        pBHarrayhead,
+    dg_compilecallcoreoneuparam (
+        pBHarrayhead, 
+        (UINT64)&dg_compiledefinition,
         definitionid);
-
-    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-    {
-        dg_pusherror(pBHarrayhead, dg_forthpostponename);
-        return;
-    }
-
-    dg_pushbufferuint64(
-        pBHarrayhead,
-        DG_DATASTACK_BUFFERID,
-        pdefinition->dataoffset);
-
-    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-    {
-        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-        dg_pusherror(pBHarrayhead, dg_forthpostponename);
-        return;
-    }
-
-    dg_pushbufferuint64(
-        pBHarrayhead,
-        DG_DATASTACK_BUFFERID,
-        pdefinition->databuf);
-
-    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-    {
-        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
-        dg_pusherror(pBHarrayhead, dg_forthpostponename);
-        return;
-    }
-
-    if ((pdefinition->compileroutinebuf == DG_CORE_BUFFERID) &&
-        (pdefinition->compileroutineoffset == (UINT64)&dg_forthdocompiletypealwaysexecute))
-    {
-        // not all of them have to be safe... just the ones that compile
-        //   but for now treating all of them as safe
-        dg_forthdocompiletypesafesubroutine(pBHarrayhead);
-
-        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-        {
-            dg_pusherror(pBHarrayhead, dg_forthpostponename);
-            return;
-        }
-
-        dg_putbufferuint64(
-            pBHarrayhead,
-            DG_DATASPACE_BUFFERID,
-            coloncallssafeflag,
-            FORTH_TRUE);
-
-        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-        {
-            dg_pusherror(pBHarrayhead, dg_forthpcoloncallssafeflagname);
-            dg_pusherror(pBHarrayhead, dg_forthpostponename);
-            return;
-        }
-    }
-    else
-    {
-        dg_callbuffer(
-            pBHarrayhead,
-            pdefinition->compileroutinebuf, 
-            pdefinition->compileroutineoffset);
-    }
 
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -6125,7 +6085,7 @@ void dg_forthrecurse (Bufferhandle* pBHarrayhead)
 
     // if getstate worked, pushstate should work
 
-    dg_executedefinition(
+    dg_interpretdefinition(
         pBHarrayhead,
         definition);
 
@@ -8128,6 +8088,340 @@ void dg_forthagain (Bufferhandle* pBHarrayhead)
 }
 
 
+void dg_forthahead (Bufferhandle* pBHarrayhead)
+//     ( -- if-sys )
+// Compiles an unresolved forward jump ( -- ) ( -r- )
+{
+    UINT64 afterbranchoffset;
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }    
+    
+    afterbranchoffset = dg_compilebranch(
+        pBHarrayhead,
+        DG_BRANCHTYPE_ALWAYS);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthaheadname);
+        return;
+    }
+
+    dg_pushbufferuint64(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        afterbranchoffset);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthaheadname);
+        return;
+    }
+}
+
+
+void dg_forthcase (Bufferhandle* pBHarrayhead)
+//     ( -- case-sys after-end-of )
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    dg_pushbufferuint64(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        dg_case_sys);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcasename);
+        return;
+    }
+
+    dg_pushbufferuint64(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        dg_after_end_of);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcasename);
+        return;
+    }
+}
+
+
+void dg_forthcompilecomma (Bufferhandle* pBHarrayhead)
+//     ( executiontoken -- )
+{
+    UINT64 executetoken;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    executetoken = dg_popbufferuint64(pBHarrayhead, DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthcompilecommaname);
+        return;
+    }
+
+    dg_compiledefinition(
+        pBHarrayhead, 
+        executetoken);
+    
+    // should we really check for an error here?
+    //if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    //{
+    //    dg_pusherror(pBHarrayhead, dg_forthcompilecommaname);
+    //    return;
+    //}
+}
+
+
+void dg_forthsafecompilecomma (Bufferhandle* pBHarrayhead)
+//     ( executiontoken -- )
+{
+    UINT64 executetoken;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    executetoken = dg_popbufferuint64(pBHarrayhead, DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthsafecompilecommaname);
+        return;
+    }
+
+    dg_safecompiledefinition(
+        pBHarrayhead, 
+        executetoken);
+    
+    // should we really check for an error here?
+    //if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    //{
+    //    dg_pusherror(pBHarrayhead, dg_forthsafecompilecommaname);
+    //    return;
+    //}
+}
+
+
+void dg_forthdefaultof (Bufferhandle* pBHarrayhead)
+    // ( compile: case-sys ... previousof-sys previousendof-sys state-sys -- 
+    //            case-sys ... previousof-sys previousendof-sys default-of-sys ) 
+{
+    UINT64 statesys;
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        // could not get error count because BHarrayhead is not there so just exiting
+        return;
+    }
+
+    statesys = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdefaultofname);
+        return;
+    }
+
+    if (statesys != dg_after_end_of)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)" - unexpected DEFAULT-OF. Marker from CASE or END-OF missing.");
+        dg_pusherror(pBHarrayhead, dg_forthdefaultofname);
+        return;
+    }
+
+    dg_compilecallcore (
+        pBHarrayhead,
+        (UINT64)dg_forthdrop); 
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdefaultofname);
+        return;
+    }
+
+    dg_pushdatastack(pBHarrayhead, dg_after_default_of);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdefaultofname);
+        return;
+    }
+}
+
+
+
+void dg_forthendcase (Bufferhandle* pBHarrayhead)
+    // ( compile: case-sys base-endofsys ... previousendof-sys lastendof-sys state-sys -- )
+{
+    UINT64 statesys;
+    UINT64 x;
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        // could not get error count because BHarrayhead is not there so just exiting
+        return;
+    }
+
+    statesys = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthendcasename);
+        return;
+    }
+
+    // just in case someone uses END-OF after DEFAULT-OF
+    //   if this happens END-OF does nothing
+    if (statesys == dg_after_default_of)
+    {
+        // do nothing since statesys already removed from stack
+    }
+    else
+    {
+        if (statesys != dg_after_end_of)
+        {
+            dg_pusherror(pBHarrayhead, (const char*)"");
+            dg_pusherror(pBHarrayhead, dg_forthendcasename);
+            return;
+        }
+
+        dg_compilecallcore (
+            pBHarrayhead,
+            (UINT64)dg_forthdrop);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthendcasename);
+            return;
+        }
+    }
+
+    while(true)
+    {
+        x = dg_popdatastack(pBHarrayhead);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, (const char*)" - case_sys missing from stack");
+            dg_pusherror(pBHarrayhead, dg_forthendcasename);
+            return;
+        }
+
+        if (dg_case_sys == x)
+        {
+            break;
+        }
+
+        dg_pushdatastack(pBHarrayhead, x);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthendcasename);
+            return;
+        }
+
+        dg_forththen(pBHarrayhead);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthendcasename);
+            return;
+        }
+    }
+}
+
+
+void dg_forthendof (Bufferhandle* pBHarrayhead)
+    // ( compile: case-sys base-endofsys ... previousendof-sys of-sys state-sys -- 
+    //    case-sys base-endofsys ... previousendof-sys end-of-sys ) 
+    // ( run: casevalue ofvalue -- |switchvalue )
+
+         // just in case someone uses END-OF after DEFAULT-OF
+         //   if this happens END-OF does nothing
+{
+    UINT64 statesys;
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        // could not get error count because BHarrayhead is not there so just exiting
+        return;
+    }
+
+    statesys = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthendofname);
+        return;
+    }
+
+    // just in case someone uses END-OF after DEFAULT-OF
+    //   if this happens END-OF does nothing
+    if (statesys == dg_after_default_of)
+    {
+        dg_pushdatastack(pBHarrayhead, dg_after_default_of);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthendofname);
+            return;
+        }
+
+        return;
+    }
+
+    if (statesys != dg_after_of)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)" - END-OF did not come after a matching OF, missing OF state marker.");
+        dg_pusherror(pBHarrayhead, dg_forthendofname);
+        return;
+    }
+
+    dg_forthahead(pBHarrayhead); // calling a compile routine from the core does not need to be safe since the core can't move
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthendofname);
+        return;
+    }
+
+    dg_forthswap(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthendofname);
+        return;
+    }
+
+    dg_forththen(pBHarrayhead); 
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthendofname);
+        return;
+    }
+
+    dg_pushdatastack(pBHarrayhead, dg_after_end_of);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthendofname);
+        return;
+    }
+}
+
+
 // FALSE defined as a UINT64 constant 
 void dg_fortherase (Bufferhandle* pBHarrayhead)
 {
@@ -8243,6 +8537,85 @@ void dg_forthnip (Bufferhandle* pBHarrayhead)
     pints[0] = pints[1];
 
     *pbuflength = *pbuflength - sizeof(UINT64);
+}
+
+
+void dg_forthof (Bufferhandle* pBHarrayhead)
+    // ( compile: case-sys ... previousof-sys previousendof-sys state-sys -- 
+    //   compile: case-sys ... previousof-sys previousendof-sys of-sys ) 
+    // ( run: casevalue ofvalue -- |switchvalue )
+{
+    UINT64 statesys;
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        // could not get error count because BHarrayhead is not there so just exiting
+        return;
+    }
+
+    statesys = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthofname);
+        return;
+    }
+
+    if (statesys != dg_after_end_of)
+    {
+        dg_pusherror(pBHarrayhead, (const char*)" - unexpected OF. Marker from CASE or END-OF missing.");
+        dg_pusherror(pBHarrayhead, dg_forthofname);
+        return;
+    }
+
+    dg_compilecallcore (
+        pBHarrayhead,
+        (UINT64)dg_forthover); // OF is immediate so calling dg_forthof does not need to be safe
+                               // this function is called from the core so it's ok
+                               // the compiled code doesn't compile soo it does not need to be safe
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthofname);
+        return;
+    }
+
+    dg_compilecallcore (
+        pBHarrayhead,
+        (UINT64)dg_forthequals); 
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthofname);
+        return;
+    }
+
+    dg_forthif(pBHarrayhead); 
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthofname);
+        return;
+    }
+
+    dg_compilecallcore (
+        pBHarrayhead,
+        (UINT64)dg_forthdrop); 
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthofname);
+        return;
+    }
+
+    dg_pushdatastack(pBHarrayhead, dg_after_of);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthofname);
+        return;
+    }
 }
 
 
@@ -9046,6 +9419,51 @@ void dg_forthugreaterthan (Bufferhandle* pBHarrayhead)
 }
 
 
+void dg_forthwithin (Bufferhandle* pBHarrayhead)     
+//     ( u1 nlo|ulo nhi|uhi -- flag )
+{
+    UINT64* pbuflength;
+    unsigned char* pdatastack;
+
+    UINT64* pints;
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (pdatastack == (unsigned char*)badbufferhandle)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthugreaterthanname);
+        return;
+    }
+
+    if (*pbuflength < (2 * sizeof(UINT64)) )
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthugreaterthanname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+
+    pints = (UINT64*)(pdatastack + *pbuflength - (3 * sizeof(UINT64)));
+
+    // OVER - >R - R> U<
+    if ((pints[0] - pints[1]) < (pints[2] - pints[1]))
+    {
+        pints[0] = FORTH_TRUE;
+    }
+    else
+    {
+        pints[0] = FORTH_FALSE;
+    }
+    
+    *pbuflength = *pbuflength - (2*sizeof(UINT64));
+}
+
+
 void dg_forthlinecomment (Bufferhandle* pBHarrayhead)
 //              ( "string<char>morestuff" -currentinputbuffer- "morestuff" )
 //              ( char -- addr length )
@@ -9081,49 +9499,6 @@ void dg_forthlinecomment (Bufferhandle* pBHarrayhead)
         dg_pusherror(pBHarrayhead, dg_forthlinecommentname);
         return;
     }
-
-
-/*
-    cibid = dg_getbufferuint64(
-        pBHarrayhead,
-        DG_DATASPACE_BUFFERID,
-        currentinterpretbuffer);
-
-    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-    {
-        dg_pusherror(pBHarrayhead, dg_forthlinecommentname);
-        return;
-    }
-
-    pcib = dg_getpbuffer(
-        pBHarrayhead,
-        cibid,
-        &pciblength);
-
-    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-    {
-        dg_pusherror(pBHarrayhead, dg_forthlinecommentname);
-        return;
-    }
-
-    // because dg_getpbuffer worked, I know the buf header for pcib is there
-    pBH = &( ((Bufferhandle*)(pBHarrayhead->pbuf))[cibid] );
-    pcibcurrentoffset = &pBH->currentoffset;
-
-
-    while(*pcibcurrentoffset < *pciblength)
-    {
-        c = *(pcib + (*pcibcurrentoffset)); 
-
-        if (FORTH_TRUE==dg_islineterminator(c))
-        {        
-            (*pcibcurrentoffset)++; // to get off end character - dont want to include end character in string
-            break;
-        }
-
-        (*pcibcurrentoffset)++;
-    }
-*/
 }
 
 
@@ -9382,5 +9757,6 @@ void dg_forthsbackslashquotes (Bufferhandle* pBHarrayhead) // ( S\" )
         return;
     }
 }
+
 
 

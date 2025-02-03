@@ -1,0 +1,90 @@
+
+// This script cross compiles an Atari 8 bit computer .atr disk image
+
+
+// /////////////////////////////////////////////////
+// Boiler plate to initialize the cross assembler //
+// /////////////////////////////////////////////////
+
+
+// compile the 6502 cross assembler
+$" DG6502CrossAsm.dglu" INCLUDEFILE$
+
+// compile the .atr disk file maker
+$" BufToATR.dglu" INCLUDEFILE$
+
+HEX 
+
+// Atari OS labels needed for this program
+222 CONSTANT VVBLKI // ( 5 ) vblank immediate vector (jump to E45F at end)
+224 CONSTANT VVBLKD // ( 6 ) deferred vblank vector (jump to E462 at end)
+2C8 CONSTANT COLOR4 // background and border
+D20A CONSTANT RANDOM
+E45C CONSTANT SETVBV
+
+// Initialize the cross assembler. This makes the disk image buffer.
+//   600 NEWCROSSBUFFER means make a new current compile buffer using relative base address 600
+HEX 
+600 NEWCROSSBUFFER  
+
+
+
+// /////////////////////////////////////////////////////
+// This is where your assembly language program goes. //
+// /////////////////////////////////////////////////////
+
+
+// Cross compile the Atari810 Disk Header 
+
+( 0x600 ) 0 CC,           // probably has to be 0 ( disassemble OS to find out for sure )
+OHERE CONSTANT oNumberOfBootSectors  // this makes a label so the script can automatically set the correct number of sectors
+( 0x601 ) 1 CC,           // number of boot sectors
+( 0x602 ) 600 CODE-U16,   // boot load address
+( 0x604 ) 606 CODE-U16,   // boot init routine address
+
+( 0x606 )
+
+// Cross compile the program
+
+//   Branching over data
+//   Using IF, assumes data length is <= 7F because it uses a short branch
+//     For data larger than 7F use LONGIF, LONGTHEN,
+//   Using Forth style branch instructions eliminates the need for branch labels
+
+CLC, CS LONGIF, ( using LONGIF so we can have more than 7f bytes of data & subroutines )
+
+  BARHERE CONSTANT deferredvblank
+    COLOR4 [U16] INC,
+    E462 U16 JMP,
+    
+LONGTHEN,
+
+// init deferred vbi
+deferredvblank FF AND U8 LDY,
+deferredvblank 100 / FF AND U8 LDX,
+7 U8 LDA,
+SETVBV U16 JSR,
+
+// Busy Wait Forever
+BEGIN,
+CLC, CS UNTIL,
+
+
+// //////////////////////////////////
+// End of where your program goes. //
+// //////////////////////////////////
+
+
+// This calculates and sets the number of boot sectors automatically
+//   I didn't fully test this calculation...
+OHERE SectorSize ROUNDUP SectorSize /   // calculate number of sectors needed
+oNumberOfBootSectors PCURRENTCOMPILEBUFFER @ O>P C!
+
+
+// This converts the program into a .ATR disk image and saves it to a file
+$" IncBackColorVBI.atr" PCURRENTCOMPILEBUFFER @ Buf>ATRFile
+
+
+
+
+

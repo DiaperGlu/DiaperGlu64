@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.12.
+//    This file is part of DiaperGlu v5.13.
 //
-//    DiaperGlu v5.12 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.12 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.12; if not, write to the Free Software
+//    along with DiaperGlu v5.13; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 24, 2023              //
-// version 5.12               //
+// February 2, 2025           //
+// version 5.13               //
 // /////////////////////////////
 
 
@@ -2492,7 +2492,7 @@ void dg_forthwordlistdot(Bufferhandle* pBHarrayhead)
         return;
     }
     
-    dg_executedefinition(
+    dg_interpretdefinition(
         pBHarrayhead,
         definitionid);
         
@@ -2780,6 +2780,50 @@ void dg_forthcreatebracketlibdot(Bufferhandle* pBHarrayhead)
     }   
        
 }
+
+
+void dg_forthcodecreate (Bufferhandle* pBHarrayhead)
+//     ( "<spaces>word<spaces>morestuff" -currentinputbuffer- "<spaces>morestuff" )
+{
+    unsigned char* pname;
+    UINT64 namelength;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    pname = dg_parseword(
+        pBHarrayhead,
+        &namelength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodecreatename);
+        return;
+    }
+
+    if (namelength == 0)
+    {
+        dg_pusherror(pBHarrayhead, dg_wordlength0error);
+        dg_pusherror(pBHarrayhead, dg_forthcodecreatename);
+        return;
+    }
+
+    dg_createcodepointerdef(
+        pBHarrayhead,
+        pname,
+        namelength);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcodecreatename);
+        return;
+    }
+}
+
 
 // $>PROCWORD $>OBWORD $>OWORD $>:WORD $>COMPILECALLWORD $>IMMEDIATEWORD
 // really only need the first 2 or 3

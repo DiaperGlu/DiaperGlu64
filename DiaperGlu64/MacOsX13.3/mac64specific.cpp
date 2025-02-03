@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.12.
+//    This file is part of DiaperGlu v5.13.
 //
-//    DiaperGlu v5.12 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.12 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.12; if not, write to the Free Software
+//    along with DiaperGlu v5.13; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 24, 2023              //
-// version 5.12               //
+// February 2, 2025           //
+// version 5.13               //
 // /////////////////////////////
 
 #include "../diapergluforth.h"
@@ -221,6 +221,17 @@ void dg_compileinitlocals (Bufferhandle* pBHarrayhead)
     {
         dg_pusherror(pBHarrayhead, dg_forthcompileentername);
     }
+
+    dg_putbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_returnstackdepth,
+        4); // for -0x20
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthcompileentername);
+    }
 }
 
 
@@ -375,11 +386,19 @@ const char dg_forthshadowcommaname[] = "SHADOW,";
 
 void dg_forthshadowcomma (Bufferhandle* pBHarrayhead)
 {
-    // mac doesn't have shadow parameters... needed be able to use
+    // mac doesn't have shadow parameters... needed to be able to use
     //   common routines for compilation
 }
 
+void dg_forthsafecallgpboaligncomma (Bufferhandle* pBHarrayhead)
+{
+    // needed to be able to use common routines for compilation   
+}
 
+void dg_forthsafecallgpbounaligncomma (Bufferhandle* pBHarrayhead)
+{
+    // needed to be able to use common routines for compilation 
+}
 
 
 
@@ -416,7 +435,7 @@ void dg_compilentoparameter (
         n);
 }
 
-
+/*
 void dg_forthcompilesafecallbuffer (Bufferhandle* pBHarrayhead)
 //     ( bufferoffset bufferid -- )
 {
@@ -604,11 +623,11 @@ void dg_forthcompilesafecallbuffer (Bufferhandle* pBHarrayhead)
     
     (*pbuflength) -= (2 * sizeof(UINT64));
 }
-
+*/
 
 const char* dg_initjumpbuffername = "dg_initjumpbuffer";
 
-// jump boffer code assumes it is being called from a subroutine that did init locals
+// jump buffer code assumes it is being called from a subroutine that did init locals
 void dg_initjumpbuffer (Bufferhandle* pBHarrayhead)
 {
     const char* pError;

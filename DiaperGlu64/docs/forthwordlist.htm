@@ -3,20 +3,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.12.
+//    This file is part of DiaperGlu v5.13.
 //
-//    DiaperGlu v5.12 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.12 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.12; if not, write to the Free Software
+//    along with DiaperGlu v5.13; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 24, 2023              //
-// version 5.12               //
+// February 2, 2025           //
+// version 5.13               //
 // /////////////////////////////
 -->
 
@@ -113,6 +113,7 @@
         <a href=forthwordlist.htm#dg_forthcurrentfrom>dg_forthcurrentfrom</a>
         <a href=forthwordlist.htm#dg_forthwordlistdot>WORDLIST.</a>
         <a href=forthwordlist.htm#dg_forthcreatebracketwordlistdot>CREATE-[WORDLIST.]</a>
+        <a href=forthwordlist.htm#dg_forthcodecreate>CODE-CREATE</a>
 
     </div>
 
@@ -1439,6 +1440,24 @@
 //   bufferid for a return address instead of the actual address in case the buffer 
 //   moves during this last defined word's execution.
 //
+// Note:
+//  If you are making a new word that compiles or pushes to the current compile  
+//   buffer, is in the same buffer, and that buffer can grow; and you use it from
+//   a word in the same buffer, you will need to that word SAFE. 
+//   The reason why is, if the current compile buffer grows while executing
+//   a word in the current compile buffer, the buffer will move to a new address
+//   invalidating the return address of the function that did the move. 
+//  In addition to making the word SAFE, you will also need to do a safe call
+//   to the function that causes the grow.... Not sure if there is an easy way to do
+//   that at the moment... (v5.12)
+//
+//  Using SAFE incurs a significant performance penalty.
+//
+//  When DiaperGlu starts, the default current compile buffer can't grow, so SAFE is
+//   not needed for any words defined there. Also, if you simply change the current
+//   compile buffer after making any words that could grow the current compile buffer,
+//   you will not need SAFE.
+//
 // Failure cases:
 //  error getting current vocabulary id
 //  error getting latest definition execute token
@@ -1904,7 +1923,174 @@
       </div>
 
 
+      <div class=word id=dg_forthlibdot>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthlibdot ( LIB. )
+//
+// C prototype:
+//   void dg_forthlibdot (Bufferhandle* pBHarrayhead) 
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//   ( "&lt;delimiters&gt;word&lt;delimiters&gt;morestuff" -currentinputbuffer-
+//     "&lt;delimiters&gt;morestuff" )
+//   ( wordlistid -- )
+// 
+// Data stack in: 
+//  libid                         handle of the shared library to search
+//                                                            
+// Action:
+//  Pops the top UINT64 off the data stack and uses it as the handle of the
+//   shared library to search.
+//  Then parses the next wordname in the current input buffer. 
+//  Then searches the shared library for the symbol with wordname.
+//  If the wordname is found, this pushes the symbol's value to the data stack.
+//  If the wordname is not found, this pushes an error to the error stack.  
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+      
+      
+      <div class=word id=dg_forthcreatebracketlibdot>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcreatebracketlibdot ( CREATE-[LIB.] )
+//
+// C prototype:
+//   void dg_forthcreatebracketlibdot (Bufferhandle* pBHarrayhead) 
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//   ( "&lt;delimiters&gt;word&lt;delimiters&gt;morestuff" -currentinputbuffer-
+//     "&lt;delimiters&gt;morestuff" )
+//   ( wordlistid -- )
+// 
+// Data stack in: 
+//  libid                         handle of the shared library
+//                                                            
+// Action:
+//  Pops the top UINT64 off the data stack and uses it as the shared library handle.
+//  Then parses the next wordname in the current input buffer.
+//  Then creates a new immediate word in the current new word wordlist that does:
+//   Searches the shared library with handle libid for the wordname.
+//   If the wordname is found and the state is execute, the symbol's value is
+//     pushed to the data stack
+//   If the wordname is found and the state is compile, code is compiled to
+//     push the symbol's value to the data stack
+//   If the wordname is not found, this pushes an error to the error stack.
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
 
+
+      <div class=word id=dg_forthcodecreate>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthcodecreate ( CODE-CREATE )
+//
+// C prototype:
+//  void dg_forthcodecreate (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//     -currentinputbuffer- &quot;&lt;delimiters&gt;morestuff&quot; )
+//  
+// Current input buffer's current offset in:
+//  &quot;&lt;delimiters&gt;word&lt;delimiters&gt;morestuff&quot; 
+//
+// Current input buffer's current offset out:
+//  &quot;&lt;delimiters&gt;morestuff&quot;           
+//                                                            
+// Action:
+//  Moves the current offset pointer for the current input buffer to the character 
+//   after the next series of non delimiter characters or to the end of the buffer if 
+//   the end of the buffer comes first.
+//  Then creates a new word in the current new word wordlist using the series of 
+//   non delimiter characters as the name that: 
+//    pushes the code space address onto the data stack when the process 
+//    is in execute mode and compiles code that pushes a code space address onto the
+//    data stack when the process is in compile mode.
+//  The code space address used is the address of the next unused byte in the 
+//   current compile buffer.
+//
+// Note
+//  This routine will calculate the code space pointer's address using the code space 
+//   pointer's buffer id and offset at the time the code is called.
+//  If the buffer the pointer is in moves, the address will become invalid. For this 
+//   reason, to be compatible with the old Forth commands, I suggest making the compile 
+//   buffer of fixed size so it will not move when you compile code. That way you do 
+//   not want to have to worry about when your pointers become obsolete.
+//  Either that or be done using the pointer before the next call to something that may 
+//   cause the buffer to move such as using : to compile new code.
+//
+//  When Diaperglu first starts, the size of the current compile buffer is of fixed 
+//   size so you do not have to worry about it moving. This is for compatibility with 
+//   older Forth programs which may keep the pointers around for a long time. 
+//   Unfortunately I also made the current new variable buffer the same as
+//   the current compile buffer which means you will likely run out of memory if you 
+//   have a large program. I recommend changing them. 
+//
+//  If you change PCURRENTCOMPILEBUFFER, then you have to worry about the life of 
+//   the pointers from variables you CODE-CREATE in the new buffer.
+
+//  
+//  For example:
+//
+//   ( Diaperglu first starts )
+//   CODE-CREATE PCOWS
+//   PCOWS         ( address of PCOWS is on the data stack )
+//   4 CODE-ALLOT  ( PCOWS address on the data stack is still valid because the default 
+//                    new compile buffer was initialized with growby = maxsize )
+//
+//
+//   100 1000 dg_newbuffer CONSTANT MYBUF
+//   MYBUF PCURRENTNEWVARIABLEBUFFER !
+//   CODE-CREATE PCATS
+//   PCATS         ( address of PCATS is on the data stack )
+//   100 ALLOT     ( base address of MYBUF has not moved yet because initial allocation 
+//                    = growby )
+//   1 CODE-ALLOT  ( OS may have moved base address of MYBUF )
+//                 ( address of PCATS on the data stack is now invalid! )
+//                 ( address of PCOWS is still valid because it is in the other buffer )
+// 
+//   DROP          ( getting rid of bad PCATS pointer )
+//   PCATS         ( Diaperglu calculates the new address of PCATS, this one is valid )
+//                 (  for now. Quick! use the pointer before it becomes invalid! )
+// 
+//   100 CODE-ALLOT ( buffer may have moved again, new address of PCATS on data stack is 
+//                    invalid )
+//
+// Failure cases:
+//  error getting current input buffer id
+//  error gettint a pointer to the current input buffer
+//  error getting the current compile (code space) buffer id
+//  error getting a pointer to the current compile buffer
+//  next word in input buffer wasn't found (no more non delimiters before the end of the 
+//   input buffer)
+//  error creating the new constant definition
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
 
     </div>
 

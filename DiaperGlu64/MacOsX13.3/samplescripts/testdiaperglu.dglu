@@ -1,21 +1,21 @@
 ( //////////////////////////////////////////////////////////////////////////////////////// )
 ( //                                                                                       )
-( //    Copyright 2023 James Patrick Norris                                                )
+( //    Copyright 2025 James Patrick Norris                                                )
 ( //                                                                                       )
-( //    This file is part of Diaperglu 5.12.                                               )
+( //    This file is part of Diaperglu 5.13.                                               )
 ( //                                                                                       )
-( //    Diaperglu 5.12 is free software; you can redistribute it and/or modify             )
+( //    Diaperglu 5.13 is free software; you can redistribute it and/or modify             )
 ( //    it under the terms of the GNU General Public License as published by               )
 ( //    the Free Software Foundation; either version 2 of the License, or                  )
 ( //    {at your option} any later version.                                                )
 ( //                                                                                       )
-( //    Diaperglu 5.12 is distributed in the hope that it will be useful,                  )
+( //    Diaperglu 5.13 is distributed in the hope that it will be useful,                  )
 ( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
 ( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
 ( //    GNU General Public License for more details.                                       )
 ( //                                                                                       )
 ( //    You should have received a copy of the GNU General Public License                  )
-( //    along with Diaperglu 5.12; if not, write to the Free Software                      )
+( //    along with Diaperglu 5.13; if not, write to the Free Software                      )
 ( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
 ( //                                                                                       )
 ( //////////////////////////////////////////////////////////////////////////////////////// )
@@ -23,8 +23,8 @@
 ( /////////////////////////////// )
 ( // James Patrick Norris      // )
 ( // www.rainbarrel.com        // )
-( // June 24, 2023             // )
-( // version 5.12              // )
+( // February 2, 2025          // )
+( // version 5.13              // )
 ( /////////////////////////////// )
 
 ( test include file )
@@ -5039,5 +5039,882 @@ DEPTH 1 = ?T
  55 = ?T
 
 
-CRLF ." test done" CRLF CRLF
+( /////////////////////////////////// )
 
+ $" Testing CODEMES-CASE," .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ : usecodemes-case,
+    [ CODEMES, ]
+        1005
+      [ CODEME, ]
+        1009
+      [ CODEME, ]
+        1007
+    [ END-CODEMES, 
+      CODEMES-CASE, 
+        5 CODEMES-OF, 
+        9 CODEMES-OF, 
+        7 CODEMES-OF, ]
+      DROP 2000
+    [ CODEMES-ENDCASE, ] ;
+ 
+ 5 usecodemes-case, 1005 = ?T
+ 9 usecodemes-case, 1009 = ?T 
+ 7 usecodemes-case, 1007 = ?T 
+ 0 usecodemes-case, 2000 = ?T 
+ 
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing EMES," .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ : useemes-case,
+    [ EMES, ]
+        1005
+      [ EME, ]
+        1009
+      [ EME, ]
+        1007
+    [ ENDEMES, 
+      CODEMES-CASE, 
+        5 CODEMES-OF, 
+        9 CODEMES-OF, 
+        7 CODEMES-OF, ]
+      DROP 2000
+    [ CODEMES-ENDCASE, ] ;
+ 
+ 5 useemes-case, 1005 = ?T
+ 9 useemes-case, 1009 = ?T 
+ 7 useemes-case, 1007 = ?T 
+ 0 useemes-case, 2000 = ?T 
+ 
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing CODEMES-JUMPS," .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ : usecodemes-jumps
+    [ CODEMES, ]
+        ( 0 ) 1005
+      [ CODEME, ]
+        ( 1 ) 1009
+      [ CODEME, ]
+        ( 2 ) 1007
+    [ END-CODEMES, 
+      CODEMES-JUMPS,
+        5 0 X-CODEME-=JUMP, 
+        9 1 X-CODEME-=JUMP, 
+        7 2 X-CODEME-=JUMP, ]
+      2000
+    [ CODEMES-ENDJUMPS, ] ;
+ 
+ 5 usecodemes-jumps 1005 = ?T
+ 9 usecodemes-jumps 1009 = ?T 
+ 7 usecodemes-jumps 1007 = ?T 
+ 0 usecodemes-jumps 2000 = ?T 
+ 
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing JUMPS," .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ : usejumps
+    [ EMES, ]
+        ( 0 ) 1005
+      [ EME, ]
+        ( 1 ) 1009
+      [ EME, ]
+        ( 2 ) 1007
+    [ ENDEMES, 
+      JUMPS,
+        5 0 =JUMP, 
+        9 1 =JUMP, 
+        7 2 =JUMP, ]
+      2000
+    [ ENDJUMPS, ] ;
+ 
+ 5 usejumps 1005 = ?T
+ 9 usejumps 1009 = ?T 
+ 7 usejumps 1007 = ?T 
+ 0 usejumps 2000 = ?T 
+ 
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing CODEMES-JUMPS,b" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ : usecodemes-jumpsb
+    [ CODEMES, ]
+        ( 0 ) 1005
+      [ CODEME, ]
+        ( 1 ) 1009
+      [ CODEME, ]
+        ( 2 ) 1007
+    [ END-CODEMES, 
+      CODEMES-JUMPS,
+        5 0 X-CODEME-U<=JUMP, 
+        9 1 X-CODEME-U>=JUMP, 
+        7 2 X-CODEME-=JUMP, ]
+      2000
+    [ CODEMES-ENDJUMPS, ] ;
+ 
+ 4 usecodemes-jumpsb 1005 = ?T
+ 5 usecodemes-jumpsb 1005 = ?T
+ 9 usecodemes-jumpsb 1009 = ?T 
+ 0A usecodemes-jumpsb 1009 = ?T 
+ 7 usecodemes-jumpsb 1007 = ?T 
+ 6 usecodemes-jumpsb 2000 = ?T 
+ 8 usecodemes-jumpsb 2000 = ?T 
+ 0 usecodemes-jumpsb 1005 = ?T 
+ -1 usecodemes-jumpsb 1009 = ?T 
+ 
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing JUMPS,b" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ : usejumpsb
+    [ EMES, ]
+        ( 0 ) 1005
+      [ EME, ]
+        ( 1 ) 1009
+      [ EME, ]
+        ( 2 ) 1007
+    [ ENDEMES, 
+      JUMPS,
+        5 0 U<=JUMP, 
+        9 1 U>=JUMP, 
+        7 2 =JUMP, ]
+      2000
+    [ ENDJUMPS, ] ;
+ 
+ 4 usejumpsb 1005 = ?T
+ 5 usejumpsb 1005 = ?T
+ 9 usejumpsb 1009 = ?T 
+ 0A usejumpsb 1009 = ?T 
+ 7 usejumpsb 1007 = ?T 
+ 6 usejumpsb 2000 = ?T 
+ 8 usejumpsb 2000 = ?T 
+ 0 usejumpsb 1005 = ?T 
+ -1 usejumpsb 1009 = ?T 
+ 
+ 55 = ?T
+
+
+
+( /////////////////////////////////// )
+
+ $" Testing CODEMES-JUMPS,c" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ : usecodemes-jumpsc
+    [ CODEMES, ]
+        ( 0 ) 1005
+      [ CODEME, ]
+        ( 1 ) 1009
+      [ CODEME, ]
+        ( 2 ) 1007
+    [ END-CODEMES, 
+      CODEMES-JUMPS,
+        5 0 X-CODEME-U<JUMP, 
+        9 1 X-CODEME-U>JUMP, 
+        7 2 X-CODEME-=JUMP, ]
+      2000
+    [ CODEMES-ENDJUMPS, ] ;
+ 
+ 4 usecodemes-jumpsc 1005 = ?T
+ 5 usecodemes-jumpsc 2000 = ?T
+ 9 usecodemes-jumpsc 2000 = ?T 
+ 0A usecodemes-jumpsc 1009 = ?T 
+ 7 usecodemes-jumpsc 1007 = ?T 
+ 6 usecodemes-jumpsc 2000 = ?T 
+ 8 usecodemes-jumpsc 2000 = ?T 
+ 0 usecodemes-jumpsc 1005 = ?T 
+ -1 usecodemes-jumpsc 1009 = ?T 
+ 
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing JUMPS,c" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ : usejumpsc
+    [ EMES, ]
+        ( 0 ) 1005
+      [ EME, ]
+        ( 1 ) 1009
+      [ EME, ]
+        ( 2 ) 1007
+    [ ENDEMES, 
+      JUMPS,
+        5 0 U<JUMP, 
+        9 1 U>JUMP, 
+        7 2 =JUMP, ]
+      2000
+    [ ENDJUMPS, ] ;
+ 
+ 4 usejumpsc 1005 = ?T
+ 5 usejumpsc 2000 = ?T
+ 9 usejumpsc 2000 = ?T 
+ 0A usejumpsc 1009 = ?T 
+ 7 usejumpsc 1007 = ?T 
+ 6 usejumpsc 2000 = ?T 
+ 8 usejumpsc 2000 = ?T 
+ 0 usejumpsc 1005 = ?T 
+ -1 usejumpsc 1009 = ?T 
+ 
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing CODEMES-JUMPS,d" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ : usecodemes-jumpsd
+    [ CODEMES, ]
+        ( 0 ) 1005
+      [ CODEME, ]
+        ( 1 ) 1009
+      [ CODEME, ]
+        ( 2 ) 1007
+    [ END-CODEMES, 
+      CODEMES-JUMPS,
+        2 0 X-CODEME-<JUMP, 
+        9 1 X-CODEME->JUMP, 
+        4 6 2 X-Y-CODEME-WITHINJUMP, ]
+      2000
+    [ CODEMES-ENDJUMPS, ] ;
+ 
+ 1 usecodemes-jumpsd 1005 = ?T
+ 2 usecodemes-jumpsd 2000 = ?T
+ 9 usecodemes-jumpsd 2000 = ?T 
+ 0A usecodemes-jumpsd 1009 = ?T 
+ 3 usecodemes-jumpsd 2000 = ?T 
+ 4 usecodemes-jumpsd 1007 = ?T 
+ 5 usecodemes-jumpsd 1007 = ?T 
+ 6 usecodemes-jumpsd 2000 = ?T 
+ 8 usecodemes-jumpsd 2000 = ?T 
+ 0 usecodemes-jumpsd 1005 = ?T 
+ -1 usecodemes-jumpsd 1005 = ?T 
+ 
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing JUMPS,d" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ : usejumpsd
+    [ EMES, ]
+        ( 0 ) 1005
+      [ EME, ]
+        ( 1 ) 1009
+      [ EME, ]
+        ( 2 ) 1007
+    [ ENDEMES, 
+      JUMPS,
+        2 0 <JUMP, 
+        9 1 >JUMP, 
+        4 6 2 WITHINJUMP, ]
+      2000
+    [ ENDJUMPS, ] ;
+ 
+ 1 usejumpsd 1005 = ?T
+ 2 usejumpsd 2000 = ?T
+ 9 usejumpsd 2000 = ?T 
+ 0A usejumpsd 1009 = ?T 
+ 3 usejumpsd 2000 = ?T 
+ 4 usejumpsd 1007 = ?T 
+ 5 usejumpsd 1007 = ?T 
+ 6 usejumpsd 2000 = ?T 
+ 8 usejumpsd 2000 = ?T 
+ 0 usejumpsd 1005 = ?T 
+ -1 usejumpsd 1005 = ?T 
+ 
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing CODEMES-JUMPS,e" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ : usecodemes-jumpse
+    [ CODEMES, ]
+        ( 0 ) 1005
+      [ CODEME, ]
+        ( 1 ) 1009
+      [ CODEME, ]
+        ( 2 ) 1007
+    [ END-CODEMES, 
+      CODEMES-JUMPS,
+        2 0 X-CODEME-<=JUMP, 
+        9 1 X-CODEME->=JUMP, 
+        4 6 2 X-Y-CODEME-WITHINJUMP, ]
+      2000
+    [ CODEMES-ENDJUMPS, ] ;
+ 
+ 1 usecodemes-jumpse 1005 = ?T
+ 2 usecodemes-jumpse 1005 = ?T
+ 9 usecodemes-jumpse 1009 = ?T 
+ 0A usecodemes-jumpse 1009 = ?T 
+ 3 usecodemes-jumpse 2000 = ?T 
+ 4 usecodemes-jumpse 1007 = ?T 
+ 5 usecodemes-jumpse 1007 = ?T 
+ 6 usecodemes-jumpse 2000 = ?T 
+ 8 usecodemes-jumpse 2000 = ?T 
+ 0 usecodemes-jumpse 1005 = ?T 
+ -1 usecodemes-jumpse 1005 = ?T 
+ 
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing JUMPS,e" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ : usejumpse
+    [ EMES, ]
+        ( 0 ) 1005
+      [ EME, ]
+        ( 1 ) 1009
+      [ EME, ]
+        ( 2 ) 1007
+    [ ENDEMES, 
+      JUMPS,
+        2 0 <=JUMP, 
+        9 1 >=JUMP, 
+        4 6 2 WITHINJUMP, ]
+      2000
+    [ ENDJUMPS, ] ;
+ 
+ 1 usejumpse 1005 = ?T
+ 2 usejumpse 1005 = ?T
+ 9 usejumpse 1009 = ?T 
+ 0A usejumpse 1009 = ?T 
+ 3 usejumpse 2000 = ?T 
+ 4 usejumpse 1007 = ?T 
+ 5 usejumpse 1007 = ?T 
+ 6 usejumpse 2000 = ?T 
+ 8 usejumpse 2000 = ?T 
+ 0 usejumpse 1005 = ?T 
+ -1 usejumpse 1005 = ?T 
+ 
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing CODEMES-CASES," .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ : usecodemes-cases
+    [ CODEMES, ]
+        ( 0 ) 1005
+      [ CODEME, ]
+        ( 1 ) 1009
+      [ CODEME, ]
+        ( 2 ) 1007
+    [ END-CODEMES, 
+      5 9 7 3 CODEMES-CASES, ]
+      DROP 2000
+    [ CODEMES-ENDCASE, ] ;
+ 
+ 9 usecodemes-cases 1009 = ?T 
+ 5 usecodemes-cases 1005 = ?T 
+ 7 usecodemes-cases 1007 = ?T 
+ 0 usecodemes-cases 2000 = ?T 
+ 
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing CASES," .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ : usecases
+    [ EMES, ]
+        ( 0 ) 1005
+      [ EME, ]
+        ( 1 ) 1009
+      [ EME, ]
+        ( 2 ) 1007
+    [ ENDEMES, 
+      5 9 7 3 CASES, ]
+      DROP 2000
+    [ ENDCASES, ] ;
+ 
+ 9 usecases 1009 = ?T 
+ 5 usecases 1005 = ?T 
+ 7 usecases 1007 = ?T 
+ 0 usecases 2000 = ?T 
+ 
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing CODEMES-UJUMP," .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ : usecodemes-ujump
+    [ CODEMES, ]
+        ( 0 ) 1000
+      [ CODEME, ]
+        ( 1 ) 1001
+      [ CODEME, ]
+        ( 2 ) 1002
+    [ END-CODEMES, 
+      CODEMES-UJUMP, ]
+      2000
+    [ CODEMES-ENDJUMPS, ] ;
+
+ -1 usecodemes-ujump 2000 = ?T  
+ 0 usecodemes-ujump 1000 = ?T 
+ 1 usecodemes-ujump 1001 = ?T 
+ 2 usecodemes-ujump 1002 = ?T 
+ 3 usecodemes-ujump 2000 = ?T 
+ 
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing UJUMP," .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ : useujump
+    [ EMES, ]
+        ( 0 ) 1000
+      [ EME, ]
+        ( 1 ) 1001
+      [ EME, ]
+        ( 2 ) 1002
+    [ ENDEMES, 
+      UJUMP, ]
+      2000
+    [ ENDUJUMP, ] ;
+
+ -1 usecodemes-ujump 2000 = ?T  
+ 0 usecodemes-ujump 1000 = ?T 
+ 1 usecodemes-ujump 1001 = ?T 
+ 2 usecodemes-ujump 1002 = ?T 
+ 3 usecodemes-ujump 2000 = ?T 
+ 
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing CASE" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ : usecase
+    CASE
+      5 OF 1005 ENDOF
+      9 OF 1009 ENDOF
+      >R 2000 R>
+    ENDCASE ;
+
+ -1 usecase 2000 = ?T  
+ 0 usecase 2000 = ?T 
+ 5 usecase 1005 = ?T 
+ 9 usecase 1009 = ?T 
+ 
+ 
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing ?<>" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ 1 0 ?<> TRUE = ?T 1 = ?T 
+ 0 0 ?<> FALSE = ?T 
+ -1 0 ?<> TRUE = ?T -1 = ?T
+ 5 4 ?<> TRUE = ?T 5 = ?T
+ 4 4 ?<> FALSE = ?T 
+ 3 4 ?<> TRUE = ?T 3 = ?T
+ 
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing ?<" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ 1 0 ?< FALSE = ?T  
+ 0 0 ?< FALSE = ?T  
+ -1 0 ?< TRUE = ?T -1 = ?T
+ 5 4 ?< FALSE = ?T
+ 4 4 ?< FALSE = ?T
+ 3 4 ?< TRUE = ?T 3 = ?T
+ 
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing ?<=" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ 1 0 ?<= FALSE = ?T  
+ 0 0 ?<= TRUE = ?T 0 = ?T  
+ -1 0 ?<= TRUE = ?T -1 = ?T
+ 5 4 ?<= FALSE = ?T
+ 4 4 ?<= TRUE = ?T 4 = ?T
+ 3 4 ?<= TRUE = ?T 3 = ?T
+ 
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing ?U<" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ 1 0 ?U< FALSE = ?T  
+ 0 0 ?U< FALSE = ?T  
+ -1 0 ?U< FALSE = ?T
+ 5 4 ?U< FALSE = ?T
+ 4 4 ?U< FALSE = ?T
+ 3 4 ?U< TRUE = ?T 3 = ?T
+ 
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing ?U<=" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ 1 0 ?U<= FALSE = ?T  
+ 0 0 ?U<= TRUE = ?T 0 = ?T  
+ -1 0 ?U<= FALSE = ?T
+ 5 4 ?U<= FALSE = ?T
+ 4 4 ?U<= TRUE = ?T 4 = ?T
+ 3 4 ?U<= TRUE = ?T 3 = ?T
+ 
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing ?>" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ 1 0 ?> TRUE = ?T 1 = ?T  
+ 0 0 ?> FALSE = ?T  
+ -1 0 ?> FALSE = ?T
+ 5 4 ?> TRUE = ?T 5 = ?T
+ 4 4 ?> FALSE = ?T
+ 3 4 ?> FALSE = ?T
+ 
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing ?>=" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ 1 0 ?>= TRUE = ?T 1 = ?T  
+ 0 0 ?>= TRUE = ?T 0 = ?T  
+ -1 0 ?>= FALSE = ?T
+ 5 4 ?>= TRUE = ?T 5 = ?T
+ 4 4 ?>= TRUE = ?T 4 = ?T
+ 3 4 ?>= FALSE = ?T
+ 
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing ?U>" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ 1 0 ?U> TRUE = ?T 1 = ?T  
+ 0 0 ?U> FALSE = ?T  
+ -1 0 ?U> TRUE = ?T -1 = ?T
+ 5 4 ?U> TRUE = ?T 5 = ?T
+ 4 4 ?U> FALSE = ?T
+ 3 4 ?U> FALSE = ?T
+ 
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing ?U>=" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+
+ 1 0 ?U>= TRUE = ?T 1 = ?T  
+ 0 0 ?U>= TRUE = ?T 0 = ?T  
+ -1 0 ?U>= TRUE = ?T -1 = ?T
+ 5 4 ?U>= TRUE = ?T 5 = ?T
+ 4 4 ?U>= TRUE = ?T 4 = ?T
+ 3 4 ?U>= FALSE = ?T
+ 
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing CI" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+ DECIMAL
+ 7 
+ CI 37 DUP 2.0E 
+ 2.0E 0.0E F~ ?T
+ 37 = ?T
+ 37 = ?T
+ 7 = ?T
+ HEX
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing C[" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+ DECIMAL
+ 7 
+ C[ ] 37 DUP 2.0E [ CI 
+ 2.0E 0.0E F~ ?T
+ 37 = ?T
+ 37 = ?T
+ 7 = ?T
+ HEX
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing C]" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+ $" ... call sub test" .$ CRLF
+ : testC]callsub [ C] DUP CI ] ;
+ 7 testC]callsub 7 = ?T 7 = ?T
+ $" ... call sub testb" .$ CRLF
+ : testC]callsubb C] DUP CI ;
+ 7 testC]callsubb 7 = ?T 7 = ?T
+ $" ... int test" .$ CRLF
+ : testC]int [ C] 7 CI ] ;
+ testC]int 7 = ?T
+ $" ... float test" .$ CRLF
+ DECIMAL
+ : testC]float [ C] 2.0E CI ] ;
+ testC]float 2.0E 0.0E F~ ?T
+ HEX
+ $" ... always execute test" .$ CRLF
+ : [DUP] DUP ; IMMEDIATE
+ : testC]callimm C] [DUP] CI ;
+ 7 testC]callsubb 7 = ?T 7 = ?T // in color compile state, immediate words are compiled
+ $" ... safe test" .$ CRLF
+ : DUPSAFE DUP ; SAFE
+ : testC]safe [ C] DUPSAFE CI ] ;
+ 7 testC]safe 7 = ?T 7 = ?T
+ $" ... pushn test" .$ CRLF
+ 1983 CONSTANT C]pushn
+ 7
+ : testC]pushn [ C] C]pushn CI ] ;
+ 7 = ?T
+ testC]pushn 1983 = ?T
+ $" ... pushf test" .$ CRLF
+ DECIMAL
+ 2.0E FCONSTANT C]pushf
+ 4.0E
+ : testC]pushf [ C] C]pushf CI ] ;
+ 4.0E 0.0E F~ ?T
+ testC]pushf 2.0E 0.0E F~ ?T
+ HEX
+
+ $" ... pushs test" .$ CRLF
+ 7 
+ : testC]$quotes [ C] $" moo" CI ] ;
+ 7 = ?T 
+ testC]$quotes 
+ $>C CHAR o = ?T
+ $>C CHAR o = ?T
+ $>C CHAR m = ?T
+ DROP$
+ 55 = ?T
+
+ $" ... words$quotes test" .$ CRLF
+ 7
+ : testC]words$quotes [ C] WORDS$" in at" CI ] ;
+ 7 = ?T
+ testC]words$quotes
+ 2 = ?T
+ $>C CHAR t = ?T
+ $>C CHAR a = ?T
+ DROP$
+ $>C CHAR n = ?T
+ $>C CHAR i = ?T
+ DROP$
+
+ $" ... words0$quotes test" .$ CRLF
+ 7
+ : testC]words0$quotes [ C] WORDS0$" in at" CI ] ;
+ 7 = ?T
+ testC]words0$quotes
+ 2 = ?T
+ $>C 0 = ?T
+ $>C CHAR t = ?T
+ $>C CHAR a = ?T
+ DROP$
+ $>C 0 = ?T
+ $>C CHAR n = ?T
+ $>C CHAR i = ?T
+ DROP$
+
+( /////////////////////////////////// )
+
+ $" Testing C(" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+ DECIMAL
+ 7 
+ C( 37 DUP 2.0E giibkekust CI 
+ 7 = ?T
+ HEX
+ 55 = ?T
+
+( /////////////////////////////////// )
+
+ $" Testing CP" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+ DECIMAL
+ 7 
+ : testCP CP 37 DUP 2.0E CI ; IMMEDIATE
+ 7 = ?T
+ : testCP2 testCP ;
+ testCP2
+ 2.0E 0.0E F~ ?T
+ 37 = ?T
+ 37 = ?T
+ HEX
+ : testCPIMM CP 38 [DUP] CI ; IMMEDIATE
+ : testCP3 testCPIMM ;
+ testCP3 38 = ?T 38 = ?T 
+
+ 55 = ?T
+
+
+CRLF ." test done" CRLF CRLF

@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.12.
+//    This file is part of DiaperGlu v5.13.
 //
-//    DiaperGlu v5.12 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.12 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.12; if not, write to the Free Software
+//    along with DiaperGlu v5.13; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 24, 2023              //
-// version 5.12               //
+// February 2, 2025           //
+// version 5.13               //
 // /////////////////////////////
 
 
@@ -707,6 +707,97 @@ UINT64 dg_createvariabledef (
 }
 
 
+const char* dg_createcodepointerdefname = "dg_createcodepointerdef";
+
+UINT64 dg_createcodepointerdef (
+    Bufferhandle* pBHarrayhead,
+    unsigned char* pname,
+    UINT64 namelength)
+{
+    UINT64 databufid;
+    UINT64 databufoffset;
+
+    UINT64 compilebufid = DG_CORE_BUFFERID;
+    UINT64 compilebufoffset = (UINT64)&dg_forthdocompiletypedpushp;
+
+    UINT64 definition = DG_ENDOFWORDLIST;
+
+    UINT64 vocabid;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        // could not get error count because BHarrayhead is not there so just exiting
+        return (definition);
+    }
+
+    databufid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_createcodepointerdefname);
+        return (definition);
+    }
+
+    // supposed to align here... 
+
+    databufoffset = dg_getbufferlength(
+        pBHarrayhead,
+        databufid);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_createcodepointerdefname);
+        return (definition);
+    }
+
+    vocabid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilewordlist);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_createcodepointerdefname);
+        return (definition);
+    }
+
+    definition = dg_newwordcopyname(
+        pBHarrayhead, 
+        compilebufid, 
+        compilebufoffset, 
+        databufid, 
+        databufoffset, 
+        DG_CORE_BUFFERID,
+        (UINT64)pname, 
+        namelength);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_createcodepointerdefname);
+        return (definition);
+    }
+
+    dg_linkdefinition(
+        pBHarrayhead,
+        vocabid,
+        definition);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        // probably should drop the definition here
+        dg_pusherror(pBHarrayhead, dg_createcodepointerdefname);
+        return (DG_ENDOFWORDLIST);
+    }
+
+    return(definition);
+}
+
+
 const char* dg_createdconstantdefname = "dg_createdconstantdef";
 
 UINT64 dg_createdconstantdef (
@@ -974,11 +1065,12 @@ UINT64 dg_getnextdefinition (
 }
 
 
-const char* dg_executedefinitionname = "dg_executedefinition";
+const char* dg_dodefinitionstatename = "dg_dodefinitionstate";
 
-void dg_executedefinition (
+void dg_dodefinitionstate (
     Bufferhandle* pBHarrayhead,
-    UINT64 definitionid)
+    UINT64 definitionid,
+    const char* state)
 {
     Definitionheader* pdefinition;
 
@@ -1001,7 +1093,7 @@ void dg_executedefinition (
 
     if (pBHarrayhead->errorcount != olderrorcount)
     {
-        dg_pusherror(pBHarrayhead, dg_executedefinitionname);
+        dg_pusherror(pBHarrayhead, dg_interpretdefinitionname);
         return;
     }
 
@@ -1012,7 +1104,7 @@ void dg_executedefinition (
 
     if (pBHarrayhead->errorcount != olderrorcount)
     {
-        dg_pusherror(pBHarrayhead, dg_executedefinitionname);
+        dg_pusherror(pBHarrayhead, dg_interpretdefinitionname);
         return;
     }
 
@@ -1023,16 +1115,554 @@ void dg_executedefinition (
 
     if (pBHarrayhead->errorcount != olderrorcount)
     {
-        dg_pusherror(pBHarrayhead, dg_executedefinitionname);
+        dg_pusherror(pBHarrayhead, dg_interpretdefinitionname);
+        return;
+    }
+
+    dg_pushbufferuint64(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        (UINT64)state);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_interpretdefinitionname);
         return;
     }
 
     dg_callbuffer(
-        pBHarrayhead, // do a safe call?
+        pBHarrayhead, 
         pdefinition->compileroutinebuf, 
         pdefinition->compileroutineoffset);
 
     // can't report errors from this call
+}
+
+
+const char* dg_parsefinddodefinitionstatename = "dg_parsefinddodefinitionstate";
+
+void dg_parsefinddodefinitionstate (
+    Bufferhandle* pBHarrayhead,
+    UINT64 wordlistid,
+    const char* state)
+{
+    unsigned char* pname;
+    UINT64 namelength;
+    UINT64 definitionid;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    pname = dg_parseword(
+        pBHarrayhead,
+        &namelength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_parsefinddodefinitionstatename);
+        return;
+    }
+    
+    if (0 == namelength)
+    {
+        dg_pusherror(pBHarrayhead, dg_nowordfounderror);
+        dg_pusherror(pBHarrayhead, dg_parsefinddodefinitionstatename);
+        return;
+    }
+    
+    definitionid = dg_finddefinwordlist (
+        pBHarrayhead,
+        wordlistid,
+        pname,
+        namelength);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_parsefinddodefinitionstatename);
+        return;
+    }
+    
+    // word not found is an error
+    if (DG_ENDOFWORDLIST == definitionid)
+    {
+        if (namelength > maxwordlength)
+        {
+            namelength = maxwordlength;
+        }
+                            
+        dg_putbuffersegment(
+            pBHarrayhead,
+            DG_DATASPACE_BUFFERID,
+            lastnotfoundword,
+            namelength,
+            pname);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {    
+            dg_pusherror(pBHarrayhead, dg_parsefinddodefinitionstatename);
+            return;
+        }
+
+        dg_putbufferbyte(
+            pBHarrayhead,
+            DG_DATASPACE_BUFFERID,
+            lastnotfoundword + namelength,
+            0);
+
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {    
+            dg_pusherror(pBHarrayhead, dg_parsefinddodefinitionstatename);
+            return;
+        }
+
+        // word is not found - standard says we can do what we want in this case so...
+        //  I want the script to stop what it's doing and tell me which word wasn't found
+        //  Copying last word not found to a buffer as a 0 string and pushing pointer
+        //  to copy to error stack so it will show up on error stack.
+        dg_pusherror(pBHarrayhead, dg_evaluatebufferwordnotfounderror);
+        dg_pusherror(pBHarrayhead, dg_parsefinddodefinitionstatename);
+            
+        return;
+    }
+
+    dg_dodefinitionstate (
+        pBHarrayhead,
+        definitionid,
+        state);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_parsefinddodefinitionstatename);
+        return;
+    }
+}
+
+
+const char* dg_interpretdefinitionname = "dg_interpretdefinition";
+
+void dg_interpretdefinition (
+    Bufferhandle* pBHarrayhead,
+    UINT64 definitionid)
+{
+    Definitionheader* pdefinition;
+    const char* state;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        // could not get error count because BHarrayhead is not there so just exiting
+        return;
+    }
+    
+    if (DG_ENDOFWORDLIST == definitionid)
+    {
+        return;
+    }
+
+    state = (const char*)dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        statevariable);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_interpretdefinitionname);
+        return;
+    }
+
+    dg_dodefinitionstate (
+        pBHarrayhead,
+        definitionid,
+        state);
+
+    // can't report errors from this call
+}
+
+
+// const char* dg_compiledefinitionname = "dg_compiledefinition";
+
+void dg_compiledefinition (
+    Bufferhandle* pBHarrayhead,
+    UINT64 definitionid)
+{
+    dg_dodefinitionstate (
+        pBHarrayhead,
+        definitionid,
+        dg_statecompile);
+
+    // not sure if pushing an error here is a good idea...
+}
+
+void dg_colorcompiledefinition (
+    Bufferhandle* pBHarrayhead,
+    UINT64 definitionid)
+{
+    dg_dodefinitionstate (
+        pBHarrayhead,
+        definitionid,
+        dg_statecolorcompile);
+
+    // not sure if pushing an error here is a good idea...
+}
+
+
+// const char* dg_executedefinitionname = "dg_executedefinition";
+
+void dg_executedefinition (
+    Bufferhandle* pBHarrayhead,
+    UINT64 definitionid)
+{
+    dg_dodefinitionstate (
+        pBHarrayhead,
+        definitionid,
+        dg_stateexecute);
+
+    // not sure if pushing an error here is a good idea...
+}
+
+
+void dg_postponedefinition (
+    Bufferhandle* pBHarrayhead,
+    UINT64 definitionid)
+{
+    dg_compilecallcoreoneuparam (
+        pBHarrayhead, 
+        (UINT64)&dg_compiledefinition,
+        definitionid);
+}
+
+void dg_colorpostponedefinition (
+    Bufferhandle* pBHarrayhead,
+    UINT64 definitionid)
+{
+    dg_compilecallcoreoneuparam (
+        pBHarrayhead, 
+        (UINT64)&dg_colorcompiledefinition,
+        definitionid);
+}
+
+// const char* dg_docolorstatedefinitionname = "dg_docolorstatedefinition";
+
+void dg_docolorstatedefinition (
+    Bufferhandle* pBHarrayhead,
+    UINT64 definitionid,
+    UINT64 colorstate)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        // could not get error count because BHarrayhead is not there so just exiting
+        return;
+    }
+
+    if (DG_ENDOFWORDLIST == definitionid)
+    {
+        return;
+    }
+
+    switch(colorstate)
+    {
+        case DG_COLORSTATE_INTERPRET:
+
+            dg_interpretdefinition(
+                pBHarrayhead,
+                definitionid);
+            break;
+
+        case DG_COLORSTATE_EXECUTE:
+
+            dg_executedefinition(
+                pBHarrayhead,
+                definitionid);
+            break;
+
+        case DG_COLORSTATE_COMPILE:
+
+            dg_colorcompiledefinition(
+                pBHarrayhead,
+                definitionid);
+            break;
+
+        case DG_COLORSTATE_POSTPONE:
+
+            dg_colorpostponedefinition(
+                pBHarrayhead,
+                definitionid);
+            break;
+
+        case DG_COLORSTATE_COMMENT:
+
+            // don't need to do anything
+            break;
+
+        default:
+     
+            dg_pusherror(
+                pBHarrayhead, 
+                (const char*)"unknown color state. resetting color state to color state execute");
+            dg_pusherror(
+                pBHarrayhead, 
+                dg_docolorstatenname);
+
+            dg_putbufferuint64(
+                pBHarrayhead,
+                DG_DATASPACE_BUFFERID,
+                dg_colorstate,
+                DG_COLORSTATE_INTERPRET);
+
+            dg_executedefinition(
+                pBHarrayhead,
+                definitionid);
+            break;
+    }
+
+}
+
+
+const char* dg_docolorstatenname = "dg_docolorstaten";
+
+void dg_docolorstaten (
+    Bufferhandle* pBHarrayhead,
+    UINT64 n,
+    UINT64 colorstate)
+{
+    const char* pstate;
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        // could not get error count because BHarrayhead is not there so just exiting
+        return;
+    }
+
+    switch(colorstate)
+    {
+        case DG_COLORSTATE_INTERPRET:
+
+            pstate = (const char*)dg_getbufferuint64(
+                pBHarrayhead,
+                DG_DATASPACE_BUFFERID,
+                statevariable);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {    
+                dg_pusherror(pBHarrayhead, dg_forthstatename);
+                dg_pusherror(pBHarrayhead, dg_docolorstatenname);
+                return;
+            }
+
+            if (pstate == dg_statecompile)
+            {
+                dg_compilepushntodatastack (
+                    pBHarrayhead,
+                    n);
+
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {    
+                    dg_pusherror(pBHarrayhead, dg_docolorstatenname);
+                    return;
+                }
+            }
+            else
+            {
+                dg_pushbufferuint64(
+                    pBHarrayhead,
+                    DG_DATASTACK_BUFFERID,
+                    n);
+
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {    
+                    dg_pusherror(pBHarrayhead, dg_docolorstatenname);
+                    return;
+                }
+            }
+            break;
+
+        case DG_COLORSTATE_EXECUTE:
+
+            dg_pushbufferuint64(
+                pBHarrayhead,
+                DG_DATASTACK_BUFFERID,
+                n);
+            break;
+
+        case DG_COLORSTATE_COMPILE:
+
+            dg_compilepushntodatastack (
+                pBHarrayhead,
+                n);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {    
+                dg_pusherror(pBHarrayhead, dg_docolorstatenname);
+                return;
+            };
+
+        case DG_COLORSTATE_POSTPONE:
+
+            dg_compilecallcoreoneuparam (
+                pBHarrayhead, 
+                (UINT64)&dg_compilepushntodatastack,
+                n);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {    
+                dg_pusherror(pBHarrayhead, dg_docolorstatenname);
+                return;
+            }
+            break;
+
+        case DG_COLORSTATE_COMMENT:
+
+            // don't need to do anything
+            break;
+
+        default:
+     
+            dg_pusherror(
+                pBHarrayhead, 
+                (const char*)"unknown color state. resetting color state execute");
+            dg_pusherror(
+                pBHarrayhead, 
+                dg_docolorstatenname);
+
+            dg_putbufferuint64(
+                pBHarrayhead,
+                DG_DATASPACE_BUFFERID,
+                dg_colorstate,
+                DG_COLORSTATE_EXECUTE);
+            break;
+
+            dg_pushdatastack(
+                pBHarrayhead,
+                n);
+    }
+}
+
+
+const char* dg_docolorstatef64name = "dg_docolorstatef64";
+
+void dg_docolorstatef64 (
+    Bufferhandle* pBHarrayhead,
+    FLOAT64 f64,
+    UINT64 colorstate)
+{
+    const char* pstate;
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        // could not get error count because BHarrayhead is not there so just exiting
+        return;
+    }
+
+    switch(colorstate)
+    {
+        case DG_COLORSTATE_INTERPRET:
+
+            pstate = (const char*)dg_getbufferuint64(
+                pBHarrayhead,
+                DG_DATASPACE_BUFFERID,
+                statevariable);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {    
+                dg_pusherror(pBHarrayhead, dg_forthstatename);
+                dg_pusherror(pBHarrayhead, dg_docolorstatef64name);
+                return;
+            }
+
+            if (pstate == dg_statecompile)
+            {
+                dg_compilepushntof64stack (
+                    pBHarrayhead,
+                    *((UINT64*)(&f64)));
+
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {    
+                    dg_pusherror(pBHarrayhead, dg_docolorstatef64name);
+                    return;
+                }
+            }
+            else
+            {
+                dg_pushf64tof64stack(
+                    pBHarrayhead,
+                    f64);
+
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {    
+                    dg_pusherror(pBHarrayhead, dg_docolorstatef64name);
+                    return;
+                }
+            }
+            break;
+
+        case DG_COLORSTATE_EXECUTE:
+
+            dg_pushf64tof64stack(
+                pBHarrayhead,
+                f64);
+            break;
+
+        case DG_COLORSTATE_COMPILE:
+
+            dg_compilepushntof64stack (
+                pBHarrayhead,
+                *((UINT64*)(&f64)));
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {    
+                dg_pusherror(pBHarrayhead, dg_docolorstatef64name);
+                return;
+            };
+
+        case DG_COLORSTATE_POSTPONE:
+
+            dg_compilecallcoreoneuparam (
+                pBHarrayhead, 
+                (UINT64)&dg_compilepushntof64stack,
+                *((UINT64*)(&f64)));
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {    
+                dg_pusherror(pBHarrayhead, dg_docolorstatef64name);
+                return;
+            }
+            break;
+
+        case DG_COLORSTATE_COMMENT:
+
+            // don't need to do anything
+            break;
+
+        default:
+     
+            dg_pusherror(
+                pBHarrayhead, 
+                (const char*)"unknown color state. resetting color state execute");
+            dg_pusherror(
+                pBHarrayhead, 
+                dg_docolorstatef64name);
+
+            dg_putbufferuint64(
+                pBHarrayhead,
+                DG_DATASPACE_BUFFERID,
+                dg_colorstate,
+                DG_COLORSTATE_EXECUTE);
+            break;
+
+            dg_pushf64tof64stack(
+                pBHarrayhead,
+                f64);
+    }
+
 }
 
 
@@ -1177,63 +1807,31 @@ UINT64 dg_finddefinsearchorder (
         dg_pusherror(pBHarrayhead, dg_finddefinsearchordername);
         return(DG_ENDOFWORDLIST);
     }
-/*
-    // check locals wordlist first
-    haslocalsflag = dg_getbufferuint64(
+
+    vocabtosearch = dg_getbufferuint64(
         pBHarrayhead,
         DG_DATASPACE_BUFFERID,
-        dg_colonhaslocalsflag);
-        
+        dg_localswordlistid);
+       
     if (pBHarrayhead->errorcount != olderrorcount)
     {
         dg_pusherror(pBHarrayhead, dg_finddefinsearchordername);
         return(DG_ENDOFWORDLIST);
     }
-    
-    haslocalstringsflag = dg_getbufferuint64(
-        pBHarrayhead,
-        DG_DATASPACE_BUFFERID,
-        dg_colonhaslocalstringsflag);
-        
+
+    definition  = dg_finddefinwordlist(pBHarrayhead, vocabtosearch, pname, namelength);
+   
     if (pBHarrayhead->errorcount != olderrorcount)
     {
         dg_pusherror(pBHarrayhead, dg_finddefinsearchordername);
         return(DG_ENDOFWORDLIST);
     }
-    
-    if ((haslocalsflag != FORTH_FALSE) || (haslocalstringsflag != FORTH_FALSE))
+   
+    if (definition != DG_ENDOFWORDLIST)
     {
-    */
-    
-        vocabtosearch = dg_getbufferuint64(
-            pBHarrayhead,
-            DG_DATASPACE_BUFFERID,
-            dg_localswordlistid);
-            
-        if (pBHarrayhead->errorcount != olderrorcount)
-        {
-            dg_pusherror(pBHarrayhead, dg_finddefinsearchordername);
-            return(DG_ENDOFWORDLIST);
-        }
-
-        definition  = dg_finddefinwordlist(pBHarrayhead, vocabtosearch, pname, namelength);
-        
-        if (pBHarrayhead->errorcount != olderrorcount)
-        {
-            dg_pusherror(pBHarrayhead, dg_finddefinsearchordername);
-            return(DG_ENDOFWORDLIST);
-        }
-        
-        if (definition != DG_ENDOFWORDLIST)
-        {
-            return(definition);
-        }
-        
-        /*
+        return(definition);
     }
-    */
         
-
     pso = dg_getpbuffer(pBHarrayhead, DG_SEARCHORDERSTACK_BUFFERID, &psolength);
 
     if (pBHarrayhead->errorcount != olderrorcount)
@@ -1297,7 +1895,10 @@ void dg_changelatestcompileroutine (
         return;
     }
     
-    mylatestdefinition = dg_getbufferuint64(pBHarrayhead, DG_DATASPACE_BUFFERID, dg_latestnewword);
+    mylatestdefinition = dg_getbufferuint64(
+        pBHarrayhead, 
+        DG_DATASPACE_BUFFERID, 
+        dg_latestnewword);
     
     if (pBHarrayhead->errorcount != olderrorcount)
     {
@@ -1762,6 +2363,80 @@ UINT64 dg_createbrackettoorderconstantdef (
     }
 
     return(definition);
+}
+
+const char* dg_safecompiledefinitionname = "dg_safecompiledefinition";
+
+void dg_safecompiledefinition (
+    Bufferhandle* pBHarrayhead,
+    UINT64 definitionid)
+{
+    // getpdefinition
+    Definitionheader* pdefinition;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        // could not get error count because BHarrayhead is not there so just exiting
+        return;
+    }
+    
+    if (DG_ENDOFWORDLIST == definitionid)
+    {
+        return;
+    }
+
+    pdefinition = dg_getpdefinition(
+        pBHarrayhead,
+        definitionid);
+
+    if (pBHarrayhead->errorcount != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_interpretdefinitionname);
+        dg_pusherror(pBHarrayhead, dg_safecompiledefinitionname);
+        return;
+    }
+
+    if ( ((pdefinition->compileroutineoffset) == ((UINT64)&dg_forthdocompiletypealwaysexecute)) &&
+         ((pdefinition->compileroutinebuf) == DG_CORE_BUFFERID) )
+    {
+        // push error that safe is not needed with execute
+        dg_pusherror(pBHarrayhead, (const char*)" - safe not needed with immediate words since they are called from the fixed address interpreter.");
+        dg_pusherror(pBHarrayhead, dg_safecompiledefinitionname);
+        return;
+    }
+
+    if ( ((pdefinition->compileroutineoffset) == ((UINT64)&dg_forthdocompiletypesubroutine)) &&
+         ((pdefinition->compileroutinebuf) == DG_CORE_BUFFERID) )
+    {
+        dg_compilesafecallforth(
+            pBHarrayhead,
+            pdefinition->dataoffset,
+            pdefinition->databuf);
+
+        // not sure if pushing an error here is a good idea...
+
+        return;
+    }
+
+    if ( ((pdefinition->compileroutineoffset) == ((UINT64)&dg_forthdocompiletypesafesubroutine)) &&
+         ((pdefinition->compileroutinebuf) == DG_CORE_BUFFERID) )
+    {
+        dg_compilesafecallforth(
+            pBHarrayhead,
+            pdefinition->dataoffset,
+            pdefinition->databuf);
+
+        // not sure if pushing an error here is a good idea...
+
+        return;
+    }
+
+    // push error that compile type is not supported
+    dg_pusherror(pBHarrayhead, (const char*)" - safe does not support this compile type yet.");
+        return;
+    dg_pusherror(pBHarrayhead, dg_safecompiledefinitionname);
 }
 
 

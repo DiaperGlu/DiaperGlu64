@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.12.
+//    This file is part of DiaperGlu v5.13.
 //
-//    DiaperGlu v5.12 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.12 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.12; if not, write to the Free Software
+//    along with DiaperGlu v5.13; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 24, 2023              //
-// version 5.12               //
+// February 2, 2025           //
+// version 5.13               //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -192,49 +192,48 @@ void testdg_evaluatebuffer()
     //    dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
 	//}
 
-	//dg_freeallbuffers(&BHarrayhead);
+    //dg_freeallbuffers(&BHarrayhead);
 
-	//dg_clearerrors(&BHarrayhead);
+    //dg_clearerrors(&BHarrayhead);
 
-	// error pushing number to the data stack
-	dg_initbuffers(&BHarrayhead);
+    // error pushing number to the data stack
+    dg_initbuffers(&BHarrayhead);
 
-	dg_initvariables(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
  
     dg_inithlists(&BHarrayhead);   
 
-	bufferid = dg_newbuffer(&BHarrayhead, 1000, 1000, &pError, false);
+    bufferid = dg_newbuffer(&BHarrayhead, 1000, 1000, &pError, false);
 
-	if (pError != dg_success)
-	{
-		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_evaluatebuffer unable to initialize a buffer for the test\n");
-		return;
-	}
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_evaluatebuffer unable to initialize a buffer for the test\n");
+        return;
+    }
 
-	dg_pushbuffersegment(&BHarrayhead, bufferid, 20, (unsigned char*)"1234 holy quacamole!");
+    dg_pushbuffersegment(&BHarrayhead, bufferid, 20, (unsigned char*)"1234 holy quacamole!");
 
+    dg_freebuffer(&BHarrayhead, DG_DATASTACK_BUFFERID);
 
-	dg_freebuffer(&BHarrayhead, DG_DATASTACK_BUFFERID);
-
-	dg_evaluatebuffer(&BHarrayhead, bufferid); 
-
-	pError = dg_poperror(&BHarrayhead);
-
-	if (pError != dg_evaluatebuffername)
-	{
-		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_evaluatebuffer error pushing number to the data stack - got wrong error on top, got ");
-        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
-        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
-	}
+    dg_evaluatebuffer(&BHarrayhead, bufferid); 
 
     pError = dg_poperror(&BHarrayhead);
 
-	if (pError != dg_forthdatastackbufferidname)
-	{
-		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_evaluatebuffer error pushing number to the data stack - got wrong error 1 below top, got ");
+    if (pError != dg_evaluatebuffername)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_evaluatebuffer error pushing number to the data stack - got wrong error on top, got ");
         dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
         dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
-	}
+    }
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_docolorstatenname)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_evaluatebuffer error pushing number to the data stack - got wrong error 1 below top, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
 
     pError = dg_poperror(&BHarrayhead);
 
@@ -285,9 +284,18 @@ void testdg_evaluatebuffer()
 
     pError = dg_poperror(&BHarrayhead);
 
-	if (pError != dg_forthliteralname)
+    if (pError != dg_docolorstatenname)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_evaluatebuffer error compiling push number to the data stack case - got wrong error 1 below top, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+    }
+
+    pError = dg_poperror(&BHarrayhead);
+
+	if (pError != dg_compilepushntodatastackname)
 	{
-		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_evaluatebuffer error compiling push number to the data stack case - got wrong error 1 below top, got ");
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_evaluatebuffer error compiling push number to the data stack case - got wrong error 2 below top, got ");
         dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
         dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
 	}

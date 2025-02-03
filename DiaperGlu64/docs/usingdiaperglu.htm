@@ -3,20 +3,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.12.
+//    This file is part of DiaperGlu v5.13.
 //
-//    DiaperGlu v5.12 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.12 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.12; if not, write to the Free Software
+//    along with DiaperGlu v5.13; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// June 24, 2023              //
-// version 5.12               //
+// February 2, 2025           //
+// version 5.13               //
 // /////////////////////////////
 -->
 
@@ -557,7 +557,7 @@ You can't change this.</p>
 ALLOT C, , and VARIABLE operate on the data space. This program
 follows the Forth standard.</p>
 
-<p>>According to the Forth standard, : operates
+<p>According to the Forth standard, : operates
 on the code space. This program follows the Forth standard.</p>
 
 <p>PCURRENTCOMPILEBUFFER points to the current code
@@ -574,6 +574,9 @@ compiles in a new buffer, you can't really use the Forth standard
 words like C, and , to do it. You can however make a new buffer
 and then use words like BUFC&gt; instead.</p>
 
+<p>You can also use CODE-S, CODE-U8, CODE-U16,
+CODE-U32, CODE-U64, to compile to the current compile buffer.</p>
+
 <p>It also means if you change the current
 compile buffer to a buffer that can move, you need to be very
 careful if you define any compiling words, and then use those words to
@@ -582,11 +585,24 @@ compiling word is compiling, and then when the processor tries to return from
 the compiling, the buffer is gone. Big problem. Fortunately I have included the
 word <a href=forthwordlist.htm#dg_forthsafe>SAFE</a> for just such emergencies.
 Simply use this word immediately after defining your subroutine to change the compile type 
-of your compiling word to safe and your processor will never get lost. You also need to 
-make any words that call your compiling words safe as well, since they will also be, ahem,
-compiling words :-) For example:</p>
-<p class=command>HEX : mycompileRTS C3 PCURRENTCOMPILEBUFFER @ C&gt;BUF ; SAFE</p>
-      </div>
+of your compiling word to safe and your processor will never get lost. For example:</p>
+<p class=command>HEX : mycompileRTS C3 CODE-U8, ; SAFE</p>
+<p>But this could still crash because the current compile buffer could move during
+the call to CODE-U8, so you need to make this safe also. You can do this using 
+SAFE-COMPILE, For
+example:</p>
+<p class=command>HEX : mycompileRTS C3 
+ [ ' CODE-U8, SAFE-COMPILE, ] ; SAFE</p>
+<p>You also need to make any words that call your compiling words safe as well, 
+since they will also be compiling words. Fortunately, DiaperGlu will automatically 
+make a word safe it if it calls a word that is safe.</p>
+<p>The best thing to do though is avoid using SAFE altogether. Using SAFE incurs a huge 
+performance penalty. All you have to do to avoid the need for SAFE is change the 
+current compile buffer after making your compiling words. So put your compiling words
+in one buffer, and the code you are building with them in another. Either that or
+use buffers that can't move, which are buffers that have growby = maxsize. Also, 
+the default current compile buffer when DiaperGlu starts up can't move so you don't
+need SAFE when compiling in that buffer.</div>
       
       
       <div class=pagestuffsection id=usingpointers>
