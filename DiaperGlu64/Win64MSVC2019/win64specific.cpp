@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2023 James Patrick Norris
+//    Copyright 2025 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.13.
+//    This file is part of DiaperGlu v5.14.
 //
-//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.14 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.14 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.13; if not, write to the Free Software
+//    along with DiaperGlu v5.14; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// February 2, 2025           //
-// version 5.13               //
+// February 20, 2025          //
+// version 5.14               //
 // /////////////////////////////
 
   
@@ -1042,7 +1042,7 @@ void dg_forthrunfileandwaitnoenvquotes(Bufferhandle* pBHarrayhead)
 }
 
 void dg_forthdocompiletyperunfileandwaitnoenvquotes(Bufferhandle* pBHarrayhead)
-//                         ( dataoffset databufid -- )
+//                         ( dataoffset databufid state -- )
 {
     const char* state;
     const char* pstring;
@@ -1055,6 +1055,14 @@ void dg_forthdocompiletyperunfileandwaitnoenvquotes(Bufferhandle* pBHarrayhead)
         return;
     }
 
+    state = (const char*)dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthodocompiletyperunfileandwaitnoenvquotesname);
+        return;
+    }
+
     dg_forthtwodrop(pBHarrayhead);
 
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
@@ -1063,17 +1071,17 @@ void dg_forthdocompiletyperunfileandwaitnoenvquotes(Bufferhandle* pBHarrayhead)
         return;
     }
 
-    state = (const char*)dg_getbufferuint64(
-        pBHarrayhead,
-        DG_DATASPACE_BUFFERID,
-        statevariable);
+    // state = (const char*)dg_getbufferuint64(
+    //    pBHarrayhead,
+    //    DG_DATASPACE_BUFFERID,
+    //    statevariable);
 
-    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
-    {
-        dg_pusherror(pBHarrayhead, dg_forthstatename);
-        dg_pusherror(pBHarrayhead, dg_forthodocompiletyperunfileandwaitnoenvquotesname);
-        return;
-    }
+    // if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    // {
+    //    dg_pusherror(pBHarrayhead, dg_forthstatename);
+    //    dg_pusherror(pBHarrayhead, dg_forthodocompiletyperunfileandwaitnoenvquotesname);
+    //    return;
+    // }
 
     if (state == dg_stateexecute)
     {
@@ -1088,7 +1096,7 @@ void dg_forthdocompiletyperunfileandwaitnoenvquotes(Bufferhandle* pBHarrayhead)
     }
     else
     {
-        if (state == dg_statecompile)
+        if ((state == dg_statecompile) || (state == dg_statecolorcompile))
         {
             // get a pointer to the command line
             pstring = (const char*)dg_parse(

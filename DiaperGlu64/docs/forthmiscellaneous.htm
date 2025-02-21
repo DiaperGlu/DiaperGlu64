@@ -1,22 +1,22 @@
 <!--
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2023 James Patrick Norris
+//    Copyright 2025 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.13.
+//    This file is part of DiaperGlu v5.14.
 //
-//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.14 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.14 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.13; if not, write to the Free Software
+//    along with DiaperGlu v5.14; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// February 2, 2025           //
-// version 5.13               //
+// February 20, 2025          //
+// version 5.14               //
 // /////////////////////////////
 -->
 
@@ -218,6 +218,9 @@
       <a href=forthmiscellaneous.htm#dg_forthci>dg_forthci</a>
       <a href=forthmiscellaneous.htm#dg_forthcp>dg_forthcp</a>
       <a href=forthmiscellaneous.htm#dg_forthcleftparen>dg_forthcleftparen</a>
+      <a href=forthmiscellaneous.htm#dg_forthquerywin>dg_forthquerywin</a>
+      <a href=forthmiscellaneous.htm#dg_forthscommatoos>dg_forthscommatoos</a>
+      <a href=forthmiscellaneous.htm#dg_forths0commatoob>dg_forths0commatoob</a>
 
     </div>
 
@@ -8540,6 +8543,131 @@
 //   Sets the colorstate to color comment. In color comment, everything parsed except 
 //     words in the color immediate wordlist are ignored. Words in the color immediate
 //     wordlist are executed.
+//   
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthquerywin>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthquerywin ( ?WIN )
+//
+// C prototype:
+//  void dg_forthquerywin (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the  
+//                                    other bufferhandles are stored          
+//
+// Stack action shorthand:
+//  ( -- flag )                             
+//
+/ Data stack out:
+//
+//  flag             UINT64          FORTH_TRUE if running on Windows
+//
+// Action:
+//
+//   Pushes FORTH_TRUE to the data stack if running on Windows, otherwise this pushes
+//    FORTH_FALSE.
+//   
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthscommatoos>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthscommatoos ( S,&gt;OS )
+//
+// C prototype:
+//  void dg_forthscommatoos (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the  
+//                                    other bufferhandles are stored          
+//
+// Stack action shorthand:
+//  ( addr length -- offset bufferid length )                             
+//
+// Data stack in:
+//
+//  addr             UINT64          address of source string
+//  length           UINT64          length of source string
+//
+// Data stack out:
+//
+//  offset           UINT64          offset of copied string
+//  bufferid         UINT64          bufferid of copied string
+//  length           UINT64          length of source and copied string
+//
+// Action:
+//
+//   Pops the source string addr and length off the data stack.
+//   Compiles a forward jump, then compiles a copy of the source string, then resolves
+//    the forward jump to skip past the copied string. Then pushes the offset,
+//    bufferid, and length of the copied string to the data stack.
+//
+// Note:
+//
+//   The reason for copying the string and using the offset and bufferid of the copied
+//    string is so that the string data and the references to it will be valid if
+//    the source string is deleted, or the buffer the string is in moves.
+//   
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forths0commatoob>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forths0commatoob ( S0,&gt;OB )
+//
+// C prototype:
+//  void dg_forths0commatoob (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle*  pBHarrayhead      pointer to a Bufferhandle structure which is 
+//                                    used as the bufferhandle for the array where the  
+//                                    other bufferhandles are stored          
+//
+// Stack action shorthand:
+//  ( addr length -- offset bufferid length2 )                             
+//
+// Data stack in:
+//
+//  addr             UINT64          address of source string
+//  length           UINT64          length of source string
+//
+// Data stack out:
+//
+//  offset           UINT64          offset of copied string
+//  bufferid         UINT64          bufferid of copied string
+//  length2          UINT64          length of copied string
+//
+// Action:
+//
+//   Pops the source string addr and length off the data stack.
+//   Compiles a forward jump, then compiles a copy of the source string, 
+//    then compiles a null terminator, then resolves
+//    the forward jump to skip past the copied string. Then pushes the offset,
+//    bufferid, and length of the copied string to the data stack.
+//
+// Note:
+//
+//   The reason for copying the string and using the offset and bufferid of the copied
+//    string is so that the string data and the references to it will be valid if
+//    the source string is deleted, or the buffer the string is in moves. And also
+//    to append a null terminator.
 //   
 // //////////////////////////////////////////////////////////////////////////////////////
 </pre>

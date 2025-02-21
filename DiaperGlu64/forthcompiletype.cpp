@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2023 James Patrick Norris
+//    Copyright 2025 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.13.
+//    This file is part of DiaperGlu v5.14.
 //
-//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.14 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.14 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.13; if not, write to the Free Software
+//    along with DiaperGlu v5.14; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// February 2, 2025           //
-// version 5.13               //
+// February 20, 2025          //
+// version 5.14               //
 // /////////////////////////////
 
 
@@ -2094,6 +2094,12 @@ void dg_forthdocompiletypedpushbracketrbpplusn(Bufferhandle* pBHarrayhead)
 
     state = (const char*)dg_popdatastack(pBHarrayhead);
 
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypeftcolonname);
+        return;
+    }
+
     pdatastack = dg_getpbuffer(
         pBHarrayhead,
         DG_DATASTACK_BUFFERID,
@@ -2232,7 +2238,7 @@ void dg_forthdocompiletypedpushbracketrbpplusn(Bufferhandle* pBHarrayhead)
 void dg_forthdocompiletypebrackettoorder(Bufferhandle* pBHarrayhead)
 //     ( dataoffset databufid state -- )
 {
-    // const char* state;
+    const char* state;
 
     UINT64* pbuflength;
     unsigned char* pdatastack;
@@ -2246,7 +2252,9 @@ void dg_forthdocompiletypebrackettoorder(Bufferhandle* pBHarrayhead)
         return;
     }
 
-    dg_forthdrop(pBHarrayhead); // drop state
+    // dg_forthdrop(pBHarrayhead); // drop state
+
+    state = (const char*)dg_popdatastack(pBHarrayhead);
 
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
@@ -2276,16 +2284,37 @@ void dg_forthdocompiletypebrackettoorder(Bufferhandle* pBHarrayhead)
     // could check for misaligned data stack here
 
     pints = (UINT64*)(pdatastack + *pbuflength - 2*sizeof(UINT64));
- 
-    dg_pushbufferuint64(
-        pBHarrayhead,
-        DG_SEARCHORDERSTACK_BUFFERID,
-        pints[0]);
-        
-    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+
+    if ((state == dg_stateexecute) || (state == dg_statecompile))
     {
-        dg_pusherror(pBHarrayhead, dg_forthdocompiletypebrackettoordername);
-        return;
+ 
+        dg_pushbufferuint64(
+            pBHarrayhead,
+            DG_SEARCHORDERSTACK_BUFFERID,
+            pints[0]);
+        
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthdocompiletypebrackettoordername);
+            return;
+        }
+    }
+    else 
+    {
+        if (state == dg_statecolorcompile)
+        {
+            dg_compilecallcoretwouparams (
+                pBHarrayhead, 
+                (UINT64)&dg_pushbufferuint64,
+                DG_SEARCHORDERSTACK_BUFFERID,
+                pints[0]);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthdocompiletypebrackettoordername);
+                return;
+            }
+        }
     }
 
     *pbuflength -= 2*sizeof(UINT64);    
@@ -2334,8 +2363,7 @@ void dg_forthdocompiletypebracketwordlistdot(Bufferhandle* pBHarrayhead)
     
     // always execute...
     // dg_forthwordlistdot(pBHarrayhead);
-
-    // this way the state gets passed... which means it supports EXECUTE and COMPILE,
+ 
     dg_parsefinddodefinitionstate (
         pBHarrayhead,
         wordlistid,
@@ -2346,6 +2374,9 @@ void dg_forthdocompiletypebracketwordlistdot(Bufferhandle* pBHarrayhead)
         dg_pusherror(pBHarrayhead, dg_forthdocompiletypebracketwordlistdotname);
         return;
     }
+
+    // this way the state gets passed... which means it supports EXECUTE and COMPILE,
+    
 }
 
 
@@ -3105,4 +3136,605 @@ void dg_docompiletypeotwostore (
     }
 }
 
+
+void dg_forthdocompiletypeparsequotes (Bufferhandle* pBHarrayhead)
+//                         ( dataoffset databufid state -- )
+{
+    UINT64 dataoffset;
+    UINT64 databufid;
+    const char* state;
+    unsigned char* pstring;
+    UINT64 stringlength = 0;
+    UINT64 currentcompilebufid;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    state = (const char*)dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthstatename);
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotesname);
+        return;
+    }
+
+    databufid = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotesname);
+        return;
+    }
+
+    dataoffset = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotesname);
+        return;
+    }
+
+    pstring = dg_parse(
+        pBHarrayhead,
+        &stringlength,
+        (unsigned char)'"');
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotesname);
+        return;
+    }
+
+    dg_pushdatastack(
+        pBHarrayhead,
+        (UINT64)pstring);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotesname);
+        return;
+    }
+
+    dg_pushdatastack(
+        pBHarrayhead,
+        stringlength);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotesname);
+        return;
+    }
+
+    if (state == dg_stateexecute)
+    {
+        // does not do a copy
+        dg_callbuffer(
+            pBHarrayhead,
+            databufid,
+            dataoffset);    
+    }
+    else
+    {
+        if ((state == dg_statecompile) || (state == dg_statecolorcompile))
+        {
+            
+            dg_forthcompiles (pBHarrayhead);
+                
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotesname);
+                return;
+            }
+
+            if (databufid == DG_CORE_BUFFERID) // call to the core
+            {
+                dg_compilecallcore(
+                    pBHarrayhead,
+                    dataoffset);
+            
+                // not checking error here on purpose
+            }
+            else // call to a buffer
+            {
+                currentcompilebufid = dg_getbufferuint64(
+                    pBHarrayhead,
+                    DG_DATASPACE_BUFFERID,
+                    currentcompilebuffer);
+
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {
+                    dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
+                    dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotesname);
+                    return;
+                }
+
+                // put routine to compile to a buffer here
+                if (databufid == currentcompilebufid)
+                {
+                    dg_compiledgframecalloffsetinsamebuffer (
+                        pBHarrayhead,
+                        dataoffset); // INT64 targetoffset)
+                    
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotesname);
+                        
+                        return;
+                    }
+                }
+                else
+                {
+                    // call to a different buffer
+                    dg_compiledgframecallbuffer (
+                        pBHarrayhead, 
+                        dataoffset,
+                        databufid);
+
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotesname);
+                        return;
+                    }
+                }
+            }
+        }
+        else
+        {
+            // unknown state do nothing
+        }        
+    }
+}
+
+
+void dg_forthdocompiletypeparsequotesscommatoos (Bufferhandle* pBHarrayhead)
+//                         ( dataoffset databufid state -- )
+{
+    UINT64 dataoffset;
+    UINT64 databufid;
+    const char* state;
+    unsigned char* pstring;
+    UINT64 stringlength = 0;
+    UINT64 currentcompilebufid;
+    UINT64 stringoffset;
+    UINT64 stringbufid;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    state = (const char*)dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthstatename);
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotesscommatoosname);
+        return;
+    }
+
+    databufid = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotesscommatoosname);
+        return;
+    }
+
+    dataoffset = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotesscommatoosname);
+        return;
+    }
+
+    pstring = dg_parse(
+        pBHarrayhead,
+        &stringlength,
+        (unsigned char)'"');
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotesscommatoosname);
+        return;
+    }
+
+    dg_pushdatastack(
+        pBHarrayhead,
+        (UINT64)pstring);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotesscommatoosname);
+        return;
+    }
+
+    dg_pushdatastack(
+        pBHarrayhead,
+        stringlength);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotesscommatoosname);
+        return;
+    }
+
+    dg_forthscommatoos(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotesscommatoosname);
+        return;
+    }
+
+    if (state == dg_stateexecute)
+    {
+        if (databufid == dg_badbufferid)
+        {
+            return;
+        }
+
+        // already did a copy
+        dg_callbuffer(
+            pBHarrayhead,
+            databufid,
+            dataoffset);    
+    }
+    else
+    {
+        if ((state == dg_statecompile) || (state == dg_statecolorcompile))
+        {
+            
+            // this could be a separate routine too....
+            //   basically compile push n items to data stack
+            // ( stroffset strbufferid stringlength -- )
+            dg_forthdrop(pBHarrayhead); // already have stringlength
+           
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotesscommatoosname);
+                return;
+            }
+
+            stringbufid = dg_popdatastack(pBHarrayhead);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotesscommatoosname);
+                return;
+            }
+
+            stringoffset = dg_popdatastack(pBHarrayhead);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotesscommatoosname);
+                return;
+            }
+
+            dg_compilepushntodatastack(
+                pBHarrayhead,
+                stringoffset);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotesscommatoosname);
+                return;
+            }
+
+            dg_compilepushntodatastack(
+                pBHarrayhead,
+                stringbufid);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotesscommatoosname);
+                return;
+            }
+
+            dg_compilepushntodatastack(
+                pBHarrayhead,
+                stringlength);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotesscommatoosname);
+                return;
+            }
+
+            if (databufid == dg_badbufferid)
+            {
+                return;
+            }
+
+            // this should be a separate routine...
+            if (databufid == DG_CORE_BUFFERID) // call to the core
+            {
+                dg_compilecallcore(
+                    pBHarrayhead,
+                    dataoffset);
+            
+                // not checking error here on purpose
+            }
+            else // call to a buffer
+            {
+                currentcompilebufid = dg_getbufferuint64(
+                    pBHarrayhead,
+                    DG_DATASPACE_BUFFERID,
+                    currentcompilebuffer);
+
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {
+                    dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
+                    dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotesscommatoosname);
+                    return;
+                }
+
+                // put routine to compile to a buffer here
+                if (databufid == currentcompilebufid)
+                {
+                    dg_compiledgframecalloffsetinsamebuffer (
+                        pBHarrayhead,
+                        dataoffset); // INT64 targetoffset)
+                    
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotesscommatoosname);
+                        
+                        return;
+                    }
+                }
+                else
+                {
+                    // call to a different buffer
+                    dg_compiledgframecallbuffer (
+                        pBHarrayhead, 
+                        dataoffset,
+                        databufid);
+
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotesscommatoosname);
+                        return;
+                    }
+                }
+            }
+        }
+        else
+        {
+            // unknown state do nothing
+        }        
+    }
+}
+
+
+void dg_forthdocompiletypeparsequotess0commatoob (Bufferhandle* pBHarrayhead)
+//                         ( dataoffset databufid state -- )
+{
+    UINT64 dataoffset;
+    UINT64 databufid;
+    const char* state;
+    unsigned char* pstring;
+    UINT64 stringlength = 0;
+    UINT64 currentcompilebufid;
+    UINT64 stringoffset;
+    UINT64 stringbufid;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    state = (const char*)dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthstatename);
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotess0commatoobname);
+        return;
+    }
+
+    databufid = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotess0commatoobname);
+        return;
+    }
+
+    dataoffset = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotess0commatoobname);
+        return;
+    }
+
+    pstring = dg_parse(
+        pBHarrayhead,
+        &stringlength,
+        (unsigned char)'"');
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotess0commatoobname);
+        return;
+    }
+
+    dg_pushdatastack(
+        pBHarrayhead,
+        (UINT64)pstring);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotess0commatoobname);
+        return;
+    }
+
+    dg_pushdatastack(
+        pBHarrayhead,
+        stringlength);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotess0commatoobname);
+        return;
+    }
+
+    dg_forths0commatoob(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotess0commatoobname);
+        return;
+    }
+
+    if (state == dg_stateexecute)
+    {
+        if (databufid == dg_badbufferid)
+        {
+            return;
+        }
+
+        // already did a copy
+        dg_callbuffer(
+            pBHarrayhead,
+            databufid,
+            dataoffset);    
+    }
+    else
+    {
+        if ((state == dg_statecompile) || (state == dg_statecolorcompile))
+        {
+            
+            // this could be a separate routine too....
+            //   basically compile push n items to data stack
+            // ( stroffset strbufferid stringlength -- )
+            // dg_forthdrop(pBHarrayhead); // already have stringlength
+           
+            // if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            // {
+            //     dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotess0commatoobname);
+            //     return;
+            // }
+
+            stringbufid = dg_popdatastack(pBHarrayhead);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotess0commatoobname);
+                return;
+            }
+
+            stringoffset = dg_popdatastack(pBHarrayhead);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotess0commatoobname);
+                return;
+            }
+
+            dg_compilepushntodatastack(
+                pBHarrayhead,
+                stringoffset);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotess0commatoobname);
+                return;
+            }
+
+            dg_compilepushntodatastack(
+                pBHarrayhead,
+                stringbufid);
+
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotess0commatoobname);
+                return;
+            }
+
+            // dg_compilepushntodatastack(
+            //    pBHarrayhead,
+            //    stringlength+1);
+
+            // if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            // {
+            //    dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotess0commatoobname);
+            //    return;
+            // }
+
+            if (databufid == dg_badbufferid)
+            {
+                return;
+            }
+
+            // this should be a separate routine...
+            if (databufid == DG_CORE_BUFFERID) // call to the core
+            {
+                dg_compilecallcore(
+                    pBHarrayhead,
+                    dataoffset);
+            
+                // not checking error here on purpose
+            }
+            else // call to a buffer
+            {
+                currentcompilebufid = dg_getbufferuint64(
+                    pBHarrayhead,
+                    DG_DATASPACE_BUFFERID,
+                    currentcompilebuffer);
+
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {
+                    dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
+                    dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotess0commatoobname);
+                    return;
+                }
+
+                // put routine to compile to a buffer here
+                if (databufid == currentcompilebufid)
+                {
+                    dg_compiledgframecalloffsetinsamebuffer (
+                        pBHarrayhead,
+                        dataoffset); // INT64 targetoffset)
+                    
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotess0commatoobname);
+                        
+                        return;
+                    }
+                }
+                else
+                {
+                    // call to a different buffer
+                    dg_compiledgframecallbuffer (
+                        pBHarrayhead, 
+                        dataoffset,
+                        databufid);
+
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotess0commatoobname);
+                        return;
+                    }
+                }
+            }
+        }
+        else
+        {
+            // unknown state do nothing
+        }        
+    }
+}
 

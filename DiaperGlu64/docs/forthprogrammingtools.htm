@@ -1,22 +1,22 @@
 <!--
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2023 James Patrick Norris
+//    Copyright 2025 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.13.
+//    This file is part of DiaperGlu v5.14.
 //
-//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.14 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.14 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.13; if not, write to the Free Software
+//    along with DiaperGlu v5.14; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// February 2, 2025           //
-// version 5.13               //
+// February 20, 2025          //
+// version 5.14               //
 // /////////////////////////////
 -->
 
@@ -68,6 +68,9 @@
       <a href=forthprogrammingtools.htm#dg_forthwords         >dg_forthwords</a>
       <a href=forthprogrammingtools.htm#dg_forthbye           >dg_forthbye</a>
       <a href=forthprogrammingtools.htm#dg_forthsynonym       >dg_forthsynonym</a>
+      <a href=forthprogrammingtools.htm#dg_forthif            >dg_forthif</a>
+      <a href=forthprogrammingtools.htm#dg_forthelse          >dg_forthelse</a>
+      <a href=forthprogrammingtools.htm#dg_forththen          >dg_forththen</a>
       
     </div>
 
@@ -244,6 +247,113 @@
 // Handling of ambiguous conditions:  
 //
 // Failure cases:
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+      <div class=word id=dg_forthbracketif>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthbracketif ( [IF] )
+//
+// C prototype:
+//  void dg_forthbracketif (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( flag -- )
+//
+// Data stack in:
+//  flag                          TRUE or FALSE  equal or not equal FALSE is used          
+//                                                   
+// Action:
+//  In both execute or compile:
+//  If the flag is TRUE, nothing is done, otherwise, this parses words and 
+//   matching [IF] ... [THEN] pairs from the current input buffer until 
+//   either a matching [ELSE] or [THEN] or the end of the current input buffer is parsed.
+//   Nested [IF] ... [THEN] pairs are recursively skipped.
+//   
+// Note:
+//  This is a multi-line parse.
+//  For now, until I add another dg_parsewords that does not need a terminating
+//   character, encountering EOF 0x1A is treated the same as reaching the end of the
+//   current input buffer. 
+//
+// Forth standard:
+//  15.6.2.2532 
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthbracketelse>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthbracketelse ( [ELSE] )
+//
+// C prototype:
+//  void dg_forthbracketelse (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )          
+//                                                   
+// Action:
+//  In both execute or compile:
+//   This parses words and matching [IF] ... [THEN] pairs from the current input buffer 
+//   until either a matching [THEN] or the end of the current input buffer 
+//   is parsed.
+//   Nested [IF] ... [THEN] pairs are recursively skipped.
+// 
+// Note:
+//  This is a multi-line parse.
+//  For now, until I add another dg_parsewords that does not need a terminating
+//   character, encountering EOF 0x1A is treated the same as reaching the end of the
+//   current input buffer. 
+//
+// Forth standard:
+//  15.6.2.2531 
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_forthbracketthen>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthbracketthen ( [THEN] )
+//
+// C prototype:
+//  void dg_forthbracketthen (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where the 
+//                                 other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( -- )          
+//                                                   
+// Action:
+//  This does nothing.
+//   
+//
+// Forth standard:
+//  15.6.2.2533 
 //  
 // //////////////////////////////////////////////////////////////////////////////////////
 </pre>

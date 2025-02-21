@@ -1,4 +1,38 @@
 Changelog for Diaperglu
+   17 February 2025
+     Updated compile type documentation.
+     I changed dg_forthdocompiletypebrackettoorder to compile in colorcompile.
+      This makes it work the same as dg_forthdocompiletypealwaysexecute.
+      This might change in the future.
+     dg_forthdocompiletypelocal and dg_forthdocompiletypefastlocalfrom were
+      left unchanged and are still always execute regardless of the state.
+     For all other compile types except these 4, compile and colorcompile do
+      the same thing.
+
+   10 February 2025
+     Changed ERROR" and E" to use dg_forthdocompiletypeparsequotess0commatoob
+     Changed O0" to use dg_forthdocompiletypeparsequotess0commatoob
+     Added dg_forthdocompiletypeparsequotess0commatoob
+
+   9 February 2025
+     Added S0,>OB 
+     Changed OS" to use dg_forthdocompiletypeparsequotesscommatoos. This removed 
+      OS"s dependence on the state variable which allows OS" to work with the new 
+      color states.
+     Added dg_forthdocompiletypeparsequotesscommatoos
+     Added S,>OS
+
+   8 February 2025
+     Changed ." to use dg_forthdocompiletypeparsequotes. This removed ."'s dependence
+      on the state variable which allows ." to work with the new color states.
+     Added dg_forthdocompiletypeparsequotes
+     Fixed dg_forthdocompiletyperunfileandwaitnoenvquotes to use a passed in state
+       instead of the state variable. I changed all the compile type routines in
+       v5.13 but missed this one. I also added a test in testdiaperglu.dglu to verify
+       this function works.
+     Added ?WIN
+     Added [IF] [ELSE] [THEN]
+
    2 February 2025
      Released v5.13
 

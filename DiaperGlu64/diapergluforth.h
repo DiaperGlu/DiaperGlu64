@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2023 James Patrick Norris
+//    Copyright 2025 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.13.
+//    This file is part of DiaperGlu v5.14.
 //
-//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.14 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.14 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.13; if not, write to the Free Software
+//    along with DiaperGlu v5.14; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// February 2, 2025           //
-// version 5.13               //
+// February 20, 2025          //
+// version 5.14               //
 // /////////////////////////////
 
 #if !defined(_INC_diapergluforth)
@@ -669,11 +669,11 @@ enum dg_cpux86regs {
     // presorted wordlist sizes  //
     // ////////////////////////////
 
-#define dg_presortedcorewordlistsize (311)
+#define dg_presortedcorewordlistsize (314)
 #define dg_presortedenvwordlistsize (21)
 // #define dg_presortedstringwordlistsize (0)
 // #define dg_presortederrorwordlistsize (0)
-#define dg_prestoredbufferwordlistsize (754)
+#define dg_prestoredbufferwordlistsize (765)
 // #define dg_presortedoswordlistsize (0)
 #define dg_presortedx86wordlistsize (1310)
 
@@ -1566,6 +1566,8 @@ enum dg_cpux86regs {
     DGLU_API extern const char dg_forthbyename[];
     DGLU_API extern const char dg_forthsynonymname[];
     DGLU_API extern const char* dg_forthcodename;
+    DGLU_API extern const char dg_forthbracketifname[];
+    DGLU_API extern const char dg_forthbracketelsename[];
 
     
     
@@ -1618,6 +1620,9 @@ enum dg_cpux86regs {
     DGLU_API extern const char dg_forthodocompiletypeostorename[];
     DGLU_API extern const char dg_forthodocompiletypeof64storename[];
     DGLU_API extern const char dg_forthodocompiletypeotwostorename[];
+    DGLU_API extern const char dg_forthdocompiletypeparsequotesname[];
+    DGLU_API extern const char dg_forthdocompiletypeparsequotesscommatoosname[];
+    DGLU_API extern const char dg_forthdocompiletypeparsequotess0commatoobname[];
     
     
     // forth compiling word names
@@ -1846,6 +1851,9 @@ enum dg_cpux86regs {
     DGLU_API extern const char dg_forthjumptableujumpcommaname[];
     DGLU_API extern const char dg_forthcodemesujumpcommaname[];
     DGLU_API extern const char dg_forthcodemesendjumpscommaname[];
+    DGLU_API extern const char dg_forthquerywinname[];
+    DGLU_API extern const char dg_forthscommatoosname[];
+    DGLU_API extern const char dg_forths0commatoobname[];
     
     DGLU_API extern const char dg_forthgetpoststringname[];
     DGLU_API extern const char dg_forthqueryzerostringtostringname[];
@@ -7533,6 +7541,12 @@ enum dg_cpux86regs {
     
  
     DGLU_API void dg_forthcode (Bufferhandle* pBHarrayhead); 
+
+
+    DGLU_API void dg_forthbracketif (Bufferhandle* pBHarrayhead);
+
+
+    DGLU_API void dg_forthbracketelse (Bufferhandle* pBHarrayhead);
     
     
     DGLU_API void dg_forthemptywordlist (Bufferhandle* pBHarrayhead); 
@@ -8112,6 +8126,12 @@ enum dg_cpux86regs {
 
     DGLU_API void dg_forthdocompiletypeotwostore (Bufferhandle* pBHarrayhead);
 
+    DGLU_API void dg_forthdocompiletypeparsequotes (Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthdocompiletypeparsequotesscommatoos (Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthdocompiletypeparsequotess0commatoob (Bufferhandle* pBHarrayhead);
+
     DGLU_API extern const char* dg_docompiletypeostorename;
     DGLU_API void dg_docompiletypeostore (
         Bufferhandle* pBHarrayhead,
@@ -8605,6 +8625,9 @@ enum dg_cpux86regs {
     DGLU_API void dg_forthjumptableujumpcomma (Bufferhandle* pBHarrayhead);
     DGLU_API void dg_forthcodemesujumpcomma (Bufferhandle* pBHarrayhead);
     DGLU_API void dg_forthcodemesendjumpscomma (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthquerywin (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthscommatoos (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forths0commatoob (Bufferhandle* pBHarrayhead);
     
     DGLU_API void dg_forthqueryposttoeh (Bufferhandle* pBHarrayhead);
     
@@ -8807,7 +8830,7 @@ enum dg_cpux86regs {
     DGLU_API void dg_forthcreateoc (Bufferhandle* pBHarrayhead);
     
     
-    DGLU_API void dg_forthosquotes (Bufferhandle* pBHarrayhead); // ( OS" )
+    // DGLU_API void dg_forthosquotes (Bufferhandle* pBHarrayhead); // ( OS" )
     
 
     DGLU_API void dg_fortho0quotes (Bufferhandle* pBHarrayhead); // ( O0" )

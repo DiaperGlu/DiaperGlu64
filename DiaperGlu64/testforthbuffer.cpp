@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2023 James Patrick Norris
+//    Copyright 2025 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.13.
+//    This file is part of DiaperGlu v5.14.
 //
-//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.14 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.14 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.13; if not, write to the Free Software
+//    along with DiaperGlu v5.14; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// February 2, 2025           //
-// version 5.13               //
+// February 20, 2025          //
+// version 5.14               //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -17178,4 +17178,379 @@ void testdg_forthdocompiletypetwovalue()
     dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
 
 }
+
+
+void testdg_forthscommatoos()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 x;
+    UINT64 mystartoffset;
+    UINT64 testbufferid;
+    const char* pError;
+    const unsigned char pTestString[] = "moo cow cat";
+    UINT64 resultbufferid;
+    INT64 flag;
+    UINT64 finalbufferlength;
+    unsigned char* presultstring;
+    UINT64 offset;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthscommatoos\n");
+
+    // success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    testbufferid = dg_newbuffer (
+        &BHarrayhead,
+        0x1000,
+        (UINT64)-1,
+        &pError,
+        FORTH_FALSE);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthscommatoos success case - got error making test buffer\n");
+        return;
+    }
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer,
+        testbufferid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthscommatoos success case - got error setting current compile bufferk\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        (UINT64)pTestString);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthscommatoos success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        7);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthscommatoos success case - got error pushing to testbuffer\n");
+        return;
+    }
+
+    dg_forthscommatoos(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthscommatoos success case - got an error doing dg_forthscommatoos, got\n" );
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    finalbufferlength = dg_getbufferlength(
+        &BHarrayhead,
+        testbufferid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthscommatoos success case - got an error getting final test buffer length\n" );
+    }
+
+    x = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthscommatoos success case - got an error popping length from datastack\n" );
+    }
+ 
+    if (x != 7)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthscommatoos success case - got wrong length, expected 7, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            x);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    resultbufferid = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthscommatoos success case - got an error popping pstring from datastack\n" );
+    }
+
+    if (resultbufferid != testbufferid)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthscommatoos success case - wrong bufferid returned\n" );
+    }
+
+    offset = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthscommatoos success case - got an error popping offset from datastack\n" );
+    }
+ 
+    if (offset != finalbufferlength - 7)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthscommatoos success case - got wrong offset, expected ");
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            finalbufferlength - 7);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"got "); 
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            offset);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    presultstring = dg_getpbufferoffset  (
+        &BHarrayhead,
+        resultbufferid,
+        offset);
+
+    if (resultbufferid != testbufferid)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthscommatoos success case - error getting pointer to result string\n" );
+    }
+ 
+    pError = dg_comparebytes(
+        presultstring,
+        7,
+        (unsigned char*)"moo cow",
+        7,
+        &flag);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthscommatoos success case - got an error comparing strings\n" );
+    }
+
+    if (flag != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthscommatoos success case - got wrong compare result, expected 0, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            flag);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthscommatoos success case - got an error getting length of datastack\n" );
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthscommatoos success case - data stack not empty after test\n" );
+    }
+
+    // presultstring + 7 should = end of testbuffer or ptestbuffer + finallength
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+}
+
+
+void testdg_forths0commatoob()
+{
+    Bufferhandle BHarrayhead;
+    UINT64 x;
+    UINT64 mystartoffset;
+    UINT64 testbufferid;
+    const char* pError;
+    const unsigned char pTestString[] = "moo cow cat";
+    UINT64 resultbufferid;
+    INT64 flag;
+    UINT64 finalbufferlength;
+    unsigned char* presultstring;
+    UINT64 offset;
+
+    dg_initpbharrayhead(&BHarrayhead);
+    
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forths0commatoob\n");
+
+    // success case
+    dg_initbuffers(&BHarrayhead);
+    dg_initvariables(&BHarrayhead);
+
+    testbufferid = dg_newbuffer (
+        &BHarrayhead,
+        0x1000,
+        (UINT64)-1,
+        &pError,
+        FORTH_FALSE);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forths0commatoob success case - got error making test buffer\n");
+        return;
+    }
+
+    dg_putbufferuint64(
+        &BHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer,
+        testbufferid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forths0commatoob success case - got error setting current compile bufferk\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        (UINT64)pTestString);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forths0commatoob success case - got error pushing to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(
+        &BHarrayhead,
+        7);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forths0commatoob success case - got error pushing to testbuffer\n");
+        return;
+    }
+
+    dg_forths0commatoob(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forths0commatoob success case - got an error doing dg_forthscommatoos, got\n" );
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    finalbufferlength = dg_getbufferlength(
+        &BHarrayhead,
+        testbufferid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forths0commatoob success case - got an error getting final test buffer length\n" );
+    }
+
+    // x = dg_popdatastack(&BHarrayhead);
+
+    // if (dg_geterrorcount(&BHarrayhead) != 0)
+    // {
+    //     dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forths0commatoob success case - got an error popping length from datastack\n" );
+    // }
+ 
+    // if (x != 8)
+    // {
+    //     dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forths0commatoob success case - got wrong length, expected 8, got " );
+    //    dg_writestdoutuint64tohex(
+    //        &BHarrayhead,
+    //        x);
+    //    dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    // }
+
+    resultbufferid = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forths0commatoob success case - got an error popping pstring from datastack\n" );
+    }
+
+    if (resultbufferid != testbufferid)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forths0commatoob success case - wrong bufferid returned\n" );
+    }
+
+    offset = dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forths0commatoob success case - got an error popping offset from datastack\n" );
+    }
+ 
+    if (offset != finalbufferlength - 8)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forths0commatoob success case - got wrong offset, expected ");
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            finalbufferlength - 7);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"got "); 
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            offset);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    presultstring = dg_getpbufferoffset  (
+        &BHarrayhead,
+        resultbufferid,
+        offset);
+
+    if (resultbufferid != testbufferid)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forths0commatoob success case - error getting pointer to result string\n" );
+    }
+ 
+    pError = dg_comparebytes(
+        presultstring,
+        7,
+        (unsigned char*)"moo cow",
+        7,
+        &flag);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forths0commatoob success case - got an error comparing strings\n" );
+    }
+
+    if (flag != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forths0commatoob success case - got wrong compare result, expected 0, got " );
+        dg_writestdoutuint64tohex(
+            &BHarrayhead,
+            flag);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n" );
+    }
+
+    if (presultstring[7] != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forths0commatoob success case - null terminator missing\n" );
+    }
+
+    x = dg_getbufferlength(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forths0commatoob success case - got an error getting length of datastack\n" );
+    }
+
+    if (x != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forths0commatoob success case - data stack not empty after test\n" );
+    }
+
+    dg_clearerrors(&BHarrayhead);   dg_freeallbuffers(&BHarrayhead);
+
+}
+
+
 

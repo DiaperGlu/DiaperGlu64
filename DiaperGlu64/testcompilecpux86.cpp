@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2023 James Patrick Norris
+//    Copyright 2025 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.13.
+//    This file is part of DiaperGlu v5.14.
 //
-//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.14 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.14 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.13; if not, write to the Free Software
+//    along with DiaperGlu v5.14; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// February 2, 2025           //
-// version 5.13               //
+// February 20, 2025          //
+// version 5.14               //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -11955,7 +11955,7 @@ void testdg_forthosquotes()
 	dg_printzerostring(&BHarrayhead,  (unsigned char*)"testing dg_forthosquotes\n");
 	
 	
-	// success case
+	// success case for compile state
 	dg_initbuffers(&BHarrayhead);
 	
 	dg_initvariables(&BHarrayhead);
@@ -12012,8 +12012,13 @@ void testdg_forthosquotes()
 		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! testing dg_forthosquotes success case - could not compile init locals\n");
 		return;
 	}
+
+        dg_pushdatastack(&BHarrayhead, 0);
+        dg_pushdatastack(&BHarrayhead, dg_badbufferid);
+        dg_pushdatastack(&BHarrayhead, (UINT64)dg_statecompile);
+        dg_forthdocompiletypeparsequotesscommatoos(&BHarrayhead);
 	
-	dg_forthosquotes (&BHarrayhead);
+	// dg_forthosquotes (&BHarrayhead);
 	
 	if (BHarrayhead.errorcount != 0)
 	{
@@ -12181,11 +12186,16 @@ void testdg_fortho0quotes()
 		return;
 	}
 	
-	dg_fortho0quotes (&BHarrayhead);
+        dg_pushdatastack(&BHarrayhead, 0);
+        dg_pushdatastack(&BHarrayhead, dg_badbufferid);
+        dg_pushdatastack(&BHarrayhead, (UINT64)dg_statecompile);
+        dg_forthdocompiletypeparsequotess0commatoob(&BHarrayhead);
+
+	// dg_fortho0quotes (&BHarrayhead);
 	
 	if (BHarrayhead.errorcount != 0)
 	{
-		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! testing dg_fortho0quotes success case - could not compile init locals\n");
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! testing dg_fortho0quotes success case - got error doing dg_fortho0quotes\n");
 		return;
 	}
 	
@@ -12217,7 +12227,7 @@ void testdg_fortho0quotes()
 	
 	if (x != mycurrentcompilebuffer)
 	{
-		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! testing dg_fortho0quotes success case - expected bufferid to be data stack buffer id, got ");
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! testing dg_fortho0quotes success case - expected bufferid to be current compile buffer id, got ");
 		dg_writestdoutuinttodec(&BHarrayhead, x);
 		dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
 	}
@@ -12231,9 +12241,11 @@ void testdg_fortho0quotes()
 	
 	if (c != 'g')
 	{
-		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! testing dg_fortho0quotes success case - 1st character of copied string incorrect, expected g, got ");
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! testing dg_fortho0quotes success case - 1st character of copied string incorrect, expected g, got hex ");
+                dg_writestdoutuint64tohex(&BHarrayhead, c);
+                dg_printzerostring(&BHarrayhead, (unsigned char*)", char>>>");
 		dg_writestdout(&BHarrayhead, &c, 1);
-		dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+		dg_printzerostring(&BHarrayhead, (unsigned char*)"<<<\n");
 	}
 	
 	c = ((unsigned char*)x)[1];

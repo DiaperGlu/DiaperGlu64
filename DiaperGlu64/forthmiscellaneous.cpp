@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2023 James Patrick Norris
+//    Copyright 2025 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.13.
+//    This file is part of DiaperGlu v5.14.
 //
-//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.14 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.14 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.13; if not, write to the Free Software
+//    along with DiaperGlu v5.14; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// February 2, 2025           //
-// version 5.13               //
+// February 20, 2025          //
+// version 5.14               //
 // /////////////////////////////
 
 
@@ -967,7 +967,8 @@ void dg_forthresolvecompiledbranch(Bufferhandle* pBHarrayhead)
     }
 }
 
-
+/*
+// moved to a compile type routine to be compatible with color states for v5.14
 void dg_forthosquotes (Bufferhandle* pBHarrayhead) // ( OS" )
 //     ( "somestuff<quotes>morestuff" -currentinputbuffer- "morestuff" )
 //     ( compiletime: -- )
@@ -1161,8 +1162,9 @@ void dg_forthosquotes (Bufferhandle* pBHarrayhead) // ( OS" )
     }
     // could compile check for errors here
 }
+*/
 
-
+/*
 void dg_fortho0quotes (Bufferhandle* pBHarrayhead) // ( O0" )
 //     ( "somestuff<quotes>morestuff" -currentinputbuffer- "morestuff" )
 //     ( compiletime: -- )
@@ -1325,6 +1327,7 @@ void dg_fortho0quotes (Bufferhandle* pBHarrayhead) // ( O0" )
         }
     }
 }
+*/
 
 
 void dg_forthpagesize(Bufferhandle* pBHarrayhead)
@@ -9243,3 +9246,278 @@ void dg_forthcodemesujumpcomma (Bufferhandle* pBHarrayhead)
         return;
     }
 }
+
+void dg_forthquerywin (Bufferhandle* pBHarrayhead)
+{
+    UINT64 flag;
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    // doing it this way to gaurantee result is FORTH_TRUE or FORTH_FALSE
+    if (dg_shadowsize != 0)
+    {
+        flag = FORTH_TRUE;
+    }
+    else
+    {
+        flag = FORTH_FALSE;
+    }
+
+    dg_pushdatastack(pBHarrayhead, flag);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthquerywinname);
+        return;
+    }
+}
+
+
+void dg_forthscommatoos (Bufferhandle* pBHarrayhead) // ( S,>OS )
+//     ( addr length -- offset bufferid length )
+{
+    UINT64 bufferid;
+    
+    unsigned char* psqstr;   
+    UINT64 sqstrlen;
+    
+    UINT64 afterbranchoffset;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    sqstrlen = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthscommatoosname);
+        return;
+    }
+    
+    psqstr = (unsigned char*)dg_popdatastack(pBHarrayhead);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthscommatoosname);
+        return;
+    }
+    
+    // now have beginoffset and length, time to compile code to copy string
+    bufferid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
+        dg_pusherror(pBHarrayhead, dg_forthscommatoosname);
+        return;
+    }
+    
+    afterbranchoffset = dg_compilebranch(
+        pBHarrayhead,
+        DG_BRANCHTYPE_ALWAYS);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthscommatoosname);
+        return;
+    }
+    
+    dg_compilesegment(
+        pBHarrayhead,
+        (const char*)psqstr,
+        sqstrlen);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthscommatoosname);
+        return;
+    }
+    
+    dg_resolvecompiledbranch(
+        pBHarrayhead,
+        afterbranchoffset,
+        afterbranchoffset + sqstrlen);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthscommatoosname);
+        return;
+    }
+
+    dg_pushbufferuint64(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        afterbranchoffset);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthscommatoosname);
+        return;
+    }
+        
+    dg_pushbufferuint64(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        bufferid);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthscommatoosname);
+        return;
+    }
+        
+    dg_pushbufferuint64(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        sqstrlen);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forthscommatoosname);
+        return;
+    }
+}
+
+// need to rename this to ob or just o
+void dg_forths0commatoob (Bufferhandle* pBHarrayhead) // ( S0,>OS )
+//     ( addr length -- offset bufferid length )
+{
+    UINT64 bufferid;
+    
+    unsigned char* psqstr;   
+    UINT64 sqstrlen;
+    
+    UINT64 afterbranchoffset;
+    
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+    
+    sqstrlen = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forths0commatoobname);
+        return;
+    }
+    
+    psqstr = (unsigned char*)dg_popdatastack(pBHarrayhead);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forths0commatoobname);
+        return;
+    }
+    
+    // now have beginoffset and length, time to compile code to copy string
+    bufferid = dg_getbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        currentcompilebuffer);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
+        dg_pusherror(pBHarrayhead, dg_forths0commatoobname);
+        return;
+    }
+    
+    afterbranchoffset = dg_compilebranch(
+        pBHarrayhead,
+        DG_BRANCHTYPE_ALWAYS);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forths0commatoobname);
+        return;
+    }
+    
+    dg_compilesegment(
+        pBHarrayhead,
+        (const char*)psqstr,
+        sqstrlen);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forths0commatoobname);
+        return;
+    }
+
+    dg_compilesegment(
+        pBHarrayhead,
+        (const char*)"\x00",
+        1);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forths0commatoobname);
+        return;
+    }
+    
+    dg_resolvecompiledbranch(
+        pBHarrayhead,
+        afterbranchoffset,
+        afterbranchoffset + sqstrlen + 1);
+    
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forths0commatoobname);
+        return;
+    }
+
+    dg_pushbufferuint64(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        afterbranchoffset);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forths0commatoobname);
+        return;
+    }
+        
+    dg_pushbufferuint64(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        bufferid);
+        
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+        dg_pusherror(pBHarrayhead, dg_forths0commatoobname);
+        return;
+    }
+    
+    // don't need length with a zero string    
+    // dg_pushbufferuint64(
+    //    pBHarrayhead,
+    //    DG_DATASTACK_BUFFERID,
+    //    sqstrlen + 1);
+        
+    // if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    // {
+    //    dg_pusherror(pBHarrayhead, dg_forthdatastackbufferidname);
+    //    dg_pusherror(pBHarrayhead, dg_forths0commatoobname);
+    //    return;
+    // }
+}
+
+

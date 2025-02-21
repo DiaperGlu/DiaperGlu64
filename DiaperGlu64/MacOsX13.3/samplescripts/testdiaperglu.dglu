@@ -2,20 +2,20 @@
 ( //                                                                                       )
 ( //    Copyright 2025 James Patrick Norris                                                )
 ( //                                                                                       )
-( //    This file is part of Diaperglu 5.13.                                               )
+( //    This file is part of Diaperglu 5.14.                                               )
 ( //                                                                                       )
-( //    Diaperglu 5.13 is free software; you can redistribute it and/or modify             )
+( //    Diaperglu 5.14 is free software; you can redistribute it and/or modify             )
 ( //    it under the terms of the GNU General Public License as published by               )
 ( //    the Free Software Foundation; either version 2 of the License, or                  )
 ( //    {at your option} any later version.                                                )
 ( //                                                                                       )
-( //    Diaperglu 5.13 is distributed in the hope that it will be useful,                  )
+( //    Diaperglu 5.14 is distributed in the hope that it will be useful,                  )
 ( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
 ( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
 ( //    GNU General Public License for more details.                                       )
 ( //                                                                                       )
 ( //    You should have received a copy of the GNU General Public License                  )
-( //    along with Diaperglu 5.13; if not, write to the Free Software                      )
+( //    along with Diaperglu 5.14; if not, write to the Free Software                      )
 ( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
 ( //                                                                                       )
 ( //////////////////////////////////////////////////////////////////////////////////////// )
@@ -23,8 +23,8 @@
 ( /////////////////////////////// )
 ( // James Patrick Norris      // )
 ( // www.rainbarrel.com        // )
-( // February 2, 2025          // )
-( // version 5.13              // )
+( // February 20, 2025         // )
+( // version 5.14              // )
 ( /////////////////////////////// )
 
 ( test include file )
@@ -5913,6 +5913,78 @@ DEPTH 1 = ?T
  : testCPIMM CP 38 [DUP] CI ; IMMEDIATE
  : testCP3 testCPIMM ;
  testCP3 38 = ?T 38 = ?T 
+
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing [IF]" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+ TRUE [IF] 7 [THEN] 7 = ?T
+ FALSE [IF] 7 [THEN] 
+
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing [ELSE]" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+ TRUE [IF] 7 [ELSE] 9 [THEN] 7 = ?T
+ FALSE [IF] 7 [ELSE] 9 [THEN] 9 = ?T 
+
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing nested [IF]" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+ TRUE [IF] 7 TRUE [IF] 9 [THEN] [THEN] 9 = ?T 7 = ?T
+ FALSE [IF] 7 TRUE [IF] 9 [THEN] [THEN] 
+
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing nested [ELSE]" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+ TRUE [IF] 7 TRUE [IF] 11 [ELSE] 12 [THEN] [ELSE] 9 [THEN] 11 = ?T 7 = ?T
+ TRUE [IF] 7 [ELSE] 9 TRUE [IF] 11 [ELSE] 12 [THEN] [THEN] 7 = ?T
+ FALSE [IF] 7 TRUE [IF] 11 [ELSE] 12 [THEN] [ELSE] 9 [THEN] 9 = ?T 
+ FALSE [IF] 7 [ELSE] 9 TRUE [IF] 11 [ELSE] 12 [THEN] [THEN] 11 = ?T 9 = ?T 
+
+ 55 = ?T
+
+
+( /////////////////////////////////// )
+
+ $" Testing RUNFILEANDWAITNOENVquotes" .$ CR  
+
+ ( /////////////////////////////////// )
+
+ HEX 55
+ CRLF ." ... should see >>>hello there<<<  "
+
+ ?WIN [IF] 
+   RUNFILEANDWAITNOENV" cmd /c echo hello there"
+ [ELSE]
+   RUNFILEANDWAITNOENV" echo hello there"   
+ [THEN]
 
  55 = ?T
 

@@ -1,21 +1,21 @@
 // //////////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright 2023 James Patrick Norris
+//    Copyright 2025 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.13.
+//    This file is part of DiaperGlu v5.14.
 //
-//    DiaperGlu v5.13 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.14 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.13 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.14 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.13; if not, write to the Free Software
+//    along with DiaperGlu v5.14; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// February 2, 2025           //
-// version 5.13               //
+// February 20, 2025          //
+// version 5.14               //
 // /////////////////////////////
 
 
@@ -336,5 +336,229 @@ void dg_forthsynonym (Bufferhandle* pBHarrayhead)
     {
         dg_pusherror(pBHarrayhead, dg_forthsynonymname);
         return;
+    }
+}
+
+
+void dg_forthbracketif (Bufferhandle* pBHarrayhead) 
+{
+    unsigned char* pword;
+    UINT64 wordlength;
+    UINT64 flag;
+    const char* perror;
+    UINT64 ifcount = 0;
+    INT64 compareflag;
+    UINT64 doneflag = FORTH_FALSE;
+    UINT64 foundendflag;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    flag = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthbracketifname);
+        return;
+    }
+
+    if (FORTH_FALSE == flag)
+    {
+        while (FORTH_FALSE == doneflag)
+        {
+            pword = dg_parsewords(
+                pBHarrayhead,
+                &wordlength,
+                (unsigned char)0x1a, // using eof in the hopes it wont be in a text file
+                &foundendflag,
+                FORTH_FALSE);        // lineterminatorsareendflag)
+        
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthbracketifname);
+                return;
+            }
+
+            if (foundendflag != FORTH_FALSE)
+            {
+                return;
+            }
+
+            perror = dg_comparebytes (
+                pword, 
+                wordlength,
+                (unsigned char*)"[IF]",
+                4,
+                &compareflag);
+
+            if (perror != dg_success)
+            {
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {
+                    dg_pusherror(pBHarrayhead, dg_forthbracketifname);
+                    return;
+                }
+            }
+
+            if (0 == compareflag)
+            {
+                // not checking for overflow because getting to max uint is impossible
+                //  when max number of characters in input buffer < size of max uint 
+                ifcount++;
+            }
+            else
+            {
+                perror = dg_comparebytes (
+                    pword, 
+                    wordlength,
+                    (unsigned char*)"[THEN]",
+                    6,
+                    &compareflag);
+
+                if (perror != dg_success)
+                {
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthbracketifname);
+                        return;
+                    }
+                }
+
+                if (0 == compareflag)
+                {
+                    if (ifcount > 0)
+                    {
+                        ifcount--;
+                    }
+                    else
+                    {
+                        doneflag = FORTH_TRUE;
+                    }
+                }
+                else
+                {
+                    perror = dg_comparebytes (
+                        pword, 
+                        wordlength,
+                        (unsigned char*)"[ELSE]",
+                        6,
+                        &compareflag);
+
+                    if (perror != dg_success)
+                    {
+                        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                        {
+                            dg_pusherror(pBHarrayhead, dg_forthbracketifname);
+                            return;
+                        }
+                    }
+
+                    if (0 == compareflag)
+                    {
+                        if (0 == ifcount)
+                        {
+                            doneflag = FORTH_TRUE;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+void dg_forthbracketelse (Bufferhandle* pBHarrayhead) 
+{
+    unsigned char* pword;
+    UINT64 wordlength;
+    const char* perror;
+    UINT64 ifcount = 0;
+    INT64 compareflag;
+    UINT64 doneflag = FORTH_FALSE;
+    UINT64 foundendflag;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    while (FORTH_FALSE == doneflag)
+    {
+        pword = dg_parsewords(
+                pBHarrayhead,
+                &wordlength,
+                (unsigned char)0x1a, // using eof in the hopes it wont be in a text file
+                &foundendflag,
+                FORTH_FALSE);        // lineterminatorsareendflag)
+        
+        if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+        {
+            dg_pusherror(pBHarrayhead, dg_forthbracketelsename);
+            return;
+        }
+
+        if (foundendflag != FORTH_FALSE)
+        {
+            return;
+        }
+
+        perror = dg_comparebytes (
+            pword, 
+            wordlength,
+            (unsigned char*)"[IF]",
+            4,
+            &compareflag);
+
+        if (perror != dg_success)
+        {
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthbracketelsename);
+                return;
+            }
+        }
+
+        if (0 == compareflag)
+        {
+            // not checking for overflow because getting to max uint is impossible
+            //  when max number of characters in input buffer < size of max uint 
+            ifcount++;
+        }
+        else
+        {
+            perror = dg_comparebytes (
+                pword, 
+                wordlength,
+                (unsigned char*)"[THEN]",
+                6,
+                &compareflag);
+
+            if (perror != dg_success)
+            {
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {
+                    dg_pusherror(pBHarrayhead, dg_forthbracketelsename);
+                    return;
+                }
+            }
+
+            if (0 == compareflag)
+            {
+                if (ifcount > 0)
+                {
+                    ifcount--;
+                }
+                else
+                {
+                    doneflag = FORTH_TRUE;
+                }
+            }
+        }
     }
 }
