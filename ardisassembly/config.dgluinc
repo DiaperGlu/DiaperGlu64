@@ -3,7 +3,7 @@
 
 : sqlusername$  $" root" ;
 
-: sqlpassword$  $" limeytwo" ;
+: sqlpassword$  $" myrootpassword" ;
 
 : con$ sqlserver$ sqlusername$ sqlpassword$ ;
 
