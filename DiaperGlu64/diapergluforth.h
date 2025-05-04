@@ -2,20 +2,20 @@
 //
 //    Copyright 2025 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.14.
+//    This file is part of DiaperGlu v5.15.
 //
-//    DiaperGlu v5.14 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.15 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.14 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.15 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.14; if not, write to the Free Software
+//    along with DiaperGlu v5.15; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// February 20, 2025          //
-// version 5.14               //
+// May 4, 2025                //
+// version 5.15               //
 // /////////////////////////////
 
 #if !defined(_INC_diapergluforth)
@@ -669,7 +669,7 @@ enum dg_cpux86regs {
     // presorted wordlist sizes  //
     // ////////////////////////////
 
-#define dg_presortedcorewordlistsize (314)
+#define dg_presortedcorewordlistsize (315)
 #define dg_presortedenvwordlistsize (21)
 // #define dg_presortedstringwordlistsize (0)
 // #define dg_presortederrorwordlistsize (0)
@@ -1621,6 +1621,7 @@ enum dg_cpux86regs {
     DGLU_API extern const char dg_forthodocompiletypeof64storename[];
     DGLU_API extern const char dg_forthodocompiletypeotwostorename[];
     DGLU_API extern const char dg_forthdocompiletypeparsequotesname[];
+    DGLU_API extern const char dg_forthdocompiletypelinesparsequotesname[];
     DGLU_API extern const char dg_forthdocompiletypeparsequotesscommatoosname[];
     DGLU_API extern const char dg_forthdocompiletypeparsequotess0commatoobname[];
     
@@ -8127,6 +8128,8 @@ enum dg_cpux86regs {
     DGLU_API void dg_forthdocompiletypeotwostore (Bufferhandle* pBHarrayhead);
 
     DGLU_API void dg_forthdocompiletypeparsequotes (Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthdocompiletypelinesparsequotes (Bufferhandle* pBHarrayhead);
 
     DGLU_API void dg_forthdocompiletypeparsequotesscommatoos (Bufferhandle* pBHarrayhead);
 

@@ -1,0 +1,100 @@
+
+$" odbcsqlsupport.dgluinc" INCLUDEFILE$
+
+$" skin.dgluinc" INCLUDEFILE$
+
+LOADFORMVALUES
+
+: getfilename$ ( -- ) ( -$- filename$|empty$ )
+    $" filename" POSTGETNAME$>VALUE$
+;
+    
+
+: selectfilename$ $" SELECT datacol FROM " db$ $>$
+   $" .tblfiles WHERE namecol = '" $>$
+   getfilename$ $>$ 
+   $" ' ;" $>$ ;
+
+: selectbaseaddress$ 
+    $" SELECT tblgamefilemapping.startaddress FROM tblgamefilemapping, tblfiles WHERE tblfiles.namecol = '"
+    getfilename$ $>$ $" ' AND tblgamefilemapping.extractedfileid = tblfiles.id" $>$ 
+;
+
+
+: drawpage ( -- )
+
+    ." CONTENT-TYPE: text/html" CRLF 
+    ." Cache-Control: no-cache, must-revalidate" CRLF
+    ." Expires: Mon, 12 Jul 1997 05:00:00 GMT" CRLF
+    CRLF
+
+    drawprojectheader
+
+    ." <h3 align='center'>View file as byte dump</h3>" CRLF
+
+    getfilename$ LENGTH$ DROP$ 0= IF
+      ." <h4 align='center'>No filename chosen.</h4>" CRLF
+      ." </body></html>" CRLF
+      EXIT
+    THEN
+
+    ." <h4 align='center'>" getfilename$ LENGTH$ .$ ." </h4>" CRLF 
+
+    ( load file data to result set )  
+    selectfilename$ con$ db$ GETRESULTSET
+
+    ?ERRORIF
+      ." <p>Error getting file data from database.</p>" CRLF
+      ." <p><pre>" ( POPOERROR0$ O>P TYPE0$ ) .ES ." </pre></p>" CRLF
+      ." </body></html>" CRLF
+      EMPTY-ERRORS
+      EXIT
+    THEN
+
+    ( load base address to result set )
+    selectbaseaddress$ con$ db$ GETRESULTSET
+
+    ?ERRORIF
+      ." <p>Error getting file's base address from database.</p>" CRLF
+      ." <p>" POPOERROR0$ O>P TYPE0$ ." </p>" CRLF
+      ." </body></html>" CRLF
+      EMPTY-ERRORS
+      EXIT
+    THEN    
+
+    0 GETNUMBEROFROWSFROMRESULTSET 0= IF
+      ." <p>File data not found in database.</p>" CRLF
+      ." </body></html>" CRLF
+      EXIT
+    THEN
+
+    ( push file data from result set 0 to $ stack )
+    1 1 0 GETDATA$FROMRESULTSET
+
+    ( push base address from result set 1 to data stack )
+    1 GETNUMBEROFROWSFROMRESULTSET 0= IF
+      0 ( if no base address exists for this file, default is 0 )
+    ELSE
+      1 1 GETCOLUMNTYPEFROMRESULTSET SQL_INTEGER = 0= IF
+        0
+      ELSE
+        1 1 1 GETDATA$FROMRESULTSET 
+        0 GETP$ 4 = IF
+          @
+        ELSE
+          0
+        THEN
+        DROP$
+      THEN
+    THEN
+
+    getbase BASE !
+
+    DRAW$ASHTMLBYTEDUMP
+
+    drawprojectfooter 
+;
+
+drawpage
+
+

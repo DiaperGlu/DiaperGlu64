@@ -1,0 +1,194 @@
+
+( Last modified: December 2, 2012 )
+
+$" odbcsqlsupport.dgluinc" INCLUDEFILE$
+
+$" skin.dgluinc" INCLUDEFILE$
+
+LOADFORMVALUES
+
+: showserverstat$ ( servervariablename$ -$- )
+    ( load file data to result set ) 
+    DEPTH$ 1 U< IF STRINGSTACKUNDERFLOWERROR PUSHOERROR0$ NAME>E EXIT THEN
+     
+    ." <tr><td>" DUP$ .$ ." </td><td>" 
+    $" SELECT " SWAP$ $>$ con$ db$ GETRESULTSET
+
+    ?ERRORIF
+      ." Error getting stat from database." CRLF
+      0 GETOERROR0$ O>P TYPE0$ ." </td></tr>" CRLF
+      EMPTY-ERRORS
+      EXIT
+    THEN
+
+    LATESTRESULTSET GETNUMBEROFROWSFROMRESULTSET 0= IF
+      ." server variable not found</td></tr>" CRLF
+    ELSE
+      ( 1 1 LATESTRESULTSET GETDATA$FROMRESULTSET .$ ." </td></tr>" CRLF )
+      1 1 LATESTRESULTSET GETDATA$FROMRESULTSET
+      1 1 LATESTRESULTSET GETTRUECOLUMNTYPEFROMRESULTSET
+      DRAWRESULTDATA$USINGDEFAULT
+      ." </td></tr>" CRLF
+    THEN
+;
+
+HEX
+: drawpage ( -- )
+
+    ." CONTENT-TYPE: text/html" CRLF 
+    ." Cache-Control: no-cache, must-revalidate" CRLF
+    ." Expires: Mon, 12 Jul 1997 05:00:00 GMT" CRLF
+    CRLF
+
+    drawprojectheader
+
+    ." <h3 align=center>SQL Server Info</h3>" CRLF
+    ." <table border=1>" CRLF
+    ."   <tr><th>Info Stat</th><th>Info Data</th></tr>" CRLF
+
+    ."   <tr><td>SQL_DBMS_NAME</td><td>" 
+           SQL_DBMS_NAME con$ CONNECTSQLANDGETINFO$ .$ ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_DBMS_VER</td><td>" 
+           SQL_DBMS_VER con$ CONNECTSQLANDGETINFO$ .$ ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_DATA_SOURCE_NAME</td><td>" 
+           SQL_DATA_SOURCE_NAME con$ CONNECTSQLANDGETINFO$ .$ ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_SERVER_NAME</td><td>" 
+           SQL_SERVER_NAME con$ CONNECTSQLANDGETINFO$ .$ ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_SEARCH_PATTERN_ESCAPE</td><td>" 
+           SQL_SEARCH_PATTERN_ESCAPE con$ CONNECTSQLANDGETINFO$ .$ ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_ACCESSIBLE_TABLES</td><td>" 
+           SQL_ACCESSIBLE_TABLES con$ CONNECTSQLANDGETINFO$ .$ ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_ACCESSIBLE_PROCEDURES</td><td>" 
+           SQL_ACCESSIBLE_PROCEDURES con$ CONNECTSQLANDGETINFO$ .$ ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_CURSOR_COMMIT_BEHAVIOR</td><td>" 
+           SQL_CURSOR_COMMIT_BEHAVIOR con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_DATA_SOURCE_READ_ONLY</td><td>" 
+           SQL_DATA_SOURCE_READ_ONLY con$ CONNECTSQLANDGETINFO$ .$ ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_DEFAULT_TXN_ISOLATION</td><td>" 
+           SQL_DEFAULT_TXN_ISOLATION con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_IDENTIFIER_CASE</td><td>" 
+           SQL_IDENTIFIER_CASE con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_IDENTIFIER_QUOTE_CHAR</td><td>" 
+           SQL_IDENTIFIER_QUOTE_CHAR con$ CONNECTSQLANDGETINFO$ .$ ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_MAX_COLUMN_NAME_LEN</td><td>" 
+           SQL_MAX_COLUMN_NAME_LEN con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_MAX_CURSOR_NAME_LEN</td><td>" 
+           SQL_MAX_CURSOR_NAME_LEN con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_MAX_SCHEMA_NAME_LEN</td><td>" 
+           SQL_MAX_SCHEMA_NAME_LEN con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_MAX_CATALOG_NAME_LEN</td><td>" 
+           SQL_MAX_CATALOG_NAME_LEN con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_MAX_TABLE_NAME_LEN</td><td>" 
+           SQL_MAX_TABLE_NAME_LEN con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_SCROLL_CONCURRENCY</td><td>" 
+           SQL_SCROLL_CONCURRENCY con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_TXN_CAPABLE</td><td>" 
+           SQL_TXN_CAPABLE con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_USER_NAME</td><td>" 
+           SQL_USER_NAME con$ CONNECTSQLANDGETINFO$ .$ ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_TXN_ISOLATION_OPTION (SQL_TRANSACTION_ISOLATION_OPTION)</td><td>" 
+           SQL_TXN_ISOLATION_OPTION con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_INTEGRITY</td><td>" 
+           SQL_INTEGRITY con$ CONNECTSQLANDGETINFO$ .$ ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_GETDATA_EXTENSIONS</td><td>" 
+           SQL_GETDATA_EXTENSIONS con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_NULL_COLLATION</td><td>" 
+           SQL_NULL_COLLATION con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_ALTER_TABLE</td><td>" 
+           SQL_ALTER_TABLE con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_ORDER_BY_COLUMNS_IN_SELECT</td><td>" 
+           SQL_ORDER_BY_COLUMNS_IN_SELECT con$ CONNECTSQLANDGETINFO$ .$ ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_SPECIAL_CHARACTERS</td><td>" 
+           SQL_SPECIAL_CHARACTERS con$ CONNECTSQLANDGETINFO$ .$ ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_MAX_COLUMNS_IN_GROUP_BY</td><td>" 
+           SQL_MAX_COLUMNS_IN_GROUP_BY con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_MAX_COLUMNS_IN_INDEX</td><td>" 
+           SQL_MAX_COLUMNS_IN_INDEX con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_MAX_COLUMNS_IN_ORDER_BY</td><td>" 
+           SQL_MAX_COLUMNS_IN_ORDER_BY con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_MAX_COLUMNS_IN_SELECT</td><td>" 
+           SQL_MAX_COLUMNS_IN_SELECT con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_MAX_COLUMNS_IN_TABLE</td><td>" 
+           SQL_MAX_COLUMNS_IN_TABLE con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_MAX_ROW_SIZE</td><td>" 
+           SQL_MAX_ROW_SIZE con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_MAX_STATEMENT_LEN</td><td>" 
+           SQL_MAX_STATEMENT_LEN con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_MAX_TABLES_IN_SELECT</td><td>" 
+           SQL_MAX_TABLES_IN_SELECT con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_MAX_USER_NAME_LEN</td><td>" 
+           SQL_MAX_USER_NAME_LEN con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_OJ_CAPABILITIES (SQL_OUTER_JOIN_CAPABILITIES)</td><td>" 
+           SQL_OJ_CAPABILITIES con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_XOPEN_CLI_YEAR</td><td>" 
+           SQL_XOPEN_CLI_YEAR con$ CONNECTSQLANDGETINFO$ .$ ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_CURSOR_SENSITIVITY</td><td>" 
+           SQL_CURSOR_SENSITIVITY con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_DESCRIBE_PARAMETER</td><td>" 
+           SQL_DESCRIBE_PARAMETER con$ CONNECTSQLANDGETINFO$ .$ ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_CATALOG_NAME</td><td>" 
+           SQL_CATALOG_NAME con$ CONNECTSQLANDGETINFO$ .$ ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_COLLATION_SEQ</td><td>" 
+           SQL_COLLATION_SEQ con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_MAX_IDENTIFIER_LEN</td><td>" 
+           SQL_MAX_IDENTIFIER_LEN con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_MAX_DRIVER_CONNECTIONS</td><td>" 
+           SQL_MAX_DRIVER_CONNECTIONS con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>SQL_MAX_CONCURRENT_ACTIVITIES</td><td>" 
+           SQL_MAX_CONCURRENT_ACTIVITIES con$ CONNECTSQLANDGETINFO DECIMAL U. ." </td></tr>" CRLF
+
+    ."   <tr><td>Test Number</td><td>" 
+           -20 con$ CONNECTSQLANDGETINFO ?ERRORIF ." got error" DROP EMPTY-ERRORS ELSE DECIMAL U. THEN ." </td></tr>" CRLF       
+
+    ." </table>" CRLF
+
+    drawprojectfooter 
+;
+
+drawpage
+
+

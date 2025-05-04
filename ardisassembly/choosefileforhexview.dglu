@@ -1,0 +1,43 @@
+
+$" odbcsqlsupport.dgluinc" INCLUDEFILE$
+
+$" skin.dgluinc" INCLUDEFILE$
+
+
+: sel$ $" SELECT namecol FROM tblfiles" ;
+
+
+: drawpage ( -- )
+
+    ." CONTENT-TYPE: text/html" CRLF 
+    ." Cache-Control: no-cache, must-revalidate" CRLF
+    ." Expires: Mon, 12 Jul 1997 05:00:00 GMT" CRLF
+    CRLF
+
+    drawprojectheader
+
+    ." <h3 align='center'>Choose file to view as byte dump</h3>" CRLF
+    
+    sel$ con$ db$ GETRESULTSET
+
+    ?ERRORIF
+      ." <p>Error getting page data</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ."   <form runat='server' action='viewfileashex.dglu' method='post'>" CRLF
+
+    1 0 $" name='filename'" DRAWRESULTSETCOLUMNASHTMLSELECTLIST
+
+    ."     <br><input type=radio name=base value=hex CHECKED>Hex" CRLF
+    ."     <br><input type=radio name=base value=decimal>Decimal" CRLF
+    ."     <br><input type='submit'>" CRLF
+
+    ."   </form>" CRLF   
+    drawprojectfooter 
+;
+
+drawpage
+
+

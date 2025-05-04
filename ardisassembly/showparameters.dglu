@@ -1,0 +1,48 @@
+
+( last modified: July 21, 2007 )
+
+$" skin.dgluinc" INCLUDEFILE$
+
+$" odbcsqlsupport.dgluinc" INCLUDEFILE$
+
+
+." CONTENT-TYPE: text/html" CRLF  
+." Cache-Control: no-cache, must-revalidate" CRLF 
+." Expires: Mon, 12 Jul 1997 05:00:00 GMT" CRLF 
+CRLF
+
+( ." <html><head></head><body>" CRLF )
+
+drawprojectheader
+
+." <p>Method string = " GETMETHOD$ .$ ." </p>" CRLF
+
+." <p>CONTENT_LENGTH = "    $" CONTENT_LENGTH"    GETENV$ .$ ."  :-)</p>" CRLF
+." <p>CONTENT_TYPE = "      $" CONTENT_TYPE"      GETENV$ .$ ."  :-)</p>" CRLF
+." <p>GATEWAY_INTERFACE = " $" GATEWAY_INTERFACE" GETENV$ .$ ."  :-)</p>" CRLF
+." <p>PATH_INFO = "         $" PATH_INFO"         GETENV$ .$ ."  :-)</p>" CRLF
+( ." <p>QUERY_STRING = " $" QUERY_STRING" GETENV$ .$ ." </p>" CRLF )
+." <p>REMOTE_ADDR = "       $" REMOTE_ADDR"       GETENV$ .$ ." </p>" CRLF 
+." <p>REQUEST_METHOD = " $" REQUEST_METHOD"       GETENV$ .$ ." </p>" CRLF 
+." <p>SCRIPT_NAME = " $" SCRIPT_NAME" GETENV$ .$ ." </p>" CRLF 
+." <p>SERVER_NAME = " $" SERVER_NAME" GETENV$ .$ ." </p>" CRLF
+." <p>SERVER_PORT = " $" SERVER_PORT" GETENV$ .$ ." </p>" CRLF
+." <p>SERVER_PROTOCOL = " $" SERVER_PROTOCOL" GETENV$ .$ ." </p>" CRLF
+." <p>SERVER_SOFTWARE = " $" SERVER_SOFTWARE" GETENV$ .$ ." </p>" CRLF
+." <p>AUTH_TYPE = " $" AUTH_TYPE" GETENV$ .$ ." </p>" CRLF
+." <p>REMOTE_HOST = " $" REMOTE_HOST" GETENV$ .$ ." </p>" CRLF
+." <p>PATH_TRANSLATED = " $" PATH_TRANSLATED" GETENV$ .$ ." </p>" CRLF
+." <p>REMOTE_IDENT = " $" REMOTE_IDENT" GETENV$ .$ ." </p>" CRLF
+." <p>REMOTE_USER = " $" REMOTE_USER" GETENV$ .$ ." </p>" CRLF
+
+." <p>Query string:<br>" CRLF
+GETQUERY$ .HTML$ CRLF
+." </p>" CRLF
+
+." <p>Post string:<br>" CRLF
+POSTBUFFERID GETPBUFFER @ S>NEW$ .HTML$ CRLF
+." </p>" CRLF
+
+drawprojectfooter
+
+         

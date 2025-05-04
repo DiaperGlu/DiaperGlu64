@@ -1,0 +1,118 @@
+
+( Last modified: March 17, 2007 )
+
+$" odbcsqlsupport.dgluinc" INCLUDEFILE$
+
+$" skin.dgluinc" INCLUDEFILE$
+
+
+LOADFORMVALUES
+
+: getpassword$ ( -$- password$ )
+    $" password" POSTGETNAME$>VALUE$
+;
+
+: getfilename$ ( -$- filename$ )
+    $" filename" POSTGETNAME$>VALUE$
+;
+
+: getfiletype$ ( -$- filetype$ )
+    $" filetype" POSTGETNAME$>VALUE$
+;
+
+VARIABLE PFILETYPE
+2 PFILETYPE !
+
+: insert$ ( -$- insert$ )
+    $" INSERT INTO tblfiles (namecol, filetypeidcol, datacol) VALUES ( '"
+    getfilename$ $>$ 
+    $" ', " $>$
+    DECIMAL PFILETYPE @ 0 <#$ #S$ #>$ $>$
+    $" , ?)" $>$
+;
+
+: selectfiletypeid$ $" SELECT ID FROM tblfiletype WHERE name = '" getfiletype$ $>$ $" '" $>$ ;
+
+VARIABLE PFILEDATABUFFER
+: drawpage ( -- )
+
+    ." CONTENT-TYPE: text/html" CRLF 
+    ." Cache-Control: no-cache, must-revalidate" CRLF
+    ." Expires: Mon, 12 Jul 1997 05:00:00 GMT" CRLF
+    CRLF
+
+    drawprojectheader
+
+    ." <h3 align='center'>Trying to insert file '" getfilename$ .$ ." '</h3>" CRLF 
+
+    ( check password )
+    
+    getpassword$ adminpassword$ COMPARE$ DROP$ DROP$ 0= 0= IF
+
+      ( they don't match )
+      ." <p>Admin password is incorrect.<p>" CRLF
+      ." </body></html>" CRLF
+      EXIT
+    THEN
+
+    ( they match )
+
+    ( load file type id to result set )      
+    selectfiletypeid$ con$ db$ GETRESULTSET
+
+    ?ERRORIF
+      ." <p>Error getting file data from database.</p>" CRLF
+      ." </body></html>" CRLF
+      EXIT
+    THEN
+
+    ( push file type from result set 0 to data stack )
+    0 GETNUMBEROFROWSFROMRESULTSET 0= IF
+      2 ( if no file type ID exists for this file type name, default is 2 )
+    ELSE
+      1 0 GETCOLUMNTYPEFROMRESULTSET SQL_INTEGER = 0= IF
+        2
+      ELSE
+        1 1 0 GETNUMBERFROMRESULTSET 
+      THEN
+    THEN
+
+    PFILETYPE !
+
+    ( loading file )
+    getfilename$ LENGTH$ 0= IF
+      ." <p>No filename specified.<p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    getfilename$ LOADFILE$
+    ?ERRORIF
+      EMPTY-ERRORS
+      ." <p>Error loading file.<p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+    PFILEDATABUFFER !
+
+    ( setting up buffer and inserting new label into label table )
+
+    PFILEDATABUFFER @ GETPBUFFER 1 SQL_LONGVARBINARY
+    1
+   
+    insert$ con$ db$ CONNECTSQLBINDSSANDDOSTATEMENT$ 
+
+    ?ERRORIF
+      ." <p>Error inserting file into database.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ." <p>Inserted file into database.<p>" CRLF
+    
+    drawprojectfooter 
+;
+
+drawpage
+
+

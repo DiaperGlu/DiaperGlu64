@@ -1,0 +1,134 @@
+
+( Last modified: April 13, 2007 )
+
+$" odbcsqlsupport.dgluinc" INCLUDEFILE$
+
+$" skin.dgluinc" INCLUDEFILE$
+
+LOADFORMVALUES
+
+: selectgamefilemapping2$ $" SELECT * FROM tblgamefilemapping" ;
+
+: selectgamefilemapping$ 
+    $" SELECT "
+    $" tblgamefilemapping.ID, " $>$
+    $" tblextractedfiles.namecol AS extractedfile, " $>$
+    $" tblsrcfiles.namecol AS sourcefile, " $>$
+    $" tblgamefilemapping.startoffset, " $>$
+    $" tblgamefilemapping.length, " $>$
+    $" tblgamefilemapping.startaddress, " $>$ 
+    $" encryptiontype.name AS encryption, " $>$ 
+    $" tblgamefilemapping.encryptionkeyoffset AS dungeonkeysector " $>$ 
+    $" FROM tblgamefilemapping, tblfiles AS tblsrcfiles , tblfiles AS tblextractedfiles, encryptiontype " $>$
+    $" WHERE tblgamefilemapping.sourcefileid = tblsrcfiles.ID " $>$
+    $" AND tblgamefilemapping.extractedfileid = tblextractedfiles.ID " $>$
+    $" AND tblgamefilemapping.encryptionid = encryptiontype.ID" $>$
+;
+
+: selectfilenames$ $" SELECT namecol FROM tblfiles" ;
+: selectencryptions$ $" SELECT * FROM encryptiontype" ;
+
+VARIABLE PFILENAMESRESULTSETID
+-1 PFILENAMESRESULTSETID !
+
+VARIABLE PENCRYPTIONRESULTSETID
+-1 PENCRYPTIONRESULTSETID !
+
+HEX
+: drawpage ( -- )
+
+    ." CONTENT-TYPE: text/html" CRLF 
+    ." Cache-Control: no-cache, must-revalidate" CRLF
+    ." Expires: Mon, 12 Jul 1997 05:00:00 GMT" CRLF
+    CRLF
+
+    drawprojectheader
+
+    ." <h3 align='center'>View mapping of game files to disk files.</h3>" CRLF
+
+    ( load file data to result set )      
+    selectgamefilemapping$ con$ db$ GETRESULTSET
+
+    ?ERRORIF
+      ." <p>Error getting game file mapping from database.</p>" CRLF
+      ( ." <p>" POPOERROR0$ O>P TYPE0$ ." </p>" CRLF )
+      drawprojectfooter
+      EXIT
+    THEN
+
+    0 GETNUMBEROFROWSFROMRESULTSET 0= IF
+      ." <p>No game files found mapped to disk files.</p>" CRLF
+    ELSE
+      getbase BASE !
+      0 $" border=1" DRAWRESULTSETASHTMLTABLE
+    THEN
+
+    selectfilenames$ con$ db$ GETRESULTSET
+
+    ?ERRORIF
+      ." <p>Error getting file names</p>" CRLF
+      ( ." <p>" POPOERROR0$ O>P TYPE0$ ." </p>" CRLF )
+      drawprojectfooter
+      EXIT
+    THEN
+
+    LATESTRESULTSET PFILENAMESRESULTSETID !
+
+    selectencryptions$ con$ db$ GETRESULTSET
+
+    ?ERRORIF
+      ." <p>Error getting encryption types</p>" CRLF
+      ( ." <p>" POPOERROR0$ O>P TYPE0$ ." </p>" CRLF )
+      drawprojectfooter
+      EXIT
+    THEN
+
+    LATESTRESULTSET PENCRYPTIONRESULTSETID !
+
+    ." <hr>" CRLF
+    ." <h3 align=center>Add game file mapping</h3>" CRLF
+
+    ."   <form runat='server' action='addgamefilemapping.dglu' method='post'>" CRLF
+
+    ."     <br>source file name: "
+    1 PFILENAMESRESULTSETID @ $" name='sourcefilename'" DRAWRESULTSETCOLUMNASHTMLSELECTLIST
+
+    ."     <br>destination file name: "
+    1 PFILENAMESRESULTSETID @ $" name='extractedfilename'" DRAWRESULTSETCOLUMNASHTMLSELECTLIST
+
+    ."     <br>Start offset in source file: <input type=text name=startoffset>" CRLF
+    // ."     <br>Source encryption: not encoded" CRLF
+    ."     <br>encryption type: "
+    2 PENCRYPTIONRESULTSETID @ $" name='encryptiontype'" DRAWRESULTSETCOLUMNASHTMLSELECTLIST
+    ."     <br>Start Address of extracted file: <input type=text name=startaddress>" CRLF
+    ."     <br>Length of extracted file: <input type=text name=extractedlength>" CRLF
+    ."     <br>Password: <input type=password name=password>" CRLF
+    ."     <input type=hidden name=hiddenpassword value=losttearstavern>" CRLF
+    ."     <br><input type='submit'>" CRLF
+
+    ."   </form>" CRLF
+
+    0 GETNUMBEROFROWSFROMRESULTSET 0= 0= IF
+
+      ."   <hr>" CRLF
+      ."   <h3 align=center>Delete a game file mapping.</h3>" CRLF
+
+      ."   <form action='confirmdelete.dglu' runat=server method=post>" CRLF
+      ."     <input type=hidden name=hiddenpassword value=losttearstavern>" CRLF
+      ."     <input type=hidden name=dbtable value=tblgamefilemapping>" CRLF
+      ."     <input type=hidden name=colname value=ID>" CRLF
+      ."     <input type=hidden name=coltype value=integer>" CRLF
+      ."     <input type=hidden name=base value=" getbase 0A = IF ." decimal" ELSE ." hex" THEN ." >" CRLF
+      ." id: "     1 0 $" name='colvalue'" getbase BASE ! DRAWRESULTSETCOLUMNASHTMLSELECTLIST
+      ."     <br>Password: <input type=password name=password>" CRLF
+      ."     <br><input type=submit>" CRLF
+      ."   </form>"
+
+    THEN  
+
+    drawprojectfooter 
+;
+
+drawpage
+
+

@@ -1,0 +1,142 @@
+
+$" odbcsqlsupport.dgluinc" INCLUDEFILE$
+
+$" skin.dgluinc" INCLUDEFILE$
+
+
+LOADFORMVALUES
+
+: getpassword$ ( -$- password$ )
+    $" password" POSTGETNAME$>VALUE$
+;
+
+: gethiddenpassword$ ( -- ) ( -$- hiddenpassword$|empty$ )
+    
+    $" hiddenpassword" POSTGETNAME$>VALUE$
+;
+
+: getdbtable$ ( -- ) ( -$- dbtable$|empty$ )
+    
+    $" dbtable" POSTGETNAME$>VALUE$
+;
+
+: getcolname$ ( -- ) ( -$- colname$|empty$ )
+    
+    $" colname" POSTGETNAME$>VALUE$
+;
+
+: getcolvalue$ ( -- ) ( -$- colvalue$|empty$ )
+    
+    $" colvalue" POSTGETNAME$>VALUE$
+;
+
+: getcoltype ( -- SQL_INTEGER|SQL_BINARY )
+    $" coltype" POSTGETNAME$>VALUE$ 
+    LENGTH$ 0= IF
+      DROP$ SQL_BINARY EXIT
+    THEN
+
+    $" binary" COMPARE$ 0= IF
+      DROP$ DROP$ SQL_BINARY
+      EXIT
+    THEN
+  
+    DROP$ DROP$
+
+    SQL_INTEGER
+;
+
+: delete$ 
+    DECIMAL
+    $" DELETE FROM "
+    getdbtable$ $>$
+    $"  WHERE " $>$
+    getcolname$ $>$
+    $" =" $>$
+    getcoltype SQL_BINARY = IF $" '" $>$ THEN
+    getcolvalue$ $>$ 
+    getcoltype SQL_BINARY = IF $" '" $>$ THEN
+;
+
+
+: drawpage ( -- )
+
+    ." CONTENT-TYPE: text/html" CRLF 
+    ." Cache-Control: no-cache, must-revalidate" CRLF
+    ." Expires: Mon, 12 Jul 1997 05:00:00 GMT" CRLF
+    CRLF
+
+    drawprojectheader
+
+    ." <h3 align='center'>Trying to delete row from table '" getdbtable$ .$ ." '</h3>" CRLF 
+
+    ( check password )    
+    getpassword$ formpassword$ COMPARE$ DROP$ DROP$ 0= 0= IF
+
+      ( they don't match )
+      ." <p>Password is incorrect.<p>" CRLF
+      drawprojectfooter
+      EXIT
+
+    THEN
+
+    ( check hidden password ) 
+    gethiddenpassword$ hiddendeletepassword$ COMPARE$ DROP$ DROP$ 0= 0= IF
+
+      ( they don't match )
+      ." <p>You didn't come to this page through the form, access is denied.<p>" CRLF
+      drawprojectfooter
+      EXIT
+
+    THEN
+ 
+    ( checking table name for problems )
+    getdbtable$ insertvalue$ok? DROP$ 0= IF
+
+      ." <p>Something wrong with table name '"
+      getdbtable$ .$
+      ." ' you are trying to delete from. Please try another name.</p>" CRLF
+      drawprojectfooter
+      EXIT
+
+    THEN
+
+    ( checking column name for problems )
+    getcolname$ insertvalue$ok? DROP$ 0= IF
+
+      ." <p>Something wrong with column name '"
+      getcolname$ .$
+      ." ' you are using to identify the row for deletion. Please try another name.</p>" CRLF
+      drawprojectfooter
+      EXIT
+
+    THEN
+
+    ( checking column value for problems )
+    getcolvalue$ insertvalue$ok? DROP$ 0= IF
+
+      ." <p>Something wrong the column value '"
+      getcolvalue$ .$
+      ." ' you are using to identify the row for deletion. Please try another value.</p>" CRLF
+      drawprojectfooter
+      EXIT
+
+    THEN
+    
+    ( deleting row from table )
+    delete$ con$ db$ CONNECTSQLANDDOSTATEMENT$  
+
+    ?ERRORIF
+      ." <p>Error deleting row from table.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ." <p>Deleted row from table.<p>" CRLF
+    
+    drawprojectfooter 
+;
+
+drawpage
+
+

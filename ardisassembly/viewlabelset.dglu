@@ -1,0 +1,98 @@
+
+$" odbcsqlsupport.dgluinc" INCLUDEFILE$
+
+$" skin.dgluinc" INCLUDEFILE$
+
+LOADFORMVALUES
+
+: getlabelsetname$ ( -- ) ( -$- filename$|empty$ )
+    $" labelsetname" POSTGETNAME$>VALUE$
+;
+    
+
+: selectlabelset$ 
+    $" SELECT tbllabels.id, tbllabels.addresscol AS labeladdress, "
+    $" tbllabels.textcol AS labeltext FROM tbllabels, tbllabelsets " $>$
+    $" WHERE tbllabelsets.namecol = '" $>$
+    getlabelsetname$ $>$ $" ' AND tbllabels.labelsetidcol = tbllabelsets.ID " $>$ 
+    $" ORDER BY labeladdress" $>$
+;
+
+
+HEX
+: drawpage ( -- )
+
+    ." CONTENT-TYPE: text/html" CRLF 
+    ." Cache-Control: no-cache, must-revalidate" CRLF
+    ." Expires: Mon, 12 Jul 1997 05:00:00 GMT" CRLF
+    CRLF
+
+    drawprojectheader
+
+    ." <h3 align='center'>View label set.</h3>" CRLF
+
+    getlabelsetname$ LENGTH$ DROP$ 0= IF
+      ." <h4 align='center'>No label set name chosen.</h4>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ." <h4 align='center'>" getlabelsetname$ LENGTH$ .$ ." </h4>" CRLF 
+
+    ( load label set to result set )      
+    selectlabelset$ con$ db$ GETRESULTSET
+
+    ?ERRORIF
+      ." <p>Error getting label set from database.</p>" CRLF
+      ( ." <p>" POPOERROR0$ O>P TYPE0$ ." </p>" CRLF )
+      drawprojectfooter
+      EXIT
+    THEN
+
+    0 GETNUMBEROFROWSFROMRESULTSET 0= IF
+      ." <p>No labels assigned to this set yet.</p>" CRLF
+    ELSE
+      getbase BASE !
+      0 $" border=1" DRAWRESULTSETASHTMLTABLE
+    THEN
+
+    ."   <hr>" CRLF
+
+    ."   <h3 align=center>Add a label to this label set.</h3>" CRLF
+
+    ."   <a href='labelexplanation.dglu'>Instructions for how to assign labels</a>" CRLF
+
+    ."   <form action='addlabel.dglu' method=post runat=server>" CRLF
+
+    ."     <input type=hidden name=labelsetname value='" getlabelsetname$ .$ ." '>" CRLF
+    ."     <br>Label address (use 0x prefix for hex numbers): <input type=text name=labeladdress>" CRLF
+    ."     <br>Label text: (no sql control characters ;:')|%\ ) <input type=text name=labeltext style='width:500px'>" CRLF
+    ."     <br>Password: <input type=password name=password>" CRLF 
+    ."     <br><input type=submit>" CRLF
+    
+    ."   </form>" CRLF
+
+    0 GETNUMBEROFROWSFROMRESULTSET 0= 0= IF
+
+      ."   <hr>" CRLF
+      ."   <h3 align=center>Delete label from this label set.</h3>" CRLF
+
+      ."   <form action='confirmdelete.dglu' runat=server method=post>" CRLF
+      ."     <input type=hidden name=hiddenpassword value=losttearstavern>" CRLF
+      ."     <input type=hidden name=dbtable value=tbllabels>" CRLF
+      ."     <input type=hidden name=colname value=id>" CRLF
+      ."     <input type=hidden name=coltype value=integer>" CRLF
+      ."     <input type=hidden name=base value=" getbase 0A = IF ." decimal" ELSE ." hex" THEN ." >" CRLF
+      ." id: "     1 0 $" name='colvalue'" getbase BASE ! DRAWRESULTSETCOLUMNASHTMLSELECTLIST
+      ."     <br>Password: <input type=password name=password>" CRLF
+      ."     <br><input type=submit>" CRLF
+      ."   </form>"
+
+    THEN    
+
+    drawprojectfooter 
+;
+
+drawpage
+
+

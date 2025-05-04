@@ -1,0 +1,50 @@
+
+( last modified: July 6, 2007 )
+
+$" skin.dgluinc" INCLUDEFILE$ 
+
+." Content-type: text/html" CRLF
+CRLF
+
+
+drawprojectheader 
+
+." 
+   <p>
+     Enter SQL statement below. Unless you are creating a database,
+     you may need to have a USE databasename statement. e.g. USE alternaterealitydb. 
+     <br>Example scripts:<br>
+       DROP DATABASE alternaterealitydb<br>
+       send the above separately<br>
+       <br>
+       CREATE DATABASE alternaterealitydb<br>
+       send the above separately<br>
+       <br>
+       <br>
+       Adding a table in mysql:
+       <br>
+       CREATE TABLE alternaterealitydb.tblmessage (ID INTEGER UNSIGNED NOT NULL DEFAULT NULL AUTO_INCREMENT PRIMARY KEY)
+       <br>
+       send the above separately
+       <br>
+       <br>
+       Adding a column to hold file data on mysql (mssql uses type IMAGE):
+       <br>
+       ALTER TABLE alternaterealitydb.tblmessage ADD messagecol BLOB
+       <br>
+   </p>
+
+" CRLF
+
+."         <form action='dosqlstatement.dglu' method=post runat=server>" CRLF
+
+."           <br><textarea name=sqlstatement rows=20 cols=80></textarea>" CRLF
+."           <input type=hidden name=hiddenpassword value=losttearstavern>" CRLF
+
+."           <br>Admin Password: <input type=password name=password>" CRLF 
+."           <br><br><input type=submit>" CRLF 
+
+."         </form>" CRLF
+
+
+drawprojectfooter

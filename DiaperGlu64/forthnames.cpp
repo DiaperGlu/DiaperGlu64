@@ -2,20 +2,20 @@
 //
 //    Copyright 2025 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.14.
+//    This file is part of DiaperGlu v5.15.
 //
-//    DiaperGlu v5.14 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.15 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.14 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.15 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.14; if not, write to the Free Software
+//    along with DiaperGlu v5.15; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// February 20, 2025          //
-// version 5.14               //
+// May 4, 2025                //
+// version 5.15               //
 // /////////////////////////////
 
 
@@ -135,6 +135,7 @@ const char dg_forthinvertname[]              = "INVERT";
 const char dg_forthjname[]                   = "J";
 const char dg_forthkeyname[]                 = "KEY";
 const char dg_forthleavename[]               = "LEAVE";
+const char dg_forthlinesdotquotesname[]      = "LINES.\"";
 const char dg_forthliteralname[]             = "LITERAL";
 
 const char dg_checkloopdonename[]            = "dg_checkloopdone";
@@ -478,6 +479,7 @@ const char dg_forthdocompiletypebrackettoordername[]             = "OCR[>ORDER]"
 const char dg_forthdocompiletypebracketwordlistdotname[]         = "OCR[WORDLIST.]";
 const char dg_forthdocompiletypebracketlibdotname[]              = "OCR[LIB.]";
 const char dg_forthdocompiletypeparsequotesname[]                = "OCRPARSE\"";
+const char dg_forthdocompiletypelinesparsequotesname[]           = "OCRLINESPARSE\"";
 const char dg_forthdocompiletypeparsequotesscommatoosname[]      = "OCRPARSE\"S,>OS";
 const char dg_forthdocompiletypeparsequotess0commatoobname[]     = "OCRPARSE\"S0,>OS";
 
@@ -3635,6 +3637,15 @@ Premadeword* dg_getppresortedcorewords (Bufferhandle* pBHarrayhead)
     presortedcorewords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypealwaysexecute;
     presortedcorewords[i].databuf               = DG_CORE_BUFFERID;
     presortedcorewords[i].dataoffset            = (UINT64)&dg_forthleave;
+
+    i++;
+
+    presortedcorewords[i].pname                 = dg_forthlinesdotquotesname;
+    presortedcorewords[i].namelength            = sizeof(dg_forthdotquotesname);
+    presortedcorewords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedcorewords[i].compileroutineoffset  = (UINT64)& dg_forthdocompiletypelinesparsequotes;
+    presortedcorewords[i].databuf               = DG_CORE_BUFFERID;
+    presortedcorewords[i].dataoffset            = (UINT64)&dg_forthtype;
 
     i++;
 

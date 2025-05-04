@@ -1,0 +1,457 @@
+
+( Last modified: December 26, 2012 )
+
+$" odbcsqlsupport.dgluinc" INCLUDEFILE$
+
+$" skin.dgluinc" INCLUDEFILE$
+
+LOADFORMVALUES
+
+: getpassword$ ( -- ) ( -$- password$|empty$ )
+    $" password" POSTGETNAME$>VALUE$
+;
+
+: getfilename$ ( -- ) ( -$- filename$|empty$ )
+    $" filename" POSTGETNAME$>VALUE$
+;
+
+HEX
+1000 7FFF0000 NEWBUFFER CONSTANT tablenamel$offsetbufid
+1000 7FFF0000 NEWBUFFER CONSTANT tablenamel$stringbufid
+
+: $>tablenamel$ ( a$ -$- ) ( -tablenamel$- a$ )
+    0 GETP$ tablenamel$offsetbufid tablenamel$stringbufid S>NEWL$ DROP$
+;
+
+: ntablenamel$>$ 
+    ( n -- ) 
+    ( tablename0 tablename1 ... tablenamex -tablenamel$- ) 
+    ( -$- tablenamen$ ) 
+    tablenamel$offsetbufid tablenamel$stringbufid GETPL$ ?ERRORIF 
+      NAME>E NEW$ EXIT 
+    THEN
+    S>NEW$
+;
+
+: deleteandinsertone ( n -- )
+    DUP 
+    ( delete )
+    $" DELETE FROM " ntablenamel$>$ 
+    ?ERRORIF NAME>E EXIT THEN
+    $>$ $"  WHERE *" $>$ con$ db$ CONNECTSQLANDDOSTATEMENT$
+    ?ERRORIF NAME>E EXIT THEN
+
+    ( insert )
+    ( table$ server$ user$ password$ database$ -$- )
+    ( resultsetid -- )
+    DUP ntablenamel$>$ ?ERRORIF LEAVE THEN
+    con$ db$ CONNECTSQLANDINSERTRESULTSETINTOTABLE$
+;
+
+: deleteandinsertit 
+    tablenamel$offsetbufid DEPTHL$ DUP 0= IF DROP EXIT THEN
+    0 DO
+      ( delete )
+      $" DELETE " I ntablenamel$>$ $>$ con$ db$ CONNECTSQLANDDOSTATEMENT$
+      ?ERRORIF LEAVE THEN
+
+      ( insert )
+      ( table$ server$ user$ password$ database$ -$- )
+      ( resultsetid -- )
+      I DUP ntablenamel$>$ ?ERRORIF LEAVE THEN
+      con$ db$ CONNECTSQLANDINSERTRESULTSETINTOTABLE$
+      ?ERRORIF LEAVE THEN
+    LOOP
+;
+
+: packtablename$
+    $" encryptiontype"           $>tablenamel$
+    $" tblfiles"                 $>tablenamel$
+    $" tblfiletype"              $>tablenamel$
+    $" tblgamefilecodesections"  $>tablenamel$
+    $" tblgamefilemapping"       $>tablenamel$
+    $" tbllabels"                $>tablenamel$
+    $" tbllabelsetmapping"       $>tablenamel$
+    $" tbllabelsets"             $>tablenamel$
+;
+
+VARIABLE ppackedbufferid
+-1 ppackedbufferid !
+VARIABLE punpackedoffsetbufferid
+-1 punpackedoffsetbufferid !
+
+: loadit ( -- )  getfilename$ LOADFILE$ ?ERRORIF EXIT THEN ppackedbufferid ! ;
+
+// after unpackit:
+//  ppackedbufferid holds the buffersl$ string data bufferid
+//  punpackedoffsetbufferid holds the buffersl$ offset data bufferid
+
+: unpackit ( -- ) 
+    ppackedbufferid @ UNPACKL$[] ?ERRORIF NAME>E EXIT THEN punpackedoffsetbufferid !
+;
+
+: buffersl$>buf ( destbufid -- )
+    DUP EMPTYBUFFER ?ERRORIF NAME>E EXIT THEN
+    >R punpackedoffsetbufferid @ ppackedbufferid @ R>
+    L$>BUF ?ERRORIF NAME>E EXIT THEN
+;
+
+: popresultsetbuffers ( -- )
+    SQLCOLNAMEL$STACKSTRINGBUFFERID buffersl$>buf ?ERRORIF ERROR" error popping SQLCOLNAMEL$STACKSTRINGBUFFERID" NAME>E EXIT THEN
+    SQLCOLNAMEL$STACKOFFSETBUFFERID buffersl$>buf ?ERRORIF ERROR" error popping SQLCOLNAMEL$STACKOFFSETBUFFERID" NAME>E EXIT THEN
+
+    SQLCOLTYPEL$STACKSTRINGBUFFERID buffersl$>buf ?ERRORIF ERROR" error popping SQLCOLTYPEL$STACKSTRINGBUFFERID" NAME>E EXIT THEN
+    SQLCOLTYPEL$STACKOFFSETBUFFERID buffersl$>buf ?ERRORIF ERROR" error popping SQLCOLTYPEL$STACKOFFSETBUFFERID" NAME>E EXIT THEN
+
+    SQLRESULTL$STACKSTRINGBUFFERID  buffersl$>buf ?ERRORIF ERROR" error popping SQLRESULTL$STACKSTRINGBUFFERID" NAME>E EXIT THEN
+    SQLRESULTL$STACKOFFSETBUFFERID  buffersl$>buf ?ERRORIF ERROR" error popping SQLRESULTL$STACKOFFSETBUFFERID" NAME>E EXIT THEN
+
+    tablenamel$stringbufid          buffersl$>buf ?ERRORIF ERROR" error popping tablenamel$stringbufid" NAME>E EXIT THEN
+    tablenamel$offsetbufid          buffersl$>buf ?ERRORIF ERROR" error popping tablenamel$offsetbufid" NAME>E EXIT THEN
+;
+
+: deletetablen { | u -- }
+    $" DELETE FROM " u ntablenamel$>$ 
+    ?ERRORIF
+      CRLF ." <br> error trying to get tablename number " u U.
+      NAME>E EXIT 
+    THEN
+    $>$ $"  WHERE ID IS NOT NULL" $>$
+    DUP$ ." <br>doing " .$
+    con$ db$ CONNECTSQLANDDOSTATEMENT$
+
+    ?ERRORIF
+
+      EMPTY-ERRORS
+
+      ( mssql throws an error if you try to delete from an empty table )
+      (   as a quick fix I'm just ignoring the error. Later hopefully I'll make )
+      (   delete check to see if there is anything to delete before it tries )
+
+      ( ." <p>Error deleting table in database</p>" CRLF
+      ." <p>" POPOERROR0$ 2DUP PUSHOERROR0$ O>P TYPE0$ ." </p>" CRLF
+      drawprojectfooter )
+      ( EMPTY-ERRORS )
+      ( SUBROUTINEERROR PUSHOERROR0$ )
+      EXIT
+    THEN
+;
+
+: inserttablen ( n -- )
+    ( insert )
+    ( table$ server$ user$ password$ database$ -$- )
+    ( resultsetid -- )
+    DUP ntablenamel$>$ ?ERRORIF 
+      ." <p>Error getting tablename$ for table " U. ."  from tablenamel$stack</p>" CRLF
+      NAME>E
+      EXIT
+    THEN
+
+    DUP$ ." <br>doing insert for " .$
+
+    con$ db$ CONNECTSQLANDINSERTRESULTSETINTOTABLE$
+   
+    ?ERRORIF
+      ERROR" Error inserting resultset into database." CRLF
+      NAME>E
+      EXIT
+    THEN
+;
+
+: allowidentityinsertformssqltable ( n -- )
+    DEPTH 1 U< IF 
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      EXIT
+    THEN
+
+    DROP EXIT
+
+    ( resultsetid -- )
+    ntablenamel$>$ ?ERRORIF 
+      ." <p>Error getting tablename$ from tablenamel$stack</p>" CRLF
+      ." <p>" POPOERROR0$ 2DUP PUSHOERROR0$ O>P TYPE0$ ." </p>" CRLF
+      NAME>E
+      EXIT
+    THEN
+ 
+    DUP$
+
+    $" SET IDENTITY_INSERT " SWAP$ $>$ $"  OFF" $>$
+
+    DUP$ ." <br>doing " .$
+    con$ db$ CONNECTSQLANDDOSTATEMENT$
+
+    ?ERRORIF
+      ." <p>Error disabling indentity insert. If the database server is not MSSQL ignore this error. </p>" CRLF
+      ." <p>MySQL will give a timeout error and this is expected." CRLF
+      ." <p>" POPOERROR0$ 2DUP PUSHOERROR0$ O>P TYPE0$ ." </p>" CRLF
+      ( EMPTY-ERRORS ) 
+      ( DROP$ )
+      NAME>E
+      EXIT
+    THEN 
+
+    $" ALTER TABLE " SWAP$ $>$ $"  NOCHECK ALL" $>$
+    DUP$ ." <br> doing " .$
+
+    ?ERRORIF
+      ." <p>Error disabling constraints. If the database server is not MSSQL ignore this error.</p>" CRLF
+      ." <p>MySQL may give a timeout error." CRLF
+      ." <p>" POPOERROR0$ 2DUP PUSHOERROR0$ O>P TYPE0$ ." </p>" CRLF
+      ( EMPTY-ERRORS )
+      NAME>E
+      EXIT
+    THEN
+;
+
+( mysql table drop )
+: droptablen ( n -- )
+    $" DROP TABLE IF EXISTS " db$ $>$ $" ." $>$ ntablenamel$>$ $>$  
+    DUP$ ." <br>doing " .$
+    con$ db$ CONNECTSQLANDDOSTATEMENT$
+
+    ?ERRORIF
+      EMPTY-ERRORS
+      ." <br>... got error trying to drop table. "
+    THEN
+;
+
+( mysql create table )
+: createtablen ( n -- )
+    LOCALS| myresultset |
+
+    $" CREATE TABLE " db$ $>$ $" ." $>$
+    myresultset ntablenamel$>$ $>$ 
+    $"  ( " $>$  
+         
+      myresultset GETNUMBEROFCOLUMNSFROMRESULTSET 1+ 1 DO
+
+        I myresultset GETCOLUMNNAME$FROMRESULTSET $>$ 
+
+        I myresultset GETCOLUMNTYPEFROMRESULTSET  SQL_INTEGER =
+        IF
+          $"  INT" $>$
+        ELSE
+          ( if this is the files table and filedata column make it longblob, else longtext )
+          myresultset 1 = I 4 = AND IF 
+            $"  LONGBLOB" $>$
+          ELSE
+            $"  LONGTEXT" $>$
+          THEN
+        THEN
+
+        // could comment this out... then alter tables after insert to make
+          // ID the identity column
+        // if column was ID, add IDENTITY and AUTO_INCREMENT
+        I myresultset GETCOLUMNNAME$FROMRESULTSET $" ID" COMPARE$ DROP$ DROP$ 0= IF
+          $"  AUTO_INCREMENT PRIMARY KEY" $>$
+        THEN
+           
+        // if this is not last column, add a comma
+        myresultset GETNUMBEROFCOLUMNSFROMRESULTSET I = 0= IF
+          $" , " $>$
+        THEN
+      LOOP
+
+    $"  ) " $>$
+
+    DUP$ ." <br>doing " .$
+    con$ db$ CONNECTSQLANDDOSTATEMENT$
+
+    ?ERRORIF
+      ." <br>... got error trying to create table. "
+      NAME>E EXIT
+    THEN
+;
+
+: RESETDATABASE ( -- )
+
+    $" DROP DATABASE " db$ $>$
+    con$ NEW$ CONNECTSQLANDDOSTATEMENT$ ( will get error if database does not exist )
+    ?ERRORIF EES ( ignoring errors ) THEN
+
+    $" CREATE DATABASE " db$ $>$ 
+    con$ NEW$ CONNECTSQLANDDOSTATEMENT$ ( seeing if there are any errors )
+    ?ERRORIF ERROR" got error trying to create new database" NAME>E EXIT THEN
+;
+
+: CREATEANDFILLTABLES ( -- )
+
+      ( these don't return errors... might be mysql specific syntax )
+      3 droptablen
+      4 droptablen
+      5 droptablen
+      6 droptablen
+      7 droptablen
+      0 droptablen
+      1 droptablen
+      2 droptablen
+
+      // now need to create the tables and add columns... mysql specific syntax
+      2 createtablen ?ERRORIF EES ." <br>" .S ." <br>" .$S drawprojectfooter EXIT THEN
+      1 createtablen ?ERRORIF EES ." <br>" .S ." <br>" .$S drawprojectfooter EXIT THEN
+      0 createtablen ?ERRORIF EES ." <br>" .S ." <br>" .$S drawprojectfooter EXIT THEN
+      7 createtablen ?ERRORIF EES ." <br>" .S ." <br>" .$S drawprojectfooter EXIT THEN
+      6 createtablen ?ERRORIF EES ." <br>" .S ." <br>" .$S drawprojectfooter EXIT THEN
+      5 createtablen ?ERRORIF EES ." <br>" .S ." <br>" .$S drawprojectfooter EXIT THEN
+      4 createtablen ?ERRORIF EES ." <br>" .S ." <br>" .$S drawprojectfooter EXIT THEN
+      3 createtablen ?ERRORIF EES ." <br>" .S ." <br>" .$S drawprojectfooter EXIT THEN 
+
+      ( filetypes )    
+      2 inserttablen ?ERRORIF NAME>E EXIT THEN
+
+      ( files )
+      1 inserttablen ?ERRORIF NAME>E EXIT THEN
+
+      ( encryptiontype )
+      0 inserttablen ?ERRORIF NAME>E EXIT THEN
+
+      ( labelsets )
+      7 inserttablen ?ERRORIF NAME>E EXIT THEN
+
+      ( labelsetmapping )
+      6 inserttablen ?ERRORIF NAME>E EXIT THEN
+
+      ( labels )
+      5 inserttablen ?ERRORIF NAME>E EXIT THEN
+
+      ( gamefilemapping )
+      4 inserttablen ?ERRORIF NAME>E EXIT THEN
+
+      ( codeoffsets )
+      3 inserttablen ?ERRORIF NAME>E EXIT THEN
+;
+
+// GETNUMBEROFCOLUMNSFROMRESULTSET ( resultsetindex0based -- numberofcolumns )
+// GETCOLUMNTYPEFROMRESULTSET ( columnindex1based resultsetindex0based -- SQL_INTEGER|SQL_BINARY )
+// GETCOLUMNNAME$FROMRESULTSET ( columnindex1based resultsetindex0based -- ) ( -$- columnname$ )
+
+( get result sets of all ardb tables )
+( make ardb table name to an l$ stack )
+( pack table name l$ buffers to pack l$ stack )
+( pack result set l$ buffers to pack l$ stack )
+( pack the pack l$ stack to pack buffer )
+( save pack buffer to disk )
+
+
+: drawpage ( -- )
+
+    ." CONTENT-TYPE: text/html" CRLF 
+    ." Cache-Control: no-cache, must-revalidate" CRLF
+    ." Expires: Mon, 12 Jul 1997 05:00:00 GMT" CRLF
+    CRLF
+
+    drawprojectheader
+
+    ." <h3 align='center'>Unpacking AR Database.</h3>" CRLF
+
+    ( check password )
+    
+    getpassword$ adminpassword$ COMPARE$ DROP$ DROP$ 0= 0= IF
+
+      ( they don't match )
+      ." <p>Admin password is incorrect.<p>" CRLF
+      ." </body></html>" CRLF
+      EXIT
+    THEN
+
+    ." <br>loading packed database from file to a buffer..." CRLF
+ 
+    loadit
+    
+    ?ERRORIF
+      ." <p>Error loading packed database file</p>" CRLF
+      ." <p>" POPOERROR0$ O>P TYPE0$ ." </p>" CRLF
+      drawprojectfooter
+      EMPTY-ERRORS
+      EXIT
+    THEN
+
+    ." <br>loaded packed database from file to a buffer" CRLF
+    ." <br>bufferlength = " ppackedbufferid @ LENGTHBUF U. CRLF
+    ." <br>unpacking buffer to packed l$ stack..." CRLF
+
+    unpackit
+
+    ?ERRORIF
+      ." <p>Error unpacking buffer to an packed l$ stack</p>" CRLF
+      ." <p>" POPOERROR0$ O>P TYPE0$ ." </p>" CRLF
+      drawprojectfooter
+      EMPTY-ERRORS
+      EXIT
+    THEN
+
+    ." <br>unpacked buffer to packed l$ stack" CRLF
+    ." <br>number of buffers packed on l$ stack = " 
+    punpackedoffsetbufferid @ DEPTHL$ U. CRLF
+    ." <br>popping packed l$ stack to result set buffers" CRLF
+
+    popresultsetbuffers
+
+    ?ERRORIF
+      ." <p>Error popping packed l$ stack to result set buffers</p>" CRLF
+      ." <p>" POPOERROR0$ O>P TYPE0$ ." </p>" CRLF
+      drawprojectfooter
+      EMPTY-ERRORS
+      EXIT
+    THEN
+
+    ." <br>popped packed l$ stack to result set buffers" CRLF
+    CRLF ." <br> Number of table names popped = " tablenamel$offsetbufid DEPTHL$ U.
+    CRLF ." <br> Table name string buffer looks like: " 
+      tablenamel$stringbufid GETSBUFFER S>NEW$ 0 DRAW$ASHTMLBYTEDUMP
+
+    // ." <br>Result sets look like:"
+    // $" border=1" 0 DRAWRESULTSETASHTMLTABLE
+    // $" border=1" 1 DRAWRESULTSETASHTMLTABLE
+    // $" border=1" 2 DRAWRESULTSETASHTMLTABLE
+    // $" border=1" 3 DRAWRESULTSETASHTMLTABLE
+    // $" border=1" 4 DRAWRESULTSETASHTMLTABLE
+    // $" border=1" 5 DRAWRESULTSETASHTMLTABLE
+    // $" border=1" 6 DRAWRESULTSETASHTMLTABLE
+    // $" border=1" 7 DRAWRESULTSETASHTMLTABLE
+
+    ." <br><br>Creating or recreating database..." CRLF
+
+    HEX
+    // CRLF ." <pre>"
+    // SQLCOLNAMEL$STACKSTRINGBUFFERID GETSBUFFER S>NEW$ 0 DRAW$ASHTMLBYTEDUMP
+    // SQLCOLNAMEL$STACKOFFSETBUFFERID GETSBUFFER S>NEW$ 0 DRAW$ASHTMLBYTEDUMP
+
+    // SQLRESULTL$STACKSTRINGBUFFERID GETSBUFFER S>NEW$ 0 DRAW$ASHTMLBYTEDUMP
+    // SQLRESULTL$STACKOFFSETBUFFERID GETSBUFFER S>NEW$ 0 DRAW$ASHTMLBYTEDUMP
+    
+    // CRLF ." </pre>"   
+
+    RESETDATABASE
+
+    ?ERRORIF
+      ." <p>Error emptying or creating database</p>" CRLF
+      ." <p>" POPOERROR0$ O>P TYPE0$ ." </p>" CRLF
+      drawprojectfooter
+      EMPTY-ERRORS
+      EXIT
+    THEN
+
+    ." <br>Created or recreated database." CRLF
+    ." <br>Loading tables into database..." CRLF
+
+    CREATEANDFILLTABLES 
+
+    ?ERRORIF
+      ." <p>Error loading tables into database</p>" CRLF
+      ." <p>" .ERRORS ." </p>" CRLF
+      drawprojectfooter
+      EMPTY-ERRORS
+      EXIT
+    THEN
+
+    ." <br>Loaded tables into database." CRLF
+
+    ." <br><br>database successfully restored from file" getfilename$ .$ CRLF
+
+    drawprojectfooter
+;
+
+drawpage
+

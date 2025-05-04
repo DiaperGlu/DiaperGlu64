@@ -1,0 +1,56 @@
+
+$" odbcsqlsupport.dgluinc" INCLUDEFILE$
+
+$" skin.dgluinc" INCLUDEFILE$
+
+LOADFORMVALUES
+    
+: selectimagefileslist$ 
+    $" SELECT tblfiles.namecol FROM tblfiles WHERE tblfiles.filetypeidcol=4" ( hardcoded file type )
+;
+
+HEX
+: drawpage ( -- )
+
+    ." CONTENT-TYPE: text/html" CRLF 
+    ." Cache-Control: no-cache, must-revalidate" CRLF
+    ." Expires: Mon, 12 Jul 1997 05:00:00 GMT" CRLF
+    CRLF
+
+    drawprojectheader
+
+    ." <h3 style='text-align: center'>Images</h3>" CRLF
+
+    ." <p>Most of these images are generated using the raw bitmap and display row color table array data.
+       The in game images are generated using arrays of row pointers and are drawn on during the game
+       so may differ from the images here.</p>" CRLF
+
+    ( load file data to result set )      
+    selectimagefileslist$ con$ db$ GETRESULTSET
+
+    ?ERRORIF
+      ." <p>Error getting list of image file names from database.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    0 GETNUMBEROFROWSFROMRESULTSET 0= IF
+      ." <p>No image files in database.</p>" CRLF
+    ELSE
+      ." <table>" CRLF
+      0 GETNUMBEROFROWSFROMRESULTSET 1+ 1 DO
+        ." <tr><td>" CRLF
+        ." <img src='downloadimage.dglu?filename=" 
+        1 I 0 GETDATA$FROMRESULTSET .$
+        ." ' alt='could not load image'>" CRLF
+      LOOP
+      ." </tr></td>" CRLF
+      ." </table>" CRLF
+    THEN
+
+    drawprojectfooter 
+;
+
+drawpage
+
+

@@ -1,0 +1,4331 @@
+
+( Version 1.3 )
+( Last modified: August 13, 2008 )
+
+( Jim Norris )
+( dglu@rainbarrel.com )
+
+( This file supports MYSQL through the odbc dll )
+
+( Compile guard, don't include this file if it is already included. )
+(  assumes wordlists containing compile guard words are in search order )
+
+' odbcsqlsupport.dgluinc ENDOFWORDLIST = 0= ?END-EVALUATE
+
+0 CONSTANT odbcsqlsupport.dgluinc
+
+
+// Packed L$ 32bit header format
+//   +0 size of this header in bytes
+//   +4 magic
+//   +8 size of L$ offset array in bytes
+
+// WORDLIST DUP [>ORDER]CONSTANT [PACK32H] >CURRENT 
+//  SIZED-CONSTANTS< 
+//    4 hsize
+//    magic
+//    offsetsize
+//  >
+//  CURRENT> DROP
+
+// Packed L$ 32bit format
+// +0 Packed L$ 32bit header
+// +0C L$ offset array using 32bit offset
+// +0C + [+8] L$ string data
+
+: insertvalueint$ok? ( value$ -$- value$ ) ( -- flag )
+
+    DEPTH$ 1 U< IF
+      FALSE EXIT
+    THEN
+
+    LENGTH$ 0= IF
+      FALSE EXIT
+    THEN
+
+    0 [CHAR] ) CSCAN$ -1 = 0= IF
+      FALSE EXIT
+    THEN
+
+    0 [CHAR] ; CSCAN$ -1 = 0= IF
+      FALSE EXIT
+    THEN
+
+    0 [CHAR] | CSCAN$ -1 = 0= IF
+      FALSE EXIT
+    THEN
+
+    0 [CHAR] % CSCAN$ -1 = 0= IF
+      FALSE EXIT
+    THEN
+
+    0 [CHAR] \ CSCAN$ -1 = 0= IF
+      FALSE EXIT
+    THEN
+
+    0 [CHAR] , CSCAN$ -1 = 0= IF
+      FALSE EXIT
+    THEN
+
+    0 [CHAR] ' CSCAN$ -1 = 0= IF
+      FALSE EXIT
+    THEN
+
+    0 BL CSCAN$ -1 = 0= IF
+      FALSE EXIT
+    THEN
+
+    TRUE
+;
+
+: insertvalue$ok? ( value$ -$- value$ ) ( -- flag )
+
+    DEPTH$ 1 U< IF
+      FALSE EXIT
+    THEN
+
+    LENGTH$ 0= IF
+      FALSE EXIT
+    THEN
+
+    0 [CHAR] ) CSCAN$ -1 = 0= IF
+      FALSE EXIT
+    THEN
+
+    0 [CHAR] ; CSCAN$ -1 = 0= IF
+      FALSE EXIT
+    THEN
+
+    0 [CHAR] | CSCAN$ -1 = 0= IF
+      FALSE EXIT
+    THEN
+
+    0 [CHAR] % CSCAN$ -1 = 0= IF
+      FALSE EXIT
+    THEN
+
+    0 [CHAR] \ CSCAN$ -1 = 0= IF
+      FALSE EXIT
+    THEN
+
+    0 [CHAR] , CSCAN$ -1 = 0= IF
+      FALSE EXIT
+    THEN
+
+    0 BL CSCAN$ -1 = 0= IF
+      FALSE EXIT
+    THEN
+
+    TRUE
+;
+
+: O32@ ( o b -- U32 ) O>P U32@ ;
+: O32! ( U32 o b -- ) O>P U32! ;
+
+: U32>BUF { oldlength | u32 destbuf -- }
+    destbuf LENGTHBUF TO oldlength
+    4 destbuf GROWBUFFER
+    u32 oldlength destbuf O>P U32! 
+;
+
+: BUF>U32 { | srcbuf -- }
+    srcbuf LENGTHBUF 4 U< IF
+      UNDERFLOWERROR >E
+      NAME>E EXIT 
+    THEN
+    srcbuf LENGTHBUF 4 - 
+    srcbuf
+    O>P U32@
+    4 srcbuf SHRINKBUFFER
+;
+
+: SU32[]>BUFU64[] { | psrc srclength destbuf -- }
+    srclength 2/ 2/ 0= IF
+      DROP EXIT
+    THEN
+    srclength 2/ 2/ 0 DO
+      I 2* 2* psrc + U32@
+      destbuf >BUF
+    LOOP
+;
+
+: BUF64[]>BUF32[] { | srcbuf destbuf -- }
+    srcbuf LENGTHBUF 2/ 2/ 2/ 
+    DUP 0= IF
+      DROP EXIT
+    THEN
+    0 DO
+      I 2* 2* 2* srcbuf O>P U64@
+      destbuf U32>BUF
+    LOOP
+;
+
+: BUF>NEWL$ 
+    ( srcbufferid l$offsetbufferid l$stringbufferid -- )
+    ( -l$- copyofbuffer )
+    ( whatever -src- whatever )
+
+    DEPTH 3 U< IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      EXIT
+    THEN
+
+    >R >R
+    GETPBUFFER @ ( pbuf length )
+    R> R>
+
+    ?ERRORIF
+      DROP DROP DROP DROP
+      EXIT
+    THEN
+
+    S>NEWL$
+;
+
+: L$>BUF 
+    ( l$offsetbufferid l$stringbufferid destbufferid -- )
+    ( topl$ -l$- )
+    ( whatever -dest- whatever&topl$ )
+
+    DEPTH 3 U< IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      ( push name to error here )
+      EXIT
+    THEN
+
+    >R
+    OVER DEPTHL$ 
+    DUP 0= IF
+      LSTRINGSTACKUNDERFLOWERROR PUSHOERROR0$
+      ( push name to error here )
+      R> DROP DROP DROP DROP
+      EXIT
+    THEN
+
+    1- ( index of top l$ on l$stack )
+    2 PICK 2 PICK 
+    GETPL$
+    ?ERRORIF
+      R> DROP DROP DROP
+      ( push name to error here )
+      EXIT
+    THEN
+
+    ( l$offset l$string pl$ l$length -- )
+    R> S>BUF
+    ?ERRORIF
+      ( push name to error here )
+      EXIT
+    THEN
+
+    DROPL$
+
+    ?ERRORIF
+      ( push name to error here )
+      EXIT
+    THEN
+;
+
+: L$U32[]>BUFU64[]
+    ( l$offsetbufferid l$stringbufferid destbufferid -- )
+    ( topl$ -l$- )
+    ( whatever -dest- whatever&topl$ )
+
+    DEPTH 3 U< IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      ( push name to error here )
+      EXIT
+    THEN
+
+    >R
+    OVER DEPTHL$ 
+    DUP 0= IF
+      LSTRINGSTACKUNDERFLOWERROR PUSHOERROR0$
+      ( push name to error here )
+      R> DROP DROP DROP DROP
+      EXIT
+    THEN
+
+    1- ( index of top l$ on l$stack )
+    2 PICK 2 PICK 
+    GETPL$
+    ?ERRORIF
+      R> DROP DROP DROP
+      ( push name to error here )
+      EXIT
+    THEN
+
+    ( l$offset l$string pl$ l$length -- )
+    R> SU32[]>BUFU64[]
+    ?ERRORIF
+      ( push name to error here )
+      EXIT
+    THEN
+
+    DROPL$
+
+    ?ERRORIF
+      ( push name to error here )
+      EXIT
+    THEN
+;
+
+( load sql odbc dll )
+$" odbc32.dll" OPENLIBRARY$ CONSTANT ODBC32-HANDLE CONSTANT ODBC32-WORDLIST
+ 
+
+ODBC32-HANDLE $" SQLGetDiagFieldW" FINDLIBRARYSYMBOL CONSTANT SQLGetDiagFieldW
+ODBC32-HANDLE $" SQLAllocHandle" FINDLIBRARYSYMBOL CONSTANT SQLAllocHandle
+ODBC32-HANDLE $" SQLFreeHandle" FINDLIBRARYSYMBOL CONSTANT SQLFreeHandle
+ODBC32-HANDLE $" SQLSetEnvAttr" FINDLIBRARYSYMBOL CONSTANT SQLSetEnvAttr
+ODBC32-HANDLE $" SQLDisconnect" FINDLIBRARYSYMBOL CONSTANT SQLDisconnect
+ODBC32-HANDLE $" SQLSetConnectAttrW" FINDLIBRARYSYMBOL CONSTANT SQLSetConnectAttrW
+ODBC32-HANDLE $" SQLConnectW" FINDLIBRARYSYMBOL CONSTANT SQLConnectW
+ODBC32-HANDLE $" SQLGetInfoA" FINDLIBRARYSYMBOL CONSTANT SQLGetInfoA
+ODBC32-HANDLE $" SQLExecDirectW" FINDLIBRARYSYMBOL CONSTANT SQLExecDirectW
+ODBC32-HANDLE $" SQLExecute" FINDLIBRARYSYMBOL CONSTANT SQLExecute
+ODBC32-HANDLE $" SQLPrepareA" FINDLIBRARYSYMBOL CONSTANT SQLPrepareA
+ODBC32-HANDLE $" SQLBindParameter" FINDLIBRARYSYMBOL CONSTANT SQLBindParameter
+ODBC32-HANDLE $" SQLNumResultCols" FINDLIBRARYSYMBOL CONSTANT SQLNumResultCols
+ODBC32-HANDLE $" SQLGetData" FINDLIBRARYSYMBOL CONSTANT SQLGetData
+ODBC32-HANDLE $" SQLFetch" FINDLIBRARYSYMBOL CONSTANT SQLFetch
+ODBC32-HANDLE $" SQLDescribeColW" FINDLIBRARYSYMBOL CONSTANT SQLDescribeColW
+
+
+( Add SQLSRV32-WORDLIST to the search order )
+ODBC32-WORDLIST SEARCHORDERSTACKBUFFERID >BUF
+
+
+( Make hlist for cgi post and get variables )
+(  Using a wordlist has the moving buffer crash problem if the word that makes
+     the post get variable words makes them to the same buffer so using an hlist instead )
+NEW-HLIST CONSTANT POSTGET-HLIST
+NEW$ $" root" ENDOFLIST POSTGET-HLIST NEW-ELEMENT CONSTANT POSTGET-HLIST-ROOT-ELEMENT ( is 0 )
+
+
+HEX
+1000 7FFF0000 NEWBUFFER CONSTANT myvarbuf
+myvarbuf PCURRENTNEWVARIABLEBUFFER !
+
+1000 7FFF0000 NEWBUFFER CONSTANT mycplbuf
+mycplbuf PCURRENTCOMPILEBUFFER !
+
+
+( Save the value for the old wordlist where new definitions were added. )
+(  Can do >R in interpret mode in this forth because r-stack does not )
+(  use processor's return stack. )
+
+GET-CURRENT >R
+
+
+( Add new definitions to the end of the SQLSRV32-WORDLIST )
+
+ODBC32-WORDLIST SET-CURRENT
+
+
+
+( SQL driver #defines )
+
+
+(  return values from functions )
+
+DECIMAL
+0 CONSTANT SQL_SUCCESS
+1 CONSTANT SQL_SUCCESS_WITH_INFO
+100 CONSTANT SQL_NO_DATA
+
+HEX
+FFFF CONSTANT SQL_ERROR          ( really a UINT16 -1 )
+FFFE CONSTANT SQL_INVALID_HANDLE ( really a UINT16 -2 )
+
+DECIMAL
+2 CONSTANT SQL_STILL_EXECUTING
+99 CONSTANT SQL_NEED_DATA
+
+
+(  flags for null-terminated string )
+
+HEX
+FFFD CONSTANT SQL_NTS
+-3 CONSTANT SQL_NTSL   
+
+
+(  maximum message length )
+
+DECIMAL 
+512 CONSTANT SQL_MAX_MESSAGE_LENGTH
+
+
+(  date/time length constants )
+
+DECIMAL
+10 CONSTANT SQL_DATE_LEN
+8 CONSTANT SQL_TIME_LEN        ( add P+1 if precision is nonzero )
+19 CONSTANT SQL_TIMESTAMP_LEN  ( add P+1 if precision is nonzero )
+
+
+(  handle type identifiers )
+
+1 CONSTANT SQL_HANDLE_ENV
+2 CONSTANT SQL_HANDLE_DBC
+3 CONSTANT SQL_HANDLE_STMT  
+4 CONSTANT SQL_HANDLE_DESC
+
+
+(  environment attribute )
+
+DECIMAL
+10001 CONSTANT SQL_ATTR_OUTPUT_NTS
+
+
+(  connection attributes )
+
+DECIMAL
+10001 CONSTANT SQL_ATTR_AUTO_IPD
+10014 CONSTANT SQL_ATTR_METADATA_ID
+
+
+(  statement attributes )
+
+DECIMAL
+10010 CONSTANT SQL_ATTR_APP_ROW_DESC
+10011 CONSTANT SQL_ATTR_APP_PARAM_DESC
+10012 CONSTANT SQL_ATTR_IMP_ROW_DESC
+10013 CONSTANT SQL_ATTR_IMP_PARAM_DESC
+HEX
+FFFF CONSTANT SQL_ATTR_CURSOR_SCROLLABLE
+FFFE CONSTANT SQL_ATTR_CURSOR_SENSITIVITY
+
+
+(  SQL_ATTR_CURSOR_SCROLLABLE values )
+
+DECIMAL
+0 CONSTANT SQL_NONSCROLLABLE
+1 CONSTANT SQL_SCROLLABLE
+
+
+(  identifiers of fields in the SQL descriptor )
+
+DECIMAL
+1001 CONSTANT SQL_DESC_COUNT
+1002 CONSTANT SQL_DESC_TYPE
+1003 CONSTANT SQL_DESC_LENGTH
+1004 CONSTANT SQL_DESC_OCTET_LENGTH_PTR
+1005 CONSTANT SQL_DESC_PRECISION
+1006 CONSTANT SQL_DESC_SCALE
+1007 CONSTANT SQL_DESC_DATETIME_INTERVAL_CODE
+1008 CONSTANT SQL_DESC_NULLABLE
+1009 CONSTANT SQL_DESC_INDICATOR_PTR
+1010 CONSTANT SQL_DESC_DATA_PTR
+1011 CONSTANT SQL_DESC_NAME
+1012 CONSTANT SQL_DESC_UNNAMED
+1013 CONSTANT SQL_DESC_OCTET_LENGTH
+1099 CONSTANT SQL_DESC_ALLOC_TYPE
+
+
+(  identifiers of fields in the diagnostics area )
+
+DECIMAL
+1 CONSTANT SQL_DIAG_RETURNCODE
+2 CONSTANT SQL_DIAG_NUMBER
+3 CONSTANT SQL_DIAG_ROW_COUNT
+4 CONSTANT SQL_DIAG_SQLSTATE
+5 CONSTANT SQL_DIAG_NATIVE
+6 CONSTANT SQL_DIAG_MESSAGE_TEXT
+7 CONSTANT SQL_DIAG_DYNAMIC_FUNCTION
+8 CONSTANT SQL_DIAG_CLASS_ORIGIN
+9 CONSTANT SQL_DIAG_SUBCLASS_ORIGIN
+10 CONSTANT SQL_DIAG_CONNECTION_NAME
+11 CONSTANT SQL_DIAG_SERVER_NAME
+12 CONSTANT SQL_DIAG_DYNAMIC_FUNCTION_CODE
+
+
+(  dynamic function codes )
+
+DECIMAL
+3 CONSTANT SQL_DIAG_ALTER_DOMAIN
+4 CONSTANT SQL_DIAG_ALTER_TABLE
+7 CONSTANT SQL_DIAG_CALL
+6 CONSTANT SQL_DIAG_CREATE_ASSERTION
+8 CONSTANT SQL_DIAG_CREATE_CHARACTER_SET
+10 CONSTANT SQL_DIAG_CREATE_COLLATION
+23 CONSTANT SQL_DIAG_CREATE_DOMAIN
+HEX
+FFFF CONSTANT SQL_DIAG_CREATE_INDEX
+DECIMAL
+64 CONSTANT SQL_DIAG_CREATE_SCHEMA
+77 CONSTANT SQL_DIAG_CREATE_TABLE
+79 CONSTANT SQL_DIAG_CREATE_TRANSLATION
+84 CONSTANT SQL_DIAG_CREATE_VIEW
+19 CONSTANT SQL_DIAG_DELETE_WHERE
+24 CONSTANT SQL_DIAG_DROP_ASSERTION
+25 CONSTANT SQL_DIAG_DROP_CHARACTER_SET
+26 CONSTANT SQL_DIAG_DROP_COLLATION
+27 CONSTANT SQL_DIAG_DROP_DOMAIN
+HEX
+FFFE CONSTANT SQL_DIAG_DROP_INDEX
+DECIMAL
+31 CONSTANT SQL_DIAG_DROP_SCHEMA
+32 CONSTANT SQL_DIAG_DROP_TABLE
+33 CONSTANT SQL_DIAG_DROP_TRANSLATION
+36 CONSTANT SQL_DIAG_DROP_VIEW
+38 CONSTANT SQL_DIAG_DYNAMIC_DELETE_CURSOR
+81 CONSTANT SQL_DIAG_DYNAMIC_UPDATE_CURSOR
+48 CONSTANT SQL_DIAG_GRANT
+50 CONSTANT SQL_DIAG_INSERT
+59 CONSTANT SQL_DIAG_REVOKE
+85 CONSTANT SQL_DIAG_SELECT_CURSOR
+0 CONSTANT SQL_DIAG_UNKNOWN_STATEMENT
+82 CONSTANT SQL_DIAG_UPDATE_WHERE
+
+
+(  SQL data type codes )
+
+DECIMAL
+0 CONSTANT SQL_UNKNOWN_TYPE
+1 CONSTANT SQL_CHAR
+2 CONSTANT SQL_NUMERIC
+3 CONSTANT SQL_DECIMAL
+4 CONSTANT SQL_INTEGER
+5 CONSTANT SQL_SMALLINT
+6 CONSTANT SQL_FLOAT
+7 CONSTANT SQL_REAL
+8 CONSTANT SQL_DOUBLE
+9 CONSTANT SQL_DATETIME
+9 CONSTANT SQL_DATE
+10 CONSTANT SQL_INTERVAL
+11 CONSTANT SQL_TIME
+11 CONSTANT SQL_TIMESTAMP
+12 CONSTANT SQL_VARCHAR
+
+HEX
+FFFF CONSTANT SQL_LONGVARCHAR
+FFFE CONSTANT SQL_BINARY
+FFFD CONSTANT SQL_VARBINARY
+FFFC CONSTANT SQL_LONGVARBINARY
+FFFB CONSTANT SQL_BIGINT
+FFFA CONSTANT SQL_TINYINT
+FFF9 CONSTANT SQL_BIT
+FFF8 CONSTANT SQL_WCHAR
+FFF7 CONSTANT SQL_WVARCHAR
+FFF6 CONSTANT SQL_WLONGVARCHAR
+FFF5 CONSTANT SQL_GUID
+
+SQL_BINARY         CONSTANT SQL_C_BINARY
+SQL_INTEGER        CONSTANT SQL_C_LONG
+SQL_CHAR           CONSTANT SQL_C_CHAR
+SQL_SMALLINT       CONSTANT SQL_C_SHORT
+SQL_REAL           CONSTANT SQL_C_FLOAT
+SQL_DOUBLE         CONSTANT SQL_C_DOUBLE
+SQL_NUMERIC        CONSTANT SQL_C_NUMERIC
+SQL_BIT            CONSTANT SQL_C_BIT
+SQL_DATE           CONSTANT SQL_C_DATE
+SQL_TIME           CONSTANT SQL_C_TIME
+SQL_TIMESTAMP      CONSTANT SQL_C_TIMESTAMP
+
+DECIMAL
+99 CONSTANT SQL_C_DEFAULT
+
+
+( Defines for SQLBindParameter and SQLProcedureColumns )
+
+0 CONSTANT SQL_PARAM_TYPE_UNKNOWN
+1 CONSTANT SQL_PARAM_INPUT
+2 CONSTANT SQL_PARAM_INPUT_OUTPUT
+3 CONSTANT SQL_RESULT_COL
+4 CONSTANT SQL_PARAM_OUTPUT
+5 CONSTANT SQL_RETURN_VALUE
+
+
+(  One-parameter shortcuts for date/time data types )
+
+DECIMAL
+91 CONSTANT SQL_TYPE_DATE
+92 CONSTANT SQL_TYPE_TIME
+93 CONSTANT SQL_TYPE_TIMESTAMP
+
+
+(  Statement attribute values for cursor sensitivity )
+
+DECIMAL
+0 CONSTANT SQL_UNSPECIFIED
+1 CONSTANT SQL_INSENSITIVE
+2 CONSTANT SQL_SENSITIVE
+
+
+(  GetTypeInfo request for all data types )
+
+DECIMAL
+0 CONSTANT SQL_ALL_TYPES
+
+
+(  Default conversion code for SQLBindCol, SQLBindParam and SQLGetData  )
+
+DECIMAL
+99 CONSTANT SQL_DEFAULT
+
+
+(  SQLGetData code indicating that the application row descriptor )
+(   specifies the data type )
+
+DECIMAL -99 HEX FFFF AND DECIMAL CONSTANT SQL_ARD_TYPE
+
+
+(  SQL date/time type subcodes )
+
+1 CONSTANT SQL_CODE_DATE
+2 CONSTANT SQL_CODE_TIME
+3 CONSTANT SQL_CODE_TIMESTAMP
+
+
+(  CLI option values )
+
+0 CONSTANT SQL_FALSE
+1 CONSTANT SQL_TRUE
+
+
+(  values of NULLABLE field in descriptor )
+
+0 CONSTANT SQL_NO_NULLS
+1 CONSTANT SQL_NULLABLE
+
+
+(  Value returned by SQLGetTypeInfo to denote that it is )
+(   not known whether or not a data type supports null values. )
+
+2 CONSTANT SQL_NULLABLE_UNKNOWN
+
+
+(  Values returned by SQLGetTypeInfo to show WHERE clause supported )
+
+0 CONSTANT SQL_PRED_NONE
+1 CONSTANT SQL_PRED_CHAR
+2 CONSTANT SQL_PRED_BASIC
+
+
+(  values of UNNAMED field in descriptor )
+
+0 CONSTANT SQL_NAMED
+1 CONSTANT SQL_UNNAMED
+
+
+(  values of ALLOC_TYPE field in descriptor )
+
+1 CONSTANT SQL_DESC_ALLOC_AUTO
+2 CONSTANT SQL_DESC_ALLOC_USER
+
+
+(  FreeStmt options )
+
+0 CONSTANT SQL_CLOSE
+1 CONSTANT SQL_DROP
+2 CONSTANT SQL_UNBIND
+3 CONSTANT SQL_RESET_PARAMS
+
+
+(  Codes used for FetchOrientation in SQLFetchScroll, and in SQLDataSources )
+
+1 CONSTANT SQL_FETCH_NEXT
+2 CONSTANT SQL_FETCH_FIRST
+
+
+(  Other codes used for FetchOrientation in SQLFetchScroll )
+
+3 CONSTANT SQL_FETCH_LAST
+4 CONSTANT SQL_FETCH_PRIOR
+5 CONSTANT SQL_FETCH_ABSOLUTE
+6 CONSTANT SQL_FETCH_RELATIVE
+
+
+(  SQLEndTran options )
+
+0 CONSTANT SQL_COMMIT
+1 CONSTANT SQL_ROLLBACK
+
+
+( null handles returned by SQLAllocHandle )
+
+( 0 CONSTANT SQL_NULL_HENV   )
+( 0 CONSTANT SQL_NULL_HDBC   )
+( 0 CONSTANT SQL_NULL_HSTMT  )
+( 0 CONSTANT SQL_NULL_HDESC  )
+
+
+(  null handle used in place of parent handle when allocating HENV )
+
+0 CONSTANT SQL_NULL_HANDLE
+
+
+( ODBC versions and other things from sqlext.h )
+
+DECIMAL
+200 CONSTANT SQL_ATTR_ODBC_VERSION
+109 CONSTANT SQL_ATTR_CURRENT_CATALOG
+113 CONSTANT SQL_ATTR_CONNECTION_TIMEOUT
+
+2 CONSTANT SQL_OV_ODBC2						
+3 CONSTANT SQL_OV_ODBC3	
+
+( SQLGetInfo information types )
+
+( ODBCVER >= 0x0300 )
+0 CONSTANT SQL_MAX_DRIVER_CONNECTIONS
+1 CONSTANT SQL_MAX_CONCURRENT_ACTIVITIES
+
+( regular )
+2 CONSTANT SQL_DATA_SOURCE_NAME
+8 CONSTANT SQL_FETCH_DIRECTION
+13 CONSTANT SQL_SERVER_NAME
+14 CONSTANT SQL_SEARCH_PATTERN_ESCAPE
+17 CONSTANT SQL_DBMS_NAME
+18 CONSTANT SQL_DBMS_VER
+19 CONSTANT SQL_ACCESSIBLE_TABLES
+20 CONSTANT SQL_ACCESSIBLE_PROCEDURES
+23 CONSTANT SQL_CURSOR_COMMIT_BEHAVIOR
+25 CONSTANT SQL_DATA_SOURCE_READ_ONLY
+26 CONSTANT SQL_DEFAULT_TXN_ISOLATION
+28 CONSTANT SQL_IDENTIFIER_CASE
+29 CONSTANT SQL_IDENTIFIER_QUOTE_CHAR
+30 CONSTANT SQL_MAX_COLUMN_NAME_LEN
+31 CONSTANT SQL_MAX_CURSOR_NAME_LEN
+32 CONSTANT SQL_MAX_SCHEMA_NAME_LEN
+34 CONSTANT SQL_MAX_CATALOG_NAME_LEN
+35 CONSTANT SQL_MAX_TABLE_NAME_LEN
+43 CONSTANT SQL_SCROLL_CONCURRENCY
+46 CONSTANT SQL_TXN_CAPABLE
+47 CONSTANT SQL_USER_NAME
+72 CONSTANT SQL_TXN_ISOLATION_OPTION
+72 CONSTANT SQL_TRANSACTION_ISOLATION_OPTION
+73 CONSTANT SQL_INTEGRITY
+81 CONSTANT SQL_GETDATA_EXTENSIONS
+85 CONSTANT SQL_NULL_COLLATION
+86 CONSTANT SQL_ALTER_TABLE
+90 CONSTANT SQL_ORDER_BY_COLUMNS_IN_SELECT
+94 CONSTANT SQL_SPECIAL_CHARACTERS
+97 CONSTANT SQL_MAX_COLUMNS_IN_GROUP_BY
+98 CONSTANT SQL_MAX_COLUMNS_IN_INDEX
+99 CONSTANT SQL_MAX_COLUMNS_IN_ORDER_BY
+100 CONSTANT SQL_MAX_COLUMNS_IN_SELECT
+101 CONSTANT SQL_MAX_COLUMNS_IN_TABLE
+104 CONSTANT SQL_MAX_ROW_SIZE
+105 CONSTANT SQL_MAX_STATEMENT_LEN
+106 CONSTANT SQL_MAX_TABLES_IN_SELECT
+107 CONSTANT SQL_MAX_USER_NAME_LEN
+
+( ODBCVER >= 0x0300 )
+  115 CONSTANT SQL_OJ_CAPABILITIES
+  115 CONSTANT SQL_OUTER_JOIN_CAPABILITIES
+  10000 CONSTANT SQL_XOPEN_CLI_YEAR
+  10001 CONSTANT SQL_CURSOR_SENSITIVITY
+  10002 CONSTANT SQL_DESCRIBE_PARAMETER
+  10003 CONSTANT SQL_CATALOG_NAME
+  10004 CONSTANT SQL_COLLATION_SEQ
+  10005 CONSTANT SQL_MAX_IDENTIFIER_LEN
+					
+
+( SQL state error messages for diagnostic functions. )
+( Making separate wordlist for looking up 5 character state strings. )
+
+WORDLIST DUP CONSTANT SQLSTATE-WORDLIST SET-CURRENT
+
+CREATEOC 00000 $" SQL Success"                                $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 01000 $" SQL General warning. If trying to connect, check internet connection, server name, and server status."
+                                                              $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 01001 $" SQL Cursor operation conflict"              $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 01002 $" SQL Disconnect error"                       $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 01003 $" SQL Null value eliminated in set function"  $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 01004 $" SQL String data, right truncated"           $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 01006 $" SQL Privelege not revoked"                  $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 01007 $" SQL Privelege not granted"                  $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 01S00 $" SQL Invalid connection string attribute"    $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 01S01 $" SQL Error in row"                           $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 01S02 $" SQL Option value changed"                   $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 01S06 $" SQL Attempt to fetch before the result set returned the first row set"  
+                                                              $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 01S07 $" SQL Fractional truncation"                  $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 01S08 $" SQL Error saving file DSN"                  $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 01S09 $" SQL Invalid keyword"                        $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 07001 $" SQL Wrong number of parameters"             $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 07002 $" SQL Count field incorrect"                  $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 07005 $" SQL Prepared statement not a cursor specification"
+                                                              $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 07006 $" SQL Restricted data type attribute violation"
+                                                              $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 07009 $" SQL Invalid descriptor index"               $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 07S01 $" SQL Invalid use of default parameter"       $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 08001 $" SQL Client unable to establish connection"  $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 08002 $" SQL Connection name in use"                 $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 08003 $" SQL Connection does not exist"              $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 08004 $" SQL Server rejected the connection"         $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 08007 $" SQL Connection failure during transaction"  $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 08S01 $" SQL Communication link failure"             $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 21S01 $" SQL Insert value does not match column list"
+                                                              $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 21S02 $" SQL Degree of derived table does not match column list"
+                                                              $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 22001 $" SQL String data right truncated"            $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 22002 $" SQL Indicator variable required but not supplied"
+                                                              $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 22003 $" SQL Numeric value out of range"             $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 22007 $" SQL Invalid datatime format"                $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 22008 $" SQL Datetime field overflow"                $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 22012 $" SQL Division by zero"                       $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 22015 $" SQL Interval field overflow"                $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 22018 $" SQL Invalid character value for cast specification"
+                                                              $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 22019 $" SQL Invalid escape character"               $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 22025 $" SQL Invalid escape sequence"                $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 22026 $" SQL String data, length mismatch"           $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 23000 $" SQL Integrity constraint violation"         $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 24000 $" SQL Invalid cursor state"                   $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 25000 $" SQL Invalid transation state"               $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 25S01 $" SQL Transaction state"                      $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 25S02 $" SQL Transaction is still active"            $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 25S03 $" SQL Transaction is rolled back"             $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 28000 $" SQL Invalid authorization specification"    $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 34000 $" SQL Invalid cursor name"                    $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 3C000 $" SQL Duplicate cursor name"                  $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 3D000 $" SQL Invalid catalog name"                   $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 3F000 $" SQL Invalid scheme name"                    $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 40001 $" SQL Serialization failure"                  $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 40002 $" SQL Integrity constraint violation"         $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 40003 $" SQL Statement completion unknown"           $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 42000 $" SQL Syntax error or access violation. If trying to connect, check database name."
+                                                              $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 42S01 $" SQL Base table or view already exists"      $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 42S02 $" SQL Base table or view not found"           $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 42S11 $" SQL Index already exists"                   $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 42S12 $" SQL Index not found"                        $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 42S21 $" SQL Column already exists"                  $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 42S22 $" SQL Column not found"                       $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC 44000 $" SQL 'WITH CHECK OPTION' violation"          $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY000 $" SQL General error"                          $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY001 $" SQL Memory allocation error"                $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY003 $" SQL Invalid application buffer type"        $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY004 $" SQL Invalid SQL data"                       $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY007 $" SQL Associated statement is not prepared"   $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY008 $" SQL Operation cancelled"                    $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY009 $" SQL Invalid use of null pointer"            $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY010 $" SQL Function sequence error"                $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY011 $" SQL Attribute cannot be set now"            $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY012 $" SQL Invalid transaction operation code"     $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY013 $" SQL Memory management error"                $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY014 $" SQL Limit on number of handles exceeded"    $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY015 $" SQL No cursor name available"               $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY016 $" SQL Cannot modify an implementation row descriptor"
+                                                              $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY017 $" SQL Invalid use of an automatically allocated descriptor handle"
+                                                              $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY018 $" SQL Server declined cancel request"         $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY019 $" SQL Non-character and non-binary data sent in pieces"
+                                                              $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY020 $" SQL Attempt to concatenate a null value"    $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY021 $" SQL Inconsistent descriptor information"    $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY024 $" SQL Invalid attribute value"                $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY090 $" SQL Invalid string or buffer length"        $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY091 $" SQL Invalid descriptor field identifier"    $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY092 $" SQL Invalid attribute/option identifier"    $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY095 $" SQL Function type out of range"             $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY096 $" SQL Invalid information type"               $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY097 $" SQL Column type out of range"               $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY098 $" SQL Scope type out of range"                $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY099 $" SQL Nullable type out of range"             $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY100 $" SQL Uniqueness option type out of range"    $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY101 $" SQL Accuracy option type out of range"      $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY103 $" SQL Invalid retrieval code"                 $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY104 $" SQL Invalid precision or scale value"       $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY105 $" SQL Invalid parameter type"                 $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY106 $" SQL Fetch type out of range"                $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY107 $" SQL Row value out of range"                 $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY109 $" SQL Invalid cursor position"                $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY110 $" SQL Invalid driver completion"              $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY111 $" SQL Invalid bookmark value"                 $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HYC00 $" SQL Optional feature not implemented"       $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HYT00 $" SQL Timeout expired"                        $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC HY101 $" SQL Connection timeout expired"             $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC IM001 $" SQL Driver does not support this function"  $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC IM002 $" SQL Data source name not found and no default driver specified"
+                                                              $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC IM003 $" SQL Specified driver could not be loaded"   $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC IM004 $" SQL Driver’s SQLAllocHandle on SQL_HANDLE_ENV failed"  
+                                                              $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC IM005 $" SQL Driver’s SQLAllocHandle on SQL_HANDLE_DBC failed"  
+                                                              $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC IM006 $" SQL Driver’s SQLSetConnectAttr failed"      $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC IM007 $" SQL No data source or driver specified; dialog prohibited"  
+                                                              $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC IM008 $" SQL Dialog failed"                          $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC IM009 $" SQL Unable to load translation DLL"         $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC IM010 $" SQL Data source name too long"              $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC IM011 $" SQL Driver name too long"                   $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC IM012 $" SQL Driver keyword syntax error"            $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC IM013 $" SQL Trace file error"                       $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC IM014 $" SQL Invalid name of file DSN"               $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+CREATEOC IM015 $" SQL Corrupt file data source"               $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+
+
+( After this, add new definitions to original current wordlist. )
+
+R> SET-CURRENT
+
+
+( Support functions )
+
+: DROP$> ( uint64$ -$- ) ( -- n )
+    0 GETP$ 1 CELLS < IF
+      DROP$ 0 EXIT
+    THEN
+    @ DROP$ 
+;
+
+// : >NEW$ ( n -- ) ( -$- uint32$ )
+//    NEW$ 4 GROW$
+//    0 GETP$ DROP ! 
+// ;
+
+HEX
+: CRLF$ ( -- ) ( -$- CRLF$ )
+    0D C>NEW$ 0A C>$
+;
+
+CREATEOC NOTA0$ERROR $" Not a 0$ error" $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+
+: O0$>NEW$ ( 0$offset 0$bufferid -- ) ( -$- 0$ )
+    DEPTH 2 U< IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E EXIT
+    THEN
+
+    O>P 
+
+    DUP -1 0 CSCAN 
+
+    ?ERRORIF
+      NAME>E EXIT 
+    THEN
+
+    DUP -1 = IF ( probably can't get this error )
+      NOTA0$ERROR PUSHOERROR0$
+      NAME>E EXIT
+    THEN
+
+    ( p0$ length )
+    S>NEW$
+
+    ?ERRORIF
+      NAME>E EXIT
+    THEN
+;
+
+: DEPTH>OFFSET ( desireddepth0based stackdepth -- offset | 0 )
+    DUP 0= IF
+      ( empty stack error )
+      DROP DROP 0 EXIT
+    THEN    
+
+    OVER OVER U< IF
+      SWAP - 1- 
+      EXIT
+    ELSE
+      ( off stack error )
+      DROP DROP 0
+      EXIT
+    THEN    
+;
+
+: BUFDEPTH32@ ( depthinintunits0based bufid -- n )
+            ( depth goes from 0 at top to buffer length / 4 - 1 at bottom )
+    DUP LENGTHBUF 0= IF 
+      DROP DROP 0
+      EXIT
+    THEN
+
+    >R 
+    2* 2* 3 + ( 0 > 7, 1 > 15, 2 > 23 )
+    R@ LENGTHBUF DEPTH>OFFSET ( offset in bytes )
+
+    R> O32@
+;
+
+: BUFDEPTH32! ( n depthinintunits bufid -- )
+            ( depth goes from 0 at top to buffer length / 4 - 1 at bottom )
+    DUP LENGTHBUF 0= IF 
+      DROP DROP DROP
+      EXIT
+    THEN
+
+    >R 
+    2* 2* 3 + ( 0 > 3, 1 > 7, 2 > 11 )
+    R@ LENGTHBUF DEPTH>OFFSET ( offset in bytes )
+
+    R> O32!
+;
+
+: BUFDEPTH64@ ( depthinintunits0based bufid -- n )
+            ( depth goes from 0 at top to buffer length / 4 - 1 at bottom )
+    DUP LENGTHBUF 0= IF 
+      DROP DROP 0
+      EXIT
+    THEN
+
+    >R 
+    2* 2* 2* 7 + ( 0 > 7, 1 > 15, 2 > 23 )
+    R@ LENGTHBUF DEPTH>OFFSET ( offset in bytes )
+
+    R> O@
+;
+
+: BUFDEPTH64! ( n depthinintunits bufid -- )
+            ( depth goes from 0 at top to buffer length / 4 - 1 at bottom )
+    DUP LENGTHBUF 0= IF 
+      DROP DROP DROP
+      EXIT
+    THEN
+
+    >R 
+    2* 2* 2* 7 + ( 0 > 3, 1 > 7, 2 > 11 )
+    R@ LENGTHBUF DEPTH>OFFSET ( offset in bytes )
+
+    R> O!
+;
+
+: GETPL$ATDEPTH ( desireddepth0based offsetbufid stringbufid -- pl$ length )
+    >R >R
+    R@ DEPTHL$
+    DEPTH>OFFSET
+    R> R> GETPL$    
+;
+
+HEX 
+: HEXBYTE>NEW$ ( byte -- ) ( -$- hex$ )
+    FF AND
+    DUP 10 U< IF
+      $" 0"
+      BASE @ >R HEX 0 <#$ #S$ #>$ R> BASE ! $>$
+    ELSE
+      BASE @ >R HEX 0 <#$ #S$ #>$ R> BASE !
+    THEN
+;
+
+DECIMAL
+: DECIMALBYTE>NEW$ ( byte -- ) ( -$- dec$ )
+    255 AND
+    DUP 10 U< IF 
+      $" 00"
+      BASE @ >R DECIMAL 0 <#$ #S$ #>$ R> BASE ! $>$
+      EXIT
+    THEN
+    DUP 100 U< IF
+      $" 0"
+      BASE @ >R DECIMAL 0 <#$ #S$ #>$ R> BASE ! $>$
+      EXIT
+    THEN
+    BASE @ >R DECIMAL 0 <#$ #S$ #>$ R> BASE !
+;
+
+HEX 
+: DRAWHEXBYTE ( byte -- )
+    HEXBYTE>NEW$
+    .$
+;
+
+DECIMAL
+: DRAWDECIMALBYTE ( byte -- )
+    DECIMALBYTE>NEW$
+    .$
+;
+
+HEX
+: DRAWBASEBYTE ( byte -- )
+    BASE @ 10 = IF
+      DRAWHEXBYTE
+    ELSE
+      DRAWDECIMALBYTE
+    THEN
+;
+
+( Error functions )
+
+CREATEOC OUNKNOWNSTATEERROR $" SQL Unknown error state message" $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+
+: ERRORSTATE$>OERROR ( 5charstateerror$ -$- ) ( -- errormessageoffset errormessagebufid )
+    ( Check for underflow? )
+    0 GETP$ SQLSTATE-WORDLIST SEARCH-WORDLIST DROP$
+    0= IF
+      OUNKNOWNSTATEERROR 
+      EXIT
+    THEN
+    EXECUTE ;
+    
+( Holds handle to the sql environment variable. )
+( All calls to the sql driver can share the same enviroment handle. )
+
+VARIABLE PHSQLENV
+SQL_NULL_HANDLE PHSQLENV !
+
+VARIABLE PSTRLENTEMP
+
+HEX
+: GETSQLERRORSTATE$ ( handle handletype -- sqlresult ) ( -$- asciierrorstate$ )
+    OVER SQL_NULL_HANDLE = IF 
+      2DROP NEW$ SQL_INVALID_HANDLE EXIT 
+    THEN
+
+    >R >R
+
+    ( Call SQL driver's get error code function )
+
+    PSTRLENTEMP ( This should be on a stack, but since we don't care about return value ... )
+    NEW$ 6 2* 
+    ( GROW$ ) $STACKOFFSETBUFFERID $STACKSTRINGBUFFERID GROWL$ ( garbage in string after grow )
+    0 GETP$ SWAP ( unicode string, and yet buffer length is in bytes :-/ and you need to leave room for null terminator )
+    SQL_DIAG_SQLSTATE
+    1
+    R>
+    R>
+    7
+    SQLGetDiagFieldW CALLPROC FFFF AND
+    ( if there is an error, there will be garbage in string )   
+
+    UNICODE>ASCII$
+    $>C DROP ( dropping null terminator )
+;
+
+CREATEOC GETOSQLERRORINVALIDHANDLEERROR 
+$" GETOSQLERROR - Invalid handle or handle type used to get diagnostic error code" 
+$>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+
+CREATEOC GETOSQLERRORMESSAGETOOBIGERROR 
+$" GETOSQLERROR - Message buffer too small. Either sql driver is broken or fix sqlsupport.dglu script." 
+$>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+
+CREATEOC GETOSQLERRORERROR 
+$" GETOSQLERROR - Either no errors with this handle yet, problem with parameters, sql driver broken, or sqlsupport.dglu broken" 
+$>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+
+
+: CHECKGETOSQLERRORSTATE$FORERROR ( sqlreturncode -- errormessageoffset errormessagebufid ) ( state$ -$- )
+    DUP SQL_SUCCESS = IF
+      DROP
+      ERRORSTATE$>OERROR
+      EXIT
+    THEN
+    DROP$
+    DUP SQL_SUCCESS_WITH_INFO = IF
+      DROP
+      GETOSQLERRORMESSAGETOOBIGERROR
+      EXIT
+    THEN
+    SQL_INVALID_HANDLE = IF
+      GETOSQLERRORINVALIDHANDLEERROR
+    ELSE
+      GETOSQLERRORERROR
+    THEN 
+;
+
+: GETOSQLERROR ( handle handletype -- errormessageoffset errormessagebufid )
+    GETSQLERRORSTATE$
+    CHECKGETOSQLERRORSTATE$FORERROR
+;
+
+CREATEOC SQLINVALIDHANDLEERROR 
+$" SQL invalid handle" 
+$>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+
+HEX
+: CHECKSQLRETURNFORHENVERROR ( sqlreturncode -- )
+
+    FFFF AND
+
+    DUP SQL_SUCCESS = IF 
+      DROP EXIT
+    THEN
+
+    SQL_INVALID_HANDLE = IF
+      SQLINVALIDHANDLEERROR
+      PUSHOERROR0$
+      EXIT
+    THEN
+
+    ( success with info, or error )
+    PHSQLENV @ SQL_HANDLE_ENV GETOSQLERROR 
+    PUSHOERROR0$
+;
+
+HEX
+: ALLOCATEHSQLENV ( -- returncode )
+
+    PHSQLENV @ SQL_NULL_HANDLE = 0= IF
+      EXIT
+    THEN
+
+    PHSQLENV SQL_NULL_HANDLE SQL_HANDLE_ENV 3 SQLAllocHandle CALLPROC FFFF AND 
+
+    ( diagnostics are tied to input handle which is NULL in this case )
+    ( so the return code is the only information ) 
+;
+
+HEX
+: FREEHSQLENV ( -- )
+
+    PHSQLENV @ SQL_NULL_HANDLE = IF 
+      EXIT 
+    THEN
+
+    PHSQLENV @ SQL_HANDLE_ENV 2 SQLFreeHandle CALLPROC FFFF AND
+    CHECKSQLRETURNFORHENVERROR
+
+    ?ERRORIF
+      NAME>E EXIT
+    ELSE
+      SQL_NULL_HANDLE PHSQLENV ! 
+    THEN ;  
+
+
+( make it so FREEHSQLENV is called automatically when program ends, this one will be called last )
+(  things pushed later will be called first )
+
+' FREEHSQLENV CLEANUPBUFFERID >BUF
+
+HEX
+: SETENVTOODBC3 ( -- )
+    0
+    SQL_OV_ODBC3
+    SQL_ATTR_ODBC_VERSION
+    PHSQLENV @ 
+    4
+    SQLSetEnvAttr CALLPROC FFFF AND
+    CHECKSQLRETURNFORHENVERROR ?ERRORIF NAME>E THEN
+;
+
+HEX
+1000 10000 NEWBUFFER CONSTANT HSQLCONNSTACKBUFFERID
+1000 10000 NEWBUFFER CONSTANT HSQLSTMTSTACKBUFFERID
+
+: GETPBUFFERDEPTH ( DEPTHINBYTES BUFFERID -- POINTER )
+    DUP >R LENGTHBUF SWAP - R> GETPBUFFEROFFSET
+;
+
+HEX
+: ALLOCATEHSQLCONN ( -- )
+    PHSQLENV @ 0= IF
+      ALLOCATEHSQLENV
+    THEN
+    
+    ?ERRORIF EXIT THEN
+
+    0 HSQLCONNSTACKBUFFERID >BUF ( allocate room for conn pointer )
+
+    4 HSQLCONNSTACKBUFFERID GETPBUFFERDEPTH
+    PHSQLENV @
+    SQL_HANDLE_DBC
+    3
+    SQLAllocHandle CALLPROC FFFF AND
+
+    CHECKSQLRETURNFORHENVERROR ?ERRORIF NAME>E THEN
+;
+
+: GETCURRENTHSQLCONN ( -- 0|hsqlconn )
+    HSQLCONNSTACKBUFFERID LENGTHBUF 4 < IF
+      ( push error? )
+      0 EXIT
+    THEN
+    
+    4 HSQLCONNSTACKBUFFERID GETPBUFFERDEPTH @
+;
+
+: GETCURRENTHSQLSTMT ( -- 0|hsqlstmt )
+    HSQLSTMTSTACKBUFFERID LENGTHBUF 4 < IF
+      ( push no statement handle error? )
+      0 EXIT
+    THEN
+    
+    4 HSQLSTMTSTACKBUFFERID GETPBUFFERDEPTH @
+;
+
+HEX
+: CHECKSQLRETURNFORHDBCERROR ( sqlreturncode -- )
+
+    FFFF AND
+
+    DUP SQL_SUCCESS = IF 
+      DROP EXIT
+    THEN
+
+    SQL_INVALID_HANDLE = IF
+      SQLINVALIDHANDLEERROR
+      PUSHOERROR0$
+      EXIT
+    THEN
+
+    ( success with info, or error )
+    GETCURRENTHSQLCONN SQL_HANDLE_DBC GETOSQLERROR 
+    PUSHOERROR0$
+;
+
+HEX
+: FREEHSQLCONN ( -- )
+
+    HSQLCONNSTACKBUFFERID LENGTHBUF 4 < IF
+      EXIT
+    THEN
+
+    GETCURRENTHSQLCONN SQL_NULL_HANDLE = IF
+      HSQLCONNSTACKBUFFERID BUF> DROP
+      EXIT
+    THEN
+
+    GETCURRENTHSQLCONN    
+    SQL_HANDLE_DBC
+    2
+    SQLFreeHandle CALLPROC
+
+    CHECKSQLRETURNFORHDBCERROR
+
+    HSQLCONNSTACKBUFFERID BUF> DROP
+
+    ?ERRORIF NAME>E THEN
+;
+
+: ALLOCATEHSQLSTMT ( -- )
+    
+    0 HSQLSTMTSTACKBUFFERID >BUF ( allocate room for conn pointer )
+
+    HSQLCONNSTACKBUFFERID LENGTHBUF 4 < IF
+      BUFFERUNDERFLOWERROR PUSHOERROR0$ 
+      NAME>E
+      EXIT
+    THEN
+
+    4 HSQLSTMTSTACKBUFFERID GETPBUFFERDEPTH
+    GETCURRENTHSQLCONN
+    SQL_HANDLE_STMT
+    3
+    SQLAllocHandle CALLPROC
+
+    CHECKSQLRETURNFORHDBCERROR
+
+    ?ERRORIF NAME>E THEN
+;
+
+HEX
+: CHECKSQLRETURNFORHSTMTERROR ( sqlreturncode -- )
+
+    FFFF AND
+
+    DUP SQL_SUCCESS = IF 
+      DROP EXIT
+    THEN
+
+    SQL_INVALID_HANDLE = IF
+      SQLINVALIDHANDLEERROR PUSHOERROR0$
+      EXIT
+    THEN
+
+    ( success with info, or error )
+    GETCURRENTHSQLSTMT SQL_HANDLE_STMT GETOSQLERROR 
+    PUSHOERROR0$
+;
+
+HEX
+: FREEHSQLSTMT ( -- )
+
+    HSQLSTMTSTACKBUFFERID LENGTHBUF 4 < IF
+      BUFFERUNDERFLOWERROR PUSHOERROR0$ 
+      NAME>E
+      EXIT
+    THEN
+
+    GETCURRENTHSQLSTMT SQL_NULL_HANDLE = IF
+      HSQLCONNSTACKBUFFERID BUF> DROP
+      EXIT
+    THEN
+
+    GETCURRENTHSQLSTMT
+    SQL_HANDLE_STMT
+    2
+    SQLFreeHandle CALLPROC
+
+    CHECKSQLRETURNFORHSTMTERROR
+
+    HSQLSTMTSTACKBUFFERID BUF> DROP
+
+    ?ERRORIF NAME>E THEN
+;
+
+: DISCONNECTSQL ( -- )
+    HSQLCONNSTACKBUFFERID LENGTHBUF 4 < IF
+      BUFFERUNDERFLOWERROR PUSHOERROR0$ 
+      NAME>E
+      EXIT
+    THEN
+
+    GETCURRENTHSQLCONN SQL_NULL_HANDLE = IF
+      EXIT
+    THEN
+
+    GETCURRENTHSQLCONN 1 SQLDisconnect CALLPROC
+
+    CHECKSQLRETURNFORHDBCERROR
+
+    ?ERRORIF NAME>E THEN
+;
+    
+
+
+HEX
+: SETHSQLCONNDATABASE ( -- ) ( asciidatabasename$ -$- )
+
+    DEPTH$ 1 U< IF
+      STRINGSTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E
+      EXIT
+    THEN
+    
+    SQL_NTS
+    $>0$ ASCII>UNICODE$ 0 GETP$ DROP ( driver prefers null terminated string format )
+    SQL_ATTR_CURRENT_CATALOG
+    GETCURRENTHSQLCONN
+    4
+    SQLSetConnectAttrW CALLPROC
+
+    DROP$
+
+    CHECKSQLRETURNFORHDBCERROR
+
+    ?ERRORIF NAME>E THEN
+;
+
+
+HEX
+: SETHSQLCONNTIMEOUT ( n -- ) ( 0 = none )
+    DEPTH 1 U< IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E
+      EXIT
+    THEN
+
+    0 SWAP
+    SQL_ATTR_CONNECTION_TIMEOUT
+    GETCURRENTHSQLCONN
+    4
+    SQLSetConnectAttrW CALLPROC
+
+    CHECKSQLRETURNFORHDBCERROR
+
+    ?ERRORIF NAME>E THEN
+;
+
+HEX
+: CONNECTSQL ( -- ) ( asciiserver$ asciiuser$ asciipass$ -$- )
+    DEPTH$ 3 U< IF 
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E
+      EXIT
+    THEN
+
+    $>0$ ASCII>UNICODE$ ROT$
+    $>0$ ASCII>UNICODE$ ROT$
+    $>0$ ASCII>UNICODE$ ROT$
+
+    ( With MSSQL, driver requires null terminated strings in many places even though docs say length strings are ok )
+    SQL_NTS
+    0 GETP$ DROP ( pass )
+    SQL_NTS 
+    1 GETP$ DROP ( user )
+    SQL_NTS 
+    2 GETP$ DROP ( server )
+    GETCURRENTHSQLCONN
+    7
+    SQLConnectW CALLPROC
+
+    DROP$ DROP$ DROP$
+
+    DUP FFFF AND SQL_SUCCESS_WITH_INFO = IF
+      DROP
+      EXIT
+    THEN
+
+    CHECKSQLRETURNFORHDBCERROR
+
+    ?ERRORIF NAME>E THEN   
+;
+
+VARIABLE pGetInfoStrLen ( holds UINT16 in UINT32 space, assumes little endian )
+: GETSQLINFO$ ( sqlinfotype -- ) ( -$- sqlinfo$ )
+
+    0 pGetInfoStrLen !
+    DEPTH 1 U< IF DATASTACKUNDERFLOWERROR PUSHOERROR0$ NAME>E EXIT THEN
+
+    >R
+    NEW$
+    pGetInfoStrLen
+    0 GETP$ SWAP
+    R> DUP >R
+    GETCURRENTHSQLCONN
+    5
+    SQLGetInfoA CALLPROC
+
+    CHECKSQLRETURNFORHDBCERROR ?ERRORIF R> DROP NAME>E EXIT THEN
+
+    pGetInfoStrLen @ ( assumes little endian, really need uint16@ ) 
+    0= IF R> DROP EXIT THEN
+
+    pGetInfoStrLen @ 1+ GROW$ ?ERRORIF R> DROP NAME>E EXIT THEN
+
+    pGetInfoStrLen
+    0 GETP$ SWAP
+    R> 
+    GETCURRENTHSQLCONN
+    5
+    SQLGetInfoA CALLPROC
+
+    CHECKSQLRETURNFORHDBCERROR ?ERRORIF NAME>E EXIT THEN
+
+    ( need to shorten the string because first call sometimes returns way oversize length )
+
+    pGetInfoStrLen @ LENGTH$ U< IF
+      LENGTH$ pGetInfoStrLen @ - SHORTEN$
+    THEN
+
+    
+;
+
+HEX
+VARIABLE pGetInfoData 
+: GETSQLINFO ( sqlinfotype -- sqlinfodata ) 
+
+    0 pGetInfoStrLen !
+    0 pGetInfoData !
+
+    DEPTH 1 U< IF DATASTACKUNDERFLOWERROR PUSHOERROR0$ NAME>E EXIT THEN
+
+    >R
+    pGetInfoStrLen
+    4
+    pGetInfoData
+    R>
+    GETCURRENTHSQLCONN
+    5
+    SQLGetInfoA CALLPROC
+
+    CHECKSQLRETURNFORHDBCERROR ?ERRORIF NAME>E THEN 
+
+    pGetInfoData @ ( assumes little endian, should use a uint16@ )    
+;
+
+CREATEOC NOHSQLSTMTERROR $" SQL no statement handle allocated"             $>0$ PCURRENTCOMPILEBUFFER @ $>BUF
+
+: DOSQLSTATEMENT$ ( -- ) ( asciisqlstatement$ -$- )
+    GETCURRENTHSQLSTMT 0= IF
+      NOHSQLSTMTERROR PUSHOERROR0$ 
+      NAME>E
+      DROP$
+      EXIT
+    THEN
+
+    ( this driver routine does not accept SQL_NTS for the length )
+    (  need to pass in length in characters of unicode string )
+
+    ASCII>UNICODE$ 0 GETP$ 2/ SWAP
+    GETCURRENTHSQLSTMT
+    3
+    SQLExecDirectW CALLPROC
+    
+    DROP$
+
+    CHECKSQLRETURNFORHSTMTERROR
+
+    ?ERRORIF NAME>E THEN   
+;
+
+: USEHSQLCONNDATABASE$ ( -- ) ( database$ -$- )
+ 
+    DEPTH$ 1 U< IF 
+      STRINGSTACKUNDERFLOWERROR PUSHOERROR0$ 
+      NAME>E 
+      EXIT 
+    THEN
+
+    LENGTH$ 0= IF DROP$ EXIT THEN
+
+    $" USE " SWAP$ $>$
+    DOSQLSTATEMENT$
+    ?ERRORIF NAME>E THEN
+;
+
+
+: DOSQLSTATEMENT ( -- )
+    GETCURRENTHSQLSTMT 0= IF
+      NOHSQLSTMTERROR PUSHOERROR0$
+      NAME>E
+      EXIT
+    THEN
+
+    GETCURRENTHSQLSTMT
+    1
+    SQLExecute CALLPROC
+
+    CHECKSQLRETURNFORHSTMTERROR
+    ?ERRORIF NAME>E THEN
+;
+
+: PREPARESQLSTATEMENT$ ( -- ) ( asciisqlstatement$ -$- asciisqlstatement$ )
+    DEPTH$ 1 U< IF
+      STRINGSTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E
+      EXIT
+    THEN
+
+    GETCURRENTHSQLSTMT 0= IF
+      NOHSQLSTMTERROR PUSHOERROR0$
+      NAME>E
+      DROP$
+      EXIT
+    THEN
+
+    ( ASCII>UNICODE$ ) 0 GETP$ ( 2/ ) SWAP
+    GETCURRENTHSQLSTMT
+    3
+    SQLPrepareA CALLPROC
+   
+    CHECKSQLRETURNFORHSTMTERROR
+
+    ?ERRORIF NAME>E THEN
+;
+
+: ISSQLINTTYPE? ( sqldatatype -- trueifinttype )
+    DEPTH 1 U< IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E
+      EXIT
+    THEN
+
+    DUP SQL_INTEGER = 
+    SWAP SQL_SMALLINT = OR
+;
+
+: ISSQLWCHARTYPE? ( sqldatatype -- trueifinttype )
+    DEPTH 1 U< IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E
+      EXIT
+    THEN
+
+    DUP SQL_WCHAR = >R
+    DUP SQL_WVARCHAR = >R
+    SQL_WLONGVARCHAR = 
+    R> OR R> OR
+;
+
+: CHANGESQLCOLTYPETOINTORBIN ( coltype -- SQL_INTEGER|SQL_BINARY )
+    DEPTH 1 U< IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E
+      EXIT
+    THEN
+
+    ISSQLINTTYPE? IF
+      SQL_INTEGER
+    ELSE
+      SQL_BINARY
+    THEN
+;
+
+: CHANGESQLCOLTYPETOINTORBINORWCHAR ( coltype -- SQL_INTEGER|SQL_BINARY|SQL_WCHAR )
+    DEPTH 1 U< IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E
+      EXIT
+    THEN
+
+    DUP ISSQLWCHARTYPE? IF
+      DROP SQL_WCHAR EXIT
+    THEN
+
+    ISSQLINTTYPE? IF
+      SQL_INTEGER
+    ELSE
+      SQL_BINARY
+    THEN
+;
+
+: GETDEFAULTCTYPE ( sqltype -- ctype )
+    DEPTH 1 U< IF 
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E
+      EXIT
+    THEN 
+
+    DUP SQL_CHAR            = IF DROP SQL_C_CHAR    EXIT THEN
+    DUP SQL_INTEGER         = IF DROP SQL_C_LONG    EXIT THEN
+    DUP SQL_SMALLINT        = IF DROP SQL_C_SHORT   EXIT THEN
+    DUP SQL_REAL            = IF DROP SQL_C_FLOAT   EXIT THEN
+    DUP SQL_DOUBLE          = IF DROP SQL_C_DOUBLE  EXIT THEN
+    DUP SQL_NUMERIC         = IF DROP ( SQL_C_NUMERIC ) SQL_C_CHAR EXIT THEN ( docs have it one way, .h another )
+    DUP SQL_DECIMAL         = IF DROP SQL_C_CHAR    EXIT THEN
+    DUP SQL_VARCHAR         = IF DROP SQL_C_CHAR    EXIT THEN
+    DUP SQL_LONGVARCHAR     = IF DROP SQL_C_CHAR    EXIT THEN
+    DUP SQL_BIT             = IF DROP SQL_C_BIT     EXIT THEN
+    DUP SQL_DATE            = IF DROP SQL_C_DATE    EXIT THEN
+    DUP SQL_TIME            = IF DROP SQL_C_TIME    EXIT THEN
+    DUP SQL_TIMESTAMP       = IF DROP SQL_C_TIMESTAMP EXIT THEN
+
+    DUP SQL_FLOAT           = IF DROP SQL_C_DOUBLE  EXIT THEN
+   
+    DUP SQL_BINARY          = IF DROP SQL_C_BINARY  EXIT THEN
+    DUP SQL_VARBINARY       = IF DROP SQL_C_BINARY  EXIT THEN
+    DUP SQL_LONGVARBINARY   = IF DROP SQL_C_BINARY  EXIT THEN
+
+    ( if it's an unlisted type, just gonna pass it through because most of them are the same )    
+;
+
+: >NAME$ ( executiontoken -- ) ( -$- name$ )
+    0 GET-ELEMENT-NAME$ 
+;
+
+: SQLCOLTYPE>NEWTYPE$ ( columntype -- ) ( -$- columntype$ )
+    DEPTH 1 U< IF 
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E
+      EXIT
+    THEN 
+    
+    ( >ONAME O0$>NEW$ replaced with 0 GET-ELEMENT-NAME$ 12/1/2012 )
+    DUP SQL_UNKNOWN_TYPE    = IF DROP ['] SQL_UNKNOWN_TYPE     >NAME$ EXIT THEN
+    DUP SQL_CHAR            = IF DROP ['] SQL_CHAR             >NAME$ EXIT THEN
+    DUP SQL_NUMERIC         = IF DROP ['] SQL_NUMERIC          >NAME$ EXIT THEN
+    DUP SQL_DECIMAL         = IF DROP ['] SQL_DECIMAL          >NAME$ EXIT THEN
+    DUP SQL_INTEGER         = IF DROP ['] SQL_INTEGER          >NAME$ EXIT THEN
+    DUP SQL_SMALLINT        = IF DROP ['] SQL_SMALLINT         >NAME$ EXIT THEN
+    DUP SQL_FLOAT           = IF DROP ['] SQL_FLOAT            >NAME$ EXIT THEN
+    DUP SQL_REAL            = IF DROP ['] SQL_REAL             >NAME$ EXIT THEN
+    DUP SQL_DOUBLE          = IF DROP ['] SQL_DOUBLE           >NAME$ EXIT THEN
+    DUP SQL_DATETIME        = IF DROP ['] SQL_DATETIME         >NAME$ EXIT THEN
+    DUP SQL_DATE            = IF DROP ['] SQL_DATE             >NAME$ EXIT THEN
+    DUP SQL_INTERVAL        = IF DROP ['] SQL_INTERVAL         >NAME$ EXIT THEN
+    DUP SQL_TIME            = IF DROP ['] SQL_TIME             >NAME$ EXIT THEN
+    DUP SQL_TIMESTAMP       = IF DROP ['] SQL_TIMESTAMP        >NAME$ EXIT THEN
+    DUP SQL_VARCHAR         = IF DROP ['] SQL_VARCHAR          >NAME$ EXIT THEN
+    DUP SQL_LONGVARCHAR     = IF DROP ['] SQL_LONGVARCHAR      >NAME$ EXIT THEN
+    DUP SQL_BINARY          = IF DROP ['] SQL_BINARY           >NAME$ EXIT THEN
+    DUP SQL_VARBINARY       = IF DROP ['] SQL_VARBINARY        >NAME$ EXIT THEN
+    DUP SQL_LONGVARBINARY   = IF DROP ['] SQL_LONGVARBINARY    >NAME$ EXIT THEN
+    DUP SQL_BIGINT          = IF DROP ['] SQL_BIGINT           >NAME$ EXIT THEN
+    DUP SQL_TINYINT         = IF DROP ['] SQL_TINYINT          >NAME$ EXIT THEN
+    DUP SQL_BIT             = IF DROP ['] SQL_BIT              >NAME$ EXIT THEN
+    DUP SQL_WCHAR           = IF DROP ['] SQL_WCHAR            >NAME$ EXIT THEN
+    DUP SQL_WVARCHAR        = IF DROP ['] SQL_WVARCHAR         >NAME$ EXIT THEN
+    DUP SQL_WLONGVARCHAR    = IF DROP ['] SQL_WLONGVARCHAR     >NAME$ EXIT THEN
+    DUP SQL_GUID            = IF DROP ['] SQL_GUID             >NAME$ EXIT THEN
+    DROP $" SQL_OTHER"
+;
+
+FFFB CONSTANT SQL_BIGINT
+FFFA CONSTANT SQL_TINYINT
+FFF9 CONSTANT SQL_BIT
+FFF8 CONSTANT SQL_WCHAR
+FFF7 CONSTANT SQL_WVARCHAR
+FFF6 CONSTANT SQL_WLONGVARCHAR
+FFF5 CONSTANT SQL_GUID
+DECIMAL
+VARIABLE PBINDBINARYSPLENGTH
+VARIABLE PBINDBINARYSPARAMNUM
+VARIABLE PBINDBINARYSPBUFFER
+VARIABLE PBINDBINARYSTYPE
+: BINDBINARYSFORSQLINSERT ( pbuffer plength 1basedparameternumber type -- )
+    DEPTH 4 U< IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E
+      EXIT
+    THEN
+
+    GETCURRENTHSQLSTMT 0= IF
+      NOHSQLSTMTERROR PUSHOERROR0$
+      NAME>E
+      DROP DROP DROP
+      EXIT
+    THEN
+
+    PBINDBINARYSTYPE !
+    PBINDBINARYSPARAMNUM !
+    PBINDBINARYSPLENGTH !
+    PBINDBINARYSPBUFFER !  
+
+    PBINDBINARYSPLENGTH @
+    DUP @
+    PBINDBINARYSPBUFFER @
+    0
+    PBINDBINARYSPLENGTH @ U32@ ( why don't I just pass the length? why use a pointer to an array element? )
+    PBINDBINARYSTYPE @ ( SQL type )
+    PBINDBINARYSTYPE @ GETDEFAULTCTYPE ( ctype )
+    SQL_PARAM_INPUT
+    PBINDBINARYSPARAMNUM @ ( paramaternumber )
+    GETCURRENTHSQLSTMT ( statementhandle )
+    10
+    SQLBindParameter CALLPROC
+
+    CHECKSQLRETURNFORHSTMTERROR
+
+    ?ERRORIF NAME>E THEN
+;
+
+VARIABLE PBINDBINARYSSFORSQLINSERTn
+: BINDBINARYSSFORSQLINSERT ( pbuffer1 plength1 paramn1 type1 ... pbuffern plengthn typen paramn2 typen n -- )
+    DEPTH 0= IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E
+      EXIT
+    THEN
+
+    PBINDBINARYSSFORSQLINSERTn !
+    PBINDBINARYSSFORSQLINSERTn @ 0= IF EXIT THEN
+
+    DEPTH PBINDBINARYSSFORSQLINSERTn @ 4 * U< IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E
+      EXIT
+    THEN
+
+    ( need to bind bottom to top )
+    PBINDBINARYSSFORSQLINSERTn @ 0 DO
+      PBINDBINARYSSFORSQLINSERTn @ 4 * I 4 * - 1- PICK 
+      PBINDBINARYSSFORSQLINSERTn @ 4 * I 4 * - 1- PICK
+      PBINDBINARYSSFORSQLINSERTn @ 4 * I 4 * - 1- PICK
+      PBINDBINARYSSFORSQLINSERTn @ 4 * I 4 * - 1- PICK
+      BINDBINARYSFORSQLINSERT
+      ?ERRORIF LEAVE THEN
+    LOOP
+    ?ERRORIF NAME>E EXIT THEN
+
+    ( dropping pairs )
+    PBINDBINARYSSFORSQLINSERTn @ 0 DO DROP DROP DROP DROP LOOP
+;
+
+DECIMAL
+: BINDBINARYBUFFERFORSQLINSERT ( bufferid 1basedparameternumber -- )
+    DEPTH 2 U< IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E
+      EXIT
+    THEN
+
+    GETCURRENTHSQLSTMT 0= IF
+      NOHSQLSTMTERROR PUSHOERROR0$
+      NAME>E
+      DROP DROP
+      EXIT
+    THEN
+
+    >R
+
+    DUP GETPBUFFERLENGTH SWAP ( plength bufferid )
+
+    ?ERRORIF 
+      R> DROP NAME>E 
+      EXIT 
+    THEN
+
+    ( could be buffersize here to be reusable for fetches )
+    ( but ODBCSQL32.dll gets confused and truncates )
+    ( when you have multiple buffers so using length instead )
+    DUP LENGTHBUF SWAP ( ... bufferlength bufferid )
+    GETPBUFFER @       ( pbuffer )
+    0 SWAP             ( decimaldigitsdontcare )
+                       ( columnsize mysql doesn't care, mssql wants strlength )
+    SQL_BINARY
+    SQL_C_BINARY
+    SQL_PARAM_INPUT
+    R>                 ( paramaternumber )
+    GETCURRENTHSQLSTMT ( statementhandle )
+    10
+    SQLBindParameter CALLPROC
+
+    CHECKSQLRETURNFORHSTMTERROR
+
+    ?ERRORIF NAME>E THEN
+;
+
+( reverse order )
+: BINDBINARYBUFFERSFORSQLINSERT ( bufferidn paramn1 ... bufferid1 paramn2 n -- )
+    DEPTH 0= IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E
+      EXIT
+    THEN
+
+    DUP 0= IF DROP EXIT THEN
+
+    ( check depth for enough pairs here )
+
+    0 DO
+      SWAP GETPBUFFER ROT SQL_BINARY SWAP BINDBINARYSSFORSQLINSERT ( BINDBINARYBUFFERFORSQLINSERT )
+      ?ERRORIF LEAVE THEN
+    LOOP
+    ?ERRORIF NAME>E THEN
+;
+
+HEX
+: FETCHNEXTSQLROW ( -- flagtrueifrowfetched )
+
+    GETCURRENTHSQLSTMT
+    1
+    SQLFetch CALLPROC FFFF AND
+ 
+    DUP SQL_SUCCESS = IF
+      DROP TRUE
+      EXIT
+    THEN
+
+    DUP SQL_NO_DATA = IF
+      DROP FALSE
+      EXIT
+    THEN
+
+    CHECKSQLRETURNFORHSTMTERROR
+
+    ?ERRORIF NAME>E THEN
+;
+
+VARIABLE PNUMCOLSTEMP
+
+: GETNUMSQLRESULTCOLS ( -- 0|numcolsinresultset )
+    0 PNUMCOLSTEMP !
+
+    PNUMCOLSTEMP 
+    GETCURRENTHSQLSTMT
+    2
+    SQLNumResultCols CALLPROC
+    
+    CHECKSQLRETURNFORHSTMTERROR
+
+    ?ERRORIF
+      0 NAME>E
+    ELSE
+      ( SQL is using UINT16 but in little endian system this will work )
+      (  for hi byte first this will need to be fixed to UINT16@ )
+      PNUMCOLSTEMP @ 
+    THEN
+;
+
+
+// COLTYPE structure uses 32bit ints... need to convert subroutines that use it
+
+HEX
+1000 100000  NEWBUFFER CONSTANT SQLRESULTL$STACKOFFSETBUFFERID
+1000 1000000 NEWBUFFER CONSTANT SQLRESULTL$STACKSTRINGBUFFERID
+1000 100000  NEWBUFFER CONSTANT SQLCOLTYPEL$STACKOFFSETBUFFERID
+1000 1000000 NEWBUFFER CONSTANT SQLCOLTYPEL$STACKSTRINGBUFFERID
+1000 100000  NEWBUFFER CONSTANT SQLCOLNAMEL$STACKOFFSETBUFFERID
+1000 1000000 NEWBUFFER CONSTANT SQLCOLNAMEL$STACKSTRINGBUFFERID
+
+( need sqldecribecol to get col data type, sqlgetdata for int and string, and the gettable function )
+
+: GETPRESULTL$ ( desireddepth0based -- presultl$ lengthresultl$ )
+    DEPTH 1 U< IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E
+      EXIT
+    THEN
+    SQLRESULTL$STACKOFFSETBUFFERID SQLRESULTL$STACKSTRINGBUFFERID 
+    GETPL$ATDEPTH
+    ?ERRORIF NAME>E THEN
+;
+
+VARIABLE PCOLNAMELENGTH
+VARIABLE PCOLDATATYPE
+VARIABLE PCOLSIZE
+VARIABLE PCOLDECIMALDIGITS
+VARIABLE PCOLNULLABLE
+
+HEX
+: DESCRIBESQLCOL ( columnnumber -- ) ( -$- columnname )
+
+    DEPTH 1 U< IF NAME>E EXIT THEN
+
+    >R
+
+    0 PCOLNAMELENGTH !
+    0 PCOLDATATYPE !
+    0 PCOLSIZE !
+    0 PCOLDECIMALDIGITS !
+    0 PCOLNULLABLE !
+
+    NEW$
+
+    PCOLNULLABLE
+    PCOLDECIMALDIGITS
+    PCOLSIZE
+    PCOLDATATYPE
+    PCOLNAMELENGTH
+    0               ( calling with no room for name to find column name length )
+    0 
+    R@
+    GETCURRENTHSQLSTMT
+    9
+    SQLDescribeColW CALLPROC FFFF AND
+
+    ( expecting success or success with info )
+
+    DUP SQL_SUCCESS = OVER SQL_SUCCESS_WITH_INFO = OR 0= IF
+      ( an error occurred )
+      R> DROP 
+      CHECKSQLRETURNFORHSTMTERROR NAME>E
+      EXIT
+    THEN
+
+    DROP
+
+    PCOLSIZE 0= IF
+      ( column has no name )
+      R> DROP 
+      EXIT
+    THEN
+
+    ( column has a name )
+
+    PCOLNAMELENGTH @ 1+ 2* ( unicode maybe w/ null - should be U16@ but this will work in x86 low byte first system )
+    $STACKOFFSETBUFFERID $STACKSTRINGBUFFERID GROWL$ ( there is garbage in string after this )
+
+    PCOLNULLABLE
+    PCOLDECIMALDIGITS
+    PCOLSIZE
+    PCOLDATATYPE
+    PCOLNAMELENGTH
+    0 GETP$ 2/ SWAP 
+    R>
+    GETCURRENTHSQLSTMT
+    9
+    SQLDescribeColW CALLPROC
+
+    UNICODE>ASCII$ $>C DROP ( dropping null, might not be one )
+
+    CHECKSQLRETURNFORHSTMTERROR ?ERRORIF NAME>E THEN
+;
+
+VARIABLE PRESULTLENGTH
+VARIABLE PRESULTUINT32
+
+: GETSQLINTDATA ( colnumber -- resultuint32 )
+    DEPTH 1 U< IF 
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E 
+      EXIT 
+    THEN
+
+    >R
+
+    ( make room for result on result stack - pushing uint32 = 0 onto resultl$stack )
+    0 PRESULTLENGTH !
+    
+    PRESULTLENGTH
+    4
+    PRESULTUINT32
+    SQL_INTEGER ( SQL_NUMERIC? )
+    R>
+    GETCURRENTHSQLSTMT
+    6
+    SQLGetData CALLPROC
+
+    CHECKSQLRETURNFORHSTMTERROR    
+
+    PRESULTUINT32 @
+
+    ?ERRORIF NAME>E THEN
+;
+
+VARIABLE growlength
+
+: GETSQLCHARDATA ( colnumber -- ) ( -$- result$ )
+    DEPTH 1 U< IF 
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E 
+      EXIT
+    THEN
+
+    >R
+
+    ( make room for result on result stack - pushing empty string onto $stack )
+    0 PRESULTLENGTH !
+    
+    NEW$ ?ERRORIF R> DROP EXIT THEN
+    [ HEX ] 40000 GROW$ DROP$ NEW$ ( kluge to prevent odbc from overflowing buffer )
+
+    ( getting data with 0 length to determine length of character string )
+    PRESULTLENGTH
+    0 GETP$ SWAP
+    SQL_BINARY ( SQL_CHAR? )
+    R@
+    GETCURRENTHSQLSTMT
+    6
+    SQLGetData CALLPROC FFFF AND
+
+    ( expecting success or success with info )
+
+    DUP SQL_SUCCESS = OVER SQL_SUCCESS_WITH_INFO = OR 0= IF
+      ( an error occurred )
+      R> DROP 
+      CHECKSQLRETURNFORHSTMTERROR
+      NAME>E
+      EXIT
+    THEN
+
+    DROP
+
+    PRESULTLENGTH @ 0= IF
+      ( string is empty )
+      R> DROP 
+      EXIT
+    THEN
+
+    PRESULTLENGTH @ -1 = IF
+      ( result is null )
+      R> DROP
+      EXIT
+    THEN
+
+    PRESULTLENGTH @ 1+ ( maybe w/ null - should be U16@ but this will work in x86 low byte first system )
+    ( might want to limit max size of data fetched here and return 'data too big' instead )
+
+    DUP growlength !
+
+    GROW$ ( there is garbage in string after this )
+    ( need to check for out of memory here )
+    ?ERRORIF NAME>E R> DROP EXIT THEN
+
+    PRESULTLENGTH    
+    0 GETP$ ?ERRORIF 
+      NAME>E R> DROP  
+      ( ." <p>grow length = " growlength @ HEX U. ." <p> " ) 
+      EXIT 
+    THEN
+    SWAP
+    SQL_BINARY ( SQL_CHAR? )
+    R>
+    GETCURRENTHSQLSTMT
+    6
+    SQLGetData CALLPROC
+
+    $>C DROP ( getting rid of null )
+
+    CHECKSQLRETURNFORHSTMTERROR
+
+    ?ERRORIF NAME>E THEN
+;
+
+: GETSQLDATAANDCOLTYPE ( columnnumber -- uint32 SQL_INTEGER | SQL_BINARY ) ( -$- | result$ )
+    DEPTH 1 U< IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E
+      EXIT
+    THEN
+
+    >R
+    
+    R@ DESCRIBESQLCOL DROP$
+
+    ?ERRORIF 
+      R> DROP 
+      0 SQL_INTEGER
+      NAME>E
+      EXIT
+    THEN
+
+    PCOLDATATYPE @ ISSQLINTTYPE? IF
+      R> GETSQLINTDATA SQL_INTEGER
+      ?ERRORIF NAME>E THEN
+      EXIT
+    THEN
+
+    R> GETSQLCHARDATA SQL_BINARY
+
+    ?ERRORIF NAME>E THEN
+;
+
+: GETSQLDATA$ ( columnnumber SQL_INTEGER|SQL_BINARY -- ) ( -$- result$ )
+    DEPTH 2 U< IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E
+      EXIT
+    THEN
+
+    ISSQLINTTYPE? IF
+      GETSQLINTDATA >NEW$
+      ?ERRORIF NAME>E THEN
+      EXIT
+    THEN
+
+    GETSQLCHARDATA
+
+    ?ERRORIF NAME>E THEN
+;
+
+: GETSQLCOLTYPES&NAMES ( -- col1type col2type ... colxtype x ) 
+                       ( -$- col1name$ col2name$ ... colxname$ )
+    GETNUMSQLRESULTCOLS DUP 0= IF
+      EXIT
+    THEN
+
+    DUP >R
+    1+ 1 DO
+
+      I DESCRIBESQLCOL ?ERRORIF LEAVE THEN
+
+      PCOLDATATYPE @ 
+
+    LOOP
+    R>
+
+    ?ERRORIF NAME>E THEN
+;
+
+: GETSQLRESULTDATAROW ( colxtype ... col2type col1type x -- ) ( reverse order! )
+                      ( -$- col1data$ col2data$ ... colxdata$ )  
+
+    ( check for underflow for x )
+    DEPTH 1 U< IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E
+      EXIT
+    THEN
+
+    DUP 0= IF 
+      DROP EXIT
+    THEN
+
+    ( check for underflow for column types here )
+
+    1+ 1 DO
+      
+      I SWAP GETSQLDATA$
+
+      ?ERRORIF
+        LEAVE
+      THEN
+
+    LOOP
+
+    ?ERRORIF NAME>E THEN
+;
+
+( Result Set Handle )
+( column types for a result set will be stored on an lstring stack of column type structures )
+( column names for a result set will be stored on an lstring stack of name strings )
+( row data for a result set will be stored on an lstring stack of data strings )
+
+( column type structure will look like this: )
+(  offset length type    whatitis )
+(  0      4      uint32  y number of rows )
+(  4      4      uint32  x number of columns )
+(  8      4      uint32  start index of this set's name strings in name string lstring stack )
+(                         this is sum of number of columns of all previous result sets )
+(  12     4      uint32  start index of this set's data strings in row data result set )
+(                         this is sum of {number of rows * number of columns} of all previous result sets )
+(  16     4      uint32  column 1's data type of either int or binary )
+(  ...    ...    ...     ... )
+(  x*4+12 4      uint32  column x's data type of either int or binary ) 
+
+: LATESTRESULTSET ( -- index | -1 )
+    SQLCOLTYPEL$STACKOFFSETBUFFERID DEPTHL$ 1- 
+;
+
+
+WORDLIST DUP [>ORDER]CONSTANT [HRESULTSET] >CURRENT 
+  SIZED-CONSTANTS< 
+    4 ou32rows
+    ou32columns
+    ou32colname$index
+    ou32data$index
+    ou32coltypes[]
+>
+CURRENT> DROP
+
+: GETNUMBEROFCOLUMNSFROMRESULTSET ( resultsetindex0based -- numberofcolumns )
+    DEPTH 1 U< IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E
+      EXIT
+    THEN
+
+    DUP SQLCOLTYPEL$STACKOFFSETBUFFERID DEPTHL$ U< IF
+      SQLCOLTYPEL$STACKOFFSETBUFFERID
+      SQLCOLTYPEL$STACKSTRINGBUFFERID
+      GETPL$ DROP
+      ( [HRESULTSET] ou32columns [ SEARCH-ORDER> DROP ] DROP ) 4 + U32@
+    ELSE
+      DROP 0
+    THEN
+;
+
+: GETNUMBEROFROWSFROMRESULTSET ( resultsetindex0based -- numberofrows )
+    
+    DEPTH 1 U< IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E
+      EXIT
+    THEN
+
+    DUP SQLCOLTYPEL$STACKOFFSETBUFFERID DEPTHL$ U< IF
+      SQLCOLTYPEL$STACKOFFSETBUFFERID
+      SQLCOLTYPEL$STACKSTRINGBUFFERID
+      GETPL$ DROP
+      ( [HRESULTSET] ou32rows [ SEARCH-ORDER> DROP ] DROP ) ( 0 + ) U32@
+    ELSE
+      DROP 0
+    THEN
+;
+
+VARIABLE PPCOLDATASTRUCT
+VARIABLE PNUMROWS
+VARIABLE PNUMCOLS
+VARIABLE PCOLX
+VARIABLE PROWY
+
+DECIMAL
+: NEWRESULTSET ( col1type col2type ... colxtype x -- ) ( column type is either SQL_INTEGER or SQL_BINARY )
+               ( col1name$ col2name$ ... colxname$ -$- ) 
+               ( -columntypesl$- newcoltypes ) ( rows = 0 )
+               ( -columnnamesl$- col1name$ col2name$ ... colxname$ )
+
+    ( check for x on data stack )
+    DEPTH 1 U< IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E
+      EXIT
+    THEN
+    
+    SQLCOLTYPEL$STACKOFFSETBUFFERID
+    SQLCOLTYPEL$STACKSTRINGBUFFERID
+    NEWL$
+
+    DUP 2* 2* 16 +
+    SQLCOLTYPEL$STACKOFFSETBUFFERID
+    SQLCOLTYPEL$STACKSTRINGBUFFERID
+    GROWL$ 
+
+    LATESTRESULTSET 
+    SQLCOLTYPEL$STACKOFFSETBUFFERID
+    SQLCOLTYPEL$STACKSTRINGBUFFERID
+    GETPL$ DROP PPCOLDATASTRUCT ! ( pointer valid until next time something pushed to coltypel$ stack )
+
+    0 PPCOLDATASTRUCT @ ( 0 + ) U32!   ( number of rows )
+    ( x ) PPCOLDATASTRUCT @ 4 + U32!  ( number of columns )
+    SQLCOLNAMEL$STACKOFFSETBUFFERID DEPTHL$ PPCOLDATASTRUCT @ 8 + U32!  ( start index in column name l$ stack )
+    SQLRESULTL$STACKOFFSETBUFFERID  DEPTHL$ PPCOLDATASTRUCT @ 12 + U32! ( start index in result data l$ stack )
+    
+    PPCOLDATASTRUCT @ 4 + U32@ 0= IF
+      R> DROP
+      EXIT
+    THEN
+
+    ( check depth of data stack and string stack, if not deep enough set #cols to 0 and exit )
+
+    ( put column types into structure and names onto namel$ stack )
+    PPCOLDATASTRUCT @ 4 + U32@ 0 DO
+
+      ?ERRORIF
+        R> DROP
+        UNLOOP NAME>E
+        EXIT
+      THEN
+      
+      ( column type - need to reverse them )
+      PPCOLDATASTRUCT @ 4 + U32@ 1- I - PICK
+      PPCOLDATASTRUCT @ I 2* 2* + 16 + U32!
+      
+      ( column name - need to reverse them )
+      PPCOLDATASTRUCT @ 4 + U32@ 1- I - GETP$
+      SQLCOLNAMEL$STACKOFFSETBUFFERID
+      SQLCOLNAMEL$STACKSTRINGBUFFERID
+      S>NEWL$       
+      
+    LOOP
+
+    PPCOLDATASTRUCT @ 4 + U32@ 0 DO
+      DROP
+      DROP$
+    LOOP    
+;
+
+DECIMAL
+: GETCOLUMNTYPESFROMRESULTSET ( -- colxtype ... col2type col1type x )
+
+    LATESTRESULTSET DUP -1 = IF
+      DROP 0 EXIT
+    THEN
+
+    GETNUMBEROFCOLUMNSFROMRESULTSET DUP 0= IF
+      EXIT
+    THEN
+
+    DUP PNUMCOLS !
+
+    LATESTRESULTSET 
+    SQLCOLTYPEL$STACKOFFSETBUFFERID
+    SQLCOLTYPEL$STACKSTRINGBUFFERID
+    GETPL$ DROP PPCOLDATASTRUCT ! ( pointer valid until next time something pushed to coltypel$stack )
+
+    0 DO 
+    
+      PPCOLDATASTRUCT @ 
+      PNUMCOLS @ 1- I - 2* 2* +
+      16 + 
+      U32@ CHANGESQLCOLTYPETOINTORBIN
+      
+    LOOP
+
+    PNUMCOLS @
+;
+
+DECIMAL
+: ADDDATAROWTORESULTSET ( -- )  ( have to assume latest result set )
+                           ( col1$ col2$ ... colx$ -$- )
+                           ( coltypes -coltypesl$- coltypes' ) ( number of rows increased by 1 )
+                           ( -resultsetl$- col1$ col2$ ... colx$ )
+    LATESTRESULTSET DUP -1 = IF 
+      DROP EXIT 
+    THEN
+
+    GETNUMBEROFCOLUMNSFROMRESULTSET DUP 0= IF
+      DROP EXIT
+    THEN
+
+    ( check depth of string stack to make sure there is enough strings )
+    DUP DEPTH$ SWAP U< IF
+      STRINGSTACKUNDERFLOWERROR PUSHOERROR0$ NAME>E 
+      DROP EXIT
+    THEN
+
+    PNUMCOLS !
+
+    ( push copy of result row data$s to result l$ stack )
+    PNUMCOLS @ 0 DO
+      PNUMCOLS @ 1- I - GETP$
+      SQLRESULTL$STACKOFFSETBUFFERID
+      SQLRESULTL$STACKSTRINGBUFFERID
+      S>NEWL$
+    LOOP
+
+    ( drop $s )
+    PNUMCOLS @ 0 DO
+      DROP$
+    LOOP
+
+    ( increment number of rows )
+    LATESTRESULTSET 
+    SQLCOLTYPEL$STACKOFFSETBUFFERID
+    SQLCOLTYPEL$STACKSTRINGBUFFERID
+    GETPL$ DROP
+
+    DUP U32@ 1+ SWAP U32!
+;
+
+: GETALLDATAROWSTORESULTSET ( -- )
+
+    BEGIN
+
+      FETCHNEXTSQLROW ?ERRORIF NAME>E EXIT THEN
+
+    WHILE
+
+      GETCOLUMNTYPESFROMRESULTSET ?ERRORIF NAME>E EXIT THEN
+
+      GETSQLRESULTDATAROW ?ERRORIF NAME>E EXIT THEN
+
+      ADDDATAROWTORESULTSET ?ERRORIF NAME>E EXIT THEN
+
+    REPEAT
+;
+
+HEX
+( this should return the result set id or -1 if failure )
+: GETRESULTSET ( select$ server$ user$ password$ database$ -$- ) 
+               ( -coltypel$- coltypes )
+               ( -colnamel$- col1name$ col2name$ ... colxname$ )
+               ( -resultdatal$- row1col1data$ row1col2data$ ... rowycolxdata$ )
+
+    ( need to add close and free handles on errors )
+
+    DEPTH$ 5 U< IF STRINGSTACKUNDERFLOWERROR PUSHOERROR0$ NAME>E EXIT THEN
+
+    ALLOCATEHSQLCONN ?ERRORIF NAME>E DROP$ DROP$ DROP$ DROP$ DROP$ EXIT THEN
+   
+    0 SETHSQLCONNTIMEOUT ?ERRORIF NAME>E DROP$ DROP$ DROP$ DROP$ FREEHSQLCONN EXIT THEN
+
+    DUP$ SETHSQLCONNDATABASE ?ERRORIF NAME>E DROP$ DROP$ DROP$ DROP$ FREEHSQLCONN EXIT THEN
+    3 ROLL$  3 ROLL$  3 ROLL$
+
+    CONNECTSQL ?ERRORIF NAME>E DROP$ FREEHSQLCONN EXIT THEN
+
+    ALLOCATEHSQLSTMT ?ERRORIF NAME>E DROP$ DISCONNECTSQL FREEHSQLCONN EXIT THEN
+
+    ( DUP$ SETHSQLCONNDATABASE ?ERRORIF NAME>E DROP$ FREEHSQLSTMT DISCONNECTSQL FREEHSQLCONN EXIT THEN )
+
+    USEHSQLCONNDATABASE$ ?ERRORIF NAME>E DROP$ FREEHSQLSTMT DISCONNECTSQL FREEHSQLCONN EXIT THEN
+
+    DOSQLSTATEMENT$ ?ERRORIF NAME>E FREEHSQLSTMT DISCONNECTSQL FREEHSQLCONN EXIT THEN
+
+    GETSQLCOLTYPES&NAMES ?ERRORIF NAME>E ( 0 should be on stack ) FREEHSQLSTMT DISCONNECTSQL FREEHSQLCONN DROP EXIT THEN
+
+    NEWRESULTSET ?ERRORIF NAME>E FREEHSQLSTMT DISCONNECTSQL FREEHSQLCONN EXIT THEN
+
+    GETALLDATAROWSTORESULTSET
+
+    FREEHSQLSTMT
+
+    DISCONNECTSQL 
+
+    FREEHSQLCONN ?ERRORIF NAME>E THEN
+;
+
+HEX
+: CONNECTSQLANDDOSTATEMENT$ ( select$ server$ user$ password$ database$ -$- )
+
+    DEPTH$ 5 U< IF STRINGSTACKUNDERFLOWERROR PUSHOERROR0$ NAME>E EXIT THEN
+
+    ALLOCATEHSQLCONN ?ERRORIF DROP$ DROP$ DROP$ DROP$ DROP$ NAME>E EXIT THEN
+
+    0 SETHSQLCONNTIMEOUT ?ERRORIF DROP$ DROP$ DROP$ DROP$ FREEHSQLCONN NAME>E EXIT THEN
+
+    DUP$ SETHSQLCONNDATABASE ?ERRORIF DROP$ DROP$ DROP$ DROP$ FREEHSQLCONN NAME>E EXIT THEN
+    3 ROLL$  3 ROLL$  3 ROLL$
+
+    CONNECTSQL ?ERRORIF DROP$ FREEHSQLCONN NAME>E EXIT THEN
+
+    ALLOCATEHSQLSTMT ?ERRORIF DROP$ DISCONNECTSQL FREEHSQLCONN NAME>E EXIT THEN
+
+    ( DUP$ SETHSQLCONNDATABASE ?ERRORIF DROP$ FREEHSQLSTMT DISCONNECTSQL FREEHSQLCONN NAME>E EXIT THEN )
+
+    USEHSQLCONNDATABASE$ ?ERRORIF DROP$ FREEHSQLSTMT DISCONNECTSQL FREEHSQLCONN NAME>E EXIT THEN
+
+    DOSQLSTATEMENT$ 
+
+    FREEHSQLSTMT
+
+    DISCONNECTSQL
+
+    FREEHSQLCONN   
+
+    ?ERRORIF NAME>E THEN
+;
+
+HEX
+: CONNECTSQLANDGETINFO$ ( server$ user$ password$ -$- info$ ) ( infotype -- )
+
+    DEPTH$ 3 U< IF STRINGSTACKUNDERFLOWERROR PUSHOERROR0$ NAME>E EXIT THEN
+
+    ALLOCATEHSQLCONN ?ERRORIF DROP$ DROP$ DROP$ NAME>E EXIT THEN
+
+    0 SETHSQLCONNTIMEOUT ?ERRORIF DROP$ DROP$ DROP$ FREEHSQLCONN NAME>E EXIT THEN
+
+    CONNECTSQL ?ERRORIF FREEHSQLCONN NAME>E EXIT THEN
+
+    GETSQLINFO$ 
+
+    DISCONNECTSQL
+
+    FREEHSQLCONN   
+
+    ?ERRORIF NAME>E THEN
+;
+
+HEX
+: CONNECTSQLANDGETINFO ( server$ user$ password$ -$- ) ( infotype -- infodata )
+
+    DEPTH$ 3 U< IF STRINGSTACKUNDERFLOWERROR PUSHOERROR0$ NAME>E EXIT THEN
+
+    ALLOCATEHSQLCONN ?ERRORIF DROP$ DROP$ DROP$ NAME>E EXIT THEN
+
+    0 SETHSQLCONNTIMEOUT ?ERRORIF DROP$ DROP$ DROP$ FREEHSQLCONN NAME>E EXIT THEN
+
+    CONNECTSQL ?ERRORIF FREEHSQLCONN NAME>E EXIT THEN
+
+    GETSQLINFO 
+
+    DISCONNECTSQL
+
+    FREEHSQLCONN   
+
+    ?ERRORIF NAME>E THEN
+;
+
+HEX
+: CONNECTSQLBINDBUFFERSANDDOINSERT$ 
+    ( insert$ server$ user$ password$ database$ -$- )
+    ( buffern paramn1 ... buffer2 paramn2 n -- )
+
+    DEPTH$ 5 U< IF STRINGSTACKUNDERFLOWERROR PUSHOERROR0$ NAME>E EXIT THEN
+
+    DEPTH 0= IF DATASTACKUNDERFLOWERROR PUSHOERROR0$ NAME>E EXIT THEN
+
+    DUP DEPTH 1- U< 0= IF DATASTACKUNDERFLOWERROR PUSHOERROR0$ NAME>E EXIT THEN
+
+    ALLOCATEHSQLCONN ?ERRORIF DROP$ DROP$ DROP$ DROP$ DROP$ NAME>E EXIT THEN
+
+    0 SETHSQLCONNTIMEOUT ?ERRORIF DROP$ DROP$ DROP$ DROP$ FREEHSQLCONN NAME>E EXIT THEN
+
+    DUP$ SETHSQLCONNDATABASE ?ERRORIF DROP$ DROP$ DROP$ DROP$ FREEHSQLCONN NAME>E EXIT THEN
+    3 ROLL$  3 ROLL$  3 ROLL$
+
+    CONNECTSQL ?ERRORIF DROP$ FREEHSQLCONN NAME>E EXIT THEN
+
+    ALLOCATEHSQLSTMT ?ERRORIF DROP$ DISCONNECTSQL FREEHSQLCONN NAME>E EXIT THEN
+
+    ( DUP$ SETHSQLCONNDATABASE ?ERRORIF DROP$ FREEHSQLSTMT DISCONNECTSQL FREEHSQLCONN NAME>E EXIT THEN )
+
+    USEHSQLCONNDATABASE$ ?ERRORIF DROP$ FREEHSQLSTMT DISCONNECTSQL FREEHSQLCONN NAME>E EXIT THEN
+
+    PREPARESQLSTATEMENT$ ?ERRORIF DROP$ FREEHSQLSTMT DISCONNECTSQL FREEHSQLCONN NAME>E EXIT THEN
+
+    BINDBINARYBUFFERSFORSQLINSERT ?ERRORIF DROP$ FREEHSQLSTMT DISCONNECTSQL FREEHSQLCONN NAME>E EXIT THEN
+
+    DROP$ DOSQLSTATEMENT 
+
+    FREEHSQLSTMT
+
+    DISCONNECTSQL
+
+    FREEHSQLCONN
+
+    ?ERRORIF NAME>E THEN 
+;
+
+
+DECIMAL
+: GETCOLUMNNAME$FROMRESULTSET ( columnindex1based resultsetindex0based -- ) ( -$- columnname$ )
+
+    ( check data stack depth )
+    DEPTH 2 U< IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NEW$ NAME>E EXIT
+    THEN
+ 
+    ( get pointer to column type structure )
+    SQLCOLTYPEL$STACKOFFSETBUFFERID
+    SQLCOLTYPEL$STACKSTRINGBUFFERID
+    GETPL$ DROP PPCOLDATASTRUCT !
+
+    ( check column index range )
+    ( column index is 1 based and can not be 0 )
+    DUP 0= IF
+      DROP NEW$ EXIT
+    THEN
+
+    1- DUP PCOLX ! 
+
+    ( get number of columns )
+    PPCOLDATASTRUCT @ 4 + U32@ 
+
+    ( see if columnindex is too big to be in in result set )
+    U< 0= IF
+      NEW$ 
+      EXIT
+    THEN
+
+    ( get namel$stack start index or this result sets name$s )    
+    PPCOLDATASTRUCT @ 8 + U32@
+
+    ( get index of column's name$ in namel$stack )
+    PCOLX @ +
+
+    ( get pointer to and length of column's name$ in namel$stack )
+    SQLCOLNAMEL$STACKOFFSETBUFFERID
+    SQLCOLNAMEL$STACKSTRINGBUFFERID
+    GETPL$
+
+    ( move name$ to string stack )
+    S>NEW$
+;
+
+DECIMAL
+: GETTRUECOLUMNTYPEFROMRESULTSET ( columnindex1based resultsetindex0based -- coltype )
+
+    ( check data stack depth )
+    DEPTH 2 U< IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$ 
+      NEW$ NAME>E EXIT
+    THEN
+ 
+    ( get pointer to structure )
+    SQLCOLTYPEL$STACKOFFSETBUFFERID
+    SQLCOLTYPEL$STACKSTRINGBUFFERID
+    GETPL$ DROP PPCOLDATASTRUCT !
+
+    ( check column index range )
+    ( column index is 1 based and can not be 0 )
+    DUP 0= IF
+      DROP SQL_BINARY ( 0 ? ) EXIT
+    THEN
+
+    1- DUP PCOLX ! 
+
+    ( get number of columns )
+    PPCOLDATASTRUCT @ 4 + U32@ 
+
+    ( see if columnindex is too big to be in in result set )
+    U< 0= IF
+      SQL_BINARY ( 0 ? ) 
+      EXIT
+    THEN
+
+    ( get column type )
+    PPCOLDATASTRUCT @ 16 + PCOLX @ 2* 2* + U32@    
+;
+
+: GETCOLUMNTYPEFROMRESULTSET ( columnindex1based resultsetindex0based -- SQL_INTEGER|SQL|BINARY )
+    GETTRUECOLUMNTYPEFROMRESULTSET
+    CHANGESQLCOLTYPETOINTORBIN
+;
+
+DECIMAL
+: GETDATA$INDEXFROMRESULTSET ( columnXindex1based rowYindex1based resultsetindex0based -- l$index )
+    ( check data stack depth )
+    DEPTH 3 U< IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NEW$ NAME>E EXIT
+    THEN
+ 
+    ( get pointer to column type structure )
+    SQLCOLTYPEL$STACKOFFSETBUFFERID
+    SQLCOLTYPEL$STACKSTRINGBUFFERID
+    GETPL$ DROP PPCOLDATASTRUCT !
+
+
+    ( row index is 1 based and can not be 0 )
+    DUP 0= IF
+      NEW$ DROP DROP EXIT
+    THEN
+
+    1- DUP PROWY !
+  
+    ( get number of rows )
+    PPCOLDATASTRUCT @ ( 0 + ) U32@
+
+    ( see if row index is too big to be in result set )
+    U< 0= IF
+      DROP NEW$
+      EXIT
+    THEN
+
+
+    ( column index is 1 based and can not be 0 )
+    DUP 0= IF
+      NEW$ DROP EXIT
+    THEN
+
+    1- DUP PCOLX ! 
+
+    ( get number of columns )
+    PPCOLDATASTRUCT @ 4 + U32@ DUP PNUMCOLS !
+
+    ( see if column index is too big to be in result set )
+    U< 0= IF
+      NEW$ 
+      EXIT
+    THEN
+
+
+    ( get datal$stack start index of this result set's data$s )    
+    PPCOLDATASTRUCT @ 12 + U32@
+
+    ( get index of row & column's data$ in datal$stack )
+    PROWY @ PNUMCOLS @ * PCOLX @ + +
+;
+
+DECIMAL
+: GETSDATA$FROMRESULTSET ( columnXindex1based rowYindex1based resultsetindex0based -- pdata$ data$length )
+    ( check data stack depth )
+    DEPTH 3 U< IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NEW$ NAME>E EXIT
+    THEN
+ 
+    ( get pointer to column type structure )
+    SQLCOLTYPEL$STACKOFFSETBUFFERID
+    SQLCOLTYPEL$STACKSTRINGBUFFERID
+    GETPL$ DROP PPCOLDATASTRUCT !
+
+
+    ( row index is 1 based and can not be 0 )
+    DUP 0= IF
+      NEW$ DROP DROP EXIT
+    THEN
+
+    1- DUP PROWY !
+  
+    ( get number of rows )
+    PPCOLDATASTRUCT @ ( 0 + ) U32@
+
+    ( see if row index is too big to be in result set )
+    U< 0= IF
+      DROP NEW$
+      EXIT
+    THEN
+
+
+    ( column index is 1 based and can not be 0 )
+    DUP 0= IF
+      NEW$ DROP EXIT
+    THEN
+
+    1- DUP PCOLX ! 
+
+    ( get number of columns )
+    PPCOLDATASTRUCT @ 4 + U32@ DUP PNUMCOLS !
+
+    ( see if column index is too big to be in result set )
+    U< 0= IF
+      NEW$ 
+      EXIT
+    THEN
+
+
+    ( get datal$stack start index of this result set's data$s )    
+    PPCOLDATASTRUCT @ 12 + U32@
+
+    ( get index of row & column's data$ in datal$stack )
+    PROWY @ PNUMCOLS @ * PCOLX @ + +
+
+    ( get pointer to and length of row and column's data$ in datal$stack )
+    SQLRESULTL$STACKOFFSETBUFFERID
+    SQLRESULTL$STACKSTRINGBUFFERID
+    GETPL$
+;
+
+DECIMAL
+: GETDATA$FROMRESULTSET ( columnXindex1based rowYindex1based resultsetindex0based -- )
+                        ( -$- data$ )
+    ( check data stack depth )
+    DEPTH 3 U< IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NEW$ NAME>E EXIT
+    THEN
+ 
+    ( get pointer to column type structure )
+    SQLCOLTYPEL$STACKOFFSETBUFFERID
+    SQLCOLTYPEL$STACKSTRINGBUFFERID
+    GETPL$ DROP PPCOLDATASTRUCT !
+
+
+    ( row index is 1 based and can not be 0 )
+    DUP 0= IF
+      NEW$ DROP DROP EXIT
+    THEN
+
+    1- DUP PROWY !
+  
+    ( get number of rows )
+    PPCOLDATASTRUCT @ ( 0 + ) U32@
+
+    ( see if row index is too big to be in result set )
+    U< 0= IF
+      DROP NEW$
+      EXIT
+    THEN
+
+
+    ( column index is 1 based and can not be 0 )
+    DUP 0= IF
+      NEW$ DROP EXIT
+    THEN
+
+    1- DUP PCOLX ! 
+
+    ( get number of columns )
+    PPCOLDATASTRUCT @ 4 + U32@ ?ERRORIF NAME>E EXIT THEN DUP PNUMCOLS !
+
+    ( see if column index is too big to be in result set )
+    U< 0= IF
+      NEW$ 
+      EXIT
+    THEN
+
+
+    ( get datal$stack start index of this result set's data$s )    
+    PPCOLDATASTRUCT @ 12 + U32@
+
+    ( get index of row & column's data$ in datal$stack )
+    PROWY @ PNUMCOLS @ * PCOLX @ + +
+
+    ( get pointer to and length of row and column's data$ in datal$stack )
+    SQLRESULTL$STACKOFFSETBUFFERID
+    SQLRESULTL$STACKSTRINGBUFFERID
+    GETPL$
+
+    ( move data$ to string stack )
+    S>NEW$
+;
+
+: INT$>NUMBER ( data$ -$- ) ( -- u )
+      DEPTH$ 1 U< IF
+        0
+        EXIT
+      THEN
+
+      0 GETP$ ( -- pdata$ data$length ) ( data$ -- )
+
+      ( get int from data$ as UINT32 or UINT64 )
+      [ EMES, ]
+        ( 4 ) U32@
+      [ EME, ]
+        ( 8 ) @
+      [ ENDEMES, ]
+
+      [ 4 8 2 CASES, ]
+        2DROP 0
+      [ ENDCASES, ]
+      DROP$
+;
+
+: GETNUMBERFROMRESULTSET ( columnXindex1based rowYindex1based resultsetindex0based -- number )
+    GETDATA$FROMRESULTSET INT$>NUMBER
+    ( 0 GETS$[ND]
+    DUP 4 = IF
+      DROP U32@
+    ELSE
+      8 = IF
+        @
+      ELSE
+        DROP -1
+      THEN
+    THEN
+    DROP$ )
+;
+
+HEX
+: UINT32>NEWDEC$ ( n -- ) ( -$- dec$ )
+    DEPTH 0= IF EXIT THEN
+    BASE @ >R
+    0A BASE !
+    0 <#$ #S$ #>$ 
+    R> BASE ! 
+;
+
+HEX 1000 7FFF0000 NEWBUFFER CONSTANT BUILDINSERT$FROMRESULTSETROWlengtharraybufid
+
+VARIABLE BUILDINSERT$FROMRESULTSETROWrow
+VARIABLE BUILDINSERT$FROMRESULTSETROWresultset
+VARIABLE BUILDINSERT$FROMRESULTSETROWnumbuf
+
+: BUILDINSERT$FROMRESULTSETROW 
+  ( rowyindex1based resultsetindex0based -- pbuf1 plength1 paramn1 type1 ... pbufn plengthn paramn typen n )
+  ( tablename$ -$- insert$ )
+  
+  DEPTH 2 U< IF
+    DATASTACKUNDERFLOWERROR PUSHOERROR0$
+    0 EXIT
+  THEN
+
+  DEPTH$ 1 U< 
+    IF STRINGSTACKUNDERFLOWERROR PUSHOERROR0$ 
+    EXIT 
+  THEN
+
+  BUILDINSERT$FROMRESULTSETROWresultset !
+  BUILDINSERT$FROMRESULTSETROWrow !
+  0 BUILDINSERT$FROMRESULTSETROWnumbuf !
+
+  BUILDINSERT$FROMRESULTSETROWresultset @
+  GETNUMBEROFCOLUMNSFROMRESULTSET 0= IF
+    DROP DROP 0 EXIT
+  THEN
+
+  ( set up length array )
+  BUILDINSERT$FROMRESULTSETROWlengtharraybufid EMPTYBUFFER
+  BUILDINSERT$FROMRESULTSETROWresultset @
+  GETNUMBEROFCOLUMNSFROMRESULTSET 4 * ( size of UINT32 ) 
+  BUILDINSERT$FROMRESULTSETROWlengtharraybufid GROWBUFFER
+  ?ERRORIF
+    ( push name error here )
+    EXIT
+  THEN 
+
+  $" INSERT INTO " SWAP$ $>$ $"  ( " $>$
+
+  BUILDINSERT$FROMRESULTSETROWresultset @ 
+  GETNUMBEROFCOLUMNSFROMRESULTSET 1+ 1 DO
+
+    I 1 = 0= IF
+      $" , " $>$
+    THEN
+
+    I BUILDINSERT$FROMRESULTSETROWresultset @ 
+    GETCOLUMNNAME$FROMRESULTSET $>$
+    
+  LOOP
+
+  $" ) VALUES ( " $>$
+
+  BUILDINSERT$FROMRESULTSETROWresultset @ 
+  GETNUMBEROFCOLUMNSFROMRESULTSET 1+ 1 DO
+
+    I 1 = 0= IF
+      $" , " $>$
+    THEN
+
+    $" ?" $>$
+    I 
+    BUILDINSERT$FROMRESULTSETROWrow @ 
+    BUILDINSERT$FROMRESULTSETROWresultset @
+    GETSDATA$FROMRESULTSET ?ERRORIF
+      LEAVE
+    THEN
+    
+    ( putting length in length array )
+    I 1- 4 * BUILDINSERT$FROMRESULTSETROWlengtharraybufid O32!
+    
+    ( getting pointer to length )
+    I 1- 4 * BUILDINSERT$FROMRESULTSETROWlengtharraybufid O>P
+
+    ( it seems like parameter number only counts ? )
+    ( not sure what docs mean so binding all parameters ? )
+    1 BUILDINSERT$FROMRESULTSETROWnumbuf +!
+    BUILDINSERT$FROMRESULTSETROWnumbuf @ 
+
+    I BUILDINSERT$FROMRESULTSETROWresultset @ 
+    GETTRUECOLUMNTYPEFROMRESULTSET
+    
+  LOOP
+ 
+  $" )" $>$
+  BUILDINSERT$FROMRESULTSETROWnumbuf @  
+;
+
+VARIABLE CONNECTSQLANDINSERTRESULTSETINTOTABLE$resultset
+
+: CONNECTSQLANDINSERTRESULTSETINTOTABLE$ 
+    ( table$ server$ user$ password$ database$ -$- )
+    ( resultsetid -- )
+
+    DEPTH$ 5 U< IF STRINGSTACKUNDERFLOWERROR PUSHOERROR0$ NAME>E EXIT THEN
+
+    DEPTH 0= IF DATASTACKUNDERFLOWERROR PUSHOERROR0$ NAME>E EXIT THEN
+
+    ALLOCATEHSQLCONN ?ERRORIF DROP$ DROP$ DROP$ DROP$ DROP$ NAME>E EXIT THEN
+
+    DUP$ SETHSQLCONNDATABASE ?ERRORIF DROP$ DROP$ DROP$ DROP$ FREEHSQLCONN NAME>E EXIT THEN
+    3 ROLL$  3 ROLL$  3 ROLL$
+
+    0 SETHSQLCONNTIMEOUT ?ERRORIF DROP$ DROP$ DROP$ DROP$ FREEHSQLCONN NAME>E EXIT THEN
+
+    CONNECTSQL ?ERRORIF DROP$ FREEHSQLCONN NAME>E EXIT THEN
+
+    CONNECTSQLANDINSERTRESULTSETINTOTABLE$resultset !
+
+    CONNECTSQLANDINSERTRESULTSETINTOTABLE$resultset @
+    GETNUMBEROFROWSFROMRESULTSET 0= IF
+      DROP$ ( drop table$ )
+      DISCONNECTSQL
+      FREEHSQLCONN
+      EXIT   
+    THEN
+
+    ALLOCATEHSQLSTMT ?ERRORIF NAME>E EXIT THEN
+
+    ( DUP$ SETHSQLCONNDATABASE ?ERRORIF DROP$ FREEHSQLSTMT DISCONNECTSQL FREEHSQLCONN NAME>E EXIT THEN )
+
+    USEHSQLCONNDATABASE$ ?ERRORIF DROP$ FREEHSQLSTMT DISCONNECTSQL FREEHSQLCONN NAME>E EXIT THEN
+
+    CONNECTSQLANDINSERTRESULTSETINTOTABLE$resultset @
+    GETNUMBEROFROWSFROMRESULTSET 1+ 1 DO
+
+      DUP$
+      I
+      CONNECTSQLANDINSERTRESULTSETINTOTABLE$resultset @ 
+
+      BUILDINSERT$FROMRESULTSETROW ?ERRORIF LEAVE THEN
+
+      DUP$ ." <br>about to prepare: " .$ CRLF
+
+      PREPARESQLSTATEMENT$ ?ERRORIF FREEHSQLSTMT LEAVE THEN
+
+      BINDBINARYSSFORSQLINSERT ?ERRORIF FREEHSQLSTMT LEAVE THEN
+
+      DROP$ DOSQLSTATEMENT ?ERRORIF FREEHSQLSTMT LEAVE THEN
+ 
+    LOOP
+
+    ?ERRORIF 
+      DROP$
+      DISCONNECTSQL
+      FREEHSQLCONN
+      NAME>E EXIT
+    THEN
+
+    FREEHSQLSTMT
+
+    DROP$ ( tablename$ )
+    DISCONNECTSQL
+    FREEHSQLCONN
+
+    ?ERRORIF NAME>E THEN
+;
+
+HEX
+: CONNECTSQLBINDSSANDDOSTATEMENT$ 
+    ( table$ server$ user$ password$ database$ -$- )
+    ( pbuffer1 plength1 paramn1 type1 ... pbuffern plengthn typen paramn2 typen n -- )
+
+    DEPTH$ 5 U< IF STRINGSTACKUNDERFLOWERROR PUSHOERROR0$ NAME>E EXIT THEN
+
+    DEPTH 0= IF DATASTACKUNDERFLOWERROR PUSHOERROR0$ NAME>E EXIT THEN
+
+    ALLOCATEHSQLCONN ?ERRORIF DROP$ DROP$ DROP$ DROP$ DROP$ NAME>E EXIT THEN
+
+    DUP$ SETHSQLCONNDATABASE ?ERRORIF DROP$ DROP$ DROP$ DROP$ FREEHSQLCONN NAME>E EXIT THEN
+    3 ROLL$  3 ROLL$  3 ROLL$
+
+    0 SETHSQLCONNTIMEOUT ?ERRORIF DROP$ DROP$ DROP$ DROP$ FREEHSQLCONN NAME>E EXIT THEN
+
+    CONNECTSQL ?ERRORIF DROP$ FREEHSQLCONN NAME>E EXIT THEN  
+      
+    ALLOCATEHSQLSTMT ?ERRORIF DISCONNECTSQL FREEHSQLCONN NAME>E EXIT THEN
+ 
+    ( DUP$ SETHSQLCONNDATABASE ?ERRORIF DROP$ FREEHSQLSTMT DISCONNECTSQL FREEHSQLCONN NAME>E EXIT THEN )
+
+    USEHSQLCONNDATABASE$ ?ERRORIF DROP$ FREEHSQLSTMT DISCONNECTSQL FREEHSQLCONN NAME>E EXIT THEN
+
+    PREPARESQLSTATEMENT$ ?ERRORIF FREEHSQLSTMT DISCONNECTSQL FREEHSQLCONN NAME>E EXIT THEN DROP$
+
+    BINDBINARYSSFORSQLINSERT ?ERRORIF DISCONNECTSQL FREEHSQLCONN NAME>E EXIT THEN
+
+    DOSQLSTATEMENT ?ERRORIF DISCONNECTSQL FREEHSQLCONN NAME>E EXIT THEN
+
+    FREEHSQLSTMT 
+    DISCONNECTSQL 
+    FREEHSQLCONN 
+    ?ERRORIF NAME>E THEN
+;
+
+
+VARIABLE PDESTBUFID
+VARIABLE PDATASTARTINDEX
+DECIMAL
+: RESULTSETINTCOL>BUF ( columnindex1based resultsetindex0based destbufid -- )
+                      ( -destbuf- row1int row2int ... rowyint )
+    DEPTH 3 U< IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      EXIT
+    THEN
+
+    PDESTBUFID !
+
+    ( get pointer to column type structure )
+    SQLCOLTYPEL$STACKOFFSETBUFFERID
+    SQLCOLTYPEL$STACKSTRINGBUFFERID
+    GETPL$ DROP PPCOLDATASTRUCT !
+
+    PCOLX !
+
+    ( get number of columns in result set )
+    PPCOLDATASTRUCT @ 4 + U32@ PNUMCOLS !
+
+    ( get number of rows in result set )
+    PPCOLDATASTRUCT @ U32@ PNUMROWS !
+
+    ( get base index of this result sets data$ in datal$stack )
+    PPCOLDATASTRUCT @ 12 + U32@ PDATASTARTINDEX !
+
+    ( check number rows )
+    PNUMROWS @ 0= IF 
+      EXIT
+    THEN
+
+    ( check column index )
+    PCOLX @ 0= IF
+      EXIT
+    THEN
+
+    PCOLX @ 1- PCOLX !
+
+    PCOLX @ PNUMCOLS @ U< 0= IF
+      EXIT
+    THEN
+
+    ?ERRORIF
+      EXIT
+    THEN
+
+    PNUMROWS @ 0 DO
+      
+      ( calculate index of data$ in datal$stack )
+      PDATASTARTINDEX @
+      I PNUMCOLS @ * + 
+      PCOLX @ +  
+
+      ( get start address and length of data$ )
+      SQLRESULTL$STACKOFFSETBUFFERID
+      SQLRESULTL$STACKSTRINGBUFFERID
+      GETPL$ S>NEW$ INT$>NUMBER
+
+      ( see if data$ has length of an int )
+      ( if not push a 0 )
+      ( 4 = IF
+        U32@ 
+      ELSE
+        DROP 0 
+      THEN )
+
+      PDESTBUFID @ >BUF
+
+      ?ERRORIF
+        LEAVE
+      THEN
+      
+    LOOP    
+;
+
+DECIMAL
+: .HTMLSPECIALCHAR ( char -- ) 
+    ( &#x00; doesn't work if I remember correctly )
+    DEPTH 1 U< IF EXIT THEN
+
+    DUP 2 U< IF
+      DROP [CHAR] . EMIT
+      EXIT
+    THEN
+
+    DUP BL = IF
+      DROP ." &nbsp"
+      EXIT
+    THEN
+
+    DUP 128 U< IF
+
+    DUP 2 U< IF
+      DROP [CHAR] . EMIT
+      EXIT
+    THEN
+
+    DUP BL = IF
+      DROP ." &nbsp"
+      EXIT
+    THEN
+
+    ." &#x" 
+    ( doing conversion this way instead of U. so there is no space after number )
+    BASE @ >R 16 BASE !
+    0 <#$ #S$ #>$ .$ 
+    R> BASE !
+    ." ;"
+
+    ELSE
+
+    128 -
+
+    DUP 2 U< IF
+      DROP ." <span style='color: red'>.</span>"
+      EXIT
+    THEN
+
+    DUP BL = IF
+      DROP ." <span style='color: red'>&nbsp</span>"
+      EXIT
+    THEN
+
+    ." <span style='color: red'>&#x" 
+    ( doing conversion this way instead of U. so there is no space after number )
+    BASE @ >R 16 BASE !
+    0 <#$ #S$ #>$ .$ 
+    R> BASE !
+    ." ;</span>"
+
+    THEN
+;
+
+DECIMAL
+: chtml>&#xx$ ( char -- ) ( $ -$- $' )
+    DEPTH 0= IF 
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      EXIT 
+    THEN
+
+    DEPTH$ 0= IF
+      STRINGSTACKUNDERFLOWERROR PUSHOERROR0$
+      EXIT
+    THEN
+
+    $" &#x" $>$
+    ( doing conversion this way instead of U. so there is no space after number )
+    BASE @ >R 16 BASE !
+    0 <#$ #S$ #>$ $>$ 
+    R> BASE !
+    $" ;" $>$
+;
+
+DECIMAL
+: chtml>$ ( char -- ) ( $ -$- $' )
+    ( &#x00; doesn't work if I remember correctly )
+    DEPTH 0= IF 
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      EXIT 
+    THEN
+
+    DEPTH$ 0= IF
+      STRINGSTACKUNDERFLOWERROR PUSHOERROR0$
+      EXIT
+    THEN
+
+    DUP 2 U< IF
+      DROP [CHAR] . C>$ EXIT
+    THEN
+
+    DUP BL = IF
+      DROP $" &nbsp" $>$ EXIT
+    THEN
+
+    DUP [CHAR] 0 U< IF
+      chtml>&#xx$ EXIT
+    THEN
+
+    DUP [CHAR] 9 1+ U< IF
+      C>$ EXIT
+    THEN
+ 
+    DUP [CHAR] A U< IF            
+      chtml>&#xx$ EXIT
+    THEN
+
+    DUP [CHAR] Z 1+ U< IF
+      C>$ EXIT
+    THEN
+
+    DUP [CHAR] a U< IF
+      chtml>&#xx$ EXIT
+    THEN
+  
+    DUP [CHAR] z 1+ U< IF
+      C>$ EXIT
+    THEN
+               
+    chtml>&#xx$
+;
+
+DECIMAL
+: chtmlinv>$ ( char -- ) ( $ -$- $' )
+    DEPTH 0= IF 
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      EXIT 
+    THEN
+
+    DEPTH$ 0= IF
+      STRINGSTACKUNDERFLOWERROR PUSHOERROR0$
+      EXIT
+    THEN
+
+    DUP 128 U< IF
+      chtml>$
+    ELSE
+      128 -
+
+      $" <span style='color: red'>" $>$
+      chtml>$
+      $" </span>" $>$
+    THEN
+;
+
+HEX
+1000 1000000 NEWBUFFER CONSTANT ascii$>html$bufid
+: ascii$>html$ ( ascii$ -$- html$ )
+    ( can't get pointer if pushing to string stack )
+    ( could use insert... but is there a better way? )
+    ( could copy string to a temporary buffer... )
+
+    DEPTH$ 0= IF 
+      STRINGSTACKUNDERFLOWERROR PUSHOERROR0$
+      EXIT 
+    THEN
+
+    LENGTH$ 0= IF EXIT THEN
+
+    ascii$>html$bufid EMPTYBUFFER
+
+    ascii$>html$bufid $>BUF
+
+    NEW$
+
+    ascii$>html$bufid LENGTHBUF 0 DO
+      I ascii$>html$bufid OC@
+      chtmlinv>$
+      ?ERRORIF LEAVE THEN
+    LOOP
+;
+
+HEX
+: .HTML$ ( ascii$ -$- )
+    ( building a string instead of doing separate emits for speed )
+    ( individual emits seem to be slow )
+    ascii$>html$ .$
+;
+
+HEX
+: .HTML$2 ( ascii$ -$- )
+         ( really just want to do non alphanumeric characters but doing all )
+         ( need to convert most non alphanumeric characters to &xxx; format to avoid confusion )
+         ( with special characters such as < > & )
+         ( doing single character emits is slow... need to convert then emit whole string )
+          
+         LENGTH$ 0= IF
+           DROP$ ." null" CRLF
+           EXIT
+         THEN
+  
+         LENGTH$ 0 DO
+
+           I $C@ 
+
+             ( DUP BL = IF
+               EMIT
+             ELSE ) 
+
+               DUP [CHAR] 0 U< IF
+                 .HTMLSPECIALCHAR
+               ELSE
+
+                 DUP [CHAR] 9 1+ U< IF
+                   EMIT
+                 ELSE
+ 
+                   DUP [CHAR] A U< IF            
+                     .HTMLSPECIALCHAR
+                   ELSE
+
+                     DUP [CHAR] Z 1+ U< IF
+                       EMIT
+                     ELSE
+                       DUP [CHAR] a U< IF
+                         .HTMLSPECIALCHAR 
+                       ELSE
+  
+                         DUP [CHAR] z 1+ U< IF
+                           EMIT
+                         ELSE
+                           .HTMLSPECIALCHAR
+                         THEN
+                       THEN
+                     THEN
+                   THEN
+                 THEN
+               THEN
+             ( THEN )
+
+         LOOP
+
+         DROP$
+;
+
+DECIMAL
+80 CONSTANT MAXDRAWDATA$LENGTH
+: INT$>NUMBER$ ( data$ -$- number$ )
+      DEPTH$ 1 U< IF
+        $" error- data$ missing"
+        EXIT
+      THEN
+
+      0 GETP$
+
+      ( get int from data$ as UINT32 or UINT64 )
+      [ EMES, ]
+        ( 0 ) DROP DROP$ $" null" EXIT
+      [ EME, ]
+        ( 4 ) U32@
+      [ EME, ]
+        ( 8 ) @
+      [ ENDEMES, ]
+
+      [ 0 4 8 3 CASES, ]
+        DROP$
+        $" error - int length not 4 or 8 bytes, got lenth " U.
+        EXIT
+      [ ENDCASES, ]
+
+      
+      ( @ ) DROP$ 0 
+
+      ( convert UINT64 to ascii string representation using current value of BASE )
+      
+      <#$ #S$ #>$
+
+      BASE @ 16 = IF
+        $" 0x" SWAP$ $>$
+      THEN
+;
+
+: FORMATRESULTDATA$USINGDEFAULT ( SQL_INTEGER|SQL_BINARY|SQL_WCHAR -- ) ( data$ -$- ) ( uses current BASE )
+    DEPTH 1 U< IF
+      $" error - data type missing"
+      EXIT
+    THEN
+
+    DEPTH$ 1 U< IF
+      $" error- data$ missing"
+      EXIT
+    THEN
+
+    DUP SQL_WCHAR = IF
+      UNICODE>ASCII$
+    THEN
+
+    SQL_INTEGER = IF
+      INT$>NUMBER$   
+      EXIT
+    THEN
+
+    ( do sql binary / ascii text )
+
+    ( empty string case )
+
+    LENGTH$ 0= IF
+      DROP$
+      $" null"
+      EXIT
+    THEN
+
+    ( string longer than MAXDRAWDATA$LENGTH - 1 characters case )
+    LENGTH$ MAXDRAWDATA$LENGTH U< 0=  IF
+      $" <div class=resultsettablesection>" CRLF$ $>$
+      SWAP$ $>$
+      $" </div>" $>$ CRLF$ $>$
+    THEN
+
+    ( convert special characters )
+    ascii$>html$
+;
+
+: DRAWRESULTDATA$USINGDEFAULT ( SQL_INTEGER|SQL_BINARY|SQL_WCHAR -- ) ( data$ -$- ) ( uses current BASE )
+
+    DEPTH 1 U< IF
+      ." error - data type missing"
+      EXIT
+    THEN
+
+    DEPTH$ 1 U< IF
+      ." error- data$ missing"
+      EXIT
+    THEN
+
+    DUP SQL_WCHAR = IF
+      UNICODE>ASCII$
+    THEN
+
+    SQL_INTEGER = IF
+      INT$>NUMBER$       
+      .$
+      EXIT
+    THEN
+
+    ( do sql binary )
+
+    ( empty string case )
+    LENGTH$ 0= IF
+      ." null"
+      DROP$
+      EXIT
+    THEN
+
+    ( string longer than MAXDRAWDATA$LENGTH - 1 characters case )
+    LENGTH$ MAXDRAWDATA$LENGTH U< 0=  IF
+      ." <div class=resultsettablesection>" CRLF
+      .$
+      ." </div>" CRLF
+      EXIT
+      ( LENGTH$ DUP MAXDRAWDATA$LENGTH - SHORTEN$
+    
+      .HTML$
+      ." ... length = "
+      BASE @ 16 = IF
+        ." 0x"
+      THEN
+      0 <#$ #S$ #>$ .$
+      EXIT )
+    THEN
+
+    ( normal case )
+    ( convert special characters )
+    .HTML$
+;
+
+: DRAWRESULTDATA$USINGDEFAULTNOCONVERT ( SQL_INTEGER|SQL_BINARY|SQL_WCHAR -- ) ( data$ -$- ) ( uses current BASE )
+
+    DEPTH 1 U< IF
+      ." error - data type missing"
+      EXIT
+    THEN
+
+    DEPTH$ 1 U< IF
+      ." error- data$ missing"
+      EXIT
+    THEN
+
+    DUP SQL_WCHAR = IF
+      UNICODE>ASCII$
+    THEN
+
+    SQL_INTEGER = IF
+      INT$>NUMBER$      
+      .$
+      EXIT
+    THEN
+
+    ( do sql binary )
+
+    ( empty string case )
+    LENGTH$ 0= IF
+      ." null"
+      DROP$
+      EXIT
+    THEN
+
+    ( string longer than MAXDRAWDATA$LENGTH - 1 characters case )
+    LENGTH$ MAXDRAWDATA$LENGTH U< 0=  IF
+      ." <div class=resultsettablesection>" CRLF
+      .$
+      ." </div>" CRLF
+      EXIT
+      ( LENGTH$ DUP MAXDRAWDATA$LENGTH - SHORTEN$
+    
+      .HTML$
+      ." ... length = "
+      BASE @ 16 = IF
+        ." 0x"
+      THEN
+      0 <#$ #S$ #>$ .$
+      EXIT )
+    THEN
+
+    ( normal case )
+    .$
+;
+
+VARIABLE PRESULTSETINDEX
+: DRAWRESULTSETASHTMLTABLE ( resultsetindex -- ) ( tableattribute$ -$- ) ( uses current BASE )
+   
+    DEPTH 1 U< IF
+      ." <P>Data stack underflow while trying to draw result set as an html table. " CRLF
+      ." Missing result set index on data stack.</P>" CRLF
+      EXIT
+    THEN
+
+    DEPTH$ 1 U< IF
+      ." <P>String stack underflow while trying to draw result set as an html table. " CRLF
+      ." Missing <table> tag attributes string. </P>" CRLF
+      EXIT
+    THEN
+
+    DUP PRESULTSETINDEX !
+
+    ( get pointer to column type structure )
+    SQLCOLTYPEL$STACKOFFSETBUFFERID
+    SQLCOLTYPEL$STACKSTRINGBUFFERID
+    GETPL$ DROP PPCOLDATASTRUCT !
+
+    ?ERRORIF 
+      EMPTY-ERRORS
+      ." <P>Error trying to get pointer to result set " PRESULTSETINDEX @ U.
+      ."  while trying to draw it as an html table. " CRLF
+      ." Has result set " PRESULTSETINDEX @ U. 
+      ."  been loaded? </P>" CRLF
+      EXIT
+    THEN
+
+    PRESULTSETINDEX @ GETNUMBEROFCOLUMNSFROMRESULTSET PNUMCOLS !
+    PRESULTSETINDEX @ GETNUMBEROFROWSFROMRESULTSET PNUMROWS !
+
+    PNUMCOLS @ 0= IF
+      ." <p>Result set has no columns.</p>" CRLF
+      EXIT
+    THEN
+
+    PNUMROWS @ 0= IF
+      ." <p>Result set has no rows.</p>" CRLF
+      EXIT
+    THEN
+    
+    ." <table " .$ ." >" CRLF
+
+    
+    $"   <tr>" CRLF$ $>$
+    PNUMCOLS @ 0 DO 
+
+      $"     <th>" $>$ CRLF$ $>$
+      I 1+ PRESULTSETINDEX @ GETCOLUMNNAME$FROMRESULTSET $>$
+      $"     </th>" $>$ CRLF$ $>$
+
+    LOOP
+    $"   </tr>" $>$ CRLF$ $>$ .$
+
+    PNUMROWS @ 0 DO
+
+      $"   <tr>" CRLF$ $>$ .$
+      PNUMCOLS @ 0 DO
+
+        $"     <td>" CRLF$ $>$ .$
+        I 1+ J 1+ PRESULTSETINDEX @ GETDATA$FROMRESULTSET
+        I 1+ PRESULTSETINDEX @ GETTRUECOLUMNTYPEFROMRESULTSET 
+        CHANGESQLCOLTYPETOINTORBINORWCHAR
+        DRAWRESULTDATA$USINGDEFAULT
+        $" </td>" CRLF$ $>$ .$
+
+        ?ERRORIF LEAVE THEN
+
+      LOOP
+      $"   </tr>" CRLF$ $>$ .$
+
+      ?ERRORIF LEAVE THEN
+
+    LOOP
+    
+    ." </table>" CRLF   
+;
+
+VARIABLE PROWINDEX
+: DRAWRESULTSETROWASHTMLEDITTABLEWCOLTYPES 
+    ( rowindex resultsetindex -- ) 
+    ( tablename$ tableattribute$ formattribute$ -$- )
+    ( uses current BASE )
+
+    DEPTH 2 U< IF
+      ." <P>Data stack underflow while trying to draw result set row as an html edit table. " CRLF
+      ." Missing result set index on data stack.</P>" CRLF
+      EXIT
+    THEN
+
+    DEPTH$ 1 U< IF
+      ." <P>String stack underflow while trying to draw result set as an html table. " CRLF
+      ." Missing <table> tag attributes string. </P>" CRLF
+      EXIT
+    THEN
+
+    DUP PRESULTSETINDEX !
+
+    ( get pointer to column type structure )
+    SQLCOLTYPEL$STACKOFFSETBUFFERID
+    SQLCOLTYPEL$STACKSTRINGBUFFERID
+    GETPL$ DROP PPCOLDATASTRUCT !
+
+    ?ERRORIF 
+      EMPTY-ERRORS
+      ." <P>Error trying to get pointer to result set " PRESULTSETINDEX @ U.
+      ."  while trying to draw it as an html table. " CRLF
+      ." Has result set " PRESULTSETINDEX @ U. 
+      ."  been loaded? </P>" CRLF
+      EXIT
+    THEN
+
+    DUP PROWINDEX !
+
+    0= IF
+      ." <p>Row index is 1 based and can not be 0.</p>" CRLF
+      EXIT
+    THEN
+
+    PRESULTSETINDEX @ GETNUMBEROFCOLUMNSFROMRESULTSET PNUMCOLS !
+    PRESULTSETINDEX @ GETNUMBEROFROWSFROMRESULTSET PNUMROWS !
+
+    PNUMCOLS @ 0= IF
+      ." <p>Result set has no columns.</p>" CRLF
+      EXIT
+    THEN
+
+    PROWINDEX @ 1- PNUMROWS @ U< 0= IF 
+      ." <p>Row index off end of result set.</p>" CRLF
+      EXIT
+    THEN
+
+    ." <form " .$ ." >" CRLF
+
+    ." <table " .$ ." >" CRLF
+
+    ."   <input type=hidden name='tablename' value='" .$ ." '>" CRLF
+
+    
+    $"   <tr>" CRLF$ $>$
+    PNUMCOLS @ 0 DO 
+
+      $"     <th>" $>$ CRLF$ $>$
+      I 1+ PRESULTSETINDEX @ GETCOLUMNNAME$FROMRESULTSET $>$
+      $"     </th>" $>$ CRLF$ $>$
+
+    LOOP
+    $"   </tr>" $>$ CRLF$ $>$ .$
+
+    $"   <tr>" CRLF$ $>$
+    PNUMCOLS @ 0 DO 
+
+      $"     <th>" $>$
+      I 1+ PRESULTSETINDEX @ GETTRUECOLUMNTYPEFROMRESULTSET SQLCOLTYPE>NEWTYPE$ $>$
+      $"     </th>" $>$ CRLF$ $>$
+
+    LOOP
+    $"   </tr>" $>$ CRLF$ $>$
+    .$
+
+    
+
+    $"   <tr>" CRLF$ $>$ .$
+    PNUMCOLS @ 0 DO
+
+      $"     <td>" CRLF$ $>$ .$
+      ( eventually will need special one for column type of binary to do file upload instead )
+      ."       <input type=text name='"
+      I 1+ PRESULTSETINDEX @ GETCOLUMNNAME$FROMRESULTSET .$
+      I 1+ PROWINDEX @ PRESULTSETINDEX @ GETDATA$FROMRESULTSET
+      I 1+ PRESULTSETINDEX @ GETTRUECOLUMNTYPEFROMRESULTSET 
+      CHANGESQLCOLTYPETOINTORBINORWCHAR
+      ." ' value='" DRAWRESULTDATA$USINGDEFAULTNOCONVERT
+      ." '>"
+      $"     </td>" CRLF$ $>$ .$
+
+      ?ERRORIF LEAVE THEN
+
+    LOOP
+
+    $"   </tr>" CRLF$ $>$ .$
+
+    ." </table>" CRLF
+
+    ."   <input type=submit value=Submit>" CRLF
+
+    ." </form>" CRLF    
+;
+
+: DRAWRESULTSETASHTMLTABLEWCOLTYPES ( resultsetindex -- ) ( tableattribute$ -$- ) ( uses current BASE )
+   
+    DEPTH 1 U< IF
+      ." <P>Data stack underflow while trying to draw result set as an html table. " CRLF
+      ." Missing result set index on data stack.</P>" CRLF
+      EXIT
+    THEN
+
+    DEPTH$ 1 U< IF
+      ." <P>String stack underflow while trying to draw result set as an html table. " CRLF
+      ." Missing <table> tag attributes string. </P>" CRLF
+      EXIT
+    THEN
+
+    DUP PRESULTSETINDEX !
+
+    ( get pointer to column type structure )
+    SQLCOLTYPEL$STACKOFFSETBUFFERID
+    SQLCOLTYPEL$STACKSTRINGBUFFERID
+    GETPL$ DROP PPCOLDATASTRUCT !
+
+    ?ERRORIF 
+      EMPTY-ERRORS
+      ." <P>Error trying to get pointer to result set " PRESULTSETINDEX @ U.
+      ."  while trying to draw it as an html table. " CRLF
+      ." Has result set " PRESULTSETINDEX @ U. 
+      ."  been loaded? </P>" CRLF
+      EXIT
+    THEN
+
+    PRESULTSETINDEX @ GETNUMBEROFCOLUMNSFROMRESULTSET PNUMCOLS !
+    PRESULTSETINDEX @ GETNUMBEROFROWSFROMRESULTSET PNUMROWS !
+
+    PNUMCOLS @ 0= IF
+      ." <p>Result set has no columns.</p>" CRLF
+      EXIT
+    THEN
+    
+    ." <table " .$ ." >" CRLF
+
+    
+    $"   <tr>" CRLF$ $>$
+    PNUMCOLS @ 0 DO 
+
+      $"     <th>" $>$ CRLF$ $>$
+      I 1+ PRESULTSETINDEX @ GETCOLUMNNAME$FROMRESULTSET $>$
+      $"     </th>" $>$ CRLF$ $>$
+
+    LOOP
+    $"   </tr>" $>$ CRLF$ $>$ .$
+
+    $"   <tr>" CRLF$ $>$
+    PNUMCOLS @ 0 DO 
+
+      $"     <th>" $>$
+      I 1+ PRESULTSETINDEX @ GETTRUECOLUMNTYPEFROMRESULTSET SQLCOLTYPE>NEWTYPE$ $>$
+      $"     </th>" $>$ CRLF$ $>$
+
+    LOOP
+    $"   </tr>" $>$ CRLF$ $>$
+    .$
+
+    PNUMROWS @ 0= 0= IF
+
+      PNUMROWS @ 0 DO
+
+        $"   <tr>" CRLF$ $>$ .$
+        PNUMCOLS @ 0 DO
+
+          $"     <td>" CRLF$ $>$ .$
+          I 1+ J 1+ PRESULTSETINDEX @ GETDATA$FROMRESULTSET
+          I 1+ PRESULTSETINDEX @ GETTRUECOLUMNTYPEFROMRESULTSET 
+          CHANGESQLCOLTYPETOINTORBINORWCHAR
+          DRAWRESULTDATA$USINGDEFAULT
+          $" </td>" CRLF$ $>$ .$
+
+          ?ERRORIF LEAVE THEN
+
+        LOOP
+        $"   </tr>" CRLF$ $>$ .$
+
+        ?ERRORIF LEAVE THEN
+
+      LOOP
+
+    THEN
+
+    ." </table>" CRLF      
+;
+
+
+VARIABLE PLEFTOVERBYTES
+VARIABLE PBASEADDRESS
+
+HEX
+10 CONSTANT BYTEDUMPROWSIZE
+1000 1000000 NEWBUFFER CONSTANT DRAW$ASHTMLBYTEDUMPbufid
+: DRAW$ASHTMLBYTEDUMP ( src$ -$- ) ( baseaddress -- ) ( uses current BASE )
+
+    DEPTH$ 1 U< IF
+      ." <p>Object to viex as byte dump is missing from string stack.</p>" CRLF      
+      EXIT
+    THEN
+
+    DEPTH 1 U< IF
+      ." <p>Base address for object to view as byte dump is missing from data stack.</p>" CRLF
+      EXIT
+    THEN
+
+    LENGTH$ 0= IF    
+      ." <p>Object to view as byte dump is empty.</p>" CRLF
+      EXIT
+    THEN
+
+    DRAW$ASHTMLBYTEDUMPbufid EMPTYBUFFER
+    DRAW$ASHTMLBYTEDUMPbufid $>BUF
+
+    PBASEADDRESS !
+
+    DRAW$ASHTMLBYTEDUMPbufid LENGTHBUF ( LENGTH$ ) BYTEDUMPROWSIZE / PNUMROWS !
+    DRAW$ASHTMLBYTEDUMPbufid LENGTHBUF ( LENGTH$ ) BYTEDUMPROWSIZE MOD PLEFTOVERBYTES !
+
+    ." <table border=1>" CRLF
+    ."   <tr><th>offset</th><th>address</th><th>byte dump</th><th>ascii</th></tr>" CRLF
+
+    PNUMROWS @ 0= 0= IF
+    
+      PNUMROWS @ 0 DO
+        ."   <tr>" CRLF
+          ( offset )
+          $"     <td>" I BYTEDUMPROWSIZE * 0 <#$ #S$ #>$ $>$ $" </td>" $>$ .$ CRLF
+
+          ( address )
+          $"     <td>" I BYTEDUMPROWSIZE * PBASEADDRESS @ + 0 <#$ #S$ #>$ $>$ $" </td>" $>$ .$ CRLF
+
+          ( hex view of bytes )
+          $"     <td STYLE='font-family: monospace'>"
+          BYTEDUMPROWSIZE 0 DO
+
+            ( get byte from string )     
+            J BYTEDUMPROWSIZE * I + DRAW$ASHTMLBYTEDUMPbufid OC@ 
+
+            ( draw byte - it will look pretty if either decimal or hex. might not be in other bases )
+            BASE @ 0A = IF
+              DECIMALBYTE>NEW$ $>$
+            ELSE
+              HEXBYTE>NEW$ $>$
+            THEN
+
+            ( space between bytes )
+            I 1+ BYTEDUMPROWSIZE = 0= IF
+              $"  " $>$
+            THEN
+
+            ?ERRORIF LEAVE THEN
+     
+          LOOP
+          $" </td>" $>$ .$ CRLF
+
+          ( ascii )
+          $"     <td STYLE='font-family: monospace'>" 
+          I BYTEDUMPROWSIZE * DRAW$ASHTMLBYTEDUMPbufid BYTEDUMPROWSIZE ( GETMID$ ) OS>NEW$ ascii$>html$ $>$
+          $" </td>" $>$ .$ CRLF
+          
+        ."   </tr>" CRLF
+
+        ?ERRORIF LEAVE THEN
+      LOOP
+    THEN
+
+    ?ERRORIF EXIT THEN
+
+    PLEFTOVERBYTES @ 0= 0= IF
+
+      ."   <tr>" CRLF
+
+      ( offset )
+      ."     <td>" PNUMROWS @ BYTEDUMPROWSIZE * 0 <#$ #S$ #>$ .$ ." </td>" CRLF
+
+      ( address )
+      ."     <td>" PNUMROWS @ BYTEDUMPROWSIZE * PBASEADDRESS @ + 0 <#$ #S$ #>$ .$ ." </td>" CRLF
+
+      ( dump of bytes )
+      ."     <td STYLE='font-family: monospace'>"
+      PLEFTOVERBYTES @ 0 DO
+
+        ( get byte from string )     
+        PNUMROWS @ BYTEDUMPROWSIZE * I + DRAW$ASHTMLBYTEDUMPbufid OC@ ( $C@ )
+
+        ( draw bytes )
+        BASE @ 10 ( hex ) = IF
+          DRAWHEXBYTE
+        ELSE
+          DRAWDECIMALBYTE
+        THEN
+
+        ( space between bytes )    
+        ."  "
+            
+        ?ERRORIF LEAVE THEN
+        
+      LOOP
+      ." </td>" CRLF
+
+      ( ascii )
+      ."     <td STYLE='font-family: monospace'>"
+      PNUMROWS @ BYTEDUMPROWSIZE * DRAW$ASHTMLBYTEDUMPbufid PLEFTOVERBYTES @ ( GETMID$ ) OS>NEW$ .HTML$
+      ." </td>" CRLF
+          
+      ."   </tr>" CRLF
+      
+    THEN
+    ." </table>" CRLF
+;
+
+: DRAWRESULTSETCOLUMNASHTMLSELECTLIST ( 1basedcolumnid 0basedresultsetid -- ) ( selectattribute$ -$- )
+
+    DEPTH 2 U< IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E
+      EXIT
+    THEN
+
+    DEPTH$ 1 U< IF
+      DROP DROP
+      STRINGSTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E
+      EXIT
+    THEN
+
+    PRESULTSETINDEX !
+    PCOLX !
+
+    ( get pointer to column type structure )
+    PRESULTSETINDEX @
+    SQLCOLTYPEL$STACKOFFSETBUFFERID
+    SQLCOLTYPEL$STACKSTRINGBUFFERID
+    GETPL$ DROP PPCOLDATASTRUCT !
+
+    ?ERRORIF 
+      EMPTY-ERRORS
+      ." <P>Error trying to get pointer to result set " PRESULTSETINDEX @ DECIMAL U.
+      ."  while trying to draw column as an html select list. " CRLF
+      ." Has result set " PRESULTSETINDEX @ U. 
+      ."  been loaded? </P>" CRLF
+      DROP$
+      EXIT
+    THEN
+
+    ( get number of columns in result set )
+    PPCOLDATASTRUCT @ 4 + U32@ PNUMCOLS !
+
+    ( get number of rows in result set )
+    PPCOLDATASTRUCT @ U32@ PNUMROWS !
+
+    PNUMCOLS @ 0= IF
+      ." <p>Result set has no columns.</p>" CRLF
+      EXIT
+    THEN
+
+    PNUMROWS @ 0= IF
+      ." <p>Result set has no rows.</p>" CRLF
+      EXIT
+    THEN
+
+    ( make sure column index is not 0 )
+    PCOLX @ 0= IF
+      ." <p>Result set columns are 1 based. Column 0 bookmarks are not in result set.</p>" CRLF
+    THEN
+
+    ( make column index 0 based and see if column is in result set )
+    PCOLX @ 1- DUP PCOLX ! PNUMCOLS @ U< 0= IF
+      ." <p>Column not in result set.</p>" CRLF
+      EXIT
+    THEN
+
+    ( draw selection list )
+    ."     <SELECT " .$ ." >" CRLF 
+
+    PNUMROWS @ 0 DO
+
+      ."       <OPTION>"
+      PCOLX @ 1+ I 1+ PRESULTSETINDEX @ GETDATA$FROMRESULTSET
+      PCOLX @ 1+ PRESULTSETINDEX @ GETTRUECOLUMNTYPEFROMRESULTSET 
+        CHANGESQLCOLTYPETOINTORBINORWCHAR
+      DRAWRESULTDATA$USINGDEFAULT
+      ." </OPTION>" CRLF
+      
+      ?ERRORIF
+        LEAVE
+      THEN
+      
+    LOOP       
+
+    ."     </SELECT>" CRLF    
+;
+
+: ?0$>$ ( a$ -$- a$' )
+
+    DEPTH$ 1 U< IF
+      STRINGSTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E
+      EXIT
+    THEN
+
+    LENGTH$ 0= IF
+      EXIT
+    THEN
+
+    $>C DUP 0= IF
+      DROP EXIT
+    ELSE
+      C>$
+    THEN
+;
+
+( If this word makes new definitions then it is a compiling word and the compile functions it calls WILL crash if the buffer moves... )
+(   So either A: this word compiles to a different buffer than the one it is in )
+(   or B: store the name value pairs in a hierarchical list... )
+: LOADNAMEVALUEPAIRDEFINITIONS ( n -- ) ( value0$ name0$ value1$ name1$ ... valuen$ namen$ )
+
+    DEPTH 1 U< IF
+      DATASTACKUNDERFLOWERROR PUSHOERROR0$
+      NAME>E 
+      EXIT 
+    THEN
+
+    DUP 0= IF
+      DROP 
+      EXIT
+    THEN
+
+    0 DO
+
+      LENGTH$ 0= IF
+        DROP$ DROP$
+      ELSE
+
+        ( make sure no delimiters in name$ here )
+
+        ( add name$ to the post get hlist )
+        0 POSTGET-HLIST NEW-ELEMENT ?ERRORIF NAME>E EXIT THEN DROP
+
+      THEN
+
+    LOOP
+; 
+
+: POSTGETNAME$>VALUE$ ( name$ -$- value$ )
+    0 POSTGET-HLIST ?NAME$>VALUE$ 
+    ?ERRORIF NAME>E EXIT THEN
+    IF EXIT THEN NEW$
+;
+
+: LOADFORMVALUES ( -- ) ( -$- )
+
+    ( could check method$ here but it really doesn't matter as far as I know )
+    ( apache leaves one empty, not sure about windows )
+    GETPOST$ ?ERRORIF NAME>E EXIT THEN
+    FORM$>VALUE$NAME$U ?ERRORIF NAME>E EXIT THEN
+    LOADNAMEVALUEPAIRDEFINITIONS ?ERRORIF NAME>E EXIT THEN
+    GETQUERY$ ?ERRORIF NAME>E EXIT THEN
+    FORM$>VALUE$NAME$U ?ERRORIF NAME>E EXIT THEN
+    LOADNAMEVALUEPAIRDEFINITIONS ?ERRORIF NAME>E EXIT THEN
+; 
+
+
+DECIMAL
+: getbase ( -- 10|16 ) ( -$- )
+    
+    $" base" POSTGETNAME$>VALUE$ 
+    LENGTH$ 0= IF
+      DROP$ 16 EXIT
+    THEN 
+
+    $" decimal" COMPARE$ 0= IF
+      DROP$ DROP$ 10 
+      EXIT
+    THEN
+  
+    DROP$
+
+    $" DECIMAL" COMPARE$ 0= IF
+      DROP$ DROP$ 10 
+      EXIT
+    THEN
+  
+    DROP$
+
+    $" 10" COMPARE$ 0= IF
+      DROP$ DROP$ 10 
+      EXIT
+    THEN
+  
+    DROP$ DROP$
+
+    16
+;
+
+
+( : DROPRESULTSET ) ( resultsetcolumntypes -columntypesl$- )
+                ( resultsetcolumnnames -columnnamesl$- )
+                ( resultsetdata        -datal$- )
+( ; )
+
+( need drop l$ to index )
+
+
+( Packed 32bit L$ looks like this )
+( Pack buffer: )
+(   0: header size in bytes )
+(   4: magic id = ascii 'PKL$' )
+(   8: size of l$offset buffer in bytes )
+(   0x0C - 0x0C + offset buffer size: l$offset buffer )
+(   rest of buffer: l$string buffer )
+
+VARIABLE PACKL$>BUFdestbuf
+VARIABLE PACKL$>BUFoffsetbuf
+VARIABLE PACKL$>BUFstringbuf
+
+HEX
+: PACKL$>BUF // Packs 64 bit array of offsets as 32 bit array of offsets
+    { | srcoffsetbuf srcstringbuf destbuf -- }
+    ( l$n ... l$1 -l$- l$n ... l$1 ) 
+    ( -destbuf- packedl$ ) 
+
+    destbuf EMPTYBUFFER
+    ?ERRORIF 
+      ( destination buffer does not exist )
+      EXIT 
+    THEN
+
+    0C destbuf U32>BUF     ( +0 is size of pack header )
+    $" PKL$" destbuf $>BUF ( +4 is magic id PKL$ )
+    srcoffsetbuf LENGTHBUF 2/ ( to get size in UINT32s )
+    ?ERRORIF
+      ( l$offsetbuffer does not exist )
+      EXIT
+    THEN
+    destbuf U32>BUF           ( +8 is length of offset buffer )
+
+    srcoffsetbuf destbuf BUF64[]>BUF32[]
+    ?ERRORIF
+      ( something wrong with l$offsetbuffer )
+      EXIT
+    THEN
+
+    srcstringbuf GETSBUFFER
+    destbuf S>BUF  ( pushing string buffer )    
+;
+
+: O32@ ( offset bufferid -- u )
+    O>P U32@
+;
+
+
+HEX
+: UNPACKBUF>L$ ( srcbufid l$offsetbufid l$stringbufid -- )
+    { ostringbuf stringbuflength | srcbuf destoffsetbuf deststringbuf --}
+
+    destoffsetbuf EMPTYBUFFER
+    ?ERRORIF 
+      ( l$ string buffer does not exist )
+      EXIT 
+    THEN
+
+    deststringbuf EMPTYBUFFER
+    ?ERRORIF 
+      ( l$ offset buffer does not exist )
+      EXIT 
+    THEN
+
+    ( check header )
+    ( checking header size for >= C )
+    0 srcbuf O32@ 0C U< IF
+      ( header too small to have magic and offset )
+      SUBROUTINEERROR PUSHOERROR0$
+      EXIT
+    THEN
+
+    ( checking magic id for PKL$ )
+    4 srcbuf 4 OS>NEW$ $" PKL$" COMPARE$ DROP$ DROP$ 0= 0= IF
+      ( magic id incorrect )
+      SUBROUTINEERROR PUSHOERROR0$
+      EXIT
+    THEN
+
+
+    ( extract offset buffer )
+    0 srcbuf O32@ ( offset of l$offset buffer )
+    srcbuf        ( srcbufferid )
+    8 srcbuf O32@ ( length of l$offset buffer )
+    GETPBUFFERSEGMENT ( doing it this way to make sure segment is in buffer )
+    
+    ?ERRORIF
+      ( couldn't get pointer, source buffer probably too small )
+      SUBROUTINEERROR PUSHOERROR0$
+      EXIT
+    THEN
+
+    8 srcbuf O32@ ( poffsetbuffer offsetbufferlength-- )
+
+    destoffsetbuf SU32[]>BUFU64[]
+
+    ?ERRORIF
+      ( couldn't push to l$offset buffer, it probably doesn't exist )
+      SUBROUTINEERROR PUSHOERROR0$
+      EXIT
+    THEN
+
+
+    ( extract string buffer )
+    0 srcbuf O32@
+    8 srcbuf O32@ +  ( offset of l$string buffer )
+    TO ostringbuf
+    srcbuf LENGTHBUF ostringbuf - TO stringbuflength
+    
+    ostringbuf srcbuf stringbuflength GETPBUFFERSEGMENT
+    
+    ?ERRORIF
+      ( couldn't get pointer, this shouldn't happen )
+      SUBROUTINEERROR PUSHOERROR0$
+      EXIT
+    THEN 
+
+    stringbuflength deststringbuf S>BUF
+
+    ?ERRORIF
+      ( couldn't push to l$string buffer, it probably doesn't exist )
+      SUBROUTINEERROR PUSHOERROR0$
+      EXIT
+    THEN      
+;
+
+
+ALLOCATEHSQLENV DROP
+SETENVTOODBC3 
+
+( Need to add flag to freehstatement that releases bindings )
+

@@ -1,4 +1,15 @@
 Changelog for Diaperglu
+   04 May 2025
+     Released v5.15
+
+   22 March 2025
+     Fixed documentation for UNPACKL$[]
+     Added dg_forthdocompiletypelinesparsequotes
+     Added LINES."
+
+   20 February 2025
+     Released v5.14
+
    17 February 2025
      Updated compile type documentation.
      I changed dg_forthdocompiletypebrackettoorder to compile in colorcompile.

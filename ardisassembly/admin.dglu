@@ -1,0 +1,135 @@
+
+( Last modified: July 3, 2008 )
+
+$" odbcsqlsupport.dgluinc" INCLUDEFILE$
+
+$" skin.dgluinc" INCLUDEFILE$
+
+: selfiletypename$ $" SELECT name FROM tblfiletype" ;
+
+: selectfiles$ $" SELECT tblfiles.ID, tblfiles.namecol as filename, tblfiletype.name as filetype "
+               $" FROM tblfiles, tblfiletype " $>$
+               $" WHERE tblfiles.filetypeidcol = tblfiletype.ID" $>$ ;
+
+: drawpage ( -- )
+
+    ." CONTENT-TYPE: text/html" CRLF 
+    ." Cache-Control: no-cache, must-revalidate" CRLF
+    ." Expires: Mon, 12 Jul 1997 05:00:00 GMT" CRLF
+    CRLF
+
+    drawprojectheader
+
+    ." <h3 align='center'>Administration Functions</h3>" CRLF
+    ( ." <p>
+         <form action='viewmessages.dglu' runat=server method=post>
+           Admin Password: <input type=password name=password><br>
+            <input type=hidden name=hiddenpassword value=losttearstavern>
+            <input type=submit value='View Messages'>
+          </form>
+       </p>" CRLF
+    
+    ." <hr>" CRLF )
+
+    ." <a href='getsqlstatement.dglu'>Do direct SQL statements</a>" CRLF
+    ( ." <br><a href='viewsqltables.dglu'>Edit SQL tables</a>" CRLF )
+
+    ." <hr>" CRLF
+
+    ." <p><h3 align=center>Pack database using 64bit pack and download as a file.</h3></p>" CRLF
+
+    ." <p>I suggest naming the file something like ardbbackup2025apr26.pkl64</p>" CRLF
+    ." <p>Any file extension will work, but to prevent accidents I suggest using .pkl64</p>" CRLF
+
+    ."   <form action='packardb64.dglu' runat=server method=post>" CRLF
+    ."     Backup filename: <input type=text name=filename><br>" CRLF
+    ."     Admin Password: <input type=password name=password><br>" CRLF
+    ."     <input type=hidden name=hiddenpassword value=losttearstavern>" CRLF
+    ."     <input type=submit>" CRLF
+    ."     </p>" CRLF
+    ."   </form>" CRLF
+
+
+    ."   <hr>" CRLF
+    ."   <h3 align=center>Load a 64bit packed database from a packed file on the local machine</h3>" CRLF
+    ."   <p>The default file included with this project is called ardbbackup2025apr26.pkl64</p>" CRLF
+    ."   <p>It takes a long time to load...</p>" CRLF
+    ."   <p>Also, I think the backup file has to be in the ardisassembly directory</p>" CRLF
+    ."   <form action='unpackardb64.dglu' runat=server method=post>" CRLF
+    ."     Backup filename: <input type=text name=filename><br>" CRLF
+    ."     Admin Password: <input type=password name=password>" CRLF
+    ."     <input type=hidden name=hiddenpassword value=losttearstavern>" CRLF
+    ."     <br><input type=submit>" CRLF
+    ."   </form>"
+
+    
+    ."   <hr>" CRLF
+    ."   <h3 align=center>Load a 32bit packed database from a packed file on the local machine</h3>" CRLF
+
+    ."   <form action='unpackardb.dglu' runat=server method=post>" CRLF
+    ."     Backup filename: <input type=text name=filename><br>" CRLF
+    ."     Admin Password: <input type=password name=password>" CRLF
+    ."     <input type=hidden name=hiddenpassword value=losttearstavern>" CRLF
+    ."     <br><input type=submit>" CRLF
+    ."   </form>"
+
+    ( select file type list to result set )
+    selfiletypename$ con$ db$ GETRESULTSET
+
+    ?ERRORIF
+      ." <p>Error getting filetypes from database</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( select file list data to result set )      
+    selectfiles$ con$ db$ GETRESULTSET
+
+    ?ERRORIF
+      ." <p>Error getting file data from data base.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( draw file list data )
+    ."   <hr>" CRLF
+    ."   <h3 align=center>List of files in the database.</h3>" CRLF
+    
+    1 GETNUMBEROFROWSFROMRESULTSET 0= IF
+      ." <p>No files found in database.</p>" CRLF
+    ELSE
+      1 $" border=1" DRAWRESULTSETASHTMLTABLE
+    THEN
+    
+
+    ."   <hr>" CRLF
+    ."   <h3 align=center>Insert a file from the local machine into the database</h3>" CRLF
+
+    ."   <p>MySQL times out if the file is too big, like over a meg. Shouldn't need a file that big right now.</p>" CRLF
+    ."   <p>Warning, someone could use this to insert the script files into the database and view them.</p>" CRLF
+    ."   <p>You can only specify code sections for files with the code file type.</p>" CRLF
+    0 GETNUMBEROFROWSFROMRESULTSET 0= 0= IF
+
+      ."   <form action='insertfile.dglu' runat=server method=post>" CRLF
+      ."     Filename: <input type=text name=filename><br>" CRLF
+      ."     Filetype: " 1 0 $" name='filetype'" DRAWRESULTSETCOLUMNASHTMLSELECTLIST ." <br>" CRLF
+      ."     Admin Password: <input type=password name=password>" CRLF
+      ."     <input type=hidden name=hiddenpassword value=losttearstavern>" CRLF
+      ."     <br><input type=submit>" CRLF
+      ."   </form>"
+
+    ELSE
+      ." <p>No file types found in database. Need these too allow file insertion.</p>" CRLF
+    THEN
+
+    
+    ."   <hr>" CRLF
+    ."   <p>Deleting a file from the browser interface is not supported at this time.</p>" CRLF
+    
+
+    drawprojectfooter 
+;
+
+drawpage
+
+

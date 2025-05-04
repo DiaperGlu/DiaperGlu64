@@ -1,0 +1,46 @@
+
+$" odbcsqlsupport.dgluinc" INCLUDEFILE$
+
+$" skin.dgluinc" INCLUDEFILE$
+
+: sel$ $" SELECT namecol FROM tblfiles" ;
+
+
+: drawpage ( -- )
+
+    ." CONTENT-TYPE: text/html" CRLF 
+    ." Cache-Control: no-cache, must-revalidate" CRLF
+    ." Expires: Mon, 12 Jul 1997 05:00:00 GMT" CRLF
+    CRLF
+
+    drawprojectheader
+
+    ." <h3 align='center'>Choose file to download.</h3>" CRLF
+
+    downloadsallowed? 0= IF
+      ." <p>Downloads are not allowed at this time.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+    
+    sel$ con$ db$ GETRESULTSET
+
+    ?ERRORIF
+      ." <p>Error getting page data</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ."   <form runat='server' action='downloadfile.dglu' method='post'>" CRLF
+
+    1 0 $" name='filename'" DRAWRESULTSETCOLUMNASHTMLSELECTLIST
+
+    ."     <br><input type='submit'>" CRLF
+
+    ."   </form>" CRLF   
+    drawprojectfooter 
+;
+
+drawpage
+
+

@@ -1,0 +1,279 @@
+
+( Last modified: March 16, 2007 )
+
+$" odbcsqlsupport.dgluinc" INCLUDEFILE$
+
+$" skin.dgluinc" INCLUDEFILE$
+
+LOADFORMVALUES
+
+: getpassword$ ( -$- password$ )
+    $" password" POSTGETNAME$>VALUE$
+;
+
+: getsourcefilename$ ( -$- sourcefilename$ )
+    $" sourcefilename" POSTGETNAME$>VALUE$
+;
+
+: getextractedfilename$ ( -$- extractedfilename$ )
+    $" extractedfilename" POSTGETNAME$>VALUE$
+;
+
+: getstartoffset$ ( -$- startoffset$ )
+    $" startoffset" POSTGETNAME$>VALUE$
+;
+
+: getextractedlength$ ( -$- extractedlength$ )
+    $" extractedlength" POSTGETNAME$>VALUE$
+;
+
+: getstartaddress$ ( -$- startaddress$ )
+    $" startaddress" POSTGETNAME$>VALUE$
+;
+
+: getencryptiontype$ ( -$- encryptiontype$ )
+    $" encryptiontype" POSTGETNAME$>VALUE$
+    LENGTH$ 0= IF
+      DROP$ $" unencoded"
+    THEN
+;
+
+: getdungeonkeysector$ ( -$- dungeonkeysector$ )
+    $" dungeonkeysector" POSTGETNAME$>VALUE$
+    LENGTH$ 0= IF
+      DROP$ $" 0" 
+    THEN
+;
+
+: selectsourcefileid$ 
+    $" SELECT ID FROM tblfiles WHERE namecol = '" getsourcefilename$ $>$ $" '" $>$ ;
+
+: selectextractedfileid$ 
+    $" SELECT ID FROM tblfiles WHERE namecol = '" getextractedfilename$ $>$ $" '" $>$ ;
+
+: selectencryptiontypeid$ 
+    $" SELECT ID FROM encryptiontype WHERE name = '" getencryptiontype$ $>$ $" '" $>$ ;
+
+
+VARIABLE PSOURCEFILEID
+-1 PSOURCEFILEID !
+
+VARIABLE PEXTRACTEDFILEID
+-1 PEXTRACTEDFILEID !
+
+VARIABLE PENCRYPTIONTYPEID
+-1 PENCRYPTIONTYPEID !
+
+
+: insert$ 
+    DECIMAL
+    $" INSERT INTO tblgamefilemapping "
+    $" (extractedfileid, sourcefileid, startoffset, length, startaddress, encryptionid, encryptionkeyoffset) " $>$
+    $" VALUES (" $>$ 
+      PEXTRACTEDFILEID @ 0 <#$ #S$ #>$ $>$ $" , " $>$
+      PSOURCEFILEID @ 0 <#$ #S$ #>$ $>$ $" , " $>$
+      getstartoffset$ $>$  $" , " $>$
+      getextractedlength$ $>$  $" , " $>$
+      getstartaddress$ $>$  $" , " $>$
+      // getencryptionid$ $>$  $" , " $>$
+      PENCRYPTIONTYPEID @ 0 <#$ #S$ #>$ $>$ $" , " $>$
+      getdungeonkeysector$ $>$ $" )" $>$ 
+;
+
+
+VARIABLE PSOURCEFILEIDRESULTSET
+-1 PSOURCEFILEIDRESULTSET !
+
+VARIABLE PEXTRACTEDFILEIDRESULTSET
+-1 PEXTRACTEDFILEIDRESULTSET !
+
+VARIABLE PENCRYPTIONTYPERESULTSET
+-1 PENCRYPTIONTYPERESULTSET !
+
+
+: drawpage ( -- )
+
+    ." CONTENT-TYPE: text/html" CRLF 
+    ." Cache-Control: no-cache, must-revalidate" CRLF
+    ." Expires: Mon, 12 Jul 1997 05:00:00 GMT" CRLF
+    CRLF
+
+    drawprojectheader
+
+    ." <h3 align='center'>Trying to add game file mapping to database.</h3>" CRLF 
+
+    ( check password )
+    
+    getpassword$ formpassword$ COMPARE$ DROP$ DROP$ 0= 0= IF
+
+      ( they don't match )
+      ." <p>Password is incorrect.<p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( they match )
+
+
+    ( checking start offset for problems )
+    getstartoffset$ insertvalueint$ok? DROP$ 0= IF
+
+      ." <p>Something wrong with start offset '"
+      getstartoffset$ .$
+      ." ' you are trying to insert. Please check.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( checking extracted length for problems )
+    getextractedlength$ insertvalueint$ok? DROP$ 0= IF
+
+      ." <p>Something wrong with extracted file length '"
+      getextractedlength$ .$
+      ." ' you are trying to insert. Please check.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( checking start address for problems )
+    getstartaddress$ insertvalueint$ok? DROP$ 0= IF
+
+      ." <p>Something wrong with start address '"
+      getstartaddress$ .$
+      ." ' you are trying to insert. Please check.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( checking encryption id for problems )
+    // getencryptionid$ insertvalueint$ok? DROP$ 0= IF
+
+    //  ." <p>Something wrong with encryption id '"
+    //  getencryptionid$ .$
+    //  ." ' you are trying to insert. Please check.</p>" CRLF
+    //  drawprojectfooter
+    //  EXIT
+    // THEN
+
+    ( checking dungeon key sector for problems )
+    getdungeonkeysector$ insertvalueint$ok? DROP$ 0= IF
+
+      ." <p>Something wrong with dungeon key sector '"
+      getdungeonkeysector$ .$
+      ." ' you are trying to insert. Please check.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+
+    ( get source file id )
+    selectsourcefileid$ con$ db$ GETRESULTSET
+
+    LATESTRESULTSET PSOURCEFILEIDRESULTSET !
+
+    ?ERRORIF
+      ." <p>Error getting source file id for source file name from database.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+  
+    ( push source fileid from result set to data stack )
+    PSOURCEFILEIDRESULTSET @ GETNUMBEROFROWSFROMRESULTSET 0= IF
+      -1 ( no file id exists for this filename )
+    ELSE
+      1 PSOURCEFILEIDRESULTSET @ GETCOLUMNTYPEFROMRESULTSET SQL_INTEGER = 0= IF
+        -1
+      ELSE
+        1 1 PSOURCEFILEIDRESULTSET @ GETNUMBERFROMRESULTSET 
+      THEN
+    THEN
+    
+    PSOURCEFILEID !
+
+    ( check if source file id loaded )
+    PSOURCEFILEID @ -1 = IF
+      ." <p>Could not find source filename '"
+      getsourcefilename$ .$ 
+      ." ' in data base.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+
+    ( get extracted file id )
+    selectextractedfileid$ con$ db$ GETRESULTSET
+
+    LATESTRESULTSET PEXTRACTEDFILEIDRESULTSET !
+
+    ?ERRORIF
+      ." <p>Error getting extracted file id for extracted file name from database.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( push extracted fileid from result set to data stack )
+    PEXTRACTEDFILEIDRESULTSET @ GETNUMBEROFROWSFROMRESULTSET 0= IF
+      -1 ( no file id exists for this filename )
+    ELSE
+      1 PEXTRACTEDFILEIDRESULTSET @ GETCOLUMNTYPEFROMRESULTSET SQL_INTEGER = 0= IF
+        -1
+      ELSE
+        1 1 PEXTRACTEDFILEIDRESULTSET @ GETNUMBERFROMRESULTSET 
+      THEN
+    THEN
+    
+    PEXTRACTEDFILEID !
+
+
+    ( get encryption type id )
+    selectencryptiontypeid$ con$ db$ GETRESULTSET
+
+    LATESTRESULTSET PENCRYPTIONTYPERESULTSET !
+
+    ?ERRORIF
+      ." <p>Error getting encryption type id for encryption type from database.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( push extracted encryption type id from result set to data stack )
+    PENCRYPTIONTYPERESULTSET @ GETNUMBEROFROWSFROMRESULTSET 0= IF
+      -1 ( no encryption type id exists for this encryption type )
+    ELSE
+      1 PENCRYPTIONTYPERESULTSET @ GETCOLUMNTYPEFROMRESULTSET SQL_INTEGER = 0= IF
+        -1
+      ELSE
+        1 1 PENCRYPTIONTYPERESULTSET @ GETNUMBERFROMRESULTSET 
+      THEN
+    THEN
+    
+    PENCRYPTIONTYPEID !
+
+
+    ( check if source file id loaded )
+    PEXTRACTEDFILEID @ -1 = IF
+      ." <p>Could not find extracted filename '"
+      getextractedfilename$ .$ 
+      ." ' in data base.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+
+    ( inserting new game file mapping into game file mapping table )
+    insert$ con$ db$ CONNECTSQLANDDOSTATEMENT$  
+
+    ?ERRORIF
+      ." <p>Error inserting game file mapping into game file mapping table.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ." <p>Inserted game file mapping into game file mapping table.<p>" CRLF
+    
+    drawprojectfooter 
+;
+
+drawpage
+
+

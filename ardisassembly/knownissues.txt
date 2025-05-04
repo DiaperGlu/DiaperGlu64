@@ -1,0 +1,10 @@
+April 08, 2007
+
+Jim Norris
+
+
+Deleting a label set does not remove the labels associated with it automatically.
+When a new label set is created, if it is assigned the id of the deleted one, it
+will inherit the deleted labels.
+
+For now the administrator will need to do this.

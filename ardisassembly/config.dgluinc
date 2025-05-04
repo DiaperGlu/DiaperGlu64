@@ -1,0 +1,21 @@
+
+: sqlserver$    $" ARDBMYSQLANSI9.2" ;
+
+: sqlusername$  $" root" ;
+
+: sqlpassword$  $" limeytwo" ;
+
+: con$ sqlserver$ sqlusername$ sqlpassword$ ;
+
+( database name )
+: db$ $" alternaterealitydb" ;
+
+: formpassword$ $" Acrinimiril" ;
+
+: hiddendeletepassword$ $" losttearstavern" ;
+
+: adminpassword$ $" whensomearelost" ;
+
+: downloadsallowed? TRUE ; ( TRUE allows downloads, FALSE disables them )
+
+: imagepath$ NEW$ ;

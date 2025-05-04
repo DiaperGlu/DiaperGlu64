@@ -1,0 +1,179 @@
+
+$" odbcsqlsupport.dgluinc" INCLUDEFILE$
+
+$" skin.dgluinc" INCLUDEFILE$
+
+LOADFORMVALUES
+
+: getpassword$ ( -$- password$ )
+    $" password" POSTGETNAME$>VALUE$
+;
+
+: getlabelsetname$ ( -$- password$ )
+    $" labelsetname" POSTGETNAME$>VALUE$
+;
+
+: getfilename$ ( -$- password$ )
+    $" filename" POSTGETNAME$>VALUE$
+;
+
+VARIABLE PLABELSETID 
+-1 PLABELSETID !
+
+VARIABLE PFILEID
+-1 PFILEID !
+
+: sellabelsetid$ ( -$- labelsetid$ )
+    $" SELECT id FROM tbllabelsets WHERE namecol = '"
+    getlabelsetname$ $>$ $" '" $>$
+;
+
+: selfileid$ ( -$- fileid$ )
+    $" SELECT id FROM tblfiles WHERE namecol = '"
+    getfilename$ $>$ $" '" $>$
+;
+
+: insert$ 
+    DECIMAL
+    $" INSERT INTO tbllabelsetmapping (extractedfileid, labelsetid) "
+    $" VALUES (" $>$
+       PFILEID @ 0 <#$ #S$ #>$ $>$ 
+       $" , " $>$
+       PLABELSETID @ 0 <#$ #S$ #>$ $>$ 
+       $" )" $>$ 
+;
+
+
+VARIABLE PLABELSETIDRESULTSET
+-1 PLABELSETIDRESULTSET !
+
+VARIABLE PFILEIDRESULTSET
+-1 PFILEIDRESULTSET !
+
+: drawpage ( -- )
+
+    ." CONTENT-TYPE: text/html" CRLF 
+    ." Cache-Control: no-cache, must-revalidate" CRLF
+    ." Expires: Mon, 12 Jul 1997 05:00:00 GMT" CRLF
+    CRLF
+
+    drawprojectheader
+
+    ." <h3 align='center'>Trying to assign label set '" getlabelsetname$ .$ 
+    ." ' to file '" getfilename$ .$ ." '</h3>" CRLF 
+
+    ( check password )
+    
+    getpassword$ formpassword$ COMPARE$ DROP$ DROP$ 0= 0= IF
+
+      ( they don't match )
+      ." <p>Password is incorrect.<p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( they match )
+ 
+    ( checking label set name for problems )
+    getlabelsetname$ insertvalue$ok? DROP$ 0= IF
+
+      ." <p>Something wrong with label set name '"
+      getlabelsetname$ .$
+      ." '. Please try another name.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( checking file name for problems )
+    getfilename$ insertvalue$ok? DROP$ 0= IF
+
+      ." <p>Something wrong with file name '"
+      getfilename$ .$
+      ." '. Please try another name.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( get label set id )
+    sellabelsetid$ con$ db$ GETRESULTSET
+
+    LATESTRESULTSET PLABELSETIDRESULTSET !
+
+    ?ERRORIF
+      ." <p>Error getting label set id for label set name from database.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+  
+    ( push label set id from result set to data stack )
+    PLABELSETIDRESULTSET @ GETNUMBEROFROWSFROMRESULTSET 0= IF
+      -1 ( no file id exists for this filename )
+    ELSE
+      1 PLABELSETIDRESULTSET @ GETCOLUMNTYPEFROMRESULTSET SQL_INTEGER = 0= IF
+        -1
+      ELSE
+        1 1 PLABELSETIDRESULTSET @ GETNUMBERFROMRESULTSET 
+      THEN
+    THEN
+    
+    PLABELSETID !
+
+    ( check if label set id loaded )
+    PLABELSETID @ -1 = IF
+      ." <p>Could not find label set '"
+      getlabelsetname$ .$ 
+      ." ' in data base.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( get file id )
+    selfileid$ con$ db$ GETRESULTSET
+
+    LATESTRESULTSET PFILEIDRESULTSET !
+
+    ?ERRORIF
+      ." <p>Error getting file id for file name from database.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+  
+    ( push file id from result set to data stack )
+    PFILEIDRESULTSET @ GETNUMBEROFROWSFROMRESULTSET 0= IF
+      -1 ( no file id exists for this filename )
+    ELSE
+      1 PFILEIDRESULTSET @ GETCOLUMNTYPEFROMRESULTSET SQL_INTEGER = 0= IF
+        -1
+      ELSE
+        1 1 PFILEIDRESULTSET @ GETNUMBERFROMRESULTSET 
+      THEN
+    THEN
+    
+    PFILEID !
+
+    ( check if label set id loaded )
+    PFILEID @ -1 = IF
+      ." <p>Could not find file name '"
+      getfilename$ .$ 
+      ." ' in data base.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( inserting new label into label table )
+    insert$ con$ db$ CONNECTSQLANDDOSTATEMENT$  
+
+    ?ERRORIF
+      ." <p>Error inserting assignment of label set to filename in database.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ." <p>Inserted assigment of label set to filename in database.<p>" CRLF
+    
+    drawprojectfooter 
+;
+
+drawpage
+
+

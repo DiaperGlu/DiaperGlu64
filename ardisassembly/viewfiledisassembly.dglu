@@ -1,0 +1,220 @@
+
+$" odbcsqlsupport.dgluinc" INCLUDEFILE$
+
+$" skin.dgluinc" INCLUDEFILE$
+
+$" drawhtmldisassembly6502.dgluinc" INCLUDEFILE$
+
+LOADFORMVALUES
+
+: getfilename$ ( -- ) ( -$- filename$|empty$ )
+    $" filename" POSTGETNAME$>VALUE$
+;
+    
+
+: selectsectionlist$ 
+    $" SELECT tblgamefilecodesections.codestartoffset FROM tblfiles, tblgamefilecodesections WHERE tblfiles.namecol = '"
+    getfilename$ $>$ $" ' AND tblgamefilecodesections.extractedfileid = tblfiles.id" $>$
+;
+
+: selectfiledata$ $" SELECT datacol FROM tblfiles WHERE namecol = '" getfilename$ $>$ $" '" $>$ ;
+
+: selectbaseaddress$ 
+    $" SELECT tblgamefilemapping.startaddress FROM tblgamefilemapping, tblfiles WHERE tblfiles.namecol = '"
+    getfilename$ $>$ $" ' AND tblgamefilemapping.extractedfileid = tblfiles.id" $>$ 
+;
+
+: selectlabels$
+    $" SELECT tbllabels.addresscol, tbllabels.textcol FROM tbllabels, tblfiles, tbllabelsetmapping "
+    $" WHERE tblfiles.namecol = '" $>$ getfilename$ $>$ 
+    $" ' AND tbllabelsetmapping.extractedfileid = tblfiles.id " $>$
+    $" AND tbllabels.labelsetidcol = tbllabelsetmapping.labelsetid" $>$
+;
+
+: selectlabelsets$
+    $" SELECT tbllabelsets.namecol FROM tblfiles, tbllabelsetmapping, tbllabelsets "
+    $" WHERE tblfiles.namecol = '" $>$ getfilename$ $>$ 
+    $" ' AND tbllabelsetmapping.extractedfileid = tblfiles.id " $>$
+    $" AND tbllabelsets.id = tbllabelsetmapping.labelsetid" $>$
+;
+
+
+VARIABLE PBASEADDRESS
+
+0 CONSTANT FILEDATARESULTSET
+1 CONSTANT BASEADDRESSRESULTSET
+2 CONSTANT CODESECTIONRESULTSET
+3 CONSTANT LABELRESULTSET
+4 CONSTANT LABELSETSRESULTSET
+
+( routine to get label$ from result set )
+: GETLABEL$SFROMLABELRESULTSET ( 0basedoffset -- ) ( -$- label$ )
+
+    DEPTH 1 U< IF
+      NEW$ EXIT
+    THEN
+
+    ( make sure offset is in result set ) 
+    DUP LABELRESULTSET GETNUMBEROFROWSFROMRESULTSET U< 0= IF
+      DROP NEW$ EXIT
+    THEN
+
+    2 SWAP 1+ LABELRESULTSET GETDATA$FROMRESULTSET        
+;
+
+' GETLABEL$SFROMLABELRESULTSET PGETLABELTEXT$FUNCTION !
+
+: drawpage ( -- )
+
+    ." CONTENT-TYPE: text/html" CRLF 
+    ." Cache-Control: no-cache, must-revalidate" CRLF
+    ." Expires: Mon, 12 Jul 1997 05:00:00 GMT" CRLF
+    CRLF
+
+    drawprojectheader
+
+    ." <h3 valign=middle align='center'>View disassembly of known code sections for " 
+
+    getfilename$ LENGTH$ DROP$ 0= IF
+      ." No filename chosen.</h3>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    getfilename$ .$ ." </h3>" CRLF 
+
+    ( load file data to result set )      
+    selectfiledata$ con$ db$ GETRESULTSET
+
+    ?ERRORIF
+      ." <p>Error getting file data from database.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( load base address to result set )
+    selectbaseaddress$ con$ db$ GETRESULTSET
+
+    ?ERRORIF
+      ." <p>Error getting file's base address from database.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN    
+
+    FILEDATARESULTSET GETNUMBEROFROWSFROMRESULTSET 0= IF
+      ." <p>File data not found in database.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( push file data from result set 0 to $ stack )
+    1 1 FILEDATARESULTSET GETDATA$FROMRESULTSET
+
+    ( push base address from result set 1 to data stack )
+    BASEADDRESSRESULTSET GETNUMBEROFROWSFROMRESULTSET 0= IF
+      0 ( if no base address exists for this file, default is 0 )
+    ELSE
+      1 BASEADDRESSRESULTSET GETCOLUMNTYPEFROMRESULTSET SQL_INTEGER = 0= IF
+        0
+      ELSE
+        1 1 BASEADDRESSRESULTSET GETDATA$FROMRESULTSET INT$>NUMBER
+      THEN
+    THEN
+
+    PBASEADDRESS !
+
+    ( load code sections to result set )      
+    selectsectionlist$ con$ db$ GETRESULTSET
+
+    ?ERRORIF
+      ." <p>Error getting list of known code sections from database.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( load labels to result set )      
+    selectlabels$ con$ db$ GETRESULTSET 
+
+    ?ERRORIF
+      ." <p>Error getting list of labels from database.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN 
+
+    1 LABELRESULTSET LABELADDRESSBUFID RESULTSETINTCOL>BUF
+
+    ?ERRORIF
+      ." <p>Error moving label addresses from result set to buffer</p>" CRLF
+      drawprojectfooter
+      EMPTY-ERRORS
+      EXIT
+    THEN
+
+    ( load label set names to result set )      
+    selectlabelsets$ con$ db$ GETRESULTSET 
+
+    ?ERRORIF
+      ." <p>Error getting list of label set names from database.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN 
+
+    ." <table border=1>" CRLF
+    ."   <tr>" CRLF
+    ."     <td width=65%>" CRLF
+    ."       <div id='disassemblyscrollsection' style='height:395px; overflow:auto'>" CRLF
+    ( draw disassembly for each known section )
+
+    getbase BASE !
+
+    ."   <p>Base address of file: " PBASEADDRESS @ U. ." </p>" CRLF
+    ."   <p>Length of file: " LENGTH$ U. ." </p>" CRLF
+
+    CODESECTIONRESULTSET GETNUMBEROFROWSFROMRESULTSET DUP 0= IF
+      DROP
+      ." <p>No known code sections found for this file.</p>" CRLF
+    ELSE
+      0 DO
+
+        ( get int from result set )
+        1 I 1+ CODESECTIONRESULTSET GETDATA$FROMRESULTSET INT$>NUMBER
+
+        PBASEADDRESS @ + PBASEADDRESS @
+        DRAW$ASHTML6502DISASSEMBLYFOLLOWCODE
+
+        ?ERRORIF
+          DROP$ LEAVE
+        THEN
+
+      LOOP
+    THEN
+
+    DROP$
+    ."       </div>" CRLF
+    ."     </td>" CRLF
+    ."     <td valign=top>" CRLF
+    ."       <div>" CRLF
+    ."         <h4 align=center>Add a label to this file's label sets.</h4>" CRLF
+    ."         <form action='addlabel.dglu' method=post runat=server>" CRLF
+
+    ."           Label set: <br>" 1 LABELSETSRESULTSET $" name='labelsetname'" DRAWRESULTSETCOLUMNASHTMLSELECTLIST
+    ."           <br>Label address: (use 0x prefix for hex numbers): <br><input type=text name=labeladdress>" CRLF
+    ."           <br>Label text: (no sql control characters ;:')|%\ ) <br><input type=text name=labeltext style='width:300px'>" CRLF
+    ."           <br>Password: <br><input type=password name=password>" CRLF 
+    ."           <br><input type=submit>" CRLF
+
+    ."         </form>" CRLF
+    ."         <hr>" CRLF
+    ."         Useful link: <br>" CRLF
+    ."         <a href='http://www.atariarchives.org/mapping/'>Mapping the Atari</a>" CRLF
+    ."       </div>" CRLF
+    ."     </td>" CRLF
+    ."   </tr>" CRLF
+    ." <table>" CRLF
+
+    drawprojectfooter 
+;
+
+drawpage
+
+

@@ -1,0 +1,225 @@
+
+( Last modified: January 14, 2008 )
+
+$" odbcsqlsupport.dgluinc" INCLUDEFILE$
+
+$" skin.dgluinc" INCLUDEFILE$
+
+
+LOADFORMVALUES
+
+HEX
+1000 7FFF0000 NEWBUFFER CONSTANT tablenamel$offsetbufid
+1000 7FFF0000 NEWBUFFER CONSTANT tablenamel$stringbufid
+
+1000 7FFF0000 NEWBUFFER CONSTANT buffersl$offsetbufid
+1000 7FFF0000 NEWBUFFER CONSTANT buffersl$stringbufid
+
+1000 7FFF0000 NEWBUFFER CONSTANT packedbufferid
+
+: getfilename$ ( -- ) ( -$- filename$|empty$ )
+    $" filename" POSTGETNAME$>VALUE$
+;
+
+: getpassword$ ( -- ) ( -$- password$|empty$ )    
+    $" password" POSTGETNAME$>VALUE$
+;
+
+: $>tablenamel$ ( a$ -$- ) ( -tablenamel$- a$ )
+    0 GETP$ tablenamel$offsetbufid tablenamel$stringbufid S>NEWL$ DROP$
+;
+
+: packtablename$
+    $" encryptiontype"           $>tablenamel$
+    $" tblfiles"                 $>tablenamel$
+    $" tblfiletype"              $>tablenamel$
+    $" tblgamefilecodesections"  $>tablenamel$
+    $" tblgamefilemapping"       $>tablenamel$
+    $" tbllabels"                $>tablenamel$
+    $" tbllabelsetmapping"       $>tablenamel$
+    $" tbllabelsets"             $>tablenamel$
+;
+
+: buf>buffersl$ ( bufferid -- )
+    GETPBUFFER @ buffersl$offsetbufid buffersl$stringbufid S>NEWL$
+;
+
+
+: pushresultsetbuffers
+    packtablename$
+    tablenamel$offsetbufid buf>buffersl$
+    tablenamel$stringbufid buf>buffersl$
+    SQLRESULTL$STACKOFFSETBUFFERID buf>buffersl$
+    SQLRESULTL$STACKSTRINGBUFFERID buf>buffersl$
+    SQLCOLTYPEL$STACKOFFSETBUFFERID buf>buffersl$
+    SQLCOLTYPEL$STACKSTRINGBUFFERID buf>buffersl$
+    SQLCOLNAMEL$STACKOFFSETBUFFERID buf>buffersl$
+    SQLCOLNAMEL$STACKSTRINGBUFFERID buf>buffersl$
+;
+
+: packit ( -- )
+    buffersl$offsetbufid buffersl$stringbufid  
+    ( packedbufferid PACKL$>BUF ) // was 32bit pack... but won't work correctly in 64 bits 
+                                  //  because offset array offsets are 64bit now
+    PACKL$[] // 64bit pack which is completely different
+;
+
+: saveit ( -- ) // not used with download
+  ( packedbufferid ) // 32bit pack dest buffer
+  buffersl$stringbufid // 64bit pack dest buffer
+  getfilename$ SAVEFILE$ ;
+
+1000 7FFF0000 NEWBUFFER CONSTANT packedl$bufid
+
+
+( get result sets of all ardb tables )
+( make ardb table name to an l$ stack )
+( pack table name l$ buffers to pack l$ stack )
+( pack result set l$ buffers to pack l$ stack )
+( pack the pack l$ stack to pack buffer )
+( save pack buffer to disk )
+
+: drawhtmlheader 
+    ." CONTENT-TYPE: text/html" CRLF  
+    ." Cache-Control: no-cache, must-revalidate" CRLF 
+    ." Expires: Mon, 12 Jul 1997 05:00:00 GMT" CRLF 
+    CRLF 
+    drawprojectheader
+    ." <h3 align='center'>Trying to pack AR Database.</h3>" CRLF
+;
+
+: drawpage ( -- )
+
+    ( check admin password )   
+    getpassword$ adminpassword$ COMPARE$ DROP$ DROP$ 0= 0= IF
+      drawhtmlheader
+      ." <p>Admin password is incorrect.<p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+    
+    $" SELECT * FROM encryptiontype" con$ db$ GETRESULTSET
+
+    ?ERRORIF
+      drawhtmlheader
+      ." <p>Error getting table from database</p>" CRLF
+      ." <p>" POPOERROR0$ O>P TYPE0$ ." </p>" CRLF
+      drawprojectfooter
+      EMPTY-ERRORS
+      EXIT
+    THEN
+
+    $" SELECT * FROM tblfiles" con$ db$ GETRESULTSET
+
+    ?ERRORIF
+      drawhtmlheader
+      ." <p>Error getting table from database</p>" CRLF
+      ." <p>" POPOERROR0$ O>P TYPE0$ ." </p>" CRLF
+      drawprojectfooter
+      EMPTY-ERRORS
+      EXIT
+    THEN
+
+    $" SELECT * FROM tblfiletype" con$ db$ GETRESULTSET
+
+    ?ERRORIF
+      drawhtmlheader
+      ." <p>Error getting table from database</p>" CRLF
+      ." <p>" POPOERROR0$ O>P TYPE0$ ." </p>" CRLF
+      drawprojectfooter
+      EMPTY-ERRORS
+      EXIT
+    THEN
+
+    $" SELECT * FROM tblgamefilecodesections" con$ db$ GETRESULTSET
+
+    ?ERRORIF
+      drawhtmlheader
+      ." <p>Error getting table from database</p>" CRLF
+      ." <p>" POPOERROR0$ O>P TYPE0$ ." </p>" CRLF
+      drawprojectfooter
+      EMPTY-ERRORS
+      EXIT
+    THEN
+
+    $" SELECT * FROM tblgamefilemapping" con$ db$ GETRESULTSET
+
+    ?ERRORIF
+      drawhtmlheader
+      ." <p>Error getting table from database</p>" CRLF
+      ." <p>" POPOERROR0$ O>P TYPE0$ ." </p>" CRLF
+      drawprojectfooter
+      EMPTY-ERRORS
+      EXIT
+    THEN
+
+    $" SELECT * FROM tbllabels" con$ db$ GETRESULTSET
+
+    ?ERRORIF
+      drawhtmlheader
+      ." <p>Error getting table from database</p>" CRLF
+      ." <p>" POPOERROR0$ O>P TYPE0$ ." </p>" CRLF
+      drawprojectfooter
+      EMPTY-ERRORS
+      EXIT
+    THEN
+
+    $" SELECT * FROM tbllabelsetmapping" con$ db$ GETRESULTSET
+
+    ?ERRORIF
+      drawhtmlheader
+      ." <p>Error getting table from database</p>" CRLF
+      ." <p>" POPOERROR0$ O>P TYPE0$ ." </p>" CRLF
+      drawprojectfooter
+      EMPTY-ERRORS
+      EXIT
+    THEN
+
+    $" SELECT * FROM tbllabelsets" con$ db$ GETRESULTSET
+
+    ?ERRORIF
+      drawhtmlheader
+      ." <p>Error getting table from database</p>" CRLF
+      ." <p>" POPOERROR0$ O>P TYPE0$ ." </p>" CRLF
+      drawprojectfooter
+      EMPTY-ERRORS
+      EXIT
+    THEN
+
+    pushresultsetbuffers
+
+    ?ERRORIF
+      drawhtmlheader
+      ." <p>Error packing resultset buffers onto an l$stack</p>" CRLF
+      ." <p>" POPOERROR0$ O>P TYPE0$ ." </p>" CRLF
+      drawprojectfooter
+      EMPTY-ERRORS
+      EXIT
+    THEN
+
+    packit
+
+    ?ERRORIF
+      drawhtmlheader
+      ." <p>Error packing l$ stack into a buffer</p>" CRLF
+      ." <p>" POPOERROR0$ O>P TYPE0$ ." </p>" CRLF
+      drawprojectfooter
+      EMPTY-ERRORS
+      EXIT
+    THEN
+
+    ( copy packed database to string stack )
+    ( packedbufferid ) // 32bit pack dest buffer
+    buffersl$stringbufid // 64bit pack dest buffer
+    GETPBUFFER @ S>NEW$ 
+
+    ( send file )
+    ." Content-Type: application/octet-stream" CRLF
+    ." Content-Length: " LENGTH$ DECIMAL 0 <#$ #S$ #>$ .$ CRLF
+    ." Content-Disposition: attachment; filename=" getfilename$ .$ CRLF
+    CRLF
+    .$ 
+;
+
+drawpage
+

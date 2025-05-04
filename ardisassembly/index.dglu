@@ -1,0 +1,30 @@
+
+( last modified: April 7, 2007 )
+
+$" skin.dgluinc" INCLUDEFILE$
+
+: .bodyimage$ $" <img style='margin: 1em; float: left' src='" imagepath$ $>$ SWAP$ $>$ $" ' alt='could not load image'>" $>$ .$ ;
+
+." Content-type: text/html" CRLF
+CRLF
+
+
+drawprojectheader
+
+( $" cityabduction.jpg" .bodyimage$ )
+
+."
+   <div style='padding: 1em;'> 
+   <p style='text-indent: 2em'>
+     Back by popular demand... well, one person wants it... 
+   </p>
+
+   <p>
+     <a href='arcitystats.htm'>AR City Character Data</a><br>
+     <a href='ampdoc.htm'>AR City A.M.P. Script Format</a>
+   </p>
+
+   </div>
+" CRLF
+
+drawprojectfooter

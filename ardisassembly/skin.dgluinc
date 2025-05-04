@@ -1,0 +1,313 @@
+
+( Last modified: May 3, 2025 )
+
+SYNONYM LINES." ."
+
+$" config.dgluinc" INCLUDEFILE$
+
+: .image$ ( imagefilename$ -$- ) $" <img src='" imagepath$ $>$ SWAP$ $>$ $" ' alt='could not load image'>" $>$ .$ ;
+( downloadimage.dglu?filename=smithyday.gif )
+
+: drawskinmenubuttontablev ( -- )
+."
+            <table class=menubuttontable>
+              <tr>
+                <td>
+                  <form action='index.dglu' runat=server method=get>
+                    <input class=menubutton type=submit value='Home'>
+                  </form>
+                </td>
+              </tr>
+
+              <tr>
+                <td>
+                  <form action='choosefileforhexview.dglu' runat=server method=get>
+                    <input class=menubutton type=submit value='Dump File'>
+                  </form>
+                </td>
+              </tr>
+        
+              <tr>
+                <td>
+                  <form action='choosefiletoviewcodesections.dglu' runat=server method=get>
+                    <input class=menubutton type=submit value='Set Code Starts'>
+                  </form>
+                </td>
+              </tr>
+
+              <tr>
+                <td>
+                  <form action='choosefilefordisassembly.dglu' runat=server method=get>
+                    <input class=menubutton type=submit value='Known Disassembly'>
+                  </form>
+                </td>
+              </tr>
+
+              <tr>
+                <td>
+                  <form action='choosefilelabelsetgroup.dglu' runat=server method=get>
+                    <input class=menubutton type=submit value='Assign Label Sets'>
+                  </form>
+                </td>
+              </tr>
+
+              <tr>
+                <td>
+                  <form action='chooselabelsettoview.dglu' runat=server method=get>
+                    <input class=menubutton type=submit value='Set Labels'>
+                  </form>
+                </td>
+              </tr>
+" CRLF
+
+              downloadsallowed? IF
+."
+              <tr>
+                <td>
+                  <form action='choosefilefordownload.dglu' runat=server method=get>
+                    <input class=menubutton type=submit value='Download File'>
+                  </form>
+                </td>
+              </tr>
+" CRLF
+              THEN
+
+."
+              <tr>
+                <td>
+                  <form action='viewgamefilemapping.dglu' runat=server method=get>
+                    <input class=menubutton type=submit value='File Mapping'>
+                    <input type=hidden name=base value=decimal>
+                  </form>
+                </td>
+              </tr>
+
+              <tr>
+                <td>
+                  <form action='viewgamefilemapping.dglu' runat=server method=get>
+                    <input class=menubutton type=submit value='File Mapping Hex'>
+                    <input type=hidden name=base value=hex>
+                  </form>
+                </td>
+              </tr>
+
+              <tr>
+                <td>
+                  <form action='admin.dglu' runat=server method=get>
+                    <input class=menubutton type=submit value='Admin'>
+                  </form>
+                </td>
+              </tr>
+
+              <tr>
+                <td>
+                  <form action='showserverstats.dglu' runat=server method=get>
+                    <input class=menubutton type=submit value='SQL Stats'>
+                  </form>
+                </td>
+              </tr>
+
+              <tr>
+                <td>
+                  <form action='showparameters.dglu' runat=server method=get>
+                    <input class=menubutton type=submit value='CGI Stats'>
+                  </form>
+                </td>
+              </tr>
+
+              <tr>
+                <td>
+                  <form action='viewimages.dglu' runat=server method=get>
+                    <input class=menubutton type=submit value='View Images'>
+                  </form>
+                </td>
+              </tr>
+
+            </table>
+" CRLF
+;
+
+: drawprojectheader ( -- )
+
+." <!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01 Transitional//EN' 'http://www.w3.org/TR/html4/loose.dtd'>" CRLF
+
+." <html>
+
+  <head>
+    <style type='text/css'>
+
+      /* page defaults */
+      body {
+        color: black; 
+        font-family: sans-serif; 
+        font-size: 11pt; 
+        height: 70%; 
+        width: 95%
+      }
+
+
+      /* header stuff */
+        /* text loses vertical positioning if img tag not included */
+      thead.pageheader th,
+      thead.pageheader img {
+        color: green; 
+        font-size: 22pt;
+        text-align: center;
+        vertical-align: middle;
+        border: 2px solid black;
+        background: #CCCCCC
+      }
+
+
+      /* footer stuff */ 
+      tfoot.pagefooter th, 
+      tfoot.pagefooter td {
+        text-align: center;
+        color: purple; 
+        font-size: 8pt; 
+        border: 2px solid gray;
+        background: #DDDDDD
+      }
+
+      tfoot.pagefooter table td {
+        border: 1px solid gray;
+        padding: 0.5em;
+        margin: 2px;
+      }
+
+
+      /* menu buttons stuff */
+      td.menubuttonholdertd {
+        vertical-align: top;
+        background: #DDDDDD;
+        border: 1px solid black;
+      }
+
+      table.menubuttontable {
+        background: #DDDDDD;
+        vertical-align: top;
+        text-align: center;
+        border: 0;
+      }
+
+      table.menubuttontable td {
+        width: 100%;
+        height: 100%;
+        border: 0;
+      }
+
+      table.menubuttontable form {
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        border: 0;
+      }
+
+      table.menubuttontable input.menubutton {
+        width: 100%;
+        color: purple;
+        font-size: 9pt;
+      }
+
+
+      /* main page section stuff */
+      td.pagedataholdertd {
+        vertical-align: top;
+        width: 100%;
+        height: 100%;
+        border: 1px solid black;
+        background: white;
+      }
+
+      /* ie 6 seems to need actual px sizes to set up scroll window*/
+      div.pagedataholderdiv {
+        vertical-align: top;
+        height: 450px;
+        width: 800px;
+        overflow: auto;
+        padding: 1em
+      }
+
+    </style>
+  </head>
+
+  <body>
+    <table class=pagebodytable>
+
+      <thead class=pageheader>
+
+        <tr>
+          <th>" CRLF
+
+
+( $" smithyday.jpg" .image$ CRLF )
+
+."            Alternate Reality Disassembly Project "
+
+( $" smithynight.jpg" .image$ CRLF )
+
+."        </th>
+        </tr>
+      </thead>" CRLF
+
+."    <tfoot class=pagefooter>
+
+        <tr>
+          <td>
+            <table>
+              <tr>
+                <td>Powered by Diaperglu from <a href='http://www.rainbarrel.com'>Rainbarrel.com</a> and 
+                <a href='https://github.com/DiaperGlu/DiaperGlu64'>Github</a> </td>
+
+                <td>Web design by Jim Norris at <a href='http://www.rainbarrel.com'>Rainbarrel.com</a></td>
+              
+                <td>Last modified May 3, 2025</td>
+
+                <td>Version 2.0</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+      </tfoot>
+" CRLF
+
+."    <tbody class=pagebody>
+        <tr>
+          <td>
+            <table>
+              <tr>
+                <td class=menubuttonholdertd>"
+                  drawskinmenubuttontablev
+ ."             </td>
+                <td class=pagedataholdertd>
+                  <div class=pagedataholderdiv>
+" CRLF
+;
+    
+    
+: drawprojectfooter ( -- )
+  
+  PSHOWERRORSONEXITFLAG @ IF
+    DEPTHERROR 0= 0= IF
+      ." Error stack:<pre>" CRLF
+      .ES
+      ." </pre>"
+      EES
+    THEN
+  THEN
+
+."
+                  </div>  
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </tbody>
+    </table>    
+  </body>
+</html>
+  " CRLF
+;
+

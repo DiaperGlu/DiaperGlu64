@@ -1,0 +1,137 @@
+
+$" odbcsqlsupport.dgluinc" INCLUDEFILE$
+
+$" skin.dgluinc" INCLUDEFILE$
+
+LOADFORMVALUES
+
+: getfilename$ ( -- ) ( -$- filename$|empty$ )
+    $" filename" POSTGETNAME$>VALUE$
+;
+    
+
+: selectfilelabelsetgroup$ 
+    $" SELECT tbllabelsetmapping.id, tbllabelsets.namecol AS labelsetname "
+    $" FROM tblfiles, tbllabelsets, tbllabelsetmapping " $>$
+    $" WHERE tblfiles.namecol = '" $>$
+    getfilename$ $>$ $" ' AND tbllabelsetmapping.extractedfileid = tblfiles.id " $>$
+    $" AND tbllabelsetmapping.labelsetid = tbllabelsets.ID" $>$
+;
+
+: selectnames$ $" SELECT * FROM tblnames" ;
+
+: selalllabelsetnames$ $" SELECT namecol FROM tbllabelsets" ;
+
+VARIABLE PLABELSETGROUPRESULTSET
+VARIABLE PALLLABELSETSRESULTSET
+
+: drawpage ( -- )
+
+    ." CONTENT-TYPE: text/html" CRLF 
+    ." Cache-Control: no-cache, must-revalidate" CRLF
+    ." Expires: Mon, 12 Jul 1997 05:00:00 GMT" CRLF
+    CRLF
+
+    drawprojectheader
+
+    ." <h3 align='center'>View group of label sets used to disassemble a file.</h3>" CRLF
+
+    getfilename$ LENGTH$ DROP$ 0= IF
+      ." <h4 align='center'>No filename chosen.</h4>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ." <h4 align='center'>" getfilename$ LENGTH$ .$ ." </h4>" CRLF 
+
+    ( load label set group for file to result set )      
+    selectfilelabelsetgroup$ con$ db$ GETRESULTSET
+    LATESTRESULTSET PLABELSETGROUPRESULTSET !
+
+    ?ERRORIF
+      ." <p>Error getting group of label sets assigned to a file from database.</p>" CRLF
+      ( ." <p>" POPOERROR0$ O>P TYPE0$ ." </p>" CRLF )
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( load all label sets to result set )      
+    selalllabelsetnames$ con$ db$ GETRESULTSET
+    LATESTRESULTSET PALLLABELSETSRESULTSET !
+
+    ?ERRORIF
+      ." <p>Error getting list of all label sets from database.</p>" CRLF
+      ( ." <p>" POPOERROR0$ O>P TYPE0$ ." </p>" CRLF )
+      drawprojectfooter
+      EXIT
+    THEN
+
+    PLABELSETGROUPRESULTSET @ GETNUMBEROFROWSFROMRESULTSET 0= IF
+      ." <p>No label sets assigned to this file yet.</p>" CRLF
+    ELSE
+      PLABELSETGROUPRESULTSET @ $" border=1" DECIMAL DRAWRESULTSETASHTMLTABLE
+    THEN
+
+    ." <hr>"
+
+    ." <h3 align=center>Assign a label set to this file</h3>" CRLF
+
+    ." <a href='labelexplanation.dglu'>Instructions for how to assign label sets</a>" CRLF
+
+    ." <form action='assignlabelsettofile.dglu' runat=server method=post>" CRLF
+
+    ."     <input type=hidden name=filename value='" getfilename$ .$ ." '>" CRLF
+    ."     <br>Label set: " 1 PALLLABELSETSRESULTSET @ $" name='labelsetname'" DRAWRESULTSETCOLUMNASHTMLSELECTLIST
+    ."     <br>Password: <input type=password name=password>" CRLF
+    ."     <br><input type='submit'>" CRLF
+   
+
+    ." </form>" CRLF
+
+    PLABELSETGROUPRESULTSET @ GETNUMBEROFROWSFROMRESULTSET 0= 0= IF
+
+      ."   <hr>" CRLF
+      ."   <h3 align=center>Remove label set assignment from this file.</h3>" CRLF
+
+      ."   <form action='confirmdelete.dglu' runat=server method=post>" CRLF
+      ."     <input type=hidden name=hiddenpassword value=losttearstavern>" CRLF
+      ."     <input type=hidden name=dbtable value=tbllabelsetmapping>" CRLF
+      ."     <input type=hidden name=coltype value=integer>" CRLF
+      ."     <input type=hidden name=base value=decimal>" CRLF
+      ."     <input type=hidden name=colname value=id>" CRLF
+      ." id: "     1 PLABELSETGROUPRESULTSET @ $" name=colvalue" DECIMAL DRAWRESULTSETCOLUMNASHTMLSELECTLIST
+      ."     <br>Password: <input type=password name=password>" CRLF
+      ."     <br><input type=submit>" CRLF
+      ."   </form>"
+
+    THEN
+
+    ( load names tables to result set )      
+    // selectnames$ con$ db$ GETRESULTSET // there is no table name table anymore
+    //   to replace this... need a select list for the table names
+
+    // ?ERRORIF
+    //  ." <p>Error getting names from database.</p>" CRLF
+    //  ( ." <p>" POPOERROR0$ O>P TYPE0$ ." </p>" CRLF )
+    //  drawprojectfooter
+    //  EXIT
+    // THEN
+
+    // LATESTRESULTSET GETNUMBEROFROWSFROMRESULTSET 0= 0= IF
+
+    //  ."   <hr>" CRLF
+    //  ."   <h3 align=center>View children of parent.</h3>" CRLF
+
+    //  ."   <form action='viewchildrenofparent.dglu' runat=server method=post>" CRLF
+    //  ." parent's name: " 2 LATESTRESULTSET $" name='parentname'" DECIMAL DRAWRESULTSETCOLUMNASHTMLSELECTLIST
+    //  ."     <br><input type=submit>" CRLF
+    //  ."   </form>"
+
+    // THEN
+
+    drawprojectfooter 
+;
+
+drawpage
+
+

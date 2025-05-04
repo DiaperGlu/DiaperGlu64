@@ -1,0 +1,1093 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+
+  <head>
+    <link rel='stylesheet' type='text/css' href='ampdoc.css'>
+    
+    <style type='text/css'>
+    
+      body { overflow: hidden }
+      
+      /* absolute positioning is relative to first non-static positioned element, otherwise it is <html> */
+      div#content { 
+        position: fixed; top: 0px; left: 0px;
+        height: 100%; width: 100%; overflow: scroll; 
+        border-width: 1px; border-color: #0000ff; border-style: solid;
+        margin: 0px; padding: 0px 
+      }
+
+      #pageheader {
+        position: absolute; top: 2px; left: 2px;
+        overflow: hidden;
+        width: 1096px; height: 38px; z-index: 1;
+        padding: 0px; margin: 0px;
+        border-width: 2px; border-color: #0000ff; border-style: solid;
+        text-align: center; color: #0000ff; font-size: 24px; background-color: #e0e0e0
+      }
+      
+      #sitedirectory {
+        position: absolute; top: 44px; left: 2px;
+        overflow: scroll;
+        width: 1096px; height: 36px; z-index: 3;
+        padding: 0px; margin: 0px;
+        border-width: 2px; border-color: #0000ff; border-style: solid;
+        text-align: left; color: #ff00ff; background-color: #808080; white-space: nowrap
+      }
+      
+      #sitedirectory a {
+        display: inline; 
+        overflow: hidden;
+        padding-top: 2px; padding-bottom: 2px; padding-left: 4px; padding-right: 4px; margin: 0px;
+        border-color: #8080e0; border-width: 2px; border-style: solid;
+        text-align: center; color: #ff00ff; background-color: #f0f0f0;
+        font-family: sans-serif; font-size: 8pt; white-space: nowrap
+      }
+      
+      #sitedirectory a:link { 
+        font-family: sans-serif; font-size: 8pt;
+        color: #ff00ff; text-decoration: none; border-style: outset
+      }
+
+      #sitedirectory a:visited { 
+        font-family: sans-serif; font-size: 8pt;
+        color: #e000e0; text-decoration: none; border-style: outset
+      }
+
+      #sitedirectory a:hover {
+        font-family: sans-serif; font-size: 8pt;
+        overflow: visible;
+        color: #ff00ff; background-color: #c0c0c0; text-decoration: none
+      }
+
+      #sitedirectory a:active {
+        font-family: sans-serif; font-size: 8pt; 
+        color: red; text-decoration: none; border-style: inset
+      }
+
+      #pagedirectory {
+        top: 80px; left: 2px; position: absolute;
+        width: 196px; height: 478px; overflow: scroll; z-index: 2;
+        padding: 0px; margin: 0px;
+        border-width: 2px; border-color: #0000ff; border-style: solid;
+        text-align: left; vertical-align: middle; color: #0000ff; background-color: #808080; 
+        font-family: sans-serif; font-size: 9pt
+      }
+      
+      .header { background-color: #e0e0e0 }
+
+      #pagedirectory a {
+        display: block; 
+        width: 168px; height: 24px; overflow: hidden;
+        padding-top: 2px; padding-bottom: 2px; padding-left: 4px; padding-right: 4px; margin: 0px;
+        border-color: #8080e0; border-width: 2px; border-style: solid;
+        text-align: center; vertical-align: middle; color: #00ff00; background-color: #f0f0f0;
+        font-family: sans-serif; font-size: 10pt; white-space: nowrap
+      }
+
+      #pagedirectory a:link {
+        vertical-align: middle;
+        font-family: sans-serif; font-size: 10pt; 
+        color: #0000ff; text-decoration: none; border-style: outset
+      }
+
+      #pagedirectory a:visited {
+        vertical-align: middle;
+        font-family: sans-serif; font-size: 10pt;
+        color: #0000e0; text-decoration: none; border-style: outset
+      }
+
+      #pagedirectory a:hover {
+        vertical-align: middle;
+        font-family: sans-serif; font-size: 10pt;
+        overflow: visible;
+        color: #00ff00; background-color: #c0c0c0; text-decoration: none 
+      }
+
+      #pagedirectory a:active {
+        vertical-align: middle;
+        font-family: sans-serif; font-size: 10pt;
+        color: #ff0000; text-decoration: none; border-style: inset
+      }
+
+      #pagestuff {
+        position: absolute; top: 80px; left: 202px;
+        width: 896px; height: 478px; overflow: scroll; z-index: 1;
+        margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px;
+        padding-top: 0px; padding-bottom: 0px; padding-left: 0px; padding-right: 0px; 
+        border-width: 2px; border-color: #00ff00; border-style: solid;
+        text-align: left; color: #000000; background-color: #ffffff; font-size: 12pt 
+      }
+      
+      .command { 
+        border-width: 2px; border-color: #c0c0c0; border-style: solid; 
+        margin-top: 1em; margin-bottom: 1em; margin-left: 0.5em; margin-right: 0.5em;
+        padding-top: 0.5em; padding-bottom: 0.5em; padding-left: 0.5em; padding-right: 0.5em;
+        text-align: left; color: #000000; background-color: #f0fff0; font-size: 12pt
+      }
+      
+      .commandtitle {
+        color: #0000ff
+      }
+      
+      .commandformat {
+        color: #00ff00
+      }
+      
+      .command p {
+        margin-top: 0em; margin-bottom: 0em; margin-left: 0em; margin-right: 0em;
+        padding-top: 0.3em; padding-bottom: 0.3em; padding-left: 0em; padding-right: 0em
+      }
+      
+      .codeblock {
+        border-width: 1px; border-color: #c0c000; border-style: none; 
+        margin-top: 0em; margin-bottom: 0em; margin-left: 2em; margin-right: 0em;
+        padding-top: 0em; padding-bottom: 0em; padding-left: 0em; padding-right: 0em; 
+        color: #800080; font-family: monotype; font-size: 11pt
+      }
+      
+      .sectionheading {
+        margin-top: 0em; margin-bottom: 0em; margin-left: 0em; margin-right: 0em;
+        padding-top: 1em; padding-bottom: 1em; padding-left: 1em; padding-right: 1em;
+        text-align: center; color: #0000ff; font-size: 24px
+      }
+      
+      .sectiontitle {
+        margin-top: 0em; margin-bottom: 0em; margin-left: 0em; margin-right: 0em;
+        padding-top: 1em; padding-bottom: 1em; padding-left: 1em; padding-right: 1em;
+        text-align: center; color: #0000ff; font-size: 18px
+      }
+      
+      .sectiontext {
+        margin-top: 0em; margin-bottom: 0em; margin-left: 0em; margin-right: 0em;
+        padding-top: 1em; padding-bottom: 1em; padding-left: 1em; padding-right: 1em;
+        text-align: left; color: #000000; font-size: 16px
+      }
+
+    </style>
+  </head>
+
+  <body><div id=content>
+
+    <div id=pageheader>
+      Alternate Reality Docs
+    </div>
+    
+    <div id=sitedirectory>
+      
+    </div>
+
+    <div id=pagedirectory>
+      <a href=ampdoc.htm#introduction       >Introduction</a>
+      <a                                    >&nbsp;</a>
+      <a                                    >Script Commands</a>
+      <a href=ampdoc.htm#command0xff        >0xFF Repeat From Beginning</a>
+      <a href=ampdoc.htm#command0xfe        >0xFE Call Subscript</a>
+      <a href=ampdoc.htm#command0xfd        >0xFD Subscript Return</a>
+      <a href=ampdoc.htm#command0xfc        >0xFC Set Audio Control</a>
+      <a href=ampdoc.htm#command0xfb        >0xFB Begin/End Counted Loop2</a>
+      <a href=ampdoc.htm#command0xfa        >0xFA Begin/End Counted Loop1</a>
+      <a href=ampdoc.htm#command0xf9        >0xF9 Disable Modulation</a>
+      <a href=ampdoc.htm#command0xf8        >0xF8 Enable Modulation</a>
+      <a href=ampdoc.htm#command0xf7        >0xF7 Exit Script</a>
+      <a href=ampdoc.htm#command0xf6        >0xF6 Jump to Main</a>
+      <a href=ampdoc.htm#command0xf5        >0xF5 Set Aux Waveform</a>
+      <a href=ampdoc.htm#command0xf4        >0xF4 Set Frequency Up Slide</a>
+      <a href=ampdoc.htm#command0xf3        >0xF3 Set Frequency Down Slide</a>
+      <a href=ampdoc.htm#command0xf2        >0xF2 Set Volume Up Slide</a>
+      <a href=ampdoc.htm#command0xf1        >0xF1 Set Volume Down Slide</a>
+      <a href=ampdoc.htm#command0xf0        >0xF0 Set Slide Bounds</a>
+      <a href=ampdoc.htm#command0xef        >0xEF Use Frequency Waveform[n]</a>
+      <a href=ampdoc.htm#command0xee        >0xEE Stop Channel 1 Frequency Waveform</a>
+      <a href=ampdoc.htm#command0xed        >0xED Repeat From Beginning Never</a>
+      <a href=ampdoc.htm#command0xec        >0xEC Roll Audio Flag</a>
+      <a href=ampdoc.htm#command0xeb        >0xEB Delayed Jump If Flag Not Zero</a>
+      <a href=ampdoc.htm#command0xea        >0xEA Jump If n1 GE Flag </a>
+      <a href=ampdoc.htm#command0xe9        >0xE9 Jump Aways</a>
+      <a href=ampdoc.htm#command0xe8        >0xE8 [2CAF] = n1</a>
+      <a href=ampdoc.htm#command0xe7        >0xE7 nop</a>
+      <a href=ampdoc.htm#command0xe6        >0xE6 Draw Karaoke Text2</a>
+      <a href=ampdoc.htm#command0xe5        >0xE5 Set Text Color</a>
+      <a href=ampdoc.htm#command0xe4        >0xE4 Draw Karaoke Text</a>
+      <a href=ampdoc.htm#command0xe3        >0xE3 Clear Karaoke Text</a>
+      <a href=ampdoc.htm#command0xe2        >0xE2 Set Karaoke Text Song Base</a>
+      <a href=ampdoc.htm#command0xe1        >0xE1 or 0xE0 Index Karaoke Song Line</a>
+      <a href=ampdoc.htm#commandaux         >0xn0 odds Jump to Aux</a>
+      <a href=ampdoc.htm#commandmain        >0x00 - 0xDF Play Next Note</a>
+      <a                                          >&nbsp;</a>
+      <a                                          >Data Formats</a>
+      <a href=ampdoc.htm#formatkaraoketext        >Karaoke Text Line Format</a>
+      <a href=ampdoc.htm#formatfrequencywaveform  >Frequency Waveform</a>
+      <a href=ampdoc.htm#formatampfile            >AMP File</a>
+      <a                                          >&nbsp;</a>
+      <a href=ampdoc.htm#memorymap                >Memory Map</a>
+      <a                                          >&nbsp;</a>
+      <a href=ampdoc.htm#vbiaudioprocessing       >Audio VBI</a>
+    </div>
+
+    <div id=pagestuff>
+    
+      <div class=sectionheading>
+        Alternate Reality the City Advanced Music Processor Docs<br>
+        by Jim Norris<br>
+        v1.1 March 5, 2010
+      </div>
+      
+      <div class=sectiontext id=introduction>
+        <p>Twenty-five years later and the Advanced Music Processor still seems to be ahead of it's time.</p>
+        
+        <div class=sectiontitle>Advanced Music Processor features:</div>
+        <ul>
+          <li>An independent script for each of the four hardware channels.</li>
+          <li>One level deep subroutines.</li>
+          <li>Counted loops (repeats).</li>
+          <li>Volume, frequency, and distortion modulation (vibratos and sfortzanos).</li>
+          <li>Volume and frequency slides. (slurs, crescendos, and decrescendos).</li>
+          <li>Randomized delayed channel syncing.</li>
+          <li>Randomized script branching (for choosing random verses).</li>
+          <li>Karaoke text with one syllable highlighted at a time.</li>
+        </ul>
+        
+        <div class=sectiontitle>Advanced Music Processor script format:</div>
+        <div class=sectiontext>Each script contains a series commands. Each command contains a command byte followed by 0 or more data bytes.</div>
+        
+        <div class=sectiontitle>Advanced Music Processor script command documentation format:</div>
+        <div class=command>
+          <p class=commandtitle>Command title (code start address)</p>
+          <p class=commandformat>Command byte code format</p>
+          <p class=commanddescription>Command description</p>
+        </div>
+      </div>
+
+      <div class=sectiontitle>A.M.P. Script Commands</div>
+    
+      <div class=command id=command0xff>
+        <p class=commandtitle>Repeat From Beginning (0x85B5)</p>
+        <p class=commandformat>0xFF</p>
+        <p class=commanddescription>Jump back to the beginning of current channel's audio script.</p>
+      </div>
+      
+      <div class=command id=command0xfe>
+        <p class=commandtitle>Call Subscript (0x8617)</p>
+        <p class=commandformat>0xFE addrlo addrhi</p>
+        <p class=commanddescription>One level deep subscript call for current audio channel. Return address is saved to a variable so this command can be used pretty much anywhere unless you are already in a subscript call from this command. Command 0xFD is used to return from this call.</p>
+      </div>
+      
+      <div class=command id=command0xfd>
+        <p class=commandtitle>Subscript Return (0x862A)</p>
+        <p class=commandformat>0xFD</p>
+        <p class=commanddescription>Return from audio subscript started using command 0xFE</p>
+      </div>
+      
+      <div class=command id=command0xfc>
+        <p class=commandtitle>Set Audio Control (0x855F)</p>
+        <p class=commandformat>0xFC n1</p>
+        <p class=commanddescription>Set audio control to n1.</p>
+      </div>
+      
+      <div class=command id=command0xfb>
+        <p class=commandtitle>Begin/End Counted Audio Loop2 (0x85C4)</p>
+        <p class=commandformat>0xFB n1 ... loop contents ... 0xFB</p>
+        <p class=commanddescription>Repeat secondary audio script loop n1 times.</p>
+        <div class=codeblock>
+          if secondary stanza repeat counter is 0<br>
+          {
+          <div class=codeblock>
+            if secondary 'already in a stanza' flag is not set<br> 
+            {
+            <div class=codeblock>
+              use next byte of script as number of repeats<br>
+              (secondary counter actually set to n-1)<br>
+              set secondary 'already in a stanza' flag<br>
+              remember current script address as beginning of secondary stanza
+            </div>
+            }<br>
+            else<br>
+            {
+            <div class=codeblock>
+              (secondary stanza just finished last repeat so...)<br>
+              clear secondary 'already in a stanza' flag<br>
+              (script will move on with next command)
+            </div>
+            }
+          </div>
+          }<br>
+          else<br>
+          {
+          <div class=codeblock>
+            decrement secondary stanza repeat counter<br>
+            jump audio script ptr to remembered beginning of secondary stanza
+          </div>
+          }<br>
+        </div>
+      </div>
+      
+      <div class=command id=command0xfa>
+        <p class=commandtitle>Begin/End Counted Audio Loop1 (0x8578)</p>
+        <p class=commandformat>0xFA n1 ... loop contents ... 0xFA</p>
+        <p class=commanddescription>Repeat primary audio script loop n1 times.</p>
+        <div class=codeblock>
+          if primary stanza repeat counter is 0<br>
+          {
+          <div class=codeblock>
+            if primary 'already in a stanza' flag is not set<br>
+            {
+            <div class=codeblock>
+              use next byte of script as number of repeats<br>
+              (primary counter actually set to n-1)<br>
+              set primary 'already in a stanza' flag<br>
+              remember current script address as beginning of primary stanza
+            </div>
+            }<br>
+            else<br>
+            {
+            <div class=codeblock>
+              (primary stanza just finished last repeat so...)<br>
+              clear primary 'already in a stanza' flag<br>
+              (script will move on with next command)
+            </div>
+            }
+          </div>
+          }<br>
+          else<br>
+          {
+          <div class=codeblock>
+            decrement primary stanza repeat counter<br>
+            jump audio script ptr to remembered beginning of primary stanza
+          </div>
+          }
+        </div>
+      </div>
+      
+      <div class=command id=command0xf9>
+        <p class=commandtitle>Disable Modulation (0x86B4)</p>
+        <p class=commandformat>0xF9</p>
+        <p class=commanddescription>Clear modulating state flag bit 0. Further commands 0x00 - 0xDF with distortion/volume bit 4 set
+                     and volume not 0 will not be modulated.</p>
+      </div>
+      
+      <div class=command id=command0xf8>
+        <p class=commandtitle>Enable Modulation (0x8681)</p>
+        <p class=commandformat>0xF8 n1</p>
+        <p class=commanddescription>Set modulation wave ptr [x] to modulation wave n1. n1 indexes pointer at (2*n) + A000 + [900C+x]]. Then set modulating state flag bit 0. Further commands 0x00 - 0xDF with volume bit 4 set and volume not 0 will be modulated from the beginning of the current channel's modulation offset waveform. This feature can be used to do volume, distortion, and frequency envelopes for notes.</p>
+      </div>
+      
+      <div class=command id=command0xf7>
+        <p class=commandtitle>Exit audio script loop. (0x867B)</p>
+        <p class=commandformat>0xF7</p>
+        <p class=commanddescription>Sets the current channel's exit audio script loop flag so that the script processor will continue with the next channel or if it's the last channel, continue with updating the audio hardware output registers.</p>
+      </div>
+      
+      <div class=command id=command0xf6>
+        <p class=commandtitle>Jump back to main audio script. (0x8667)</p>
+        <p class=commandformat>0xF6</p>
+        <p class=commanddescription>Jump back to main audio script loop pointer for this channel and clear the exit audio script loop flag for this channel.</p>
+      </div>
+      
+      <div class=command id=command0xf5>
+        <p class=commandtitle>Set aux waveform. (0x8637)</p>
+        <p class=commandformat>0xF5 n1</p>
+        <p class=commanddescription>Load aux pointer with audio waveform n1. [n1 indexes table at (2*n1) + A000 + [900C+x]]. Aux audio script runs when bit 4 of script commands 0x00 to 0xDF is set, but only if volume part of command is not 0 and exit script flag is not already set. Aux audio script probably needs an 0xF6 at the end before exiting the script loop to get back to the main script.</p>
+      </div>
+      
+      <div class=command id=command0xf4>
+        <p class=commandtitle>Set frequency slide up. (0x85CA)</p>
+        <p class=commandformat>0xF4 step slidespernoteb</p>
+        <p class=commanddescription>Set frequency slide adder step and number of slides per note counter b. The true number of slides per note is the multiple of counter a times b, so if you set a frequency and volume slide at the same time you should probably set one of the slides per note counters to a duration of 1.</p>
+      </div>
+      
+      <div class=command id=command0xf3>
+        <p class=commandtitle>Set frequency slide down. (0x85DA)</p>
+        <p class=commandformat>0xF3 step slidespernoteb</p>
+        <p class=commanddescription>Set frequency slide subtractor step and number of slides per note counter b. The true number of slides per note is the multiple of counter a times b, so if you set a frequency and volume slide at the same time you should probably set one of the slides per note counters to a duration of 1.</p>
+      </div>
+      
+      <div class=command id=command0xf2>
+        <p class=commandtitle>Set volume slide up. (0x85EA)</p>
+        <p class=commandformat>0xF2 step slidespernotea</p>
+        <p class=commanddescription>Set volume slide adder step and number of slides per note counter a. The true number of slides per note is the multiple of counter a times b, so if you set a frequency and volume slide at the same time you should probably set one of the slides per note counters to a duration of 1.</p>
+      </div>
+      
+      <div class=command id=command0xf1>
+        <p class=commandtitle>Set volume slide down. (0x85FA)</p>
+        <p class=commandformat>0xF2 step slidespernotea</p>
+        <p class=commanddescription>Set volume slide subtractor step and number of slides per note counter a. The true number of slides per note is the multiple of counter a times b, so if you set a frequency and volume slide at the same time you should probably set one of the slides per note counters to a duration of 1.</p>
+      </div>
+      
+      <div class=command id=command0xf0>
+        <p class=commandtitle>Set volume slide boundaries. (0x860A)</p>
+        <p class=commandformat>0xF0 hibound lobound</p>
+        <p class=commanddescription>Volume is bound to be greater or equal to the lobound, and less than or equal to the hibound. While volume is less than the lobound, the lobound is repeatedly added to the volume. While the volume goes greater than the hibound, the hibound is repeatedly subtracted from the volume.</p>
+      </div>
+      
+      <div class=command id=command0xef>
+        <p class=commandtitle>Do audio frequency waveform n1. (0x8549)</p>
+        <p class=commandformat>0xEF n1</p>
+        <p class=commanddescription>n1 indexes wavefrom ptr table at 0xA000. When doing commands 0x00 through 0xDF, frequency settings for this channel will come from this waveform instead of the command. All channels share the same array.</p>
+      </div>
+      
+      <div class=command id=command0xee>
+        <p class=commandtitle>Stop using channel 1's frequency waveform. (0x8543)</p>
+        <p class=commandformat>0xEE</p>
+        <p class=commanddescription>Clears channel 1 audio frequency waveform ptr hi. This command will end playing channel 1's frequency waveform which I suspect is a bug since this command doesn't affect the current audio channel. (Should it be 8545 sta (+x) BFAE?).</p>
+      </div>
+      
+      <div class=command id=command0xed>
+        <p class=commandtitle>Repeat from beginning never (0x852E)</p>
+        <p class=commandformat>0xED</p>
+        <p class=commanddescription> Looks like BFA1 is never initialized and will always be 0 so this command probably always does nothing.</p>
+        <div class=codeblock>
+          if [BFA1] is not 0 then<br>
+          {
+          <div class=codeblock>
+            jump back to beginning of script<br>  
+            inc audio script not playing flag [A1+x]
+          </div>
+          }
+        </div>
+      </div>
+      
+      <div class=command id=command0xec>
+        <p class=commandtitle>Randomize sync flag. (0x8509)</p>
+        <p class=commandformat>0xEC mask offset</p>
+        <p class=commanddescription>All channels sync flag [4C] = (rnd and mask) + offset.</p>
+      </div>
+      
+      <div class=command id=command0xeb>
+        <p class=commandtitle>Delayed synced jump. (0x84EB)</p>
+        <p class=commandformat>0xEB scriptaddrlo scriptaddrhi</p>
+        <p class=commanddescription>If sync flag is not 0 start a countdown to a jump to the script address. Each vertical blank the counter is decremented and when it reaches 0 the jump is taken.</p>
+        <div class=codeblock>
+          if [4C] is not 0<br> 
+          {
+          <div class=codeblock>
+            set 'countdown to next' counter duration for this channel to [4C]<br>
+            set 'next' script ptr for this channel to next two bytes of script<br>
+            (countdown to next counter will decrement each vbi and
+              when it gets to 0 it will force script to jump to
+              address in 'next' script ptr)
+          </div>
+          }<br>
+          else<br>
+          {
+          <div class=codeblock>
+            skip next two bytes of script
+          </div>
+          }
+        </div>
+      </div>
+      
+      <div class=command id=command0xea>
+        <p class=commandtitle>Synced jump if greater or equal. (0x8519)</p>
+        <p class=commandformat>0xEA n1 scriptaddrlo scriptaddrhi</p>
+        <p class=commanddescription>If n1 is greater or equal to sync flag [4C], then jump to the script address.</p>
+      </div>
+      
+      <div class=command id=command0xe9>
+        <p class=commandtitle>Jump (0x8520)</p>
+        <p class=commandformat>0xE9 scriptaddrlo scriptaddrhi</p>
+        <p class=commanddescription>Audio script jump using next two bytes of script as address.</p>
+      </div>
+      
+      <div class=command id=command0xe8>
+        <p class=commandtitle>[2CAF] = n1</p>
+        <p class=commandformat>0xE8 n1</p>
+        <p class=commanddescription>No idea what this command does, yet. It may have something to do with enabling a dli drumbeat routine.</p>
+      </div>
+      
+      <div class=command id=command0xe7>
+        <p class=commandtitle>Nop</p>
+        <p class=commandformat>0xE7</p>
+        <p class=commanddescription>This command does nothing.</p>
+      </div>
+      
+      <div class=command id=command0xe6>
+        <p class=commandtitle>Draw current karaoke text line.</p>
+        <p class=commandformat>0xE6 notused sn cn</p>
+        <p class=commanddescription>Redraws the current text line with the syllable sn highlighted using color register cn (0 to 3).</p>
+      </div>
+      
+      <div class=command id=command0xe5>
+        <p class=commandtitle>Set color register.</p>
+        <p class=commandformat>0xE5 cn value</p>
+        <p class=commanddescription>Set color register cn (0 to 3) with the color value.</p>
+      </div>
+      
+      <div class=command id=command0xe4>
+        <p class=commandtitle>Draw current karaoke text line.</p>
+        <p class=commandformat>0xE4 sn cn</p>
+        <p class=commanddescription>Redraws the current text line with the syllable sn highlighted using color register cn (0 to 3). Syllables are marked using ascii upper case letters. Characters are drawn using a 64 character font which displays lower case letters as upper case.</p>
+      </div>
+      
+      <div class=command id=command0xe3>
+        <p class=commandtitle>Clear current karaoke text line.</p>
+        <p class=commandformat>0xE3</p>
+        <p class=commanddescription>Clear the karaoke text line and block further karaoke text updates.</p>
+      </div>
+      
+      <div class=command id=command0xe2>
+        <p class=commandtitle>Set text song base pointer.</p>
+        <p class=commandformat>0xE2 n1</p>
+        <p class=commanddescription>Karaoke text song pointer = [[4A 4B] + (2*n1)]. [4A 4B] is set during initialization from the bytes 4 and 5 of the song file which is loaded at addresses 0x9000. [9004 9005].</p>
+      </div>
+      
+      <div class=command id=command0xe1>
+        <p class=commandtitle>Set text current line pointer.</p>
+        <p class=commandformat>0xE1 n1 or 0xE0 n1</p>
+        <p class=commanddescription>Karaoke text current line pointer = songbase + (n1*20). Each text line in a song is 20 characters long.</p>
+      </div>
+      
+      <div class=command id=commanddoaux>
+        <p class=commandtitle>Jump to aux script.</p>
+        <p class=commandformat>0x10, 0x30, 0x50, 0x70, 0x90, 0xB0, or 0xD0</p>
+        <p class=commanddescription>If the exit script loop flag is not set then the script continues with the current aux waveform.</p>
+        <div class=codeblock>
+          if bit 4 of command byte is set and volume setting of command is 0 and exit script loop flag is not set<br>
+          {
+          <div class=codeblock>
+            set audio script main ptr to current audio script ptr position<br>
+            jump audio script ptr to subscript at aux ptr<br>
+            [probably need jump back to main at end of aux script]<br>
+            set exit script loop flag<br>
+            rts to go back to beginning of script loop
+          </div>
+          }
+        </div>
+      </div>
+      
+      <div class=command id=commandmain>
+        <p class=commandtitle>Play next note.</p>
+        <p class=commandformat>&lt;=0xDF duration frequency</p>
+        <p class=commanddescription>Set note distortion, volume, ticks per slide duration and frequency for the current channel. Distortion is set using the upper 3 bits of the command byte. Volume is set using the lower 4 bits of the command byte. If the frequency waveform pointer for the current channel is set, the next frequency waveform setting is used instead of the frequency setting from this command. If bit 4 of the command byte is clear, the note is not modulated. If bit 4 of the command byte is set (and the volume setting is not 0), then the note settings from this command are modulated starting with the beginning of the current modulation waveform for this channel. Note duration in vbis is the ticks between slides * slides per note a * slides per note b.</p>
+        <div class=codeblock>
+          drop return address to exit script loop
+
+          get volume from current byte of script and set volume shadow<br>
+          get ticks per slide duration from next byte of script and set ticks per slide duration and counter<br>
+          move script pointer to next byte in script<br>
+
+          if frequency waveform ptr hi[x] is not 0<br>
+          {
+          <div class=codeblock>
+            set frequency shadow using use next byte at frequency waveform ptr [x]<br>
+            increment frequency waveform ptr[x]
+          </div>
+          }<br>
+          else<br>
+          {
+          <div class=codeblock>
+            get current byte in script and set frequency shadow
+          </div>
+          }<br>
+
+          if bit 4 of volume shadow = 0<br>
+          {
+          <div class=codeblock>
+            disable modulation by clearing modulating flag bit 1
+          </div>
+          }<br>
+          else<br>
+          {
+          <div class=codeblock>
+            if volume shadow volume != 0<br>
+            {
+            <div class=codeblock>
+              set modulation wave duration to 1<br>
+              set bit 1 of modulating flag<br>
+              set modulation wave current offset to 0 (go back to beginning)
+            </div>
+            }<br>
+            else<br>
+            {
+            <div class=codeblock>
+              disable modulation by clearing modulating flag bit 1
+            </div>
+            }
+          </div>
+          }<br>
+  
+          bump audio script ptr to current position (add y to audio ptr)<br>
+
+          continue audio loop with check to see if modulating waveform (at 8437)
+        </div>
+      </div>
+      
+      <div class=sectiontitle>A.M.P. Data Formats</div>
+      
+      <div class=command id=formatampfile>
+        <p class=commandtitle>AMP file format.</p>
+        <p class=commanddescription>
+            9002,3 - pointer to 4 entry array of pointers to the beginning of each channel's script<br>
+            9004,5 - pointer to array of pointers to the beginning of each karaoke song's text<br><br>
+            
+            900C - byte offset from A000 to channel 1's array of pointers to modulation or aux waveforms<br>
+            900E - byte offset from A000 to channel 2's array of pointers to modulation or aux waveforms<br>
+            9010 - byte offset from A000 to channel 3's array of pointers to modulation or aux waveforms<br>
+            9012 - byte offset from A000 to channel 4's array of pointers to modulation or aux waveforms<br><br>
+            
+            A000 - base address for arrays of pointers to frequency waveforms (all channels share same array)
+        </p>
+      </div>
+      
+      <div class=command id=formatkaraoketext>
+        <p class=commandtitle>Karaoke text line format.</p>
+        <p class=commanddescription>Always 20 characters. Capital ASCII letters mark the beginning of each syllable. Ascii is converted to font before being rendered which displays characters in the lower case range (0x60-0x7F) as upper case, and characters in the control character range (0x00-0x1F) as characters in the 0x20-0x3F range.</p>
+      </div>
+      
+      <div class=command id=formatfrequencywaveform>
+        <p class=commandtitle>Frequency waveform format.</p>
+        <p class=commanddescription>Just an array of bytes. Each byte in the waveform is a frequency setting.</p>
+      </div>
+      
+      <div class=sectiontitle>A.M.P. Vertical Blank Routine Psuedocode</div>
+      
+      <div class=command id=vbiaudioprocessing>
+        <p class=commandtitle>Vertical Blank Audio Processing</p>
+        <p class=commanddescription>
+          
+          channel 3 and 4 volume off calculation
+          <p>
+          <div class=codeblock>
+            if [AB] != 0 and [891E] = 0 channel 3 and 4 volume is off<br>
+            or if [AB] != 0 and [AA] = 0 channel 3 and 4 volume is off
+          </div>
+          </p>
+
+          channel 1 and 2 volume off calculation
+          
+          <p>
+          <div class=codeblock>
+            if [A9] = 0 channel 1 and 2 volume is off
+          </div>
+          </p>
+
+          do audio channel processing, 3 parts
+
+          <p>
+          <div class=codeblock>
+            if a delayed audio script jump is pending ([4D+x] != 0)<br>
+            {
+            <div class=codeblock>
+              decrement delayed jump counter (dec [55+X])<br>
+
+              if delayed jump counter has reached 0 ([55+x] = 0)<br>
+              {
+              <div class=codeblock>
+                make delayed jump no longer pending ([4D+x] = 0)<br>
+                jump audio script to delayed jump address ([3A 3B] <- [5D 5E +x])<br>
+                init audio channel[x] (8273)
+              </div>
+              }
+            </div>
+            }<br>
+
+            dec [BFF5+x] (ticks till next slide counter)<br>
+
+            if [BFF5+x] = 0<br>
+            {
+            <div class=codeblock>
+              freqshad[x] = freqshad[x] - negfreqslide[x] + posfreqslide[x]<br>
+
+              [BFF5+x] = [BFC5+x] reload ticks till slide counter<br>
+
+              a = volshad[x] - negvolslide[x] + posvolslide[x]<br>
+  
+              // &lt; 0 check is probably not necessary due to immediate and with 0x0F after<br>
+              
+              if a &lt; 0<br>
+              {
+              <div class=codeblock>
+                a = a + 0x0F
+              </div>
+              }<br>
+              &nbsp;<br>
+              begin<br>
+              {
+              <div class=codeblock>
+                a = a &amp; 0x0F<br>
+                &nbsp;<br>
+                if a &gt;= [0xBF93+x]<br>
+                {
+                <div class=codeblock>
+                  if a &gt; [0xBF94+x]<br>
+                  {
+                  <div class=codeblock>
+                    a = a - [BF94+x]
+                  </div>
+                  }<br>
+                  else<br>
+                  {
+                  <div class=codeblock>
+                    break
+                  </div>
+                  }
+                </div>
+                }<br>
+                &nbsp;<br>
+                a = a + [BF93+x]<br>
+              </div>
+              }<br>
+              repeat<br>
+              &nbsp;<br>
+              volshadow[x] = a<br>
+              &nbsp;<br>
+              //number of slides per note is slides per note a * slides per note b<br>
+              //when slides per note is finished, the audio script continues with the next command<br>
+              &nbsp;<br>
+              dec [333A+x] (decrement slides per note counter a)<br>
+              &nbsp;<br>
+              if [333A+x] = 0 (slides per note counter a = 0)<br>
+              {
+              <div class=codeblock>
+                [333A+x] = [3339+x] (reload slides per note counter a)<br>
+                &nbsp;<br>
+                dec [BFD5+x] (decrement slides per note counter b)<br>
+                &nbsp;<br>
+                if [BFD5+x] = 0 (if slides per note counter b = 0)<br>  
+                {
+                <div class=codeblock>     
+                  [BFD5+x] = [BFD6+x] (reload slides per note counter b)<br>
+                  &nbsp;<br>
+                //init and enter audio script loop<br>
+                y=0<br>
+                &nbsp;<br>
+                push loop begin address onto return stack to entry audio script loop<br>
+                (the next rts brings you back to here unless you drop the return address)<br>
+                &nbsp;<br>
+                a = [[3A]+y] (get next byte of audio script)<br>
+                &nbsp;<br>
+                if a &gt;= 0xE0<br>
+                {
+                <div class=codeblock>
+                if a &lt; 0xE9<br>
+                {
+                <div class=codeblock>
+                  do audio commands 0xE0 through 0xE8
+                </div>
+                }<br>
+                else<br>
+                {
+                <div class=codeblock>
+                  do audio commands 0xE9 through 0xFF
+                </div>
+                }
+              </div>
+              }<br>
+              else<br>
+              {
+              <div class=codeblock>
+                do audio commands 0x00 through 0xDF
+              </div>
+              }
+            </div>
+            }
+          </div>
+          }
+        </div>
+        }<br>
+        
+        &nbsp;<br>  
+        // ticks per slide and slides per note counters not 0 (address 0x8437)<br>
+        if [BF8B+x] = 3 (waveform data processing state, 3 = modulating)<br>
+        {
+        <div class=codeblock>
+          dec [BF8C+x] (waveform note setting duration counter)<br>
+          &nbsp;<br>
+          if [BF8C+x] = 0 (if waveform note setting duration counter = 0)<br>
+          {
+          <div class=codeblock>
+            [38 39] = [BF22+x] (load waveform data ptr)<br>
+            y = [BF84+x] (load waveform data current offset)<br>
+            &nbsp;<br>
+            a = [0xBFF6+x] (a = volshad[x])<br>
+            a = a &amp; 0x0F<br>
+            psha<br>
+            &nbsp;<br>
+            volshad[x] = volshad[x] &amp; 0xF0 (set volume to 0, keep distortion)<br>
+            &nbsp;<br>
+            pula<br>
+            a = a + [[38]+y] (add extracted volume to next byte of waveform)<br>
+            &nbsp;<br>
+            // bit 4 of volshad should always be 0.... so<br>
+            //  this masks volume overflows so it adds the old volume to the next byte in the<br>
+            a = a and 0xEF<br>
+            &nbsp;<br>
+            // this effectively uses the next byte in the waveform and uses it to add to<br>
+            // both volume and distortion separately<br>
+            volshad[x] = volshad[x] + a<br>
+            &nbsp;<br>
+            iny (go to next byte in waveform)<br>
+            &nbsp;<br>
+            [BF8C+x] = [[38]+y] (set waveform note setting duration counter)<br>
+            iny (go to next byte in waveform)<br>
+            &nbsp;<br>
+            [BFC6+x] = [BFC6+x] + [[38]+y]<br>
+            &nbsp;<br>
+            iny (go to next byte in waveform)<br>
+            &nbsp;<br>
+            [BF84+x] = y (save waveform data current offset)
+          </div>
+          }
+        </div>
+        }<br>
+        &nbsp;<br>
+       if x < 4 (if channel is 1 or 2) and [24B] != 0<br>
+       {
+       <div class=codeblock>
+         // skip updating channels 1 and 2 if don't update channels 1 and 2 flag is set
+       </div>
+       }<br>
+       else<br>
+       {
+       <div class=codeblock>
+         [D200+x] = [BFC6+x] (set frequency from shadow)<br>
+         [D201+x] = [BFF6+x] &amp; 0xEF (set distortion and volume from shadow)
+       </div>
+       }
+       &nbsp;<br>
+       [BF32+x BF33+x] = [3A 3B] (save audio script pointer)<br>
+       &nbsp;<br>
+       dex dex (next audio channel)<br>
+       &nbsp;<br>
+       until x = 0<br>
+       &nbsp;<br>
+       if [24B] = 0 (if do not update audio control flag is not 0)<br>
+       {
+       <div class=codeblock>
+         if [BFA3] != [BFA2] (if audio control shadow2 != audio control shadow1)<br>
+         {
+         <div class=codeblock>
+           [D208] = [BFA2] = [BFA3] (audio control = audio control shadow2 = audio control shadow1)
+         </div>
+         }
+       </div>
+       }<br>
+       &nbsp;<br>
+       exit vbi<br>
+       &nbsp;
+        </div>
+        </p>
+      </div>
+      
+      <div class=sectiontitle>A.M.P. Memory Map</div>
+      
+      <div class=command id=memorymap>
+        <p class=commandtitle>AMP Memory Map</p>
+        <p class=commanddescription>
+[46] = character counter<br>
+[48] = number of characters to do<br>
+[49] = character with index bits rotated to high position - used during ascii to font conversions<br>
+
+[4a 4b] = pointer to array of song text base pointers set during file init from [9004 9005]<br>
+
+[38 39] = frequency waveform ptr or modulation waveform ptr<br>
+
+[43 44] = pointer to current karaoke text line<br>
+[4a 4b] = pointer to array of pointers to karaoke text lines<br>
+
+[4C] = randomized sync flag for all channels<br> 
+
+[4D] = audio channel 1 delayed jump pending when 0 flag<br>
+[4E] = <br>
+[4F] = audio channel 2 delayed jump pending when 0 flag<br>
+[50] = <br>
+[51] = audio channel 3 delayed jump pending when 0 flag<br>
+[52] = <br>
+[53] = audio channel 4 delayed jump pending when 0 flag<br>
+[54] = <br>
+
+[55] = audio channel 1 vbis until delayed jump counter<br>
+[56] = <br>
+[57] = audio channel 2 vbis until delayed jump counter<br>
+[58] = <br>
+[59] = audio channel 3 vbis until delayed jump counter<br>
+[5A] = <br>
+[5B] = audio channel 4 vbis until delayed jump counter<br>
+[5C] = <br>
+
+[5D 5E] = audio channel 1 delayed jump address ptr<br>
+[5F 60] = audio channel 2 delayed jump address ptr<br>
+[61 62] = audio channel 3 delayed jump address ptr<br>
+[63 64] = audio channel 4 delayed jump address ptr<br>
+
+[A1] = audio channel 1 playing when not 0 flag<br>
+[A2] = <br>
+[A3] = audio channel 2 playing when not 0 flag<br>
+[A4] = <br>
+[A5] = audio channel 3 playing when not 0 flag<br>
+[A6] = <br>
+[A7] = audio channel 4 playing when not 0 flag<br>
+[A8] = <br>
+[A9] = audio channels 1 and 2 playing when not 0 flag<br>
+[AA] = <br>
+[AB] = audio channels 3 and 4 playing when not 0 flag<br>
+
+
+[3331] = audio channel 1 volume slide adder<br>
+[3332] = audio channel 1 volume slide subtractor<br>
+[3333] = audio channel 2 volume slide adder<br>
+[3334] = audio channel 2 volume slide subtractor<br>
+[3335] = audio channel 3 volume slide adder<br>
+[3336] = audio channel 3 volume slide subtractor<br>
+[3337] = audio channel 4 volume slide adder<br>
+[3338] = audio channel 4 volume slide subtractor<br>
+
+[3339] = audio channel 1 slides per note a<br>
+[333A] = audio channel 1 slides per note counter a<br>
+[333B] = audio channel 2 slides per note a<br>
+[333C] = audio channel 2 slides per note counter a<br>
+[333D] = audio channel 3 slides per note a<br>
+[333E] = audio channel 3 slides per note counter a<br>
+[333F] = audio channel 4 slides per note a<br>
+[3340] = audio channel 4 slides per note counter a<br>
+
+[BF12 BF13] = audio channel 1 aux script command ptr<br>
+[BF14 BF15] = audio channel 1 aux script command ptr<br>
+[BF16 BF17] = audio channel 1 aux script command ptr<br>
+[BF18 BF19] = audio channel 1 aux script command ptr<br>
+
+[BF1A BF1B] = audio channel 1 script command subscript return ptr<br>
+[BF1C BF1D] = audio channel 2 script command subscript return ptr<br>
+[BF1E BF1F] = audio channel 3 script command subscript return ptr<br>
+[BF20 BF21] = audio channel 4 script command subscript return ptr<br>
+
+[BF22 BF23] = audio channel 1 modulation waveform base ptr<br>
+[BF24 BF25] = audio channel 2 modulation waveform base ptr<br>
+[BF26 BF27] = audio channel 3 modulation waveform base ptr<br>
+[BF28 BF29] = audio channel 4 modulation waveform base ptr<br>
+
+[BF2A BF2B] = audio channel 1 script command ptr<br>
+[BF2C BF2D] = audio channel 2 script command ptr<br>
+[BF2E BF2F] = audio channel 3 script command ptr<br>
+[BF30 BF31] = audio channel 4 script command ptr<br>
+
+[BF32 BF33] = audio channel 1 script command ptr<br>
+[BF34 BF35] = audio channel 2 script command ptr<br>
+[BF36 BF37] = audio channel 3 script command ptr<br>
+[BF38 BF39] = audio channel 4 script command ptr<br>
+
+[BF83] = audio channel 1 exit command script loop when set flag<br>
+[BF84] = audio channel 1 modulation waveform current offset<br>
+[BF85] = audio channel 2 exit command script loop when set flag<br>
+[BF86] = audio channel 2 modulation waveform current offset<br>
+[BF87] = audio channel 3 exit command script loop when set flag<br>
+[BF88] = audio channel 3 modulation waveform current offset<br>
+[BF89] = audio channel 4 exit command script loop when set flag<br>
+[BF8A] = audio channel 4 modulation waveform current offset<br>
+
+[BF8B] = modulating audio channel 1 when = 3 flag<br>
+[BF8C] = audio channel 1 modulation entry offsets duration counter<br>
+[BF8D] = modulating audio channel 2 when = 3 flag<br>
+[BF8E] = audio channel 2 modulation entry offsets duration counter<br>
+[BF8F] = modulating audio channel 3 when = 3 flag<br>
+[BF90] = audio channel 3 modulation entry offsets duration counter<br>
+[BF91] = modulating audio channel 4 when = 3 flag<br>
+[BF92] = audio channel 4 modulation entry offsets duration counter<br>
+
+[BF93] = audio channel 1 volume lobound (adder)<br>
+[BF94] = audio channel 1 volume hibound (subtractor)<br>
+[BF95] = audio channel 2 volume lobound (adder)<br>
+[BF96] = audio channel 2 volume hibound (subtractor)<br>
+[BF97] = audio channel 3 volume lobound (adder)<br>
+[BF98] = audio channel 3 volume hibound (subtractor)<br>
+[BF99] = audio channel 4 volume lobound (adder)<br>
+[BF9A] = audio channel 4 volume hibound (subtractor)<br>
+
+[BF9B] = temp var for audio script command 0xF5<br>
+[BF9C] = temp var [holds audio channel x]<br>
+
+[BFA1] = audio command 0xED jump to beginning of script when not 0 flag<br>
+
+[BFAD BFAE] = audio frequency waveform channel 1 ptr (not using this if hi byte 0)<br>
+[BFAF BFB0] = audio frequency waveform channel 2 ptr (not using this if hi byte 0)<br>
+[BFB1 BFB2] = audio frequency waveform channel 3 ptr (not using this if hi byte 0)<br>
+[BFB3 BFB4] = audio frequency waveform channel 4 ptr (not using this if hi byte 0)<br>
+
+[BFB5] = audio channel 1 script command beginning of stanza repeat ptr a lo<br>
+[BFB6] = audio channel 1 script command beginning of stanza repeat ptr b lo<br>
+[BFB7] = audio channel 2 script command beginning of stanza repeat ptr a lo<br>
+[BFB8] = audio channel 2 script command beginning of stanza repeat ptr b lo<br>
+[BFB9] = audio channel 3 script command beginning of stanza repeat ptr a lo<br>
+[BFBA] = audio channel 3 script command beginning of stanza repeat ptr b lo<br>
+[BFBB] = audio channel 4 script command beginning of stanza repeat ptr a lo<br>
+[BFBC] = audio channel 4 script command beginning of stanza repeat ptr b lo<br>
+ 
+[BFBD] = audio channel 1 script command beginning of stanza repeat ptr a hi<br>
+[BFBE] = audio channel 1 script command beginning of stanza repeat ptr b hi<br>
+[BFBF] = audio channel 2 script command beginning of stanza repeat ptr a hi<br>
+[BFC0] = audio channel 2 script command beginning of stanza repeat ptr b hi<br>
+[BFC1] = audio channel 3 script command beginning of stanza repeat ptr a hi<br>
+[BFC2] = audio channel 3 script command beginning of stanza repeat ptr b hi<br>
+[BFC3] = audio channel 4 script command beginning of stanza repeat ptr a hi<br>
+[BFC4] = audio channel 4 script command beginning of stanza repeat ptr b hi<br>
+
+[BFC5] = audio channel 1 vbis between slides (it repeats each slide)<br>
+[BFC6] = audio channel 1 frequency shadow<br>
+[BFC7] = audio channel 2 vbis between slides (it repeats each slide)<br>
+[BFC8] = audio channel 2 frequency shadow<br>
+[BFC9] = audio channel 3 vbis between slides (it repeats each slide)<br>
+[BFCA] = audio channel 3 frequency shadow<br>
+[BFCB] = audio channel 4 vbis between slides (it repeats each slide)<br>
+[BFCC] = audio channel 4 frequency shadow<br>
+
+[BFCD] = audio channel 1 frequency slide adder<br>
+[BFCE] = audio channel 1 frequency slide subtractor<br>
+[BFCF] = audio channel 2 frequency slide adder<br>
+[BFD0] = audio channel 2 frequency slide subtractor<br>
+[BFD1] = audio channel 3 frequency slide adder<br>
+[BFD2] = audio channel 3 frequency slide subtractor<br>
+[BFD3] = audio channel 4 frequency slide adder<br>
+[BFD4] = audio channel 4 frequency slide subtractor<br>
+
+[BFD5] = audio channel 1 slides per note b<br>
+[BFD6] = audio channel 1 slides per note counter b<br>
+[BFD7] = audio channel 2 slides per note b<br>
+[BFD8] = audio channel 2 slides per note counter b<br>
+[BFD9] = audio channel 3 slides per note b<br>
+[BFDA] = audio channel 3 slides per note counter b<br>
+[BFDB] = audio channel 4 slides per note b<br>
+[BFDC] = audio channel 4 slides per note counter b<br>
+
+[BFDD] = audio channel 1 script command stanza repeat counter a<br>
+[BFDE] = audio channel 1 script command stanza repeat counter b<br>
+[BFDF] = audio channel 2 script command stanza repeat counter a<br>
+[BFE0] = audio channel 2 script command stanza repeat counter b<br>
+[BFE1] = audio channel 3 script command stanza repeat counter a<br>
+[BFE2] = audio channel 3 script command stanza repeat counter b<br>
+[BFE3] = audio channel 4 script command stanza repeat counter a<br>
+[BFE4] = audio channel 4 script command stanza repeat counter b<br>
+
+[BFE5] = audio channel 1 script command using stanza repeat counter when not 0 flag a<br>
+[BFE6] = audio channel 1 script command using stanza repeat counter when not 0 flag b<br>
+[BFE7] = audio channel 2 script command using stanza repeat counter when not 0 flag a<br>
+[BFE8] = audio channel 2 script command using stanza repeat counter when not 0 flag b <br>
+[BFE9] = audio channel 3 script command using stanza repeat counter when not 0 flag a<br>
+[BFEA] = audio channel 3 script command using stanza repeat counter when not 0 flag b <br>
+[BFEB] = audio channel 4 script command using stanza repeat counter when not 0 flag a<br>
+[BFEC] = audio channel 4 script command using stanza repeat counter when not 0 flag b<br>
+
+[BFED BFEE] = audio channel 1 beginning of command script ptr<br>
+[BFEF BFF0] = audio channel 2 beginning of command script ptr<br>
+[BFF1 BFF2] = audio channel 3 beginning of command script ptr<br>
+[BFF3 BFF4] = audio channel 4 beginning of command script ptr<br>
+
+[BFF5] = audio channel 1 vbis between slides counter<br>
+[BFF6] = audio channel 1 distortion and volume shadow <br>
+[BFF7] = audio channel 2 vbis between slides counter<br>
+[BFF8] = audio channel 2 distortion and volume shadow <br>
+[BFF9] = audio channel 3 vbis between slides counter<br>
+[BFFA] = audio channel 3 distortion and volume shadow <br>
+[BFFB] = audio channel 4 vbis between slides counter<br>
+[BFFC] = audio channel 4 distortion and volume shadow<br>
+        </p>
+      </div>
+
+    </div>
+
+  </div></body>
+</html>
+
+
+
+
+

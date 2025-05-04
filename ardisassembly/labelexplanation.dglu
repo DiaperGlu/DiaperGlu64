@@ -1,0 +1,52 @@
+
+$" skin.dgluinc" INCLUDEFILE$
+
+." Content-Type: text/html" CRLF
+CRLF
+
+drawprojectheader
+
+." 
+  <h3 align=center>Explanation of labels, label sets, and lists of label sets assigned to a file.</h3>
+
+  <p>When some are lost, can't find there way... Some find labels can save the day :-)</p>
+
+  <p>Around each corner, hoping to see, a way to read a disassembly, a way to break free from bland addresses.</p>
+
+  <p>
+    Ok, enough Alternate Reality jokes;=) Basically the disassembler looks up the label addresses 
+    in the list of label sets assigned to the file and shows the text. That's it. 
+    I chose to organize the labels into sets, and assign those sets to files for 3 reasons:
+    <ul>
+      <li>So the disassembler wouldn't have to search through all the labels every time, speeding it up.</li>
+      <li>So you wouldn't see text for a label for another file that happens to have the same address.</li>
+      <li>And so the same label wouldn't have to be duplicated in multiple sets.</li>
+    </ul>
+  </p>
+
+  <p>
+    To get this scheme to work some rules need to be followed which are:
+    <ul>
+      <li>Make a label set for each game file, and one for the atari operating system rom.</li>
+      <li>For game code addresses, assign labels to the file the code is in.</li>
+      <li>For operating system code addresses, assign the labels to the atarios label set.</li>
+      <li>For game variables, try assigning the labels the the game file that first uses them.</li>
+      <li>For operating system variables, assign the labels to the atarios label set.</li>
+      <li>Assign label sets to files according to which game files are in memory at the same time.</li>
+      <li>Every list of label sets will likely include the atarios set because it is always in memory
+           unless the game file it is for does not use the operating system.</li>
+    </ul>
+  </p>
+
+  <p>
+    For example, when the City disk 1 side 1 is first booted, the only things in memory are the operating system, and 
+    the CityBoot.xfd game file. So the label sets assigned to it are atarios and cityboot. 
+  </p>
+  <p>
+    Then the CityBoot.xfd code loads the CityTitleLoader.xfd game file and runs the CityTitleLoader.xfd's code.
+    CityTitleLoader.xfd uses some of CityBoot.xfd's code (I think), so the label sets assigned to
+    CityTitleLoader.xfd are atarios, cityboot, and citytitleloader.
+  </p>
+"
+
+drawprojectfooter

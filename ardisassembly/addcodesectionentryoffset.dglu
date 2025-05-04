@@ -1,0 +1,134 @@
+
+$" odbcsqlsupport.dgluinc" INCLUDEFILE$
+
+$" skin.dgluinc" INCLUDEFILE$
+
+LOADFORMVALUES
+
+: getpassword$ ( -$- password$ )
+    $" password" POSTGETNAME$>VALUE$
+;
+
+: getnewcodesectionentryoffset$ ( -$- password$ )
+    $" codeentryoffset" POSTGETNAME$>VALUE$
+;
+
+: getfilename$ ( -$- filename$ )
+    $" filename" POSTGETNAME$>VALUE$
+;
+
+: selectextractedfileid$ ( -$- select$ )
+    $" SELECT id FROM tblfiles WHERE namecol = '" 
+    getfilename$ $>$
+    $" '" $>$
+;
+
+VARIABLE PEXTRACTEDFILEID
+-1 PEXTRACTEDFILEID !
+
+: insert$ 
+    $" INSERT INTO tblgamefilecodesections (codestartoffset, extractedfileid) VALUES ("
+    getnewcodesectionentryoffset$ $>$ 
+    $" , " $>$
+    PEXTRACTEDFILEID @ DECIMAL 0 <#$ #S$ #>$ $>$
+    $" )" $>$ 
+;
+
+
+VARIABLE PFILEIDRESULTSET
+
+: drawpage ( -- )
+
+    ." CONTENT-TYPE: text/html" CRLF 
+    ." Cache-Control: no-cache, must-revalidate" CRLF
+    ." Expires: Mon, 12 Jul 1997 05:00:00 GMT" CRLF
+    CRLF
+
+    drawprojectheader
+
+    ." <h3 align='center'>Trying to add a known code section entry offset to a file.</h3>" CRLF
+    ." <h4 align='center'>" getfilename$ .$ ." </h4>" CRLF
+
+    ( check password )
+    
+    getpassword$ formpassword$ COMPARE$ DROP$ DROP$ 0= 0= IF
+
+      ( they don't match )
+      ." <p>Password is incorrect.<p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( they match )
+ 
+    ( checking code section entry offset string for problems - techically should contain only e{0-9 a-f x} )
+    getnewcodesectionentryoffset$ insertvalue$ok? DROP$ 0= IF
+
+      ." <p>Something wrong with code section entry offset '"
+      getnewcodesectionentryoffset$ .$
+      ." ' you are trying to insert. Please enter a number.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( checking filename string for problems )
+    getfilename$ insertvalue$ok? DROP$ 0= IF
+
+      ." <p>Something wrong with filename '"
+      getfilename$ .$
+      ." ' you are trying to insert. Filenames must be alphanumeric with no spaces</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( get file id of filename into result set)
+    selectextractedfileid$ con$ db$ GETRESULTSET
+    LATESTRESULTSET PFILEIDRESULTSET !
+
+    ?ERRORIF
+      ." <p>Error getting file id for filename from database.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+  
+    ( push fileid from result set to data stack )
+    0 GETNUMBEROFROWSFROMRESULTSET 0= IF
+      -1 ( no file id exists for this filename )
+    ELSE
+      1 PFILEIDRESULTSET @ GETCOLUMNTYPEFROMRESULTSET SQL_INTEGER = 0= IF
+        -1
+      ELSE
+        1 1 PFILEIDRESULTSET @ GETNUMBERFROMRESULTSET 
+      THEN
+    THEN
+    
+    PEXTRACTEDFILEID !
+
+    ( See if filename has an ID )
+    PEXTRACTEDFILEID @ -1 = IF
+  
+      ." <p>Could not find file name in database.</p>" CRLF
+      drawprojectfooter
+      EXIT
+
+    THEN
+
+    ( inserting new name into label set name table )
+    insert$ con$ db$ CONNECTSQLANDDOSTATEMENT$  
+
+    ?ERRORIF
+      ." <p>Error inserting new known code entry offset into table.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ." <p>Inserted code entry offset '" 
+    getnewcodesectionentryoffset$ .$
+    ." ' into table.<p>" CRLF
+    
+    drawprojectfooter 
+;
+
+drawpage
+
+

@@ -1,0 +1,150 @@
+
+$" odbcsqlsupport.dgluinc" INCLUDEFILE$
+
+$" skin.dgluinc" INCLUDEFILE$
+
+LOADFORMVALUES
+
+: getpassword$ ( -$- password$ )
+    $" password" POSTGETNAME$>VALUE$
+;
+
+: getlabelsetname$ ( -$- password$ )
+    $" labelsetname" POSTGETNAME$>VALUE$
+;
+
+: getlabeladdress$ ( -$- password$ )
+    $" labeladdress" POSTGETNAME$>VALUE$
+;
+
+: getlabeltext$ ( -$- password$ )
+    $" labeltext" POSTGETNAME$>VALUE$
+;
+
+VARIABLE PLABELSETID 
+-1 PLABELSETID !
+
+: sellabelsetid$ ( -$- labelset$ )
+    $" SELECT id FROM tbllabelsets WHERE namecol = '"
+    getlabelsetname$ $>$ $" '" $>$
+;
+
+: insert$ 
+    DECIMAL
+    $" INSERT INTO tbllabels (labelsetidcol, addresscol, textcol) "
+    $" VALUES (" $>$ 
+      PLABELSETID @ 0 <#$ #S$ #>$ $>$ 
+      $" ," $>$
+      getlabeladdress$ $>$ 
+      $" , '" $>$
+      getlabeltext$ $>$ 
+      $" ')" $>$ 
+;
+
+
+VARIABLE PLABELSETIDRESULTSET
+-1 PLABELSETIDRESULTSET !
+
+: drawpage ( -- )
+
+    ." CONTENT-TYPE: text/html" CRLF 
+    ." Cache-Control: no-cache, must-revalidate" CRLF
+    ." Expires: Mon, 12 Jul 1997 05:00:00 GMT" CRLF
+    CRLF
+
+    drawprojectheader
+
+    ." <h3 align='center'>Trying to add label to label set '" getlabelsetname$ .$ ." '</h3>" CRLF 
+
+    ( check password )
+    
+    getpassword$ formpassword$ COMPARE$ DROP$ DROP$ 0= 0= IF
+
+      ( they don't match )
+      ." <p>Password is incorrect.<p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( they match )
+ 
+    ( checking label set name for problems )
+    getlabelsetname$ insertvalue$ok? DROP$ 0= IF
+
+      ." <p>Something wrong with label set name '"
+      getlabelsetname$ .$
+      ." ' you are trying to add to. Please try another name.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( checking label address for problems )
+    getlabeladdress$ insertvalueint$ok? DROP$ 0= IF
+
+      ." <p>Something wrong with address '"
+      getlabeladdress$ .$
+      ." ' you are trying to insert. Please check address.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( checking label text for problems )
+    getlabeltext$ insertvalue$ok? DROP$ 0= IF
+
+      ." <p>Something wrong with label text '"
+      getlabeltext$ .$
+      ." ' you are trying to insert. Please check text. If you stick to alphanumeric characters it will work.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( get label set id )
+    sellabelsetid$ con$ db$ GETRESULTSET
+
+    LATESTRESULTSET PLABELSETIDRESULTSET !
+
+    ?ERRORIF
+      ." <p>Error getting label set id for label set name from database.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+  
+    ( push fileid from result set to data stack )
+    0 GETNUMBEROFROWSFROMRESULTSET 0= IF
+      -1 ( no file id exists for this filename )
+    ELSE
+      1 PLABELSETIDRESULTSET @ GETCOLUMNTYPEFROMRESULTSET SQL_INTEGER = 0= IF
+        -1
+      ELSE
+        1 1 PLABELSETIDRESULTSET @ GETNUMBERFROMRESULTSET 
+      THEN
+    THEN
+    
+    PLABELSETID !
+
+    ( check if label set id loaded )
+    PLABELSETID @ -1 = IF
+      ." <p>Could not find label set '"
+      getlabelsetname$ .$ 
+      ." ' in data base.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( inserting new label into label table )
+    insert$ con$ db$ CONNECTSQLANDDOSTATEMENT$  
+
+    ?ERRORIF
+      ." <p>Error inserting label into label table.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ." <p>Inserted label into label table.<p>" CRLF
+    
+    drawprojectfooter 
+;
+
+drawpage
+
+

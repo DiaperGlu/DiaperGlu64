@@ -1,0 +1,78 @@
+
+$" odbcsqlsupport.dgluinc" INCLUDEFILE$
+
+$" skin.dgluinc" INCLUDEFILE$
+
+
+LOADFORMVALUES
+
+: getfilename$ ( -- ) ( -$- filename$|empty$ )
+    
+    $" filename" POSTGETNAME$>VALUE$
+;
+
+: selectfilename$ $" SELECT datacol FROM tblfiles WHERE namecol = '" getfilename$ $>$ $" '" $>$ ;
+
+: drawhtmlheader 
+    ." CONTENT-TYPE: text/html" CRLF  
+    ." Cache-Control: no-cache, must-revalidate" CRLF 
+    ." Expires: Mon, 12 Jul 1997 05:00:00 GMT" CRLF 
+    CRLF 
+    drawprojectheader
+    ." <h3 align='center'>Trying to download file.</h3>" CRLF
+;
+
+: drawpage ( -- )
+
+    downloadsallowed? 0= IF
+      drawhtmlheader
+      ." <h4 align='center'>Downloads not allowed.</h4>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    getfilename$ LENGTH$ DROP$ 0= IF
+      drawhtmlheader
+      ." <h4 align='center'>No filename chosen.</h4>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( load file data to result set )      
+    selectfilename$ con$ db$ GETRESULTSET
+
+    ?ERRORIF
+      drawhtmlheader
+      ." <p>Error getting file data from database.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ?ERRORIF
+      drawhtmlheader
+      ." <p>Error getting file's base address from database.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN    
+
+    0 GETNUMBEROFROWSFROMRESULTSET 0= IF
+      drawhtmlheader
+      ." <p>File data not found in database.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( push file data from result set 0 to $ stack )
+    1 1 0 GETDATA$FROMRESULTSET
+
+    ( send file )
+    ." Content-Type: application/octet-stream" CRLF
+    ." Content-Length: " LENGTH$ DECIMAL 0 <#$ #S$ #>$ .$ CRLF
+    ." Content-Disposition: attachment; filename=" getfilename$ .$ CRLF
+    CRLF
+    .$
+;
+
+drawpage
+
+

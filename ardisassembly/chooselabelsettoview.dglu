@@ -1,0 +1,80 @@
+
+$" odbcsqlsupport.dgluinc" INCLUDEFILE$
+
+$" skin.dgluinc" INCLUDEFILE$
+
+
+: sel$ $" SELECT namecol FROM tbllabelsets" ;
+
+
+: drawpage ( -- )
+
+    ." CONTENT-TYPE: text/html" CRLF 
+    ." Cache-Control: no-cache, must-revalidate" CRLF
+    ." Expires: Mon, 12 Jul 1997 05:00:00 GMT" CRLF
+    CRLF
+
+    drawprojectheader
+
+    ." <h3 align='center'>Choose label set to view.</h3>" CRLF
+    
+    sel$ con$ db$ GETRESULTSET
+
+    ?ERRORIF
+      ." <p>Error getting page data</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    0 GETNUMBEROFROWSFROMRESULTSET 0= 0= IF
+      ."   <form runat='server' action='viewlabelset.dglu' method='get'>" CRLF
+
+      1 0 $" name='labelsetname'" DRAWRESULTSETCOLUMNASHTMLSELECTLIST
+
+      ."     <br><input type=radio name=base value=hex CHECKED>Hex" CRLF
+      ."     <br><input type=radio name=base value=decimal>Decimal" CRLF
+
+      ."     <br><input type='submit'>" CRLF
+
+      ."   </form>" CRLF   
+    ELSE
+      ." <p>No label sets found in database.<p>" CRLF
+    THEN
+
+    ." <hr>" CR
+
+    ." <p><h3 align=center>Make a new label set</h3></p>" CRLF
+
+    ."   <a href='labelexplanation.dglu'>Instructions for how to assign labels</a>" CRLF
+
+    ."   <form action='addlabelset.dglu' runat=server method=post>" CRLF
+    ."     <p>Please use alpha numeric characters for the name.<br>" CRLF
+    ."     New label set name: <input type=text name=newlabelsetname><br>" CRLF
+    ."     Password: <input type=password name=password><br>" CRLF
+    ."     <input type=submit>" CRLF
+    ."     </p>" CRLF
+    ."   </form>" CRLF
+
+    0 GETNUMBEROFROWSFROMRESULTSET 0= 0= IF
+      ."   <hr>" CRLF
+      ."   <h3 align=center>Choose label set to delete.</h3>" CRLF
+
+      ."   <form action='confirmdelete.dglu' runat=server method=post>" CRLF
+      ."     <input type=hidden name=hiddenpassword value=losttearstavern>" CRLF
+      ."     <input type=hidden name=dbtable value=tbllabelsets>" CRLF
+      ."     <input type=hidden name=coltype value=binary>" CRLF
+      ."     <input type=hidden name=base value=decimal>" CRLF
+      ."     <input type=hidden name=colname value=namecol>" CRLF
+           1 0 $" name='colvalue'" DRAWRESULTSETCOLUMNASHTMLSELECTLIST
+      ."     <br>Password: <input type=password name=password>" CRLF
+      ."     <br><input type=submit>" CRLF
+      ."   </form>"
+    THEN
+    
+
+    drawprojectfooter 
+;
+
+drawpage
+
+

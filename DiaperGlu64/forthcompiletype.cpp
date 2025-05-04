@@ -2,20 +2,20 @@
 //
 //    Copyright 2025 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.14.
+//    This file is part of DiaperGlu v5.15.
 //
-//    DiaperGlu v5.14 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.15 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.14 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.15 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.14; if not, write to the Free Software
+//    along with DiaperGlu v5.15; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// February 20, 2025          //
-// version 5.14               //
+// May 4, 2025                //
+// version 5.15               //
 // /////////////////////////////
 
 
@@ -3278,6 +3278,160 @@ void dg_forthdocompiletypeparsequotes (Bufferhandle* pBHarrayhead)
                     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
                     {
                         dg_pusherror(pBHarrayhead, dg_forthdocompiletypeparsequotesname);
+                        return;
+                    }
+                }
+            }
+        }
+        else
+        {
+            // unknown state do nothing
+        }        
+    }
+}
+
+
+void dg_forthdocompiletypelinesparsequotes (Bufferhandle* pBHarrayhead)
+//                         ( dataoffset databufid state -- )
+{
+    UINT64 dataoffset;
+    UINT64 databufid;
+    const char* state;
+    unsigned char* pstring;
+    UINT64 stringlength = 0;
+    UINT64 currentcompilebufid;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    state = (const char*)dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthstatename);
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypelinesparsequotesname);
+        return;
+    }
+
+    databufid = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypelinesparsequotesname);
+        return;
+    }
+
+    dataoffset = dg_popdatastack(pBHarrayhead);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypelinesparsequotesname);
+        return;
+    }
+
+    pstring = dg_parsemultiline(
+        pBHarrayhead,
+        &stringlength,
+        (unsigned char)'"');
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypelinesparsequotesname);
+        return;
+    }
+
+    dg_pushdatastack(
+        pBHarrayhead,
+        (UINT64)pstring);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypelinesparsequotesname);
+        return;
+    }
+
+    dg_pushdatastack(
+        pBHarrayhead,
+        stringlength);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthdocompiletypelinesparsequotesname);
+        return;
+    }
+
+    if (state == dg_stateexecute)
+    {
+        // does not do a copy
+        dg_callbuffer(
+            pBHarrayhead,
+            databufid,
+            dataoffset);    
+    }
+    else
+    {
+        if ((state == dg_statecompile) || (state == dg_statecolorcompile))
+        {
+            
+            dg_forthcompiles (pBHarrayhead);
+                
+            if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+            {
+                dg_pusherror(pBHarrayhead, dg_forthdocompiletypelinesparsequotesname);
+                return;
+            }
+
+            if (databufid == DG_CORE_BUFFERID) // call to the core
+            {
+                dg_compilecallcore(
+                    pBHarrayhead,
+                    dataoffset);
+            
+                // not checking error here on purpose
+            }
+            else // call to a buffer
+            {
+                currentcompilebufid = dg_getbufferuint64(
+                    pBHarrayhead,
+                    DG_DATASPACE_BUFFERID,
+                    currentcompilebuffer);
+
+                if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                {
+                    dg_pusherror(pBHarrayhead, dg_forthpcurrentcompilebuffername);
+                    dg_pusherror(pBHarrayhead, dg_forthdocompiletypelinesparsequotesname);
+                    return;
+                }
+
+                // put routine to compile to a buffer here
+                if (databufid == currentcompilebufid)
+                {
+                    dg_compiledgframecalloffsetinsamebuffer (
+                        pBHarrayhead,
+                        dataoffset); // INT64 targetoffset)
+                    
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthdocompiletypelinesparsequotesname);
+                        
+                        return;
+                    }
+                }
+                else
+                {
+                    // call to a different buffer
+                    dg_compiledgframecallbuffer (
+                        pBHarrayhead, 
+                        dataoffset,
+                        databufid);
+
+                    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+                    {
+                        dg_pusherror(pBHarrayhead, dg_forthdocompiletypelinesparsequotesname);
                         return;
                     }
                 }

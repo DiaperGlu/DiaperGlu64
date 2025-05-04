@@ -1,0 +1,62 @@
+
+( Last modified: March 17, 2007 )
+
+$" odbcsqlsupport.dgluinc" INCLUDEFILE$
+
+$" skin.dgluinc" INCLUDEFILE$
+
+LOADFORMVALUES
+
+: getpassword$ ( -$- password$ )
+    $" password" POSTGETNAME$>VALUE$
+;
+
+: getsqlstatement$ ( -$- sqlstatement$ )
+    $" sqlstatement" POSTGETNAME$>VALUE$
+;
+
+: drawpage ( -- )
+
+    ." CONTENT-TYPE: text/html" CRLF 
+    ." Cache-Control: no-cache, must-revalidate" CRLF
+    ." Expires: Mon, 12 Jul 1997 05:00:00 GMT" CRLF
+    CRLF
+
+    drawprojectheader
+
+    ." <h3 align='center'>Trying to do sql statement '" getsqlstatement$ .$ ." '</h3>" CRLF 
+
+    ( check password )
+    
+    getpassword$ 
+    adminpassword$
+    COMPARE$ DROP$ DROP$ 0= 0= IF
+
+      ( they don't match )
+      ." <p>Admin password is incorrect.<p>" CRLF
+      ." <p>POST$ = " GETPOST$ .$ ." </p>" CRLF
+      ." <p>Password entered is: " getpassword$ .$ ." </p>" CRLF
+      ." </body></html>" CRLF
+      EXIT
+    THEN
+
+    ( they match )
+
+    ( doing sql statement )
+
+    getsqlstatement$ con$ NEW$ CONNECTSQLANDDOSTATEMENT$ 
+
+    ?ERRORIF
+      ." <p>Error doing sql statement.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ." <p>sql statement successfully processed.<p>" CRLF
+    
+    drawprojectfooter 
+;
+
+drawpage
+
+

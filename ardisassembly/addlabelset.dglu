@@ -1,0 +1,73 @@
+
+$" odbcsqlsupport.dgluinc" INCLUDEFILE$
+
+$" skin.dgluinc" INCLUDEFILE$
+
+LOADFORMVALUES
+
+: getpassword$ ( -$- password$ )
+    $" password" POSTGETNAME$>VALUE$
+;
+
+: getnewlabelsetname$ ( -$- newlabelsetname$ )
+    $" newlabelsetname" POSTGETNAME$>VALUE$
+;
+
+: insert$ 
+    $" INSERT INTO tbllabelsets (namecol) VALUES ('"
+    getnewlabelsetname$ $>$ $" ')" $>$ 
+;
+
+
+: drawpage ( -- )
+
+    ." CONTENT-TYPE: text/html" CRLF 
+    ." Cache-Control: no-cache, must-revalidate" CRLF
+    ." Expires: Mon, 12 Jul 1997 05:00:00 GMT" CRLF
+    CRLF
+
+    drawprojectheader
+
+    ." <h3 align='center'>Trying to add new label set name.</h3>" CRLF
+
+    ( check password )
+    
+    getpassword$ formpassword$ COMPARE$ DROP$ DROP$ 0= 0= IF
+
+      ( they don't match )
+      ." <p>Password is incorrect.<p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( they match )
+ 
+    ( checking label set name for problems )
+    getnewlabelsetname$ insertvalue$ok? DROP$ 0= IF
+
+      ." <p>Something wrong with name '"
+      getnewlabelsetname$ .$
+      ." ' you are trying to insert. Please try another name.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ( inserting new name into label set name table )
+    insert$ con$ db$ CONNECTSQLANDDOSTATEMENT$  
+
+    ?ERRORIF
+      ." <p>Error inserting new name into label set name table.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ." <p>Inserted name '" 
+    getnewlabelsetname$ .$
+    ." ' into label set name table.<p>" CRLF
+    
+    drawprojectfooter 
+;
+
+drawpage
+
+

@@ -1,0 +1,92 @@
+
+$" odbcsqlsupport.dgluinc" INCLUDEFILE$
+
+$" skin.dgluinc" INCLUDEFILE$
+
+LOADFORMVALUES
+
+: getfilename$ ( -- ) ( -$- filename$|empty$ ) 
+    $" filename" POSTGETNAME$>VALUE$
+;
+    
+
+: selectsectionlist$ 
+    $" SELECT tblgamefilecodesections.id, tblgamefilecodesections.codestartoffset "
+    $" FROM tblfiles, tblgamefilecodesections WHERE tblfiles.namecol = '" $>$
+    getfilename$ $>$ $" ' AND tblgamefilecodesections.extractedfileid = tblfiles.id" $>$
+;
+
+
+HEX
+: drawpage ( -- )
+
+    ." CONTENT-TYPE: text/html" CRLF 
+    ." Cache-Control: no-cache, must-revalidate" CRLF
+    ." Expires: Mon, 12 Jul 1997 05:00:00 GMT" CRLF
+    CRLF
+
+    drawprojectheader
+
+    ." <h3 align='center'>View list of known code sections for a file.</h3>" CRLF
+
+    getfilename$ LENGTH$ DROP$ 0= IF
+      ." <h4 align='center'>No filename chosen.</h4>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    ." <h4 align='center'>" getfilename$ LENGTH$ .$ ." </h4>" CRLF 
+
+    ( load file data to result set )      
+    selectsectionlist$ con$ db$ GETRESULTSET
+
+    ?ERRORIF
+      ." <p>Error getting list of known code sections from database.</p>" CRLF
+      drawprojectfooter
+      EXIT
+    THEN
+
+    0 GETNUMBEROFROWSFROMRESULTSET 0= IF
+      ." <p>No known code sections found for this file.</p>" CRLF
+    ELSE
+      getbase BASE !
+      0 $" border=1" DRAWRESULTSETASHTMLTABLE
+    THEN
+
+    ."   <hr>" CRLF
+    ."   <h3 align=center>Add code entry offset to this file</h3>" CRLF
+
+    ."   <p>Offset can be decimal or hex. For hex, prefix number with 0x. For example 31 is 0x1f" CRLF
+    
+
+    ."   <form action='addcodesectionentryoffset.dglu' method=post runat=server>" CRLF
+    ."     <p><input type=hidden name=filename value=" getfilename$ .$ ." >" CRLF
+    ."     New code entry offset from start of file: <input type=text name=codeentryoffset><br>" CRLF
+    ."     Password: <input type=password name=password><br>" CRLF
+    ."     <input type=submit></p>" CRLF 
+    ."   </form>" CRLF
+
+    0 GETNUMBEROFROWSFROMRESULTSET 0= 0= IF
+
+      ."   <hr>" CRLF
+      ."   <h3 align=center>Delete code entry offset from this file.</h3>" CRLF
+
+      ."   <form action='confirmdelete.dglu' runat=server method=post>" CRLF
+      ."     <input type=hidden name=hiddenpassword value=losttearstavern>" CRLF
+      ."     <input type=hidden name=dbtable value=tblgamefilecodesections>" CRLF
+      ."     <input type=hidden name=coltype value=integer>" CRLF
+      ."     <input type=hidden name=base value=" getbase 0A = IF ." decimal" ELSE ." hex" THEN ." >" CRLF
+      ."     <input type=hidden name=colname value=id>" CRLF
+      ." id: "     1 0 $" name='colvalue'" getbase BASE ! DRAWRESULTSETCOLUMNASHTMLSELECTLIST
+      ."     <br>Password: <input type=password name=password>" CRLF
+      ."     <br><input type=submit>" CRLF
+      ."   </form>"
+
+    THEN  
+
+    drawprojectfooter 
+;
+
+drawpage
+
+

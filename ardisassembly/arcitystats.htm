@@ -1,0 +1,380 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<title>Atari 8-</title>
+</head>
+
+<body>
+
+<h4 align="center">Atari 8-bit version Alternate Reality the City
+character stats</h4>
+
+<p align="left">You can change many of these stats while the game
+is running in an emulator.</p>
+
+<p align="left">There are 3 different values for str, int, etc.
+One is your base value. Another is your effective value and goes
+down if you are diseased. The last is your visible value and goes
+up if you are deluded.</p>
+
+<table border="1">
+    <tr>
+        <th>address </th>
+        <th>stat </th>
+        <td><strong>size</strong></td>
+    </tr>
+    <tr>
+        <td>0x8916</td>
+        <td>hour&nbsp;[0-23]</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8917</td>
+        <td>day&nbsp;[0-29]</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8918</td>
+        <td>month&nbsp;[0-11]</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8919</td>
+        <td>year&nbsp;[0xA8&nbsp;is&nbsp;0&nbsp;and&nbsp;0xA7&nbsp;is&nbsp;255]</td>
+        <td>uint16 low to high</td>
+    </tr>
+    <tr>
+        <td>0x891A</td>
+        <td>year&nbsp;high&nbsp;byte&nbsp;not&nbsp;used&nbsp;in&nbsp;inns</td>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td>0x891D</td>
+        <td>raining&nbsp;flag</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x891E</td>
+        <td>no&nbsp;wind&nbsp;blowing&nbsp;flag&nbsp;when&nbsp;not&nbsp;0</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8923</td>
+        <td>character&nbsp;save&nbsp;slot&nbsp;[0-3]</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8924</td>
+        <td>current&nbsp;location&nbsp;y</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8925</td>
+        <td>current&nbsp;location&nbsp;x</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8926</td>
+        <td>last&nbsp;location&nbsp;y</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8927</td>
+        <td>last&nbsp;location&nbsp;x</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x892C</td>
+        <td>how&nbsp;big&nbsp;character&nbsp;steps&nbsp;are</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x892D</td>
+        <td>auxilary&nbsp;hour&nbsp;counter&nbsp;[0-23]</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x892E</td>
+        <td>strength1</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x892F</td>
+        <td>strength2</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8930</td>
+        <td>strength3</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8936</td>
+        <td>fractional&nbsp;strength</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8937</td>
+        <td>intelligence1</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8938</td>
+        <td>intelligence2</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8939</td>
+        <td>intelligence3</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x893F</td>
+        <td>fractional&nbsp;intelligence</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8940</td>
+        <td>wisdom1</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8941</td>
+        <td>wisdom2</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8942</td>
+        <td>wisdom3</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8948</td>
+        <td>fractional&nbsp;wisdom</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8949</td>
+        <td>skill1</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x894A</td>
+        <td>skill2</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x894B</td>
+        <td>skill3</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8951</td>
+        <td>fractional&nbsp;skill</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8952</td>
+        <td>stamina1</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8953</td>
+        <td>stamina2</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8954</td>
+        <td>stamina3</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x895A</td>
+        <td>fractional&nbsp;stamina</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x895B</td>
+        <td>charisma1</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x895C</td>
+        <td>charisma2</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x895D</td>
+        <td>charisma3</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8963</td>
+        <td>fractional&nbsp;charisma</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8964</td>
+        <td>speed1</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8965</td>
+        <td>speed2</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8966</td>
+        <td>speed3</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x896C</td>
+        <td>fractional&nbsp;speed</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x896E</td>
+        <td>evilness</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x896F</td>
+        <td>rounds&nbsp;of&nbsp;paralysis&nbsp;left&nbsp;when&nbsp;not&nbsp;0</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x897D</td>
+        <td>potions</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x897E</td>
+        <td>poison&nbsp;level</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8AA6</td>
+        <td>current&nbsp;experience&nbsp;points</td>
+        <td>uint32 high to low</td>
+    </tr>
+    <tr>
+        <td>0x8AAA</td>
+        <td>current&nbsp;level</td>
+        <td>uint32 high to low</td>
+    </tr>
+    <tr>
+        <td>0x8AAE</td>
+        <td>experience&nbsp;needed&nbsp;for&nbsp;next&nbsp;level</td>
+        <td>uint32 high to low</td>
+    </tr>
+    <tr>
+        <td>0x8AB2</td>
+        <td>experience&nbsp;needed&nbsp;from&nbsp;previous&nbsp;level</td>
+        <td>uint32 high to low</td>
+    </tr>
+    <tr>
+        <td>0x8AB6</td>
+        <td>hit&nbsp;points</td>
+        <td>uint32 high to low</td>
+    </tr>
+    <tr>
+        <td>0x8ABA</td>
+        <td>maximum&nbsp;hit&nbsp;points</td>
+        <td>uint32 high to low</td>
+    </tr>
+    <tr>
+        <td>0x8ABE</td>
+        <td>gold</td>
+        <td>uint32 high to low</td>
+    </tr>
+    <tr>
+        <td>0x8AC2</td>
+        <td>silver</td>
+        <td>uint32 high to low</td>
+    </tr>
+    <tr>
+        <td>0x8AC6</td>
+        <td>copper</td>
+        <td>uint32 high to low</td>
+    </tr>
+    <tr>
+        <td>0x8ACA</td>
+        <td>jewelry</td>
+        <td>uint32 high to low</td>
+    </tr>
+    <tr>
+        <td>0x8ACE</td>
+        <td>gems</td>
+        <td>uint32 high to low</td>
+    </tr>
+    <tr>
+        <td>0x8B0C</td>
+        <td>pointer&nbsp;to&nbsp;primary&nbsp;weapon&nbsp;stats</td>
+        <td>uint16 low to high</td>
+    </tr>
+    <tr>
+        <td>0x8B0E</td>
+        <td>which&nbsp;weapon&nbsp;is&nbsp;primary&nbsp;[0-4]&nbsp;[4&nbsp;is&nbsp;bare&nbsp;hands]</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8B0F</td>
+        <td>pointer&nbsp;to&nbsp;secondary&nbsp;weapon&nbsp;name</td>
+        <td>uint16 low to high</td>
+    </tr>
+    <tr>
+        <td>0x8FA2</td>
+        <td>intoxication&nbsp;level</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8FA6</td>
+        <td>treasure&nbsp;finding&nbsp;level</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8FAB</td>
+        <td>food&nbsp;packets</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8FAC</td>
+        <td>water&nbsp;flasks</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8FAD</td>
+        <td>hunger&nbsp;-&nbsp;visible&nbsp;at&nbsp;7</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8FAE</td>
+        <td>thirst&nbsp;-&nbsp;visible&nbsp;at&nbsp;4</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8FAF</td>
+        <td>fatigue&nbsp;-&nbsp;visible&nbsp;at&nbsp;0x11</td>
+        <td>uint8</td>
+    </tr>
+    <tr>
+        <td>0x8FB1</td>
+        <td>saved&nbsp;character&nbsp;file&nbsp;checksum&nbsp;low&nbsp;[8900&nbsp;-&nbsp;8EFF]</td>
+        <td>uint16 low to high</td>
+    </tr>
+    <tr>
+        <td>0x8FB2</td>
+        <td>saved&nbsp;character&nbsp;file&nbsp;checksum&nbsp;high&nbsp;[8900&nbsp;-&nbsp;8EFF]</td>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td>0xBFAC</td>
+        <td>number&nbsp;of&nbsp;game&nbsp;scripts&nbsp;in&nbsp;current&nbsp;game&nbsp;script&nbsp;table</td>
+        <td>uint8</td>
+    </tr>
+</table>
+</body>
+</html>

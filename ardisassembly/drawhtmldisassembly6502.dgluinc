@@ -1,0 +1,707 @@
+
+( Version 1.1 )
+( Last modified: March 20, 2007 )
+
+( Jim Norris )
+( dglu@rainbarrel.com )
+
+
+( Compile guard, don't include this file if it is already included. )
+
+' DRAWHTMLDISSASEMBLY6502.DGLU ENDOFWORDLIST = 0= ?END-EVALUATE
+
+0 CONSTANT DRAWHTMLDISSASEMBLY6502.DGLU
+
+
+HEX 100  100  NEWBUFFER CONSTANT OPCODETYPEBUFID
+HEX 1000 10000  NEWBUFFER CONSTANT OPCODENAMEL$OFFSETBUFID
+HEX 1000 100000 NEWBUFFER CONSTANT OPCODENAMEL$STRINGBUFID
+
+HEX 1000 100000  NEWBUFFER CONSTANT LABELADDRESSBUFID
+VARIABLE PGETLABELTEXT$FUNCTION
+
+
+: DEFAULTLABELTEXT$FUNCTION ( offset -- ) ( -$- $ ) 
+    NEW$
+ 
+    DEPTH 1 U< 0= IF
+      DROP
+    THEN 
+;
+
+' DEFAULTLABELTEXT$FUNCTION PGETLABELTEXT$FUNCTION !
+
+: >OPCODE ( opcodetype -- ) ( opcodename -$- )
+    OPCODETYPEBUFID C>BUF
+    
+    0 GETP$
+    OPCODENAMEL$OFFSETBUFID
+    OPCODENAMEL$STRINGBUFID
+    S>NEWL$ DROP$
+;
+
+( Opcode data types )
+0 CONSTANT none
+1 CONSTANT byte
+2 CONSTANT address
+3 CONSTANT branch
+4 CONSTANT terminating
+5 CONSTANT byteaddress
+
+( 00 ) $" brk"         terminating   >OPCODE
+( 01 ) $" ora(()+x)"   byteaddress   >OPCODE
+( 02 ) $" ???"         terminating   >OPCODE
+( 03 ) $" ???"         terminating   >OPCODE
+( 04 ) $" ???"         terminating   >OPCODE
+( 05 ) $" ora()"       byteaddress   >OPCODE
+( 06 ) $" asl()"       byteaddress   >OPCODE
+( 07 ) $" ???"         terminating   >OPCODE
+( 08 ) $" pshp"        none          >OPCODE
+( 09 ) $" ora"         byte          >OPCODE
+( 0a ) $" asla"        none          >OPCODE
+( 0b ) $" ???"         terminating   >OPCODE
+( 0c ) $" ???"         terminating   >OPCODE
+( 0d ) $" ora()"       address       >OPCODE
+( 0e ) $" asl()"       address       >OPCODE
+( 0f ) $" ???"         terminating   >OPCODE
+
+( 10 ) $" bpl"         branch        >OPCODE
+( 11 ) $" ora(()+y)"   byteaddress   >OPCODE
+( 12 ) $" ???"         terminating   >OPCODE
+( 13 ) $" ???"         terminating   >OPCODE
+( 14 ) $" ???"         terminating   >OPCODE
+( 15 ) $" ora(+x)"     byteaddress   >OPCODE
+( 16 ) $" asl(+x)"     byteaddress   >OPCODE
+( 17 ) $" ???"         terminating   >OPCODE
+( 18 ) $" clc"         none          >OPCODE
+( 19 ) $" ora(+y)"     address       >OPCODE
+( 1a ) $" ???"         terminating   >OPCODE
+( 1b ) $" ???"         terminating   >OPCODE
+( 1c ) $" ???"         terminating   >OPCODE
+( 1d ) $" ora(+x)"     address       >OPCODE
+( 1e ) $" asl(+x)"     address       >OPCODE
+( 1f ) $" ???"         terminating   >OPCODE
+
+( 20 ) $" jsr"         address       >OPCODE
+( 21 ) $" anda(()+x)"  byteaddress   >OPCODE
+( 22 ) $" ???"         terminating   >OPCODE
+( 23 ) $" ???"         terminating   >OPCODE
+( 24 ) $" bit()"       byteaddress   >OPCODE
+( 25 ) $" anda()"      byteaddress   >OPCODE
+( 26 ) $" rol()"       byteaddress   >OPCODE
+( 27 ) $" ???"         terminating   >OPCODE
+( 28 ) $" pulp"        none          >OPCODE
+( 29 ) $" anda"        byte          >OPCODE
+( 2a ) $" rola"        none          >OPCODE
+( 2b ) $" ???"         terminating   >OPCODE
+( 2c ) $" bit()"       address       >OPCODE
+( 2d ) $" anda()"      address       >OPCODE
+( 2e ) $" rol()"       address       >OPCODE
+( 2f ) $" ???"         terminating   >OPCODE
+
+( 30 ) $" bmi"         branch        >OPCODE
+( 31 ) $" anda(()+y)"  byteaddress   >OPCODE
+( 32 ) $" ???"         terminating   >OPCODE
+( 33 ) $" ???"         terminating   >OPCODE
+( 34 ) $" ???"         terminating   >OPCODE
+( 35 ) $" anda(+x)"    byteaddress   >OPCODE
+( 36 ) $" rol(+x)"     byteaddress   >OPCODE
+( 37 ) $" ???"         terminating   >OPCODE
+( 38 ) $" sec"         none          >OPCODE
+( 39 ) $" anda(+y)"    address       >OPCODE
+( 3a ) $" ???"         terminating   >OPCODE
+( 3b ) $" ???"         terminating   >OPCODE
+( 3c ) $" ???"         terminating   >OPCODE
+( 3d ) $" anda(+x)"    address       >OPCODE
+( 3e ) $" rol(+x)"     address       >OPCODE
+( 3f ) $" ???"         terminating   >OPCODE
+
+( 40 ) $" rti"         terminating   >OPCODE
+( 41 ) $" eora(()+x)"  byteaddress   >OPCODE
+( 42 ) $" ???"         terminating   >OPCODE
+( 43 ) $" ???"         terminating   >OPCODE
+( 44 ) $" ???"         terminating   >OPCODE
+( 45 ) $" eora()"      byteaddress   >OPCODE
+( 46 ) $" lsr()"       byteaddress   >OPCODE
+( 47 ) $" ???"         terminating   >OPCODE
+( 48 ) $" psha"        none          >OPCODE
+( 49 ) $" eora"        byte          >OPCODE
+( 4a ) $" lsra"        none          >OPCODE
+( 4b ) $" ???"         terminating   >OPCODE
+( 4c ) $" jmp"         address       >OPCODE
+( 4d ) $" eora()"      address       >OPCODE
+( 4e ) $" lsr()"       address       >OPCODE
+( 4f ) $" ???"         terminating   >OPCODE
+
+( 50 ) $" bvc"         branch        >OPCODE
+( 51 ) $" eora(()+y)"  byteaddress   >OPCODE
+( 52 ) $" ???"         terminating   >OPCODE
+( 53 ) $" ???"         terminating   >OPCODE
+( 54 ) $" ???"         terminating   >OPCODE
+( 55 ) $" eora(+x)"    byteaddress   >OPCODE
+( 56 ) $" lsr(+x)"     byteaddress   >OPCODE
+( 57 ) $" ???"         terminating   >OPCODE
+( 58 ) $" cli"         none          >OPCODE
+( 59 ) $" eora(+y)"    address       >OPCODE
+( 5A ) $" ???"         terminating   >OPCODE
+( 5B ) $" ???"         terminating   >OPCODE
+( 5C ) $" ???"         terminating   >OPCODE
+( 5D ) $" eora(+x)"    address       >OPCODE
+( 5E ) $" lsr(+x)"     address       >OPCODE
+( 5f ) $" ???"         terminating   >OPCODE
+
+( 60 ) $" rts"         terminating   >OPCODE
+( 61 ) $" adca(()+x)"  byteaddress   >OPCODE
+( 62 ) $" ???"         terminating   >OPCODE
+( 63 ) $" ???"         terminating   >OPCODE
+( 64 ) $" ???"         terminating   >OPCODE
+( 65 ) $" adca()"      byteaddress   >OPCODE
+( 66 ) $" ror()"       byteaddress   >OPCODE
+( 67 ) $" ???"         terminating   >OPCODE
+( 68 ) $" pula"        none          >OPCODE
+( 69 ) $" adca"        byte          >OPCODE
+( 6a ) $" rora"        none          >OPCODE
+( 6b ) $" ???"         terminating   >OPCODE
+( 6c ) $" jmp()"       address       >OPCODE
+( 6d ) $" adca()"      address       >OPCODE
+( 6e ) $" ror()"       address       >OPCODE
+( 6f ) $" ???"         terminating   >OPCODE
+
+( 70 ) $" bvs"         branch        >OPCODE
+( 71 ) $" adca(()+y)"  byteaddress   >OPCODE
+( 72 ) $" ???"         terminating   >OPCODE
+( 73 ) $" ???"         terminating   >OPCODE
+( 74 ) $" ???"         terminating   >OPCODE
+( 75 ) $" adca(+x)"    byteaddress   >OPCODE
+( 76 ) $" ror(+x)"     byteaddress   >OPCODE
+( 77 ) $" ???"         terminating   >OPCODE
+( 78 ) $" sei"         none          >OPCODE
+( 79 ) $" adca(+y)"    address       >OPCODE
+( 7a ) $" ???"         terminating   >OPCODE
+( 7b ) $" ???"         terminating   >OPCODE
+( 7c ) $" ???"         terminating   >OPCODE
+( 7d ) $" adca(+x)"    address       >OPCODE
+( 7e ) $" ror(+x)"     address       >OPCODE
+( 7f ) $" ???"         terminating   >OPCODE
+
+( 80 ) $" ???"         terminating   >OPCODE
+( 81 ) $" sta(()+x)"   byteaddress   >OPCODE
+( 82 ) $" ???"         terminating   >OPCODE
+( 83 ) $" ???"         terminating   >OPCODE
+( 84 ) $" sty()"       byteaddress   >OPCODE
+( 85 ) $" sta()"       byteaddress   >OPCODE
+( 86 ) $" stx()"       byteaddress   >OPCODE
+( 87 ) $" ???"         terminating   >OPCODE
+( 88 ) $" decy"        none          >OPCODE
+( 89 ) $" ???"         terminating   >OPCODE
+( 8a ) $" txa"         none          >OPCODE
+( 8b ) $" ???"         terminating   >OPCODE
+( 8c ) $" sty()"       address       >OPCODE
+( 8d ) $" sta()"       address       >OPCODE
+( 8e ) $" stx()"       address       >OPCODE
+( 8f ) $" ???"         terminating   >OPCODE
+
+( 90 ) $" bcc"         branch        >OPCODE
+( 91 ) $" sta(()+y)"   byteaddress   >OPCODE
+( 92 ) $" ???"         terminating   >OPCODE
+( 93 ) $" ???"         terminating   >OPCODE
+( 94 ) $" sty(+x)"     byteaddress   >OPCODE
+( 95 ) $" sta(+x)"     byteaddress   >OPCODE
+( 96 ) $" stx(+y)"     byteaddress   >OPCODE
+( 97 ) $" ???"         terminating   >OPCODE
+( 98 ) $" tya"         none          >OPCODE
+( 99 ) $" sta(+y)"     address       >OPCODE
+( 9a ) $" txs"         none          >OPCODE
+( 9b ) $" ???"         terminating   >OPCODE
+( 9c ) $" ???"         terminating   >OPCODE
+( 9d ) $" sta(+x)"     address       >OPCODE
+( 9e ) $" ???"         terminating   >OPCODE
+( 9f ) $" ???"         terminating   >OPCODE
+
+( a0 ) $" ldy"         byte          >OPCODE
+( a1 ) $" lda(()+x)"   byteaddress   >OPCODE
+( a2 ) $" ldx"         byte          >OPCODE
+( a3 ) $" ???"         terminating   >OPCODE
+( a4 ) $" ldy()"       byteaddress   >OPCODE
+( a5 ) $" lda()"       byteaddress   >OPCODE
+( a6 ) $" ldx()"       byteaddress   >OPCODE
+( a7 ) $" ???"         terminating   >OPCODE
+( a8 ) $" tay"         none          >OPCODE
+( a9 ) $" lda"         byte          >OPCODE
+( aa ) $" tax"         none          >OPCODE
+( ab ) $" ???"         terminating   >OPCODE
+( ac ) $" ldy()"       address       >OPCODE
+( ad ) $" lda()"       address       >OPCODE
+( ae ) $" ldx()"       address       >OPCODE
+( af ) $" ???"         terminating   >OPCODE
+
+( b0 ) $" bcs"         branch        >OPCODE
+( b1 ) $" lda(()+y)"   byteaddress   >OPCODE
+( b2 ) $" ???"         terminating   >OPCODE
+( b3 ) $" ???"         terminating   >OPCODE
+( b4 ) $" ldy(+x)"     byteaddress   >OPCODE
+( b5 ) $" lda(+x)"     byteaddress   >OPCODE
+( b6 ) $" ldx(+y)"     byteaddress   >OPCODE
+( b7 ) $" ???"         terminating   >OPCODE
+( b8 ) $" clv"         none          >OPCODE
+( b9 ) $" lda(+y)"     address       >OPCODE
+( ba ) $" tsx"         none          >OPCODE
+( bb ) $" ???"         terminating   >OPCODE
+( bc ) $" ldy(+x)"     address       >OPCODE
+( bd ) $" lda(+x)"     address       >OPCODE
+( be ) $" ldx(+y)"     address       >OPCODE
+( bf ) $" ???"         terminating   >OPCODE
+
+( c0 ) $" cpy"         byte          >OPCODE
+( c1 ) $" cmp(()+x)"   byteaddress   >OPCODE
+( c2 ) $" ???"         terminating   >OPCODE
+( c3 ) $" ???"         terminating   >OPCODE
+( c4 ) $" cpy()"       byteaddress   >OPCODE
+( c5 ) $" cmpa()"      byteaddress   >OPCODE
+( c6 ) $" dec()"       byteaddress   >OPCODE
+( c7 ) $" ???"         terminating   >OPCODE
+( c8 ) $" iny"         none          >OPCODE
+( c9 ) $" cmpa"        byte          >OPCODE
+( ca ) $" dex"         none          >OPCODE
+( cb ) $" ???"         terminating   >OPCODE
+( cc ) $" cpy()"       address       >OPCODE
+( cd ) $" cmpa()"      address       >OPCODE
+( ce ) $" dec()"       address       >OPCODE
+( cf ) $" ???"         terminating   >OPCODE
+
+( d0 ) $" bne"         branch        >OPCODE
+( d1 ) $" cmpa(()+y)"  byteaddress   >OPCODE
+( d2 ) $" ???"         terminating   >OPCODE
+( d3 ) $" ???"         terminating   >OPCODE
+( d4 ) $" ???"         terminating   >OPCODE
+( d5 ) $" cmpa(+x)"    byteaddress   >OPCODE
+( d6 ) $" dec(+x)"     byteaddress   >OPCODE
+( d7 ) $" ???"         terminating   >OPCODE
+( d8 ) $" cld"         none          >OPCODE
+( d9 ) $" cmpa(+y)"    address       >OPCODE
+( da ) $" ???"         terminating   >OPCODE
+( db ) $" ???"         terminating   >OPCODE
+( dc ) $" ???"         terminating   >OPCODE
+( dd ) $" cmpa(+x)"    address       >OPCODE
+( de ) $" dec(+x)"     address       >OPCODE
+( df ) $" ???"         terminating   >OPCODE
+
+( e0 ) $" cpx"         byte          >OPCODE
+( e1 ) $" sbc(()+x)"   byteaddress   >OPCODE
+( e2 ) $" ???"         terminating   >OPCODE
+( e3 ) $" ???"         terminating   >OPCODE
+( e4 ) $" cpx()"       byteaddress   >OPCODE
+( e5 ) $" sbca()"      byteaddress   >OPCODE
+( e6 ) $" inc()"       byteaddress   >OPCODE
+( e7 ) $" ???"         terminating   >OPCODE
+( e8 ) $" inx"         none          >OPCODE
+( e9 ) $" sbca"        byte          >OPCODE
+( ea ) $" nop"         none          >OPCODE
+( eb ) $" ???"         terminating   >OPCODE
+( ec ) $" cpx()"       address       >OPCODE
+( ed ) $" sbca()"      address       >OPCODE
+( ee ) $" inc()"       address       >OPCODE
+( ef ) $" ???"         terminating   >OPCODE
+
+( f0 ) $" beq"         branch        >OPCODE
+( f1 ) $" sbca(()+y)"  byteaddress   >OPCODE
+( f2 ) $" ???"         terminating   >OPCODE
+( f3 ) $" ???"         terminating   >OPCODE
+( f4 ) $" ???"         terminating   >OPCODE
+( f5 ) $" sbca(+x)"    byteaddress   >OPCODE
+( f6 ) $" inc(+x)"     byteaddress   >OPCODE
+( f7 ) $" ???"         terminating   >OPCODE
+( f8 ) $" sed"         none          >OPCODE
+( f9 ) $" sbca(+y)"    address       >OPCODE
+( fa ) $" ???"         terminating   >OPCODE
+( fb ) $" ???"         terminating   >OPCODE
+( fc ) $" ???"         terminating   >OPCODE
+( fd ) $" sbca(+x)"    address       >OPCODE
+( fe ) $" inc(+x)"     address       >OPCODE
+( ff ) $" ???"         terminating   >OPCODE
+
+
+HEX 10000 10000 NEWBUFFER CONSTANT FALREADYDISASSEMBLEDBUFID
+HEX 1000  -1    NEWBUFFER CONSTANT PSECTIONSTACKBUFID
+
+10000 FALREADYDISASSEMBLEDBUFID GROWBUFFER
+
+VARIABLE PENTRYADDRESS
+VARIABLE PBASEADDRESS
+VARIABLE PCURRENTADDRESS
+VARIABLE PDATAADDRESS
+VARIABLE PX
+VARIABLE POPCODE 
+VARIABLE POPCODETYPE 
+
+HEX
+: CHECKISADDRESSOK? ( address -- flag ) ( data$ -$- data$ )
+
+    DEPTH 1 U< IF
+      ( need to push underflow error here ) 
+      FALSE EXIT
+    THEN
+
+    DEPTH$ 1 U< IF
+      ( need to push underflow error here )
+      DROP FALSE EXIT
+    THEN
+
+    DUP PBASEADDRESS @ U< IF
+      DROP FALSE
+      EXIT
+    THEN
+
+    DUP PBASEADDRESS @ LENGTH$ + U< 0= IF
+      DROP FALSE
+      EXIT
+    THEN
+
+    DUP FALREADYDISASSEMBLEDBUFID OC@ ( getting a byte so can't compare with true )
+    0= IF
+      ( DROP ) TRUE
+      EXIT
+    THEN
+
+    ( ." <tr>
+         <td>"
+           U. ." already disassembled"
+           
+    ."   </td>
+       </tr> " CRLF )
+
+    FALSE
+;
+
+VARIABLE PFFOUNDADDRESS
+: POPADDRESSFROMSECTIONSTACK ( -- uint16address|-1 ) 
+
+    PSECTIONSTACKBUFID LENGTHBUF 8 U< IF
+      -1
+      EXIT
+    THEN
+
+    FALSE PFFOUNDADDRESS !
+    BEGIN
+
+      PSECTIONSTACKBUFID LENGTHBUF 8 U< IF
+        -1
+        TRUE PFFOUNDADDRESS !
+      ELSE
+
+        PSECTIONSTACKBUFID BUF>
+
+        DUP CHECKISADDRESSOK? IF
+          TRUE PFFOUNDADDRESS ! 
+        ELSE
+          DROP
+        THEN
+
+      THEN
+    
+      PFFOUNDADDRESS @
+    UNTIL    
+;
+
+: ?NOTDONEDISASSEMBLING ( -- flag )
+
+    ( see if address is ok )
+    PX @ PBASEADDRESS @ + CHECKISADDRESSOK? IF TRUE EXIT THEN 
+
+    ( address is not ok, see if we can get one from section stack )
+    POPADDRESSFROMSECTIONSTACK
+    
+    DUP -1 = IF
+      DROP FALSE EXIT 
+    THEN
+
+    PBASEADDRESS @ - PX ! TRUE
+
+    ." <tr>
+         <td>
+           <hr>
+         </td>
+       </tr> " CRLF
+;
+
+HEX
+: CSIGNEXTEND ( n -- n' ) ( bit7 is copied to all higher bits )
+    ( Forth doesn't have a sign extend byte function? )
+
+    FF AND
+
+    DUP 80 U< IF
+      EXIT
+    THEN
+
+    FFFFFFFFFFFFFF00 OR
+;
+
+VARIABLE PGETLABELTEXT$SCURRENTOFFSET
+VARIABLE PGETLABELTEXT$SMATCHES
+VARIABLE PGETLABELTEXT$SADDRESS
+
+: GETLABELTEXT$SFORADDRESS ( address -- n ) ( labeltext1$ labeltext2$ ... labeltextn$ -$- )
+
+    DEPTH 1 U< IF 
+      ( underflow error )
+      0  
+    THEN
+    
+    PGETLABELTEXT$SADDRESS !
+
+    0 PGETLABELTEXT$SMATCHES !
+    0 PGETLABELTEXT$SCURRENTOFFSET !
+
+    BEGIN
+
+      ( offset of -1 will cause loop to exit )
+      PGETLABELTEXT$SCURRENTOFFSET @ LABELADDRESSBUFID LENGTHBUF U<
+
+    WHILE
+      LABELADDRESSBUFID 
+      PGETLABELTEXT$SCURRENTOFFSET @
+      PGETLABELTEXT$SADDRESS @
+      SCANBUF PGETLABELTEXT$SCURRENTOFFSET ! 
+
+      PGETLABELTEXT$SCURRENTOFFSET @ -1 U< IF
+
+        ( labelindex -- ) ( -$- labeltext$ )
+        PGETLABELTEXT$SCURRENTOFFSET @ 
+        PGETLABELTEXT$FUNCTION @ ( check end of wordlist? ) 
+        EXECUTE
+
+        1 PGETLABELTEXT$SMATCHES +!
+        1 PGETLABELTEXT$SCURRENTOFFSET +!
+      
+      THEN
+    REPEAT
+
+    PGETLABELTEXT$SMATCHES @    
+;
+
+: DRAWLABELTEXT$S ( n -- ) ( label0text$ label1text$ ... labelntext$ -$- )
+
+    DEPTH 1 U< IF
+      ( data stack underflow error )
+      EXIT
+    THEN 
+
+    DUP 0= IF
+      DROP EXIT 
+    THEN
+
+    DUP DEPTH$ SWAP U< IF
+      ( string stack underflow )
+      DROP EXIT
+    THEN
+
+    0 DO
+      .$ ." <br>"
+    LOOP
+;
+
+HEX
+
+: CLEARALREADYDISASSEMBLED ( -- )
+    10000 0 DO 
+      FALSE I FALREADYDISASSEMBLEDBUFID OC!
+    LOOP
+;
+
+: DRAW$ASHTML6502DISASSEMBLYFOLLOWCODE ( entryaddress baseaddress -- ) 
+                                       ( memorysection$ -$- memorysection$ )
+                                       ( uses current BASE )
+   
+    PSECTIONSTACKBUFID EMPTYBUFFER
+
+    DEPTH 2 U< IF
+      ." <p>Data stack underflow trying to draw disassembly. Missing base and/or entry address.</p>" CRLF
+      EXIT
+    THEN   
+
+    DEPTH$ 1 U< IF
+      ." <p>String stack underflow trying to draw disassembly. Missing data$ to disassemble.</p>" CRLF
+      DROP DROP EXIT
+    THEN
+
+    PBASEADDRESS !
+    PENTRYADDRESS !
+
+    ." <br><hr><br>Entry address of code = " PENTRYADDRESS @ U. ." </p>" CRLF
+
+    LENGTH$ 0= IF
+      ." <p>Memory section string is empty.</p>" CRLF
+      EXIT
+    THEN
+
+    PBASEADDRESS @ 10000 U< 0= IF
+      ." <p>Base address of memory section is not between 0 and 0xFFFF</p>" CRLF
+      EXIT
+    THEN
+
+    PBASEADDRESS @ LENGTH$ + 10001 U< 0= IF 
+      ." <p>Memory section addresses go past 0xFFFF</p>" CRLF
+      EXIT
+    THEN
+
+    PENTRYADDRESS @ PBASEADDRESS @ U< IF
+      ." <p>Entry address is before base address of memory section.</p>" CRLF
+      EXIT
+    THEN    
+
+    PENTRYADDRESS @ PBASEADDRESS @ LENGTH$ + U< 0= IF
+      ." <p>Entry address is after end of memory section.</p>" CRLF
+      EXIT
+    THEN
+
+    PENTRYADDRESS @ PBASEADDRESS @ - PX !
+    ( PENTRYADDRESS @ PCURRENTADDRESS ! )
+
+    ."   <table>" CRLF
+
+    BEGIN
+
+      ( check address and pop section stack if needed )
+      ( if bad address and nothing is on section stack we are done )
+      ?NOTDONEDISASSEMBLING
+
+    WHILE
+
+      PX @ PBASEADDRESS @ + PCURRENTADDRESS ! 
+      -1 PDATAADDRESS ! ( don't make a label for uint32 -1, using this as no data address flag :- )
+
+      ( check to see if there are labels for this address )
+      PCURRENTADDRESS @ 
+      GETLABELTEXT$SFORADDRESS DUP 0= IF
+        DROP
+      ELSE
+        0 DO
+        ." <tr><th align=left colspan=3>" CRLF
+        ( DRAWLABELTEXT$S ) .$
+        ." </th></tr>" CRLF
+        LOOP
+      THEN
+      
+      ( draw address field )
+      ."     <tr>" CRLF
+      ."       <td align=top style='FONT-FAMILY: Monospace'>" 
+      PCURRENTADDRESS @ 0 <#$ #S$ #>$ .$
+      ." </td>" CRLF
+
+      ( mark address as already disassembled )
+      TRUE PCURRENTADDRESS @ FALREADYDISASSEMBLEDBUFID OC!
+
+      ( draw opcode field )
+
+        ( get and opcode type and opcode namel$ offset bufid )
+        PX @ $C@ POPCODE !
+        POPCODE @ OPCODETYPEBUFID OC@ POPCODETYPE !
+
+        POPCODE @
+        OPCODENAMEL$OFFSETBUFID
+        OPCODENAMEL$STRINGBUFID
+        GETPL$
+
+        ."       <td align=topleft style='FONT-FAMILY: Monospace' width=30%>"
+        TYPE 
+
+        ( moving pointer to next address )
+        PX @ 1+ PX !
+
+        ( draw data for opcodes with one byte of data )
+        POPCODETYPE @ byte = IF
+
+          PX @ LENGTH$ U< IF
+            ."  " 
+            PX @ $C@  
+            DRAWBASEBYTE
+          THEN
+
+          ( moving pointer to next address )
+          PX @ 1+ PX !
+        THEN
+
+        POPCODETYPE @ byteaddress = IF
+          PX @ LENGTH$ U< IF
+            ."  " 
+            PX @ $C@ DUP PDATAADDRESS !
+            DRAWBASEBYTE
+          THEN
+
+          ( moving pointer to next address )
+          PX @ 1+ PX !
+        THEN
+
+        ( draw address for opcodes with two bytes of data )
+        POPCODETYPE @ address = IF
+        
+          PX @ 1+ LENGTH$ U< IF
+            ."  "
+        
+            ( don't have $UINT16@ so... )
+            PX @ 1+ $C@ 100 * PX @ $C@ + PDATAADDRESS !
+
+            ( moving pointer to next address )
+            PX @ 2 + PX !
+
+            PDATAADDRESS @ 0 <#$ #S$ #>$ .$ 
+
+            POPCODE @ 20 = IF
+              PDATAADDRESS @ PSECTIONSTACKBUFID >BUF
+            THEN
+
+            POPCODE @ 4C = IF
+              PDATAADDRESS @ PBASEADDRESS @ - PX !
+            THEN
+
+            POPCODE @ 6C = IF
+              -1 PX !
+            THEN
+
+          THEN
+
+        THEN
+
+        ( draw branch address for branch opcodes )
+        POPCODETYPE @ branch = IF
+
+          PX @ $C@ CSIGNEXTEND
+
+          PX @ 1+ PX !
+          
+          PX @ PBASEADDRESS @ + + FFFF AND PDATAADDRESS !
+
+          ."  "
+          PDATAADDRESS @ 0 <#$ #S$ #>$ .$
+
+          PDATAADDRESS @ PSECTIONSTACKBUFID >BUF
+          
+        THEN
+
+        ( found unknown opcode, RTS, RTI, or BRK. Popping disassembly stack. )
+        POPCODETYPE @ terminating = IF
+          -1 PX !
+        THEN
+
+        ." </td>" CRLF
+
+        ( draw label text for data address )
+        ."       <td align=topleft>"
+        PDATAADDRESS @ 
+        GETLABELTEXT$SFORADDRESS
+        DRAWLABELTEXT$S
+        ." </td>" CRLF
+
+        ."     </tr>" CRLF
+
+        ?ERRORIF 
+          ."     </table>" CRLF
+          EXIT
+        THEN     
+    REPEAT    
+
+    ."   </table>" CRLF
+;
+
+CLEARALREADYDISASSEMBLED
