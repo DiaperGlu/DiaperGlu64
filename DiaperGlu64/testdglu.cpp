@@ -2,20 +2,20 @@
 //
 //    Copyright 2025 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.15.
+//    This file is part of DiaperGlu v5.16.
 //
-//    DiaperGlu v5.15 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.16 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.15 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.16 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.15; if not, write to the Free Software
+//    along with DiaperGlu v5.16; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// May 4, 2025                //
-// version 5.15               //
+// January 24, 2026           //
+// version 5.16               //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -117,6 +117,8 @@ void dg_forthselftest ()
     testdg_popf64stacktobracketob();
     testdg_popdatastacktou128bracketob();
     testdg_ubufferalign();
+    testdg_depthtoindex();
+    testdg_stackdepthtoindex();
 
     //need dg_clearbuffer
     //need dg_getpbufferoffset
@@ -188,6 +190,7 @@ void dg_forthselftest ()
     testdg_divlstringnbyu64();
     testdg_fescdecodelstring();
     testdg_fescencodelstring();
+    testdg_getslstringatdepth();
     
     // test C lstring queue stuff
     testdg_initlstringqueue();
@@ -596,9 +599,11 @@ void dg_forthselftest ()
 	// test Forth buffer words
 	testdg_forthocfetch();
 	testdg_forthofetch();
+        testdg_forthou32fetch();
 	testdg_forthostonewstring();
 	testdg_forthocstore();
 	testdg_forthostore();
+        testdg_forthou32store();
 	// testputbufferstring2(); // not implemented yet 
 	testdg_forthctobuf();
 	testdg_forthtobuf();
@@ -685,6 +690,12 @@ void dg_forthselftest ()
     testdg_forthlershiftclstringn();
     testdg_forthu64starlstringnplustolstringn();
     testdg_forthtoslashulelstringn();
+    testdg_forthgetslstringbracketud();
+    testdg_forthcopylstringtobuf();
+    testdg_forthlstringtobuf();
+    testdg_forthcopybuftonewlstring();
+    testdg_forthcopylstringbracketudtobuf();
+    testdg_forthcopylstringbracketutobuf();
     
     // testing Forth string stack stuff
 	testdg_forthcomparestring();

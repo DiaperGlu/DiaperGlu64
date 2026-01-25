@@ -1,0 +1,208 @@
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2023 James Patrick Norris
+//
+//    This file is part of DGXtensaElfDotoMaker v1.0
+//
+//    DGXtensaElfDotoMaker v1.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DGXtensaElfDotoMaker v1.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DGXtensaElfDotoMaker v1.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// September 28, 2024         //
+// version 1.0                //
+// /////////////////////////////
+
+$" DGMachoDotoMaker.dglu" INCLUDEFILE$
+
+HEX
+
+: testsdefaultmach_header_64 
+    CRLF ." testing mach_header_64 size"
+    sdefaultmach_header_64  DROP obdefaultmach_header_64 O>P <>
+    IF CRLF ERROR" - sdefaultmach_header_64 address incorrect" EXIT THEN
+    sdefaultmach_header_64 SWAP DROP [mach_header_64] size DROP [ SEARCH-ORDER> DROP ] <>
+    IF CRLF ERROR" - sdefaultmach_header_64 size incorrect" EXIT THEN
+;
+
+testsdefaultmach_header_64
+
+
+: testsdefaultbuild_version_command 
+    CRLF ." testing build_version_command size"
+    sdefaultbuild_version_command  DROP obdefaultbuild_version_command O>P <>
+    IF CRLF ERROR" - sdefaultbuild_version_command address incorrect" EXIT THEN
+    sdefaultbuild_version_command SWAP DROP [build_version_command] size DROP [ SEARCH-ORDER> DROP ] <>
+    IF CRLF ERROR" - sdefaultbuild_version_command size incorrect" EXIT THEN
+;
+
+testsdefaultbuild_version_command
+
+
+: testsdefaultsymtab_command
+    CRLF ." testing symtab_command size"
+    sdefaultsymtab_command  DROP obdefaultsymtab_command O>P <>
+    IF CRLF ERROR" - ssdefaultsymtab_command address incorrect" EXIT THEN
+    sdefaultsymtab_command SWAP DROP [symtab_command] size DROP [ SEARCH-ORDER> DROP ] <>
+    IF CRLF ERROR" - sdefaultsymtab_command size incorrect" EXIT THEN
+;
+
+testsdefaultsymtab_command
+
+
+: testsdefaultdysymtab_command
+    CRLF ." testing dysymtab_command size"
+    sdefaultdysymtab_command  DROP obdefaultdysymtab_command O>P <>
+    IF CRLF ERROR" - sdefaultdysymtab_command address incorrect" EXIT THEN
+    sdefaultdysymtab_command SWAP DROP [dysymtab_command] size DROP [ SEARCH-ORDER> DROP ] <>
+    IF CRLF ERROR" - sdefaultdysymtab_command size incorrect" EXIT THEN
+;
+
+testsdefaultdysymtab_command
+
+HEX
+: testaddexportsymbol ( -- )
+
+    { strbufid nlistarraybufid pfirstsymbol firstsymbollength psecondsymbol secondsymbollength }
+
+    CRLF ." testing addexportsymbol"
+
+    1000 -1 NEWBUFFER TO strbufid
+    1000 -1 NEWBUFFER TO nlistarraybufid
+
+    S" firstsymbol" ( pname namelength  -- ) TO firstsymbollength TO pfirstsymbol
+    S" secondsymbol" ( pname namelength  -- ) TO secondsymbollength TO psecondsymbol
+
+    pfirstsymbol firstsymbollength ( pname namelength -- )
+    3AC0B416 ( pname namelength value -- )
+    strbufid nlistarraybufid
+    addexportsymbol
+
+    strbufid GETBUFFERLENGTH firstsymbollength 2 + <>
+    IF CRLF ERROR" - addexportsymbol 1st test - string buffer size not correct" EXIT THEN
+    0 strbufid O>P C@ [CHAR] _ <>
+    IF CRLF ERROR" - addexportsymbol 1st test - missing _" EXIT THEN
+    1 strbufid O>P firstsymbollength pfirstsymbol firstsymbollength COMPARE 0 <>
+    IF CRLF ERROR" - addexportsymbol 1st test - string buffer not correct" EXIT THEN
+    firstsymbollength 1+ strbufid O>P C@ 0 <>
+    IF CRLF ERROR" - addsymbol 1st test - string buffer null terminator missing" EXIT THEN
+
+    nlistarraybufid GETBUFFERLENGTH obdefaultnlist_64.size <> 
+    IF CRLF ERROR" - addexportsymbol 1st test - nlist array buffer size not correct" EXIT THEN
+    0 nlistarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addexportsymbol 1st test - symbol name offset not correct" EXIT THEN
+    4 nlistarraybufid O>P C@ 0F <>
+    IF CRLF ERROR" - addexportymbol 1st test - symbol type not correct" EXIT THEN
+    5 nlistarraybufid O>P C@ 1 <>
+    IF CRLF ERROR" - addexpotsymbol 1st test - symbol section not correct" EXIT THEN
+    6 nlistarraybufid O>P U16@ 0 <>
+    IF CRLF ERROR" - addexportsymbol 1st test - symbol description not correct" EXIT THEN
+    8 nlistarraybufid O>P U64@ 3AC0B416 <>
+    IF CRLF ERROR" - addexportsymbol 1st test - symbol value not correct" EXIT THEN
+
+    psecondsymbol secondsymbollength ( pname namelength -- )
+    263787A1 ( pname namelength value -- )
+    strbufid nlistarraybufid
+    addexportsymbol
+
+    strbufid GETBUFFERLENGTH firstsymbollength secondsymbollength + 4 + <>
+    IF CRLF ERROR" - addexportsymbol 2nd test - string buffer size not correct" EXIT THEN
+    firstsymbollength 2 + strbufid O>P C@ [CHAR] _ <>
+    IF CRLF ERROR" - addexportsymbol 2nd test - missing _" EXIT THEN
+    firstsymbollength 3 + strbufid O>P secondsymbollength psecondsymbol secondsymbollength COMPARE 0 <>
+    IF CRLF ERROR" - addexportsymbol 2nd test - string buffer not correct" EXIT THEN
+    firstsymbollength secondsymbollength + 3 + strbufid O>P C@ 0 <>
+    IF CRLF ERROR" - addexportsymbol 2nd test - string buffer null terminator missing" EXIT THEN
+
+    nlistarraybufid GETBUFFERLENGTH obdefaultnlist_64.size 2* <> 
+    IF CRLF ERROR" - addexportsymbol 2nd test - nlist array buffer size not correct" EXIT THEN
+    obdefaultnlist_64.size 0 + nlistarraybufid O>P U32@ firstsymbollength 2 + <>
+    IF CRLF ERROR" - addexportsymbol 2nd test - symbol name offset not correct" EXIT THEN
+    obdefaultnlist_64.size 4 + nlistarraybufid O>P C@ 0F <>
+    IF CRLF ERROR" - addexportymbol 2nd test - symbol type not correct" EXIT THEN
+    obdefaultnlist_64.size 5 + nlistarraybufid O>P C@ 1 <>
+    IF CRLF ERROR" - addexportsymbol 2nd test - symbol section not correct" EXIT THEN
+    obdefaultnlist_64.size 6 + nlistarraybufid O>P U16@ 0 <>
+    IF CRLF ERROR" - addexportsymbol 2nd test - symbol description not correct" EXIT THEN
+    obdefaultnlist_64.size 8 + nlistarraybufid O>P U64@ 263787A1 <>
+    IF CRLF ERROR" - addexportsymbol 2nd test - symbol value not correct" EXIT THEN
+
+    strbufid FREEBUFFER
+    nlistarraybufid FREEBUFFER
+;
+
+testaddexportsymbol
+
+HEX
+: testaddexportsymbols { exportelementid exporthlistid strtabbufid symbolarraybufid }
+
+    CRLF ." testing addexportsymbols"
+
+    NEW-HLIST TO exporthlistid
+    ENDOFLIST exporthlistid NEW$ $" root" NEW-ELEMENT TO exportelementid
+      // children get sorted by name
+      exportelementid exporthlistid 472813 >NEW$ $" symbol1" NEW-ELEMENT DROP
+      exportelementid exporthlistid 28343 >NEW$ $" xsym2" NEW-ELEMENT DROP
+
+    1000 -1 NEWBUFFER TO strtabbufid
+    1000 -1 NEWBUFFER TO symbolarraybufid
+
+    exportelementid exporthlistid strtabbufid symbolarraybufid 
+    addexportsymbols
+
+    exporthlistid FREE-HLIST 
+
+    // CRLF ." strtabbufid" CRLF
+    // strtabbufid GETSBUFFER DUMP
+
+    // CRLF ." symbolarraybufid" CRLF
+    // symbolarraybufid GETSBUFFER DUMP
+
+    strtabbufid GETBUFFERLENGTH 10 <>
+    IF CRLF ERROR" - addexportsymbols 1st test - string table buffer size not correct" EXIT THEN
+    0 strtabbufid O>P C@ [CHAR] _ <>
+    IF CRLF ERROR" - addexportsymbols 1st test - string table buffer null terminator missing" EXIT THEN
+    1 strtabbufid O>P 7 S" symbol1" COMPARE 0 <>
+    IF CRLF ERROR" - addexportsymbols 1st test - string table buffer not correct" EXIT THEN
+    8 strtabbufid O>P C@ 0 <>
+    IF CRLF ERROR" - addexportsymbols 1st test - string table buffer null terminator missing" EXIT THEN
+    
+    symbolarraybufid GETBUFFERLENGTH obdefaultnlist_64.size 2* <> 
+    IF CRLF ERROR" - addexportsymbols 1st test - symbol array buffer size not correct" EXIT THEN
+    0 symbolarraybufid O>P U32@ 0 <>
+    IF CRLF ERROR" - addexportsymbols 1st test - symbol name offset not correct" EXIT THEN
+    4 symbolarraybufid O>P C@ 0F <>
+    IF CRLF ERROR" - addexportsymbols 1st test - symbol type not correct" EXIT THEN
+    5 symbolarraybufid O>P C@ 1 <>
+    IF CRLF ERROR" - addexportsymbols 1st test - symbol section not correct" EXIT THEN
+    6 symbolarraybufid O>P U16@ 0 <>
+    IF CRLF ERROR" - addexportsymbols 1st test - symbol decsription not correct" EXIT THEN
+    8 symbolarraybufid O>P U64@ 472813 <>
+    IF CRLF ERROR" - addexportsymbols 1st test - symbol value not correct" EXIT THEN
+    
+
+    strtabbufid FREEBUFFER
+    symbolarraybufid FREEBUFFER
+;
+
+testaddexportsymbols
+
+
+TRUE ?END-EVALUATE
+
+
+

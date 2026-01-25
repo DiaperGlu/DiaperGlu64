@@ -1,21 +1,21 @@
 ( //////////////////////////////////////////////////////////////////////////////////////// )
 ( //                                                                                       )
-( //    Copyright 2025 James Patrick Norris                                                )
+( //    Copyright 2026 James Patrick Norris                                                )
 ( //                                                                                       )
-( //    This file is part of Diaperglu 5.15.                                               )
+( //    This file is part of Diaperglu 5.16.                                               )
 ( //                                                                                       )
-( //    Diaperglu 5.15 is free software; you can redistribute it and/or modify             )
+( //    Diaperglu 5.16 is free software; you can redistribute it and/or modify             )
 ( //    it under the terms of the GNU General Public License as published by               )
 ( //    the Free Software Foundation; either version 2 of the License, or                  )
 ( //    {at your option} any later version.                                                )
 ( //                                                                                       )
-( //    Diaperglu 5.15 is distributed in the hope that it will be useful,                  )
+( //    Diaperglu 5.16 is distributed in the hope that it will be useful,                  )
 ( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
 ( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
 ( //    GNU General Public License for more details.                                       )
 ( //                                                                                       )
 ( //    You should have received a copy of the GNU General Public License                  )
-( //    along with Diaperglu 5.15; if not, write to the Free Software                      )
+( //    along with Diaperglu 5.16; if not, write to the Free Software                      )
 ( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
 ( //                                                                                       )
 ( //////////////////////////////////////////////////////////////////////////////////////// )
@@ -23,12 +23,13 @@
 ( /////////////////////////////// )
 ( // James Patrick Norris      // )
 ( // www.rainbarrel.com        // )
-( // May 4, 2025               // )
-( // version 5.15              // )
+( // January 24, 2026          // )
+( // version 5.16              // )
 ( /////////////////////////////// )
 
 
-// last changed April 15, 2020
+// last changed 24 Jan, 2026
+//   24 Jan 2026 Jim Norris - removed -no_uuid -no_eh_labels as uuid and eh_labels are now required
 
 // this script first makes a .o file
 // then runs ld to build a .dylib file from the .o file
@@ -84,7 +85,7 @@ TESTMAKEDOTOCOMPILEBUFID EH> $" mytestdoto.o" BUF>.OFILE$
 
 CRLF ." Running ld to turn the .o file into a dylib... sometimes this take awhile" CRLF
 
-RUNFILEANDWAITNOENV" ld -demangle -dynamic -dylib -no_uuid -no_eh_labels -arch x86_64 -platform_version macos 12.0.0 12.1 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -o libmytestlib.dylib -L. -L/usr/local/lib mytestdoto.o -lSystem"
+RUNFILEANDWAITNOENV" ld -demangle -dynamic -dylib -arch x86_64 -platform_version macos 12.0.0 12.1 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -o libmytestlib.dylib -L. -L/usr/local/lib mytestdoto.o -lSystem"
 
 // removing the .o file
 

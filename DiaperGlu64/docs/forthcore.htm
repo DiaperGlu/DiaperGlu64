@@ -3,20 +3,20 @@
 //
 //    Copyright 2025 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.15.
+//    This file is part of DiaperGlu v5.16.
 //
-//    DiaperGlu v5.15 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.16 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.15 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.16 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.15; if not, write to the Free Software
+//    along with DiaperGlu v5.16; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// May 4, 2025                //
-// version 5.15               //
+// January 24, 2026           //
+// version 5.16               //
 // /////////////////////////////
 -->
 
@@ -5032,7 +5032,7 @@ UINT64 dg_checkloopdone (Bufferhandle* pBHarrayhead)
 // Data stack in:
 //  x1                            integer to shift to the left (64 bit)
 //  u                             unsigned number of bit places to shift 
-//                                  (64 bit but only low 5 bits are used, rest ignored )
+//                                  (64 bit but only low 6 bits are used, rest ignored )
 // 
 // Data stack out:
 //  x2                            the result of the shift with 0 shifted into the 
@@ -5040,8 +5040,8 @@ UINT64 dg_checkloopdone (Bufferhandle* pBHarrayhead)
 //
 // Note:                          
 //  the calculation for a signed x1 is the same as for an unsigned x1
-//  only the lowest 5 bits of u are used, the rest are ignored so if you
-//  specify shifts larger than 31 bits, you will get a shift equal to u anded with 31
+//  only the lowest 6 bits of u are used, the rest are ignored so if you
+//  specify shifts larger than 63 bits, you will get a shift equal to u anded with 63
 //                                                              
 // Action:
 //  x2 = x1 &lt;&lt; u
@@ -5816,7 +5816,7 @@ UINT64 dg_checkloopdone (Bufferhandle* pBHarrayhead)
 // Data stack in:
 //  x1                            integer to shift to the right (64 bit)
 //  u                             number of bit places to right 
-//                                (only 5 out of 64 bits used, the rest are ignored)
+//                                (only 6 out of 64 bits used, the rest are ignored)
 // 
 // Data stack out:
 //  x2                            the result of the shift with 0 shifted into the 
@@ -5829,7 +5829,7 @@ UINT64 dg_checkloopdone (Bufferhandle* pBHarrayhead)
 //  6.1.2162
 //
 // Notes:
-//  if u is greater than 32, x1 is shifted only u anded with 31 positions
+//  if u is greater than 63, x1 is shifted only u anded with 63 positions
 //
 // Failure cases:
 //  error getting pointer to the data stack

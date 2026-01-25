@@ -2,20 +2,20 @@
 //
 //    Copyright 2025 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.15.
+//    This file is part of DiaperGlu v5.16.
 //
-//    DiaperGlu v5.15 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.16 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.15 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.16 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.15; if not, write to the Free Software
+//    along with DiaperGlu v5.16; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// May 4, 2025                //
-// version 5.15               //
+// January 24, 2026           //
+// version 5.16               //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -13446,4 +13446,267 @@ void testdg_ubufferalign()
     dg_freeallbuffers(&BHarrayhead);
 }
 
+
+void testdg_depthtoindex()
+{
+    const char* pError;
+    UINT64 index;
+
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(
+        &BHarrayhead,
+        (unsigned char*)"testing dg_depthtoindex\n");
+
+
+    // depth 0 maxdepth 8 case
+
+    dg_initbuffers(&BHarrayhead); // to get error stack
+    
+    index = dg_depthtoindex(&BHarrayhead, 0, 8);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0) 
+    {
+        dg_printzerostring(
+            &BHarrayhead,
+            (unsigned char*)"FAIL! depth 0 maxdepth 8 case, got an error\n");
+
+        dg_freeallbuffers(&BHarrayhead);
+        return;
+    }
+
+    if (index != 7)
+    {
+        dg_printzerostring(
+            &BHarrayhead,
+            (unsigned char*)"FAIL! depth 0 maxdepth 8 case, got wrong index\n");
+
+        dg_freeallbuffers(&BHarrayhead);
+        return;
+    }
+
+    // depth 7 maxdepth 8 case
+
+    index = dg_depthtoindex(&BHarrayhead, 7, 8);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0) 
+    {
+        dg_printzerostring(
+            &BHarrayhead,
+            (unsigned char*)"FAIL! depth 7 maxdepth 8 case, got an error\n");
+
+        dg_freeallbuffers(&BHarrayhead);
+        return;
+    }
+
+    if (index != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead,
+            (unsigned char*)"FAIL! depth 7 maxdepth 8 case, got wrong index\n");
+
+        dg_freeallbuffers(&BHarrayhead);
+        return;
+    }
+
+
+    // depth 8 maxdepth 8 case
+    
+    index = dg_depthtoindex(&BHarrayhead, 8, 8);
+
+    if (dg_geterrorcount(&BHarrayhead) == 0) 
+    {
+        dg_printzerostring(
+            &BHarrayhead,
+            (unsigned char*)"FAIL! depth 8 maxdepth 8 case, failed to get an error\n");
+
+        dg_freeallbuffers(&BHarrayhead);
+        return;
+    }
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_depthtoindexname) 
+    {
+        dg_printzerostring(
+            &BHarrayhead,
+            (unsigned char*)"FAIL! depth 8 maxdepth 8 case, got wrong error on top\n");
+
+        dg_freeallbuffers(&BHarrayhead);
+        return;
+    }
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_indexnotinarrayerror) 
+    {
+        dg_printzerostring(
+            &BHarrayhead,
+            (unsigned char*)"FAIL! depth 8 maxdepth 8 case, got wrong error one below top\n");
+
+        dg_freeallbuffers(&BHarrayhead);
+        return;
+    }
+
+    if (index != largestunsignedint)
+    {
+        dg_printzerostring(
+            &BHarrayhead,
+            (unsigned char*)"FAIL! depth 8 maxdepth 8 case, got wrong index\n");
+
+        dg_freeallbuffers(&BHarrayhead);
+        return;
+    }
+
+    dg_freeallbuffers(&BHarrayhead); 
+}
+
+
+void testdg_stackdepthtoindex()
+{
+    const char* pError;
+    UINT64 index;
+
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(
+        &BHarrayhead,
+        (unsigned char*)"testing dg_stackdepthtoindex\n");
+
+    dg_initbuffers(&BHarrayhead); // to get error stack
+
+    dg_growbuffer(
+        &BHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        8 * sizeof(UINT64),
+        &pError,
+        FORTH_FALSE);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(
+            &BHarrayhead,
+            (unsigned char*)"FAIL! depth 0 bufferlength 8 elements case, got an error growing buffer\n");
+
+        dg_freeallbuffers(&BHarrayhead);
+        return;
+    }
+
+
+    // depth 0 bufferlength 8 elements case 
+    
+    index = dg_stackdepthtoindex(&BHarrayhead, 0, DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0) 
+    {
+        dg_printzerostring(
+            &BHarrayhead,
+            (unsigned char*)"FAIL! depth 0 bufferlength 8 elements case, got an error\n");
+
+        dg_freeallbuffers(&BHarrayhead);
+        return;
+    }
+
+    if (index != 7)
+    {
+        dg_printzerostring(
+            &BHarrayhead,
+            (unsigned char*)"FAIL! depth 0 bufferlength 8 elements case, got wrong index\n");
+
+        dg_freeallbuffers(&BHarrayhead);
+        return;
+    }
+
+
+    // depth 7 bufferlength 8 elements case
+
+    index = dg_stackdepthtoindex(&BHarrayhead, 7, DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0) 
+    {
+        dg_printzerostring(
+            &BHarrayhead,
+            (unsigned char*)"FAIL! depth 7 bufferlength 8 elements case, got an error\n");
+
+        dg_freeallbuffers(&BHarrayhead);
+        return;
+    }
+
+    if (index != 0)
+    {
+        dg_printzerostring(
+            &BHarrayhead,
+            (unsigned char*)"FAIL! depth 7 bufferlength 8 elements case, got wrong index\n");
+
+        dg_freeallbuffers(&BHarrayhead);
+        return;
+    }
+
+
+    // depth 8 bufferlength 8 elements case
+    
+    index = dg_stackdepthtoindex(&BHarrayhead, 8, DG_DATASTACK_BUFFERID);
+
+    if (dg_geterrorcount(&BHarrayhead) == 0) 
+    {
+        dg_printzerostring(
+            &BHarrayhead,
+            (unsigned char*)"FAIL! depth 8 bufferlength 8 elements case, failed to get an error\n");
+
+        dg_freeallbuffers(&BHarrayhead);
+        return;
+    }
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_stackdepthtoindexname) 
+    {
+        dg_printzerostring(
+            &BHarrayhead,
+            (unsigned char*)"FAIL! depth 8 bufferlength 8 elements case, got wrong error on top\n");
+
+        dg_freeallbuffers(&BHarrayhead);
+        return;
+    }
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_depthtoindexname) 
+    {
+        dg_printzerostring(
+            &BHarrayhead,
+            (unsigned char*)"FAIL! depth 8 bufferlength 8 elements case, got wrong error one below top\n");
+
+        dg_freeallbuffers(&BHarrayhead);
+        return;
+    }
+
+    pError = dg_poperror(&BHarrayhead);
+
+    if (pError != dg_indexnotinarrayerror) 
+    {
+        dg_printzerostring(
+            &BHarrayhead,
+            (unsigned char*)"FAIL! depth 8 bufferlength 8 elements case, got wrong error two below top\n");
+
+        dg_freeallbuffers(&BHarrayhead);
+        return;
+    }
+
+    if (index != largestunsignedint)
+    {
+        dg_printzerostring(
+            &BHarrayhead,
+            (unsigned char*)"FAIL! depth 8 bufferlength 8 elements case, got wrong index\n");
+
+        dg_freeallbuffers(&BHarrayhead);
+        return;
+    }
+
+    dg_freeallbuffers(&BHarrayhead); 
+}
 

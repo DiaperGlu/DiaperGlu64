@@ -1,0 +1,83 @@
+
+// This example uses lower level words to show how everything works.
+
+$" ../DGMachoDotoMaker.dglu" INCLUDEFILE$
+$" ../DGArm64CrossAsm.dglu" INCLUDEFILE$
+
+HEX
+5555 // stack marker
+0 PBASEADDRESS ! 
+
+// saving old current compile buffer
+PCURRENTCOMPILEBUFFER @ CONSTANT myoldcurrentcompilebufferid
+
+// Creating a separate compile buffer is needed to avoid the problem
+//   where the buffer moves while executing a word in that buffer.
+//   In other words, don't use compiling words to compile to the same buffer
+//    they are in if that buffer can grow. 
+PAGESIZE -1 NEWBUFFER CONSTANT mycodebufid
+mycodebufid PCURRENTCOMPILEBUFFER !
+
+// making the export symbol list
+NEW-HLIST CONSTANT exphlist
+NEW$ $" root" -1 exphlist NEW-ELEMENT CONSTANT exprootelement
+
+// making the import symbol list
+NEW-HLIST CONSTANT imphlist
+NEW$ $" root" -1 imphlist NEW-ELEMENT CONSTANT improotelement 
+
+OHERE CONSTANT omessage
+  $" Hello World" 0A C>$ 0A C>$ 0 C>$ mycodebufid $>BUF
+
+OHERE omessage - CONSTANT omessage.length
+
+// need to align to 4 here ...
+BARALIGN32
+
+HEX
+OHERE >NEW$ $" main" exprootelement exphlist NEW-ELEMENT DROP
+
+  // enter frame
+  RSP 10 N RSP SUB,
+  X29 X30 RSP 0 64BIT ARMSTP,
+
+  // call write(1, pmessage, messagelength)
+  1 X0 N->IR64,
+  omessage X1 O->IR64,  
+  omessage.length X2 N->IR64,  
+  OHERE >NEW$ $" write" improotelement imphlist NEW-ELEMENT DROP
+  0 ARMBL,
+
+  // exit frame
+  RSP 0 X29 X30 64BIT ARMLDP,
+  RSP 10 N RSP ADD,
+
+  // set return code
+  0 X0 N->IR64,
+
+  RET, 
+
+// checking to see if the stack is ok
+5555 ?MARKER
+
+// restoring old currrent compile buffer
+myoldcurrentcompilebufferid PCURRENTCOMPILEBUFFER !
+
+// making the .o file image  
+mycodebufid GETSBUFFER
+exprootelement exphlist
+improotelement imphlist
+makeimpexpdotobuf CONSTANT myimpexpdotobuf
+
+// saving the .o file image
+myimpexpdotobuf $" helloworld.o" SAVEFILE$
+
+// cleaning up... this will happen automatically when DiaperGlu exits
+//   but in just in case some is going to do more stuff, this is a good practice.
+myimpexpdotobuf FREEBUFFER
+mycodebufid FREEBUFFER
+exphlist FREE-HLIST
+imphlist FREE-HLIST
+
+
+

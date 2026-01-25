@@ -249,7 +249,6 @@ DECIMAL
     $" ../../MacOsX13.3/samplescripts/asmimportusingld/asmimportusingld.dglu" changelineendingstocrlffile$
 
     $" ../../MacOsX13.3/samplescripts/calculatepi/calculatepi.dglu" changelineendingstocrlffile$
-    $" ../../MacOsX13.3/samplescripts/calculatepi/calculatepi2.dglu" changelineendingstocrlffile$
     $" ../../MacOsX13.3/samplescripts/calculatepi/makecalculatepi.dglu" changelineendingstocrlffile$
 
     $" ../../MacOsX13.3/samplescripts/dg2dgraphicsdylib/makedg2dgraphicsdylib.dglu" changelineendingstocrlffile$

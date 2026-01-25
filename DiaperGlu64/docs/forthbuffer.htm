@@ -3,20 +3,20 @@
 //
 //    Copyright 2025 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.15.
+//    This file is part of DiaperGlu v5.16.
 //
-//    DiaperGlu v5.15 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.16 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.15 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.16 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.15; if not, write to the Free Software
+//    along with DiaperGlu v5.16; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// May 4, 2025                //
-// version 5.15               //
+// January 24, 2026           //
+// version 5.16               //
 // /////////////////////////////
 -->
 
@@ -66,9 +66,11 @@
       <a href=forthbuffer.htm#dg_howbufferswork               >How buffers work</a>
       <a href=forthbuffer.htm#dg_forthocfetch                 >dg_forthocfetch</a>
       <a href=forthbuffer.htm#dg_forthofetch                  >dg_forthofetch</a>
+      <a href=forthbuffer.htm#dg_forthou32fetch               >dg_forthou32fetch</a>
       <a href=forthbuffer.htm#dg_forthostonewstring           >dg_forthostonewstring</a>
       <a href=forthbuffer.htm#dg_forthocstore                 >dg_forthocstore</a>
       <a href=forthbuffer.htm#dg_forthostore                  >dg_forthostore</a>
+      <a href=forthbuffer.htm#dg_forthou32store               >dg_forthou32store</a>
       <a href=forthbuffer.htm#dg_forthctobuf                  >dg_forthctobuf</a>
       <a href=forthbuffer.htm#dg_forthtobuf                   >dg_forthtobuf</a>
       <a href=forthbuffer.htm#dg_forthstringtobuf             >dg_forthstringtobuf</a>
@@ -250,6 +252,46 @@
       </div>
 
 
+      <div class=word id=dg_forthou32fetch>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthou32fetch ( OU32@ )
+//
+// C prototype:
+//  void dg_forthou32fetch (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( offset bufferid -- value )
+//
+// Data stack in:
+//  offset                        offset in buffer in bytes
+//
+//  bufferid                      bufferid of buffer
+//
+// Data stack out:                
+//  value                         UINT32 at offset in buffer
+//                                                              
+// Action:
+//  pops offset and buffer id from the data stack
+//  pushes the uint32 at the offset in the buffer to the data stack
+//    the uint32 fetched from the buffer gets 0 extended to 64 bits
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error getting dword from the buffer
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
       <div class=word id=dg_forthostonewstring>
 <pre>
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -349,18 +391,56 @@
 //                                 the other bufferhandles are stored.
 //
 // Stack action shorthand:
-//  ( dword offset bufferid -- )
+//  ( u offset bufferid -- )
 //
 // Data stack in:
-//  dword                         dword to store in buffer
+//  u                             uint64 to store in buffer
 //
 //  offset                        offset in bytes in buffer
 //
 //  bufferid                      buffer id of buffer
 //                                                              
 // Action:
-//  pops dword offset and buffer id from the data stack
-//  puts the dword into the buffer at the offset
+//  pops u offset and buffer id from the data stack
+//  puts u into the buffer at the offset
+//
+// Failure cases:
+//  error getting pointer to the data stack
+//  data stack underflow
+//  error putting dword to the buffer
+//  
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+            <div class=word id=dg_forthou32store>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_forthou32store ( OU32!)
+//
+// C prototype:
+//  void dg_forthou32store (Bufferhandle* pBHarrayhead)
+//
+// Inputs:
+//  Bufferhandle* pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                 used as the bufferhandle for the array where
+//                                 the other bufferhandles are stored.
+//
+// Stack action shorthand:
+//  ( u offset bufferid -- )
+//
+// Data stack in:
+//  u                             uint32 to store in buffer
+//
+//  offset                        offset in bytes in buffer
+//
+//  bufferid                      buffer id of buffer
+//                                                              
+// Action:
+//  pops u offset and buffer id from the data stack
+//  puts the lowest 32 bits of u into the buffer at the offset
 //
 // Failure cases:
 //  error getting pointer to the data stack

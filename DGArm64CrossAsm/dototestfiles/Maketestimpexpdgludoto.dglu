@@ -1,0 +1,106 @@
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2023 James Patrick Norris
+//
+//    This file is part of DGXtensaElfDotoMaker v1.0
+//
+//    DGXtensaElfDotoMaker v1.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DGXtensaElfDotoMaker v1.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DGXtensaElfDotoMaker v1.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// September 28, 2024         //
+// version 1.0                //
+// /////////////////////////////
+
+$" ../DGMachoDotoMaker.dglu" INCLUDEFILE$
+
+HEX
+CREATEOC obtestcode2  ( -- offset bufferid ) 
+( 00 ) 646E320A CODE-U32,  // \n2nd Hello World!\n\n
+( 04 ) 6C654820 CODE-U32,  
+( 08 ) 57206F6C CODE-U32,
+( 0C ) 646C726F CODE-U32,
+( 10 ) 000A0A21 CODE-U32,
+
+CREATEOC obtestcode  ( -- offset bufferid ) 
+
+( 14 ) 6C65480A CODE-U32,  // \nHello World!\n\n
+( 18 ) 57206F6C CODE-U32,
+( 1C ) 646C726F CODE-U32,
+( 20 ) 000A0A21 CODE-U32,
+
+// dg_testasm1
+( 24 ) D2824680 CODE-U32,  // 1234 X0 MOVZ,
+( 28 ) D65F03C0 CODE-U32,  // RET,
+
+// dg_testasm2
+( 2C ) D2822440 CODE-U32,  // 1122 X0 MOVZ, 
+( 30 ) D503201F CODE-U32,  // NOP,
+( 34 ) D503201F CODE-U32,  // NOP,
+( 38 ) D503201F CODE-U32,  // NOP,
+( 3C ) D65F03C0 CODE-U32,  // RET, 
+
+// dg_testasm3
+( 40 ) D10043FF CODE-U32, // sub sp, sp, #0x10
+( 44 ) A9007BFD CODE-U32, // spt x29, x30, [sp, #0]
+( 48 ) 910003FD CODE-U32, // mov x29, sp
+
+( 4C ) D2800020 CODE-U32, // movz x0, #0x01
+( 50 ) 10FFFE21 CODE-U32, // adr x1, _omessage
+( 54 ) D28001E2 CODE-U32, // movz x2, #0x0f
+( 58 ) 94000000 CODE-U32, // 0 BL,
+
+( 5C ) D2800020 CODE-U32, // movz x0, #0x01
+( 60 ) 10FFFD01 CODE-U32, // adr x1, _omessage2
+( 64 ) D2800262 CODE-U32, // movz x2, #0x13
+( 68 ) 94000000 CODE-U32, // 0 BL,
+
+( 6C ) A9407BFD CODE-U32, // ldp x29, x30, [sp, #0]
+( 70 ) 910043FF CODE-U32, // add sp, sp, #0x10
+( 74 ) D65F03C0 CODE-U32, // RET,
+
+  
+OHERE obtestcode2 DROP - CONSTANT obtestcode.size
+
+NEW-HLIST CONSTANT testexphlist
+NEW$ $" root" -1 testexphlist NEW-ELEMENT CONSTANT testexprootelement 
+24 >NEW$ $" dg_testasm1" testexprootelement testexphlist NEW-ELEMENT DROP
+2C >NEW$ $" dg_testasm2" testexprootelement testexphlist NEW-ELEMENT DROP
+40 >NEW$ $" dg_testasm3" testexprootelement testexphlist NEW-ELEMENT DROP
+
+NEW-HLIST CONSTANT testimphlist
+NEW$ $" root" -1 testimphlist NEW-ELEMENT CONSTANT testimprootelement 
+58 >NEW$ $" write" testimprootelement testimphlist NEW-ELEMENT DROP
+68 >NEW$ $" write" testimprootelement testimphlist NEW-ELEMENT DROP
+
+obtestcode2 O>P obtestcode.size
+testexprootelement testexphlist
+testimprootelement testimphlist
+makeimpexpdotobuf CONSTANT myimpexpdotobuf
+
+myimpexpdotobuf $" testimpexpdglu.o" SAVEFILE$
+
+myimpexpdotobuf FREEBUFFER
+testexphlist FREE-HLIST
+testimphlist FREE-HLIST
+
+
+TRUE ?END-EVALUATE
+
+
+

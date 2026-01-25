@@ -2,20 +2,20 @@
 //
 //    Copyright 2025 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.15.
+//    This file is part of DiaperGlu v5.16.
 //
-//    DiaperGlu v5.15 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.16 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.15 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.16 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.15; if not, write to the Free Software
+//    along with DiaperGlu v5.16; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// May 4, 2025                //
-// version 5.15               //
+// January 24, 2026           //
+// version 5.16               //
 // /////////////////////////////
 
 
@@ -6409,6 +6409,28 @@ void dg_forthcleftparen (Bufferhandle* pBHarrayhead)
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {       
         dg_pusherror(pBHarrayhead, dg_forthcleftparenname);
+        return;
+    }
+}
+
+void dg_forthcsafe (Bufferhandle* pBHarrayhead)
+{
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+    
+    if (baderrorcount == olderrorcount)
+    {
+        return;
+    }
+
+    dg_putbufferuint64(
+        pBHarrayhead,
+        DG_DATASPACE_BUFFERID,
+        dg_colorstate,
+        DG_COLORSTATE_SAFE);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {       
+        dg_pusherror(pBHarrayhead, dg_forthcsafename);
         return;
     }
 }

@@ -2,20 +2,20 @@
 //
 //    Copyright 2025 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.15.
+//    This file is part of DiaperGlu v5.16.
 //
-//    DiaperGlu v5.15 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.16 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.15 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.16 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.15; if not, write to the Free Software
+//    along with DiaperGlu v5.16; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// May 4, 2025                //
-// version 5.15               //
+// January 24, 2026           //
+// version 5.16               //
 // /////////////////////////////
 
 
@@ -8213,6 +8213,80 @@ UINT64 dg_ubufferalign(
     }
 
     return(bufferlength);
+}
+
+
+const char dg_depthtoindexname[] = "dg_depthtoindex";
+
+UINT64 dg_depthtoindex(
+    Bufferhandle* pBHarrayhead,
+    UINT64 desireddepth, // 0 = top of stack
+    UINT64 maxdepth)     // number of elements on stack
+{
+    UINT64 index;
+
+    if (desireddepth >= maxdepth)
+    {
+        dg_pusherror(pBHarrayhead, dg_indexnotinarrayerror);
+        dg_pusherror(pBHarrayhead, dg_depthtoindexname);
+        return(largestunsignedint);
+    }    
+
+    index = maxdepth - (desireddepth + 1);
+    return(index);
+}
+
+
+const char dg_stackdepthtoindexname[] = "dg_stackdepthtoindex";
+
+UINT64 dg_stackdepthtoindex(
+    Bufferhandle* pBHarrayhead,
+    UINT64 desireddepth,   // 0 = top of stack
+    UINT64 bufferid)      
+{
+    UINT64 index;
+    UINT64 bufferlength;
+    UINT64 maxdepth;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        // could not get error count because BHarrayhead is not there so just exiting
+        return(largestunsignedint);
+    }
+
+    bufferlength = dg_getbufferlength(
+        pBHarrayhead,
+        bufferid);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_stackdepthtoindexname);
+        return(largestunsignedint);
+    }
+
+    if ((bufferlength & 0x7) != 0)
+    {
+        dg_pusherror(pBHarrayhead, dg_arraymisalignederror);
+        dg_pusherror(pBHarrayhead, dg_stackdepthtoindexname);
+        return(largestunsignedint);
+    }
+
+    maxdepth = bufferlength >> 3;
+
+    index = dg_depthtoindex(
+        pBHarrayhead,
+        desireddepth,
+        maxdepth);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_stackdepthtoindexname);
+        return(largestunsignedint);
+    }
+
+    return(index);
 }
 
 

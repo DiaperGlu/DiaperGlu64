@@ -1,0 +1,1330 @@
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2023 James Patrick Norris
+//
+//    This file is part of DGXtensaElfDotoMaker v1.0
+//
+//    DGXtensaElfDotoMaker v1.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DGXtensaElfDotoMaker v1.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DGXtensaElfDotoMaker v1.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// September 28, 2024         //
+// version 1.0                //
+// /////////////////////////////
+
+CRLF ." loading DGArm64 Cross Assembler"
+$" DGArm64CrossAsm.dglu" INCLUDEFILE$
+
+CRLF
+CRLF ." testing DGArm64 cross assembler"
+
+HEX
+: TEST?SRCAR ( -- )
+    CRLF ." testing ?SRCAR"
+
+    R PSOURCEAMODE !
+    ?SRCAR FALSE = IF
+      CRLF ERROR" fail - R ?SRCAR was FALSE  " NAME>E EXIT
+    THEN
+
+    DEFAULTR PSOURCEAMODE !
+    ?SRCAR FALSE = IF
+      CRLF ERROR" fail - DEFAULTR ?SRCAR was FALSE  " NAME>E EXIT
+    THEN
+
+    N PSOURCEAMODE !
+    ?SRCAR FALSE <> IF
+      CRLF ERROR" fail - N ?SRCAR not FALSE  " NAME>E EXIT
+    THEN
+;
+
+TEST?SRCAR
+
+: TEST?SRCBR ( -- )
+    CRLF ." testing ?SRCBR"
+
+    R PSOURCEBMODE !
+    ?SRCBR FALSE = IF
+      CRLF ERROR" fail - R ?SRCBR was FALSE  " NAME>E EXIT
+    THEN
+
+    DEFAULTR PSOURCEBMODE !
+    ?SRCBR FALSE = IF
+      CRLF ERROR" fail - DEFAULTR ?SRCBR was FALSE  " NAME>E EXIT
+    THEN
+
+    N PSOURCEBMODE !
+    ?SRCBR FALSE <> IF
+      CRLF ERROR" fail - N ?SRCBR not FALSE  " NAME>E EXIT
+    THEN
+;
+
+TEST?SRCBR
+
+: TEST?DESTR ( -- )
+    CRLF ." testing ?DESTR"
+
+    R PDESTMODE !
+    ?DESTR FALSE = IF
+      CRLF ERROR" fail - R ?DESTR was FALSE  " NAME>E EXIT
+    THEN
+
+    DEFAULTR PDESTMODE !
+    ?DESTR FALSE = IF
+      CRLF ERROR" fail - DEFAULTR ?DESTR was FALSE  " NAME>E EXIT
+    THEN
+
+    N PDESTMODE !
+    ?DESTR FALSE <> IF
+      CRLF ERROR" fail - N ?DESTR not FALSE  " NAME>E EXIT
+    THEN
+;
+
+TEST?DESTR
+
+HEX
+: TESTN9>= ( -- )
+    CRLF ." testing N9>="
+
+    755 ( -- stackmarker )
+
+    0 N9>= 0<> IF
+      CRLF ERROR" fail - 0 N9>= not false  " NAME>E EXIT
+    THEN
+
+    -1 N9>= 0<> IF
+      CRLF ERROR" fail - -1 N9>= not false  " NAME>E EXIT
+    THEN
+
+    FF N9>= 0<> IF
+      CRLF ERROR" fail - FF N9>= not false  " NAME>E EXIT
+    THEN
+
+    100 N9>= 0= IF
+      CRLF ERROR" fail - 100 N9>= returned true  " NAME>E EXIT
+    THEN
+
+    -100 N9>= 0<> IF
+      CRLF ERROR" fail -  -100 N9>= not false  " NAME>E EXIT
+    THEN
+
+    -101 N9>= 0= IF
+      CRLF ERROR" fail -  -101 N9>= returned true  " NAME>E EXIT
+    THEN
+
+    755 <> IF 
+      ERROR" stack marker incorrect " NAME>E EXIT 
+    THEN
+;
+
+TESTN9>=
+
+HEX
+: TEST?MA ( -- ) 
+    CRLF ." testing ?MA"
+
+    977 ( -- stackmarker )
+
+    R PSOURCEAMODE ! ?MA FALSE <> IF
+      CRLF ERROR" fail - R PSOURCEAMODE ! ?MA ... result not FALSE " NAME>E EXIT
+    THEN
+
+    N PSOURCEAMODE ! ?MA FALSE <> IF
+      CRLF ERROR" fail - N PSOURCEAMODE ! ?MA ... result not FALSE " NAME>E EXIT
+    THEN
+
+    [R] PSOURCEAMODE ! ?MA FALSE = IF
+      CRLF ERROR" fail - [R] PSOURCEAMODE ! ?MA ... result is FALSE " NAME>E EXIT
+    THEN
+
+    [R+N] PSOURCEAMODE ! ?MA FALSE = IF
+      CRLF ERROR" fail - [R+N] PSOURCEAMODE ! ?MA ... result is FALSE " NAME>E EXIT
+    THEN
+
+    [O] PSOURCEAMODE ! ?MA FALSE = IF
+      CRLF ERROR" fail - [O] PSOURCEAMODE ! ?MA ... result is FALSE " NAME>E EXIT
+    THEN
+
+    [PC+N] PSOURCEAMODE ! ?MA FALSE = IF
+      CRLF ERROR" fail - [PC+N] PSOURCEAMODE ! ?MA ... result is FALSE " NAME>E EXIT
+    THEN
+
+    [RSP+N] PSOURCEAMODE ! ?MA FALSE = IF
+      CRLF ERROR" fail - [RSP+N] PSOURCEAMODE ! ?MA ... result is FALSE " NAME>E EXIT
+    THEN
+
+    [R++N] PSOURCEAMODE ! ?MA FALSE = IF
+      CRLF ERROR" fail - [R++N] PSOURCEAMODE ! ?MA ... result is FALSE " NAME>E EXIT
+    THEN
+
+    [R]++N PSOURCEAMODE ! ?MA FALSE = IF
+      CRLF ERROR" fail - [R]++N PSOURCEAMODE ! ?MA ... result is FALSE " NAME>E EXIT
+    THEN
+    
+
+    977 <> IF 
+      ERROR" stack marker incorrect " NAME>E EXIT 
+    THEN
+;
+
+TEST?MA
+
+HEX
+: TEST?MB ( -- ) 
+    CRLF ." testing ?MB"
+
+    978 ( -- stackmarker )
+
+    R PSOURCEBMODE ! ?MB FALSE <> IF
+      CRLF ERROR" fail - R PSOURCEBMODE ! ?MB ... result not FALSE " NAME>E EXIT
+    THEN
+
+    N PSOURCEBMODE ! ?MB FALSE <> IF
+      CRLF ERROR" fail - N PSOURCEBMODE ! ?MB ... result not FALSE " NAME>E EXIT
+    THEN
+
+    [R] PSOURCEBMODE ! ?MB FALSE = IF
+      CRLF ERROR" fail - [R] PSOURCEBMODE ! ?MB ... result is FALSE " NAME>E EXIT
+    THEN
+
+    [R+N] PSOURCEBMODE ! ?MB FALSE = IF
+      CRLF ERROR" fail - [R+N] PSOURCEBMODE ! ?MB ... result is FALSE " NAME>E EXIT
+    THEN
+
+    [O] PSOURCEBMODE ! ?MB FALSE = IF
+      CRLF ERROR" fail - [O] PSOURCEBMODE ! ?MB ... result is FALSE " NAME>E EXIT
+    THEN
+
+    [PC+N] PSOURCEBMODE ! ?MB FALSE = IF
+      CRLF ERROR" fail - [PC+N] PSOURCEBMODE ! ?MB ... result is FALSE " NAME>E EXIT
+    THEN
+
+    [RSP+N] PSOURCEBMODE ! ?MB FALSE = IF
+      CRLF ERROR" fail - [RSP+N] PSOURCEBMODE ! ?MB ... result is FALSE " NAME>E EXIT
+    THEN
+
+    [R++N] PSOURCEBMODE ! ?MB FALSE = IF
+      CRLF ERROR" fail - [R++N] PSOURCEBMODE ! ?MB ... result is FALSE " NAME>E EXIT
+    THEN
+
+    [R]++N PSOURCEBMODE ! ?MB FALSE = IF
+      CRLF ERROR" fail - [R]++N PSOURCEBMODE ! ?MB ... result is FALSE " NAME>E EXIT
+    THEN
+    
+
+    978 <> IF 
+      ERROR" stack marker incorrect " NAME>E EXIT 
+    THEN
+;
+
+TEST?MB
+
+HEX
+: TEST?MDEST ( -- ) 
+    CRLF ." testing ?MDEST"
+
+    979 ( -- stackmarker )
+
+    R PDESTMODE ! ?MDEST FALSE <> IF
+      CRLF ERROR" fail - R PDESTMODE ! ?MB ... result not FALSE " NAME>E EXIT
+    THEN
+
+    N PDESTMODE ! ?MDEST FALSE <> IF
+      CRLF ERROR" fail - N PDESTMODE ! ?MDEST ... result not FALSE " NAME>E EXIT
+    THEN
+
+    [R] PDESTMODE ! ?MDEST FALSE = IF
+      CRLF ERROR" fail - [R] PDESTMODE ! ?MDEST ... result is FALSE " NAME>E EXIT
+    THEN
+
+    [R+N] PDESTMODE ! ?MDEST FALSE = IF
+      CRLF ERROR" fail - [R+N] PDESTMODE ! ?MDEST ... result is FALSE " NAME>E EXIT
+    THEN
+
+    [O] PDESTMODE ! ?MDEST FALSE = IF
+      CRLF ERROR" fail - [O] PDESTMODE ! ?MDEST ... result is FALSE " NAME>E EXIT
+    THEN
+
+    [PC+N] PDESTMODE ! ?MDEST FALSE = IF
+      CRLF ERROR" fail - [PC+N] PDESTMODE ! ?MDEST ... result is FALSE " NAME>E EXIT
+    THEN
+
+    [RSP+N] PDESTMODE ! ?MDEST FALSE = IF
+      CRLF ERROR" fail - [RSP+N] PDESTMODE ! ?MDEST ... result is FALSE " NAME>E EXIT
+    THEN
+
+    [R++N] PDESTMODE ! ?MDEST FALSE = IF
+      CRLF ERROR" fail - [R++N] PDESTMODE ! ?MDEST ... result is FALSE " NAME>E EXIT
+    THEN
+
+    [R]++N PDESTMODE ! ?MDEST FALSE = IF
+      CRLF ERROR" fail - [R]++N PDESTMODE ! ?MDEST ... result is FALSE " NAME>E EXIT
+    THEN
+    
+
+    979 <> IF 
+      ERROR" stack marker incorrect " NAME>E EXIT 
+    THEN
+;
+
+TEST?MDEST
+
+: RESETTARGET
+    -1 PTARGETSIZE !
+    -1 PTARGETR !
+    -1 PTARGETN !
+    -1 PTARGETMODE !
+    -1 PPRESERVEFLAGSFLAG !
+; 
+
+HEX
+: TESTPULLTARGET ( -- )
+    CRLF ." testing PULLTARGET"
+
+    975 ( -- stackmarker )
+
+    RESETTARGET
+
+    R0 R PULLTARGET 
+    PTARGETSIZE @ 64BIT <> IF
+      CRLF ERROR" fail - R0 R PULLTARGET size 64BIT " NAME>E EXIT
+    THEN
+    PTARGETR @ R0 <> IF
+      CRLF ERROR" fail - R0 R PULLTARGET r not R0, got " PTARGETR @ U. NAME>E EXIT
+    THEN
+    PTARGETN @ 0 <> IF
+      CRLF ERROR" fail - R0 R PULLTARGET n not 0 " NAME>E EXIT
+    THEN
+    PTARGETMODE @ R <> IF
+      CRLF ERROR" fail - R0 R PULLTARGET mode not R " NAME>E EXIT
+    THEN
+
+    RESETTARGET
+
+    R1 PULLTARGET 
+    PTARGETSIZE @ 64BIT <> IF
+      CRLF ERROR" fail - R1 PULLTARGET size not 64BIT " NAME>E EXIT
+    THEN
+    PTARGETR @ R1 <> IF
+      CRLF ERROR" fail - R1 PULLTARGET r not R1 " NAME>E EXIT
+    THEN
+    PTARGETN @ 0 <> IF
+      CRLF ERROR" fail - R1 PULLTARGET n not 0 " NAME>E EXIT
+    THEN
+    PTARGETMODE @ -1 <> IF
+      CRLF ERROR" fail - R1 PULLTARGET mode not defaultr " NAME>E EXIT
+    THEN  
+
+    RESETTARGET
+
+    R2 R PULLTARGET 
+    PTARGETSIZE @ 64BIT <> IF
+      CRLF ERROR" fail - R2 R PULLTARGET size 64BIT " NAME>E EXIT
+    THEN
+    PTARGETR @ R2 <> IF
+      CRLF ERROR" fail - R2 R PULLTARGET r not R2, got " PTARGETR @ U. NAME>E EXIT
+    THEN
+    PTARGETN @ 0 <> IF
+      CRLF ERROR" fail - R2 R PULLTARGET n not 0 " NAME>E EXIT
+    THEN
+    PTARGETMODE @ R <> IF
+      CRLF ERROR" fail - R2 R PULLTARGET mode not R " NAME>E EXIT
+    THEN
+
+    RESETTARGET
+
+    R3 R 32BIT PULLTARGET 
+    PTARGETSIZE @ 32BIT <> IF
+      CRLF ERROR" fail - R3 R 32BIT PULLTARGET size 32BIT " NAME>E EXIT
+    THEN
+    PTARGETR @ R3 <> IF
+      CRLF ERROR" fail - R3 R 32BIT PULLTARGET r not R3, got " PTARGETR @ U. NAME>E EXIT
+    THEN
+    PTARGETN @ 0 <> IF
+      CRLF ERROR" fail - R3 R 32BIT PULLTARGET n not 0 " NAME>E EXIT
+    THEN
+    PTARGETMODE @ R <> IF
+      CRLF ERROR" fail - R3 R 32BIT PULLTARGET mode not R " NAME>E EXIT
+    THEN
+
+    RESETTARGET
+
+    R3 R 16BIT PULLTARGET 
+    PTARGETSIZE @ 16BIT <> IF
+      CRLF ERROR" fail - R3 R 16BIT PULLTARGET size 16BIT " NAME>E EXIT
+    THEN
+    PTARGETR @ R3 <> IF
+      CRLF ERROR" fail - R3 R 16BIT PULLTARGET r not R3, got " PTARGETR @ U. NAME>E EXIT
+    THEN
+    PTARGETN @ 0 <> IF
+      CRLF ERROR" fail - R3 R 16BIT PULLTARGET n not 0 " NAME>E EXIT
+    THEN
+    PTARGETMODE @ R <> IF
+      CRLF ERROR" fail - R3 R 16BIT PULLTARGET mode not R " NAME>E EXIT
+    THEN
+
+    RESETTARGET
+
+    R3 R 8BIT PULLTARGET 
+    PTARGETSIZE @ 8BIT <> IF
+      CRLF ERROR" fail - R3 R 8BIT PULLTARGET size 8BIT " NAME>E EXIT
+    THEN
+    PTARGETR @ R3 <> IF
+      CRLF ERROR" fail - R3 R 8BIT PULLTARGET r not R3, got " PTARGETR @ U. NAME>E EXIT
+    THEN
+    PTARGETN @ 0 <> IF
+      CRLF ERROR" fail - R3 R 8BIT PULLTARGET n not 0 " NAME>E EXIT
+    THEN
+    PTARGETMODE @ R <> IF
+      CRLF ERROR" fail - R3 R 8BIT PULLTARGET mode not R " NAME>E EXIT
+    THEN  
+
+    RESETTARGET
+
+    5 N 64BIT PULLTARGET 
+    PTARGETSIZE @ 64BIT <> IF
+      CRLF ERROR" fail - 5 N 64BIT PULLTARGET size 64BIT " NAME>E EXIT
+    THEN
+    PTARGETR @ NOREG <> IF
+      CRLF ERROR" fail - 5 N 64BIT PULLTARGET r not NOREG, got " PTARGETR @ U. NAME>E EXIT
+    THEN
+    PTARGETN @ 5 <> IF
+      CRLF ERROR" fail - 5 N 64BIT PULLTARGET n not 5 " NAME>E EXIT
+    THEN
+    PTARGETMODE @ N <> IF
+      CRLF ERROR" fail - 5 N 64BIT PULLTARGET mode not N " NAME>E EXIT
+    THEN
+
+    RESETTARGET
+
+    R5 [R] PULLTARGET 
+    PTARGETSIZE @ 64BIT <> IF
+      CRLF ERROR" fail - R5 [R] PULLTARGET size 64BIT " NAME>E EXIT
+    THEN
+    PTARGETR @ R5 <> IF
+      CRLF ERROR" fail - R5 [R] PULLTARGET r not R5, got " PTARGETR @ U. NAME>E EXIT
+    THEN
+    PTARGETN @ 0 <> IF
+      CRLF ERROR" fail - R5 [R] PULLTARGET n not 0 " NAME>E EXIT
+    THEN
+    PTARGETMODE @ [R] <> IF
+      CRLF ERROR" fail - R5 [R] PULLTARGET mode not [R] " NAME>E EXIT
+    THEN
+
+    RESETTARGET
+
+    R6 837 [R+N] PULLTARGET 
+    PTARGETSIZE @ 64BIT <> IF
+      CRLF ERROR" fail - R6 837 [R+N] PULLTARGET size 64BIT " NAME>E EXIT
+    THEN
+    PTARGETR @ R6 <> IF
+      CRLF ERROR" fail - R6 837 [R+N] PULLTARGET r not R6, got " PTARGETR @ U. NAME>E EXIT
+    THEN
+    PTARGETN @ 837 <> IF
+      CRLF ERROR" fail - R6 837 [R+N] PULLTARGET n not 837 " NAME>E EXIT
+    THEN
+    PTARGETMODE @ [R+N] <> IF
+      CRLF ERROR" fail - R6 837 [R+N] PULLTARGET mode not [R+N] " NAME>E EXIT
+    THEN
+
+    RESETTARGET
+
+    32 [PC+N] PULLTARGET 
+    PTARGETSIZE @ 64BIT <> IF
+      CRLF ERROR" fail - 32 [PC+N] PULLTARGET size 64BIT " NAME>E EXIT
+    THEN
+    PTARGETR @ PC <> IF
+      CRLF ERROR" fail - 32 [PC+N] PULLTARGET r not PC, got " PTARGETR @ U. NAME>E EXIT
+    THEN
+    PTARGETN @ 32 <> IF
+      CRLF ERROR" fail - 32 [PC+N] PULLTARGET n not 32 " NAME>E EXIT
+    THEN
+    PTARGETMODE @ [PC+N] <> IF
+      CRLF ERROR" fail - 32 [PC+N] PULLTARGET mode not [PC+N] " NAME>E EXIT
+    THEN
+
+    RESETTARGET
+
+    99 [RSP+N] PULLTARGET 
+    PTARGETSIZE @ 64BIT <> IF
+      CRLF ERROR" fail - 99 [RSP+N] PULLTARGET size 64BIT " NAME>E EXIT
+    THEN
+    PTARGETR @ RSP <> IF
+      CRLF ERROR" fail - 99 [RSP+N] PULLTARGET r not RSP, got " PTARGETR @ U. NAME>E EXIT
+    THEN
+    PTARGETN @ 99 <> IF
+      CRLF ERROR" fail - 99 [RSP+N] PULLTARGET n not 32 " NAME>E EXIT
+    THEN
+    PTARGETMODE @ [RSP+N] <> IF
+      CRLF ERROR" fail - 99 [RSP+N] PULLTARGET mode not [RSP+N] " NAME>E EXIT
+    THEN
+
+    RESETTARGET
+
+    834 O PULLTARGET 
+    PTARGETSIZE @ 64BIT <> IF
+      CRLF ERROR" fail - 834 O PULLTARGET size 64BIT " NAME>E EXIT
+    THEN
+    PTARGETR @ PC <> IF
+      CRLF ERROR" fail - 834 O PULLTARGET r not PC, got " PTARGETR @ U. NAME>E EXIT
+    THEN
+    PTARGETN @ 834 <> IF
+      CRLF ERROR" fail - 834 O PULLTARGET n not 834 " NAME>E EXIT
+    THEN
+    PTARGETMODE @ O <> IF
+      CRLF ERROR" fail - 834 O PULLTARGET mode not O " NAME>E EXIT
+    THEN
+
+    RESETTARGET
+
+    835 [O] PULLTARGET 
+    PTARGETSIZE @ 64BIT <> IF
+      CRLF ERROR" fail - 835 [O] PULLTARGET size 64BIT " NAME>E EXIT
+    THEN
+    PTARGETR @ PC <> IF
+      CRLF ERROR" fail - 835 [O] PULLTARGET r not PC, got " PTARGETR @ U. NAME>E EXIT
+    THEN
+    PTARGETN @ 835 <> IF
+      CRLF ERROR" fail - 835 [O] PULLTARGET n not 835 " NAME>E EXIT
+    THEN
+    PTARGETMODE @ [O] <> IF
+      CRLF ERROR" fail - 835 [O] PULLTARGET mode not [O] " NAME>E EXIT
+    THEN
+
+    836 [O] PF PULLTARGET 
+    PTARGETSIZE @ 64BIT <> IF
+      CRLF ERROR" fail - 836 [O] PF PULLTARGET size 64BIT " NAME>E EXIT
+    THEN
+    PTARGETR @ PC <> IF
+      CRLF ERROR" fail - 836 [O] PF PULLTARGET r not PC, got " PTARGETR @ U. NAME>E EXIT
+    THEN
+    PTARGETN @ 836 <> IF
+      CRLF ERROR" fail - 836 [O] PF PULLTARGET n not 836 " NAME>E EXIT
+    THEN
+    PTARGETMODE @ [O] <> IF
+      CRLF ERROR" fail - 836 [O] PF PULLTARGET mode not [O], got " PTARGETMODE @ U. NAME>E EXIT
+    THEN
+    PPRESERVEFLAGSFLAG @ TRUE <> IF
+      CRLF ERROR" fail - 836 [O] PF PULLTARGET preserveflagsflag not TRUE, got " PPRESERVEFLAGSFLAG @ U. NAME>E EXIT
+    THEN
+
+    837 [O] UF PULLTARGET 
+    PTARGETSIZE @ 64BIT <> IF
+      CRLF ERROR" fail - 837 [O] UF PULLTARGET size 64BIT " NAME>E EXIT
+    THEN
+    PTARGETR @ PC <> IF
+      CRLF ERROR" fail - 837 [O] UF PULLTARGET r not PC, got " PTARGETR @ U. NAME>E EXIT
+    THEN
+    PTARGETN @ 837 <> IF
+      CRLF ERROR" fail - 837 [O] UF PULLTARGET n not 835 " NAME>E EXIT
+    THEN
+    PTARGETMODE @ [O] <> IF
+      CRLF ERROR" fail - 837 [O] UF PULLTARGET mode not [O] " NAME>E EXIT
+    THEN
+    PPRESERVEFLAGSFLAG @ FALSE <> IF
+      CRLF ERROR" fail - 837 [O] UF PULLTARGET preserveflagsflag not FALSE, got " PPRESERVEFLAGSFLAG @ U. NAME>E EXIT
+    THEN
+
+    RESETTARGET
+
+    R9 838 [R++N] PULLTARGET 
+    PTARGETSIZE @ 64BIT <> IF
+      CRLF ERROR" fail - R9 838 [R++N] PULLTARGET size 64BIT " NAME>E EXIT
+    THEN
+    PTARGETR @ R9 <> IF
+      CRLF ERROR" fail - R9 838 [R++N] PULLTARGET r not R9, got " PTARGETR @ U. NAME>E EXIT
+    THEN
+    PTARGETN @ 838 <> IF
+      CRLF ERROR" fail - R9 838 [R++N] PULLTARGET n not 838 " NAME>E EXIT
+    THEN
+    PTARGETMODE @ [R++N] <> IF
+      CRLF ERROR" fail - R9 838 [R++N] PULLTARGET mode not [R++N] " NAME>E EXIT
+    THEN
+
+    RESETTARGET
+
+    R3 839 [R]++N PULLTARGET 
+    PTARGETSIZE @ 64BIT <> IF
+      CRLF ERROR" fail - R3 839 [R]++N PULLTARGET size 64BIT " NAME>E EXIT
+    THEN
+    PTARGETR @ R3 <> IF
+      CRLF ERROR" fail - R3 839 [R]++N PULLTARGET r not R3, got " PTARGETR @ U. NAME>E EXIT
+    THEN
+    PTARGETN @ 839 <> IF
+      CRLF ERROR" fail - R3 839 [R]++N PULLTARGET n not 839 " NAME>E EXIT
+    THEN
+    PTARGETMODE @ [R]++N <> IF
+      CRLF ERROR" fail - R3 839 [R]++N PULLTARGET mode not [R]++N " NAME>E EXIT
+    THEN
+
+    975 <> IF 
+      ERROR" stack marker incorrect " NAME>E EXIT 
+    THEN
+;
+
+TESTPULLTARGET
+
+HEX
+: TESTPULL3TARGETS ( -- ) // tested
+    CRLF ." testing PULL3TARGETS"
+
+    976 ( -- stackmarker )
+
+    RESETTARGET
+
+    R3 123 [R+N] 8BIT R4 124 [R+N] 16BIT R5 125 [R+N] 32BIT PULL3TARGETS 
+    PSOURCEASIZE @ 8BIT <> IF
+      CRLF ERROR" fail - R3 123 [R+N] 8BIT ... source a size not 8BIT " PSOURCEASIZE @ U. NAME>E EXIT
+    THEN
+    PSOURCEAR @ R3 <> IF
+      CRLF ERROR" fail - R3 123 [R+N] 8BIT ... source a r not R3, got " PSOURCEAR @ U. NAME>E EXIT
+    THEN
+    PSOURCEAN @ 123 <> IF
+      CRLF ERROR" fail - R3 123 [R+N] 8BIT ... source a n not 123 " NAME>E EXIT
+    THEN
+    PSOURCEAMODE @ [R+N] <> IF
+      CRLF ERROR" fail - R3 123 [R+N] 8BIT ... source a mode not [R+N] " NAME>E EXIT
+    THEN
+
+    PSOURCEBSIZE @ 16BIT <> IF
+      CRLF ERROR" fail - R4 124 [R+N] 16BIT ... source b size 16BIT " NAME>E EXIT
+    THEN
+    PSOURCEBR @ R4 <> IF
+      CRLF ERROR" fail - R4 124 [R+N] 16BIT ... source b r not R4, got " PSOURCEAR @ U. NAME>E EXIT
+    THEN
+    PSOURCEBN @ 124 <> IF
+      CRLF ERROR" fail - R4 124 [R+N] 16BIT ... source b n not 124 " NAME>E EXIT
+    THEN
+    PSOURCEBMODE @ [R+N] <> IF
+      CRLF ERROR" fail - R4 124 [R+N] 16BIT ... source b mode not [R+N] " NAME>E EXIT
+    THEN
+
+    PDESTSIZE @ 32BIT <> IF
+      CRLF ERROR" fail - R5 125 [R+N] 32BIT ... dest size 32BIT " NAME>E EXIT
+    THEN
+    PDESTR @ R5 <> IF
+      CRLF ERROR" fail - R5 125 [R+N] 32BIT ... dest r not R5, got " PSOURCEAR @ U. NAME>E EXIT
+    THEN
+    PDESTN @ 125 <> IF
+      CRLF ERROR" fail - R5 125 [R+N] 32BIT ... dest n not 125 " NAME>E EXIT
+    THEN
+    PDESTMODE @ [R+N] <> IF
+      CRLF ERROR" fail - R5 125 [R+N] 32BIT ... dest mode not [R+N] " NAME>E EXIT
+    THEN
+
+    976 <> IF 
+      ERROR" stack marker incorrect " NAME>E EXIT 
+    THEN
+;
+
+TESTPULL3TARGETS
+
+HEX
+: TEST?U12ADDSUBOP ( -- )
+    CRLF ." testing ?U12ADDSUBOP"
+
+    955 ( -- stackmarker )
+
+    0 IDADD ?U12ADDSUBOP TRUE <> IF
+      CRLF ERROR" fail - 0 IDADD not true  " NAME>E EXIT
+    THEN
+
+    0 IDSUB ?U12ADDSUBOP TRUE <> IF
+      CRLF ERROR" fail - 0 IDSUB not true  " NAME>E EXIT
+    THEN
+
+    0 IDEOR ?U12ADDSUBOP FALSE <> IF
+      CRLF ERROR" fail - 0 IDSUB not true  " NAME>E EXIT
+    THEN
+
+    FFF IDADD ?U12ADDSUBOP TRUE <> IF
+      CRLF ERROR" fail - FFF IDADD not true  " NAME>E EXIT
+    THEN
+
+    1000 IDADD ?U12ADDSUBOP FALSE <> IF
+      CRLF ERROR" fail - 1000 IDADD not false  " NAME>E EXIT
+    THEN
+
+    -1 IDADD ?U12ADDSUBOP FALSE <> IF
+      CRLF ERROR" fail - -1 IDADD not false  " NAME>E EXIT
+    THEN
+
+    FFF IDSUB ?U12ADDSUBOP TRUE <> IF
+      CRLF ERROR" fail - FFF IDSUB not true  " NAME>E EXIT
+    THEN
+
+    1000 IDSUB ?U12ADDSUBOP FALSE <> IF
+      CRLF ERROR" fail - 1000 IDSUB not false  " NAME>E EXIT
+    THEN
+
+    -1 IDSUB ?U12ADDSUBOP FALSE <> IF
+      CRLF ERROR" fail - -1 IDSUB not false  " NAME>E EXIT
+    THEN
+
+    955 <> IF 
+      ERROR" stack marker incorrect " NAME>E EXIT 
+    THEN
+;
+
+TEST?U12ADDSUBOP
+
+: TEST?U12<<12ADDSUBOP ( -- )
+    CRLF ." testing ?U12<<12ADDSUBOP"
+
+    9A55 ( -- stackmarker )
+
+    0 IDADD ?U12<<12ADDSUBOP TRUE <> IF
+      CRLF ERROR" fail - 0 IDADD not true  " NAME>E EXIT
+    THEN
+
+    0 IDSUB ?U12<<12ADDSUBOP TRUE <> IF
+      CRLF ERROR" fail - 0 IDSUB not true  " NAME>E EXIT
+    THEN
+
+    0 IDEOR ?U12<<12ADDSUBOP FALSE <> IF
+      CRLF ERROR" fail - 0 IDEOR not false  " NAME>E EXIT
+    THEN
+
+    1 IDADD ?U12<<12ADDSUBOP FALSE <> IF
+      CRLF ERROR" fail - 1 IDADD not false  " NAME>E EXIT
+    THEN
+
+    FFF IDADD ?U12<<12ADDSUBOP FALSE <> IF
+      CRLF ERROR" fail - FFF IDADD not false  " NAME>E EXIT
+    THEN
+
+    1000 IDADD ?U12<<12ADDSUBOP TRUE <> IF
+      CRLF ERROR" fail - 1000 IDADD not true  " NAME>E EXIT
+    THEN
+
+    FFF000 IDADD ?U12<<12ADDSUBOP TRUE <> IF
+      CRLF ERROR" fail - FFF000 IDADD not true  " NAME>E EXIT
+    THEN
+
+    1000000 IDADD ?U12<<12ADDSUBOP FALSE <> IF
+      CRLF ERROR" fail - 1000000 IDADD not false  " NAME>E EXIT
+    THEN
+
+    9A55 <> IF 
+      ERROR" stack marker incorrect " NAME>E EXIT 
+    THEN
+;
+
+TEST?U12<<12ADDSUBOP
+
+: TEST?U13ANDOREOROP ( -- )
+    CRLF ." testing ?U13ANDOREOROP"
+
+    9A56 ( -- stackmarker )
+
+    0 IDADD ?U13ANDOREOROP FALSE <> IF
+      CRLF ERROR" fail - 0 IDADD not false  " NAME>E EXIT
+    THEN
+
+    0 IDAND ?U13ANDOREOROP TRUE <> IF
+      CRLF ERROR" fail - 0 IDAND not true  " NAME>E EXIT
+    THEN
+
+    0 IDOR ?U13ANDOREOROP TRUE <> IF
+      CRLF ERROR" fail - 0 IDOR not true  " NAME>E EXIT
+    THEN
+
+    0 IDEOR ?U13ANDOREOROP TRUE <> IF
+      CRLF ERROR" fail - 0 IDEOR not true  " NAME>E EXIT
+    THEN
+
+    1FFF IDEOR ?U13ANDOREOROP TRUE <> IF
+      CRLF ERROR" fail - 1FFF IDEOR not true  " NAME>E EXIT
+    THEN
+
+    2000 IDEOR ?U13ANDOREOROP FALSE <> IF
+      CRLF ERROR" fail - 1FFF IDEOR not false  " NAME>E EXIT
+    THEN
+
+    9A56 <> IF 
+      ERROR" stack marker incorrect " NAME>E EXIT 
+    THEN
+;
+
+TEST?U13ANDOREOROP
+
+: TESTID>ADDSUBNPFOP ( -- )
+    CRLF ." testing ID>ADDSUBNPFOP"
+
+    9A57 ( -- stackmarker )
+
+    IDADD ID>ADDSUBNPFOP ARMADDIMMEDIATE <> IF
+      CRLF ERROR" fail - IDADD not ARMADDIMMEDIATE  " NAME>E EXIT
+    THEN
+
+    IDSUB ID>ADDSUBNPFOP ARMSUBIMMEDIATE <> IF
+      CRLF ERROR" fail - IDSUB not ARMSUBIMMEDIATE  " NAME>E EXIT
+    THEN
+
+    9A57 <> IF 
+      ERROR" stack marker incorrect " NAME>E EXIT 
+    THEN
+;
+
+TESTID>ADDSUBNPFOP
+
+: TESTID>ANDOREORPFOP ( -- )
+    CRLF ." testing ID>ANDOREORPFOP"
+
+    9A57 ( -- stackmarker )
+
+    IDAND ID>ANDOREORPFOP ARMANDIMMEDIATE <> IF
+      CRLF ERROR" fail - IDAND not ARMANDIMMEDIATE  " NAME>E EXIT
+    THEN
+
+    IDOR ID>ANDOREORPFOP ARMORIMMEDIATE <> IF
+      CRLF ERROR" fail - IDSUB not ARMORIMMEDIATE  " NAME>E EXIT
+    THEN
+
+    IDEOR ID>ANDOREORPFOP ARMEORIMMEDIATE <> IF
+      CRLF ERROR" fail - IDSUB not ARMEORIMMEDIATE  " NAME>E EXIT
+    THEN
+
+    9A57 <> IF 
+      ERROR" stack marker incorrect " NAME>E EXIT 
+    THEN
+;
+
+TESTID>ANDOREORPFOP
+
+HEX
+: TESTN19>= ( -- )
+    CRLF ." testing N19>="
+
+    155 ( -- stackmarker )
+
+    0 N19>= 0<> IF
+      CRLF ERROR" fail - 0 N19>= not false  " NAME>E EXIT
+    THEN
+
+    -1 N19>= 0<> IF
+      CRLF ERROR" fail - -1 N19>= not false  " NAME>E EXIT
+    THEN
+
+    3FFFF N19>= 0<> IF
+      CRLF ERROR" fail - 3FFFF N19>= not false  " NAME>E EXIT
+    THEN
+
+    40000 N19>= 0= IF
+      CRLF ERROR" fail - 40000 N19>= returned false  " NAME>E EXIT
+    THEN
+
+    -40000 N19>= 0<> IF
+      CRLF ERROR" fail -  -40000 N19>= not false  " NAME>E EXIT
+    THEN
+
+    -40001 N19>= 0= IF
+      CRLF ERROR" fail -  -40001 N19>= returned false  " NAME>E EXIT
+    THEN
+
+    155 <> IF 
+      ERROR" stack marker incorrect " NAME>E EXIT 
+    THEN
+;
+
+TESTN19>=
+
+HEX
+: TESTN21>= ( -- )
+    CRLF ." testing N21>="
+
+    555 ( -- stackmarker )
+
+    0 N21>= 0<> IF
+      CRLF ERROR" fail - 0 N21>= not false  " NAME>E EXIT
+    THEN
+
+    -1 N21>= 0<> IF
+      CRLF ERROR" fail - -1 N21>= not false  " NAME>E EXIT
+    THEN
+
+    FFFFF N21>= 0<> IF
+      CRLF ERROR" fail - FFFFF N21>= not false  " NAME>E EXIT
+    THEN
+
+    100000 N21>= 0= IF
+      CRLF ERROR" fail - 100000 N21>= returned false  " NAME>E EXIT
+    THEN
+
+    -100000 N21>= 0<> IF
+      CRLF ERROR" fail -  -100000 N21>= not false  " NAME>E EXIT
+    THEN
+
+    -100001 N21>= 0= IF
+      CRLF ERROR" fail -  -100001 N21>= returned false  " NAME>E EXIT
+    THEN
+
+    555 <> IF 
+      ERROR" stack marker incorrect " NAME>E EXIT 
+    THEN
+;
+
+TESTN21>=
+
+HEX
+: TESTN26>= ( -- )
+    CRLF ." testing N26>="
+
+    155 ( -- stackmarker )
+
+    0 N26>= 0<> IF
+      CRLF ERROR" fail - 0 N26>= not false  " NAME>E EXIT
+    THEN
+
+    -1 N26>= 0<> IF
+      CRLF ERROR" fail - -1 N26>= not false  " NAME>E EXIT
+    THEN
+
+    1FFFFFF N26>= 0<> IF
+      CRLF ERROR" fail - 1FFFFFF N26>= not false  " NAME>E EXIT
+    THEN
+
+    2000000 N26>= 0= IF
+      CRLF ERROR" fail - 2000000 N26>= returned false  " NAME>E EXIT
+    THEN
+
+    -2000000 N26>= 0<> IF
+      CRLF ERROR" fail -  -2000000 N26>= not false  " NAME>E EXIT
+    THEN
+
+    -2000001 N26>= 0= IF
+      CRLF ERROR" fail -  -2000001 N26>= returned false  " NAME>E EXIT
+    THEN
+
+    155 <> IF 
+      ERROR" stack marker incorrect " NAME>E EXIT 
+    THEN
+;
+
+TESTN26>=
+
+HEX
+: TESTN19>N64 ( -- )
+    CRLF ." testing N19>N64"
+
+    155 ( -- stackmarker )
+
+    0 N19>N64 0<> IF
+      CRLF ERROR" fail - 0 N19>N64 not 0  " NAME>E EXIT
+    THEN
+
+    -1 N19>N64 -1 <> IF
+      CRLF ERROR" fail - -1 N19>N64 not -1  " NAME>E EXIT
+    THEN
+
+    3FFFF N19>N64 3FFFF <> IF
+      CRLF ERROR" fail - 3FFFF N19>N64 not 3FFFF  " NAME>E EXIT
+    THEN
+
+    40000 N19>N64 FFFFFFFFFFFC0000 <> IF
+      CRLF ERROR" fail - 40000 N19>N64 not FFFFFFFFFFFC0000  " NAME>E EXIT
+    THEN
+
+    155 <> IF 
+      ERROR" stack marker incorrect " NAME>E EXIT 
+    THEN
+;
+
+TESTN19>N64
+
+HEX
+: TESTN26>N64 ( -- )
+    CRLF ." testing N26>N64"
+
+    155 ( -- stackmarker )
+
+    0 N26>N64 0<> IF
+      CRLF ERROR" fail - 0 N26>N64 not 0  " NAME>E EXIT
+    THEN
+
+    -1 N26>N64 -1 <> IF
+      CRLF ERROR" fail - -1 N26>N64 not -1  " NAME>E EXIT
+    THEN
+
+    1FFFFFF N26>N64 1FFFFFF <> IF
+      CRLF ERROR" fail - 1FFFFFF N26>N64 not 1FFFFFF  " NAME>E EXIT
+    THEN
+
+    2000000 N26>N64 FFFFFFFFFE000000 <> IF
+      CRLF ERROR" fail - 2000000 N26>N64 not FFFFFFFFFE000000  " NAME>E EXIT
+    THEN
+
+    155 <> IF 
+      ERROR" stack marker incorrect " NAME>E EXIT 
+    THEN
+;
+
+TESTN26>N64
+
+HEX
+: TESTGETBRANCHTYPE ( -- )
+    CRLF ." testing GETBRANCHTYPE"
+
+    155 ( -- stackmarker )
+
+    ARMNOP GETBRANCHTYPE branchtypenever <> IF
+      2DROP
+      CRLF ERROR" fail - ARMNOP GETBRANCHTYPE branchtype not branchtypenever" NAME>E EXIT
+    THEN
+    0 <> IF
+      DROP
+      CRLF ERROR" fail - ARMNOP GETBRANCHTYPE displacement not 0" NAME>E EXIT
+    THEN
+    ARMNOP <> IF
+      CRLF ERROR" fail - ARMNOP GETBRANCHTYPE opcope' not armnop" NAME>E EXIT
+    THEN
+
+    ARMB GETBRANCHTYPE branchtypealways <> IF
+      2DROP
+      CRLF ERROR" fail - ARMB GETBRANCHTYPE branchtype not branchtypealways" NAME>E EXIT
+    THEN
+    0 <> IF
+      DROP
+      CRLF ERROR" fail - ARMB GETBRANCHTYPE displacement not 0" NAME>E EXIT
+    THEN
+    ARMB <> IF
+      CRLF ERROR" fail - ARMB GETBRANCHTYPE opcope' not armb" NAME>E EXIT
+    THEN
+
+    ARMB.cond GETBRANCHTYPE branchtypecond <> IF
+      2DROP
+      CRLF ERROR" fail - ARMB.cond GETBRANCHTYPE branchtype not branchtypecond" NAME>E EXIT
+    THEN
+    0 <> IF
+      DROP
+      CRLF ERROR" fail - ARMB.cond GETBRANCHTYPE displacement not 0" NAME>E EXIT
+    THEN
+    ARMB.cond <> IF
+      CRLF ERROR" fail - ARMB.cond GETBRANCHTYPE opcope' not armb.cond" NAME>E EXIT
+    THEN
+
+    ARMB.cond NE OR GETBRANCHTYPE branchtypecond <> IF
+      2DROP
+      CRLF ERROR" fail - ARMB.cond NE OR GETBRANCHTYPE branchtype not branchtypecond" NAME>E EXIT
+    THEN
+    0 <> IF
+      DROP
+      CRLF ERROR" fail - ARMB.cond NE OR GETBRANCHTYPE displacement not 0" NAME>E EXIT
+    THEN
+    ARMB.cond NE OR <> IF
+      CRLF ERROR" fail - ARMB.cond NE OR GETBRANCHTYPE opcope' not armb.cond NE OR" NAME>E EXIT
+    THEN
+
+    // oring in a displacement
+    ARMB.cond 20 OR GETBRANCHTYPE branchtypecond <> IF
+      2DROP
+      CRLF ERROR" fail - ARMB.cond 20 OR GETBRANCHTYPE branchtype not branchtypecond" NAME>E EXIT
+    THEN
+    1 <> IF
+      DROP
+      CRLF ERROR" fail - ARMB.cond 20 OR GETBRANCHTYPE displacement not 1" NAME>E EXIT
+    THEN
+    ARMB.cond <> IF
+      CRLF ERROR" fail - ARMB.cond 20 OR GETBRANCHTYPE opcope' not armb.cond" NAME>E EXIT
+    THEN
+
+    155 <> IF 
+      ERROR" stack marker incorrect " NAME>E EXIT 
+    THEN
+;
+
+TESTGETBRANCHTYPE
+
+HEX
+: TESTSHORTBRANCH, { oldccbuf newccbuf | -- }
+    CRLF ." testing SHORTBRANCH,"
+
+    155 ( -- stackmarker )
+
+    PCURRENTCOMPILEBUFFER @ TO oldccbuf
+    1000 -1 NEWBUFFER DUP TO newccbuf
+    PCURRENTCOMPILEBUFFER !
+
+    EQ SHORTBRANCH,
+    4 <> IF
+      CRLF ERROR" fail - NE SHORTBRANCH, afterbranchoffset incorrect" NAME>E EXIT
+    THEN
+
+    0 PCURRENTCOMPILEBUFFER @ O>P U32@ GETBRANCHTYPE
+    branchtypecond <> IF
+      CRLF ERROR" fail - EQ SHORTBRANCH, compiled branch branchtype not branchtypecond" NAME>E EXIT
+    THEN
+    0 <> IF
+      DROP
+      CRLF ERROR" fail - EQ SHORTBRANCH, compiled branch displacement not 0" NAME>E EXIT
+    THEN
+    ARMB.cond <> IF
+      CRLF ERROR" fail - EQ SHORTBRANCH, compiled branch opcope' not armnop" NAME>E EXIT
+    THEN
+
+    NE SHORTBRANCH,
+    8 <> IF
+      CRLF ERROR" fail - NE SHORTBRANCH, afterbranchoffset incorrect" NAME>E EXIT
+    THEN
+
+    4 PCURRENTCOMPILEBUFFER @ O>P U32@ GETBRANCHTYPE
+    branchtypecond <> IF
+      CRLF ERROR" fail - NE SHORTBRANCH, compiled branch branchtype not branchtypecond" NAME>E EXIT
+    THEN
+    0 <> IF
+      DROP
+      CRLF ERROR" fail - NE SHORTBRANCH, compiled branch displacement not 0" NAME>E EXIT
+    THEN
+    ARMB.cond NE OR <> IF
+      CRLF ERROR" fail - NE SHORTBRANCH, compiled branch opcope' not armnop with NE" NAME>E EXIT
+    THEN
+
+    LE SHORTBRANCH,
+    0C <> IF
+      CRLF ERROR" fail - LE SHORTBRANCH, afterbranchoffset incorrect" NAME>E EXIT
+    THEN
+
+    8 PCURRENTCOMPILEBUFFER @ O>P U32@ GETBRANCHTYPE
+    branchtypecond <> IF
+      CRLF ERROR" fail - LE SHORTBRANCH, compiled branch branchtype not branchtypecond" NAME>E EXIT
+    THEN
+    0 <> IF
+      DROP
+      CRLF ERROR" fail - LE SHORTBRANCH, compiled branch displacement not 0" NAME>E EXIT
+    THEN
+    ARMB.cond LE OR <> IF
+      CRLF ERROR" fail - LE SHORTBRANCH, compiled branch opcope' not armnop with LE" NAME>E EXIT
+    THEN
+
+    AL SHORTBRANCH,
+    10 <> IF
+      CRLF ERROR" fail - AL SHORTBRANCH, afterbranchoffset incorrect" NAME>E EXIT
+    THEN
+
+    0C PCURRENTCOMPILEBUFFER @ O>P U32@ GETBRANCHTYPE
+    branchtypealways <> IF
+      CRLF ERROR" fail - AL SHORTBRANCH, compiled branch branchtype not branchtypealways" NAME>E EXIT
+    THEN
+    0 <> IF
+      DROP
+      CRLF ERROR" fail - AL SHORTBRANCH, compiled branch displacement not 0" NAME>E EXIT
+    THEN
+    ARMB <> IF
+      CRLF ERROR" fail - AL SHORTBRANCH, compiled branch opcope' not armb" NAME>E EXIT
+    THEN
+
+    NV SHORTBRANCH,
+    14 <> IF
+      CRLF ERROR" fail - NV SHORTBRANCH, afterbranchoffset incorrect" NAME>E EXIT
+    THEN
+
+    10 PCURRENTCOMPILEBUFFER @ O>P U32@ GETBRANCHTYPE
+    branchtypenever <> IF
+      CRLF ERROR" fail - NV SHORTBRANCH, compiled branch branchtype not branchtypenever" NAME>E EXIT
+    THEN
+    0 <> IF
+      DROP
+      CRLF ERROR" fail - NV SHORTBRANCH, compiled branch displacement not 0" NAME>E EXIT
+    THEN
+    ARMNOP <> IF
+      CRLF ERROR" fail - NV SHORTBRANCH, compiled branch opcope' not armnop" NAME>E EXIT
+    THEN
+    
+    newccbuf FREEBUFFER
+    oldccbuf PCURRENTCOMPILEBUFFER !
+
+    155 <> IF 
+      ERROR" stack marker incorrect " NAME>E EXIT 
+    THEN
+;
+
+TESTSHORTBRANCH,
+
+HEX
+: TESTRESOLVE-BRANCH { oldccbuf newccbuf | -- }
+    CRLF ." testing RESOLVE-BRANCH"
+
+    155 ( -- stackmarker )
+
+    PCURRENTCOMPILEBUFFER @ TO oldccbuf
+    1000 -1 NEWBUFFER DUP TO newccbuf
+    PCURRENTCOMPILEBUFFER !
+
+    EQ SHORTBRANCH, 0 RESOLVE-BRANCH
+
+    0 PCURRENTCOMPILEBUFFER @ O>P U32@ GETBRANCHTYPE
+    branchtypecond <> IF
+      2DROP
+      CRLF ERROR" fail - EQ SHORTBRANCH, 0 RESOLVE-BRANCH compiled branch branchtype not branchtypecond" NAME>E EXIT
+    THEN
+    0 <> IF
+      DROP
+      CRLF ERROR" fail - EQ SHORTBRANCH, 0 RESOLVE-BRANCH compiled branch displacement not 0" NAME>E EXIT
+    THEN
+    ARMB.cond <> IF
+      CRLF ERROR" fail - EQ SHORTBRANCH, 0 RESOLVE-BRANCH compiled branch opcope' not armb.cond" NAME>E EXIT
+    THEN
+
+    NE SHORTBRANCH, 0 RESOLVE-BRANCH
+
+    4 PCURRENTCOMPILEBUFFER @ O>P U32@ GETBRANCHTYPE
+    branchtypecond <> IF
+      2DROP
+      CRLF ERROR" fail - NE SHORTBRANCH, 0 RESOLVE-BRANCH compiled branch branchtype not branchtypecond" NAME>E EXIT
+    THEN
+    -1 <> IF
+      DROP
+      CRLF ERROR" fail - NE SHORTBRANCH, 0 RESOLVE-BRANCH compiled branch displacement not -1" NAME>E EXIT
+    THEN
+    ARMB.cond NE OR <> IF
+      CRLF ERROR" fail - NE SHORTBRANCH, 0 RESOLVE-BRANCH compiled branch opcope' not armb.cond with NE" NAME>E EXIT
+    THEN
+
+    LE SHORTBRANCH, 0 RESOLVE-BRANCH
+
+    8 PCURRENTCOMPILEBUFFER @ O>P U32@ GETBRANCHTYPE
+    branchtypecond <> IF
+      2DROP
+      CRLF ERROR" fail - LE SHORTBRANCH, 0 RESOLVE-BRANCH compiled branch branchtype not branchtypecond" NAME>E EXIT
+    THEN
+    -2 <> IF
+      DROP
+      CRLF ERROR" fail - LE SHORTBRANCH, 0 RESOLVE-BRANCH compiled branch displacement not -2" NAME>E EXIT
+    THEN
+    ARMB.cond LE OR <> IF
+      CRLF ERROR" fail - LE SHORTBRANCH, 0 RESOLVE-BRANCH compiled branch opcope' not armb.cond with LE" NAME>E EXIT
+    THEN
+
+    AL SHORTBRANCH, 0 RESOLVE-BRANCH
+
+    0C PCURRENTCOMPILEBUFFER @ O>P U32@ GETBRANCHTYPE
+    branchtypealways <> IF
+      2DROP
+      CRLF ERROR" fail - AL SHORTBRANCH, 0 RESOLVE-BRANCH compiled branch branchtype not branchtypealways" NAME>E EXIT
+    THEN
+    -3 <> IF
+      DROP
+      CRLF ERROR" fail - AL SHORTBRANCH, 0 RESOLVE-BRANCH compiled branch displacement not -3" NAME>E EXIT
+    THEN
+    ARMB <> IF
+      CRLF ERROR" fail - AL SHORTBRANCH, 0 RESOLVE-BRANCH compiled branch opcope' not armb" NAME>E EXIT
+    THEN
+
+    NV SHORTBRANCH, 0 RESOLVE-BRANCH
+
+    10 PCURRENTCOMPILEBUFFER @ O>P U32@ GETBRANCHTYPE
+    branchtypenever <> IF
+      2DROP
+      CRLF ERROR" fail - NV SHORTBRANCH, 0 RESOLVE-BRANCH compiled branch branchtype not branchtypenever" NAME>E EXIT
+    THEN
+    0 <> IF
+      DROP
+      CRLF ERROR" fail - NV SHORTBRANCH, 0 RESOLVE-BRANCH compiled branch displacement not 0" NAME>E EXIT
+    THEN
+    ARMNOP <> IF
+      CRLF ERROR" fail - NV SHORTBRANCH, 0 RESOLVE-BRANCH compiled branch opcope' not armnop" NAME>E EXIT
+    THEN
+    
+    
+    newccbuf FREEBUFFER
+    oldccbuf PCURRENTCOMPILEBUFFER !
+
+    155 <> IF 
+      ERROR" stack marker incorrect " NAME>E EXIT 
+    THEN
+;
+
+TESTRESOLVE-BRANCH
+
+HEX
+: TESTSF>SIZE ( -- )
+    CRLF ." testing SF>SIZE"
+
+    255 ( -- stackmarker )
+
+    8BIT SF>SIZE
+    8 <> IF 
+      DROP
+      CRLF ERROR" fail - 8BIT SF>SIZE result not 8" NAME>E EXIT
+    THEN
+
+    16BIT SF>SIZE
+    10 <> IF 
+      DROP
+      CRLF ERROR" fail - 16BIT SF>SIZE result not 0x10" NAME>E EXIT
+    THEN
+
+    32BIT SF>SIZE
+    20 <> IF 
+      DROP
+      CRLF ERROR" fail - 32BIT SF>SIZE result not 0x20" NAME>E EXIT
+    THEN
+
+    64BIT SF>SIZE
+    40 <> IF 
+      DROP
+      CRLF ERROR" fail - 64BIT SF>SIZE result not 0x40" NAME>E EXIT
+    THEN
+
+    255 <> IF 
+      ERROR" stack marker incorrect " NAME>E EXIT 
+    THEN
+;
+
+TESTSF>SIZE
+
+HEX
+: TEST>U16[U] ( -- )
+    CRLF ." testing >U16[U]"
+
+    355 ( -- stackmarker )
+
+    1112131415161718 0 >U16[U]
+    1718 <> IF 
+      DROP
+      CRLF ERROR" fail -  1112131415161718 0 >U16[U] result not 1718" NAME>E EXIT
+    THEN
+
+    1112131415161718 1 >U16[U]
+    1516 <> IF 
+      DROP
+      CRLF ERROR" fail -  1112131415161718 1 >U16[U] result not 1516" NAME>E EXIT
+    THEN
+
+    1112131415161718 2 >U16[U]
+    1314 <> IF 
+      DROP
+      CRLF ERROR" fail -  1112131415161718 2 >U16[U] result not 1314" NAME>E EXIT
+    THEN
+
+    1112131415161718 3 >U16[U]
+    1112 <> IF 
+      DROP
+      CRLF ERROR" fail -  1112131415161718 3 >U16[U] result not 1112" NAME>E EXIT
+    THEN
+
+    355 <> IF 
+      ERROR" stack marker incorrect " NAME>E EXIT 
+    THEN
+;
+
+TEST>U16[U]
+
+CRLF CRLF ." finished testing DGArm64 cross assembler" CRLF
+
+

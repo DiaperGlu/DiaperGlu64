@@ -2,20 +2,20 @@
 //
 //    Copyright 2025 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.15.
+//    This file is part of DiaperGlu v5.16.
 //
-//    DiaperGlu v5.15 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.16 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.15 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.16 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.15; if not, write to the Free Software
+//    along with DiaperGlu v5.16; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// May 4, 2025                //
-// version 5.15               //
+// January 24, 2026           //
+// version 5.16               //
 // /////////////////////////////
 
 #if !defined(_INC_testdglu)
@@ -241,6 +241,8 @@ void testdg_popdatastacktobracketob();
 void testdg_popf64stacktobracketob();
 void testdg_popdatastacktou128bracketob();
 void testdg_ubufferalign();
+void testdg_depthtoindex();
+void testdg_stackdepthtoindex();
 
 void testdg_forthdocompiletypealwaysexecute();
 void testdg_forthdocompiletypesubroutine();
@@ -326,6 +328,7 @@ void testdg_mulu64bylstringnaddtolstringn();
 void testdg_divlstringnbyu64();
 void testdg_fescdecodelstring();
 void testdg_fescencodelstring();
+void testdg_getslstringatdepth();
 
 void testdg_initlstringqueue();
 void testdg_pushlstringqueuehead();
@@ -621,10 +624,12 @@ void testdg_forthlocalsbar();
 // dg_forth buffer words
 void testdg_forthocfetch();
 void testdg_forthofetch();
+void testdg_forthou32fetch();
 void testdg_forthostonewstring();
 
 void testdg_forthocstore();
 void testdg_forthostore();
+void testdg_forthou32store();
 
 void testdg_forthctobuf();
 void testdg_forthtobuf();
@@ -686,7 +691,7 @@ void testdg_forthumin();
 void testdg_forthulessthanequals();
 void testdg_forthugreaterthanequals();
 
-// dg_forth lstring words
+// DiaperGlu lstring words
 void testdg_forthdepthlstring();
 void testdg_forthstartoffsetlstring();
 void testdg_forthlengthlstring();
@@ -717,10 +722,16 @@ void testdg_forthlelshiftclstringn();
 void testdg_forthlershiftclstringn();
 void testdg_forthu64starlstringnplustolstringn();
 void testdg_forthtoslashulelstringn();
+void testdg_forthgetslstringbracketud();
+void testdg_forthcopylstringtobuf();
+void testdg_forthlstringtobuf();
+void testdg_forthcopybuftonewlstring();
+void testdg_forthcopylstringbracketudtobuf();
+void testdg_forthcopylstringbracketutobuf();
 
 void testdg_forthudmslashmod();
 
-// dg_forth string stack words
+// DiaperGlu string stack words
 void testdg_forthcomparestring();
 void testdg_forthgetmidstring();
 void testdg_forthcatstring();

@@ -1,4 +1,4 @@
-
+# 24 Jan 2026 Jim Norris - replaced -mmacosx-version-min=12.0 with -target x86_64-apple-macos11.0
 .PHONY: all
 all : libsampleasmdylib.dylib testsampleasmdylib clean test
 
@@ -6,7 +6,7 @@ libsampleasmdylib.dylib : makesampleasmdylibusingld.dglu sampleasmdylib.dglu FOR
 	../../diaperglu makesampleasmdylibusingld.dglu
 
 testsampleasmdylib : testsampleasmdylib.cpp FORCE
-	cc testsampleasmdylib.cpp -o testsampleasmdylib -mstackrealign -mmacosx-version-min=12.0 -L. -L../.. -lsampleasmdylib
+	cc testsampleasmdylib.cpp -o testsampleasmdylib -mstackrealign -target x86_64-apple-macos11.0 -L. -L../.. -lsampleasmdylib
 
 .PHONY: clean 
 clean :

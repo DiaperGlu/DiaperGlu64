@@ -6,7 +6,7 @@ libcalculatepi.dylib : makecalculatepi.dglu calculatepi.dglu FORCE
 	../../diaperglu makecalculatepi.dglu
 
 testcalculatepidylib : testcalculatepidylib.cpp FORCE
-	cc testcalculatepidylib.cpp -o testcalculatepidylib -mstackrealign -mmacosx-version-min=10.11 -L. -L../.. -lcalculatepi
+	cc testcalculatepidylib.cpp -o testcalculatepidylib -mstackrealign -target x86_64-apple-macos11.0 -L. -L../.. -lcalculatepi
 
 .PHONY: clean 
 clean :

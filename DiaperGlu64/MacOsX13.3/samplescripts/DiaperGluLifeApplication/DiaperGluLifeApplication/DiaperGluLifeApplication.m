@@ -5,6 +5,8 @@
 //  Created by James Norris on 4/8/18.
 //  Copyright (c) 2018 James Norris. All rights reserved.
 //
+//  Modified 24 Jan 2026, added a couple modals to init to show errors when loading dylibs
+//    Also changed build setting architecture in the .xcodeproject file to x86_64 so that it will cross compile on Apple silicon Mac
 
 #import "DiaperGluLifeApplication.h"
 // #import "DiaperGluLifeOpenGLView.h"
@@ -20,7 +22,7 @@
 //  this demo assumes libdiaperglu.dylib is at the mylocalpath place
 //  and this demo assumes some support files are in the samplescripts subdirectory
 //  and this demo assumes the DiaperGluLifeApplication demo is in the samplescripts subdirectory
-NSString* mylocalpath = @"/Users/jamespatricknorris/desktop/DiaperGlu64git/DiaperGlu64/macosx13.3/";
+NSString* mylocalpath = @"/Users/jamespatricknorris/Desktop/DiaperGlu64git/DiaperGlu64/MacOsX13.3/";
 
 unsigned char bittbl[8] = {0x80, 0x40, 0x20, 0x10, 8, 4, 2, 1};
 
@@ -366,6 +368,7 @@ unsigned char bittbl[8] = {0x80, 0x40, 0x20, 0x10, 8, 4, 2, 1};
     uint64* pgamedevbitmapbufferlength;
     uint64 gamedevbitmapbufferlength;
     uint64 bitmappadding = 16;
+    const char* pError;
     
     // const char libdiaperglupathfilename[] = "/Users/jim/desktop/DiaperGlu64/macosx10.9.5/libdiaperglu.dylib";
     // const char lifedglibpathfilename[]    = "/Users/jim/desktop/DiaperGlu64/macosx10.9.5/samplescripts/life.dglib";
@@ -373,6 +376,7 @@ unsigned char bittbl[8] = {0x80, 0x40, 0x20, 0x10, 8, 4, 2, 1};
     // const char clevelandgamedevsbitmapfilename[] = "/Users/jim/desktop/DiaperGlu64/macosx10.9.5/samplescripts/DiaperGluLifeApplication/DiaperGluLifeApplication/clevelandgamedevs.rawbmp";
     
     NSString* mylibdiaperglupathfilename = [mylocalpath stringByAppendingString: @"libdiaperglu.dylib"];
+    
     NSString* myliblifepathfilename = [mylocalpath stringByAppendingString: @"samplescripts/lifedylib/liblife.dylib"];
     // NSString* mydg2dgraphicspathfilename = [mylocalpath stringByAppendingString: @"samplescripts/dg2dgraphicsdylib/libdg2dgraphics.dylib"];
     // NSString* mylifedglibpathfilename = [mylocalpath stringByAppendingString: @"samplescripts/lifenglulib/life.dglib"];
@@ -407,20 +411,40 @@ unsigned char bittbl[8] = {0x80, 0x40, 0x20, 0x10, 8, 4, 2, 1};
     // self.pnextneighborsforeightcellstable = malloc(0x1000); // 0x100 * 0x10
         
     self.hdiaperglulib = dlopen([mylibdiaperglupathfilename cStringUsingEncoding: NSASCIIStringEncoding], RTLD_LOCAL);
-    self.hlifelib      = dlopen([myliblifepathfilename cStringUsingEncoding: NSASCIIStringEncoding], RTLD_LOCAL);
-    // self.hdg2dgraphicslib = dlopen([mydg2dgraphicspathfilename cStringUsingEncoding: NSASCIIStringEncoding], RTLD_LOCAL);
         
     if (self.hdiaperglulib == 0)
     {
         // printf("could not open libdiaperglu\n");
         // myLabel.text = [NSString localizedStringWithFormat: @"%s", dlerror()];
+        pError = dlerror();
+        NSAlert *alert = [[NSAlert alloc] init];
+        // NSString *myalertstring = [NSString init];
+            // myalertstring = [myalertstring initWithCString: myfilenamebuf encoding: NSASCIIStringEncoding];
+            [alert addButtonWithTitle:@"could not open libdiaperglu"];
+            [alert addButtonWithTitle:@(pError)];
+            // [alert setInformativeText: myalertstring];
+            [alert setAlertStyle:NSWarningAlertStyle];
+                
+            [alert runModal];
+        
         return;
     }
+    
+    self.hlifelib      = dlopen([myliblifepathfilename cStringUsingEncoding: NSASCIIStringEncoding], RTLD_LOCAL);
+    // self.hdg2dgraphicslib = dlopen([mydg2dgraphicspathfilename cStringUsingEncoding: NSASCIIStringEncoding], RTLD_LOCAL);
     
     if (self.hlifelib == 0)
     {
         // printf("could not open libdiaperglu\n");
         // myLabel.text = [NSString localizedStringWithFormat: @"%s", dlerror()];
+        NSAlert *alert = [[NSAlert alloc] init];
+        // NSString *myalertstring = [NSString init];
+            // myalertstring = [myalertstring initWithCString: myfilenamebuf encoding: NSASCIIStringEncoding];
+            [alert addButtonWithTitle:@"could not open liblife"];
+            // [alert setInformativeText: myalertstring];
+            [alert setAlertStyle:NSWarningAlertStyle];
+                
+            [alert runModal];
         return;
     }
         
@@ -477,10 +501,18 @@ unsigned char bittbl[8] = {0x80, 0x40, 0x20, 0x10, 8, 4, 2, 1};
         
         if (self.gamedevbitmapbufferid == (uint64)-1) // could ignore this error and leave bitmap empty
         {
-            printf("could not load Clevland Game Dev bit map\n");
+            // printf("could not load Clevland Game Dev bit map\n");
             // myLabel.text = [NSString localizedStringWithFormat:
              //   @"Could not load dglib. Top error = %s",
              //   (const char*)self.dg_poperror(self.pBHarrayhead)];
+            NSAlert *alert = [[NSAlert alloc] init];
+            // NSString *myalertstring = [NSString init];
+                // myalertstring = [myalertstring initWithCString: myfilenamebuf encoding: NSASCIIStringEncoding];
+                [alert addButtonWithTitle:@"could not load Cleveland Game Devs bitmap"];
+                // [alert setInformativeText: myalertstring];
+                [alert setAlertStyle:NSWarningAlertStyle];
+                    
+                [alert runModal];
             return;
         }
     

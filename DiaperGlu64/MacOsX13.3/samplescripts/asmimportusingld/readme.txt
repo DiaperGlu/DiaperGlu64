@@ -1,4 +1,9 @@
-04/112022 Jim Norris
+24/01/2026 Jim Norris
+
+Removed -no_uuid and -no_eh_labels from build commands. 
+  It seems uuid and eh_labels are required now.
+
+04/11/2022 Jim Norris
 
 There is a new way to to compile imports. See the /testosymbolbuf example for details.
 

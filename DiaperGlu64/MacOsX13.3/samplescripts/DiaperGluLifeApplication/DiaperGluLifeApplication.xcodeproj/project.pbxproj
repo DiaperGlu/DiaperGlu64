@@ -460,11 +460,13 @@
 		389FDFB3207404A5003FF5D3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = x86_64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = "";
+				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DiaperGluLifeApplication/DiaperGluLifeApplication-Prefix.pch";
 				INFOPLIST_FILE = "DiaperGluLifeApplication/DiaperGluLifeApplication-Info.plist";
@@ -480,11 +482,13 @@
 		389FDFB4207404A5003FF5D3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = x86_64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = "";
+				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DiaperGluLifeApplication/DiaperGluLifeApplication-Prefix.pch";
 				INFOPLIST_FILE = "DiaperGluLifeApplication/DiaperGluLifeApplication-Info.plist";

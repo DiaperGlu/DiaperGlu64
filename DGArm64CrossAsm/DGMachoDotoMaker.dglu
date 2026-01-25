@@ -1,0 +1,1191 @@
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2023 James Patrick Norris
+//
+//    This file is part of DGXtensaElfDotoMaker v1.0
+//
+//    DGXtensaElfDotoMaker v1.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DGXtensaElfDotoMaker v1.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DGXtensaElfDotoMaker v1.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// September 28, 2024         //
+// version 1.0                //
+// /////////////////////////////
+
+// To add a call to an imported function:
+//   compile instruction bl with 0 offset
+//   add a string with the imported symbol's name
+//   add an nlist entry for the symbol with type = 1, section = 0, desc = 0, value = 0
+//   add a 16 byte relocation entry for the symbol with relocoffset = offset of bl instruction, symbol number = nlist entry index, type = 0x2D
+
+// the reloc section goes after the code section and before the nlist table
+// the text section header's .nreloc and reloff fields get set to the number of imported symbols and offset of the relocation table
+
+// NOTE: this method may put a limit on the max size of a .o code section and/or the location of the bl instruction... 
+//    the bl instruction has to be close enough to either the beginning or end of the .o code section for the linker to do its thing.
+
+
+HEX
+// /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/mach-o/
+
+HEX
+: [SODROP] SEARCH-ORDER> DROP ; IMMEDIATE
+
+: U8! C! ;
+: U8@ C@ ;
+
+: U24! ( value addr -- )
+    // assumes little endian
+      2DUP U16! // low 16 bits 
+      2 + SWAP 10 RSHIFT SWAP U8! // hi 8 bits
+;
+
+: U24@ ( addr -- value )
+    // assumes little endian
+      DUP U16@ // low 16 bits
+      SWAP 2 + U8@ 10 LSHIFT OR 
+;
+
+: POL! ( value paddr offset length -- )
+       { | length -- }
+    + 
+
+    length 0= IF
+      2DROP EXIT
+    THEN
+
+    length 1 = IF
+      C! EXIT
+    THEN
+
+    length 2 = IF
+      U16! EXIT
+    THEN
+
+    length 3 = IF // asssumes little endian
+      U24! EXIT
+    THEN
+
+    length 4 = IF
+      U32! EXIT
+    THEN
+
+    length 8 = IF
+      U64! EXIT
+    THEN
+
+    ERROR" - unsupported length"
+;
+
+: VALUE$>VALUE ( VALUE$ -$- ) ( -- VALUE ) // assumes first 8 bytes is a U64
+    0 GETS$[ND] 8 U< IF DROP 0 EXIT THEN // if length of value$ too small return 0
+    @ DROP$
+;
+
+: getsname$valuesize { sizeelementid | elementid hlistid -- pname namelength value size }
+    ( -$- name$ ) // must drop name$ after using name$.... might be better to just get a pointer to the original name$
+    elementid hlistid GET-ELEMENT-NAME$ 0 GETS$[ND]
+    elementid hlistid GET-ELEMENT-VALUE$ VALUE$>VALUE
+    $" size" elementid hlistid FIND-ELEMENT-CHILD-BY-NAME$ TO sizeelementid
+    sizeelementid -1 = IF 0 EXIT THEN
+    sizeelementid hlistid VALUE$>VALUE
+;
+
+// Export .o file structure
+//   mach_header_64 struct
+//   segment_command_64 struct
+//     section_64 struct (is technically part of the segment command)
+//   build_version_command struct
+//   symtab_command struct
+//   dysymtab_command struct
+//   code
+//     (may need to align to 8 here)
+//   one nlist struct for each exported symbol probably in alphabetical order
+//   string table with one empty string to start
+
+
+
+// struct mach_header_64 {
+//	uint32_t	magic;		/* mach magic number identifier */
+//	int32_t		cputype;	/* cpu specifier */
+//	int32_t		cpusubtype;	/* machine specifier */
+//	uint32_t	filetype;	/* type of file */
+//	uint32_t	ncmds;		/* number of load commands */
+//	uint32_t	sizeofcmds;	/* the size of all the load commands */
+//	uint32_t	flags;		/* flags */
+//	uint32_t	reserved;	/* reserved */
+// };
+
+// declaring mach_header_64 structure
+WORDLIST DUP ( -- structwid structwid )
+( structwid -- ) [>ORDER]CONSTANT [mach_header_64] 
+( structwid -- ) >CURRENT   ( ... -searchorder- ... structwid )
+  SIZED-CONSTANTS< 
+    4 magic 
+    4 cputype
+    4 cpusubtype 
+    4 filetype
+    4 ncmds
+    4 sizeofcmds
+    4 flags
+    4 reserved
+    0 size
+  >
+( ... structwid -searchorder- ... ) CURRENT> DROP
+
+// make an initializer for a mach_header_64 structure -- assumes mach_header_64 hasn't changed
+HEX
+CREATEOC obdefaultmach_header_64  ( -- offset bufferid ) // creates definition for current compile buffer 
+
+  FEEDFACF CODE-U32,  // magic
+  100000C  CODE-U32,  // cputype. (x86 is 0x1000007)
+  0        CODE-U32,  // subtype  (x86 is 3)
+  1        CODE-U32,  // filetype (same)
+  0        CODE-U32,  // ncmds
+  0        CODE-U32,  // sizeofcmds
+  0        CODE-U32,  // flags (same 0)
+  0        CODE-U32,  // reserved (same 0)
+
+OHERE obdefaultmach_header_64  DROP - CONSTANT obdefaultmach_header_64.size
+
+: sdefaultmach_header_64 ( -- addr length )
+    obdefaultmach_header_64 O>P obdefaultmach_header_64.size
+;
+
+: initmach_header_64 ( outputbufferid -- ) // assumes empty buffer
+    sdefaultmach_header_64 ROT S>BUF
+    ?ERRORIF NAME>E EXIT THEN
+;
+
+
+
+// struct segment_command_64 { /* for 64-bit architectures */
+//	uint32_t	cmd;		/* LC_SEGMENT_64 */
+//	uint32_t	cmdsize;	/* includes sizeof section_64 structs */
+//	char		segname[16];	/* segment name */
+//	uint64_t	vmaddr;		/* memory address of this segment */
+//	uint64_t	vmsize;		/* memory size of this segment */
+//	uint64_t	fileoff;	/* file offset of this segment */
+//	uint64_t	filesize;	/* amount to map from the file */
+//	int32_t		maxprot;	/* maximum VM protection */
+//	int32_t		initprot;	/* initial VM protection */
+//	uint32_t	nsects;		/* number of sections in segment */
+//	uint32_t	flags;		/* flags */
+// };
+
+// declaring  segment_command_64 structure
+WORDLIST DUP [>ORDER]CONSTANT [segment_command_64] >CURRENT 
+  SIZED-CONSTANTS<
+    4 cmd
+    4 cmdsize
+    10 segname
+    8  vmaddr
+    8  vmsize
+    8  fileoff
+    8  filesize
+    4  maxprot
+    4  initprot
+    4  nsects
+    4  flags
+    0 size
+  >
+CURRENT> DROP
+
+// make an initializer for a segment_command_64 structure -- assumes segment_command_64 hasn't changed
+HEX
+CREATEOC obdefaultsegment_command_64  ( -- offset bufferid ) // creates definition for current compile buffer 
+  19 CODE-U32,
+  98 CODE-U32,  // includes section_64 structure that follows
+  0 CODE-U64, 0 CODE-U64, // segname looks like it's not used ... was __TEXT for x86
+  0        CODE-U64,  // vmaddr (0)
+  0        CODE-U64,  // vmsize (will be length of code buffer)
+  0        CODE-U64,  // fileoff (will be file offset of code buffer)
+  0        CODE-U64,  // filesize (will be length of code buffer)
+  7        CODE-U32,  // maxprot 
+  7        CODE-U32,  // initprot
+  1        CODE-U32,  // nsects
+  0        CODE-U32,  // flags
+ 
+
+OHERE obdefaultsegment_command_64  DROP - CONSTANT obdefaultsegment_command_64.size
+
+: sdefaultsegment_command_64 ( -- addr length )
+    obdefaultsegment_command_64 O>P obdefaultsegment_command_64.size
+;
+
+: adddefaultsegment_command_64 { osegmentcommand | outbufid -- osegmentcommand }
+    outbufid GETBUFFERLENGTH TO osegmentcommand
+    sdefaultsegment_command_64 outbufid S>BUF
+    osegmentcommand
+;
+
+
+// struct section_64 { /* for 64-bit architectures */
+//	char		sectname[16];	/* name of this section */
+//	char		segname[16];	/* segment this section goes in */
+//	uint64_t	addr;		/* memory address of this section */
+//	uint64_t	size;		/* size in bytes of this section */
+//	uint32_t	offset;		/* file offset of this section */
+//	uint32_t	align;		/* section alignment (power of 2) */
+//	uint32_t	reloff;		/* file offset of relocation entries */
+//	uint32_t	nreloc;		/* number of relocation entries */
+//	uint32_t	flags;		/* flags (section type and attributes)*/
+//	uint32_t	reserved1;	/* reserved (for offset or index) */
+//	uint32_t	reserved2;	/* reserved (for count or sizeof) */
+//	uint32_t	reserved3;	/* reserved */
+// };
+
+// declaring  section_64 structure
+WORDLIST DUP [>ORDER]CONSTANT [section_64] >CURRENT 
+  SIZED-CONSTANTS<
+    10 sectname
+    10 segname
+    8  addr
+    8  codesize
+    4  offset
+    4  align
+    4  relof
+    4  nreloc
+    4  flags
+    4  reserved1
+    4  reserved2
+    4  reserved3
+    0 size
+  >
+CURRENT> DROP
+
+
+// make an initializer for a text section_64 structure -- assumes section_64 hasn't changed
+HEX
+CREATEOC obdefaulttextsection_64  ( -- offset bufferid ) // creates definition for current compile buffer 
+
+  $" __text" 0 GETS$[ND] CODE-S, DROP$  0 CODE-U16, 0 CODE-U64, // sectname
+  $" __TEXT" 0 GETS$[ND] CODE-S, DROP$  0 CODE-U16, 0 CODE-U64, // segname
+  0         CODE-U64,  // addr
+  0         CODE-U64,  // size (will be length of code buffer)
+  0         CODE-U32,  // offset = sizeof mach header + machheader.sizeofcmds
+  0         CODE-U32,  // align (was 1)
+  0         CODE-U32,  // relof
+  0         CODE-U32,  // nreloc
+  80000400  CODE-U32,  // flags 
+  0         CODE-U32,  // reserved1
+  0         CODE-U32,  // reserved2
+  0         CODE-U32,  // reserved3
+ 
+
+OHERE obdefaulttextsection_64  DROP - CONSTANT obdefaulttextsection_64.size
+
+: sdefaulttextsection_64 ( -- addr length )
+    obdefaulttextsection_64 O>P obdefaulttextsection_64.size
+;
+
+: adddefaulttextsection_64 { otextsection | outbufid -- otextsection } 
+    outbufid GETBUFFERLENGTH TO otextsection
+    sdefaulttextsection_64 outbufid S>BUF
+    otextsection
+;
+
+
+// struct build_version_command {
+//    uint32_t	cmd;		/* LC_BUILD_VERSION */
+//    uint32_t	cmdsize;	/* sizeof(struct build_version_command) plus */
+//				/* ntools * sizeof(struct build_tool_version) */
+//    uint32_t	platform;	/* platform */
+//    uint32_t	minos;		/* X.Y.Z is encoded in nibbles xxxx.yy.zz */
+//    uint32_t	sdk;		/* X.Y.Z is encoded in nibbles xxxx.yy.zz */
+//    uint32_t	ntools;		/* number of tool entries following this */
+// };
+
+// declaring build_version_command structure
+WORDLIST DUP [>ORDER]CONSTANT [build_version_command] >CURRENT 
+  SIZED-CONSTANTS<
+    4 cmd
+    4 cmdsize
+    4 platform
+    4 minos
+    4 sdk
+    4 ntools
+    0 size
+  >
+CURRENT> DROP
+
+// make an initializer for a build_version_command structure -- assumes build_version_command hasn't changed
+HEX
+CREATEOC obdefaultbuild_version_command  ( -- offset bufferid ) // creates definition for current compile buffer 
+
+  32       CODE-U32,  // cmd = LC_BUILD_VERSION = 0x32
+  18       CODE-U32,  // cmdsize = 0x18
+  1        CODE-U32,  // platform
+  F00      CODE-U32,  // minos = 15.0 (was 11.0)
+  0        CODE-U32,  // sdk
+  0        CODE-U32,  // ntools
+
+OHERE obdefaultbuild_version_command  DROP - CONSTANT obdefaultbuild_version_command.size
+
+: sdefaultbuild_version_command ( -- addr length )
+    obdefaultbuild_version_command O>P obdefaultbuild_version_command.size
+;
+
+: addbuild_version_command { obuildcommand | outbufid -- obuildcommand }
+    outbufid GETBUFFERLENGTH TO obuildcommand
+    sdefaultbuild_version_command outbufid S>BUF
+    obuildcommand
+;
+
+
+// struct symtab_command {
+//	uint32_t	cmd;		/* LC_SYMTAB */
+//	uint32_t	cmdsize;	/* sizeof(struct symtab_command) */
+//	uint32_t	symoff;		/* symbol table offset */
+//	uint32_t	nsyms;		/* number of symbol table entries */
+//	uint32_t	stroff;		/* string table offset */
+//	uint32_t	strsize;	/* string table size in bytes */
+// };
+
+// declaring symtab_command structure
+WORDLIST DUP [>ORDER]CONSTANT [symtab_command] >CURRENT 
+  SIZED-CONSTANTS<
+    4 cmd
+    4 cmdsize
+    4 symoff
+    4 nsyms
+    4 stroff
+    4 strsize
+    0 size
+  >
+CURRENT> DROP
+
+// make an initializer for a symtab_command structure -- assumes symtab_command hasn't changed
+HEX
+CREATEOC obdefaultsymtab_command  ( -- offset bufferid ) // creates definition for current compile buffer 
+
+  02       CODE-U32,  // cmd = LC_SYMTAB = 0x02
+  18       CODE-U32,  // cmdsize = 0x18
+  0        CODE-U32,  // symoff
+  0        CODE-U32,  // nsyms
+  0        CODE-U32,  // stroff
+  0        CODE-U32,  // strsize = number of nlist elements
+
+OHERE obdefaultsymtab_command  DROP - CONSTANT obdefaultsymtab_command.size
+
+: sdefaultsymtab_command ( -- addr length )
+    obdefaultsymtab_command O>P obdefaultsymtab_command.size
+;
+
+: addsymtab_command { osymtabcommand | outbufid -- osymtabcommand }
+    outbufid GETBUFFERLENGTH TO osymtabcommand 
+    sdefaultsymtab_command outbufid S>BUF
+    osymtabcommand
+;
+
+
+
+// struct dysymtab_command {
+//    uint32_t cmd;	/* LC_DYSYMTAB */
+//    uint32_t cmdsize;	/* sizeof(struct dysymtab_command) */
+//    uint32_t ilocalsym;	/* index to local symbols */
+//    uint32_t nlocalsym;	/* number of local symbols */
+//    uint32_t iextdefsym;/* index to externally defined symbols */
+//    uint32_t nextdefsym;/* number of externally defined symbols */
+//    uint32_t iundefsym;	/* index to undefined symbols */
+//    uint32_t nundefsym;	/* number of undefined symbols */
+//    uint32_t tocoff;	/* file offset to table of contents */
+//    uint32_t ntoc;	/* number of entries in table of contents */
+//    uint32_t modtaboff;	/* file offset to module table */
+//    uint32_t nmodtab;	/* number of module table entries */
+//    uint32_t extrefsymoff;	/* offset to referenced symbol table */
+//    uint32_t nextrefsyms;	/* number of referenced symbol table entries */
+//    uint32_t indirectsymoff; /* file offset to the indirect symbol table */
+//    uint32_t nindirectsyms;  /* number of indirect symbol table entries */
+//    uint32_t extreloff;	/* offset to external relocation entries */
+//    uint32_t nextrel;	/* number of external relocation entries */
+//    uint32_t locreloff;	/* offset to local relocation entries */
+//    uint32_t nlocrel;	/* number of local relocation entries */
+// };
+
+// declaring dysymtab_command structure
+WORDLIST DUP [>ORDER]CONSTANT [dysymtab_command] >CURRENT 
+  SIZED-CONSTANTS<
+    4 cmd
+    4 cmdsize
+    4 ilocalsym
+    4 nlocalsym
+    4 iextdefsym
+    4 nextdefsym
+    4 iundefsym
+    4 nundefsym
+    4 tocoff
+    4 ntoc
+    4 modtaboff
+    4 nmodtab
+    4 extrefsymoff
+    4 nextrefsyms
+    4 indirectsymoff
+    4 nindirectsyms
+    4 extreloff
+    4 nextrel
+    4 locreloff
+    4 nlocrel
+    0 size
+  >
+CURRENT> DROP
+
+// make an initializer for a symtab_command structure -- assumes symtab_command hasn't changed
+HEX
+CREATEOC obdefaultdysymtab_command  ( -- offset bufferid ) // creates definition for current compile buffer 
+
+  0B       CODE-U32,  // cmd = LC_DYSYMTAB = 0x0B
+  50       CODE-U32,  // cmdsize = 0x50
+  0        CODE-U32,  // ilocalsym = numtempsymbols
+  0        CODE-U32,  // nlocalsym = numtempsymbols
+  0        CODE-U32,  // iextdefsym = numexportedsymbols
+  0        CODE-U32,  // nextdefsym = totalnumberofsymbols
+  0        CODE-U32,  // iundefsym
+  0        CODE-U32,  // nundefsym
+  0        CODE-U32,  // tocoff
+  0        CODE-U32,  // ntoc
+  0        CODE-U32,  // modtaboff
+  0        CODE-U32,  // nmodtab
+  0        CODE-U32,  // extrefsymoff
+  0        CODE-U32,  // nextrefsyms
+  0        CODE-U32,  // indirectsymoff
+  0        CODE-U32,  // nindirectsyms
+  0        CODE-U32,  // extreloff
+  0        CODE-U32,  // nextrel
+  0        CODE-U32,  // locreloff
+  0        CODE-U32,  // nlocrel
+
+OHERE obdefaultdysymtab_command  DROP - CONSTANT obdefaultdysymtab_command.size
+
+: sdefaultdysymtab_command ( -- addr length )
+    obdefaultdysymtab_command O>P obdefaultdysymtab_command.size
+;
+
+: adddysymtab_command { odysymtabcommand | outbufid -- odysymtabcommand }
+    outbufid GETBUFFERLENGTH TO odysymtabcommand 
+    sdefaultdysymtab_command outbufid S>BUF
+    odysymtabcommand
+;
+
+
+
+// struct nlist_64 {
+//    union {
+//        uint32_t  n_strx; /* index into the string table */
+//    } n_un;
+//    uint8_t n_type;        /* type flag, see below */
+//    uint8_t n_sect;        /* section number or NO_SECT */
+//    uint16_t n_desc;       /* see <mach-o/stab.h> */
+//    uint64_t n_value;      /* value of this symbol (or stab offset) */
+// };
+
+// declaring  nlist_64 structure
+WORDLIST DUP [>ORDER]CONSTANT [nlist_64] >CURRENT 
+  SIZED-CONSTANTS<
+    4 n_strx
+    1 n_type
+    1 n_sect
+    2 n_desc
+    8 n_value
+    0 size
+  >
+CURRENT> DROP
+
+// make an initializer for a symtab_command structure -- assumes symtab_command hasn't changed
+HEX
+CREATEOC obdefaultnlist_64  ( -- offset bufferid ) // creates definition for current compile buffer 
+
+  0        CODE-U32,  // n_strx will be offset in string buffer
+  0F       CODE-U8,   // n_type = export
+  1        CODE-U8,   // n_sect = section 1
+  0        CODE-U16,  // n_desc
+  0        CODE-U64,  // n_value will be offset in code buffer
+
+OHERE obdefaultnlist_64  DROP - CONSTANT obdefaultnlist_64.size
+
+: sdefaultnlist_64 ( -- addr length )
+    obdefaultnlist_64 O>P obdefaultnlist_64.size
+;
+
+: addnlist_64 ( nlistbufferid -- ) // assumes empty buffer
+    sdefaultnlist_64 ROT S>BUF
+;
+
+// types used:
+//   0x0F = defined in section n_sect and exported
+//   0x0E = defined in section n_sect
+//   there is an extra symbol ltmp0 with value 0 of unknown purpose...
+
+
+// struct relocation_info {
+//   int32_t	r_address;	/* offset in the section to what is being
+//				   relocated */
+//   uint32_t     r_symbolnum:24,	/* symbol index if r_extern == 1 or section
+//				   ordinal if r_extern == 0 */
+//		r_pcrel:1, 	/* was relocated pc relative already */
+//		r_length:2,	/* 0=byte, 1=word, 2=long, 3=quad */
+//		r_extern:1,	/* does not include value of sym referenced */
+//		r_type:4;	/* if not 0, machine specific relocation type */
+// };
+
+// declaring  relocation_info structure
+WORDLIST DUP [>ORDER]CONSTANT [relocation_info] >CURRENT 
+  SIZED-CONSTANTS<
+    4 r_address
+    3 r_symbolnum
+    1 r_flags
+    0 size
+  >
+CURRENT> DROP
+
+// make an initializer for a relocation_info structure -- assumes relocation_info hasn't changed
+HEX
+CREATEOC obdefaultrelocation_info  ( -- offset bufferid ) // creates definition for current compile buffer 
+
+  0        CODE-U32,  // r_address will be offset in code buffer
+  2D000000 CODE-U32,  // r_symbolnum:24;  // nlist index of import symbol name 
+                      // r_pcrel:1;       // true = already relocated (is pc relative); it's true which probably means it's an offset
+                      // r_length:2;      // size: 0 = 1 byte, 1 = 2 bytes, 2 = 4 bytes, 3 = 8 bytes; 2 = 32 bit
+                      // r_extern:1;      // I think true means it's c extern (imported)
+                      // r_type:4         // type = 2 which probably means it's bl
+
+OHERE obdefaultrelocation_info  DROP - CONSTANT obdefaultrelocation_info.size
+
+: sdefaultrelocation_info ( -- addr length )
+    obdefaultrelocation_info O>P obdefaultrelocation_info.size
+;
+
+: addrelocation_info ( relocbufferid -- ) // assumes empty buffer
+    sdefaultrelocation_info ROT S>BUF
+;
+
+HEX
+[nlist_64]
+: addimportsymbol { 
+    oldstrbuflength oldnlistbuflength pnlist oldrelocbuflength preloc poldname pushnewstringflag
+    | pname namelength value strbufid nlistbufid relocbufid oldoldstrbuflength -- }
+
+    // TRUE TO pushnewstringflag
+
+    // get current end offset of old symbol name string buffer
+    strbufid LENGTHBUF TO oldstrbuflength
+
+    // if new name is same as previous name (assumes names are added in sorted order)
+    //   then don't push a new name and instead use the offset of the old name
+     oldoldstrbuflength -1 <> IF
+      // this assumes there is a leading _ and a trailing null
+      oldoldstrbuflength 1+ strbufid O>P TO poldname
+      poldname oldstrbuflength oldoldstrbuflength 1+ - 1- pname namelength COMPARE 0= IF
+        FALSE TO pushnewstringflag
+        oldoldstrbuflength TO oldstrbuflength
+      THEN 
+    THEN
+
+    pushnewstringflag IF
+
+      // push _ to symbol name string buffer
+      [CHAR] _ strbufid C>BUF
+
+      // push symbol name string to symbol name string buffer
+      pname namelength strbufid S>BUF
+
+      // add a null to the symbol name string
+      0 strbufid C>BUF
+
+    THEN
+
+    // get current end offset of nlist array buffer
+    nlistbufid LENGTHBUF TO oldnlistbuflength
+
+    // add new initialized symbol to symbol array buffer
+    nlistbufid addnlist_64
+
+    // get a pointer to the new symbol 
+    oldnlistbuflength nlistbufid O>P TO pnlist 
+
+    // set the parameters for the new symbol
+    oldstrbuflength pnlist n_strx POL!
+    ( 0 pnlist n_value POL! ) // 0 is probably default...
+    01 pnlist n_type POL!
+    0 pnlist n_sect POL! // section is 0 for imported symbol
+
+    // get current end offset of reloc array buffer
+    relocbufid LENGTHBUF TO oldrelocbuflength
+
+    // add new initialized reloc to reloc array buffer
+    relocbufid addrelocation_info
+
+    // get a pointer to the new relocation
+    oldrelocbuflength relocbufid O>P TO preloc
+
+    // set the parameters for the new reloc
+    value preloc [relocation_info] r_address [SODROP] POL!
+    oldnlistbuflength size ( of nlist structure ) DROP /
+      ( should now have index of new symbol in nlist array )
+      preloc [relocation_info] r_symbolnum [SODROP] POL!
+
+   oldstrbuflength
+;
+SEARCH-ORDER> DROP
+
+HEX
+[nlist_64]
+: addexportsymbol { 
+    oldstrbuflength oldnlistbuflength pnlist poldname
+    | pname namelength value strbufid nlistbufid oldoldstrbuflength -- }
+
+    // get current end offset of old symbol name string buffer
+    strbufid LENGTHBUF TO oldstrbuflength
+
+    // if new name is same as previous name (assumes names are added in sorted order)
+    //   then push an error
+    oldoldstrbuflength -1 <> IF
+      // this assumes there is a leading _ and a trailing null
+      oldoldstrbuflength 1+ strbufid O>P TO poldname
+      poldname oldstrbuflength oldoldstrbuflength 1+ - 1- pname namelength  
+      COMPARE 0= IF
+        ERROR" addexportsymbol - export symbol names must be unique" 
+        EXIT 
+      THEN 
+    THEN
+
+    // push _ to symbol name string buffer
+    [CHAR] _ strbufid C>BUF
+
+    // push symbol name string to symbol name string buffer
+    pname namelength strbufid S>BUF
+
+    // add a null to the symbol name string
+    0 strbufid C>BUF
+
+    // get current end offset of nlist array buffer
+    nlistbufid LENGTHBUF TO oldnlistbuflength
+
+    // add new initialized symbol to symbol array buffer
+    nlistbufid addnlist_64
+
+    // get a pointer to the new symbol 
+    oldnlistbuflength nlistbufid O>P TO pnlist 
+
+    // set the parameters for the new symbol
+    oldstrbuflength pnlist n_strx POL!
+    value pnlist n_value POL!
+    0F pnlist n_type POL!
+
+    oldstrbuflength
+;
+SEARCH-ORDER> DROP
+
+
+HEX
+[nlist_64]
+: addtempsymbol { 
+    oldstrbuflength oldnlistbuflength pnlist 
+    | pname namelength value strbufid nlistbufid -- }
+
+    // get current end offset of old symbol name string buffer
+    strbufid LENGTHBUF TO oldstrbuflength
+
+    // push symbol name string to symbol name string buffer
+    pname namelength strbufid S>BUF
+    ?ERRORIF ERROR" error pushing symbol name to string buffer" NAME>E EXIT THEN
+
+    // add a null to the symbol name string
+    0 strbufid C>BUF
+    ?ERRORIF ERROR" error adding null to string buffer" NAME>E EXIT THEN
+
+    // get current end offset of nlist array buffer
+    nlistbufid LENGTHBUF TO oldnlistbuflength
+
+    // add new initialized symbol to symbol array buffer
+    nlistbufid addnlist_64
+    ?ERRORIF ERROR" error adding symbol to nlist array" NAME>E EXIT THEN
+
+    // get a pointer to the new symbol 
+    oldnlistbuflength nlistbufid O>P
+    ?ERRORIF ERROR" error getting pointer to new symbol" NAME>E EXIT THEN 
+    TO pnlist 
+
+    // set the parameters for the new symbol
+    oldstrbuflength pnlist n_strx POL!
+    value pnlist n_value POL!
+    0E pnlist n_type POL!
+    ?ERRORIF ERROR" error setting parameters for the new symbol" NAME>E EXIT THEN
+;
+SEARCH-ORDER> DROP
+
+
+// kind of slow way to do this... be nice if there was a get
+: addexportsymbols { 
+    xeid i n oldstrbuflength
+    | exportelementid exporthlistid strbufid nlistbufid -- }
+
+    ( parentelementid parenthlistid -eh- parentelementid parenthlistid )
+
+    -1 TO oldstrbuflength
+
+    // for each child of exportelementid do:
+    //   get pname, value, and value of a child with name 'size'
+    //   (if there is no child with name 'size' the size is 0)
+    //   addexportsymbol
+
+    0 TO i
+    exportelementid exporthlistid GET-ELEMENT-NUMBER-OF-SORTED-CHILDREN TO n
+    n 0= IF EXIT THEN
+    BEGIN
+      i n U<
+    WHILE
+      i exportelementid exporthlistid FIND-ELEMENT-CHILD-N TO xeid
+      xeid exporthlistid getsname$valuesize ( -- pname namelength value size ) ( -$- name$ )
+      // { | pname namelength value length textshndx strtabbufid symbufid -- } 
+      DROP // don't need size on mac os x 
+      strbufid nlistbufid oldstrbuflength addexportsymbol ( -- ) ( -$- name$ ) 
+        ?ERRORIF ERROR" addexportsymbols" EXIT THEN // can't do NAME>E because of locals
+        TO oldstrbuflength
+      DROP$ ( -- ) ( -$- )
+      i 1+ TO i
+    REPEAT
+    n
+;
+
+// kind of slow way to do this... be nice if there was a get
+: addimportsymbols { 
+    xeid i n oldstrbuflength
+    | importelementid importhlistid strbufid nlistbufid relocbufid -- }
+
+    ( parentelementid parenthlistid -eh- parentelementid parenthlistid )
+
+    -1 TO oldstrbuflength
+
+    // for each child of importelementid do:
+    //   get pname, value, and value of a child with name 'size'
+    //   (if there is no child with name 'size' the size is 0)
+    //   addimportsymbol
+
+    0 TO i
+    importelementid importhlistid GET-ELEMENT-NUMBER-OF-SORTED-CHILDREN TO n
+    n 0= IF EXIT THEN
+    BEGIN
+      i n U<
+    WHILE
+      i importelementid importhlistid FIND-ELEMENT-CHILD-N TO xeid
+      xeid importhlistid getsname$valuesize ( -- pname namelength value size ) ( -$- name$ )
+      // { | pname namelength value length textshndx strtabbufid symbufid -- } 
+      DROP // don't need size on mac os x 
+      strbufid nlistbufid relocbufid oldstrbuflength addimportsymbol ( -- ) ( -$- name$ ) TO oldstrbuflength
+      DROP$ ( -- ) ( -$- )
+      i 1+ TO i
+    REPEAT
+    n
+;
+
+
+
+// rename this >outputbuf and make it generic
+: addcodebuf { ocode | pcode codelength outbufid -- ocode }
+    outbufid GETBUFFERLENGTH TO ocode
+    pcode codelength outbufid S>BUF
+    ocode
+;
+
+: addstuffbuftooutbuf { ostuff | stuffbufid outbufid -- ostuff }
+    outbufid GETBUFFERLENGTH TO ostuff
+    stuffbufid GETSBUFFER outbufid S>BUF
+    ostuff
+;
+
+
+: alignbufto4 { | bufid }
+    BEGIN
+      bufid GETBUFFERLENGTH 3 AND 0 <>
+    WHILE
+      0 bufid C>BUF
+    REPEAT
+;
+
+: alignbufto8 { | bufid }
+    BEGIN
+      bufid GETBUFFERLENGTH 7 AND 0 <>
+    WHILE
+      0 bufid C>BUF
+    REPEAT
+;
+
+HEX
+: alignbufto16 { | bufid }
+    BEGIN
+      bufid GETBUFFERLENGTH 0F AND 0 <>
+    WHILE
+      0 bufid C>BUF
+    REPEAT
+;
+
+HEX
+: makeexpdotobuf { 
+    strbufid nlistbufid outbufid numexportsymbols numtempsymbols 
+    osegmentcommand osectionheader obuildcommand osymtabcommand odysymtabcommand ocode onlists ostrings oendofcommands
+    | pcode codelength expsymtbleid expsymtblhid 
+    -- dotobuf }
+
+    1000 -1 NEWBUFFER TO outbufid           // will be export doto buf
+    1000 -1 NEWBUFFER TO strbufid
+    1000 -1 NEWBUFFER TO nlistbufid
+    ?ERRORIF ERROR" error initializing buffers" NAME>E EXIT THEN
+
+    // push null string to string table - this version of .o does not add null string to nlist array
+    0 strbufid C>BUF
+    ?ERRORIF ERROR" error adding null symbol" NAME>E EXIT THEN
+
+    // add weird temp symbol
+    $" ltemp0" 0 GETS$[ND] 0 strbufid nlistbufid addtempsymbol DROP$
+    ?ERRORIF ERROR" error adding temp symbol" NAME>E EXIT THEN
+    1 TO numtempsymbols
+
+    // add export symbols
+    expsymtbleid expsymtblhid strbufid nlistbufid addexportsymbols
+    ?ERRORIF ERROR" error adding export symbol" NAME>E EXIT THEN 
+    TO numexportsymbols
+
+    // push mach header to output buf
+    outbufid initmach_header_64
+    ?ERRORIF ERROR" error pushing default elf header" NAME>E EXIT THEN
+    CRLF ." after header outbuf length = " outbufid GETBUFFERLENGTH U. 
+
+    // add segment command to output buf
+    outbufid adddefaultsegment_command_64 TO osegmentcommand
+    ?ERRORIF ERROR" error pushing segment command" NAME>E EXIT THEN
+    CRLF ." after segment command outbuf length = " outbufid GETBUFFERLENGTH U.
+
+    // add section header to output buf
+    outbufid adddefaulttextsection_64 TO osectionheader
+    ?ERRORIF ERROR" error pushing section header" NAME>E EXIT THEN
+    CRLF ." after section header outbuf length = " outbufid GETBUFFERLENGTH U.
+
+    // add build command to output buf
+    outbufid addbuild_version_command TO obuildcommand // does not need modifying
+    ?ERRORIF ERROR" error pushing build command" NAME>E EXIT THEN
+    CRLF ." after build command outbuf length = " outbufid GETBUFFERLENGTH U.
+
+    // add symtab command to output buf
+    outbufid addsymtab_command TO osymtabcommand
+    ?ERRORIF ERROR" error pushing symtab_command" NAME>E EXIT THEN
+    CRLF ." after symtab_command outbuf length = " outbufid GETBUFFERLENGTH U.
+
+    // add dysymtab command to output buf
+    outbufid adddysymtab_command TO odysymtabcommand
+    ?ERRORIF ERROR" error pushing dysymtab_command" NAME>E EXIT THEN
+    CRLF ." after dysymtab_command outbuf length = " outbufid GETBUFFERLENGTH U.
+
+    outbufid GETBUFFERLENGTH TO oendofcommands
+    
+    // add code to output buf
+    pcode codelength outbufid addcodebuf TO ocode
+    ?ERRORIF ERROR" error pushing code" NAME>E EXIT THEN
+    CRLF ." after code outbuf length = " outbufid GETBUFFERLENGTH U.
+
+    outbufid alignbufto8
+    ?ERRORIF ERROR" error aligning buffer to 8" NAME>E EXIT THEN
+
+    // add nlist array to output buf
+    outbufid GETBUFFERLENGTH TO onlists
+    nlistbufid GETSBUFFER outbufid S>BUF
+    ?ERRORIF ERROR" error adding nlist array to output buf" NAME>E EXIT THEN
+
+    // add strings to output buf
+    outbufid GETBUFFERLENGTH TO ostrings
+    strbufid GETSBUFFER outbufid S>BUF
+    ?ERRORIF ERROR" error adding strings to output buf" NAME>E EXIT THEN
+
+    // set segment command length to segment command size + section header size
+    obuildcommand osegmentcommand - 
+    osegmentcommand outbufid O>P [segment_command_64] cmdsize [SODROP] POL!
+    ?ERRORIF ERROR" error setting segment command length" NAME>E EXIT THEN
+
+    // set number of commands
+    4
+    0 outbufid O>P [mach_header_64] ncmds [SODROP] POL!
+    ?ERRORIF ERROR" error setting number of commands" NAME>E EXIT THEN
+
+    oendofcommands osegmentcommand -
+    0 outbufid O>P [mach_header_64] sizeofcmds [SODROP] POL!
+    ?ERRORIF ERROR" error setting size of commands" NAME>E EXIT THEN
+
+    // set code length
+    codelength
+    osegmentcommand outbufid O>P [segment_command_64] vmsize [SODROP] POL!
+    ?ERRORIF ERROR" error setting code length" NAME>E EXIT THEN
+
+    // set code file offset
+    ocode
+    osegmentcommand outbufid O>P [segment_command_64] fileoff [SODROP] POL!
+    ?ERRORIF ERROR" error setting file offset" NAME>E EXIT THEN
+    
+    // set file code length
+    codelength
+    osegmentcommand outbufid O>P [segment_command_64] filesize [SODROP] POL!
+    ?ERRORIF ERROR" error setting file code length to segment.filesize" NAME>E EXIT THEN
+
+    codelength
+    osectionheader outbufid O>P [section_64] codesize [SODROP] POL!
+    ?ERRORIF ERROR" error setting file code length to section.size" NAME>E EXIT THEN
+
+    ocode
+    osectionheader outbufid O>P [section_64] offset [SODROP] POL!
+    ?ERRORIF ERROR" error setting code offset to section.offset" NAME>E EXIT THEN
+
+    onlists
+    osymtabcommand outbufid O>P [symtab_command] symoff [SODROP] POL!
+    ?ERRORIF ERROR" error setting nlist offset to symtab.symoff" NAME>E EXIT THEN
+
+    numexportsymbols numtempsymbols +
+    osymtabcommand outbufid O>P [symtab_command] nsyms [SODROP] POL!
+    ?ERRORIF ERROR" error setting number of symbols to symtab.nsyms" NAME>E EXIT THEN
+
+    ostrings
+    osymtabcommand outbufid O>P [symtab_command] stroff [SODROP] POL!
+    ?ERRORIF ERROR" error setting string offset to symtab.symoff" NAME>E EXIT THEN
+
+    strbufid GETBUFFERLENGTH
+    osymtabcommand outbufid O>P [symtab_command] strsize [SODROP] POL!
+    ?ERRORIF ERROR" error setting number of symbols to symtab.strsize" NAME>E EXIT THEN
+
+    0 // index of first temp symbol
+    odysymtabcommand outbufid O>P [dysymtab_command] ilocalsym [SODROP] POL!
+    ?ERRORIF ERROR" error setting first symbol index to dysymtab.ilocalsym" NAME>E EXIT THEN
+
+    numtempsymbols // number of temp symbols
+    odysymtabcommand outbufid O>P [dysymtab_command] nlocalsym [SODROP] POL!
+    ?ERRORIF ERROR" error setting number of temp symbols to dysymtab.nlocalsym" NAME>E EXIT THEN
+
+    numtempsymbols // index of first exported symbol
+    odysymtabcommand outbufid O>P [dysymtab_command] iextdefsym [SODROP] POL!
+    ?ERRORIF ERROR" error setting number of temp symbols to dysymtab.iextdefsym" NAME>E EXIT THEN
+
+    numexportsymbols // number of exported symbols
+    odysymtabcommand outbufid O>P [dysymtab_command] nextdefsym [SODROP] POL!
+    ?ERRORIF ERROR" error setting number of export symbols to dysymtab.nextdefsym" NAME>E EXIT THEN
+
+    numexportsymbols numtempsymbols + // index of first undefined symbol
+    odysymtabcommand outbufid O>P [dysymtab_command] iundefsym [SODROP] POL!
+    ?ERRORIF ERROR" error setting total number of symbols to dysymtab.iundefsym" NAME>E EXIT THEN
+
+    strbufid FREEBUFFER
+    nlistbufid FREEBUFFER
+    ?ERRORIF ERROR" error freeing buffers" NAME>E EXIT THEN
+
+    outbufid
+;
+
+HEX
+: makeimpexpdotobuf { 
+    strbufid nlistbufid relocbufid outbufid numexportsymbols numimportsymbols numtempsymbols 
+    osegmentcommand osectionheader obuildcommand osymtabcommand odysymtabcommand ocode onlists orelocs ostrings oendofcommands
+    | pcode codelength expsymtbleid expsymtblhid impsymtbleid impsymtblhid 
+    -- dotobuf }
+
+    1000 -1 NEWBUFFER TO outbufid           // will be export doto buf
+    1000 -1 NEWBUFFER TO strbufid
+    1000 -1 NEWBUFFER TO nlistbufid
+    1000 -1 NEWBUFFER TO relocbufid
+    ?ERRORIF ERROR" error initializing buffers" NAME>E EXIT THEN
+
+    // push null string to string table - this version of .o does not add null string to nlist array
+    0 strbufid C>BUF
+    ?ERRORIF ERROR" error adding null symbol" NAME>E EXIT THEN
+
+    // add weird temp symbol
+    $" ltemp0" 0 GETS$[ND] 0 strbufid nlistbufid addtempsymbol DROP$
+    ?ERRORIF ERROR" error adding temp symbol" NAME>E EXIT THEN
+    1 TO numtempsymbols
+
+    // add fake omessage symbol
+    ( $" _omessage" 0 GETS$[ND] 0 strbufid nlistbufid addtempsymbol
+    ?ERRORIF ERROR" error adding temp symbol" NAME>E EXIT THEN
+    2 TO numtempsymbols )
+
+    // add export symbols
+    expsymtbleid expsymtblhid strbufid nlistbufid addexportsymbols
+    ?ERRORIF ERROR" error adding export symbol" NAME>E EXIT THEN 
+    TO numexportsymbols
+
+    // add import symbols
+    impsymtbleid impsymtblhid strbufid nlistbufid relocbufid addimportsymbols
+    ?ERRORIF ERROR" error adding import symbol" NAME>E EXIT THEN 
+    TO numimportsymbols
+
+    // push mach header to output buf
+    outbufid initmach_header_64
+    ?ERRORIF ERROR" error pushing default elf header" NAME>E EXIT THEN
+    CRLF ." after header outbuf length = " outbufid GETBUFFERLENGTH U. 
+
+    // add segment command to output buf
+    outbufid adddefaultsegment_command_64 TO osegmentcommand
+    ?ERRORIF ERROR" error pushing segment command" NAME>E EXIT THEN
+    CRLF ." after segment command outbuf length = " outbufid GETBUFFERLENGTH U.
+
+    // add section header to output buf
+    outbufid adddefaulttextsection_64 TO osectionheader
+    ?ERRORIF ERROR" error pushing section header" NAME>E EXIT THEN
+    CRLF ." after section header outbuf length = " outbufid GETBUFFERLENGTH U.
+
+    // add build command to output buf
+    outbufid addbuild_version_command TO obuildcommand // does not need modifying
+    ?ERRORIF ERROR" error pushing build command" NAME>E EXIT THEN
+    CRLF ." after build command outbuf length = " outbufid GETBUFFERLENGTH U.
+
+    // add symtab command to output buf
+    outbufid addsymtab_command TO osymtabcommand
+    ?ERRORIF ERROR" error pushing symtab_command" NAME>E EXIT THEN
+    CRLF ." after symtab_command outbuf length = " outbufid GETBUFFERLENGTH U.
+
+    // add dysymtab command to output buf
+    outbufid adddysymtab_command TO odysymtabcommand
+    ?ERRORIF ERROR" error pushing dysymtab_command" NAME>E EXIT THEN
+    CRLF ." after dysymtab_command outbuf length = " outbufid GETBUFFERLENGTH U.
+
+    outbufid GETBUFFERLENGTH TO oendofcommands
+    
+    // add code to output buf
+    pcode codelength outbufid addcodebuf TO ocode
+    ?ERRORIF ERROR" error pushing code" NAME>E EXIT THEN
+    CRLF ." after code outbuf length = " outbufid GETBUFFERLENGTH U.
+
+    outbufid alignbufto8
+    ?ERRORIF ERROR" error aligning buffer to 8" NAME>E EXIT THEN
+
+    // add reloc array to output buf
+    relocbufid outbufid addstuffbuftooutbuf TO orelocs
+    ?ERRORIF ERROR" error adding relocation array to output buf" NAME>E EXIT THEN
+
+    // add nlist array to output buf
+    outbufid GETBUFFERLENGTH TO onlists
+    nlistbufid GETSBUFFER outbufid S>BUF
+    ?ERRORIF ERROR" error adding nlist array to output buf" NAME>E EXIT THEN
+
+    // add strings to output buf
+    outbufid GETBUFFERLENGTH TO ostrings
+    strbufid GETSBUFFER outbufid S>BUF
+    ?ERRORIF ERROR" error adding strings to output buf" NAME>E EXIT THEN
+
+    // set segment command length to segment command size + section header size
+    obuildcommand osegmentcommand - 
+    osegmentcommand outbufid O>P [segment_command_64] cmdsize [SODROP] POL!
+    ?ERRORIF ERROR" error setting segment command length" NAME>E EXIT THEN
+
+    // set number of commands
+    4
+    0 outbufid O>P [mach_header_64] ncmds [SODROP] POL!
+    ?ERRORIF ERROR" error setting number of commands" NAME>E EXIT THEN
+
+    oendofcommands osegmentcommand -
+    0 outbufid O>P [mach_header_64] sizeofcmds [SODROP] POL!
+    ?ERRORIF ERROR" error setting size of commands" NAME>E EXIT THEN
+
+    // set code length
+    codelength
+    osegmentcommand outbufid O>P [segment_command_64] vmsize [SODROP] POL!
+    ?ERRORIF ERROR" error setting code length" NAME>E EXIT THEN
+
+    // set code file offset
+    ocode
+    osegmentcommand outbufid O>P [segment_command_64] fileoff [SODROP] POL!
+    ?ERRORIF ERROR" error setting file offset" NAME>E EXIT THEN
+    
+    // set file code length
+    codelength
+    osegmentcommand outbufid O>P [segment_command_64] filesize [SODROP] POL!
+    ?ERRORIF ERROR" error setting file code length to segment.filesize" NAME>E EXIT THEN
+
+    codelength
+    osectionheader outbufid O>P [section_64] codesize [SODROP] POL!
+    ?ERRORIF ERROR" error setting file code length to section.size" NAME>E EXIT THEN
+
+    ocode
+    osectionheader outbufid O>P [section_64] offset [SODROP] POL!
+    ?ERRORIF ERROR" error setting code offset to section.offset" NAME>E EXIT THEN
+
+    onlists
+    osymtabcommand outbufid O>P [symtab_command] symoff [SODROP] POL!
+    ?ERRORIF ERROR" error setting nlist offset to symtab.symoff" NAME>E EXIT THEN
+
+    numexportsymbols numtempsymbols + numimportsymbols +
+    osymtabcommand outbufid O>P [symtab_command] nsyms [SODROP] POL!
+    ?ERRORIF ERROR" error setting number of symbols to symtab.nsyms" NAME>E EXIT THEN
+
+    ostrings
+    osymtabcommand outbufid O>P [symtab_command] stroff [SODROP] POL!
+    ?ERRORIF ERROR" error setting string offset to symtab.symoff" NAME>E EXIT THEN
+
+    strbufid GETBUFFERLENGTH
+    osymtabcommand outbufid O>P [symtab_command] strsize [SODROP] POL!
+    ?ERRORIF ERROR" error setting number of symbols to symtab.strsize" NAME>E EXIT THEN
+
+    0 // index of first temp symbol
+    odysymtabcommand outbufid O>P [dysymtab_command] ilocalsym [SODROP] POL!
+    ?ERRORIF ERROR" error setting first symbol index to dysymtab.ilocalsym" NAME>E EXIT THEN
+
+    numtempsymbols // number of temp symbols
+    odysymtabcommand outbufid O>P [dysymtab_command] nlocalsym [SODROP] POL!
+    ?ERRORIF ERROR" error setting number of temp symbols to dysymtab.nlocalsym" NAME>E EXIT THEN
+
+    numtempsymbols // index of first exported symbol
+    odysymtabcommand outbufid O>P [dysymtab_command] iextdefsym [SODROP] POL!
+    ?ERRORIF ERROR" error setting number of temp symbols to dysymtab.iextdefsym" NAME>E EXIT THEN
+
+    numexportsymbols // number of exported symbols
+    odysymtabcommand outbufid O>P [dysymtab_command] nextdefsym [SODROP] POL!
+    ?ERRORIF ERROR" error setting number of export symbols to dysymtab.nextdefsym" NAME>E EXIT THEN
+
+    numexportsymbols numtempsymbols + // index of first undefined symbol 
+    odysymtabcommand outbufid O>P [dysymtab_command] iundefsym [SODROP] POL!
+    ?ERRORIF ERROR" error setting total number of symbols to dysymtab.iundefsym" NAME>E EXIT THEN
+
+    numimportsymbols // number of imported symbols
+    odysymtabcommand outbufid O>P [dysymtab_command] nundefsym [SODROP] POL!
+    ?ERRORIF ERROR" error setting number of imported symbols to dysymtab.nundefsym" NAME>E EXIT THEN
+
+    orelocs
+    osectionheader outbufid O>P [section_64] relof [SODROP] POL!
+    ?ERRORIF ERROR" error setting relocation array offset to section.relof" NAME>E EXIT THEN
+
+    relocbufid GETBUFFERLENGTH [relocation_info] size [SODROP] DROP /
+    osectionheader outbufid O>P [section_64] nreloc [SODROP] POL!
+    ?ERRORIF ERROR" error setting number of relocations to section.reloc" NAME>E EXIT THEN
+
+    strbufid FREEBUFFER
+    nlistbufid FREEBUFFER
+    relocbufid FREEBUFFER
+    ?ERRORIF ERROR" error freeing buffers" NAME>E EXIT THEN
+
+    outbufid
+;
+
+// assumes you are using NEW-FLAT-OSYMBOL-BUF
+: IMPEXPBUF>.OFILE$ ( filename$ -$- )              // frees the code buffer and restores the old ccbuf
+    PCURRENTCOMPILEBUFFER @ GETSBUFFER             // pcodebuf codelength
+    EH[TOP]                                        // export elementid hlistid
+    1 EH[ND]                                       // import elementid hlistid
+    makeimpexpdotobuf 
+    SAVEFILE$
+    FREE-FLAT-OSYMBOL-BUF
+;
+
+TRUE ?END-EVALUATE
+
+
+

@@ -10,7 +10,7 @@ Document key:
   [AR]        = value in memory using the value in AR as the address
 
   n or N      = 32 bit signed integer
-  u or U      = 32 but unsigned integer
+  u or U      = 32 bit unsigned integer
   u8 or U8    = unsigned 8 bit integer
   n16 or N16  = signed 16 bit integer
   u16 or U16  = unsigned 16 bit integer
@@ -82,7 +82,7 @@ The script files included in this project:
           HEX 1000 -1 NEWBUFFER CONSTANT mybuffername
           mybuffername PCURRENTCOMPILEBUFFER !
 
-        or if you are going to use the .o maker script then this will do  the above in one step:
+        or if you are going to use the .o maker script then this will do the above in one step:
 
           NEW-FLAT-OSYMBOL-BUF
 

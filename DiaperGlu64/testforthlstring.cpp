@@ -2,20 +2,20 @@
 //
 //    Copyright 2025 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.15.
+//    This file is part of DiaperGlu v5.16.
 //
-//    DiaperGlu v5.15 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.16 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.15 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.16 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.15; if not, write to the Free Software
+//    along with DiaperGlu v5.16; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// May 4, 2025                //
-// version 5.15               //
+// January 24, 2026           //
+// version 5.16               //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -8331,6 +8331,1358 @@ void testdg_forthtoslashulelstringn()
 }
 
 
+void testdg_forthgetslstringbracketud()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    const char* pError = NULL;
+
+    UINT64 offsetbufid = 0;
+    UINT64 stringbufid = 0;
+ 
+    unsigned char* plstring;
+    UINT64 lstringlength;   
+
+    INT64 flag;
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthgetslstringbracketud\n");
+
+    // success case
+    dg_initbuffers(&BHarrayhead);
+
+    offsetbufid = dg_newbuffer(&BHarrayhead, 100, 200, &pError, false);
+    
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - unable to initialize test offsest buffer\n");
+        return;
+    }
+
+    stringbufid = dg_newbuffer(&BHarrayhead, 1000, 2000, &pError, false);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - unable to initialize test string buffer\n");
+        return;
+    }
+
+    dg_pushlstring(&BHarrayhead, offsetbufid, stringbufid, 5, (unsigned char*)"first");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - got error pushing first test string\n");
+        return;
+    }
+
+    dg_pushlstring(&BHarrayhead, offsetbufid, stringbufid, 6, (unsigned char*)"second");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - got error pushing second test string\n");
+        return;
+    }
+
+    dg_pushlstring(&BHarrayhead, offsetbufid, stringbufid, 3, (unsigned char*)"3rd");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - got error pushing third test string\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 0);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - got error pushing 0 to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, offsetbufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - got error pushing offsetbufferid for 0 to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, stringbufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - got error pushing stringbufferid for 0 to data stack\n");
+        return;
+    }
+
+    dg_forthgetslstringbracketud(&BHarrayhead); 
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - got error doing dg_forthgetslstringbracketud for 0\n");
+        return;
+    }
+
+    lstringlength = (UINT64)dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - got error popping lstring length for 0\n");
+        return;
+    }
+
+    plstring = (unsigned char*)dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - got error popping plstring for 0\n");
+        return;
+    }
+
+    pError = dg_comparebytes (
+        plstring, 
+        lstringlength,
+        (unsigned char*)"3rd",
+        3,
+        &flag);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - got error comparing string for 0\n");
+        return;
+    }
+
+    if (flag != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - string for 0 did not match\n");
+        return;
+    }
+
+    if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - data stack not empty after 0\n");
+        return;
+    }
+
+
+    dg_pushdatastack(&BHarrayhead, 1);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - got error pushing 1 to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, offsetbufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - got error pushing offsetbufferid for 1 to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, stringbufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - got error pushing stringbufferid for 1 to data stack\n");
+        return;
+    }
+
+    dg_forthgetslstringbracketud(&BHarrayhead); 
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - got error doing dg_forthgetslstringbracketud for 1\n");
+        return;
+    }
+
+    lstringlength = (UINT64)dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - got error popping lstring length for 1\n");
+        return;
+    }
+
+    plstring = (unsigned char*)dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - got error popping plstring for 1\n");
+        return;
+    }
+
+    pError = dg_comparebytes (
+        plstring, 
+        lstringlength,
+        (unsigned char*)"second",
+        6,
+        &flag);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - got error comparing string for 1\n");
+        return;
+    }
+
+    if (flag != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - string for 1 did not match\n");
+        return;
+    }
+
+    if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - data stack not empty after 1\n");
+        return;
+    }
+
+
+    dg_pushdatastack(&BHarrayhead, 2);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - got error pushing 2 to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, offsetbufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - got error pushing offsetbufferid for 2 to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, stringbufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - got error pushing stringbufferid for 2 to data stack\n");
+        return;
+    }
+
+    dg_forthgetslstringbracketud(&BHarrayhead); 
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - got error doing dg_forthgetslstringbracketud for 2\n");
+        return;
+    }
+
+    lstringlength = (UINT64)dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - got error popping lstring length for 2\n");
+        return;
+    }
+
+    plstring = (unsigned char*)dg_popdatastack(&BHarrayhead);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - got error popping plstring for 2\n");
+        return;
+    }
+
+    pError = dg_comparebytes (
+        plstring, 
+        lstringlength,
+        (unsigned char*)"first",
+        5,
+        &flag);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - got error comparing string for 2\n");
+        return;
+    }
+
+    if (flag != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - string for 2 did not match\n");
+        return;
+    }
+
+    if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthgetslstringbracketud success case - data stack not empty after 2\n");
+        return;
+    }
+
+    
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_forthcopylstringtobuf()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    const char* pError = NULL;
+
+    UINT64 offsetbufid = 0;
+    UINT64 stringbufid = 0;
+
+    UINT64 bufid = 0;
+ 
+    unsigned char* pbuf;
+    UINT64* pbuflength;   
+
+    INT64 flag;
+    UINT64 x;
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthcopylstringtobuf\n");
+
+    // success case
+    dg_initbuffers(&BHarrayhead);
+
+    offsetbufid = dg_newbuffer(&BHarrayhead, 100, 200, &pError, false);
+    
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringtobuf success case - unable to initialize test offsest buffer\n");
+        return;
+    }
+
+    stringbufid = dg_newbuffer(&BHarrayhead, 1000, 2000, &pError, false);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringtobuf success case - unable to initialize test string buffer\n");
+        return;
+    }
+
+    bufid = dg_newbuffer(&BHarrayhead, 1000, 2000, &pError, false);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringtobuf success case - unable to initialize test string buffer\n");
+        return;
+    }
+
+    dg_pushlstring(&BHarrayhead, offsetbufid, stringbufid, 5, (unsigned char*)"first");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringtobuf success case - got error pushing first test string\n");
+        return;
+    }
+
+    dg_pushlstring(&BHarrayhead, offsetbufid, stringbufid, 6, (unsigned char*)"second");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringtobuf success case - got error pushing second test string\n");
+        return;
+    }
+
+    dg_pushlstring(&BHarrayhead, offsetbufid, stringbufid, 3, (unsigned char*)"3rd");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringtobuf success case - got error pushing third test string\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, offsetbufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringtobuf success case - got error pushing offsetbufferid to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, stringbufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringtobuf success case - got error pushing stringbufferid to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, bufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringtobuf success case - got error pushing bufferid to data stack\n");
+        return;
+    }
+
+    dg_forthcopylstringtobuf(&BHarrayhead); 
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringtobuf success case - got error doing dg_forthcopylstringtobuf\n");
+        return;
+    }
+
+    pbuf = dg_getpbuffer(
+        &BHarrayhead,
+        bufid,
+        &pbuflength);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringtobuf success case - got error getting address length of buffer\n");
+        return;
+    }
+
+    pError = dg_comparebytes (
+        pbuf, 
+        *pbuflength,
+        (unsigned char*)"3rd",
+        3,
+        &flag);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringtobuf success case - got error comparing string\n");
+        return;
+    }
+
+    if (flag != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringtobuf success case - string did not match\n");
+        return;
+    }
+
+    if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringtobuf success case - data stack not empty after 0\n");
+        return;
+    }
+
+    x = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        offsetbufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringtobuf success case - got error getting number of lstrings on stack\n");
+        return;
+    }
+
+    if (x != 3)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringtobuf success case - lstring stack depth changed\n");
+        return;
+    }
+
+    
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_forthlstringtobuf()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    const char* pError = NULL;
+
+    UINT64 offsetbufid = 0;
+    UINT64 stringbufid = 0;
+
+    UINT64 bufid = 0;
+ 
+    unsigned char* pbuf;
+    UINT64* pbuflength;   
+
+    INT64 flag;
+    UINT64 x;
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthlstringtobuf\n");
+
+    // success case
+    dg_initbuffers(&BHarrayhead);
+
+    offsetbufid = dg_newbuffer(&BHarrayhead, 100, 200, &pError, false);
+    
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlstringtobuf success case - unable to initialize test offsest buffer\n");
+        return;
+    }
+
+    stringbufid = dg_newbuffer(&BHarrayhead, 1000, 2000, &pError, false);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlstringtobuf success case - unable to initialize test string buffer\n");
+        return;
+    }
+
+    bufid = dg_newbuffer(&BHarrayhead, 1000, 2000, &pError, false);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlstringtobuf success case - unable to initialize test string buffer\n");
+        return;
+    }
+
+    dg_pushlstring(&BHarrayhead, offsetbufid, stringbufid, 5, (unsigned char*)"first");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlstringtobuf success case - got error pushing first test string\n");
+        return;
+    }
+
+    dg_pushlstring(&BHarrayhead, offsetbufid, stringbufid, 6, (unsigned char*)"second");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlstringtobuf success case - got error pushing second test string\n");
+        return;
+    }
+
+    dg_pushlstring(&BHarrayhead, offsetbufid, stringbufid, 3, (unsigned char*)"3rd");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlstringtobuf success case - got error pushing third test string\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, offsetbufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlstringtobuf success case - got error pushing offsetbufferid to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, stringbufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlstringtobuf success case - got error pushing stringbufferid to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, bufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlstringtobuf success case - got error pushing bufferid to data stack\n");
+        return;
+    }
+
+    dg_forthlstringtobuf(&BHarrayhead); 
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlstringtobuf success case - got error doing dg_forthcopylstringtobuf\n");
+        return;
+    }
+
+    pbuf = dg_getpbuffer(
+        &BHarrayhead,
+        bufid,
+        &pbuflength);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlstringtobuf success case - got error getting address length of buffer\n");
+        return;
+    }
+
+    pError = dg_comparebytes (
+        pbuf, 
+        *pbuflength,
+        (unsigned char*)"3rd",
+        3,
+        &flag);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlstringtobuf success case - got error comparing string\n");
+        return;
+    }
+
+    if (flag != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlstringtobuf success case - string did not match\n");
+        return;
+    }
+
+    if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlstringtobuf success case - data stack not empty after 0\n");
+        return;
+    }
+
+    x = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        offsetbufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlstringtobuf success case - got error getting number of lstrings on stack\n");
+        return;
+    }
+
+    if (x != 2)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthlstringtobuf success case - top lstring not dropped\n");
+        return;
+    }
+
+    
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_forthcopybuftonewlstring()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    const char* pError = NULL;
+
+    UINT64 offsetbufid = 0;
+    UINT64 stringbufid = 0;
+
+    UINT64 bufid = 0;
+ 
+    unsigned char* pbuf;
+    UINT64* pbuflength;   
+
+    unsigned char* plstring;
+    UINT64 lstringlength;
+
+    INT64 flag;
+    UINT64 x;
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthcopybuftonewlstring\n");
+
+    // success case
+    dg_initbuffers(&BHarrayhead);
+
+    offsetbufid = dg_newbuffer(&BHarrayhead, 100, 200, &pError, false);
+    
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopybuftonewlstring success case - unable to initialize test offsest buffer\n");
+        return;
+    }
+
+    stringbufid = dg_newbuffer(&BHarrayhead, 1000, 2000, &pError, false);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopybuftonewlstring success case - unable to initialize test string buffer\n");
+        return;
+    }
+
+    bufid = dg_newbuffer(&BHarrayhead, 1000, 2000, &pError, false);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopybuftonewlstring success case - unable to initialize test string buffer\n");
+        return;
+    }
+
+    dg_pushlstring(&BHarrayhead, offsetbufid, stringbufid, 5, (unsigned char*)"first");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopybuftonewlstring success case - got error pushing first test string\n");
+        return;
+    }
+
+    dg_pushlstring(&BHarrayhead, offsetbufid, stringbufid, 6, (unsigned char*)"second");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopybuftonewlstring success case - got error pushing second test string\n");
+        return;
+    }
+
+    dg_pushlstring(&BHarrayhead, offsetbufid, stringbufid, 3, (unsigned char*)"3rd");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopybuftonewlstring success case - got error pushing third test string\n");
+        return;
+    }
+
+    dg_pushbuffersegment (
+        &BHarrayhead,
+        bufid,
+        5, // length,
+        (unsigned char*)"FORTH");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopybuftonewlstring success case - got error pushing test string to buffer\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, bufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopybuftonewlstring success case - got error pushing bufferid to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, offsetbufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopybuftonewlstring success case - got error pushing offsetbufferid to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, stringbufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopybuftonewlstring success case - got error pushing stringbufferid to data stack\n");
+        return;
+    }
+
+    dg_forthcopybuftonewlstring(&BHarrayhead); 
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopybuftonewlstring success case - got error doing dg_forthcopylstringtobuf\n");
+        return;
+    }
+
+    pbuf = dg_getpbuffer(
+        &BHarrayhead,
+        bufid,
+        &pbuflength);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopybuftonewlstring success case - got error getting address length of buffer\n");
+        return;
+    }
+
+    pError = dg_comparebytes (
+        pbuf, 
+        *pbuflength,
+        (unsigned char*)"FORTH",
+        5,
+        &flag);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopybuftonewlstring success case - got error comparing string in buffer\n");
+        return;
+    }
+
+    if (flag != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopybuftonewlstring success case - string did not match\n");
+        return;
+    }
+
+    if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopybuftonewlstring success case - data stack not empty after 0\n");
+        return;
+    }
+
+    x = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        offsetbufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopybuftonewlstring success case - got error getting number of lstrings on stack\n");
+        return;
+    }
+
+    if (x != 4)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopybuftonewlstring success case - new lstring not pushed\n");
+        return;
+    }
+
+    plstring = dg_getplstring(
+        &BHarrayhead,
+        offsetbufid,
+        stringbufid,
+        3, // stringid,
+        &lstringlength);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopybuftonewlstring success case - got error getting addr length of top lstring\n");
+        return;
+    }
+
+    pError = dg_comparebytes (
+        plstring, 
+        lstringlength,
+        (unsigned char*)"FORTH",
+        5,
+        &flag);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopybuftonewlstring success case - got error comparing top lstring\n");
+        return;
+    }
+
+    if (flag != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopybuftonewlstring success case - top lstring did not match\n");
+        return;
+    }
+    
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_forthcopylstringbracketudtobuf()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    const char* pError = NULL;
+
+    UINT64 offsetbufid = 0;
+    UINT64 stringbufid = 0;
+
+    UINT64 bufid = 0;
+ 
+    unsigned char* pbuf;
+    UINT64* pbuflength;   
+
+    INT64 flag;
+    UINT64 x;
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthcopylstringbracketudtobuf\n");
+
+    // success case
+    dg_initbuffers(&BHarrayhead);
+
+    offsetbufid = dg_newbuffer(&BHarrayhead, 100, 200, &pError, false);
+    
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketudtobuf success case - unable to initialize test offsest buffer\n");
+        return;
+    }
+
+    stringbufid = dg_newbuffer(&BHarrayhead, 1000, 2000, &pError, false);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketudtobuf success case - unable to initialize test string buffer\n");
+        return;
+    }
+
+    bufid = dg_newbuffer(&BHarrayhead, 1000, 2000, &pError, false);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketudtobuf success case - unable to initialize test string buffer\n");
+        return;
+    }
+
+    dg_pushlstring(&BHarrayhead, offsetbufid, stringbufid, 5, (unsigned char*)"first");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketudtobuf success case - got error pushing first test string\n");
+        return;
+    }
+
+    dg_pushlstring(&BHarrayhead, offsetbufid, stringbufid, 6, (unsigned char*)"second");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketudtobuf success case - got error pushing second test string\n");
+        return;
+    }
+
+    dg_pushlstring(&BHarrayhead, offsetbufid, stringbufid, 3, (unsigned char*)"3rd");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketudtobuf success case - got error pushing third test string\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 1);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketudtobuf success case - got error pushing 1 to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, offsetbufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketudtobuf success case - got error pushing offsetbufferid to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, stringbufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketudtobuf success case - got error pushing stringbufferid to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, bufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketudtobuf success case - got error pushing bufferid to data stack\n");
+        return;
+    }
+
+    dg_forthcopylstringbracketudtobuf(&BHarrayhead); 
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketudtobuf success case - got error doing dg_forthcopylstringtobuf\n");
+        return;
+    }
+
+    pbuf = dg_getpbuffer(
+        &BHarrayhead,
+        bufid,
+        &pbuflength);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketudtobuf success case - got error getting address length of buffer\n");
+        return;
+    }
+
+    pError = dg_comparebytes (
+        pbuf, 
+        *pbuflength,
+        (unsigned char*)"second",
+        6,
+        &flag);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketudtobuf success case - got error comparing string\n");
+        return;
+    }
+
+    if (flag != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketudtobuf success case - string did not match\n");
+        return;
+    }
+
+    if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketudtobuf success case - data stack not empty after 1st time\n");
+        return;
+    }
+
+    x = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        offsetbufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketudtobuf success case - got error getting number of lstrings on stack\n");
+        return;
+    }
+
+    if (x != 3)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketudtobuf success case - lstring stack depth changed\n");
+        return;
+    }
+
+
+    dg_pushdatastack(&BHarrayhead, 0);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketudtobuf success case - got error pushing 0 to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, offsetbufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketudtobuf success case - got error pushing offsetbufferid to data stack 2nd time\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, stringbufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketudtobuf success case - got error pushing stringbufferid to data stack 2nd time\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, bufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketudtobuf success case - got error pushing bufferid to data stack 2nd time\n");
+        return;
+    }
+
+    dg_forthcopylstringbracketudtobuf(&BHarrayhead); 
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketudtobuf success case - got error doing dg_forthcopylstringtobuf\n");
+        return;
+    }
+
+    pbuf = dg_getpbuffer(
+        &BHarrayhead,
+        bufid,
+        &pbuflength);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketudtobuf success case - got error getting address length of buffer\n");
+        return;
+    }
+
+    pError = dg_comparebytes (
+        pbuf, 
+        *pbuflength,
+        (unsigned char*)"second3rd",
+        9,
+        &flag);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketudtobuf success case - got error comparing string 2nd time\n");
+        return;
+    }
+
+    if (flag != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketudtobuf success case - string did not match 2nd time\n");
+        return;
+    }
+
+    if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketudtobuf success case - data stack not empty after 2nd time\n");
+        return;
+    }
+
+    x = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        offsetbufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketudtobuf success case - got error getting number of lstrings on stack 2nd time\n");
+        return;
+    }
+
+    if (x != 3)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketudtobuf success case - lstring stack depth changed 2nd time\n");
+        return;
+    }
+
+    
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
+void testdg_forthcopylstringbracketutobuf()
+{
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    const char* pError = NULL;
+
+    UINT64 offsetbufid = 0;
+    UINT64 stringbufid = 0;
+
+    UINT64 bufid = 0;
+ 
+    unsigned char* pbuf;
+    UINT64* pbuflength;   
+
+    INT64 flag;
+    UINT64 x;
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_forthcopylstringbracketutobuf\n");
+
+    // success case
+    dg_initbuffers(&BHarrayhead);
+
+    offsetbufid = dg_newbuffer(&BHarrayhead, 100, 200, &pError, false);
+    
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketutobuf success case - unable to initialize test offsest buffer\n");
+        return;
+    }
+
+    stringbufid = dg_newbuffer(&BHarrayhead, 1000, 2000, &pError, false);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketutobuf success case - unable to initialize test string buffer\n");
+        return;
+    }
+
+    bufid = dg_newbuffer(&BHarrayhead, 1000, 2000, &pError, false);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketutobuf success case - unable to initialize test string buffer\n");
+        return;
+    }
+
+    dg_pushlstring(&BHarrayhead, offsetbufid, stringbufid, 5, (unsigned char*)"first");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketutobuf success case - got error pushing first test string\n");
+        return;
+    }
+
+    dg_pushlstring(&BHarrayhead, offsetbufid, stringbufid, 6, (unsigned char*)"second");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketutobuf success case - got error pushing second test string\n");
+        return;
+    }
+
+    dg_pushlstring(&BHarrayhead, offsetbufid, stringbufid, 3, (unsigned char*)"3rd");
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketutobuf success case - got error pushing third test string\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, 1);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketutobuf success case - got error pushing 1 to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, offsetbufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketutobuf success case - got error pushing offsetbufferid to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, stringbufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketutobuf success case - got error pushing stringbufferid to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, bufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketutobuf success case - got error pushing bufferid to data stack\n");
+        return;
+    }
+
+    dg_forthcopylstringbracketutobuf(&BHarrayhead); 
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketutobuf success case - got error doing dg_forthcopylstringtobuf\n");
+        return;
+    }
+
+    pbuf = dg_getpbuffer(
+        &BHarrayhead,
+        bufid,
+        &pbuflength);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketutobuf success case - got error getting address length of buffer\n");
+        return;
+    }
+
+    pError = dg_comparebytes (
+        pbuf, 
+        *pbuflength,
+        (unsigned char*)"second",
+        6,
+        &flag);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketutobuf success case - got error comparing string\n");
+        return;
+    }
+
+    if (flag != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketutobuf success case - string did not match\n");
+        return;
+    }
+
+    if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketutobuf success case - data stack not empty after 1st time\n");
+        return;
+    }
+
+    x = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        offsetbufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketutobuf success case - got error getting number of lstrings on stack\n");
+        return;
+    }
+
+    if (x != 3)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketutobuf success case - lstring stack depth changed\n");
+        return;
+    }
+
+
+    dg_pushdatastack(&BHarrayhead, 2);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketutobuf success case - got error pushing 2 to data stack\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, offsetbufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketutobuf success case - got error pushing offsetbufferid to data stack 2nd time\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, stringbufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketutobuf success case - got error pushing stringbufferid to data stack 2nd time\n");
+        return;
+    }
+
+    dg_pushdatastack(&BHarrayhead, bufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketutobuf success case - got error pushing bufferid to data stack 2nd time\n");
+        return;
+    }
+
+    dg_forthcopylstringbracketutobuf(&BHarrayhead); 
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketutobuf success case - got error doing dg_forthcopylstringtobuf\n");
+        return;
+    }
+
+    pbuf = dg_getpbuffer(
+        &BHarrayhead,
+        bufid,
+        &pbuflength);
+        
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketutobuf success case - got error getting address length of buffer\n");
+        return;
+    }
+
+    pError = dg_comparebytes (
+        pbuf, 
+        *pbuflength,
+        (unsigned char*)"second3rd",
+        9,
+        &flag);
+
+    if (pError != dg_success)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketutobuf success case - got error comparing string 2nd time\n");
+        return;
+    }
+
+    if (flag != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketutobuf success case - string did not match 2nd time\n");
+        return;
+    }
+
+    if (dg_getbufferlength(&BHarrayhead, DG_DATASTACK_BUFFERID) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketutobuf success case - data stack not empty after 2nd time\n");
+        return;
+    }
+
+    x = dg_getnumberoflstringsonstack(
+        &BHarrayhead,
+        offsetbufid);
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketutobuf success case - got error getting number of lstrings on stack 2nd time\n");
+        return;
+    }
+
+    if (x != 3)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL! dg_forthcopylstringbracketutobuf success case - lstring stack depth changed 2nd time\n");
+        return;
+    }
+
+    
+    dg_clearerrors(&BHarrayhead);
+
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+
 /*
 void testdg_forthcscanlstring ()
 {
@@ -8432,6 +9784,8 @@ void testdg_forthcscanlstring ()
     // error cscanning lstring case
 
 }
+
+
 */
 
 // dg_forthscanlstring

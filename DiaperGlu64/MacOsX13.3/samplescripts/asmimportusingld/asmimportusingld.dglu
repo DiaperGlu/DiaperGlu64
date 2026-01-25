@@ -1,21 +1,21 @@
 ( //////////////////////////////////////////////////////////////////////////////////////// )
 ( //                                                                                       )
-( //    Copyright 2025 James Patrick Norris                                                )
+( //    Copyright 2026 James Patrick Norris                                                )
 ( //                                                                                       )
-( //    This file is part of Diaperglu 5.15.                                               )
+( //    This file is part of Diaperglu 5.16.                                               )
 ( //                                                                                       )
-( //    Diaperglu 5.15 is free software; you can redistribute it and/or modify             )
+( //    Diaperglu 5.16 is free software; you can redistribute it and/or modify             )
 ( //    it under the terms of the GNU General Public License as published by               )
 ( //    the Free Software Foundation; either version 2 of the License, or                  )
 ( //    {at your option} any later version.                                                )
 ( //                                                                                       )
-( //    Diaperglu 5.15 is distributed in the hope that it will be useful,                  )
+( //    Diaperglu 5.16 is distributed in the hope that it will be useful,                  )
 ( //    but WITHOUT ANY WARRANTY; without even the implied warranty of                     )
 ( //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      )
 ( //    GNU General Public License for more details.                                       )
 ( //                                                                                       )
 ( //    You should have received a copy of the GNU General Public License                  )
-( //    along with Diaperglu 5.15; if not, write to the Free Software                      )
+( //    along with Diaperglu 5.16; if not, write to the Free Software                      )
 ( //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA          )
 ( //                                                                                       )
 ( //////////////////////////////////////////////////////////////////////////////////////// )
@@ -23,8 +23,8 @@
 ( /////////////////////////////// )
 ( // James Patrick Norris      // )
 ( // www.rainbarrel.com        // )
-( // May 4, 2025               // )
-( // version 5.15              // )
+( // January 24, 2026          // )
+( // version 5.16              // )
 ( /////////////////////////////// )
 
 
@@ -89,7 +89,7 @@ $" asmexportonlyusingld.o" SAVEFILE$
 
 CRLF ." running ld to turn the .o file into a .dylib... this might take a minute" CRLF
 
-RUNFILEANDWAITNOENV" ld -demangle -dynamic -dylib -no_uuid -no_eh_labels -arch x86_64 -platform_version macos 12.0.0 12.1 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -o libasmexportonlyusingld.dylib -L. -L/usr/local/lib asmexportonlyusingld.o -lSystem" 
+RUNFILEANDWAITNOENV" ld -demangle -dynamic -dylib -arch x86_64 -platform_version macos 11.0.0 11.1 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -o libasmexportonlyusingld.dylib -L. -L/usr/local/lib asmexportonlyusingld.o -lSystem" 
 
 PCURRENTCOMPILEBUFFER @ CONSTANT OLDCOMPILEBUFID
 
@@ -167,7 +167,7 @@ $" asmimportusingld.o" SAVEFILE$
 
 CRLF ." running ld to turn the import .o file into a .dylib" CRLF
 
-RUNFILEANDWAITNOENV" ld -demangle -dynamic -dylib -no_uuid -no_eh_labels -arch x86_64 -platform_version macos 12.0.0 12.1 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -o libasmimportusingld.dylib -L. -L/usr/local/lib asmimportusingld.o -lasmexportonlyusingld -lSystem" 
+RUNFILEANDWAITNOENV" ld -demangle -dynamic -dylib -arch x86_64 -platform_version macos 12.0.0 12.1 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -o libasmimportusingld.dylib -L. -L/usr/local/lib asmimportusingld.o -lasmexportonlyusingld -lSystem" 
 
 
 CRLF ." opening the new shared library that does imports and calling the test functions " CRLF
@@ -213,8 +213,8 @@ TRUE ?END-EVALUATE  // this ends the script
 ( 8 ) $" 10.11" $>0$
 ( 7 ) $" -dynamic" $>0$
 ( 6 ) $" -dylib" $>0$
-( 5 ) $" -no_uuid" $>0$
-( 4 ) $" -no_eh_labels" $>0$
+// ( 5 ) $" -no_uuid" $>0$
+// ( 4 ) $" -no_eh_labels" $>0$
 ( 3 ) $" -o" $>0$
 ( 2 ) $" libasmexportonlyusingld.dylib" $>0$
 ( 1 ) $" asmexportonlyusingld.o" $>0$
@@ -229,8 +229,8 @@ TRUE ?END-EVALUATE  // this ends the script
 RSTACKBUFFERID GETBUFFERLENGTH CONSTANT myrstackbaselength
 
 HEX
-0A GETS$[ND] DROP >R
-9 GETS$[ND] DROP >R
+// 0A GETS$[ND] DROP >R
+// 9 GETS$[ND] DROP >R
 8 GETS$[ND] DROP >R
 7 GETS$[ND] DROP >R
 6 GETS$[ND] DROP >R
@@ -248,8 +248,8 @@ HEX
 RUNFILEANDWAIT
 
 // cleaning the rstack
-R> DROP
-R> DROP
+// R> DROP
+// R> DROP
 R> DROP
 R> DROP
 R> DROP
@@ -269,8 +269,8 @@ R> DROP
 ( 0B ) $" 10.11" $>0$
 ( 0A ) $" -dynamic" $>0$
 ( 9 ) $" -dylib" $>0$
-( 8 ) $" -no_uuid" $>0$
-( 7 ) $" -no_eh_labels" $>0$
+// ( 8 ) $" -no_uuid" $>0$
+// ( 7 ) $" -no_eh_labels" $>0$
 ( 6 ) $" -L." $>0$
 ( 5 ) $" -lasmexportonlyusingld" $>0$
 ( 4 ) $" -lSystem" $>0$      // ld needs this to generate the import table stubs or something
@@ -288,8 +288,8 @@ R> DROP
 RSTACKBUFFERID GETBUFFERLENGTH CONSTANT myrstackbaselength
 
 HEX
-0D GETS$[ND] DROP >R
-0C GETS$[ND] DROP >R
+// 0D GETS$[ND] DROP >R
+// 0C GETS$[ND] DROP >R
 0B GETS$[ND] DROP >R
 0A GETS$[ND] DROP >R
 9 GETS$[ND] DROP >R
@@ -310,8 +310,8 @@ HEX
 RUNFILEANDWAIT
 
 // cleaning the rstack
-R> DROP
-R> DROP
+// R> DROP
+// R> DROP
 R> DROP
 R> DROP
 R> DROP

@@ -2,20 +2,20 @@
 //
 //    Copyright 2025 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.15.
+//    This file is part of DiaperGlu v5.16.
 //
-//    DiaperGlu v5.15 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.16 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.15 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.16 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.15; if not, write to the Free Software
+//    along with DiaperGlu v5.16; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// May 4, 2025                //
-// version 5.15               //
+// January 24, 2026           //
+// version 5.16               //
 // /////////////////////////////
 
 
@@ -138,6 +138,59 @@ void dg_forthofetch (Bufferhandle* pBHarrayhead)
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
         dg_pusherror(pBHarrayhead, dg_forthofetchname);
+        return;
+    }
+
+    *pbuflength = *pbuflength - sizeof(UINT64);
+}
+
+
+void dg_forthou32fetch (Bufferhandle* pBHarrayhead)
+//     ( offset bufferid -- dword)
+{
+    UINT64* pbuflength = NULL;
+    unsigned char* pdatastack = NULL;
+
+    UINT64* pints = NULL;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        // could not get error count because BHarrayhead is not there so just exiting
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthou32fetchname);
+        return;
+    }
+
+    if (*pbuflength < (2 * sizeof(UINT64)))
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthou32fetchname);
+        return;
+    }
+
+    // could check for misaligned data stack here
+
+    pints = (UINT64*)(pdatastack + *pbuflength - (2 * sizeof(UINT64)));
+
+    pints[0] = dg_getbufferuint32(
+        pBHarrayhead,
+        pints[1],
+        pints[0]);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthou32fetchname);
         return;
     }
 
@@ -315,6 +368,60 @@ void dg_forthostore (Bufferhandle* pBHarrayhead)
     if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
     {
         dg_pusherror(pBHarrayhead, dg_forthostorename);
+        return;
+    }
+
+    *pbuflength -= (3 * sizeof(UINT64));
+}
+
+
+void dg_forthou32store (Bufferhandle* pBHarrayhead)
+//     ( dword offset bufferid -- )
+{
+    UINT64* pbuflength = NULL;
+    unsigned char* pdatastack = NULL;
+
+    UINT64* pints = NULL;
+
+    UINT64 olderrorcount = dg_geterrorcount(pBHarrayhead);
+
+    if (baderrorcount == olderrorcount)
+    {
+        // could not get error count because BHarrayhead is not there so just exiting
+        return;
+    }
+
+    pdatastack = dg_getpbuffer(
+        pBHarrayhead,
+        DG_DATASTACK_BUFFERID,
+        &pbuflength);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthou32storename);
+        return;
+    }
+
+    if (*pbuflength < (3 * sizeof(UINT64)))
+    {
+        dg_pusherror(pBHarrayhead, dg_datastackunderflowerror);
+        dg_pusherror(pBHarrayhead, dg_forthou32storename);
+        return;
+    }
+
+    // could check for misaligned data stack here
+
+    pints = (UINT64*)(pdatastack + *pbuflength - (3 * sizeof(UINT64)));
+
+    dg_putbufferuint32(
+        pBHarrayhead,
+        pints[2],
+        pints[1],
+        pints[0]);
+
+    if (dg_geterrorcount(pBHarrayhead) != olderrorcount)
+    {
+        dg_pusherror(pBHarrayhead, dg_forthou32storename);
         return;
     }
 

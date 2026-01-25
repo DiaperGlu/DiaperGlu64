@@ -1,0 +1,5819 @@
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2023 James Patrick Norris
+//
+//    This file is part of DGArm64CrossAsm v1.0
+//
+//    DGArm64CrossAsm v1.0 is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    DGArm64CrossAsm v1.0 is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with DGArm64CrossAsm v1.0; if not, write to the Free Software
+//    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// September 28, 2024         //
+// version 1.0                //
+// /////////////////////////////
+
+// to do:
+
+//   go through each base instruction in official arm doc and check implementation:
+
+//   try to test some more instructions
+//   try to check for missing instructions
+//   check worst case use of scratchregs... (mem op mem -> mem with large int offsets)
+
+// compile guard
+' DGARM64CROSSASM.DGLU ENDOFWORDLIST = 0= ?END-EVALUATE
+0 CONSTANT DGARM64CROSSASM.DGLU
+
+
+// Arm calling convention:
+//
+//   Ints:
+//     passed in X0 X1 X2 X3 X4 X5 X6 X7 
+//     passed out X0 X1
+//     must be preserved X19 - X28
+//     linker special use X16 X17 ( linkers may corrupt these between a call and first instruction of a subroutine )
+//     indirect result register X9, points to caller allocated memory used to return structures 
+//     frame pointer X29 
+//     link register X30 ( used to hold the return address for function calls )
+//
+//   Floats:
+//     passed in D0 D1 D2 D3 D4 D5 D6 D7
+//     passed out D0 D1 D2 D3 D4 D5 D6 D7
+
+
+// Mac calling convention:
+//
+//    Ints:
+//      X18 platforms reserve register, must not be used.
+//      X29 frame pointer register, must always point to a valid frame record which is the previous frame pointer
+//
+// Arm64 notes:
+//   Specifying register X31 can refer to the current return stack pointer, a source integer value 0, or no destination depending on the instruction.
+//     In general, register X31 refers to the current return stack pointer when the instruction does not set the condition code flags.
+//   Return stack pointer must be 16 byte aligned when memory is accessed using the return stack pointer. Not sure if interrupts can happen at any time,
+//     if so... return stack pointer must always be 16 byte aligned... unless you disable interrupts or know exactly when they will happen...
+
+// Mac Arm64 M4 features supported:
+//   Features supported:
+//     FEAT_FLAGm
+
+
+PCURRENTCOMPILEBUFFER @ CONSTANT dgarm64crossasmbufid
+
+HEX
+55 ( for stack check at end )
+
+: ?MARKER ( u1 u1 -- u ) ( -e- |errormessage )
+    OVER <> IF ERROR" marker missing" THEN
+;
+
+-1 CONSTANT NOREG
+-2 CONSTANT PC
+10 CONSTANT SCRATCHREG1 // subroutine calls, long branches, destreg = a srcreg, large constants, and memory targets may trash this register.
+11 CONSTANT SCRATCHREG2 // subroutine calls, long branches, destreg = a srcreg, large constants, and memory targets may trash this register.
+
+// default type registers
+00 CONSTANT R0
+01 CONSTANT R1
+02 CONSTANT R2
+03 CONSTANT R3
+04 CONSTANT R4
+05 CONSTANT R5
+06 CONSTANT R6
+07 CONSTANT R7
+08 CONSTANT R8
+09 CONSTANT R9
+0A CONSTANT R10
+0B CONSTANT R11
+0C CONSTANT R12
+0D CONSTANT R13
+0E CONSTANT R14
+0F CONSTANT R15
+10 CONSTANT R16
+11 CONSTANT R17
+12 CONSTANT R18
+13 CONSTANT R19
+14 CONSTANT R20
+15 CONSTANT R21
+16 CONSTANT R22
+17 CONSTANT R23
+18 CONSTANT R24
+19 CONSTANT R25
+1A CONSTANT R26
+1B CONSTANT R27
+1C CONSTANT R28
+1D CONSTANT R29
+1E CONSTANT R30
+1F CONSTANT R31
+
+// 32 bit int registers
+20 CONSTANT W0
+21 CONSTANT W1
+22 CONSTANT W2
+23 CONSTANT W3
+24 CONSTANT W4
+25 CONSTANT W5
+26 CONSTANT W6
+27 CONSTANT W7
+28 CONSTANT W8
+29 CONSTANT W9
+2A CONSTANT W10
+2B CONSTANT W11
+2C CONSTANT W12
+2D CONSTANT W13
+2E CONSTANT W14
+2F CONSTANT W15
+30 CONSTANT W16
+31 CONSTANT W17
+32 CONSTANT W18
+33 CONSTANT W19
+34 CONSTANT W20
+35 CONSTANT W21
+36 CONSTANT W22
+37 CONSTANT W23
+38 CONSTANT W24
+39 CONSTANT W25
+3A CONSTANT W26
+3B CONSTANT W27
+3C CONSTANT W28
+3D CONSTANT W29
+3E CONSTANT W30
+3F CONSTANT W31
+
+// 64 bit int registers
+40 CONSTANT X0
+41 CONSTANT X1
+42 CONSTANT X2
+43 CONSTANT X3
+44 CONSTANT X4
+45 CONSTANT X5
+46 CONSTANT X6
+47 CONSTANT X7
+48 CONSTANT X8
+49 CONSTANT X9
+4A CONSTANT X10
+4B CONSTANT X11
+4C CONSTANT X12
+4D CONSTANT X13
+4E CONSTANT X14
+4F CONSTANT X15
+50 CONSTANT X16
+51 CONSTANT X17
+52 CONSTANT X18
+53 CONSTANT X19
+54 CONSTANT X20
+55 CONSTANT X21
+56 CONSTANT X22
+57 CONSTANT X23
+58 CONSTANT X24
+59 CONSTANT X25
+5A CONSTANT X26
+5B CONSTANT X27
+5C CONSTANT X28
+5D CONSTANT X29
+5E CONSTANT X30
+5E CONSTANT LR
+5F CONSTANT X31
+5F CONSTANT RSP // return stack pointer
+60 CONSTANT WZR
+70 CONSTANT XZR
+
+
+// 8 bit floating point registers - name changed due to conflict with hex numbers
+HEX
+100 CONSTANT FRB0
+101 CONSTANT FRB1
+102 CONSTANT FRB2
+103 CONSTANT FRB3
+104 CONSTANT FRB4
+105 CONSTANT FRB5
+106 CONSTANT FRB6
+107 CONSTANT FRB7
+108 CONSTANT FRB8
+109 CONSTANT FRB9
+10A CONSTANT FRB10
+10B CONSTANT FRB11
+10C CONSTANT FRB12
+10D CONSTANT FRB13
+10E CONSTANT FRB14
+10F CONSTANT FRB15
+
+// 16 bit floating point registers 
+HEX
+110 CONSTANT H0
+111 CONSTANT H1
+112 CONSTANT H2
+113 CONSTANT H3
+114 CONSTANT H4
+115 CONSTANT H5
+116 CONSTANT H6
+117 CONSTANT H7
+118 CONSTANT H8
+119 CONSTANT H9
+11A CONSTANT H10
+11B CONSTANT H11
+11C CONSTANT H12
+11D CONSTANT H13
+11E CONSTANT H14
+11F CONSTANT H15
+
+// 32 bit floating point registers 
+HEX
+120 CONSTANT S0
+121 CONSTANT S1
+122 CONSTANT S2
+123 CONSTANT S3
+124 CONSTANT S4
+125 CONSTANT S5
+126 CONSTANT S6
+127 CONSTANT S7
+128 CONSTANT S8
+129 CONSTANT S9
+12A CONSTANT S10
+12B CONSTANT S11
+12C CONSTANT S12
+12D CONSTANT S13
+12E CONSTANT S14
+12F CONSTANT S15
+
+// 64 bit floating point registers - name changed due to conflict with hex numbers
+HEX
+130 CONSTANT FRD0
+131 CONSTANT FRD1
+132 CONSTANT FRD2
+133 CONSTANT FRD3
+134 CONSTANT FRD4
+135 CONSTANT FRD5
+136 CONSTANT FRD6
+137 CONSTANT FRD7
+138 CONSTANT FRD8
+139 CONSTANT FRD9
+13A CONSTANT FRD10
+13B CONSTANT FRD11
+13C CONSTANT FRD12
+13D CONSTANT FRD13
+13E CONSTANT FRD14
+13F CONSTANT FRD15
+
+// 128 bit floating point registers 
+HEX
+140 CONSTANT Q0
+141 CONSTANT Q1
+142 CONSTANT Q2
+143 CONSTANT Q3
+144 CONSTANT Q4
+145 CONSTANT Q5
+146 CONSTANT Q6
+147 CONSTANT Q7
+148 CONSTANT Q8
+149 CONSTANT Q9
+14A CONSTANT Q10
+14B CONSTANT Q11
+14C CONSTANT Q12
+14D CONSTANT Q13
+14E CONSTANT Q14
+14F CONSTANT Q15
+
+// 128 bit vector registers 
+HEX
+150 CONSTANT V0
+151 CONSTANT V1
+152 CONSTANT V2
+153 CONSTANT V3
+154 CONSTANT V4
+155 CONSTANT V5
+156 CONSTANT V6
+157 CONSTANT V7
+158 CONSTANT V8
+159 CONSTANT V9
+15A CONSTANT V10
+15B CONSTANT V11
+15C CONSTANT V12
+15D CONSTANT V13
+15E CONSTANT V14
+15F CONSTANT V15
+
+// System Registers    op0 ( really o0 )  op1 CRn  CRm  op2
+5A10 CONSTANT NZCV   //  3           1    011 0100 0010 000  so 0101 1010 0001 0000 or 5A10
+
+0 CONSTANT UXTB
+1 CONSTANT UXTH
+2 CONSTANT UXTW
+3 CONSTANT UXTX
+4 CONSTANT SXTB
+5 CONSTANT SXTH
+6 CONSTANT SXTW
+7 CONSTANT SXTX
+0 CONSTANT U8XT
+
+0 CONSTANT U8X
+1 CONSTANT U16X
+2 CONSTANT U32X
+3 CONSTANT U64X
+4 CONSTANT N8X
+5 CONSTANT N16X
+6 CONSTANT N32X
+7 CONSTANT N64X
+
+0 CONSTANT LSL
+1 CONSTANT LSR
+2 CONSTANT ASR
+
+0 CONSTANT U<<
+1 CONSTANT U>>
+2 CONSTANT N>>
+
+// Base Opcodes for two source rr->r instructions that don't change flags
+1A000000 CONSTANT BOPADC
+5A000000 CONSTANT BOPSBC
+1AC00C00 CONSTANT BOPSDIV
+1AC06000 CONSTANT BOPSMAX
+1AC06800 CONSTANT BOPSMIN
+9B407C00 CONSTANT BOPSMULH
+9B007C00 CONSTANT BOPMULL 
+1AC00800 CONSTANT BOPUDIV
+1AC06400 CONSTANT BOPUMAX
+1AC06C00 CONSTANT BOPUMIN
+9BA07C00 CONSTANT BOPUMULL
+9BC07C00 CONSTANT BOPUMULH
+0B000000 CONSTANT BOPADD
+0A000000 CONSTANT BOPAND
+0A200000 CONSTANT BOPBIC
+4A200000 CONSTANT BOPEON
+4A000000 CONSTANT BOPEOR
+2A200000 CONSTANT BOPORN
+2A000000 CONSTANT BOPORR
+4B000000 CONSTANT BOPSUB
+9AC02800 CONSTANT BOPASR // n m -> d where m is right shift amount
+9AC02400 CONSTANT BOPLSR // n m -> d where m is right shift amount
+9AC02000 CONSTANT BOPLSL // n m -> d where m is left shift amount
+9AC02C00 CONSTANT BOPROR // n m -> d where m is right rotate amount
+
+
+// Base Opcodes for two source instructions that do change the flags
+3A000000 CONSTANT BOPADCS
+7A000000 CONSTANT BOPSBCS
+2B000000 CONSTANT BOPADDS
+6A000000 CONSTANT BOPANDS
+6A200000 CONSTANT BOPBICS
+6B000000 CONSTANT BOPSUBS
+
+// Instruction IDS
+ 0 CONSTANT IDADC
+ 1 CONSTANT IDSBC
+ 2 CONSTANT IDSDIV
+ 3 CONSTANT IDASR
+ 4 CONSTANT IDLSR
+ 5 CONSTANT IDSMULH
+ 6 CONSTANT IDMUL  // lower 64 bits are same for both signed and unsigned multiply
+ 7 CONSTANT IDUDIV
+ 8 CONSTANT IDLSL
+ 9 CONSTANT IDROR
+0A CONSTANT IDUMULH
+0B CONSTANT IDADD
+0C CONSTANT IDAND
+0D CONSTANT IDBIC
+0E CONSTANT IDEON
+0E CONSTANT IDXNOR
+0F CONSTANT IDEOR
+0F CONSTANT IDXOR
+10 CONSTANT IDORN
+11 CONSTANT IDORR
+11 CONSTANT IDOR
+12 CONSTANT IDSUB
+13 CONSTANT IDNAND
+14 CONSTANT IDNOR
+
+// OPID table
+CODE-CREATE PIDTABLE
+//   ID    noflagop            flagop                type ... bit 0 = compile invert dest flag
+   ( 00 )  BOPADC CODE-U64,    BOPADCS CODE-U64,     0 CODE-U64,
+   ( 01 )  BOPSBC CODE-U64,    BOPSBCS CODE-U64,     8 CODE-U64,
+   ( 02 )  BOPSDIV CODE-U64,   0 CODE-U64,           8 CODE-U64,
+   ( 03 )  BOPASR CODE-U64,    0 CODE-U64,           0 CODE-U64, // not sure how to do carry flag easily
+   ( 04 )  BOPLSR CODE-U64,    0 CODE-U64,           0 CODE-U64, // not sure how to do carry flag easily
+   ( 05 )  BOPSMULH CODE-U64,  0 CODE-U64,           0 CODE-U64,
+   ( 06 )  BOPMULL CODE-U64,   0 CODE-U64,           0 CODE-U64,  // lower 64 bits is same for both signed and unsigned multiply
+   ( 07 )  BOPUDIV CODE-U64,   0 CODE-U64,           8 CODE-U64,
+   ( 08 )  BOPLSL CODE-U64,    0 CODE-U64,           0 CODE-U64, // not sure how to do carry flag easily
+   ( 09 )  BOPROR CODE-U64,    0 CODE-U64,           0 CODE-U64, // not sure how to do carry flag easily
+   ( 0A )  BOPUMULH CODE-U64,  0 CODE-U64,           0 CODE-U64,
+   ( 0B )  BOPADD CODE-U64,    BOPADDS CODE-U64,     0 CODE-U64,
+   ( 0C )  BOPAND CODE-U64,    BOPANDS CODE-U64,     0 CODE-U64,
+   ( 0D )  BOPBIC CODE-U64,    BOPBICS CODE-U64,     8 CODE-U64,
+   ( 0E )  BOPEON CODE-U64,    0 CODE-U64,           0 CODE-U64,
+   ( 0F )  BOPEOR CODE-U64,    0 CODE-U64,           0 CODE-U64,
+   ( 10 )  BOPORN CODE-U64,    0 CODE-U64,           8 CODE-U64,
+   ( 11 )  BOPORR CODE-U64,    0 CODE-U64,           0 CODE-U64,
+   ( 12 )  BOPSUB CODE-U64,    BOPSUBS CODE-U64,     8 CODE-U64,
+   ( 13 )  BOPAND CODE-U64,    0 CODE-U64,           5 CODE-U64,  // NAND
+   ( 14 )  BOPORR CODE-U64,    BOPBICS CODE-U64,     3 CODE-U64,  // NOR - not sure if order is important... need to check
+
+1 CONSTANT IDTABLE.INVERTDESTMASK  // for preserve regs case
+2 CONSTANT IDTABLE.INVERTSRCAMASK   // for NOR case
+4 CONSTANT IDTABLE.INVERTNANDCASEMASK    // for NAND case
+8 CONSTANT IDTABLE.ORDERIMPORTANT  // if not true, sources can be swapped
+
+3 CONSTANT IDTABLE.COLUMNS
+15 CONSTANT IDTABLE.ROWS
+IDTABLE.COLUMNS 3 LSHIFT CONSTANT IDTABLE.ROWSIZE
+
+: OCCBUF>P ( currentcompilebufferoffset -- poffset )
+    PCURRENTCOMPILEBUFFER @ O>P
+;
+
+: ID>PROW { | ID -- prow }
+    ID IDTABLE.ROWS U> IF ERROR" ID too high" NAME>E EXIT THEN
+    ID IDTABLE.ROWSIZE * PIDTABLE +
+;
+
+: ID>ROWDATA { prow | ID -- NFOP CFOP TYPE }
+    ID ID>PROW ?ERRORIF NAME>E EXIT THEN TO prow 
+    prow @
+    prow 8 + @
+    prow 10 + @
+;
+
+: ID>PFOP ( ID -- PFOP )
+    ID>PROW ?ERRORIF NAME>E EXIT THEN @
+;
+
+: ID>CFOP ( ID -- CFOP )
+    ID>PROW ?ERRORIF NAME>E EXIT THEN 8 + @
+;
+
+HEX
+: ID>TYPE ( ID -- TYPE )
+    ID>PROW ?ERRORIF NAME>E EXIT THEN 10 + @
+;
+
+HEX
+VARIABLE PBASEADDRESS
+0 PBASEADDRESS !
+
+: +BA ( bufferoffset -- baraddress )
+    PBASEADDRESS @ +
+;
+
+: -BA ( baraddress -- bufferoffset )
+    PBASEADDRESS @ - 
+;
+
+// base address relative here
+: BARHERE OHERE +BA ;
+
+
+: BARALIGN32 ( -- ) 4 BARHERE 3 AND - 3 AND CODE-ALLOT ;
+
+
+
+HEX
+: >U16[U] ( X U -- U16 )
+    4 LSHIFT RSHIFT FFFF AND   
+;
+
+HEX
+: ?N8 ( displacement -- displacement flag )
+    DUP 80 + 100 U<
+;
+
+: ?U8 ( displacement -- displacement flag )
+    DUP 100 U<
+;
+
+: ?ERRORU8 ( imm8 -- imm8 )
+    ?U8 IF EXIT THEN
+    ERROR" unsigned value larger than u8"
+;
+
+: ?ERRORN8 ( imm8 -- imm8 )
+    ?N8 IF EXIT THEN
+    ERROR" signed displacement larger than n8"
+;
+
+HEX
+: ?N4b ( n -- n flag )  // -1; 1h to 0Fh
+    DUP 1+ ( n n+1 -- )
+    DUP 1 = IF DROP FALSE EXIT THEN
+    11 U<
+;
+
+: ?N7b ( displacement -- displacement flag )  // -32 to 95; -20h to 60h
+    DUP 20 + 80 U<
+;
+
+: ?N12 ( displacement -- displacement flag )
+    DUP 800 + 1000 U<
+;
+
+: N8>= ( displacement -- flag )
+    80 + 100 U>=
+;
+
+: U8>= ( displacement -- flag )
+    100 U>=
+;
+
+: N9>= ( displacement -- flag )
+    100 + 200 U>=
+;
+
+: U12>= ( displacement -- flag )
+    1000 U>=
+;
+
+: U13>= ( displacement -- flag )
+    2000 U>=
+;
+
+HEX
+: ?N18 ( displacement -- displacement flag )
+    DUP 20000 + 40000 U<
+;
+
+HEX
+: ?N19 ( displacement -- displacement flag )
+    DUP 40000 + 80000 U<
+;
+
+: N19>= ( displacement -- flag )
+    40000 + 80000 U>=
+;
+
+HEX
+: ?N21 ( displacement -- displacement flag )
+    DUP 100000 + 200000 U< ;
+
+: N21>= ( displacement -- flag )
+    100000 + 200000 U>=
+;
+
+HEX
+: ?N26 ( displacement -- displacement flag )
+    DUP 2000000 + 4000000 U<
+;
+
+: N26>= ( displacement -- flag )
+    2000000 + 4000000 U>=
+;
+
+: ?U12 ( displacement -- displacement flag )
+    DUP 1000 U<
+;
+
+: ?ERRORU12 ( u12 -- u12 )
+    ?U12 IF EXIT THEN
+    ERROR" unsigned value larger than u12"
+;
+
+: ?ERRORN12 ( n12 -- n12 )
+    ?N12 IF EXIT THEN
+    ERROR" signed displacement larger than n12"
+;
+
+HEX
+: ?256*N8 { | n32 -- n32 flag }
+    n32 FF AND 0= 
+    n32 100 /
+    80 + 100 U< AND
+    n32 SWAP
+;
+
+FFFFFFFFFFFFF000 CONSTANT 8BIT
+FFFFFFFFFFFFF001 CONSTANT 16BIT
+FFFFFFFFFFFFF002 CONSTANT 32BIT
+FFFFFFFFFFFFF003 CONSTANT 64BIT
+FFFFFFFFFFFFF000 CONSTANT U8BIT
+FFFFFFFFFFFFF001 CONSTANT U16BIT
+FFFFFFFFFFFFF002 CONSTANT U32BIT
+FFFFFFFFFFFFF003 CONSTANT U64BIT
+FFFFFFFFFFFFF080 CONSTANT N8BIT
+FFFFFFFFFFFFF081 CONSTANT N16BIT
+FFFFFFFFFFFFF082 CONSTANT N32BIT
+
+
+: SF>SIZE 3 + 1 SWAP LSHIFT ;
+
+HEX
+0000000F CONSTANT condMASK
+00FFFFE0 CONSTANT IMM19MASK
+03FFFFFF CONSTANT IMM26MASK
+IMM19MASK condMASK OR CONSTANT IMM19condMASK
+
+: N19>N64 { | N19 -- N64 }
+    N19 00040000 AND 0= IF
+      N19 0007FFFF AND
+    ELSE
+      N19 FFFFFFFFFFF80000 OR
+    THEN
+;
+
+: N26>N64 { | N26 -- N64 }
+    N26 02000000 AND 0= IF
+      N26 03FFFFFF AND
+    ELSE
+      N26 FFFFFFFFFC000000 OR
+    THEN
+;
+
+: RD>OP     ( op rd  -- op' )     1F AND           OR ;
+: RN>OP     ( op rn  -- op' )     1F AND  5 LSHIFT OR ;
+: RM>OP     ( op rm  -- op' )     1F AND 10 LSHIFT OR ;
+: RA>OP     ( op rm  -- op' )     1F AND 0A LSHIFT OR ;
+: SF>OP     ( op sf  -- op' )      1 AND 1F LSHIFT OR ;
+: SF>OPb    ( op sf  -- op' )      3 AND 1E LSHIFT OR ;
+: SF>OPc    ( op sf  -- op' )      1 AND 1E LSHIFT OR ;
+: SFB>OP    ( op sfb -- op' )      1 AND 1 XOR 16 LSHIFT OR ; // either 32 or 64
+: IMM16>OP  ( op imm16 -- op' ) FFFF AND  5 LSHIFT OR ;
+: HW>OP     ( op hw  -- op' )      3 AND 15 LSHIFT OR ;
+: IMM3>OP   ( op imm3 -- op' )     7 AND 0A LSHIFT OR ;
+: OPTION>OP ( op option -- op' )   7 AND 0D LSHIFT OR ;
+: IMM12>OP  ( op imm12 -- op' )  FFF AND 0A LSHIFT OR ;
+: SH>OP     ( op sh  -- op' )      1 AND 16 LSHIFT OR ;
+: IMM6>OP   ( op imm6 -- op' )    3F AND 0A LSHIFT OR ;
+: SHIFT>OP  ( op shift -- op' )    3 AND 16 LSHIFT OR ;
+: IMM4>OP   ( op imm3 -- op' )    0F AND 0A LSHIFT OR ;
+: IMM6>OPb  ( op imm6 -- op' )    3F AND 10 LSHIFT OR ;
+: IMMHI>OP  ( op immhi -- op' ) 3FFF AND 05 LSHIFT OR ;
+: IMMLO>OP  ( op immlo -- op' )    3 AND 1D LSHIFT OR ;
+// : IMM21>IMMLOIMMHI ( imm21 -- immlo immhi ) DUP 7FFFF AND SWAP 180000 AND 13 RSHIFT ;
+: IMM21>OP  ( op imm21 -- ) DUP >R 1FFFFC AND 3 LSHIFT OR R> 3 AND 1D LSHIFT OR ;
+: IMMS>OP   ( op imms -- op' )    3F AND 0A LSHIFT OR ;
+: IMMR>OP   ( op immr -- op' )    3F AND 10 LSHIFT OR ;
+: N>OP      ( op n -- op' )        1 AND 16 LSHIFT OR ;
+: X>OP      ( op n -- op' )        1 AND 0F LSHIFT OR ;
+: NZCV>OP   ( op nzcv -- op' )    0F AND OR ;
+
+: IMM13>OP  { | op imm13 -- op' } 
+    imm13 3F AND 10 LSHIFT  
+    imm13 F30 AND 4 LSHIFT OR 
+    1000 AND 0A LSHIFT OR 
+    op OR ; 
+
+: OP2>OP    ( op op2 -- op' )      7 AND  5 LSHIFT OR ;
+: OP1>OP    ( op op1 -- op' )      7 AND 10 LSHIFT OR ;
+: O0>OP     ( op n -- op' )        1 AND 13 LSHIFT OR ;
+: Z>OP      ( op n -- op' )        1 AND 0D LSHIFT OR ;
+: IMM26>OP  ( op imm26 -- op' )    IMM26MASK AND OR ;
+: IMM19>OP  ( op imm19 -- op' )    7FFFF AND 5 LSHIFT OR ;
+: COND>OP   ( op cond -- op' )    0F AND OR ;
+: IMM6>OPc  ( op imm6 -- op' )    3F AND 0F LSHIFT OR ;
+: IMM9>OP   ( op imm9 -- op' )   1FF AND 05 LSHIFT OR ;
+: COND>OPb  ( op cond -- op' )     7 AND 15 LSHIFT OR ;
+: IMM4>OPb  ( op imm3 -- op' )    0F AND 08 LSHIFT OR ;
+: COND>OPc  ( op cond -- op' )    0F AND 0C LSHIFT OR ;
+: IMM9>OPb  ( op imm9 -- op' )   1FF AND 0C LSHIFT OR ;
+: IMM8>OP   ( op imm9 -- op' )   0FF AND 0A LSHIFT OR ;
+: CRN>OP    ( op crn -- op' )     0F AND 0C LSHIFT OR ;
+: CRM>OP    ( op crn -- op' )     0F AND 08 LSHIFT OR ;
+: SZ>OP     ( op sz  -- op' )      3 AND 1E LSHIFT OR ;
+: IMM14>OP  ( op imm14 -- op' ) 3FFF AND 05 LSHIFT OR ;
+: BIT6>OP   ( op bit6 -- op' )    DUP >R 1F AND 13 LSHIFT OR R> 20 AND 1A LSHIFT OR ;  
+: IMM7>OP   ( op imm7 -- op' )    7F AND 0F LSHIFT OR ;
+: CRM>OPb   ( op crm -- op' )     03 AND 09 LSHIFT OR ;
+: S>OP      ( op s -- op' )       01 AND 0C LSHIFT OR ;
+: Sb>OP     ( op s -- op' )      200 AND 0D LSHIFT OR ;
+: RPRFOP>OP ( op s -- op' )        7 AND OR ;
+: PRFOP>OP  ( op prfop -- op' )   1F AND OR ;
+: SYSREG>OP ( op sysreg -- op' )  7FFF AND 05 LSHIFT OR ;
+
+
+: ARMNOP          ( -- armnopopcode ) D503201F ;
+: ARMNOP,         ( -- ) ARMNOP CODE-U32, ;  // tested
+: ARMAUTIA1716,   ( -- ) D503219F CODE-U32, ; // FEAT_PAuth ?
+: ARMAUTIASP,     ( -- ) D50323BF CODE-U32, ; // FEAT_PAuth ?
+: ARMAUTIAZ,      ( -- ) D503239F CODE-U32, ; // FEAT_PAuth ?
+: ARMAUTIA171615, ( -- ) DAC1BBFE CODE-U32, ; // FEAT_PAuth ?
+: ARMAUTIB1716,   ( -- ) D50321DF CODE-U32, ; // FEAT_PAuth ?
+: ARMAUTIBSP,     ( -- ) D50323FF CODE-U32, ; // FEAT_PAuth ?
+: ARMAUTIBZ,      ( -- ) D50323DF CODE-U32, ; // FEAT_PAuth ?
+: ARMAUTIB171615, ( -- ) DAC1BFFE CODE-U32, ; // FEAT_PAuth ?
+: ARMAXFLAG,      ( -- ) D500405F CODE-U32, ; // FEAT_FlagM2 ?
+: ARMBTI,         ( -- ) D503241F CODE-U32, ; // FEAT_BTI ?
+: ARMBTIc,        ( -- ) D503245F CODE-U32, ; // FEAT_BTI ?
+: ARMBTIj,        ( -- ) D503249F CODE-U32, ; // FEAT_BTI ?
+: ARMBTIcj,       ( -- ) D50324DF CODE-U32, ; // FEAT_BTI ?
+: ARMCFINV,       ( -- ) D500401F CODE-U32, ; // tested
+: ARMCHKFEAT,     ( -- ) D503251F CODE-U32, ; // FEAT_CHK ?
+: ARMCLRBHB,      ( -- ) D50322DF CODE-U32, ; // FEAT_CLRBHB ?
+: ARMCSDB,        ( -- ) D503229F CODE-U32, ; // needs test
+: ARMDGH,         ( -- ) D50320DF CODE-U32, ; // FEAT_DGH ?
+: ARMDRPS,        ( -- ) D6BF03E0 CODE-U32, ; // need test
+: ARMERET,        ( -- ) D69F03E0 CODE-U32, ; // need test
+: ARMERETAA,      ( -- ) D69F0BFF CODE-U32, ; // FEAT_PAuth ?
+: ARMERETAB,      ( -- ) D69F0FFF CODE-U32, ; // FEAT_PAuth ?
+: ARMESB,         ( -- ) D503221F CODE-U32, ; // FEAT_RAS ?
+: ARMGCSB,        ( -- ) D503227F CODE-U32, ; // FEAT_GCS ?
+: ARMPACIA1716,   ( -- ) D503211F CODE-U32, ; // FEAT_PAuth ?
+: ARMPACIASP,     ( -- ) D503233F CODE-U32, ; // FEAT_PAuth ?
+: ARMPACIAZ,      ( -- ) D503231F CODE-U32, ; // FEAT_PAuth ?
+: ARMPACIA171615, ( -- ) DAC18BFE CODE-U32, ; // FEAT_PAuth_LR ?
+: ARMPACIASPPC,   ( -- ) DAC1A3FE CODE-U32, ; // FEAT_PAuth_LR ?
+: ARMPACIB1716,   ( -- ) D503215F CODE-U32, ; // FEAT_PAuth ?
+: ARMPACIBSP,     ( -- ) D503237F CODE-U32, ; // FEAT_PAuth ?
+: ARMPACIBZ,      ( -- ) D503235F CODE-U32, ; // FEAT_PAuth ?
+: ARMPACIB171615, ( -- ) DAC18FFE CODE-U32, ; // FEAT_PAuth_LR ?
+: ARMPACIBSPPC,   ( -- ) DAC1A7FE CODE-U32, ; // FEAT_PAuth_LR ?
+: ARMPACM,        ( -- ) D50324FF CODE-U32, ; // FEAT_PAuth_LR ?
+: ARMPACNBIASPPC, ( -- ) DAC183FE CODE-U32, ; // FEAT_PAuth_LR ?
+: ARMPACNBIBSPPC, ( -- ) DAC187FE CODE-U32, ; // FEAT_PAuth_LR ?
+: ARMPSB,         ( -- ) D503223F CODE-U32, ; // FEAT_SPE ?
+: ARMPSSBB,       ( -- ) D503349F CODE-U32, ; // need test
+: ARMRETA,        ( -- ) D65F0BFF CODE-U32, ; // FEAT_PAuth ?
+: ARMRETB,        ( -- ) D65F0FFF CODE-U32, ; // FEAT_PAuth ?
+: ARMSB,          ( -- ) D50330FF CODE-U32, ; // FEAT_SB ?
+: ARMSEV,         ( -- ) D503209F CODE-U32, ; // need test
+: ARMSEVL,        ( -- ) D50320BF CODE-U32, ; // need test
+: ARMSSBB,        ( -- ) D503309F CODE-U32, ; // need test
+: ARMSTCPH,       ( -- ) D503269F CODE-U32, ; // need test
+: ARMSTSHHKEEP,   ( -- ) D503261F CODE-U32, ; // FEAT_PCDPHINT
+: ARMSTSHHSTRM,   ( -- ) D503203F CODE-U32, ; // FEAT_PCDPHINT
+: ARMTCOMMIT,     ( -- ) D503307F CODE-U32, ; // FEAT_TME
+: ARMTSB,         ( -- ) D503225F CODE-U32, ; // FEAT_TRF
+
+: ARMWFE,         ( -- ) D503205F CODE-U32, ; // need test
+: ARMWFI,         ( -- ) D503207F CODE-U32, ; // need test
+: ARMXAFLAG,      ( -- ) D500403F CODE-U32, ; // FEAT_FlagM2
+: ARMXPACLRI,     ( -- ) D50320FF CODE-U32, ; // FEAT_PAuth
+: ARMYIELD,       ( -- ) D503203F CODE-U32, ; // need test
+
+: ARMMLBI.ALLE1,   ( -- ) 0C707080 CODE-U32, ; // FEAT_MPAMv2_VID symbol name ALLE1 not unique so doing it this way
+: ARMMLBI.VMALLE1, ( -- ) 0C7070A0 CODE-U32, ; // FEAT_MPAMv2_VID
+: ARMMLBI.VPIDE1,  ( -- ) 0C7070C0 CODE-U32, ; // FEAT_MPAMv2_VID
+: ARMMLBI.VPMGE1,  ( -- ) 0C7070E0 CODE-U32, ; // FEAT_MPAMv2_VID
+
+
+: ARMPRFMREG, { PRFOP RN RM OPTION S | } // need test
+    F8A04800
+    PRFOP  PRFOP>OP
+    RN     RN>OP
+    RM     RM>OP
+    OPTION OPTION>OP
+    S      S>OP
+    CODE-U32,
+;
+
+
+
+: IMM26OP, ( imm26 op -- ) SWAP IMM26>OP CODE-U32, ;
+
+14000000 CONSTANT ARMB
+: ARMB,  ( imm26 -- ) ARMB IMM26OP, ;      // tested
+: ARMBL, ( imm26 -- ) 94000000 IMM26OP, ;  // tested in import export macho file maker test
+
+
+HEX
+: RDBIT6IMM14OP, { | RD BIT6 IMM14 OP -- }
+  OP 
+  RD       RD>OP
+  BIT6     BIT6>OP
+  IMM14    IMM14>OP
+  CODE-U32,
+;
+
+: ARMTBNZ, ( RD BIT6 IMM14 -- ) 37000000 RDBIT6IMM14OP, ; // tested
+: ARMTBZ,  ( RD BIT6 IMM14 -- ) 36000000 RDBIT6IMM14OP, ; // tested
+
+
+HEX
+: RNIMM6NZCVOP, { | RN IMM6 MASK OP -- }
+  OP
+  IMM6     IMM6>OPc
+  RN       RN>OP 
+  MASK     NZCV>OP
+  CODE-U32,
+;
+
+: ARMRMIF,  ( RN IMM6 MASK -- ) BA000400 RNIMM6NZCVOP, ; // FEAT_FlagM
+
+
+HEX
+: RDRARNIMM7OP, { | RD RA RN IMM7 OP -- }
+  OP 
+  RD       RD>OP
+  RA       RA>OP
+  RN       RN>OP
+  IMM7     IMM7>OP
+  CODE-U32,
+;
+
+: ARMSTGP,       ( RD RA RN IMM7 -- ) 69000000 RDRARNIMM7OP, ; // FEAT_MTE
+: ARMSTGPIMM++,  ( RD RA RN IMM7 -- ) 68800000 RDRARNIMM7OP, ; // FEAT_MTE
+: ARMIMM++STGP,  ( RD RA RN IMM7 -- ) 69800000 RDRARNIMM7OP, ; // FEAT_MTE
+
+
+: ARMSTTNP,       ( RD RA RN IMM7 -- ) E8000000 RDRARNIMM7OP, ; // FEAT_LSUI
+: ARMSTTP,        ( RD RA RN IMM7 -- ) E9800000 RDRARNIMM7OP, ; // FEAT_LSUI
+: ARMIMM++STTP,   ( RD RA RN IMM7 -- ) E9000000 RDRARNIMM7OP, ; // FEAT_LSUI
+
+
+HEX
+: RNIMM7RDRAOP,   { | RN IMM7 RD RA OP -- }
+  OP 
+  RD       RD>OP
+  RA       RA>OP
+  RN       RN>OP
+  IMM7     IMM7>OP
+  CODE-U32,
+;
+
+: ARMLDTNP,       ( RN IMM7 RD RA -- ) E8400000 RNIMM7RDRAOP, ; // FEAT_LSUI not supported on my mac
+: ARMLDTP,        ( RN IMM7 RD RA -- ) E9400000 RNIMM7RDRAOP, ; // FEAT_LSUI not supported on my mac
+: ARMIMM++LDTP,   ( RN IMM7 RD RA -- ) E9C00000 RNIMM7RDRAOP, ; // FEAT_LSUI not supported on my mac
+: ARMLDTPIMM++,   ( RN IMM7 RD RA -- ) E8C00000 RNIMM7RDRAOP, ; // FEAT_LSUI not supported on my mac
+
+
+HEX
+: RNIMM7RDRASFOP, { | RN IMM7 RD RA SF OP -- }
+  OP 
+  RD       RD>OP
+  RA       RA>OP
+  RN       RN>OP
+  IMM7     IMM7>OP
+  SF       SF>OP
+  CODE-U32,
+;
+
+: ARMLDNP,        ( RN IMM7 RD RA SF -- ) 28400000 RNIMM7RDRASFOP, ; // need test
+
+: ARMLDPIMM++,    ( RN IMM7 RD RA SF -- ) 28C00000 RNIMM7RDRASFOP, ; // 64 bit tested. imm7 scaled by size
+: ARMIMM++LDP,    ( RN IMM7 RD RA SF -- ) 29C00000 RNIMM7RDRASFOP, ; // 64 bit tested. imm7 scaled by size
+: ARMLDP,         ( RN IMM7 RD RA SF -- ) 29400000 RNIMM7RDRASFOP, ; // 64 bit tested. imm7 scaled by size
+
+: ARMLDPSWIMM++,  ( RN IMM7 RD RA -- ) 16BIT 28C00000 RNIMM7RDRASFOP, ; // need test
+: ARMIMM++LDPSW,  ( RN IMM7 RD RA -- ) 16BIT 29C00000 RNIMM7RDRASFOP, ; // need test
+: ARMLDPSW,       ( RN IMM7 RD RA -- ) 16BIT 29400000 RNIMM7RDRASFOP, ; // need test, [rn + u7] -> rd:ra; loads 2 signed 32 bit values into rd:ra
+
+
+
+HEX
+: RDRARNIMM7SFOP, { | RD RA RN IMM7 SF OP -- }
+  OP 
+  RD       RD>OP
+  RA       RA>OP
+  RN       RN>OP
+  IMM7     IMM7>OP
+  SF       SF>OP
+  CODE-U32,
+;
+
+: ARMSTNP,       ( RD RA RN IMM7 SF -- ) 28000000 RDRARNIMM7OP, ;   // need test
+
+: ARMSTPIMM++,   ( RD RA RN IMM7 SF -- ) 28800000 RDRARNIMM7SFOP, ; // 64 bit tested. imm7 is scaled by size 
+: ARMIMM++STP,   ( RD RA RN IMM7 SF -- ) 29800000 RDRARNIMM7SFOP, ; // 64 bit tested. imm7 is scaled by size 
+: ARMSTP,        ( RD RA RN IMM7 SF -- ) 29000000 RDRARNIMM7SFOP, ; // 64 bit tested. imm7 is scaled by size ( so 64BIT is *8 )
+
+: RNRDRAOP, { | RN RD RA OP -- }
+  OP 
+  RD       RD>OP
+  RA       RA>OP
+  RN       RN>OP
+  CODE-U32,
+;
+
+: ARMLDAP,       ( RN RD RA -- ) D9405800 RNRDRAOP, ; // FEAT_LSCP ?
+: ARMLDAPP,      ( RN RD RA -- ) D9407800 RNRDRAOP, ; // FEAT_LSCP ?
+
+HEX
+: RDN10RDOP, { | RN N10 RD OP -- }
+  OP 
+  RD       RD>OP
+  RN       RN>OP
+  N10      IMM9>OPb
+  N10      Sb>OP
+  CODE-U32,
+;
+
+: ARMLDRAA,       ( RN N10 RD -- ) F8200400 RDN10RDOP, ; // FEAT_PAuth ?
+: ARMIMM++LDRAA,  ( RN N10 RD -- ) F8200C00 RDN10RDOP, ; // FEAT_PAuth ?
+: ARMLDRAB,       ( RN N10 RD -- ) F8A00400 RDN10RDOP, ; // FEAT_PAuth ?
+: ARMIMM++LDRAB,  ( RN N10 RD -- ) F8A00C00 RDN10RDOP, ; // FEAT_PAuth ?
+
+
+HEX
+: IMM4OP, { | IMM4 OP -- }
+  OP 
+  IMM4    IMM4>OPb
+  CODE-U32,
+;
+
+: ARMCLREX, ( imm4 -- ) D503305F IMM4OP, ; // tested
+
+
+HEX
+: OP1CRNCRMOP2RDOP, { | OP1 CRN CRM OP2 RD OP -- }
+  OP
+  OP1     OP1>OP
+  CRN     CRN>OP
+  CRM     CRM>OP
+  OP2     OP2>OP
+  RD      RD>OP
+  CODE-U32,
+;
+
+: ARMSYS,  ( OP1 CRN CRM OP2 RT -- ) D5080000 OP1CRNCRMOP2RDOP, ; // need test
+ 
+  : VMALLE1OS       0 8 1 0 ;
+  : VAE1OS          0 8 1 1 ;
+  : ASIDE1OS        0 8 1 2 ;
+  : VAAE1OS         0 8 1 3 ;
+  : VALE1OS         0 8 1 5 ;
+  : VAALE1OS        0 8 1 7 ;
+  : RVAE1IS         0 8 2 1 ;
+  : RVAAE1IS        0 8 2 3 ;
+  : RVALE1IS        0 8 2 5 ;
+  : RVAALE1IS       0 8 2 7 ;
+  : VMALLE1IS       0 8 3 0 ;
+  : VAE1IS          0 8 3 1 ;
+  : ASIDE1IS        0 8 3 2 ;
+  : VAAE1IS         0 8 3 3 ;
+  : VALE1IS         0 8 3 5 ;
+  : VAALE1IS        0 8 3 7 ;
+  : RVAE1OS         0 8 5 1 ;
+  : RVAAE1OS        0 8 5 3 ;
+  : RVALE1OS        0 8 5 5 ;
+  : RVAALE1OS       0 8 5 7 ;
+  : RVAE1           0 8 6 1 ;
+  : RVAAE1          0 8 6 3 ;
+  : RVALE1          0 8 6 5 ;
+  : RVAALE1         0 8 6 7 ;
+  : VMALLE1         0 8 7 0 ;
+  : VAE1            0 8 7 1 ;
+  : ASIDE1          0 8 7 2 ;
+  : VAAE1           0 8 7 3 ;
+  : VALE1           0 8 7 5 ;
+  : VAALE1          0 8 7 7 ;
+  : VMALLE1OSNXS    0 9 1 0 ;
+  : VAE1ISNXS       0 9 1 1 ;
+  : VAALE1ISNXS     0 9 3 7 ;
+  : RVAE1OSNXS      0 9 5 1 ;
+  : RVAAE1OSNXS     0 9 5 3 ;
+  : RVALE1OSNXS     0 9 5 5 ;
+  : RVAALE1OSNXS    0 9 5 7 ;
+  : RVAE1NXS        0 9 6 1 ;
+  : RVAAE1NXS       0 9 6 3 ;
+  : RVALE1NXS       0 9 6 5 ;
+  : RVAALE1NXS      0 9 6 7 ;
+  : VMALLE1NXS      0 9 7 0 ;
+  : VAE1NXS         0 9 7 1 ;
+  : ASIDE1NXS       0 9 7 2 ;
+  : VAAE1NXS        0 9 7 3 ;
+  : VALE1NXS        0 9 7 5 ;
+  : VAALE1NXS       0 9 7 7 ;
+  : IPAS2E1IS       4 8 0 1 ;
+  : RIPAS2E1IS      4 8 0 2 ;
+  : IPAS2LE1IS      4 8 0 5 ;
+  : RIPAS2LE1IS     4 8 0 6 ;
+  : ALLE2OS         4 8 1 0 ;
+  : VAE2OS          4 8 1 1 ;
+  : ALLE1OS         4 8 1 4 ;
+  : VALE2OS         4 8 1 5 ;
+  : VMALLS12E1OS    4 8 1 6 ;
+  : RVAE2IS         4 8 2 1 ;
+  : VMALLWS2E1IS    4 8 2 2 ;
+  : RVALE2IS        4 8 2 5 ;
+  : ALLE2IS         4 8 3 0 ;
+  : VAE2IS          4 8 3 1 ;
+  : ALLE1IS         4 8 3 4 ;
+  : VALE2IS         4 8 3 5 ;
+  : VMALLS12E1IS    4 8 3 6 ;
+  : IPAS2E1OS       4 8 4 0 ;
+  : IPAS2E1         4 8 4 1 ;
+  : RIPAS2E1        4 8 4 2 ;
+  : RIPAS2E1OS      4 8 4 3 ;
+  : IPAS2LE1OS      4 8 4 4 ;
+  : IPAS2LE1        4 8 4 5 ;
+  : RIPAS2LE1       4 8 4 6 ;
+  : RIPAS2LE1OS     4 8 4 7 ;
+  : RVAE2OS         4 8 5 1 ;
+  : VMALLWS2E1OS    4 8 5 2 ;
+  : RVALE2OS        4 8 5 5 ;
+  : RVAE2           4 8 6 1 ;
+  : VMALLWS2E1      4 8 6 2 ;
+  : RVALE2          4 8 6 5 ;
+  : ALLE2           4 8 7 0 ;
+  : VAE2            4 8 7 1 ;
+  : ALLE1           4 8 7 4 ;
+  : VALE2           4 8 7 5 ;
+  : VMALLS12E1      4 8 7 6 ;
+  : IPAS2E1ISNXS    4 9 0 1 ;
+  : RIPAS2E1ISNXS   4 9 0 2 ;
+  : IPAS2LE1ISNXS   4 9 0 5 ;
+  : RIPAS2LE1ISNXS  4 9 0 6 ;
+  : ALLE2OSNXS      4 9 1 0 ;
+  : VAE2OSNXS       4 9 1 1 ;
+  : ALLE1OSNXS      4 9 1 4 ;
+  : VALE2OSNXS      4 9 1 5 ;
+  : VMALLS12E1OSNXS 4 9 1 6 ;
+  : RVAE2ISNXS      4 9 2 1 ;
+  : MVALLWS2E1ISNXS 4 9 2 2 ;
+  : RVALE2ISNXS     4 9 2 5 ;
+  : ALLE2ISNXS      4 9 3 0 ;
+  : VAE2ISNXS       4 9 3 1 ;
+  : ALLE1ISNXS      4 9 3 4 ;
+  : VALE2ISNXS      4 9 3 5 ;
+  : VMALLS12E1ISNXS 4 9 3 6 ;
+  : IPAS2E1OSNXS    4 9 4 0 ;
+  : IPAS2E1NXS      4 9 4 1 ;
+  : RIPAS2E1NXS     4 9 4 2 ;
+  : RIPAS2E1OSNXS   4 9 4 3 ;
+  : IPAS2LE1OSNXS   4 9 4 4 ;
+  : IPAS2LE1NXS     4 9 4 5 ;
+  : RIPAS2LE1NXS    4 9 4 6 ;
+  : RIPAS2LE1OSNXS  4 9 4 7 ;
+  : RVAE2OSNXS      4 9 5 1 ;
+  : VMALLWS2E1OSNXS 4 9 5 2 ;
+  : RVALE2OSNXS     4 9 5 5 ;
+  : RVAE2NXS        4 9 6 1 ;
+  : VMALLWS2E1NXS   4 9 6 2 ;
+  : RVALE2NXS       4 9 6 5 ;
+  : ALLE2NXS        4 9 7 0 ;
+  : VAE2NXS         4 9 7 1 ;
+  : ALLE1NXS        4 9 7 4 ;
+  : VALE2NXS        4 9 7 5 ;
+  : VMALLS12E1NXS   4 9 7 6 ;
+  : ALLE3OS         6 8 1 0 ;
+  : VAE3OS          6 8 1 1 ;
+  : PAALLOS         6 8 1 4 ;
+  : VALE3OS         6 8 1 5 ;
+  : RVAE3IS         6 8 2 1 ;
+  : RVALE3IS        6 8 2 5 ;
+  : ALLE3IS         6 8 3 0 ;
+  : VAE3IS          6 8 3 1 ;
+  : VALE3IS         6 8 3 5 ;
+  : RPAOS           6 8 4 3 ;
+  : RPALOS          6 8 4 7 ;
+  : RVAE3OS         6 8 5 1 ;
+  : RVALE3OS        6 8 5 5 ;
+  : RVAE3           6 8 6 1 ;
+  : RVALE3          6 8 6 5 ;
+  : ALLE3           6 8 7 0 ;
+  : VAE3            6 8 7 1 ;
+  : PAALL           6 8 7 4 ;
+  : VALE3           6 8 7 5 ;
+  : ALLE3OSNXS      6 9 1 0 ;
+  : VAE3OSNXS       6 9 1 1 ;
+  : VALE3OSNXS      6 9 1 5 ;
+  : RVAE3ISNXS      6 9 2 1 ;
+  : RVALE3ISNXS     6 9 2 5 ;
+  : ALLE3ISNXS      6 9 3 0 ;
+  : VAE3ISNXS       6 9 3 1 ;
+  : VALE3ISNXS      6 9 3 5 ;
+  : RVAE3OSNXS      6 9 5 1 ;
+  : RVALE3OSNXS     6 9 5 5 ;
+  : RVAE3NXS        6 9 6 1 ;
+  : RVALE3NXS       6 9 6 5 ;
+  : ALLE2NXS        6 9 7 0 ;
+  : VAE3NXS         6 9 7 1 ;
+  : VALE3NXS        6 9 7 5 ;
+
+: ARMTLBI, { | OP1 CRM OP2 RT -- } OP1 8 CRM OP2 RT ARMSYS, ; // need test
+
+
+: ARMSYSL, ( OP1 CRN CRM OP2 RT -- ) D5280000 OP1CRNCRMOP2RDOP, ; // need test
+
+: ARMSYSP, ( OP1 CRN CRM OP2 RT -- ) D5480000 OP1CRNCRMOP2RDOP, ; // need test FEAT_SYSINSTR128
+SYNONYM ARMSYSP, TLBIP,   // FEAT_D128 && FEAT_SYSINSTR128
+
+
+: SYSREGRDOP, { | SYSREG RD OP -- }
+  OP
+  SYSREG SYSREG>OP
+  RD     RD>OP
+  CODE-U32,
+;
+
+: ARMMRSREG,  ( sysreg rd -- ) D5300000 SYSREGRDOP, ; // tested
+: ARMMRRSREG, ( sysreg rd -- ) D5700000 SYSREGRDOP, ; // FEAT_SYSREG128 ?
+
+: RDSYSREGOP, { | RD SYSREG OP -- }
+  OP
+  SYSREG SYSREG>OP
+  RD     RD>OP
+  CODE-U32,
+;
+
+: ARMMSRREG,   ( rs sysreg -- ) D5100000 RDSYSREGOP, ; // tested
+: ARMMSRRREG,  ( rs sysreg -- ) D5500000 RDSYSREGOP, ; // FEAT_SYSREG128 ?
+
+HEX
+: O0OP1CRNCRMOP2RDOP, { | O0 OP1 CRN CRM OP2 RD OP -- }
+  OP
+  O0      O0>OP
+  OP1     OP1>OP
+  CRN     CRN>OP
+  CRM     CRM>OP
+  OP2     OP2>OP
+  RD      RD>OP
+  CODE-U32,
+;
+
+: ARMMRRS,   ( O0 OP1 CRN CRM OP2 RD -- ) D5700000 O0OP1CRNCRMOP2RDOP, ; // FEAT_SYSREG128 ? could move rd to the other side...
+: ARMMRS,    ( O0 OP1 CRN CRM OP2 RD -- ) D5300000 O0OP1CRNCRMOP2RDOP, ; // tested 
+
+HEX
+: RDO0OP1CRNCRMOP2OP, { | RD O0 OP1 CRN CRM OP2 OP -- }
+  OP
+  O0      O0>OP
+  OP1     OP1>OP
+  CRN     CRN>OP
+  CRM     CRM>OP
+  OP2     OP2>OP
+  RD      RD>OP
+  CODE-U32,
+;
+
+: ARMMSR,   ( RS O0 OP1 CRN CRM OP2 -- ) D5100000 RDO0OP1CRNCRMOP2OP, ; // tested 
+: ARMMSRR,  ( RS O0 OP1 CRN CRM OP2 -- ) D5500000 RDO0OP1CRNCRMOP2OP, ; // FEAT_SYSREG128 ?
+
+HEX
+: OP1CRMOP2RDOP, { | OP1 CRM OP2 RD OP -- }
+  OP
+  OP1     OP1>OP
+  CRM     CRM>OP
+  OP2     OP2>OP
+  RD      RD>OP
+  CODE-U32,
+;
+
+: ARMDC,   ( OP1 CRM OP2 RT -- ) D5087000 OP1CRMOP2RDOP, ; 
+  : IVAC 0 6 1 ;
+  : ISW  0 6 2 ;
+  : IGVAC 0 6 3 ;
+  : IGSW 0 6 4 ;
+  : IGDVAC 0 6 5 ;
+  : IGDSW 0 6 6 ;
+  : CSW 0 0A 2 ;
+  : CGSW 0 0A 4 ;
+  : CGDSW 0 0A 6 ;
+  : CISW 0 0E 2 ;
+  : CIGSW 0 0E 4 ;
+  : CIGDSW 0 0E 6 ;
+  : CIVAPS 0 0F 1 ;
+  : CIGDVAPS 0 0F 5 ;
+  : ZVA 3 4 1 ;
+  : GVA 3 4 3 ;
+  : GZVA 3 4 4 ;
+  : ZGBVA 3 4 5 ;
+  : GBVA 3 4 7 ;
+  : CVAC 3 0A 1 ;
+  : CGVAC 3 0A 3 ;
+  : CGDVAC 3 0A 5 ;
+  : CVAOC 3 0B 0 ;
+  : CVAU 3 0B 1 ;
+  : CGDVAOC 3 0B 7 ;
+  : CVAP 3 0C 1 ;
+  : CGVAP 3 0C 3 ;
+  : CGDVAP 3 0C 5 ;
+  : CVADP 3 0D 1 ;
+  : CGVADP 3 0D 3 ;
+  : CGDVADP 3 0D 5 ;
+  : CIVAC 3 0E 1 ;
+  : CIGVAC 3 0E 3 ;
+  : CIGDVAC 3 0E 5 ;
+  : CIVAOC 3 0F 0 ;
+  : CIGDVAOC 3 0F 7 ;
+  : CIPAE 4 0E 0 ;
+  : CIGDPAE 4 0E 7 ; 
+  : CIPAPA 6 0E 1 ;
+  : CIGDPAPA 6 0E 5 ;
+
+: ARMGIC,  ( OP1 CRM OP2 RT -- ) D508C000 OP1CRMOP2RDOP, ; // FEAT_GCIE rt is a source soo...
+  : CDDIS 0 1 0 ;
+  : CDEN 0 1 1 ;
+  : CDPRI 0 1 2 ;
+  : CDAFF 0 1 3 ;
+  : CDPEND 0 1 4 ;
+  : CDRCFG 0 1 5 ;
+  : CDEOI 0 1 7 ;
+  : CDDI 0 2 0 ;
+  : CDHM 0 2 0 ;
+  : VDDIS 4 1 0 ;
+  : VDEN  4 1 1 ;
+  : VDPRI 4 1 2 ;
+  : VDAFF 4 1 3 ;
+  : VDPEND 4 1 4 ;
+  : VDRCFG 4 1 5 ;
+  : VDDI 4 2 0 ;
+  : VDHM 4 2 1 ;
+  : LDDIS 6 1 0 ;
+  : LDEN 6 1 1 ;
+  : LDPRI 6 1 2 ;
+  : LDAFF 6 1 3 ;
+  : LDPEND 6 1 4 ;
+  : LDRCFG 6 1 5 ;
+  : LDDI 6 2 0 ;
+  : LDHM 6 2 1 ;
+
+: ARMIC,   ( OP1 CRM OP2 RT -- ) D5087000 OP1CRMOP2RDOP, ; // may need ops
+  : IALLUIS 0 1 0 ;
+  : IALLU 0 5 0 ;
+  : IVAU 0 5 1 ;
+
+: ARMGICR, ( OP2 RT -- ) >R >R 0 3 R> R> ARMGIC, ; // FEAT_GCIE ?
+  : CDIA 0 ;
+  : CDNMIA 1 ;
+
+: ARMGSB, ( OP2 RT -- ) >R >R 0 0 R> R> ARMGIC, ; // FEAT_GCIE ?
+
+
+HEX
+: CRMOP2OP, { | CRM OP2 OP -- }
+  OP
+  CRM     CRM>OP
+  OP2     OP2>OP
+  CODE-U32,
+;
+
+: ARMHINT,   ( CRM OP2 -- ) D503201F CRMOP2OP, ; // need test
+
+HEX
+: OP2OP, { | OP2 OP -- }
+  OP
+  OP2     OP2>OP
+  CODE-U32,
+;
+
+: ARMSHUH, ( op2 -- ) D50326F5 OP2OP, ; // FEAT_CMH ?  // pass in 0 or 1, 2 or 3 will also work PH is 1
+  0 CONSTANT NOPH
+  1 CONSTANT PH 
+
+HEX
+: CRMOP1OP2OP, { | CRM OP1 OP2 OP -- }
+  OP
+  OP1     OP1>OP
+  CRM     CRM>OP
+  OP2     OP2>OP
+  CODE-U32,
+;
+
+: ARMMSRIMM, ( IMM4 OP1 OP2 -- ) D500401F CRMOP1OP2OP, ; // need test
+  : UAO 0 3 ;
+  : PAN 0 4 ;
+  : SPSel 0 5 ;
+  : ALLINT 1 0 ;
+  : SSBS 3 1 ;
+  : DIT 3 2 ;
+  : TCO 3 4 ;
+  : DAIFSet 3 6 ;
+  : DAIFClr 3 7 ;
+  : PM 1 0 ;
+  : SVCRSM 3 3 ;
+  : SVCRZA 3 3 ;
+  : SVCRSMZA 3 3 ;
+
+
+HEX
+: RNIMM5NZCVCONDDP, { | RN RM NZCV COND SF OP -- }
+  OP
+  RN     RN>OP
+  RM     RM>OP
+  NZCV   NZCV>OP
+  COND   COND>OPc
+  SF     SF>OP
+  CODE-U32,
+;
+
+: ARMCCMNIMM, ( RN IMM5 NZCV COND SF -- ) 3A400800 RNIMM5NZCVCONDDP, ; // 64 bit tested; uses the condition from before the instruction, both always and never = true
+: ARMCCMNREG, ( RN   RM NZCV COND SF -- ) 3A400000 RNIMM5NZCVCONDDP, ; // 64 bit tested; uses the condition from before the instruction, both always and never = true
+: ARMCCMPIMM, ( RN IMM5 NZCV COND SF -- ) 7A400800 RNIMM5NZCVCONDDP, ; // 64 bit tested
+: ARMCCMPREG, ( RN   RM NZCV COND SF -- ) 7A400000 RNIMM5NZCVCONDDP, ; // 64 bit tested
+
+HEX
+: RNCONDcRDSFOP, { | RN COND RD SF OP -- }
+  OP
+  RN     RN>OP
+  RN     RM>OP
+  COND   1 XOR COND>OPc
+  RD     RD>OP
+  SF     SF>OP
+  CODE-U32,
+;
+
+: ARMCINC, ( RN COND RD SF -- ) 1A800400 RNCONDcRDSFOP, ; // 64 bit tested; if true RN=RN+1
+: ARMCINV, ( RN COND RD SF -- ) 5A800000 RNCONDcRDSFOP, ; // 64 bit tested; if true RN=!RN
+: ARMCNEG, ( RN COND RD SF -- ) 5A800400 RNCONDcRDSFOP, ; // 64 bit tested; if true RN=0-RN
+
+HEX
+: RNRMCONDcRDSFOP, { | RN RM COND RD SF OP -- }
+  OP
+  RM     RM>OP
+  RN     RN>OP
+  COND   COND>OPc
+  RD     RD>OP
+  SF     SF>OP
+  CODE-U32,
+;
+
+: ARMCSINC, ( RN RM COND RD SF -- ) 1A800400 RNRMCONDcRDSFOP, ; // 64 bit tested; true = RN, false = RM+1
+: ARMCSINV, ( RN RM COND RD SF -- ) 5A800000 RNRMCONDcRDSFOP, ; // 64 bit tested; true = RN, false = !RM
+: ARMCSNEG, ( RN RM COND RD SF -- ) 5A800400 RNRMCONDcRDSFOP, ; // 64 bit tested; true = RN, false = 0 - RM
+
+HEX
+: RNIMM9RDOP, { | RN IMM9 RD OP -- }
+  OP
+  RN      RN>OP 
+  IMM9    IMM9>OPb
+  RD      RD>OP
+  CODE-U32,
+;
+
+
+: ARMLDG,        ( RN IMM9 RT -- ) D9600000 RNIMM9RDOP, ; // FEAT_MTE ?
+
+: ARMLDTRSW,     ( RN IMM9 RT -- ) B8800800 RNIMM9RDOP, ; // need test
+
+: ARMLDURSW,     ( RN IMM9 RT -- ) B8800000 RNIMM9RDOP, ; // need test
+: ARMPRFUM,      ( RN IMM9 RT -- ) F8800000 RNIMM9RDOP, ; // need test
+
+HEX
+: RDIMM9RNOP, { | RD IMM9 RN OP -- }
+  OP
+  RN      RN>OP 
+  IMM9    IMM9>OPb
+  RD      RD>OP
+  CODE-U32,
+;
+
+
+: ARMST2G,       ( RT IMM9 RN -- ) D9A00800 RDIMM9RNOP, ; // FEAT_MTE ?
+: ARMST2GIMM++,  ( RT IMM9 RN -- ) D9A00400 RDIMM9RNOP, ; // FEAT_MTE ?
+: ARMIMM++ST2G,  ( RT IMM9 RN -- ) D9A00C00 RDIMM9RNOP, ; // FEAT_MTE ?
+
+: ARMSTG,        ( RT IMM9 RN -- ) D9200800 RDIMM9RNOP, ; // FEAT_MTE ?
+: ARMSTGIMM++,   ( RT IMM9 RN -- ) D9200400 RDIMM9RNOP, ; // FEAT_MTE ?
+: ARMIMM++STG,   ( RT IMM9 RN -- ) D9200C00 RDIMM9RNOP, ; // FEAT_MTE ?
+
+: ARMSTZ2G,      ( RT IMM9 RN -- ) D9E00800 RDIMM9RNOP, ; // FEAT_MTE ?
+: ARMSTZ2GIMM++, ( RT IMM9 RN -- ) D9E00400 RDIMM9RNOP, ; // FEAT_MTE ?
+: ARMIMM++STZ2G, ( RT IMM9 RN -- ) D9E00C00 RDIMM9RNOP, ; // FEAT_MTE ?
+
+: ARMSTZG,       ( RT IMM9 RN -- ) D9600800 RDIMM9RNOP, ; // FEAT_MTE ?
+: ARMSTZGIMM++,  ( RT IMM9 RN -- ) D9600400 RDIMM9RNOP, ; // FEAT_MTE ?
+: ARMIMM++STZG,  ( RT IMM9 RN -- ) D9600C00 RDIMM9RNOP, ; // FEAT_MTE ?
+
+
+HEX
+: RNIMM9RDSFOP, { | RN IMM9 RD SF OP -- }
+  OP
+  RN      RN>OP 
+  IMM9    IMM9>OPb
+  RD      RD>OP
+  SF      SF>OPb
+  CODE-U32,
+;
+
+: ARMLDAPR,    ( RN IMM9 RT SF -- ) 19C00800 RNIMM9RDSFOP, ; // FEAT_LRCPC3 ?
+  : ARMLDAPRB, ( RN IMM9 RT -- ) 8BIT ARMLDAPR, ;
+  : ARMLDAPRH, ( RN IMM9 RT -- ) 16BIT ARMLDAPR, ;
+  : ARMLDAPRW, ( RN IMM9 RT -- ) 32BIT ARMLDAPR, ;
+  : ARMLDAPRX, ( RN IMM9 RT -- ) 64BIT ARMLDAPR, ;
+
+: ARMLDAPUR, ( RN IMM9 RT SF -- ) 19400000 RNIMM9RDSFOP, ; // FEAT_LRCPC2 ?
+  : ARMLDAPURB, ( RN IMM9 RT -- ) 8BIT ARMLDAPUR, ;
+  : ARMLDAPURH, ( RN IMM9 RT -- ) 16BIT ARMLDAPUR, ;
+  : ARMLDAPURW, ( RN IMM9 RT -- ) 32BIT ARMLDAPUR, ;
+  : ARMLDAPURX, ( RN IMM9 RT -- ) 64BIT ARMLDAPUR, ;
+
+: ARMLDTR,   ( RN IMM9 RT SF -- ) 38400800 RNIMM9RDSFOP, ; // need test
+  : ARMLDTRB,   ( RN IMM9 RT -- ) 8BIT ARMLDTR, ;
+  : ARMLDTRH,   ( RN IMM9 RT -- ) 16BIT ARMLDTR, ;
+  : ARMLDTRW,   ( RN IMM9 RT -- ) 32BIT ARMLDTR, ;
+  : ARMLDTRX,   ( RN IMM9 RT -- ) 64BIT ARMLDTR, ;
+
+: ARMLDUR,   ( RN IMM9 RT SF -- ) 38400000 RNIMM9RDSFOP, ; // need test
+  : ARMLDURB,   ( RN IMM9 RT -- ) 8BIT ARMLDUR, ;
+  : ARMLDURH,   ( RN IMM9 RT -- ) 16BIT ARMLDUR, ;
+  : ARMLDURW,   ( RN IMM9 RT -- ) 32BIT ARMLDUR, ;
+  : ARMLDURX,   ( RN IMM9 RT -- ) 64BIT ARMLDUR, ;
+
+: ARMLDRIMM++, ( RN IMM9 RT SF -- ) 38400400 RNIMM9RDSFOP, ; // 64 bit tested
+  : ARMLDRBIMM++, ( RN IMM9 RT -- ) 8BIT  ARMLDRIMM++, ; // tested
+  : ARMLDRHIMM++, ( RN IMM9 RT -- ) 16BIT ARMLDRIMM++, ; // tested
+  : ARMLDRWIMM++, ( RN IMM9 RT -- ) 32BIT ARMLDRIMM++, ; // tested
+  : ARMLDRXIMM++, ( RN IMM9 RT -- ) 64BIT ARMLDRIMM++, ; // tested
+
+: ARMIMM++LDR, ( RN IMM9 RT SF -- ) 38400C00 RNIMM9RDSFOP, ; // 64 bit tested
+  : ARMIMM++LDRB, ( RN IMM9 RT -- ) 8BIT  ARMIMM++LDR, ; // tested
+  : ARMIMM++LDRH, ( RN IMM9 RT -- ) 16BIT ARMIMM++LDR, ; // tested
+  : ARMIMM++LDRW, ( RN IMM9 RT -- ) 32BIT ARMIMM++LDR, ; // tested
+  : ARMIMM++LDRX, ( RN IMM9 RT -- ) 64BIT ARMIMM++LDR, ; // tested
+
+HEX
+: RDIMM9RNSFOP, { | RD IMM9 RN SF OP -- }
+  OP
+  RN      RN>OP 
+  IMM9    IMM9>OPb
+  RD      RD>OP
+  SF      SF>OPb
+  CODE-U32,
+;
+
+: ARMSTLUR,  ( RT IMM9 RN SF -- ) 19000000 RDIMM9RNSFOP, ; // FEAT_LRCPC2
+  : ARMSTLURB,  ( RT IMM9 RN -- ) 8BIT ARMSTLUR, ;
+  : ARMSTLURH,  ( RT IMM9 RN -- ) 16BIT ARMSTLUR, ;
+  : ARMSTLURW,  ( RT IMM9 RN -- ) 32BIT ARMSTLUR, ;
+  : ARMSTLURX,  ( RT IMM9 RN -- ) 64BIT ARMSTLUR, ;
+
+: ARMSTTR,   ( RT IMM9 RN SF -- ) 38000800 RDIMM9RNSFOP, ; // need test
+  : ARMSTTRB,   ( RT IMM9 RN -- ) 8BIT ARMSTTR, ;
+  : ARMSTTRH,   ( RT IMM9 RN -- ) 16BIT ARMSTTR, ;
+  : ARMSTTRW,   ( RT IMM9 RN -- ) 32BIT ARMSTTR, ;
+  : ARMSTTRX,   ( RT IMM9 RN -- ) 64BIT ARMSTTR, ;
+  
+: ARMSTUR,   ( RT IMM9 RN SF -- ) 38000000 RDIMM9RNSFOP, ; // need test
+  : ARMSTURB,   ( RT IMM9 RN -- ) 8BIT ARMSTUR, ;
+  : ARMSTURH,   ( RT IMM9 RN -- ) 16BIT ARMSTUR, ;
+  : ARMSTURW,   ( RT IMM9 RN -- ) 32BIT ARMSTUR, ;
+  : ARMSTURX,   ( RT IMM9 RN -- ) 64BIT ARMSTUR, ;
+
+HEX
+: RNIMM9RDSFSFBOP, { | RN IMM9 RD SF SFB OP -- }
+  OP
+  RN      RN>OP 
+  IMM9    IMM9>OPb
+  RD      RD>OP
+  SF      SF>OPb
+  SFB     SFB>OP
+  CODE-U32,
+;
+
+: ARMLDRSIMM++, ( RN IMM9 RT SF SFB -- ) 38800400 RNIMM9RDSFSFBOP, ; 
+  : ARMLDRSBWIMM++, ( RN IMM9 RT -- ) 8BIT  32BIT ARMLDRSIMM++, ; // tested
+  : ARMLDRSBXIMM++, ( RN IMM9 RT -- ) 8BIT  64BIT ARMLDRSIMM++, ; // tested
+  : ARMLDRSHWIMM++, ( RN IMM9 RT -- ) 16BIT 32BIT ARMLDRSIMM++, ; // tested
+  : ARMLDRSHXIMM++, ( RN IMM9 RT -- ) 16BIT 64BIT ARMLDRSIMM++, ; // tested
+  : ARMLDRSWXIMM++, ( RN IMM9 RT -- ) 32BIT 64BIT ARMLDRSIMM++, ; // tested
+
+: ARMIMM++LDRS, ( RN IMM9 RT SF SFB -- ) 38800C00 RNIMM9RDSFSFBOP, ; 
+  : ARMIMM++LDRSBW, ( RN IMM9 RT -- ) 8BIT  32BIT ARMIMM++LDRS, ; // tested
+  : ARMIMM++LDRSBX, ( RN IMM9 RT -- ) 8BIT  64BIT ARMIMM++LDRS, ; // tested
+  : ARMIMM++LDRSHW, ( RN IMM9 RT -- ) 16BIT 32BIT ARMIMM++LDRS, ; // tested
+  : ARMIMM++LDRSHX, ( RN IMM9 RT -- ) 16BIT 64BIT ARMIMM++LDRS, ; // tested
+  : ARMIMM++LDRSWX, ( RN IMM9 RT -- ) 32BIT 64BIT ARMIMM++LDRS, ; // tested
+
+: ARMLDAPURS, ( RN IMM9 RT SF SFB -- ) 19800000 RNIMM9RDSFSFBOP, ; // FEAT_LRCPC2 ?
+  : ARMLDAPURSB, ( RN IMM9 RT SFB -- ) 8BIT SWAP ARMLDAPURS, ;
+  : ARMLDAPURSH, ( RN IMM9 RT SFB -- ) 16BIT SWAP ARMLDAPURS, ; 
+  : ARMLDAPURSW, ( RN IMM9 RT -- ) 32BIT 64BIT ARMLDAPURS, ; 
+
+HEX
+: RDRNIMM9SFOP, { | RD RN IMM9 SF OP -- }
+  OP
+  RN      RN>OP 
+  IMM9    IMM9>OPb
+  RD      RD>OP
+  SF      SF>OPb
+  CODE-U32,
+;
+
+: ARMSTRIMM++, ( RS RN IMM9 SF -- ) 38000400 RDRNIMM9SFOP, ; // 64 bit tested
+  : ARMSTRBIMM++, ( RS RN IMM9 -- ) 8BIT  ARMSTRIMM++, ; // tested
+  : ARMSTRHIMM++, ( RS RN IMM9 -- ) 16BIT ARMSTRIMM++, ; // tested
+  : ARMSTRWIMM++, ( RS RN IMM9 -- ) 32BIT ARMSTRIMM++, ; // tested
+  : ARMSTRXIMM++, ( RS RN IMM9 -- ) 64BIT ARMSTRIMM++, ; // tested
+ 
+: ARMIMM++STR, ( RS RN IMM9 SF -- ) 38000C00 RDRNIMM9SFOP, ;  // 64 bit tested
+  : ARMIMM++STRB, ( RS RN IMM9 -- ) 8BIT  ARMIMM++STR, ; // tested
+  : ARMIMM++STRH, ( RS RN IMM9 -- ) 16BIT ARMIMM++STR, ; // tested
+  : ARMIMM++STRW, ( RS RN IMM9 -- ) 32BIT ARMIMM++STR, ; // tested
+  : ARMIMM++STRX, ( RS RN IMM9 -- ) 64BIT ARMIMM++STR, ; // tested
+
+: ARMSTLUR, ( RS RN IMM9 SF -- ) 19000000 RDRNIMM9SFOP, ; // FEAT_LRCPC2
+  : ARMSTLURB, ( RS RN IMM9 -- ) 8BIT ARMSTLUR, ;
+  : ARMSTLURH, ( RS RN IMM9 -- ) 16BIT ARMSTLUR, ;
+  : ARMSTLURW, ( RS RN IMM9 -- ) 32BIT ARMSTLUR, ;
+  : ARMSTLURX, ( RS RN IMM9 -- ) 64BIT ARMSTLUR, ;
+
+HEX
+: RNIMM9RDSFOPb, { | RN IMM9 RD SF OP -- }
+  OP
+  RN      RN>OP 
+  IMM9    IMM9>OPb
+  RD      RD>OP
+  SF      1 XOR N>OP
+  CODE-U32,
+;
+
+: ARMLDRSBIMM++,  ( RN IMM9 RD SF -- ) 38800400 RNIMM9RDSFOPb, ;
+: ARMIMM++LDRSB,  ( RN IMM9 RD SF -- ) 38800C00 RNIMM9RDSFOPb, ;
+: ARMLDRSHIMM++,  ( RN IMM9 RD SF -- ) 78800400 RNIMM9RDSFOPb, ;
+: ARMIMM++LDRSH,  ( RN IMM9 RD SF -- ) 78800C00 RNIMM9RDSFOPb, ;
+: ARMLDRSWIMM++,  ( RN IMM9 RD -- ) 0 B8800400 RNIMM9RDSFOPb, ; // it's always 32bit -> 64bit
+: ARMIMM++LDRSW,  ( RN IMM9 RD -- ) 0 B8800C00 RNIMM9RDSFOPb, ; // it's always 32bit -> 64bit
+
+: ARMLDTRSB,   ( RN IMM9 RD SF -- ) 38800800 RNIMM9RDSFOPb, ; // need test
+: ARMLDTRSH,   ( RN IMM9 RD SF -- ) 78800800 RNIMM9RDSFOPb, ; // need test
+: ARMLDURSB,   ( RN IMM9 RD SF -- ) 38800000 RNIMM9RDSFOPb, ; // need test
+: ARMLDURSH,   ( RN IMM9 RD SF -- ) 78800000 RNIMM9RDSFOPb, ; // need test
+
+// HEX
+// : RNIMM8RDOP, { | RN IMM8 RD OP -- }
+//   OP
+//   RN      RN>OP 
+//   IMM8    IMM8>OP
+//   RD      RD>OP
+//   CODE-U32,
+// ;
+
+HEX
+: RNIMM8RDSFOP, { | RN IMM8 RD SF OP -- }
+  OP
+  RN      RN>OP 
+  IMM8    IMM8>OP
+  RD      RD>OP
+  SF      SF>OP
+  CODE-U32,
+;
+
+: ARMSMAXIMM, ( RN IMM8 RD SF -- ) 11C00000 RNIMM8RDSFOP, ; // FEAT_CSSC not supported on my mac
+: ARMSMINIMM, ( RN IMM8 RD SF -- ) 11C80000 RNIMM8RDSFOP, ; // FEAT_CSSC not supported on my mac
+: ARMUMAXIMM, ( RN IMM8 RD SF -- ) 11C40000 RNIMM8RDSFOP, ; // FEAT_CSSC not supported on my mac
+: ARMUMINIMM, ( RN IMM8 RD SF -- ) 11CC0000 RNIMM8RDSFOP, ; // FEAT_CSSC not supported on my mac
+
+HEX
+: IMM19CONDOP, { | IMM19 COND OP -- }
+  OP 
+  IMM19 IMM19>OP
+  COND COND>OP 
+  CODE-U32,
+; 
+
+54000000 CONSTANT ARMB.cond
+
+: ARMB.cond,  ( imm19 cond -- ) ARMB.cond IMM19CONDOP, ; // tested
+: ARMBC.cond, ( imm19 cond -- ) 54000010 IMM19CONDOP, ; // FEAT_HBC ?
+
+HEX
+: RDIMM19OP, { | RD IMM19 OP -- }
+  OP
+  RD RD>OP 
+  IMM19 IMM19>OP
+  CODE-U32,
+; 
+
+: ARMCBNZ, ( RT IMM19 -- ) 35000000 RDIMM19OP, ; // tested
+: ARMCBZ,  ( RT IMM19 -- ) 34000000 RDIMM19OP, ; // tested
+
+HEX
+: RNIMM12RDOP, { | RN IMM12 RD OP -- }
+  OP
+  RN      RN>OP 
+  IMM12   IMM12>OP
+  RD      RD>OP
+  CODE-U32,
+;
+
+: ARMPRFMIMM,   ( RN IMM12 RD -- ) F9800000 RNIMM12RDOP, ;
+  0 CONSTANT PLDL1KEEP
+  1 CONSTANT PLD1STRM
+  2 CONSTANT PLDL2KEEP
+  3 CONSTANT PLDL2STRM
+  4 CONSTANT PLDL3KEEP
+  5 CONSTANT PLDL3STRM
+  6 CONSTANT PLDSLCKEEP
+  7 CONSTANT PLDSLCSTRM
+  8 CONSTANT PLIL1KEEP
+  9 CONSTANT PLIL1STRM
+  0A CONSTANT PLIL2KEEP
+  0B CONSTANT PLIL2STRM
+  0C CONSTANT PLIL3KEEP
+  0D CONSTANT PLIL3STRM
+  0E CONSTANT PLISLCKEEP
+  0F CONSTANT PLISLCSTRM
+  10 CONSTANT PSTL1KEEP
+  11 CONSTANT PSTL1STRM
+  12 CONSTANT PSTL2KEEP
+  13 CONSTANT PSTL2STRM
+  14 CONSTANT PSTL3KEEP
+  15 CONSTANT PSTL3STRM
+  16 CONSTANT PSTSLCKEEP
+  17 CONSTANT PSTSLCSTRM
+  18 CONSTANT IR
+
+
+HEX
+: IMM19RDSFOP, { | IMM19 RD SF OP -- }
+  OP 
+  IMM19 IMM19>OP
+  RD RD>OP
+  SF SF>OPc
+  CODE-U32,
+; 
+
+: ARMLDRLIT,  ( IMM19 RD SF -- ) 18000000 IMM19RDSFOP, ; // 64 bit tested
+
+HEX
+: IMM19RDOP, { | IMM19 RD OP -- }
+  OP 
+  IMM19 IMM19>OP
+  RD RD>OP
+  CODE-U32,
+;
+
+: ARMLDRSWLIT,  ( IMM19 RD -- ) 98000000 IMM19RDOP, ; // tested
+: ARMPRFMLIT,   ( IMM19 RD -- ) D8000000 IMM19RDOP, ; // need test
+
+HEX
+: RDIMM6IMM9SFCONDOP, { | RD IMM6 IMM9 SF COND OP -- }
+  OP 
+  IMM6 IMM6>OPc
+  RD   RD>OP
+  IMM9 IMM9>OP
+  SF   SF>OP 
+  COND COND>OPb
+  CODE-U32,
+; 
+
+0 CONSTANT Cmp_GT
+1 CONSTANT Cmp_LT
+2 CONSTANT Cmp_UGT
+3 CONSTANT Cmp_ULT
+6 CONSTANT Cmp_EQ
+7 CONSTANT Cmp_NE
+
+: ARMCBIMM, ( RT IMM6 IMM9 SF COND -- ) 75000000 RDIMM6IMM9SFCONDOP, ; // FEAT_CMPBR not supported on m4 mac
+
+: ARMCBGTIMM, ( RT IMM6 IMM9 SF      -- ) 0 ARMCBIMM, ; // FEAT_CMPBR not supported on m4 mac
+: ARMCBGEIMM, ( RT IMM6 IMM9 SF      -- ) >R 1+ R> 0 ARMCBIMM, ; // FEAT_CMPBR not supported on m4 mac
+: ARMCBLTIMM, ( RT IMM6 IMM9 SF      -- ) 1 ARMCBIMM, ; // FEAT_CMPBR not supported on m4 mac
+: ARMCBLEIMM, ( RT IMM6 IMM9 SF      -- ) >R 1+ R> 1 ARMCBIMM, ; // FEAT_CMPBR not supported on m4 mac
+: ARMCBHIIMM, ( RT IMM6 IMM9 SF      -- ) 2 ARMCBIMM, ; // FEAT_CMPBR not supported on m4 mac
+: ARMCBHSIMM, ( RT IMM6 IMM9 SF      -- ) >R 1+ R> 2 ARMCBIMM, ; // FEAT_CMPBR not supported on m4 mac
+: ARMCBLOIMM, ( RT IMM6 IMM9 SF      -- ) 3 ARMCBIMM, ; // FEAT_CMPBR not supported on m4 mac
+: ARMCBLSIMM, ( RT IMM6 IMM9 SF      -- ) >R 1+ R> 3 ARMCBIMM, ; // FEAT_CMPBR not supported on m4 mac
+
+: ARMCBEQIMM, ( RT IMM6 IMM9 SF      -- ) 6 ARMCBIMM, ; // FEAT_CMPBR not supported on m4 mac
+: ARMCBNEIMM, ( RT IMM6 IMM9 SF      -- ) 7 ARMCBIMM, ; // FEAT_CMPBR not supported on m4 mac
+
+HEX
+: RDRMIMM9SFCONDOP, { | RD RM IMM9 SF COND OP -- }
+  OP 
+  RM   RM>OP
+  RD   RD>OP
+  IMM9 IMM9>OP
+  SF   SF>OP 
+  COND COND>OPb
+  CODE-U32,
+; 
+
+: ARMCBREG, ( RT RM IMM9 SF COND -- ) 74000000 RDRMIMM9SFCONDOP, ; // FEAT_CMPBR not supported on m4 mac
+
+: ARMCBGTREG, ( RT RM IMM9 SF      -- ) 0 ARMCBREG, ; // FEAT_CMPBR not supported on m4 mac
+: ARMCBGEREG, ( RT RM IMM9 SF      -- ) 1 ARMCBREG, ; // FEAT_CMPBR not supported on m4 mac
+: ARMCBHIREG, ( RT RM IMM9 SF      -- ) 2 ARMCBREG, ; // FEAT_CMPBR not supported on m4 mac
+: ARMCBHSREG, ( RT RM IMM9 SF      -- ) 3 ARMCBREG, ; // FEAT_CMPBR not supported on m4 mac
+: ARMCBEQREG, ( RT RM IMM9 SF      -- ) 6 ARMCBREG, ; // FEAT_CMPBR not supported on m4 mac
+: ARMCBNEREG, ( RT RM IMM9 SF      -- ) 7 ARMCBREG, ; // FEAT_CMPBR not supported on m4 mac
+
+: ARMCBLTREG, ( RT RM IMM9 SF      -- ) >R >R SWAP R> R> 0 ARMCBREG, ; // FEAT_CMPBR not supported on m4 mac
+: ARMCBLEREG, ( RT RM IMM9 SF      -- ) >R >R SWAP R> R> 1 ARMCBREG, ; // FEAT_CMPBR not supported on m4 mac
+: ARMCBLOREG, ( RT RM IMM9 SF      -- ) >R >R SWAP R> R> 2 ARMCBREG, ; // FEAT_CMPBR not supported on m4 mac
+: ARMCBLSREG, ( RT RM IMM9 SF      -- ) >R >R SWAP R> R> 3 ARMCBREG, ; // FEAT_CMPBR not supported on m4 mac
+
+HEX
+: RDRMIMM9CONDOP, { | RD RM IMM9 COND OP -- }
+  OP 
+  RM   RM>OP
+  RD   RD>OP
+  IMM9 IMM9>OP 
+  COND COND>OPb
+  CODE-U32,
+; 
+
+: ARMCBBREG, ( RT RM IMM9 COND -- ) 74008000 RDRMIMM9CONDOP, ; // FEAT_CMPBR not supported on m4 mac 
+: ARMCBHREG, ( RT RM IMM9 COND -- ) 7400C000 RDRMIMM9CONDOP, ; // FEAT_CMPBR not supported on m4 mac 
+
+: ARMCBBGTREG, ( RM RT IMM9 SF      -- ) 0 ARMCBBREG, ; // FEAT_CMPBR not supported on m4 mac 
+: ARMCBBGEREG, ( RM RT IMM9 SF      -- ) 1 ARMCBBREG, ; // FEAT_CMPBR not supported on m4 mac
+: ARMCBBHIREG, ( RM RT IMM9 SF      -- ) 2 ARMCBBREG, ; // FEAT_CMPBR not supported on m4 mac 
+: ARMCBBHSREG, ( RM RT IMM9 SF      -- ) 3 ARMCBBREG, ; // FEAT_CMPBR not supported on m4 mac 
+: ARMCBBEQREG, ( RM RT IMM9 SF      -- ) 6 ARMCBBREG, ; // FEAT_CMPBR not supported on m4 mac 
+: ARMCBBNEREG, ( RM RT IMM9 SF      -- ) 7 ARMCBBREG, ; // FEAT_CMPBR not supported on m4 mac  
+
+: ARMCBHGTREG, ( RM RT IMM9 SF      -- ) 0 ARMCBHREG, ; // FEAT_CMPBR not supported on m4 mac 
+: ARMCBHGEREG, ( RM RT IMM9 SF      -- ) 1 ARMCBHREG, ; // FEAT_CMPBR not supported on m4 mac 
+: ARMCBHHIREG, ( RM RT IMM9 SF      -- ) 2 ARMCBHREG, ; // FEAT_CMPBR not supported on m4 mac 
+: ARMCBHHSREG, ( RM RT IMM9 SF      -- ) 3 ARMCBHREG, ; // FEAT_CMPBR not supported on m4 mac 
+: ARMCBHEQREG, ( RM RT IMM9 SF      -- ) 6 ARMCBHREG, ; // FEAT_CMPBR not supported on m4 mac 
+: ARMCBHNEREG, ( RM RT IMM9 SF      -- ) 7 ARMCBHREG, ; // FEAT_CMPBR not supported on m4 mac  
+
+: ARMCBBLTREG, ( RM RT IMM9 SF      -- ) >R >R SWAP R> R> 0 ARMCBBREG, ; // FEAT_CMPBR not supported on m4 mac 
+: ARMCBBLEREG, ( RM RT IMM9 SF      -- ) >R >R SWAP R> R> 1 ARMCBBREG, ; // FEAT_CMPBR not supported on m4 mac 
+: ARMCBBLOREG, ( RM RT IMM9 SF      -- ) >R >R SWAP R> R> 2 ARMCBBREG, ; // FEAT_CMPBR not supported on m4 mac 
+: ARMCBBLSREG, ( RM RT IMM9 SF      -- ) >R >R SWAP R> R> 3 ARMCBBREG, ; // FEAT_CMPBR not supported on m4 mac 
+
+: ARMCBHLTREG, ( RM RT IMM9 SF      -- ) >R >R SWAP R> R> 0 ARMCBHREG, ; // FEAT_CMPBR not supported on m4 mac 
+: ARMCBHLEREG, ( RM RT IMM9 SF      -- ) >R >R SWAP R> R> 1 ARMCBHREG, ; // FEAT_CMPBR not supported on m4 mac 
+: ARMCBHLOREG, ( RM RT IMM9 SF      -- ) >R >R SWAP R> R> 2 ARMCBHREG, ; // FEAT_CMPBR not supported on m4 mac 
+: ARMCBHLSREG, ( RM RT IMM9 SF      -- ) >R >R SWAP R> R> 3 ARMCBHREG, ; // FEAT_CMPBR not supported on m4 mac 
+
+
+HEX
+: IMM16OP, ( IMM16 OP -- )
+  SWAP IMM16>OP 
+  CODE-U32,
+;
+
+: ARMAUTIASPPC, ( IMM16 -- ) F380001F IMM16OP, ; // FEAT_PAuth_LR ?
+: ARMAUTIBSPPC, ( IMM16 -- ) F3A0001F IMM16OP, ; // FEAT_PAuth_LR ?
+: ARMBRK,       ( IMM16 -- ) D4200000 IMM16OP, ; // need test
+: ARMDCPS1,     ( IMM16 -- ) D4A00001 IMM16OP, ; // need test
+: ARMDCPS2,     ( IMM16 -- ) D4A00002 IMM16OP, ; // need test
+: ARMDCPS3,     ( IMM16 -- ) D4A00003 IMM16OP, ; // need test
+: ARMHLT,       ( IMM16 -- ) D4400000 IMM16OP, ; // need test
+: ARMHVC,       ( IMM16 -- ) D4000002 IMM16OP, ; // need test
+: ARMRETAASPPC, ( IMM16 -- ) 5500001F IMM16OP, ; // FEAT_PAuth_LR ?
+: ARMRETABSPPC, ( IMM16 -- ) 5540001F IMM16OP, ; // FEAT_PAuth_LR ?
+: ARMSMC,       ( IMM16 -- ) D4000003 IMM16OP, ; // need test
+: ARMSVC,       ( IMM16 -- ) D4000001 IMM16OP, ; // need test
+
+
+HEX
+: RNRDSFOP, { | RN RD SF OP -- }
+  OP 
+  RD RD>OP   // dest reg 0-31
+  RN RN>OP   // source reg 0-31  
+  SF SF>OP   // 0 = 32bit, 1 = 64bit
+  CODE-U32,
+; 
+
+: ARMABS,   ( RN RD SF -- ) 5AC02000 RNRDSFOP, ; // FEAT_CSSC not implemented on my m4 arm
+: ARMMOVSP, ( RN RD SF -- ) 11000000 RNRDSFOP, ; // tested
+: ARMCLS,   ( RN RD SF -- ) 5AC01400 RNRDSFOP, ; // tested. count does not include sign bit
+: ARMCLZ,   ( RN RD SF -- ) 5AC01000 RNRDSFOP, ; // tested
+: ARMCNT,   ( RN RD SF -- ) 5AC01C00 RNRDSFOP, ; // FEAT_CSSC not implemented on my m4 arm mac
+: ARMCTZ,   ( RN RD SF -- ) 5AC01800 RNRDSFOP, ; // FEAT_CSSC not implemented on my m4 arm mac
+: ARMRBIT,  ( RN RD SF -- ) 5AC00000 RNRDSFOP, ; // tested
+: ARMREV,   ( RN RD SF -- ) DUP 1 AND 0> IF DAC00C00 ELSE 5AC00800 THEN RNRDSFOP, ; // 64 bit tested
+: ARMREV16, ( RN RD SF -- ) 5AC00400 RNRDSFOP, ;    // tested
+: ARMREV32, ( RN RD -- ) 64BIT DAC00800 RNRDSFOP, ; // tested
+: ARMREV64, ( RN RD -- ) 64BIT DAC00C00 RNRDSFOP, ; // tested
+
+
+
+
+
+
+HEX
+: RMRDSFOP, { | RM RD SF OP -- }
+  OP 
+  RD RD>OP   // dest reg 0-31
+  RM RM>OP   // source reg 0-31  
+  SF SF>OP   // 0 = 32bit, 1 = 64bit
+  CODE-U32,
+; 
+
+: ARMMOVREG,  ( RM RD SF -- ) 2A0003E0 RMRDSFOP, ; // 64 bit tested - does not support sp (use movsp instead)
+: ARMNGC,     ( RM RD SF -- ) 5A0003E0 RMRDSFOP, ; // 64 bit tested
+: ARMNGCS,    ( RM RD SF -- ) 7A0003E0 RMRDSFOP, ; // 64 bit tested
+
+HEX
+: RMRNRDSFOP, { | RM RN RD SF OP -- }
+  OP 
+  RD RD>OP
+  RN RN>OP
+  RM RM>OP
+  SF SF>OP
+  CODE-U32,
+;
+
+: ARMADC,     ( RM RN RD SF -- ) 1A000000 RMRNRDSFOP, ; // tested
+: ARMADCS,    ( RM RN RD SF -- ) 3A000000 RMRNRDSFOP, ; // tested
+
+: ARMMNEG,    ( RM RN RD SF -- ) 1B00FC00 RMRNRDSFOP, ; // 64 bit tested
+
+: ARMSMAXREG, ( RM RN RD SF -- ) 1AC06000 RMRNRDSFOP, ; // FEAT_CSSC not supported on M4 Mac
+: ARMSMINREG, ( RM RN RD SF -- ) 1AC06800 RMRNRDSFOP, ; // FEAT_CSSC not supported on M4 Mac
+
+: ARMUMAXREG, ( RM RN RD SF -- ) 1AC06400 RMRNRDSFOP, ; // FEAT_CSSC
+: ARMUMINREG, ( RN RN RD SF -- ) 1AC06C00 RMRNRDSFOP, ; // FEAT_CSSC
+
+
+HEX
+: RNRMRDSFOP, { | RN RM RD SF OP -- }
+  OP 
+  RD RD>OP
+  RN RN>OP
+  RM RM>OP
+  SF SF>OP
+  CODE-U32,
+;
+
+: ARMSBC,     ( RN RM RD SF -- ) 5A000000 RNRMRDSFOP, ; // 64 bit tested
+: ARMSBCS,    ( RN RM RD SF -- ) 7A000000 RNRMRDSFOP, ; // 64 bit tested
+
+: ARMASRREG,  ( RN RM RD SF -- ) 1AC02800 RNRMRDSFOP, ; // tested
+SYNONYM ARMASRREG, ARMASRV,    
+
+: ARMLSLREG,  ( RN RM RD SF -- ) 1AC02000 RNRMRDSFOP, ; // tested
+SYNONYM ARMLSLREG, ARMLSLV,
+
+: ARMLSRREG,  ( RN RM RD SF -- ) 1AC02400 RNRMRDSFOP, ; // tested
+SYNONYM ARMLSRREG, ARMLSRV,
+
+: ARMRORREG,    ( RN RM RD SF -- ) 1AC02C00 RNRMRDSFOP, ; // 64 bit tested
+SYNONYM ARMRORREG, ARMRORV, 
+
+: ARMSDIV,    ( RN RM RD SF -- ) 1AC00C00 RNRMRDSFOP, ; // tested
+: ARMUDIV,    ( RN RM RD SF -- ) 1AC00800 RNRMRDSFOP, ; // tested
+
+HEX
+: RNRDRMSFOPb, { | RN RD RM SF OP -- }
+  OP 
+  RD RD>OP
+  RN RN>OP
+  RM RM>OP
+  SF SF>OPb
+  CODE-U32,
+;
+
+
+// RD is lo (first transferred ) RM is hi (second transferred)... 
+: ARMLDIAPP,      ( RN RD RM SF -- ) 99401800 RNRMRDSFOP, ; // FEAT_LRCPC3 ?
+: ARMLDIAPPSZ++,  ( RN RD RM SF -- ) 99400800 RNRMRDSFOP, ; // adds size of SF to RN after load, 32BIT = 4, 64BIT = 8
+
+HEX
+: RMRNRDSZOP, { | RM RN RD SZ OP -- }
+  OP 
+  RD RD>OP
+  RN RN>OP
+  RM RM>OP
+  SZ SZ>OP
+  CODE-U32,
+;
+
+
+HEX
+: RARMRNRDSFOP, { | RA RM RN RD SF OP -- }
+  OP 
+  RD RD>OP
+  RN RN>OP
+  RM RM>OP
+  RA RA>OP
+  SF SF>OP
+  CODE-U32,
+;
+
+: ARMMADDPT,  ( RA RM RN RD    -- ) 1 9B600000 RARMRNRDSFOP, ; // FEAT_CPA ?
+: ARMMSUB,    ( RA RM RN RD SF -- ) 1B008000 RARMRNRDSFOP, ; // 64 bit tested sort of
+: ARMMSUBPT,  ( RA RM RN RD    -- ) 1 9B608000 RARMRNRDSFOP, ; // FEAT_CPA ?
+: ARMSMADDL,  ( RA RM RN RD    -- ) 1 9B200000 RARMRNRDSFOP, ; // tested ... could add negative test
+: ARMSMSUBL,  ( RA RM RN RD    -- ) 1 9B208000 RARMRNRDSFOP, ; // tested ... could add negative test
+
+: ARMUMADDL,  ( RA RM RN RD    -- ) 1 9BA00000 RARMRNRDSFOP, ; // tested ... could add negative test
+: ARMUMSUBL,  ( RA RM RN RD    -- ) 1 9BA08000 RARMRNRDSFOP, ; // tested ... could add negative test
+
+HEX
+: RNRMRARDSFOP, { | RN RM RA RD SF OP -- }
+  OP 
+  RD RD>OP
+  RN RN>OP
+  RM RM>OP
+  RA RA>OP
+  SF SF>OP
+  CODE-U32,
+;
+
+: ARMMADD,    ( RN RM RA RD SF -- ) 1B000000 RNRMRARDSFOP, ; // 64 bit tested
+: ARMMUL,     ( RN RM RD SF -- ) R31 -ROT ARMMADD, ; // R31 becomes 0 64 bit tested
+
+HEX
+: RDRARNRMSFcOP, { | RD RA RN RM SF OP -- }
+  OP 
+  RD RD>OP
+  RN RN>OP
+  RM RM>OP
+  RA RA>OP
+  SF SF>OPc
+  CODE-U32,
+;
+
+             // lo hi base result 
+: ARMSTXP,   ( RT2 RT1 RN RS SF -- ) 88200000 RDRARNRMSFcOP, ; // 64 bit tested; RT2:RT1 -> [RN]; flag -> RS
+: ARMSTLXP,  ( RT2 RT1 RN RS SF -- ) 88208000 RDRARNRMSFcOP, ; // need test; RT2:RT1 -> [RN]; flag -> RS
+
+
+HEX
+: RNRDRASFcOP, { | RN RD RA SF OP -- }
+  OP 
+  RD RD>OP
+  RN RN>OP
+  RA RA>OP
+  SF SF>OPc
+  CODE-U32,
+;
+
+: ARMLDXP,   ( RN RT1 RT2 SF -- ) 887F0000 RNRDRASFcOP, ; // 64 bit tested; // RT2:RT1 -> [RN]; flag -> RS
+: ARMLDAXP,  ( RN RT1 RT2 SF -- ) 887F8000 RNRDRASFcOP, ; // RT2:RT1 -> [RN]; flag -> RS
+
+HEX
+: RMRDRNSFOPb, { | RM RD RN SF OP -- }
+  OP 
+  RD RD>OP
+  RN RN>OP
+  RM RM>OP
+  SF SF>OPb
+  CODE-U32,
+;
+
+: ARMCAS,       ( RS RT RN SF -- ) 08A07C00 RMRDRNSFOPb, ; // 64 bit tested. if RS == [RN] then RT->[RN] else [RN]->RS 
+  : ARMCASB,    ( RS RT RN -- ) 8BIT ARMCAS, ;
+  : ARMCASH,    ( RS RT RN -- ) 16BIT ARMCAS, ;
+  : ARMCASW,    ( RS RT RN -- ) 32BIT ARMCAS, ;
+  : ARMCASX,    ( RS RT RN -- ) 64BIT ARMCAS, ;
+
+: ARMCASA,      ( RS RT RN SF -- ) 08E07C00 RMRDRNSFOPb, ; // 64 bit tested except for 'aquire'
+  : ARMCASAB,   ( RS RT RN -- ) 8BIT ARMCASA, ;
+  : ARMCASAH,   ( RS RT RN -- ) 16BIT ARMCASA, ;
+  : ARMCASAW,   ( RS RT RN -- ) 32BIT ARMCASA, ;
+  : ARMCASAX,   ( RS RT RN -- ) 64BIT ARMCASA, ;
+
+: ARMCASAL,     ( RS RT RN SF -- ) 08E0FC00 RMRDRNSFOPb, ; // 64 bit tested except for 'load and aquire'
+  : ARMCASALB,  ( RS RT RN -- ) 8BIT ARMCASAL, ;
+  : ARMCASALH,  ( RS RT RN -- ) 16BIT ARMCASAL, ;
+  : ARMCASALW,  ( RS RT RN -- ) 32BIT ARMCASAL, ;
+  : ARMCASALX,  ( RS RT RN -- ) 64BIT ARMCASAL, ;
+
+: ARMCASL,      ( RS RT RN SF -- ) 08A0FC00 RMRDRNSFOPb, ; // 64 bit tested except for 'load'
+  : ARMCASLB,   ( RS RT RN -- ) 8BIT ARMCASL, ;
+  : ARMCASLH,   ( RS RT RN -- ) 16BIT ARMCASL, ;
+  : ARMCASLW,   ( RS RT RN -- ) 32BIT ARMCASL, ;
+  : ARMCASLX,   ( RS RT RN -- ) 64BIT ARMCASL, ;
+
+HEX
+: RMRDRNSFOPc, { | RM RD RN SF OP -- } 
+  OP 
+  RD RD>OP
+  RN RN>OP
+  RM RM>OP
+  SF SF>OPc
+  CODE-U32,
+;
+
+: ARMCASP,      ( RS RT RN SF -- ) 08207C00 RMRDRNSFOPc, ; // 64 bit tested
+  : ARMCASPW,   ( RS RT RN -- ) 32BIT ARMCASP, ;
+  : ARMCASPX,   ( RS RT RN -- ) 64BIT ARMCASP, ;
+
+: ARMCASPA,     ( RS RT RN SF -- ) 08607C00 RMRDRNSFOPc, ; // 64 bit tested except for 'aquire'
+  : ARMCASPW,   ( RS RT RN -- ) 32BIT ARMCASPA, ;
+  : ARMCASPX,   ( RS RT RN -- ) 64BIT ARMCASPA, ;
+
+: ARMCASPAL,    ( RS RT RN SF -- ) 0860FC00 RMRDRNSFOPc, ; // 64 bit tested except for 'load and aquire'
+  : ARMCASPW,   ( RS RT RN -- ) 32BIT ARMCASPAL, ;
+  : ARMCASPX,   ( RS RT RN -- ) 64BIT ARMCASPAL, ;
+
+: ARMCASPL,     ( RS RT RN SF -- ) 0820FC00 RMRDRNSFOPc, ; // 64 bit tested except for 'load'
+  : ARMCASPLW,  ( RS RT RN -- ) 32BIT ARMCASPL, ;
+  : ARMCASPLX,  ( RS RT RN -- ) 64BIT ARMCASPL, ;
+
+
+HEX
+: RMRNRDSFOPb, { | RM RN RD SF OP -- }
+  OP 
+  RD RD>OP
+  RN RN>OP
+  RM RM>OP
+  SF SF>OPb
+  CODE-U32,
+;
+
+: ARMLDADD,     ( RS RN RT SF -- ) 38200000 RMRNRDSFOPb, ; // FEAT_LSE tested; [RN]->RT; RS + [RN] -> [RN]
+  : ARMLDADDB,  ( RS RN RT -- )    8BIT ARMLDADD, ; // tested
+  : ARMLDADDH,  ( RS RN RT -- )    16BIT ARMLDADD, ; // tested
+  : ARMLDADDW,  ( RS RN RT -- )    32BIT ARMLDADD, ; 
+  : ARMLDADDX,  ( RS RN RT -- )    64BIT ARMLDADD, ; 
+
+: ARMLDADDA,    ( RS RN RT SF -- ) 38A00000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMLDADDAB,  ( RS RN RT -- ) 8BIT ARMLDADDA, ; 
+  : ARMLDADDAH,  ( RS RN RT -- ) 16BIT ARMLDADDA, ; 
+  : ARMLDADDAW,  ( RS RN RT -- ) 32BIT ARMLDADDA, ; 
+  : ARMLDADDAX,  ( RS RN RT -- ) 64BIT ARMLDADDA, ; 
+
+: ARMLDADDAL,    ( RS RN RT SF -- ) 38E00000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMLDADDALB, ( RS RN RT -- ) 8BIT ARMLDADDAL, ; 
+  : ARMLDADDALH, ( RS RN RT -- ) 16BIT ARMLDADDAL, ; 
+  : ARMLDADDALW, ( RS RN RT -- ) 32BIT ARMLDADDAL, ;
+  : ARMLDADDALX, ( RS RN RT -- ) 64BIT ARMLDADDAL, ;  
+
+: ARMLDADDL,     ( RS RN RT SF -- ) 38600000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMLDADDLB,  ( RS RN RT -- ) 8BIT ARMLDADDL, ;
+  : ARMLDADDLH,  ( RS RN RT -- ) 16BIT ARMLDADDL, ;
+  : ARMLDADDLW,  ( RS RN RT -- ) 32BIT ARMLDADDL, ;
+  : ARMLDADDLX,  ( RS RN RT -- ) 64BIT ARMLDADDL, ;
+
+: ARMLDCLR,    ( RS RN RT SF -- ) 38201000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMLDCLRB,    ( RS RN RT -- )  8BIT 38201000 RMRNRDSFOPb, ; // tested
+  : ARMLDCLRH,    ( RS RN RT -- ) 16BIT 38201000 RMRNRDSFOPb, ; 
+  : ARMLDCLRW,    ( RS RN RT -- ) 32BIT 38201000 RMRNRDSFOPb, ;
+  : ARMLDCLRX,    ( RS RN RT -- ) 64BIT 38201000 RMRNRDSFOPb, ; 
+
+: ARMLDCLRA,   ( RS RN RT SF -- ) 38A01000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMLDCLRAB,   ( RS RN RT -- )  8BIT 38A01000 RMRNRDSFOPb, ;
+  : ARMLDCLRAH,   ( RS RN RT -- ) 16BIT 38A01000 RMRNRDSFOPb, ; 
+  : ARMLDCLRAW,   ( RS RN RT -- ) 32BIT 38A01000 RMRNRDSFOPb, ; 
+  : ARMLDCLRAX,   ( RS RN RT -- ) 64BIT 38A01000 RMRNRDSFOPb, ;
+
+: ARMLDCLRAL,  ( RS RN RT SF -- ) 38E01000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMLDCLRALB,  ( RS RN RT -- )  8BIT 38E01000 RMRNRDSFOPb, ;
+  : ARMLDCLRALH,  ( RS RN RT -- ) 16BIT 38E01000 RMRNRDSFOPb, ;
+  : ARMLDCLRALW,  ( RS RN RT -- ) 32BIT 38E01000 RMRNRDSFOPb, ;
+  : ARMLDCLRALX,  ( RS RN RT -- ) 64BIT 38E01000 RMRNRDSFOPb, ;
+
+: ARMLDCLRL,   ( RS RN RT SF -- ) 38601000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMLDCLRLB,   ( RS RN RT -- )  8BIT 38601000 RMRNRDSFOPb, ;
+  : ARMLDCLRLH,   ( RS RN RT -- ) 16BIT 38601000 RMRNRDSFOPb, ;
+  : ARMLDCLRLW,   ( RS RN RT -- ) 32BIT 38601000 RMRNRDSFOPb, ;
+  : ARMLDCLRLX,   ( RS RN RT -- ) 64BIT 38601000 RMRNRDSFOPb, ;
+
+: ARMLDEOR,    ( RS RN RT SF -- ) 38202000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMLDEORB,    ( RS RN RT -- )  8BIT 38202000 RMRNRDSFOPb, ; // tested
+  : ARMLDEORH,    ( RS RN RT -- ) 16BIT 38202000 RMRNRDSFOPb, ; 
+  : ARMLDEORW,    ( RS RN RT -- ) 32BIT 38202000 RMRNRDSFOPb, ;
+  : ARMLDEORX,    ( RS RN RT -- ) 64BIT 38202000 RMRNRDSFOPb, ; 
+
+: ARMLDEORA,   ( RS RN RT SF -- ) 38A02000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMLDEORAB,   ( RS RN RT -- )  8BIT 38A02000 RMRNRDSFOPb, ;
+  : ARMLDEORAH,   ( RS RN RT -- ) 16BIT 38A02000 RMRNRDSFOPb, ; 
+  : ARMLDEORAW,   ( RS RN RT -- ) 32BIT 38A02000 RMRNRDSFOPb, ; 
+  : ARMLDEORAX,   ( RS RN RT -- ) 64BIT 38A02000 RMRNRDSFOPb, ;
+
+: ARMLDEORAL,  ( RS RN RT SF -- ) 38E02000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMLDEORALB,  ( RS RN RT -- )  8BIT 38E02000 RMRNRDSFOPb, ;
+  : ARMLDEORALH,  ( RS RN RT -- ) 16BIT 38E02000 RMRNRDSFOPb, ;
+  : ARMLDEORALW,  ( RS RN RT -- ) 32BIT 38E02000 RMRNRDSFOPb, ;
+  : ARMLDEORALX,  ( RS RN RT -- ) 64BIT 38E02000 RMRNRDSFOPb, ;
+
+: ARMLDEORL,   ( RS RN RT SF -- ) 38602000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMLDEORLB,   ( RS RN RT -- )  8BIT 38602000 RMRNRDSFOPb, ;
+  : ARMLDEORLH,   ( RS RN RT -- ) 16BIT 38602000 RMRNRDSFOPb, ;
+  : ARMLDEORLW,   ( RS RN RT -- ) 32BIT 38602000 RMRNRDSFOPb, ;
+  : ARMLDEORLX,   ( RS RN RT -- ) 64BIT 38602000 RMRNRDSFOPb, ;
+
+: ARMLDSET,      ( RS RN RT SF -- ) 38203000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMLDSETB,   ( RS RN RT -- ) 8BIT ARMLDSET, ; // tested
+  : ARMLDSETH,   ( RS RN RT -- ) 16BIT ARMLDSET, ; 
+  : ARMLDSETW,   ( RS RN RT -- ) 32BIT ARMLDSET, ; 
+  : ARMLDSETX,   ( RS RN RT -- ) 64BIT ARMLDSET, ; 
+
+: ARMLDSETA,  ( RS RN RT SF -- ) 38A03000 RMRNRDSFOPb, ; 
+  : ARMLDSETAB,  ( RS RN RT -- ) 8BIT ARMLDSETA, ; 
+  : ARMLDSETAH,  ( RS RN RT -- ) 16BIT ARMLDSETA, ; 
+  : ARMLDSETAW,  ( RS RN RT -- ) 32BIT ARMLDSETA, ; 
+  : ARMLDSETAX,  ( RS RN RT -- ) 64BIT ARMLDSETA, ; 
+
+: ARMLDSETAL,    ( RS RN RT SF -- ) 38E03000 RMRNRDSFOPb, ; 
+  : ARMLDSETALB, ( RS RN RT -- ) 8BIT ARMLDSETAL, ;
+  : ARMLDSETALH, ( RS RN RT -- ) 16BIT ARMLDSETAL, ; 
+  : ARMLDSETALW, ( RS RN RT -- ) 32BIT ARMLDSETAL, ;
+  : ARMLDSETALX, ( RS RN RT -- ) 64BIT ARMLDSETAL, ;  
+
+: ARMLDSETL,  ( RS RN RT SF -- ) 38603000 RMRNRDSFOPb, ; 
+  : ARMLDSETLB,  ( RS RN RT -- ) 8BIT ARMLDSETL, ; 
+  : ARMLDSETLH,  ( RS RN RT -- ) 16BIT ARMLDSETL, ; 
+  : ARMLDSETLW,  ( RS RN RT -- ) 32BIT ARMLDSETL, ; 
+  : ARMLDSETLX,  ( RS RN RT -- ) 64BIT ARMLDSETL, ; 
+
+: ARMLDSMAX,   ( RS RN RT SF -- ) 38204000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMLDSMAXB,   ( RS RN RT -- ) 8BIT ARMLDSMAX, ; // tested
+  : ARMLDSMAXH,   ( RS RN RT -- ) 16BIT ARMLDSMAX, ;
+  : ARMLDSMAXW,   ( RS RN RT -- ) 32BIT ARMLDSMAX, ;
+  : ARMLDSMAXX,   ( RS RN RT -- ) 64BIT ARMLDSMAX, ;
+ 
+: ARMLDSMAXA,  ( RS RN RT SF -- ) 38A01000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMLDSMAXAB,   ( RS RN RT -- ) 8BIT ARMLDSMAXA, ; 
+  : ARMLDSMAXAH,   ( RS RN RT -- ) 16BIT ARMLDSMAXA, ;
+  : ARMLDSMAXAW,   ( RS RN RT -- ) 32BIT ARMLDSMAXA, ;
+  : ARMLDSMAXAX,   ( RS RN RT -- ) 64BIT ARMLDSMAXA, ;
+
+: ARMLDSMAXAL, ( RS RN RT SF -- ) 38E01000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMLDSMAXALB,   ( RS RN RT -- ) 8BIT ARMLDSMAXAL, ; 
+  : ARMLDSMAXALH,   ( RS RN RT -- ) 16BIT ARMLDSMAXAL, ;
+  : ARMLDSMAXALW,   ( RS RN RT -- ) 32BIT ARMLDSMAXAL, ;
+  : ARMLDSMAXALX,   ( RS RN RT -- ) 64BIT ARMLDSMAXAL, ;
+
+: ARMLDSMAXL,  ( RS RN RT SF -- ) 38601000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMLDSMAXLB,   ( RS RN RT -- ) 8BIT ARMLDSMAXL, ; 
+  : ARMLDSMAXLH,   ( RS RN RT -- ) 16BIT ARMLDSMAXL, ;
+  : ARMLDSMAXLW,   ( RS RN RT -- ) 32BIT ARMLDSMAXL, ;
+  : ARMLDSMAXLX,   ( RS RN RT -- ) 64BIT ARMLDSMAXL, ;
+
+: ARMLDSMIN,   ( RS RN RT SF -- ) 38205000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMLDSMINB,   ( RS RN RT -- ) 8BIT ARMLDSMIN, ; // tested
+  : ARMLDSMINH,   ( RS RN RT -- ) 16BIT ARMLDSMIN, ;
+  : ARMLDSMINW,   ( RS RN RT -- ) 32BIT ARMLDSMIN, ;
+  : ARMLDSMINX,   ( RS RN RT -- ) 64BIT ARMLDSMIN, ;
+
+: ARMLDSMINA,  ( RS RN RT SF -- ) 38A05000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMLDSMINAB,   ( RS RN RT -- ) 8BIT ARMLDSMINA, ; 
+  : ARMLDSMINAH,   ( RS RN RT -- ) 16BIT ARMLDSMINA, ;
+  : ARMLDSMINAW,   ( RS RN RT -- ) 32BIT ARMLDSMINA, ;
+  : ARMLDSMINAX,   ( RS RN RT -- ) 64BIT ARMLDSMINA, ;
+ 
+: ARMLDSMINAL, ( RS RN RT SF -- ) 38E05000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMLDSMINALB,   ( RS RN RT -- ) 8BIT ARMLDSMINAL, ; 
+  : ARMLDSMINALH,   ( RS RN RT -- ) 16BIT ARMLDSMINAL, ;
+  : ARMLDSMINALW,   ( RS RN RT -- ) 32BIT ARMLDSMINAL, ;
+  : ARMLDSMINALX,   ( RS RN RT -- ) 64BIT ARMLDSMINAL, ;
+
+: ARMLDSMINL,  ( RS RN RT SF -- ) 38605000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMLDSMINLB,   ( RS RN RT -- ) 8BIT ARMLDSMINL, ; 
+  : ARMLDSMINLH,   ( RS RN RT -- ) 16BIT ARMLDSMINL, ;
+  : ARMLDSMINLW,   ( RS RN RT -- ) 32BIT ARMLDSMINL, ;
+  : ARMLDSMINLX,   ( RS RN RT -- ) 64BIT ARMLDSMINL, ;
+
+: ARMLDUMAX,      ( RS RN RT SF -- ) 38206000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMLDUMAXB,   ( RS RN RT -- ) 8BIT ARMLDUMAX, ; // tested
+  : ARMLDUMAXH,   ( RS RN RT -- ) 16BIT ARMLDUMAX, ;
+  : ARMLDUMAXW,   ( RS RN RT -- ) 32BIT ARMLDUMAX, ;
+  : ARMLDUMAXX,   ( RS RN RT -- ) 64BIT ARMLDUMAX, ;
+
+: ARMLDUMAXA,  ( RS RN RT SF -- ) 38A06000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMLDUMAXAB,  ( RS RN RT -- ) 8BIT ARMLDUMAXA, ; 
+  : ARMLDUMAXAH,  ( RS RN RT -- ) 16BIT ARMLDUMAXA, ;
+  : ARMLDUMAXAW,  ( RS RN RT -- ) 32BIT ARMLDUMAXA, ;
+  : ARMLDUMAXAX,  ( RS RN RT -- ) 64BIT ARMLDUMAXA, ;
+
+: ARMLDUMAXAL,     ( RS RN RT SF -- ) 38E06000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMLDUMAXALB,  ( RS RN RT -- ) 8BIT ARMLDUMAXAL, ; 
+  : ARMLDUMAXALH,  ( RS RN RT -- ) 16BIT ARMLDUMAXAL, ; 
+  : ARMLDUMAXALW,  ( RS RN RT -- ) 32BIT ARMLDUMAXAL, ; 
+  : ARMLDUMAXALX,  ( RS RN RT -- ) 64BIT ARMLDUMAXAL, ; 
+
+: ARMLDUMAXL,     ( RS RN RT SF -- ) 38606000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMLDUMAXLB,   ( RS RN RT -- ) 8BIT ARMLDUMAXL, ; 
+  : ARMLDUMAXLH,   ( RS RN RT -- ) 16BIT ARMLDUMAXL, ; 
+  : ARMLDUMAXLW,   ( RS RN RT -- ) 32BIT ARMLDUMAXL, ; 
+  : ARMLDUMAXLX,   ( RS RN RT -- ) 64BIT ARMLDUMAXL, ; 
+
+: ARMLDUMIN,   ( RS RN RT SF -- ) 38207000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMLDUMINB,   ( RS RN RT -- ) 8BIT ARMLDUMIN, ; // tested
+  : ARMLDUMINH,   ( RS RN RT -- ) 16BIT ARMLDUMIN, ; 
+  : ARMLDUMINW,   ( RS RN RT -- ) 32BIT ARMLDUMIN, ; 
+  : ARMLDUMINX,   ( RS RN RT -- ) 64BIT ARMLDUMIN, ; 
+
+: ARMLDUMINA,  ( RS RN RT SF -- ) 38A07000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMLDUMINAB,   ( RS RN RT -- ) 8BIT ARMLDUMINA, ; 
+  : ARMLDUMINAH,   ( RS RN RT -- ) 16BIT ARMLDUMINA, ; 
+  : ARMLDUMINAW,   ( RS RN RT -- ) 32BIT ARMLDUMINA, ; 
+  : ARMLDUMINAX,   ( RS RN RT -- ) 64BIT ARMLDUMINA, ; 
+
+: ARMLDUMINAL, ( RS RN RT SF -- ) 38E07000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMLDUMINALB,   ( RS RN RT -- ) 8BIT ARMLDUMINAL, ; 
+  : ARMLDUMINALH,   ( RS RN RT -- ) 16BIT ARMLDUMINAL, ; 
+  : ARMLDUMINALW,   ( RS RN RT -- ) 32BIT ARMLDUMINAL, ; 
+  : ARMLDUMINALX,   ( RS RN RT -- ) 64BIT ARMLDUMINAL, ; 
+
+: ARMLDUMINL,  ( RS RN RT SF -- ) 38607000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMLDUMINLB,   ( RS RN RT -- ) 8BIT ARMLDUMINL, ; 
+  : ARMLDUMINLH,   ( RS RN RT -- ) 16BIT ARMLDUMINL, ; 
+  : ARMLDUMINLW,   ( RS RN RT -- ) 32BIT ARMLDUMINL, ; 
+  : ARMLDUMINLX,   ( RS RN RT -- ) 64BIT ARMLDUMINL, ;  
+
+: ARMSTADD,    ( RS RN SF -- )    R31 SWAP 38200000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMSTADDB,   ( RS RN -- ) 8BIT ARMSTADD, ; // tested
+  : ARMSTADDH,   ( RS RN -- ) 16BIT ARMSTADD, ;
+  : ARMSTADDW,   ( RS RN -- ) 32BIT ARMSTADD, ;
+  : ARMSTADDX,   ( RS RN -- ) 64BIT ARMSTADD, ;
+
+: ARMSTADDL,   ( RS RN SF -- )    R31 SWAP 38600000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMSTADDLB,  ( RS RN -- ) 8BIT ARMSTADDL, ; 
+  : ARMSTADDLH,  ( RS RN -- ) 16BIT ARMSTADDL, ; 
+  : ARMSTADDLW,  ( RS RN -- ) 32BIT ARMSTADDL, ; 
+  : ARMSTADDLX,  ( RS RN -- ) 64BIT ARMSTADDL, ; 
+
+: ARMSTCLR,    ( RS RN SF -- )    R31 SWAP 38201000 RMRNRDSFOPb, ;  // FEAT_LSE need test
+  : ARMSTCLRB,   ( RS RN -- )  8BIT ARMSTCLR, ; 
+  : ARMSTCLRH,   ( RS RN -- )  16BIT ARMSTCLR, ; 
+  : ARMSTCLRW,   ( RS RN -- )  32BIT ARMSTCLR, ; 
+  : ARMSTCLRX,   ( RS RN -- )  64BIT ARMSTCLR, ; 
+
+: ARMSTCLRL,   ( RS RN SF -- )    R31 SWAP 38601000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMSTCLRLB,  ( RS RN -- )    8BIT ARMSTCLRL, ; 
+  : ARMSTCLRLH,  ( RS RN -- )    16BIT ARMSTCLRL, ; 
+  : ARMSTCLRLW,  ( RS RN -- )    32BIT ARMSTCLRL, ; 
+  : ARMSTCLRLX,  ( RS RN -- )    64BIT ARMSTCLRL, ; 
+
+: ARMSTEOR,    ( RS RN SF -- )    R31 SWAP 38202000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMSTEORB,   ( RS RN -- )    8BIT ARMSTEOR, ; 
+  : ARMSTEORH,   ( RS RN -- )    16BIT ARMSTEOR, ;
+  : ARMSTEORW,   ( RS RN -- )    16BIT ARMSTEOR, ;
+  : ARMSTEORX,   ( RS RN -- )    16BIT ARMSTEOR, ;
+ 
+: ARMSTEORL,   ( RS RN SF -- )    R31 SWAP 38602000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMSTEORLB,  ( RS RN -- )    8BIT ARMSTEORL, ; 
+  : ARMSTEORLH,  ( RS RN -- )    16BIT ARMSTEORL, ;
+  : ARMSTEORLW,  ( RS RN -- )    32BIT ARMSTEORL, ;
+  : ARMSTEORLX,  ( RS RN -- )    64BIT ARMSTEORL, ; 
+
+: ARMSTLTXR,   ( RS RN RT SF -- ) 0900FC00 RMRNRDSFOPb, ; // not tested. my Mac M4 does not support FEAT_LSUI instructions 
+  : ARMSTLTXRB,  ( RS RN RT -- ) 8BIT ARMSTLTXR, ;
+  : ARMSTLTXRH,  ( RS RN RT -- ) 16BIT ARMSTLTXR, ;
+  : ARMSTLTXRW,  ( RS RN RT -- ) 32BIT ARMSTLTXR, ;
+  : ARMSTLTXRX,  ( RS RN RT -- ) 64BIT ARMSTLTXR, ;
+
+: ARMSTLXR,    ( RS RN RT SF -- ) 0800FC00 RMRNRDSFOPb, ; // need test
+  : ARMSTLXRB,   ( RS RN RT -- ) 8BIT ARMSTLXR, ;
+  : ARMSTLXRH,   ( RS RN RT -- ) 16BIT ARMSTLXR, ;
+  : ARMSTLXRW,   ( RS RN RT -- ) 32BIT ARMSTLXR, ;
+  : ARMSTLXRX,   ( RS RN RT -- ) 64BIT ARMSTLXR, ;
+
+: ARMSTSET,    ( RS RN SF -- )    R31 SWAP 38203000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMSTSETB,   ( RS RN -- )   8BIT ARMSTSET, ;
+  : ARMSTSETH,   ( RS RN -- )   16BIT ARMSTSET, ;
+  : ARMSTSETW,   ( RS RN -- )   32BIT ARMSTSET, ;
+  : ARMSTSETX,   ( RS RN -- )   64BIT ARMSTSET, ;
+
+: ARMSTSETL,   ( RS RN SF -- )    R31 SWAP 38603000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMSTSETLB,  ( RS RN SF -- ) 8BIT ARMSTSETL, ;
+  : ARMSTSETLH,  ( RS RN SF -- ) 16BIT ARMSTSETL, ;
+  : ARMSTSETLW,  ( RS RN SF -- ) 32BIT ARMSTSETL, ;
+  : ARMSTSETLX,  ( RS RN SF -- ) 64BIT ARMSTSETL, ;
+
+: ARMSTSMAX,   ( RS RN SF -- )    R31 SWAP 38204000 RMRNRDSFOPb, ; // FEAT_LSE need test
+  : ARMSTSMAXB,    ( RS RN -- )    8BIT ARMSTSMAX, ;
+  : ARMSTSMAXH,    ( RS RN -- )    16BIT ARMSTSMAX, ;
+  : ARMSTSMAXW,    ( RS RN -- )    32BIT ARMSTSMAX, ;
+  : ARMSTSMAXX,    ( RS RN -- )    64BIT ARMSTSMAX, ;
+
+: ARMSTSMAXL,  ( RS RN SF -- )    R31 SWAP 38604000 RMRNRDSFOPb, ; 
+  : ARMSTSMAXLB,  ( RS RN -- )    8BIT ARMSTSMAXL, ; 
+  : ARMSTSMAXLH,  ( RS RN -- )    16BIT ARMSTSMAXL, ; 
+  : ARMSTSMAXLW,  ( RS RN -- )    32BIT ARMSTSMAXL, ; 
+  : ARMSTSMAXLX,  ( RS RN -- )    64BIT ARMSTSMAXL, ; 
+
+: ARMSTSMIN,   ( RS RN SF -- )    R31 SWAP 38205000 RMRNRDSFOPb, ; 
+  : ARMSTSMINB,   ( RS RN -- )    8BIT ARMSTSMIN, ; 
+  : ARMSTSMINH,   ( RS RN -- )    16BIT ARMSTSMIN, ; 
+  : ARMSTSMINW,   ( RS RN -- )    32BIT ARMSTSMIN, ; 
+  : ARMSTSMINX,   ( RS RN -- )    64BIT ARMSTSMIN, ; 
+
+: ARMSTSMINL,  ( RS RN SF -- )    R31 SWAP 38605000 RMRNRDSFOPb, ; 
+  : ARMSTSMINLB,  ( RS RN -- )    8BIT ARMSTSMINL, ; 
+  : ARMSTSMINLH,  ( RS RN -- )    16BIT ARMSTSMINL, ; 
+  : ARMSTSMINLW,  ( RS RN -- )    32BIT ARMSTSMINL, ; 
+  : ARMSTSMINLX,  ( RS RN -- )    64BIT ARMSTSMINL, ; 
+
+: ARMSTUMAX,   ( RS RN SF -- )    R31 SWAP 38206000 RMRNRDSFOPb, ; 
+  : ARMSTUMAXB,   ( RS RN -- )     8BIT ARMSTUMAX, ;
+  : ARMSTUMAXH,   ( RS RN -- )     16BIT ARMSTUMAX, ;
+  : ARMSTUMAXW,   ( RS RN -- )     32BIT ARMSTUMAX, ;
+  : ARMSTUMAXX,   ( RS RN -- )     64BIT ARMSTUMAX, ;
+
+: ARMSTUMAXL,  ( RS RN SF -- )    R31 SWAP 38606000 RMRNRDSFOPb, ; 
+  : ARMSTUMAXLB,  ( RS RN -- )     8BIT ARMSTUMAXL, ;
+  : ARMSTUMAXLH,  ( RS RN -- )     16BIT ARMSTUMAXL, ;
+  : ARMSTUMAXLW,  ( RS RN -- )     32BIT ARMSTUMAXL, ;
+  : ARMSTUMAXLX,  ( RS RN -- )     64BIT ARMSTUMAXL, ;
+
+: ARMSTUMIN,   ( RS RN SF -- )    R31 SWAP 38207000 RMRNRDSFOPb, ; 
+  : ARMSTUMINB,   ( RS RN -- )     8BIT ARMSTUMIN, ;
+  : ARMSTUMINH,   ( RS RN -- )     16BIT ARMSTUMIN, ;
+  : ARMSTUMINW,   ( RS RN -- )     32BIT ARMSTUMIN, ;
+  : ARMSTUMINX,   ( RS RN -- )     64BIT ARMSTUMIN, ;
+
+: ARMSTUMINL,  ( RS RN SF -- )    R31 SWAP 38607000 RMRNRDSFOPb, ; 
+  : ARMSTUMINLB,  ( RS RN -- )     8BIT ARMSTUMINL, ;
+  : ARMSTUMINLH,  ( RS RN -- )     16BIT ARMSTUMINL, ;
+  : ARMSTUMINLW,  ( RS RN -- )     32BIT ARMSTUMINL, ;
+  : ARMSTUMINLX,  ( RS RN -- )     64BIT ARMSTUMINL, ;
+
+: ARMSWP,      ( RS RN RT SF -- ) 38208000 RMRNRDSFOPb, ; // FEAT_LSE
+  : ARMSWPB,      ( RS RN RT -- ) 8BIT ARMSWP, ; // tested
+  : ARMSWPH,      ( RS RN RT -- ) 16BIT ARMSWP, ;
+  : ARMSWPW,      ( RS RN RT -- ) 32BIT ARMSWP, ;
+  : ARMSWPX,      ( RS RN RT -- ) 64BIT ARMSWP, ;
+
+: ARMSWPA,     ( RS RN RT SF -- ) 38A08000 RMRNRDSFOPb, ; 
+  : ARMSWPAB,     ( RS RN RT -- ) 8BIT ARMSWPA, ; 
+  : ARMSWPAH,     ( RS RN RT -- ) 16BIT ARMSWPA, ; 
+  : ARMSWPAW,     ( RS RN RT -- ) 32BIT ARMSWPA, ; 
+  : ARMSWPAX,     ( RS RN RT -- ) 64BIT ARMSWPA, ; 
+
+: ARMSWPAL,    ( RS RN RT SF -- ) 38E08000 RMRNRDSFOPb, ; 
+  : ARMSWPALB,    ( RS RN RT -- )  8BIT ARMSWPAL, ;
+  : ARMSWPALH,    ( RS RN RT -- )  16BIT ARMSWPAL, ;
+  : ARMSWPALW,    ( RS RN RT -- )  32BIT ARMSWPAL, ;
+  : ARMSWPALX,    ( RS RN RT -- )  64BIT ARMSWPAL, ;
+
+: ARMSWPL,     ( RS RN RT SF -- ) 38608000 RMRNRDSFOPb, ; 
+  : ARMSWPLB,     ( RS RN RT -- )  8BIT ARMSWPL, ;
+  : ARMSWPLH,     ( RS RN RT -- )  16BIT ARMSWPL, ;
+  : ARMSWPLW,     ( RS RN RT -- )  32BIT ARMSWPL, ;
+  : ARMSWPLX,     ( RS RN RT -- )  64BIT ARMSWPL, ;
+
+
+// probably should have rn last soo RT (lo) RS (hi) RN (src/dest) ... probably should change this
+: ARMLDCLRP, ( RS RN RT -- )  8BIT 19201000 RMRNRDSFOPb, ; // really 128bit FEAT_LSE128 need test
+: ARMLDCLRPA, ( RS RN RT -- )  8BIT 19A01000 RMRNRDSFOPb, ; // really 128bit FEAT_LSE128 need test
+: ARMLDCLRPAL, ( RS RN RT -- )  8BIT 19E01000 RMRNRDSFOPb, ; // really 128bit FEAT_LSE128 need test
+: ARMLDCLRPL, ( RS RN RT -- )  8BIT 19601000 RMRNRDSFOPb, ; // really 128bit FEAT_LSE128 need test
+
+HEX
+: RNRDSFcOP, { | RN RD SF OP -- }
+  OP 
+  RD RD>OP
+  RN RN>OP
+  SF SF>OPc
+  CODE-U32,
+;
+
+: ARMLDATXR, ( RN RT SF -- ) 895FFC00 RNRDSFcOP, ; // FEAT_LSUI ?
+: ARMLDAXR, ( RN RT SF -- ) 885FFC00 RNRDSFcOP, ; // need test
+
+HEX
+: RMRNRDSFOPc, { | RM RN RD SF OP -- }
+  OP 
+  RD RD>OP
+  RN RN>OP
+  RM RM>OP
+  SF SF>OPc
+  CODE-U32,
+;
+
+: ARMLDTADD,   ( RS RN RT SF -- ) 19200400 RMRNRDSFOPc, ; // not tested. my Mac M4 does not support FEAT_LSUI instructions
+: ARMLDTADDA,  ( RS RN RT SF -- ) 19A00400 RMRNRDSFOPc, ; // not tested. my Mac M4 does not support FEAT_LSUI instructions 
+: ARMLDTADDAL, ( RS RN RT SF -- ) 19E00400 RMRNRDSFOPc, ; // not tested. my Mac M4 does not support FEAT_LSUI instructions
+: ARMLDTADDL,  ( RS RN RT SF -- ) 19600400 RMRNRDSFOPc, ; // not tested. my Mac M4 does not support FEAT_LSUI instructions
+
+: ARMLDTCLR,   ( RS RN RT SF -- ) 19201400 RMRNRDSFOPc, ; // not tested. my Mac M4 does not support FEAT_LSUI instructions 
+: ARMLDTCLRA,  ( RS RN RT SF -- ) 19A01400 RMRNRDSFOPc, ; // not tested. my Mac M4 does not support FEAT_LSUI instructions 
+: ARMLDTCLRAL, ( RS RN RT SF -- ) 19E01400 RMRNRDSFOPc, ; // not tested. my Mac M4 does not support FEAT_LSUI instructions 
+: ARMLDTCLRL,  ( RS RN RT SF -- ) 19601400 RMRNRDSFOPc, ; // not tested. my Mac M4 does not support FEAT_LSUI instructions 
+
+: ARMLDTSET,   ( RS RN RT SF -- ) 19203400 RMRNRDSFOPc, ; // not tested. my Mac M4 does not support FEAT_LSUI instructions 
+: ARMLDTSETA,  ( RS RN RT SF -- ) 19A03400 RMRNRDSFOPc, ; // not tested. my Mac M4 does not support FEAT_LSUI instructions 
+: ARMLDTSETAL, ( RS RN RT SF -- ) 19E03400 RMRNRDSFOPc, ; // not tested. my Mac M4 does not support FEAT_LSUI instructions 
+: ARMLDTSETL,  ( RS RN RT SF -- ) 19603400 RMRNRDSFOPc, ; // not tested. my Mac M4 does not support FEAT_LSUI instructions 
+
+: ARMSWPT,     ( RS RN RT SF -- ) 19208400 RMRNRDSFOPc, ; // not tested. my Mac M4 does not support FEAT_LSUI instructions
+: ARMSWPTA,    ( RS RN RT SF -- ) 19A08400 RMRNRDSFOPc, ; // not tested. my Mac M4 does not support FEAT_LSUI instructions
+: ARMSWPTAL,   ( RS RN RT SF -- ) 19E08400 RMRNRDSFOPc, ; // not tested. my Mac M4 does not support FEAT_LSUI instructions
+: ARMSWPTL,    ( RS RN RT SF -- ) 19608400 RMRNRDSFOPc, ; // not tested. my Mac M4 does not support FEAT_LSUI instructions
+
+// 16 32 bit only... so use SFc
+: ARMLDTXR,    ( RN RT SF -- ) >R >R >R 1F R> R> R> 89407C00 RMRNRDSFOPc, ; // FEAT_LSUI not supported on M4 Mac
+
+
+: ARMSTTADD,   ( RS RN SF -- )    >R 1F R> 19200400 RMRNRDSFOPc, ; // FEAT_LSUI not supported on M4 Mac
+: ARMSTTADDL,  ( RS RN SF -- )    >R 1F R> 19600400 RMRNRDSFOPc, ; // FEAT_LSUI not supported on M4 Mac
+
+: ARMSTTCLR,   ( RS RN SF -- )    >R 1F R> 19201400 RMRNRDSFOPc, ; // FEAT_LSUI not supported on M4 Mac
+: ARMSTTCLRL,  ( RS RN SF -- )    >R 1F R> 19601400 RMRNRDSFOPc, ; // FEAT_LSUI not supported on M4 Mac
+
+: ARMSTTSET,   ( RS RN SF -- )    >R 1F R> 19203400 RMRNRDSFOPc, ; // FEAT_LSUI not supported on M4 Mac
+: ARMSTTSETL,  ( RS RN SF -- )    >R 1F R> 19603400 RMRNRDSFOPc, ; // FEAT_LSUI not supported on M4 Mac
+
+: ARMSTTXR,    ( RS RN RT SF -- ) 89007C00 RMRNRDSFOPc, ; // FEAT_LSUI not supported on M4 Mac
+
+
+
+
+
+
+
+
+HEX
+: RNRDSFbOP, { | RN RD SF OP -- }
+  OP 
+  RD RD>OP
+  RN RN>OP
+  SF SF>OPb
+  CODE-U32,
+;
+
+: ARMLDAR,    ( RN RT SF -- ) 08DFFC00 RNRDSFbOP, ; // need test
+  : ARMLDARB,    ( RN RT -- ) 8BIT ARMLDAR, ; // tested
+  : ARMLDARH,    ( RN RT -- ) 16BIT ARMLDAR, ; 
+  : ARMLDARW,    ( RN RT -- ) 32BIT ARMLDAR, ; 
+  : ARMLDARX,    ( RN RT -- ) 64BIT ARMLDAR, ;  
+
+: ARMLDAXR, ( RN RT SF -- ) 085FFC00 RNRDSFbOP, ; // need test
+  : ARMLDAXRB, ( RN RT -- ) 8BIT ARMLDAXR, ;
+  : ARMLDAXRH, ( RN RT -- ) 16BIT ARMLDAXR, ;
+  : ARMLDAXRW, ( RN RT -- ) 32BIT ARMLDAXR, ;
+  : ARMLDAXRX, ( RN RT -- ) 64BIT ARMLDAXR, ;
+
+: ARMLDLAR,   ( RN RT SF -- ) 08DF7C00 RNRDSFbOP, ; // FEAT_LOR
+  : ARMLDLARB,   ( RN RT -- ) 8BIT ARMLDLAR, ;
+  : ARMLDLARH,   ( RN RT -- ) 16BIT ARMLDLAR, ; 
+  : ARMLDLARW,   ( RN RT -- ) 32BIT ARMLDLAR, ; 
+  : ARMLDLARX,   ( RN RT -- ) 64BIT ARMLDLAR, ; 
+
+: ARMLDXR,  ( RN RD SF -- ) 085F7C00 RNRDSFbOP, ; // need test
+  : ARMLDXRB, ( RN RD -- ) ARMLDXR, 8BIT ; 
+  : ARMLDXRH, ( RN RD -- ) ARMLDXR, 16BIT ;  
+  : ARMLDXRW, ( RN RD -- ) ARMLDXR, 32BIT ; 
+  : ARMLDXRX, ( RN RD -- ) ARMLDXR, 64BIT ; 
+
+HEX
+: RNRDSFOPd, { | RN RD SF OP -- }
+  OP 
+  RD RD>OP
+  RN RN>OP
+  SF SF>OP
+  SF N>OP
+  CODE-U32,
+;
+
+: ARMSXTB,  ( RN RD SF -- ) 13001C00 RNRDSFOPd, ; // 64 bit tested
+: ARMSXTH,  ( RN RD SF -- ) 13003C00 RNRDSFOPd, ; // 64 bit tested
+
+: RDRNSFOPb, { | RD RN SF OP -- }
+  OP 
+  RD RD>OP
+  RN RN>OP
+  SF SF>OPb
+  CODE-U32,
+;
+
+: ARMSTLR,      ( RT RN SF -- ) 089FFC00 RDRNSFOPb, ; // need test
+  : ARMSTLRB,     ( RT RN -- ) 8BIT 089FFC00 RDRNSFOPb, ;
+  : ARMSTLRH,     ( RT RN -- ) 16BIT 089FFC00 RDRNSFOPb, ;
+  : ARMSTLRW,     ( RT RN -- ) 32BIT 089FFC00 RDRNSFOPb, ;
+  : ARMSTLRX,     ( RT RN -- ) 64BIT 089FFC00 RDRNSFOPb, ;
+: ARM--SZSTLR,  ( RT RN SF -- ) 09800800 RDRNSFOPb, ; // FEAT_LRCPC3
+  : ARM--1STLRB,  ( RT RN -- ) 8BIT 09800800 RDRNSFOPb, ;   // predecrements 1 
+  : ARM--2STLRH,  ( RT RN -- ) 16BIT 09800800 RDRNSFOPb, ;  // predecrements 2
+  : ARM--4STLRW,  ( RT RN -- ) 32BIT 09800800 RDRNSFOPb, ;  // predecrements 4
+  : ARM--8STLRX,  ( RT RN -- ) 64BIT 09800800 RDRNSFOPb, ;  // predecrements 8
+: ARMSTLLR,     ( RT RN SF -- ) 089F7C00 RDRNSFOPb, ; // FEAT_LOR ?
+  : ARMSTLLRB,     ( RT RN -- ) 8BIT 089F7C00 RDRNSFOPb, ;
+  : ARMSTLLRH,     ( RT RN -- ) 16BIT 089F7C00 RDRNSFOPb, ;
+  : ARMSTLLRW,     ( RT RN -- ) 32BIT 089F7C00 RDRNSFOPb, ;
+  : ARMSTLLRX,     ( RT RN -- ) 64BIT 089F7C00 RDRNSFOPb, ;
+
+
+HEX
+: RNRMRDSFCONDOP, { | RN RM RD SF COND OP -- }
+  OP 
+  RD RD>OP
+  RN RN>OP
+  RM RM>OP
+  SF SF>OP
+  COND COND>OPc
+  CODE-U32,
+;
+
+: ARMCSEL,    ( RM RN RD SF COND -- ) 1A800000 RNRMRDSFCONDOP, ; // 64 bit tested
+
+HEX
+: RDSFCONDOP, { | RD SF COND OP -- }
+  OP 
+  RD RD>OP
+  SF SF>OP
+  COND COND>OPc
+  CODE-U32,
+;
+
+: ARMCSET,   ( RD SF COND -- ) 1 XOR 1A9F07E0 RDSFCONDOP, ; // tested
+: ARMCSETM,  ( RD SF COND -- ) 1 XOR 5A9F03E0 RDSFCONDOP, ; // tested
+
+
+HEX
+: RMRDRNOP, { | RM RD RN OP -- }
+  OP 
+  RD RD>OP
+  RN RN>OP
+  RM RM>OP
+  CODE-U32,
+;
+
+: ARMCASPT,    ( RS RT RN -- ) 49807C00 RMRDRNOP, ; // FEAT_LSUI can't test on m4 mac
+: ARMCASPAT,   ( RS RT RN -- ) 49C07C00 RMRDRNOP, ; // FEAT_LSUI can't test on m4 mac
+: ARMCASPALT,  ( RS RT RN -- ) 49C0FC00 RMRDRNOP, ; // FEAT_LSUI can't test on m4 mac
+: ARMCASPLT,   ( RS RT RN -- ) 4980FC00 RMRDRNOP, ; // FEAT_LSUI can't test on m4 mac
+
+: ARMCAST,     ( RS RT RN -- ) C9807C00 RMRDRNOP, ; // FEAT_LSUI can't test on m4 mac
+: ARMCASAT,    ( RS RT RN -- ) C9C07C00 RMRDRNOP, ; // FEAT_LSUI can't test on m4 mac
+: ARMCASALT,   ( RS RT RN -- ) C9C0FC00 RMRDRNOP, ; // FEAT_LSUI can't test on m4 mac
+: ARMCASLT,    ( RS RT RN -- ) C980FC00 RMRDRNOP, ; // FEAT_LSUI can't test on m4 mac
+
+
+: ARMCPYFP,    ( RM RD RN -- ) 19000400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFM,    ( RM RD RN -- ) 19400400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFE,    ( RM RD RN -- ) 19800400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYFPN,   ( RM RD RN -- ) 1900C400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFMN,   ( RM RD RN -- ) 1940C400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFEN,   ( RM RD RN -- ) 1980C400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYFPRN,  ( RM RD RN -- ) 19008400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFMRN,  ( RM RD RN -- ) 19408400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFERN,  ( RM RD RN -- ) 19808400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYFPRT,  ( RM RD RN -- ) 19002400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFMRT,  ( RM RD RN -- ) 19402400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFERT,  ( RM RD RN -- ) 19802400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYFPRTN, ( RM RD RN -- ) 1900E400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFMRTN, ( RM RD RN -- ) 1940E400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFERTN, ( RM RD RN -- ) 1980E400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYFPRTRN, ( RM RD RN -- ) 1900A400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFMRTRN, ( RM RD RN -- ) 1940A400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFERTRN, ( RM RD RN -- ) 1980A400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYFPRTWN, ( RM RD RN -- ) 19006400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFMRTWN, ( RM RD RN -- ) 19406400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFERTWN, ( RM RD RN -- ) 19806400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYFPT,    ( RM RD RN -- ) 19003400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFMT,    ( RM RD RN -- ) 19403400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFET,    ( RM RD RN -- ) 19803400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYFPTN,   ( RM RD RN -- ) 1900F400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFMTN,   ( RM RD RN -- ) 1940F400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFETN,   ( RM RD RN -- ) 1980F400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYFPTRN,  ( RM RD RN -- ) 1900B400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFMTRN,  ( RM RD RN -- ) 1940B400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFETRN,  ( RM RD RN -- ) 1980B400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYFPTWN,  ( RM RD RN -- ) 19007400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFMTWN,  ( RM RD RN -- ) 19407400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFETWN,  ( RM RD RN -- ) 19807400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYFPWN,   ( RM RD RN -- ) 19004400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFMWN,   ( RM RD RN -- ) 19404400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFEWN,   ( RM RD RN -- ) 19804400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYFPWT,   ( RM RD RN -- ) 19001400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFMWT,   ( RM RD RN -- ) 19401400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFEWT,   ( RM RD RN -- ) 19801400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYFPWTN,  ( RM RD RN -- ) 1900D400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFMWTN,  ( RM RD RN -- ) 1940D400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFEWTN,  ( RM RD RN -- ) 1980D400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYFPWTRN, ( RM RD RN -- ) 19009400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFMWTRN, ( RM RD RN -- ) 19409400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFEWTRN, ( RM RD RN -- ) 19809400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYFPWTWN, ( RM RD RN -- ) 19005400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFMWTWN, ( RM RD RN -- ) 19405400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYFEWTWN, ( RM RD RN -- ) 19805400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+
+: ARMCPYP,      ( RM RD RN -- ) 1D000400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYM,      ( RM RD RN -- ) 1D400400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYE,      ( RM RD RN -- ) 1D800400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYPN,   ( RM RD RN -- ) 1D00C400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYMN,   ( RM RD RN -- ) 1D40C400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYEN,   ( RM RD RN -- ) 1D80C400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYPRN,  ( RM RD RN -- ) 1D008400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYMRN,  ( RM RD RN -- ) 1D408400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYERN,  ( RM RD RN -- ) 1D808400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYPRT,  ( RM RD RN -- ) 1D002400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYMRT,  ( RM RD RN -- ) 1D402400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYERT,  ( RM RD RN -- ) 1D802400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYPRTN, ( RM RD RN -- ) 1D00E400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYMRTN, ( RM RD RN -- ) 1D40E400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYERTN, ( RM RD RN -- ) 1D80E400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYPRTRN, ( RM RD RN -- ) 1D00A400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYMRTRN, ( RM RD RN -- ) 1D40A400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYERTRN, ( RM RD RN -- ) 1D80A400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYPRTWN, ( RM RD RN -- ) 1D006400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYMRTWN, ( RM RD RN -- ) 1D406400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYERTWN, ( RM RD RN -- ) 1D806400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYPT,    ( RM RD RN -- ) 1D003400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYMT,    ( RM RD RN -- ) 1D403400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYET,    ( RM RD RN -- ) 1D803400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYPTN,   ( RM RD RN -- ) 1D00F400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYMTN,   ( RM RD RN -- ) 1D40F400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYETN,   ( RM RD RN -- ) 1D80F400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYPTRN,  ( RM RD RN -- ) 1D00B400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYMTRN,  ( RM RD RN -- ) 1D40B400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYETRN,  ( RM RD RN -- ) 1D80B400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYPTWN,  ( RM RD RN -- ) 1D007400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYMTWN,  ( RM RD RN -- ) 1D407400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYETWN,  ( RM RD RN -- ) 1D807400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYPWN,   ( RM RD RN -- ) 1D004400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYMWN,   ( RM RD RN -- ) 1D404400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYEWN,   ( RM RD RN -- ) 1D804400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYPWT,   ( RM RD RN -- ) 1D001400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYMWT,   ( RM RD RN -- ) 1D401400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYEWT,   ( RM RD RN -- ) 1D801400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYPWTN,  ( RM RD RN -- ) 1D00D400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYMWTN,  ( RM RD RN -- ) 1D40D400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYEWTN,  ( RM RD RN -- ) 1D80D400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYPWTRN, ( RM RD RN -- ) 1D009400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYMWTRN, ( RM RD RN -- ) 1D409400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYEWTRN, ( RM RD RN -- ) 1D809400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMCPYPWTWN, ( RM RD RN -- ) 1D005400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYMWTWN, ( RM RD RN -- ) 1D405400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+: ARMCPYEWTWN, ( RM RD RN -- ) 1D805400 RMRDRNOP, ; // FEAT_MOPS not supported on m4 mac
+
+: ARMRCWCAS,    ( RS RT RN -- ) 19200800 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+: ARMRCWCASA,   ( RS RT RN -- ) 19A00800 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+: ARMRCWCASAL,  ( RS RT RN -- ) 19E00800 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+: ARMRCWCASL,   ( RS RT RN -- ) 19600800 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+
+: ARMRCWCASP,   ( RS RT RN -- ) 19200C00 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+: ARMRCWCASPA,  ( RS RT RN -- ) 19A00C00 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+: ARMRCWCASPAL, ( RS RT RN -- ) 19E00C00 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+: ARMRCWCASPL,  ( RS RT RN -- ) 19600C00 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+
+: ARMRCWLR,     ( RS RT RN -- ) 38209000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+: ARMRCWLRA,    ( RS RT RN -- ) 38A09000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+: ARMRCWLRAL,   ( RS RT RN -- ) 38E09000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+: ARMRCWLRL,    ( RS RT RN -- ) 38609000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+
+: ARMRCWLRP,    ( RS RT RN -- ) 19209000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+: ARMRCWLRPA,   ( RS RT RN -- ) 19A09000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+: ARMRCWLRPAL,  ( RS RT RN -- ) 19E09000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+: ARMRCWLRPL,   ( RS RT RN -- ) 19609000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+
+: ARMRCWSCAS,    ( RS RT RN -- ) 59200800 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+: ARMRCWSCASA,   ( RS RT RN -- ) 59A00800 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+: ARMRCWSCASAL,  ( RS RT RN -- ) 59E00800 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+: ARMRCWSCASL,   ( RS RT RN -- ) 59600800 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+
+: ARMRCWSCASP,   ( RS RT RN -- ) 59200C00 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+: ARMRCWSCASPA,  ( RS RT RN -- ) 59A00C00 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+: ARMRCWSCASPAL, ( RS RT RN -- ) 59E00C00 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+: ARMRCWSCASPL,  ( RS RT RN -- ) 59600C00 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+
+: ARMRCWSCLR,   ( RS RT RN -- ) 78209000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+: ARMRCWSCLRA,  ( RS RT RN -- ) 78A09000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+: ARMRCWSCLRAL, ( RS RT RN -- ) 78E09000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+: ARMRCWSCLRL,  ( RS RT RN -- ) 78609000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+
+: ARMRCWSCLRP,   ( RS RT RN -- ) 59209000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+: ARMRCWSCLRPA,  ( RS RT RN -- ) 59A09000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+: ARMRCWSCLRPAL, ( RS RT RN -- ) 59E09000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+: ARMRCWSCLRPL,  ( RS RT RN -- ) 59609000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+
+: ARMRCWSET,     ( RS RT RN -- ) 3820B000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+: ARMRCWSETA,    ( RS RT RN -- ) 38A0B000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+: ARMRCWSETAL,   ( RS RT RN -- ) 38E0B000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+: ARMRCWSETL,    ( RS RT RN -- ) 3860B000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+
+: ARMRCWSETP,    ( RS RT RN -- ) 1920B000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+: ARMRCWSETPA,   ( RS RT RN -- ) 19A0B000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+: ARMRCWSETPAL,  ( RS RT RN -- ) 19E0B000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+: ARMRCWSETPL,   ( RS RT RN -- ) 1960B000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+
+: ARMRCWSSET,    ( RS RT RN -- ) 7820B000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+: ARMRCWSSETA,   ( RS RT RN -- ) 78A0B000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+: ARMRCWSSETAL,  ( RS RT RN -- ) 78E0B000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+: ARMRCWSSETL,   ( RS RT RN -- ) 7860B000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+
+: ARMRCWSSETP,   ( RS RT RN -- ) 5920B000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+: ARMRCWSSETPA,  ( RS RT RN -- ) 59A0B000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+: ARMRCWSSETPAL, ( RS RT RN -- ) 59E0B000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+: ARMRCWSSETPL,  ( RS RT RN -- ) 5960B000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+
+: ARMRCWSSWP,    ( RS RT RN -- ) 7820A000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+: ARMRCWSSWPA,   ( RS RT RN -- ) 78A0A000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+: ARMRCWSSWPAL,  ( RS RT RN -- ) 78E0A000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+: ARMRCWSSWPL,   ( RS RT RN -- ) 7860A000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+
+: ARMRCWSSWPP,   ( RS RT RN -- ) 5920A000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+: ARMRCWSSWPPA,  ( RS RT RN -- ) 59A0A000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+: ARMRCWSSWPPAL, ( RS RT RN -- ) 59E0A000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+: ARMRCWSSWPPL,  ( RS RT RN -- ) 5960A000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+
+: ARMRCWSWP,    ( RS RT RN -- ) 3820A000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+: ARMRCWSWPA,   ( RS RT RN -- ) 38A0A000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+: ARMRCWSWPAL,  ( RS RT RN -- ) 38E0A000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+: ARMRCWSWPL,   ( RS RT RN -- ) 3860A000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac
+
+: ARMRCWSWPP,   ( RS RT RN -- ) 1920A000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+: ARMRCWSWPPA,  ( RS RT RN -- ) 19A0A000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+: ARMRCWSWPPAL, ( RS RT RN -- ) 19E0A000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+: ARMRCWSWPPL,  ( RS RT RN -- ) 1960A000 RMRDRNOP, ; // FEAT_THE not supported on M4 Mac also FEAT_D128
+
+HEX
+: RNRMRDOP, { | RN RM RD OP -- }
+  OP 
+  RD RD>OP
+  RN RN>OP
+  RM RM>OP
+  CODE-U32,
+;
+
+: ARMSUBPS,    ( RN RS RD -- ) BAC00000 RNRMRDOP, ; // FEAT_MTE ?
+
+: ARMCMPP,     ( RN RS -- )    R31 ARMSUBPS, ;  // FEAT_MTE ?
+
+: ARMGMI,      ( RN RS RD -- ) 9AC01400 RNRMRDOP, ; // FEAT_MTE ?
+: ARMIRG,      ( RN RS RD -- ) 9AC01000 RNRMRDOP, ; // FEAT_MTE ?
+
+HEX
+: RNRDRMOP, { | RN RD RM OP -- }
+  OP 
+  RD RD>OP
+  RN RN>OP
+  RM RM>OP
+  CODE-U32,
+;
+
+: ARMLDSETP,   ( RN RD RM -- ) 19203000 RNRDRMOP, ; // FEAT_LSE128 ?
+: ARMLDSETAP,  ( RN RD RM -- ) 19A03000 RNRDRMOP, ; // FEAT_LSE128 ?
+: ARMLDSETALP, ( RN RD RM -- ) 19E03000 RNRDRMOP, ; // FEAT_LSE128 ?
+: ARMLDSETLP,  ( RN RD RM -- ) 19603000 RNRDRMOP, ; // FEAT_LSE128 ?
+
+HEX
+: RDRNRMOP, { | RD RN RM OP -- }
+  OP 
+  RD RD>OP
+  RN RN>OP
+  RM RM>OP
+  CODE-U32,
+;
+
+: ARMST64BV,    ( RT RN RS -- ) F820B000 RDRNRMOP, ; // FEAT_LS64_V ?
+: ARMST64BV0,   ( RT RN RS -- ) F820A000 RDRNRMOP, ; // FEAT_LS64_ACCDATA ?
+
+HEX
+: RDRNRMSFbOP, { | RD RN RM SF OP -- }
+  OP 
+  RD RD>OP
+  RN RN>OP
+  RM RM>OP
+  SF SF>OPb
+  CODE-U32,
+;
+
+: ARMSTXR, ( RT RN RS SF -- ) 08007C00 RDRNRMSFbOP, ; // need test
+  : ARMSTXRB, ( RT RN RS -- ) 8BIT ARMSTXR, ;
+  : ARMSTXRH, ( RT RN RS -- ) 16BIT ARMSTXR, ;
+  : ARMSTXRW, ( RT RN RS -- ) 32BIT ARMSTXR, ;
+  : ARMSTXRX, ( RT RN RS -- ) 64BIT ARMSTXR, ;
+
+HEX
+: RMRNRDOP, { | RM RN RD OP -- }
+  OP 
+  RD RD>OP
+  RN RN>OP
+  RM RM>OP
+  CODE-U32,
+;
+
+
+: ARMPACGA,     ( RS RN RD -- ) 9AC0C000 RMRNRDOP, ;  // FEAT_PAuth ?
+
+: ARMSMNEGL,    ( RM RN RD -- ) 9B20FC00 RMRNRDOP, ; // tested
+
+: ARMSMULH,     ( RM RN RD -- ) 9B407C00 RMRNRDOP, ; // tested
+: ARMSMULL,     ( RM RN RD -- ) 9B207C00 RMRNRDOP, ; // tested 
+
+: ARMSUBP,      ( RM RN RD -- )    9AC00000 RMRNRDOP, ; // FEAT_MTE
+: ARMSUBPS,     ( RM RN RD -- )    BAC00000 RMRNRDOP, ; // FEAT_MTE
+
+: ARMSWPP,      ( RS RN RD -- ) 19208000 RMRNRDOP, ; // FEAT_LSE128
+: ARMSWPPA,     ( RS RN RD -- ) 19A08000 RMRNRDOP, ; // FEAT_LSE128
+: ARMSWPPAL,    ( RS RN RD -- ) 19E08000 RMRNRDOP, ; // FEAT_LSE128
+: ARMSWPPL,     ( RS RN RD -- ) 19608000 RMRNRDOP, ; // FEAT_LSE128
+
+: ARMUMNEGL,    ( RM RN RD -- ) 9BA0FC00 RMRNRDOP, ; // tested
+: ARMUMULH,     ( RM RN RD -- ) 9BC07C00 RMRNRDOP, ; // 64 bit tested
+: ARMUMULL,     ( RM RN RD -- ) 9BA07C00 RMRNRDOP, ; // tested
+
+: ARMCRC32B,    ( RM RN RD -- ) 1AC04000 RMRNRDOP, ; // FEAT_CRC32 ... sort of tested
+: ARMCRC32H,    ( RM RN RD -- ) 1AC04400 RMRNRDOP, ;
+: ARMCRC32W,    ( RM RN RD -- ) 1AC04800 RMRNRDOP, ;
+: ARMCRC32X,    ( RM RN RD -- ) 9AC04C00 RMRNRDOP, ;
+
+: ARMCRC32CB,    ( RM RN RD -- ) 1AC04000 RMRNRDOP, ; // FEAT_CRC32
+: ARMCRC32CH,    ( RM RN RD -- ) 1AC04400 RMRNRDOP, ;
+: ARMCRC32CW,    ( RM RN RD -- ) 1AC04800 RMRNRDOP, ;
+: ARMCRC32CX,    ( RM RN RD -- ) 9AC04C00 RMRNRDOP, ;
+
+: ARMSETGP,      ( RM RN RD -- ) 1DC00400 RMRNRDOP, ; // FEAT_MOPS && FEAT_MTE not supported on my M4 Mac
+: ARMSETGM,      ( RM RN RD -- ) 1DC04400 RMRNRDOP, ; // FEAT_MOPS && FEAT_MTE not supported on my M4 Mac
+: ARMSETGE,      ( RM RN RD -- ) 1DC08400 RMRNRDOP, ; // FEAT_MOPS && FEAT_MTE not supported on my M4 Mac
+
+: ARMSETGPN,     ( RM RN RD -- ) 1DC02400 RMRNRDOP, ; // FEAT_MOPS && FEAT_MTE not supported on my M4 Mac
+: ARMSETGMN,     ( RM RN RD -- ) 1DC06400 RMRNRDOP, ; // FEAT_MOPS && FEAT_MTE not supported on my M4 Mac
+: ARMSETGEN,     ( RM RN RD -- ) 1DC0A400 RMRNRDOP, ; // FEAT_MOPS && FEAT_MTE not supported on my M4 Mac
+
+: ARMSETGPT,     ( RM RN RD -- ) 1DC01400 RMRNRDOP, ; // FEAT_MOPS && FEAT_MTE not supported on my M4 Mac
+: ARMSETGMT,     ( RM RN RD -- ) 1DC05400 RMRNRDOP, ; // FEAT_MOPS && FEAT_MTE not supported on my M4 Mac
+: ARMSETGET,     ( RM RN RD -- ) 1DC09400 RMRNRDOP, ; // FEAT_MOPS && FEAT_MTE not supported on my M4 Mac
+
+: ARMSETGPTN,    ( RM RN RD -- ) 1DC03400 RMRNRDOP, ; // FEAT_MOPS && FEAT_MTE not supported on my M4 Mac
+: ARMSETGMTN,    ( RM RN RD -- ) 1DC07400 RMRNRDOP, ; // FEAT_MOPS && FEAT_MTE not supported on my M4 Mac
+: ARMSETGETN,    ( RM RN RD -- ) 1DC0B400 RMRNRDOP, ; // FEAT_MOPS && FEAT_MTE not supported on my M4 Mac
+ 
+: ARMSETP,       ( RM RN RD -- ) 19C00400 RMRNRDOP, ; // FEAT_MOPS not supported on my M4 Mac
+: ARMSETM,       ( RM RN RD -- ) 19C04400 RMRNRDOP, ; // FEAT_MOPS not supported on my M4 Mac
+: ARMSETE,       ( RM RN RD -- ) 19C08400 RMRNRDOP, ; // FEAT_MOPS not supported on my M4 Mac
+
+: ARMSETPN,      ( RM RN RD -- ) 19C02400 RMRNRDOP, ; // FEAT_MOPS not supported on my M4 Mac
+: ARMSETMN,      ( RM RN RD -- ) 19C06400 RMRNRDOP, ; // FEAT_MOPS not supported on my M4 Mac
+: ARMSETEN,      ( RM RN RD -- ) 19C0A400 RMRNRDOP, ; // FEAT_MOPS not supported on my M4 Mac
+
+: ARMSETPT,      ( RM RN RD -- ) 19C01400 RMRNRDOP, ; // FEAT_MOPS not supported on my M4 Mac
+: ARMSETMT,      ( RM RN RD -- ) 19C05400 RMRNRDOP, ; // FEAT_MOPS not supported on my M4 Mac
+: ARMSETET,      ( RM RN RD -- ) 19C09400 RMRNRDOP, ; // FEAT_MOPS not supported on my M4 Mac
+
+: ARMSETPTN,     ( RM RN RD -- ) 19C03400 RMRNRDOP, ; // FEAT_MOPS not supported on my M4 Mac
+: ARMSETMTN,     ( RM RN RD -- ) 19C07400 RMRNRDOP, ; // FEAT_MOPS not supported on my M4 Mac
+: ARMSETETN,     ( RM RN RD -- ) 19C0B400 RMRNRDOP, ; // FEAT_MOPS not supported on my M4 Mac
+
+HEX
+: RPRFOPRMRDOP, { | RPRFOP RM RN OP -- } 
+  OP
+  RPRFOP RPRFOP>OP
+  RN RN>OP
+  RM RM>OP
+  CODE-U32,
+;
+
+: ARMRPRFM, ( RPRFOP RM RN -- ) F8A04818  RPRFOPRMRDOP, ; // FEAT_RPRFM ?
+  : PLDKEEP 0 ;
+  : PSTKEEP 1 ;
+  : PLDSTRM 4 ;
+  : PSTSTRM 5 ;
+
+HEX
+: RDRMRNSFOPb, { | RD RM RN SF OP -- }
+  OP 
+  RD RD>OP
+  RN RN>OP
+  RM RM>OP
+  SF SF>OPc
+  CODE-U32,
+;
+
+: ARMSTILP,       ( RD RM RN SF -- ) 99000800 RDRMRNSFOPb, ; // FEAT_LRCPC3 ?
+: ARMSZ++STILP,   ( RD RM RN SF -- ) 99001800 RDRMRNSFOPb, ; // FEAT_LRCPC3 ?
+
+HEX
+: RDRMRNOP, { | RD RM RN OP -- }
+  OP 
+  RD RD>OP
+  RN RN>OP
+  RM RM>OP
+  CODE-U32,
+;
+
+: ARMSTLP, ( rt1 rt2 RN -- ) D9005800 RDRMRNOP, ; // FEAT_LSCP ?
+
+
+HEX
+: IMM16HWRDSFOP, { | IMM16 HW RD SF OP -- }
+  OP 
+  RD  RD>OP
+  IMM16 IMM16>OP
+  HW  HW>OP
+  SF  SF>OP
+  CODE-U32,
+;
+
+
+// : ARMMOVINVWIDEIMM, ( IMM16 HW RD SF -- ) 12800000 IMM16HWRDSFOP, ; // not supported, use N->IR64, or MOV, instead
+// : ARMMOVWIDEIMM,  ( IMM16 HW RD SF -- ) 52800000 IMM16HWRDSFOP, ; // not supported, use N->IR64, or MOV, instead
+: ARMMOVK, ( IMM16 HW RD SF -- ) 72800000 IMM16HWRDSFOP, ;  // 64 bit tested
+: ARMMOVN, ( IMM16 HW RD SF -- ) 12800000 IMM16HWRDSFOP, ;  // 64 bit tested
+: ARMMOVZ, ( IMM16 HW RD SF -- ) 52800000 IMM16HWRDSFOP, ;  // 64 bit tested
+
+: RMRNOPTIONIMM3RDSFOP, { | RN RM OPTION IMM3 RD SF OP -- }
+  OP 
+  RD      RD>OP
+  RN      RN>OP
+  RM      RM>OP
+  SF      SF>OP
+  IMM3    IMM3>OP
+  OPTION  OPTION>OP
+  CODE-U32,
+;
+
+: ARMADDEXT,  ( RN RM OPTION IMM3 RD SF -- ) 0B200000 RMRNOPTIONIMM3RDSFOP, ; // IMM3 0-4 only // 64 bit tested // ARMADDEXT,
+: ARMADDSEXT, ( RN RM OPTION IMM3 RD SF -- ) 2B200000 RMRNOPTIONIMM3RDSFOP, ; // 64 bit tested a little         // ARMADDSEXT,
+
+: ARMCMNEXT,  ( RN RM OPTION IMM3 SF -- )    1F SWAP 2B200000 RMRNOPTIONIMM3RDSFOP, ; // 64 bit tested a little // ARMCMNEXT,
+
+: ARMSUBEXT,  ( RN RM OPTION IMM3 RD SF -- ) 4B200000 RMRNOPTIONIMM3RDSFOP, ; // 64 bit tested a little         // ARMSUBEXT,
+: ARMSUBSEXT, ( RN RM OPTION IMM3 RD SF -- ) 6B200000 RMRNOPTIONIMM3RDSFOP, ; // 64 bit tested a little         // ARMSUBSEXT,
+
+: ARMCMPEXT,  ( RN RM OPTION IMM3 SF -- )    1F SWAP 6B200000 RMRNOPTIONIMM3RDSFOP, ; // 64 bit tested a little // ARMCMPEXT,
+
+
+: RNRMOPTIONSRDSFOP, { | RN RM OPTION S RD SF OP -- }
+  OP 
+  RD      RD>OP
+  RN      RN>OP
+  RM      RM>OP
+  SF      SF>OPb
+  S       S>OP
+  OPTION  OPTION>OP
+  CODE-U32,
+;
+
+: ARMLDRREG,  ( RN RM OPTION S RD SF -- ) 38600800 RNRMOPTIONSRDSFOP, ; // 64 bit tested
+  : ARMLDRBREG,  ( RN RM OPTION S RD -- ) 8BIT  ARMLDRREG, ; // tested
+  : ARMLDRHREG,  ( RN RM OPTION S RD -- ) 16BIT ARMLDRREG, ; // tested
+  : ARMLDRWREG,  ( RN RM OPTION S RD -- ) 32BIT ARMLDRREG, ; // tested
+  : ARMLDRXREG,  ( RN RM OPTION S RD -- ) 64BIT ARMLDRREG, ; // tested
+
+: RNRMOPTIONSRDSFSFBOP, { | RN RM OPTION S RD SF SFB OP -- }
+  OP 
+  RD      RD>OP
+  RN      RN>OP
+  RM      RM>OP
+  SF      SF>OPb
+  S       S>OP
+  OPTION  OPTION>OP
+  SFB     SFB>OP
+  CODE-U32,
+;
+
+: ARMLDRSREG,  ( RN RM OPTION S RD SF SFB -- ) 38A00800 RNRMOPTIONSRDSFSFBOP, ; 
+  : ARMLDRSBWREG,  ( RN RM OPTION S RD -- ) 8BIT  32BIT ARMLDRSREG, ; // tested
+  : ARMLDRSBXREG,  ( RN RM OPTION S RD -- ) 8BIT  64BIT ARMLDRSREG, ; // tested
+  : ARMLDRSHWREG,  ( RN RM OPTION S RD -- ) 16BIT 32BIT ARMLDRSREG, ; // tested
+  : ARMLDRSHXREG,  ( RN RM OPTION S RD -- ) 16BIT 64BIT ARMLDRSREG, ; // tested
+  : ARMLDRSWXREG,  ( RN RM OPTION S RD -- ) 32BIT 64BIT ARMLDRSREG, ; // tested
+
+: RDRNRMOPTIONSSFOP, { | RD RN RM OPTION S SF OP -- }
+  OP 
+  RD      RD>OP
+  RN      RN>OP
+  RM      RM>OP
+  SF      SF>OPb
+  S       S>OP
+  OPTION  OPTION>OP
+  CODE-U32,
+;
+ 
+: ARMSTRREG,  ( RS RN RM OPTION S SF -- ) 38200800 RDRNRMOPTIONSSFOP, ;
+  : ARMSTRBREG,  ( RS RN RM OPTION S -- ) 8BIT  ARMSTRREG, ; // tested
+  : ARMSTRHREG,  ( RS RN RM OPTION S -- ) 16BIT ARMSTRREG, ; // tested
+  : ARMSTRWREG,  ( RS RN RM OPTION S -- ) 32BIT ARMSTRREG, ; // tested
+  : ARMSTRXREG,  ( RS RN RM OPTION S -- ) 64BIT ARMSTRREG, ; // tested
+
+: RNIMM12SHRDSFOP, { | RN IMM12 SH RD SF OP -- }
+  OP 
+  RN      RN>OP
+  IMM12   IMM12>OP
+  SH      SH>OP
+  RD      RD>OP
+  SF      SF>OP
+  CODE-U32,
+;
+
+11000000 CONSTANT ARMADDIMM
+31000000 CONSTANT ARMADDSIMM
+51000000 CONSTANT ARMSUBIMM
+71000000 CONSTANT ARMSUBSIMM
+
+: ARMADDIMM,  ( RN IMM12 SH RD SF -- ) 11000000 RNIMM12SHRDSFOP, ; // 64 bit tested  // ARMADDIMM,
+: ARMADDSIMM, ( RN IMM12 SH RD SF -- ) 31000000 RNIMM12SHRDSFOP, ; // 64 bit tested  // ARMADDSIMM,
+
+: ARMCMNIMM,  ( RN IMM12 SH SF -- )    1F SWAP 31000000 RNIMM12SHRDSFOP, ; // 64 bit tested // ARMCMNIMM,
+
+: ARMSUBIMM,  ( RN IMM12 SH RD SF -- ) 51000000 RNIMM12SHRDSFOP, ; // 64 bit tested // ARMSUBIMM,
+: ARMSUBSIMM, ( RN IMM12 SH RD SF -- ) 71000000 RNIMM12SHRDSFOP, ; // 64 bit tested // ARMSUBSIMM,
+
+: ARMCMPIMM,  ( RN IMM12 SH SF -- )    1F SWAP 71000000 RNIMM12SHRDSFOP, ; // 64 bit tested // ARMCMPIMM,
+
+
+: RNIMM12RDSFOP, { | RN IMM12 RD SF OP -- }
+  OP 
+  RN      RN>OP
+  IMM12   IMM12>OP
+  SF      1 XOR N>OP
+  RD      RD>OP
+  CODE-U32,
+;
+
+: ARMLDRSHIMM,    ( RN IMM12 RD SF -- )    79800000 RNIMM12RDSFOP, ;
+
+: RNIMM12RDSFOPb, { | RN IMM12 RD SF OP -- }
+  OP 
+  RN      RN>OP
+  IMM12   IMM12>OP
+  SF      SF>OPb
+  RD      RD>OP
+  CODE-U32,
+;
+
+: ARMLDRIMM,    ( RN IMM12 RD SF -- )    39400000 RNIMM12RDSFOPb, ; // 64 bit tested - uses imm12 * SF size in bytes
+  : ARMLDRBIMM,   ( RN IMM12 RD -- ) 8BIT ARMLDRIMM, ;  // 64 bit tested uses imm12 * 1
+  : ARMLDRHIMM,   ( RN IMM12 RD -- ) 16BIT ARMLDRIMM, ; // 64 bit tested uses imm12 * 2
+  : ARMLDRWIMM,   ( RN IMM12 RD -- ) 32BIT ARMLDRIMM, ; // 64 bit tested uses imm12 * 4
+  : ARMLDRXIMM,   ( RN IMM12 RD -- ) 64BIT ARMLDRIMM, ; // 64 bit tested uses imm12 * 8
+
+: RNIMM12RDSFSFBOP, { | RN IMM12 RD SF SFB OP -- }
+  OP 
+  RN      RN>OP
+  IMM12   IMM12>OP
+  SF      SF>OPb
+  RD      RD>OP
+  SFB     SFB>OP
+  CODE-U32,
+;
+
+: ARMLDRSIMM,    ( RN IMM12 RD SF SFB -- )    39800000 RNIMM12RDSFSFBOP, ; 
+  : ARMLDRSBWIMM,   ( RN IMM12 RD -- ) 8BIT  32BIT ARMLDRSIMM, ; // tested
+  : ARMLDRSBXIMM,   ( RN IMM12 RD -- ) 8BIT  64BIT ARMLDRSIMM, ; // tested
+  : ARMLDRSHWIMM,   ( RN IMM12 RD -- ) 16BIT 32BIT ARMLDRSIMM, ; // tested
+  : ARMLDRSHXIMM,   ( RN IMM12 RD -- ) 16BIT 64BIT ARMLDRSIMM, ; // tested
+  : ARMLDRSWXIMM,   ( RN IMM12 RD -- ) 32BIT 64BIT ARMLDRSIMM, ; // tested
+
+: RDRNIMM12SFOPb, { | RD RN IMM12 SF OP -- }
+  OP 
+  RN      RN>OP
+  IMM12   IMM12>OP
+  SF      SF>OPb
+  RD      RD>OP
+  CODE-U32,
+;
+
+: ARMSTRIMM,    ( RS RN IMM12 SF -- )    39000000 RDRNIMM12SFOPb, ; // 64 bit tested
+  : ARMSTRBIMM,   ( RS RN IMM12 -- )  8BIT ARMSTRIMM, ; // tested uses imm12 * 1
+  : ARMSTRHIMM,   ( RS RN IMM12 -- )  16BIT ARMSTRIMM, ; // tested uses imm12 * 2
+  : ARMSTRWIMM,   ( RS RN IMM12 -- )  32BIT ARMSTRIMM, ; // tested uses imm12 * 4
+  : ARMSTRXIMM,   ( RS RN IMM12 -- )  64BIT ARMSTRIMM, ; // tested uses imm12 * 8
+
+: RNRMIMM6SHIFTRDSFOP, { | RN RM IMM6 SHIFT RD SF OP -- }
+  OP 
+  RN      RN>OP
+  RM      RM>OP
+  IMM6    IMM6>OP
+  SHIFT   SHIFT>OP
+  RD      RD>OP
+  SF      SF>OP
+  CODE-U32,
+;
+
+: ARMADDSHIFTEDREG,  ( RN RM IMM6 SHIFT RD SF -- ) 0B000000 RNRMIMM6SHIFTRDSFOP, ; // 64 bit tested
+: ARMADDSSHIFTEDREG, ( RN RM IMM6 SHIFT RD SF -- ) 2B000000 RNRMIMM6SHIFTRDSFOP, ; // 64 bit tested
+
+: ARMCMNSHIFTEDREG,  ( RN RM IMM6 SHIFT SF -- )    1F SWAP 2B000000 RNRMIMM6SHIFTRDSFOP, ; // 64 bit tested
+
+: ARMANDSHIFTEDREG,  ( RN RM IMM6 SHIFT RD SF -- ) 0A000000 RNRMIMM6SHIFTRDSFOP, ; // 64 bit tested
+: ARMANDSSHIFTEDREG, ( RN RM IMM6 SHIFT RD SF -- ) 6A000000 RNRMIMM6SHIFTRDSFOP, ; // 64 bit tested
+
+: ARMBICSHIFTEDREG,  ( RN RM IMM6 SHIFT RD SF -- ) 0A200000 RNRMIMM6SHIFTRDSFOP, ; // 64 bit tested
+: ARMBICSSHIFTEDREG, ( RN RM IMM6 SHIFT RD SF -- ) 6A200000 RNRMIMM6SHIFTRDSFOP, ; // 64 bit tested
+
+: ARMEONSHIFTEDREG,  ( RN RM IMM6 SHIFT RD SF -- ) 4A200000 RNRMIMM6SHIFTRDSFOP, ; // 64 bit tested
+: ARMEORSHIFTEDREG,  ( RN RM IMM6 SHIFT RD SF -- ) 4A000000 RNRMIMM6SHIFTRDSFOP, ; // 64 bit tested
+
+: ARMORNSHIFTEDREG,  ( RN RM IMM6 SHIFT RD SF -- ) 2A200000 RNRMIMM6SHIFTRDSFOP, ; // 64 bit tested
+: ARMORRSHIFTEDREG,  ( RN RM IMM6 SHIFT RD SF -- ) 2A000000 RNRMIMM6SHIFTRDSFOP, ; // 64 bit tested
+
+: ARMSUBSHIFTEDREG,  ( RN RM IMM6 SHIFT RD SF -- ) 4B000000 RNRMIMM6SHIFTRDSFOP, ; // 64 bit tested
+: ARMSUBSSHIFTEDREG, ( RN RM IMM6 SHIFT RD SF -- ) 6B000000 RNRMIMM6SHIFTRDSFOP, ; // 64 bit tested
+
+: ARMCMPSHIFTEDREG,  ( RN RM IMM6 SHIFT SF -- )    1F SWAP 6B000000 RNRMIMM6SHIFTRDSFOP, ; // 64 bit tested
+
+: ARMTSTSHIFTEDREG,  ( RN RM IMM6 SHIFT SF -- )    1F SWAP 6A000000 RNRMIMM6SHIFTRDSFOP, ; // 64 bit tested
+
+: RMIMM6SHIFTRDSFOP, { | RM IMM6 SHIFT RD SF OP -- }
+  OP 
+  RM      RM>OP
+  IMM6    IMM6>OP
+  SHIFT   SHIFT>OP
+  RD      RD>OP
+  SF      SF>OP
+  CODE-U32,
+;
+
+: ARMMVN,  ( RM IMM6 SHIFT RD SF -- ) 2A2003E0 RMIMM6SHIFTRDSFOP, ; // 64 bit tested
+: ARMNEG,  ( RM IMM6 SHIFT RD SF -- ) 4B0003E0 RMIMM6SHIFTRDSFOP, ; // 64 bit tested... shift 3 is reserved (would be ROR)
+: ARMNEGS, ( RM IMM6 SHIFT RD SF -- ) 6B0003E0 RMIMM6SHIFTRDSFOP, ; // RD = 1F 64 bit tested
+
+
+: RNIMM6IMM4RDOP, { | RN IMM6 IMM4 RD OP -- }
+  OP 
+  RN      RN>OP
+  IMM6    IMM6>OP
+  IMM4    IMM4>OP
+  RD      RD>OP
+  CODE-U32,
+;
+
+: ARMADDG, ( RN IMM6 IMM4 RD -- ) 91800000 RNIMM6IMM4RDOP, ; // FEAT_MTE ?
+: ARMSUBG, ( RN IMM6 IMM4 RD -- ) D1800000 RNIMM6IMM4RDOP, ; // FEAT_MTE ?
+
+: RNRMIMM3RDOP, { | RN RM IMM3 RD OP -- }
+  OP 
+  RN      RN>OP
+  RM      RM>OP
+  IMM3    IMM3>OP
+  RD      RD>OP
+  CODE-U32,
+;
+
+: ARMADDPT, ( RN RM IMM3 RD -- ) 9A002000 RNRMIMM3RDOP, ; // FEAT_CPA ?
+: ARMSUBPT, ( RN RM IMM3 RD -- ) DA002000 RNRMIMM3RDOP, ; // FEAT_CPA ?
+
+: IMM21RDOP, { | IMM21 RD OP -- }
+  OP 
+  IMM21   IMM21>OP
+  RD      RD>OP
+  CODE-U32,
+;
+
+: ARMADR,  ( IMM21 RD -- ) 10000000 IMM21RDOP, ; // tested
+: ARMADRP, ( IMM21 RD -- ) 90000000 IMM21RDOP, ; // need test
+
+: RNIMM13RDOP, { | RN IMM13 RD SF OP -- }
+  OP 
+  RN      RN>OP
+  IMM13   IMM13>OP
+  RD      RD>OP
+  SF      SF>OP
+  CODE-U32,
+;
+
+
+12000000 CONSTANT ARMANDIMM
+72000000 CONSTANT ARMANDSIMM
+32000000 CONSTANT ARMORIMM
+52000000 CONSTANT ARMEORIMM
+
+: RNIMMRNIMMSRDSFOP, { | RN IMMR N IMMS RD SF OP -- } // N may be high bit of IMMS
+  OP 
+  RN      RN>OP
+  IMMR    IMMR>OP
+  N       N>OP
+  IMMS    IMMS>OP
+  RD      RD>OP
+  SF      SF>OP
+  CODE-U32,
+;
+
+// n = 1 then there is one 64 bit section
+//  (if n = 0 highest clear bit of imms selects number of sections and size of each section)
+// n = 0, bit 5 of imms is highest clear bit then there are two 32 bit sections
+// n = 0, bit 4 of imms is highest clear bit then there are four 16 bit sections
+// n = 0, bit 3 of imms is highest clear bit then there are eight 8 bit sections
+// n = 0, bit 2 of imms is highest clear bit then there are sixteen 4 bit sections
+// n = 0, bit 1 of imms is highest clear bit then there are thirtytwo 2 bit sections
+// n = 0, bit 0 of imms is highest clear bit then I think this is udf
+// n = 0,  no clear bits of imms then udf and length of imms is 6
+// lower remaining bits of imms are length of mask - 1 (mask is imms + 1 1 bits and is right justified at lowest bit of each section before the rotate)
+// same lower bits as those of imms of immr are right rotate amount
+: ARMANDIMM,        ( RN IMMR N IMMS RD SF OP  -- ) ARMANDIMM  RNIMMRNIMMSRDSFOP, ; // tested  
+: ARMANDSIMM,       ( RN IMMR N IMMS RD SF OP  -- ) ARMANDSIMM RNIMMRNIMMSRDSFOP, ; // tested           
+: ARMEORIMM,        ( RN IMMR N IMMS RD SF OP  -- ) ARMEORIMM  RNIMMRNIMMSRDSFOP, ; // tested  
+: ARMORIMM,         ( RN IMMR N IMMS RD SF OP  -- ) ARMORIMM   RNIMMRNIMMSRDSFOP, ; // tested  
+SYNONYM ARMORIMM, ARMORRIMM,
+
+
+: ARMMOVBITMASKIMM, { | IMMR N IMMS RD SF -- } // 64 bit tested  ( rightrotate 64bitsectionflag length-1 RD SF -- )
+    R31
+    IMMR
+    N
+    IMMS
+    RD
+    SF
+    ARMORIMM,  ; 
+
+
+
+HEX
+: RDOP, { | RD OP -- }
+  OP 
+  RD RD>OP
+  CODE-U32,
+;
+
+: ARMAPAS,        ( RT -- ) D50E7000 RDOP, ; // FEAT_RME_GPC3 ?
+: ARMCFP,         ( RT -- ) D50B7380 RDOP, ; // FEAT_SPECRES ?
+: ARMCOSP,        ( RT -- ) D50B73C0 RDOP, ; // FEAT_SPECRES2 ?
+: ARMCPP,         ( RT -- ) D50B73E0 RDOP, ; // FEAT_SPECRES ?
+: ARMDVP,         ( RT -- ) D50B73A0 RDOP, ; // FEAT_SPECRES ?
+: ARMPACIZA,      ( RT -- ) DAC123E0 RDOP, ; // FEAT_PAuth ?
+: ARMPACIZB,      ( RT -- ) DAC127E0 RDOP, ; // FEAT_PAuth ?
+
+: ARMRETAASPPCR,  ( RT -- ) D65F0BE0 RDOP, ; // FEAT_PAuth_LR ?
+: ARMRETABSPPCR,  ( RT -- ) D65F0FE0 RDOP, ; // FEAT_PAuth_LR ?
+: ARMTRCIT,       ( RT -- ) D50B72E0 RDOP, ; // FEAT_ITE
+: ARMTSTART,      ( RT -- ) D5233060 RDOP, ; // FEAT_TME
+: ARMTTEST,       ( RT -- ) D5233160 RDOP, ; // FEAT_TME
+: ARMWFET,        ( RD -- ) D5031000 RDOP, ; // FEAT_WFxT
+: ARMWFIT,        ( RD -- ) D5031020 RDOP, ; // FEAT_WFxT
+
+: ARMXPACD,       ( RD -- ) DAC147E0 RDOP, ; // FEAT_PAuth
+: ARMXPACI,       ( RD -- ) DAC143E0 RDOP, ; // FEAT_PAuth
+
+: IMMSRNIMMRRDNSFOP, { | IMMS RN IMMR RD SF OP -- }
+  OP
+  IMMS    IMMS>OP 
+  RN      RN>OP
+  IMMR    IMMR>OP
+  RD      RD>OP
+  SF      N>OP
+  SF      SF>OP
+  CODE-U32,
+;
+
+: ARMSBFM,         ( IMMS RN IMMR RD SF -- ) 13000000 IMMSRNIMMRRDNSFOP, ; // 64 bit tested some
+: ARMSBFX, { | RN lsb width RD SF -- } // 64 bit tested
+    lsb width + 1-
+    RN
+    lsb
+    RD
+    SF
+    ARMSBFM,
+;
+
+: ARMSBFIZ, { | RN width RD lsb SF -- } // 64 bit tested
+    width 1-
+    RN
+    SF 64BIT = IF
+      40 lsb - 3F AND
+    ELSE
+      20 lsb - 1F AND
+    THEN
+    RD
+    SF
+    ARMSBFM,
+;
+
+
+
+
+: ARMTSTIMM,       ( IMMS RN IMMR    SF -- ) >R 1F R> 72000000 IMMSRNIMMRRDNSFOP, ; // need test
+
+ 
+: ARMUBFM,         ( IMMS RN IMMR RD SF -- ) 53000000 IMMSRNIMMRRDNSFOP, ; // 64 bit tested
+
+HEX
+: ARMUBFIZ,        { | RN lsb width RD SF -- } // 64 bit tested
+   width 1-
+   RN
+   SF 64BIT = IF // assumes one of 64BIT or 32BIT
+     40 lsb - 3F AND
+   ELSE
+     20 lsb - 1F AND
+   THEN
+   RD
+   SF  
+   ARMUBFM,
+;
+
+HEX
+: ARMUBFX,        { | RN lsb width RD SF -- } // 64 bit tested
+   lsb width + 1-
+   RN
+   lsb
+   RD
+   SF  
+   ARMUBFM,
+;
+
+: RNIMMSIMMRRDNSFOP, { | RN IMMS IMMR RD SF OP -- } // ( source offset rotate destination size op -- )
+  OP
+  IMMS    IMMS>OP 
+  RN      RN>OP
+  IMMR    IMMR>OP
+  RD      RD>OP
+  SF      N>OP
+  SF      SF>OP
+  CODE-U32,
+;
+
+: ARMBFM, ( RN IMMS IMMR RD SF -- ) 33000000 RNIMMSIMMRRDNSFOP, ; // 64 bit tested
+
+HEX
+: ARMBFC,     { | lsb width RD SF -- } // 64 bit tested. FEAT_ASMv8p2
+    R31
+    width 1-  
+    SF 32BIT = IF
+      20 lsb -
+    ELSE
+      40 lsb -
+    THEN
+    RD 
+    SF
+    ARMBFM, ;
+
+: ARMBFI,     { | RN lsb width RD SF -- } // 64 bit tested
+    RN
+    width 1-  
+    SF 32BIT = IF
+      20 lsb -
+    ELSE
+      40 lsb -
+    THEN
+    RD 
+    SF
+    ARMBFM, ;
+
+: ARMBFXIL,     { | RN lsb width RD SF -- } // 64 bit tested
+    RN
+    lsb width + 1-  
+    lsb
+    RD 
+    SF
+    ARMBFM, ;
+
+: RNIMMRRDNSFOP, { | RN IMMR RD SF OP -- }
+  OP 
+  RN      RN>OP
+  IMMR    IMMR>OP
+  RD      RD>OP
+  SF      N>OP
+  SF      X>OP
+  SF      SF>OP
+  CODE-U32,
+;
+
+: ARMASRIMM, ( RN IMMR RD SF -- ) 13007C00 RNIMMRRDNSFOP, ; // tested  
+: ARMLSRIMM, ( RN IMMR RD SF -- ) 53007C00 RNIMMRRDNSFOP, ; // tested  
+
+: RNLSHIFTRDNSFOP, { IMMS LSHIFT2 | RN LSHIFT RD SF OP -- }
+  LSHIFT SF 64BIT = IF 3F AND ELSE 1F AND THEN TO LSHIFT2
+  SF 3 AND SF>SIZE 1- LSHIFT2 - TO IMMS
+  OP 
+  RN        RN>OP
+  IMMS 1+   IMMR>OP
+  IMMS      IMMS>OP
+  RD        RD>OP
+  SF        N>OP
+  SF        SF>OP
+  CODE-U32,
+;
+
+: ARMLSLIMM, ( RN LSHIFT RD SF -- ) 53000000 RNLSHIFTRDNSFOP, ; // tested  
+
+: RMRNIMMSRDSFOP, { | RM RN IMMS RD SF OP -- }
+  OP
+  RM      RM>OP
+  IMMS    IMMS>OP 
+  RN      RN>OP
+  RD      RD>OP
+  SF      N>OP
+  SF      SF>OP
+  CODE-U32,
+;
+
+: ARMEXTR,     ( RMlow RNhi IMMSbitoffset RD SF -- ) 13800000 RMRNIMMSRDSFOP, ; // 64 bit tested
+
+: ARMRORIMM,   ( RS shift RD SF -- )  >R >R >R DUP R> R> R> ARMEXTR, ; // 64 bit tested
+HEX
+: ARMROLIMM,   { | RS shift RD SF -- } // 64 bit tested
+    RS RS
+    SF 64BIT = IF // assumes one of 32BIT or 64BIT
+      40 shift - 3F AND
+    ELSE
+      20 shift - 1F AND
+    THEN
+    RD SF
+    ARMEXTR,
+;  
+
+: OP1CRMOP2RDNOP, { | OP1 CRM OP2 RD OP -- }
+  OP
+  OP1     OP1>OP 
+  CRM     CRM>OP
+  OP2     OP2>OP 
+  RD      RD>OP
+  CODE-U32,
+;
+
+: ARMAT,  ( OP1 CRM OP2 RD -- ) D5087000 OP1CRMOP2RDNOP, ; 
+  : S1E1R  0 8 0 ;
+  : S1E1W  0 8 1 ;
+  : S1E0R  0 8 2 ;
+  : S1E0W  0 8 3 ;
+  : S1E1RP 0 9 0 ; // FEAT_PAN2
+  : S1E1WP 0 9 1 ; // FEAT_PAN2
+  : S1E1A  0 9 2 ; // FEAT_ATS1A
+  : S1E2R  4 8 0 ;
+  : S1E2W  4 8 1 ;
+  : S12E1W 4 8 4 ;
+  : S12E0R 4 8 6 ;
+  : S12E0W 4 8 7 ;
+  : S1E2A  4 9 2 ; // FEAT_ATS1A
+  : S1E3R  6 8 0 ;
+  : S1E3W  6 8 1 ; 
+  : S1E3A  6 9 2 ; // FEAT_ATS1A
+
+: RDRNOP, { | RD RN OP -- }
+  OP
+  RN      RN>OP
+  RD      RD>OP
+  CODE-U32,
+;
+
+: ARMGCSSTR,  ( RT RN -- )   D91F0C00 RDRNOP, ; // FEAT_GCS ?
+: ARMGCSSTTR, ( RT RN -- )   D91F1C00 RDRNOP, ; // FEAT_GCS ?
+
+: ARMST64B,   ( RD RN -- )   F83F9000 RDRNOP, ; // FEAT_LS64 ?
+: ARMSTGM,    ( RT RN -- )   D9A00000 RDRNOP, ; // FEAT_MTE2 ?
+
+: RNRDOP, { | RN RD OP -- }
+  OP
+  RN      RN>OP
+  RD      RD>OP
+  CODE-U32,
+;
+
+: ARMAUTDA,   ( RN RD -- )   DAC11800 RNRDOP, ; // FEAT_PAuth ?
+: ARMAUTDZA,  ( RN RD -- )   DAC13800 RNRDOP, ; // FEAT_PAuth ?
+: ARMAUTDB,   ( RN RD -- )   DAC11C00 RNRDOP, ; // FEAT_PAuth ?
+: ARMAUTDZB,  ( RN RD -- )   DAC13C00 RNRDOP, ; // FEAT_PAuth ?
+: ARMAUTIA,   ( RN RD -- )   DAC11000 RNRDOP, ; // FEAT_PAuth ?
+: ARMAUTIZA,  ( RD -- )      1F SWAP DAC13000 RNRDOP, ; // FEAT_PAuth ?
+: ARMAUTIB,   ( RN RD -- )   DAC11400 RNRDOP, ; // FEAT_PAuth ?
+: ARMAUTIZB,  ( RD -- )      1F SWAP DAC13400 RNRDOP, ; // FEAT_PAuth ?
+: ARMBLRAA,   ( RM RD -- )   D73F0800 RNRDOP, ; // FEAT_PAuth ?
+: AARMBLRAAZ, ( RD -- )      1F SWAP D63F0800 RNRDOP, ; // FEAT_PAuth ?
+: ARMBLRAB,   ( RM RD -- )   D73F0C00 RNRDOP, ; // FEAT_PAuth ?
+: AARMBLRABZ, ( RD -- )      1F SWAP D63F0C00 RNRDOP, ; // FEAT_PAuth ?
+: ARMBRRAA,   ( RM RD -- )   D71F0800 RNRDOP, ; // FEAT_PAuth ?
+: AARMBRRAAZ, ( RD -- )      1F SWAP D61F0800 RNRDOP, ; // FEAT_PAuth ?
+: ARMBRRAB,   ( RM RD -- )   D71F0C00 RNRDOP, ; // FEAT_PAuth ?
+: AARMBRRABZ, ( RD -- )      1F SWAP D61F0C00 RNRDOP, ; // FEAT_PAuth ?
+
+
+: ARMLD64B,   ( RM RD -- )   F83FD000 RNRDOP, ; // FEAT_LS64 need test
+: ARMLDAXRB,  ( RN RD -- )   085FFC00 RNRDOP, ;
+: ARMLDAXRH,  ( RN RD -- )   485FFC00 RNRDOP, ;
+: ARMLDGM,    ( RN RD -- )   D9E00000 RNRDOP, ; // FEAT_MTE2 need test
+: ARMLDXRB,   ( RN RD -- )   085F7C00 RNRDOP, ;
+: ARMLDXRH,   ( RN RD -- )   485F7C00 RNRDOP, ;
+: ARMPACDA,   ( RN RD -- )   DAC10800 RNRDOP, ; // FEAT_PAuth ?
+: ARMPACDZA,  ( RN RD -- )   DAC12800 RNRDOP, ; // FEAT_PAuth ?
+: ARMPACDB,   ( RN RD -- )   DAC10C00 RNRDOP, ; // FEAT_PAuth ?
+: ARMPACDZB,  ( RN RD -- )   DAC12C00 RNRDOP, ; // FEAT_PAuth ?
+: ARMPACIA,   ( RN RD -- )   DAC10000 RNRDOP, ; // FEAT_PAuth ?
+: ARMPACIB,   ( RN RD -- )   DAC10400 RNRDOP, ; // FEAT_PAuth ?
+
+: ARMSXTW,    ( RN RD -- )   93407C00 RNRDOP, ; // tested
+: ARMUXTB,    ( RN RD -- )   53001C00 RNRDOP, ; // tested
+: ARMUXTH,    ( RN RD -- )   53003C00 RNRDOP, ; // tested
+
+
+: RNOP, ( RN OP -- )
+  SWAP      RN>OP
+  CODE-U32,
+;
+
+: ARMAUTIASPPCR,  ( RN -- ) DAC1901E RNOP, ; // FEAT_PAuth_LR ?
+: ARMAUTIBSPPCR,  ( RN -- ) DAC1941E RNOP, ; // FEAT_PAuth_LR ?
+: ARMBR,          ( RN -- ) D61F0000 RNOP, ; // tested
+: ARMBLR,         ( RN -- ) D63F0000 RNOP, ; // tested
+: ARMGCSPOPCX,    ( RN -- ) D50877A0 RNOP, ; // FEAT_GCS ?
+: ARMGCSPOPM,     ( RN -- ) D52B7720 RNOP, ; // FEAT_GCS ?
+: ARMGCSPOPX,     ( RN -- ) D50877C0 RNOP, ; // FEAT_GCS ?
+: ARMGCSPUSHM,    ( RN -- ) D50B7700 RNOP, ; // FEAT_GCS ?
+: ARMGCSPUSHX,    ( RN -- ) D5087780 RNOP, ; // FEAT_GCS ?
+: ARMGCSSS1,      ( RN -- ) D50B7740 RNOP, ; // FEAT_GCS ?
+: ARMGCSSS2,      ( RN -- ) D52B7760 RNOP, ; // FEAT_GCS ?
+: ARMRET,         ( RN -- ) D65F0000 RNOP, ;  // tested
+: ARMSETF8,       ( RN -- ) 3A00080D RNOP, ; // FEAT_FlagM tested
+: ARMSETF16,      ( RN -- ) 3A00480D RNOP, ; // FEAT_FlagM tested
+
+: OP2RDNOP, { | OP2 RD OP -- }
+  OP
+  OP2     OP2>OP 
+  RD      RD>OP
+  CODE-U32,
+;
+
+: ARMBRB,        ( OP2 RD -- ) D5097200 OP2RDNOP, ; // // FEAT_PAuth ?
+  4 CONSTANT IALL
+  5 CONSTANT INJ
+
+: ARMUDF,     ( imm16 -- ) 0FFFF AND CODE-U32, ; // need test
+
+: CRMOP, ( CRM OP -- )
+  SWAP      CRM>OP
+  CODE-U32,
+;
+
+: ARMISB,     ( CRM -- ) D50330DF CRMOP, ; // need test
+: ARMDMB,     ( CRM -- ) D50330BF CRMOP, ; // need test
+: ARMDSB,     ( CRM -- ) D503309F CRMOP, ; // need test
+
+: CRMOPb, ( CRM OP -- )
+  SWAP      CRM>OPb
+  CODE-U32,
+;
+
+: ARMSMSTART,   ( CRM -- ) D503417F CRMOPb, ; // FEAT_SME ?
+  3 CONSTANT SM
+  5 CONSTANT ZA
+  7 CONSTANT SMZA
+
+: ARMSMSTOP,    ( CRM -- ) D503407F CRMOPb, ; // FEAT_SME ?
+
+
+: NOP,       ( -- ) D503201F CODE-U32, ;  // tested
+: RET,       ( -- ) D65F03C0 CODE-U32, ;  // tested
+
+: U16>IR, ( U16 HW IR FILL0FLAG -- )
+    IF
+      0 ARMMOVZ,
+    ELSE
+      0 ARMMOVK,
+    THEN
+;
+
+: !U16>IR, ( U16 HW IR FILL1FLAG -- )
+    IF
+      0 ARMMOVN,
+    ELSE
+      0 ARMMOVK,
+    THEN
+;
+
+HEX 
+: U>IR, TRUE { | FILL0FLAG U IR -- }
+    U 0= IF
+      0 0 IR 0 ARMMOVZ, EXIT
+    THEN
+    U FFFF AND 0<> IF 
+      U FFFF AND 0 IR FILL0FLAG U16>IR,
+      FALSE TO FILL0FLAG
+    THEN
+    U FFFF0000 AND 0<> IF 
+      U FFFF0000 AND 1 IR FILL0FLAG U16>IR,
+      FALSE TO FILL0FLAG
+    THEN
+    U FFFF00000000 AND 0<> IF 
+      U FFFF00000000 AND 2 IR FILL0FLAG U16>IR,
+      FALSE TO FILL0FLAG
+    THEN
+    U FFFF000000000000 AND 0<> IF 
+      U FFFF000000000000 AND 3 IR FILL0FLAG U16>IR,
+    THEN
+;
+
+// condition codes for B.cond,
+00 CONSTANT EQ
+00 CONSTANT ZS
+01 CONSTANT NE
+01 CONSTANT NZ
+
+02 CONSTANT CS
+03 CONSTANT NC
+
+02 CONSTANT GEU // unsigned
+03 CONSTANT LTU // unsigned
+
+04 CONSTANT MI
+05 CONSTANT PL
+
+06 CONSTANT VS
+07 CONSTANT VC
+
+08 CONSTANT HI
+09 CONSTANT LS
+
+08 CONSTANT GTU // unsigned
+09 CONSTANT LEU // unsigned
+
+0A CONSTANT GE // signed
+0B CONSTANT LT // signed
+
+0C CONSTANT GT // signed
+0D CONSTANT LE // signed
+
+0E CONSTANT ALWAYS
+0F CONSTANT NEVER   // NEVER is treated as ALWAYS by the ARM64 instructions. The helper control flow words like UNTIL, will compile a NOP, if needed.
+                    // See section C1.2.4 of the Arm Architecture Reference Manual for A-profile architecture
+
+0E CONSTANT AL
+0F CONSTANT NV      // NEVER is treated as ALWAYS by the ARM64 instructions. The helper control flow words like UNTIL, will compile a NOP, if needed.
+                    // See section C1.2.4 of the Arm Architecture Reference Manual for A-profile architecture
+
+: OPPOSITEBRANCHCODE ( opcode -- opcode' )
+   
+    1 XOR
+;
+
+
+// compiles an unresolved shortbramch
+: SHORTBRANCH, { | branchcode -- afterbranchoffset }
+ 
+    branchcode 10 U> IF 2DROP ERROR" not a valid branch code" EXIT THEN
+
+    branchcode ALWAYS U<
+    IF 
+      0 branchcode ARMB.cond,
+      OHERE
+      EXIT
+    THEN
+
+    branchcode ALWAYS =
+    IF
+      0 ARMB,
+      OHERE
+      EXIT
+    THEN
+
+    branchcode NEVER =
+    IF
+      ARMNOP,
+      OHERE
+      EXIT
+    THEN
+;
+
+// branchtypes
+0 CONSTANT branchtypenever
+1 CONSTANT branchtypealways
+2 CONSTANT branchtypecond
+3 CONSTANT branchtypeerror
+
+: GETBRANCHTYPE { | branchopcode -- branchopcode' displacement type }
+    branchopcode ARMNOP = IF
+      branchopcode 0 branchtypenever
+      EXIT
+    THEN
+    branchopcode IMM26MASK INVERT AND ARMB = IF
+      branchopcode IMM26MASK INVERT AND
+      branchopcode ( IMM26MASK AND ) N26>N64
+      branchtypealways
+      EXIT
+    THEN
+    branchopcode IMM19condMASK INVERT AND ARMB.cond = IF
+      branchopcode IMM19MASK INVERT AND // keep the condition code
+      branchopcode ( IMM19MASK AND ) 5 RSHIFT N19>N64
+      branchtypecond
+      EXIT
+    THEN
+    ERROR" unknown branch type"
+;
+
+: RESOLVE-BRANCH { branchbaseopcode oldbranchdisplacement branchdisplacement branchtype | afterbranchoffset targetoffset -- }
+  
+    afterbranchoffset OCCBUF>P 4 - U32@ GETBRANCHTYPE
+    TO branchtype
+    TO oldbranchdisplacement
+    TO branchbaseopcode
+
+    oldbranchdisplacement 0 <> IF
+      ERROR" branch already resolved"
+      EXIT
+    THEN
+
+    branchtype branchtypenever = IF
+      EXIT 
+    THEN
+
+    // delta offset to displacement
+    targetoffset afterbranchoffset 4 - - 
+    DUP 03 AND 0<> IF 
+      DROP ERROR" branch displacement not aligned... code must be aligned to UINT32" EXIT
+    THEN
+    2/ 2/ TO branchdisplacement
+
+    branchtype branchtypealways = IF
+      // make sure displacement is in range
+      branchdisplacement N26>= IF
+        ERROR" always branch too far for a short branch"
+        EXIT
+      THEN 
+     
+      // assemble branch opcode
+      ARMB branchdisplacement IMM26>OP
+
+      // put assembled opcode before afterbranchoffset
+      afterbranchoffset OCCBUF>P 4 - U32!
+      EXIT
+    THEN
+
+    branchtype branchtypecond = IF
+      // make sure displacement is in range
+      branchdisplacement N19>= IF
+        ERROR" .cond branch too far for a short branch"
+        EXIT
+      THEN 
+
+      // assemble branch opcode
+      branchbaseopcode branchdisplacement IMM19>OP
+      
+      // put assembled opcode before after branch offset
+      afterbranchoffset OCCBUF>P 4 - U32!
+      EXIT
+    THEN 
+
+    ERROR" unknown branch type" 
+;
+
+: IF, ( conditioncode -- afterbranchaddr )
+   OPPOSITEBRANCHCODE SHORTBRANCH,
+;
+
+: THEN, ( afterbranchaddr -- )
+    OHERE RESOLVE-BRANCH
+;
+
+: ELSE, ( iffaddr -- )
+    ALWAYS SHORTBRANCH, >R
+    THEN,
+    R>
+;
+
+: WHILE, ( beginaddr cc -- whileaddr beginaddr )
+    IF, SWAP
+;
+
+: BEGIN, ( -- beginaddr )
+    OHERE
+;
+
+: UNTIL, ( beginaddr branchcode -- )
+    OPPOSITEBRANCHCODE ( beginaddr oppositebranchcode -- )
+    SHORTBRANCH, ( beginaddr afterbranchaddr -- ) 
+    SWAP RESOLVE-BRANCH
+;
+
+: REPEAT, ( whileaddr beginaddr -- )
+    NEVER UNTIL,
+    THEN,
+;
+
+: ?MOVZorK, ( U I IR donefirstflag -- ) // tested
+    IF
+      64BIT ARMMOVK,
+    ELSE
+      64BIT ARMMOVZ,
+    THEN
+;
+
+: ?MOVNorK, ( N I IR donefirstflag -- ) // tested
+    IF
+      64BIT ARMMOVK,
+    ELSE
+      >R >R INVERT FFFF AND R> R> 64BIT ARMMOVN,
+    THEN
+;
+
+: N->IR64, { donefirstflag X | N IR -- } // tested but didn't check the compiled code for minimal size
+
+    FALSE TO donefirstflag
+
+    // 0 case    
+    N 0= IF
+
+      0 0 IR 64BIT ARMMOVZ,
+      EXIT
+
+    THEN
+
+    // -1 case
+    N -1 = IF
+
+      0 0 IR 64BIT ARMMOVN,
+      EXIT
+
+    THEN
+
+    // more 0000s than FFFFs when FFFF is hi case
+    N FFFF000000000000 XOR TO X
+    X FFFF0000FFFFFFFF AND 0=
+    X FFFFFFFF0000FFFF AND 0= OR
+    X FFFFFFFFFFFF0000 AND 0= OR IF
+    THEN
+
+      4 0 DO
+        N I >U16[U] 0> IF
+
+          N I >U16[U] I IR donefirstflag ?MOVZorK,
+          TRUE TO donefirstflag
+
+        THEN
+      LOOP
+      EXIT
+    
+    // FFFF hi case
+    N 3 >U16[U] FFFF = IF
+
+      -1 3 DO
+        N I >U16[U] FFFF <> IF
+
+          N I >U16[U] I IR donefirstflag ?MOVNorK,
+          TRUE TO donefirstflag
+
+        THEN
+      -1 +LOOP
+      EXIT
+
+    THEN
+
+    // 0000 hi case
+    -1 3 DO
+      N I >U16[U] 0> IF
+
+        N I >U16[U] I IR donefirstflag ?MOVZorK,
+        TRUE TO donefirstflag
+
+      THEN
+    -1 +LOOP
+;
+
+: IR64->IR64, ( srcIR64 destIR64 -- ) >R 0 0 R> 64BIT ARMADDIMM, ; // Tested. Using ARMADDIMM so that RSP works
+
+
+
+: RSP->IR64, ( destIR64 -- ) RSP SWAP IR64->IR64, ; // tested
+
+SYNONYM ARMRET, IR64->PC, 
+
+: IR64->RSP, ( srcIR64 -- ) RSP IR64->IR64, ; // tested
+
+//   will need R8U->R64 R16U->R64 R32U->R64 R8N->R64 R16N->R64 R32N->R64
+// R->R, ( covers all cases )
+
+
+//   use armaddimm, if N is positive and fits in 12 bits
+//   use armsubimm, if N is negative and fits in 12 bits
+//   use N->IR64 with destreg then armaddreg if N does not fit ( no scratch reg needed )
+//     could check for shifted Ns
+//   must use SCRATCHREG1 if srcreg = destreg and N doesn't fit in +-U12 
+//   must use scratchret if destreg = RSP since RSP can't be index reg in ARMADDEXT,
+: IR64+N->IR64, { tempIR | srcIR N destIR -- } // tested
+
+    N ?U12 IF 
+      DROP srcIR N 0 destIR 64BIT ARMADDIMM, 
+      EXIT 
+    THEN
+
+    NEGATE ?U12 IF 
+      DROP srcIR N NEGATE 0 destIR 64BIT ARMSUBIMM, 
+      EXIT 
+    THEN
+
+    destIR TO tempIR
+
+    destIR RSP = IF // needed because RSP can't be an index reg in ARMADDEXT
+      SCRATCHREG1 TO tempIR
+    THEN
+
+    destIR srcIR = IF // don't want to trash srcIR
+      SCRATCHREG1 TO tempIR
+    THEN
+
+    srcIR SCRATCHREG1 = IF // again, don't want to trash srcIR
+      SCRATCHREG2 TO tempIR 
+    THEN
+
+    // srcIR destIR = IF 
+    //  srcIR SCRATCHREG1 = IF
+    //    SCRATCHREG2 TO tempIR
+    //  ELSE
+    //    SCRATCHREG1 TO tempIR
+    //  THEN
+    // ELSE
+    //  destIR TO tempIR
+    // THEN
+
+    DROP N tempIR N->IR64, 
+    srcIR tempIR UXTX 0 destIR 64BIT ARMADDEXT,
+;
+
+: PC+N->PC, { | N -- } // tested
+    OHERE 3 AND 0<> IF ERROR" code not aligned to multiple of 4 bytes (trying to compile a branch)" EXIT THEN
+    N 3 AND 0<> IF ERROR" jump displacement not a multiple of 4 bytes" EXIT THEN
+    N 2/ 2/ ( if N is from after branch offset... may need to subtract 1 )  ?N26 IF
+      ARMB,
+      EXIT
+    THEN
+
+    0 SCRATCHREG1 ARMADR,
+    SCRATCHREG1 N SCRATCHREG1 IR64+N->IR64,
+    SCRATCHREG1 IR64->PC,
+;
+
+: PC+N->IR64, { tempIR | N destIR -- } // tested
+    N N21>= IF 
+      SCRATCHREG1 destIR = IF
+        SCRATCHREG1 TO tempIR
+      ELSE
+        SCRATCHREG2 TO tempIR
+      THEN  
+
+      0 destIR ARMADR,
+
+      N tempIR N->IR64,
+      destIR tempIR UXTX  0 destIR 64BIT ARMADDEXT,
+      EXIT
+    THEN
+
+    N destIR ARMADR,    
+;
+
+: PC->IR64, ( destIR64 -- ) 0 SWAP ARMADR, ; // tested
+
+: RSP+N->IR64, ( N destIR -- ) >R >R RSP R> R> IR64+N->IR64, ; // tested
+
+: RSP+N->RSP, ( N -- ) RSP SWAP RSP IR64+N->IR64, ; // tested
+
+: [IR64]->IR64, ( srcIR destIR -- ) // tested
+    >R R31 UXTX 0 R> 64BIT ARMLDRREG,
+;
+
+: IR64->[IR64], ( srcIR destIR -- ) // tested
+    R31 UXTX 0 64BIT ARMSTRREG,  ( RS RN RM OPTION S SF -- )
+;
+
+// first src reg and dest reg can be rsp, using R32 for second src reg means second src = 0x0
+: [IR64+IR64]->IR64, ( srcIRa srcIRb destIR -- ) // tested
+    >R UXTX 0 R> 64BIT ARMLDRREG,
+;
+
+: [IR64+IR64]->IRSZ, { | srcIRa srcIRb destIR size -- } // tested
+    size 80 AND 0= IF 
+      srcIRa srcIRb UXTX 0 destIR size ARMLDRREG,
+    ELSE
+      srcIRa srcIRb UXTX 0 destIR size 64BIT ARMLDRSREG,
+    THEN
+;
+
+: [IR64]->IRSZ, ( srcIR destIR size -- ) // tested
+    >R >R R31 R> R> [IR64+IR64]->IRSZ,
+;
+
+// src reg and first dest reg can be rsp, using R32 for second dest reg means second dest = 0x0
+: IR64->[IR64+IR64], ( srcIR destIRa destIRb -- ) // tested
+    UXTX 0 64BIT ARMSTRREG,  ( RS RN RM OPTION S SF -- )
+;
+
+: IRSZ->[IR64+IR64], ( srcIR size destIRa destIRb -- ) // tested
+    ROT >R UXTX 0 R> ARMSTRREG,  ( RS RN RM OPTION S SF -- )
+;
+
+: IRSZ->[IR64], ( srcIR size destIR -- ) // tested
+    SWAP >R R31 UXTX 0 R> ARMSTRREG,  ( RS RN RM OPTION S SF -- )
+;
+
+// R+N->IR ( covers all cases )
+
+: [PC+N]->IR64, { | N destIR -- } // tested, assumes N is a multiple of 4
+
+    N 2/ 2/ N19>= IF
+      N destIR PC+N->IR64, // is it a problem if destIR = RSP?
+      destIR destIR [IR64]->IR64,
+      EXIT
+    THEN
+     
+    N 2/ 2/ destIR 64BIT ARMLDRLIT,  ( IMM19 RD SF -- ) 
+;
+
+: [PC+N]->IRSZ, { | N destIR size -- } // tested
+
+    N 2/ 2/ N19>=
+    size 3 AND 0 = OR // 8BIT or N8BIT
+    size 3 AND 1 = OR // 16BIT or N16BIT
+    IF
+      N destIR PC+N->IR64, // is it a problem if destIR = RSP?
+      destIR destIR size [IR64]->IRSZ,
+      EXIT
+    THEN
+
+    size N32BIT = IF
+       N 2/ 2/ destIR ARMLDRSWLIT,  ( IMM19 RD SF -- )
+       EXIT
+    THEN
+  
+    N 2/ 2/ destIR size ARMLDRLIT,  ( IMM19 RD SF -- )
+;
+
+
+// can do 32.... but 8 and 16 are not supported in one instruction...
+
+: O->IR64, ( O destIR -- ) >R OHERE - R> PC+N->IR64, ; // tested
+: [O]->IR64, ( O destIR -- ) >R OHERE - R> [PC+N]->IR64, ; // tested
+
+: [O]->IRSZ, ( O destIR size -- ) >R >R OHERE - R> R> [PC+N]->IRSZ, ; // tested
+
+// uses SCRATCHREG1 if N/8 doesn't fit into U12 and either destIR is RSP or srcIR = destIR
+: [IR64+N]->IR64, { tempIR | srcIR N destIR -- } // tested 
+
+    destIR TO tempIR
+
+    destIR RSP = IF // needed because RSP can't be an index reg in ARMADDEXT
+      SCRATCHREG1 TO tempIR
+    THEN
+
+    destIR srcIR = IF // don't want to trash srcIR
+      SCRATCHREG1 TO tempIR
+    THEN
+
+    srcIR SCRATCHREG1 = IF // again, don't want to trash srcIR
+      SCRATCHREG2 TO tempIR 
+    THEN
+
+    N 7 AND 0<> IF // could use one of the other loads that don't require alignment...
+      ERROR" N not a multiple of 8"
+      EXIT
+    THEN
+
+    N 2/ 2/ 2/ U12>= IF 
+      N tempIR N->IR64,
+      srcIR tempIR UXTX 0 tempIR 64BIT ARMADDEXT, ( RN RM OPTION IMM3 RD SF -- )
+      tempIR 0 destIR 64BIT ARMLDRIMM,
+      EXIT
+    THEN
+
+    srcIR N 2/ 2/ 2/ destIR 64BIT ARMLDRIMM, 
+;
+
+// uses SCRATCHREG1 if N/8 doesn't fit into U12 and either destIR is RSP or srcIR = destIR
+: [IR64+N]->IRSZ, { tempIR | srcIR N destIR size -- } // tested except for error cases... and I only tested aligned to 8 cases
+
+    destIR TO tempIR
+
+    destIR RSP = IF // needed because RSP can't be an index reg in ARMADDEXT
+      SCRATCHREG1 TO tempIR
+    THEN
+
+    destIR srcIR = IF // don't want to trash srcIR
+      SCRATCHREG1 TO tempIR
+    THEN
+
+    srcIR SCRATCHREG1 = IF // again, don't want to trash srcIR
+      SCRATCHREG2 TO tempIR 
+    THEN
+
+    size 3 AND 3 = IF
+      N 7 AND 0<> IF // could use one of the other loads that don't require alignment...
+        ERROR" N not a multiple of 8"
+        EXIT
+      THEN
+    THEN
+
+    size 3 AND 2 = IF
+       N 3 AND 0<> IF // could use one of the other loads that don't require alignment...
+        ERROR" N not a multiple of 4"
+        EXIT
+      THEN
+    THEN 
+
+    size 3 AND 1 = IF
+       N 1 AND 0<> IF // could use one of the other loads that don't require alignment...
+        ERROR" N not a multiple of 2"
+        EXIT
+      THEN
+    THEN   
+
+    N size 3 AND RSHIFT U12>= IF 
+      N tempIR N->IR64,
+      srcIR tempIR UXTX 0 tempIR 64BIT ARMADDEXT, ( RN RM OPTION IMM3 RD SF -- )
+      size 80 AND 0= IF
+        tempIR 0 destIR size ARMLDRIMM,
+      ELSE
+        tempIR 0 destIR size 64BIT ARMLDRSIMM,
+      THEN
+      EXIT
+    THEN
+
+    size 80 AND 0= IF
+      srcIR N size 3 AND RSHIFT destIR size ARMLDRIMM,
+    ELSE
+      srcIR N size 3 AND RSHIFT destIR size 64BIT ARMLDRSIMM,
+    THEN 
+;
+
+: [IR64++N]->IR64, { | srcIR N destIR -- }  // tested
+  
+    N N9>= IF 
+      srcIR N srcIR IR64+N->IR64,
+      srcIR 0 destIR 64BIT ARMLDRIMM,
+      EXIT
+    THEN 
+
+    srcIR N destIR 64BIT ARMIMM++LDR, // ( RN IMM9 RT SF -- )
+;
+
+: [IR64++N]->IRSZ, { | srcIR N destIR size -- }  // tested
+  
+    N N9>= IF 
+      srcIR N srcIR IR64+N->IR64,
+      size 80 AND 0= IF
+        srcIR 0 destIR size ARMLDRIMM,
+      ELSE
+        srcIR 0 destIR size 64BIT ARMLDRSIMM,
+      THEN
+      EXIT
+    THEN 
+
+    size 80 AND 0= IF
+      srcIR N destIR size ARMIMM++LDR, // ( RN IMM9 RT SF -- )
+    ELSE
+      srcIR N destIR size 64BIT ARMIMM++LDRS,
+    THEN
+;
+
+: IR64->[IR64++N], { | srcIR destIR N -- }  // tested
+  
+    N N9>= IF 
+      destIR N destIR IR64+N->IR64,
+      srcIR destIR 0 64BIT ARMSTRIMM,
+      EXIT
+    THEN 
+
+    srcIR destIR N 64BIT ARMIMM++STR, // ( RN RT IMM9 SF -- )
+;
+
+: IRSZ->[IR64++N], { | srcIR size destIR N -- }  // tested
+  
+    N N9>= IF 
+      destIR N destIR IR64+N->IR64,
+      srcIR destIR 0 size ARMSTRIMM,
+      EXIT
+    THEN 
+
+    srcIR destIR N size ARMIMM++STR, // ( RN RT IMM9 SF -- )
+;
+
+: [IR64]++N->IR64, { | srcIR N destIR -- }  // tested
+  
+    N N9>= IF 
+      // there might be a more efficient way... but this minimizes the use of scratch regs and I'm guessing
+      //   this won't be needed much if at all
+      srcIR N srcIR IR64+N->IR64,
+      srcIR 0 N - destIR [IR64+N]->IR64,
+      EXIT
+    THEN 
+
+    srcIR N destIR 64BIT ARMLDRIMM++, // ( RN IMM9 RT SF -- )
+;
+
+: [IR64]++N->IRSZ, { | srcIR N destIR size -- } // tested
+  
+    N N9>= IF 
+      // there might be a more efficient way... but this minimizes the use of scratch regs and I'm guessing
+      //   this won't be needed much if at all
+      srcIR N srcIR IR64+N->IR64,
+      srcIR 0 N - destIR size [IR64+N]->IRSZ,
+      EXIT
+    THEN 
+
+    size 80 AND 0= IF
+      srcIR N destIR size ARMLDRIMM++, // ( RN IMM9 RT SF -- )
+    ELSE
+      srcIR N destIR size 64BIT ARMLDRSIMM++,
+    THEN
+;
+
+: [RSP+N]->IR64, ( N destreg -- ) >R >R RSP R> R> [IR64+N]->IR64, ; // tested
+
+: [RSP+N]->IRSZ, ( N destreg size -- ) >R >R >R RSP R> R> R> [IR64+N]->IRSZ, ; // tested
+
+: IR64->[IR64+N], { | srcIR destIR N -- } // tested
+
+    N 7 AND 0<> IF // could use one of the other loads that don't require alignment...
+      ERROR" N not a multiple of 8"
+      EXIT
+    THEN
+
+    N 2/ 2/ 2/ U12>= IF 
+      destIR N destIR IR64+N->IR64,
+      srcIR destIR 0 64BIT ARMSTRIMM,
+      EXIT
+    THEN
+
+    srcIR destIR N 2/ 2/ 2/ 64BIT ARMSTRIMM,
+;
+
+: IRSZ->[IR64+N], { | srcIR size destIR N -- } // tested
+
+    size 3 AND 1 = IF
+      N 1 AND 0<> IF // could use one of the other loads that don't require alignment...
+        ERROR" N not a multiple of 2"
+        EXIT
+      THEN
+    THEN
+
+    size 3 AND 2 = IF
+      N 3 AND 0<> IF // could use one of the other loads that don't require alignment...
+        ERROR" N not a multiple of 4"
+        EXIT
+      THEN
+    THEN
+
+    size 3 AND 3 = IF
+      N 7 AND 0<> IF // could use one of the other loads that don't require alignment...
+        ERROR" N not a multiple of 8"
+        EXIT
+      THEN
+    THEN
+
+    N size 3 AND RSHIFT U12>= IF 
+      destIR N destIR IR64+N->IR64,
+      srcIR destIR 0 size ARMSTRIMM,
+      EXIT
+    THEN
+
+    srcIR destIR N size 3 AND RSHIFT size ARMSTRIMM,
+;
+
+: IR64->[IR64]++N, { | srcIR destIR N -- }  // tested
+  
+    N N9>= IF 
+      // there might be a more efficient way... but this minimizes the use of scratch regs and I'm guessing
+      //   this won't be needed much if at all
+      srcIR destIR IR64->[IR64],
+      destIR N destIR IR64+N->IR64,
+      EXIT
+    THEN 
+
+    srcIR destIR N 64BIT ARMSTRIMM++, // ( RN RT IMM9 SF -- )
+;
+
+: IRSZ->[IR64]++N, { | srcIR size destIR N -- }  // tested
+  
+    N N9>= IF 
+      // there might be a more efficient way... but this minimizes the use of scratch regs and I'm guessing
+      //   this won't be needed much if at all
+      srcIR size destIR IRSZ->[IR64],
+      destIR N destIR IR64+N->IR64,
+      EXIT
+    THEN 
+
+    srcIR destIR N size ARMSTRIMM++, // ( RN RT IMM9 SF -- )
+;
+
+: IR64->[RSP+N], ( srcIR N -- ) RSP SWAP IR64->[IR64+N], ; // tested
+
+: IRSZ->[RSP+N], ( srcIR size N -- ) RSP SWAP IRSZ->[IR64+N], ; // tested
+
+: IR64IR64->IR64OP, ( srcIRa srcIRb destIR baseopcode -- ) >R 64BIT R>  RNRMRDSFOP, ; // tested
+
+// compile two register sources preserve flags instruction using instruction id
+: IR64IR64->IR64IDPF, { | srcIRa srcIRb destIR OPID -- } // mostly tested
+    srcIRa srcIRb destIR OPID ID>PFOP IR64IR64->IR64OP, 
+
+    // if type bit for invert dest for preserve flags is set then xor result with -1
+    //   this gets you NAND and NOR using only 2 instructions
+    OPID ID>TYPE ?ERRORIF NAME>E EXIT THEN IDTABLE.INVERTDESTMASK AND 0<> IF
+      destIR R31 0 LSL destIR 64BIT ARMEONSHIFTEDREG,  ( RN RM IMM6 SHIFT RD SF -- )
+    THEN 
+; 
+
+// compile two register sources change flags instruction using instruction id
+: IR64IR64->IR64IDCF, { | srcIRa srcIRb destIR OPID -- } 
+
+    // if type bit for invert source for change flags is set then xor srcIRa with -1
+    //   this gets you NORS using only 2 instructions unless srcIRb = destIR
+    OPID ID>TYPE IDTABLE.INVERTSRCAMASK AND 0<> IF
+      // NOR case
+      
+      // inverter case ... can use only one instruction
+      srcIRa srcIRb = IF
+        srcIRa R31 0 LSL destIR 64BIT ARMEONSHIFTEDREG,  ( RN RM IMM6 SHIFT RD SF -- )
+        destIR 0 0 destIR 64BIT ARMADDSIMM, 
+        EXIT
+      THEN
+
+      // if srcIRa is destIR then you can't use destIR as the temporary result... use SCRATCHREG1 instead
+      destIR srcIRa = IF 
+   
+        // assumes srcIRa and srcIRb are not the same
+        // assumes base opcode is BICS or that set flag opcode exists
+        srcIRa R31 0 LSL SCRATCHREG1 64BIT ARMEONSHIFTEDREG,  ( RN RM IMM6 SHIFT RD SF -- )
+        SCRATCHREG1 srcIRb destIR OPID ID>CFOP ?ERRORIF NAME>E EXIT THEN IR64IR64->IR64OP, 
+        EXIT
+      THEN
+
+      // assumes base opcode is BICS or that set flag opcode exists
+      srcIRa R31 0 LSL destIR 64BIT ARMEONSHIFTEDREG,  ( RN RM IMM6 SHIFT RD SF -- )
+      destIR srcIRb destIR OPID ID>CFOP ?ERRORIF NAME>E EXIT THEN IR64IR64->IR64OP, 
+      EXIT
+    THEN 
+
+    // NAND case
+    OPID ID>TYPE IDTABLE.INVERTNANDCASEMASK AND 0<> IF
+      // inverter case ... can use only one instruction
+      srcIRa srcIRb = IF
+        srcIRa R31 0 LSL destIR 64BIT ARMEONSHIFTEDREG,  ( RN RM IMM6 SHIFT RD SF -- )
+        destIR 0 0 destIR 64BIT ARMADDSIMM, 
+        EXIT
+      THEN
+
+      //  compile AND, -1 XOR, 0 ADDS,
+      srcIRa srcIRb destIR OPID ID>PFOP IR64IR64->IR64OP,
+      destIR R31 0 LSL destIR 64BIT ARMEONSHIFTEDREG,  ( RN RM IMM6 SHIFT RD SF -- )
+      destIR 0 0 destIR 64BIT ARMADDSIMM, 
+      EXIT
+    THEN
+
+    // if change flags opcode exists then use it
+    OPID ID>CFOP 0<> IF 
+      srcIRa srcIRb destIR OPID ID>CFOP ?ERRORIF NAME>E EXIT THEN IR64IR64->IR64OP, 
+      EXIT 
+    THEN
+
+    // if change flags opcode does not exist then use preserve flags opcode with an adds 0 after it
+    //   ***************************************************************************
+    //   *** to do: this does not handle the carry flag for the shifts cases.... ***
+    //         but... do you really need to do the carry flag when you have a barrel shifter?
+    //   ***************************************************************************
+    srcIRa srcIRb destIR OPID ID>PFOP ?ERRORIF NAME>E EXIT THEN IR64IR64->IR64OP,  
+    ( RN IMM12 SH RD SF -- )
+    destIR 0 0 destIR 64BIT ARMADDSIMM, 
+; 
+
+
+: ?U12ADDSUBOP { | U OPID -- flag }
+    U U12>= IF
+      FALSE
+      EXIT
+    THEN
+    OPID IDADD = 
+    OPID IDSUB = OR
+;
+
+: ?U12<<12ADDSUBOP { | U OPID -- flag }
+    U FFF AND 0= IF
+      U 0C RSHIFT U12>= 0= IF
+        OPID IDADD = 
+        OPID IDSUB = OR
+        EXIT
+      THEN
+    THEN
+    FALSE
+;
+
+: ?U13ANDOREOROP { | U OPID -- flag }
+    U U13>= 0= IF
+      OPID IDAND = 
+      OPID IDORR = OR
+      OPID IDEOR = OR
+      EXIT
+    THEN
+    FALSE
+;
+
+: ID>ADDSUBNPFOP { | OPID -- baseop }
+    OPID IDADD = IF
+      ARMADDIMM EXIT
+    THEN
+    OPID IDSUB = IF
+      ARMSUBIMM EXIT
+    THEN
+    ERROR" not add or sub opid" 
+;
+
+: ID>ANDOREORPFOP { | OPID -- baseop }
+    OPID IDAND = IF
+      ARMANDIMM EXIT
+    THEN
+    OPID IDOR = IF
+      ARMORIMM EXIT
+    THEN
+    OPID IDEOR = IF
+      ARMEORIMM EXIT
+    THEN
+    ERROR" not and or or or eor opid" 
+;
+
+: ID>ADDSUBNCFOP { | OPID -- baseop }
+    OPID IDADD = IF
+      ARMADDSIMM EXIT
+    THEN
+    OPID IDSUB = IF
+      ARMSUBSIMM EXIT
+    THEN
+    ERROR" not add or sub opid" 
+;
+
+
+// compile one register one n preserve flags instruction using instruction id
+: IR64N->IR64IDPF, { | srcIRa N destIR OPID -- } // tested
+    N OPID ?U12ADDSUBOP IF
+      srcIRa N 0 destIR 64BIT OPID ID>ADDSUBNPFOP RNIMM12SHRDSFOP, ( | RN IMM12 SH RD SF OP -- )
+      EXIT
+    THEN
+
+    N OPID ?U12<<12ADDSUBOP IF
+      srcIRa N 0C RSHIFT 1 destIR 64BIT OPID ID>ADDSUBNPFOP RNIMM12SHRDSFOP, ( | RN IMM12 SH RD SF OP -- )
+      EXIT
+    THEN
+
+//    ANDOREOR N stuff is compilicated
+//    N OPID ?U13ANDOREOROP IF
+//      srcIRa N destIR 64BIT OPID ID>ANDOREORPFOP RNIMM13RDOP, ( | RN IMM13 RD SF OP -- )
+//      EXIT
+//    THEN
+
+    // don't I need to check if there is a preserve regs op here?
+
+    srcIRa SCRATCHREG1 = IF
+       N SCRATCHREG2 N->IR64,
+       srcIRa SCRATCHREG2 destIR OPID IR64IR64->IR64IDPF,
+    ELSE
+      N SCRATCHREG1 N->IR64,
+      srcIRa SCRATCHREG1 destIR OPID IR64IR64->IR64IDPF,
+    THEN
+; 
+
+// compile one register one n change flags instruction using instruction id
+: IR64N->IR64IDCF, { | srcIRa N destIR OPID -- } // tested
+    N OPID ?U12ADDSUBOP IF
+      srcIRa N 0 destIR 64BIT OPID ID>ADDSUBNCFOP RNIMM12SHRDSFOP, ( | RN IMM12 SH RD SF OP -- )
+      EXIT
+    THEN
+
+    N OPID ?U12<<12ADDSUBOP IF
+      srcIRa N 0C RSHIFT 1 destIR 64BIT OPID ID>ADDSUBNCFOP RNIMM12SHRDSFOP, ( | RN IMM12 SH RD SF OP -- )
+      EXIT
+    THEN
+
+    // don't I need to check if there is a change regs op here?
+
+    srcIRa SCRATCHREG1 = IF
+      N SCRATCHREG2 N->IR64,
+      srcIRa SCRATCHREG2 destIR OPID IR64IR64->IR64IDCF,
+    ELSE
+      N SCRATCHREG1 N->IR64,
+      srcIRa SCRATCHREG1 destIR OPID IR64IR64->IR64IDCF,
+      // don't I need the test thing here?
+    THEN
+; 
+
+// if source a n is not reversible, this trashes scratchreg1 or scratchreg2
+: NIR64->IR64IDPF, { | N srcIRa destIR OPID -- } // tested
+    OPID ID>TYPE IDTABLE.ORDERIMPORTANT AND 0= IF
+      // op is reversible
+      srcIRa N destIR OPID IR64N->IR64IDPF,
+      EXIT
+    THEN
+ 
+    // op is not reversible
+    srcIRa SCRATCHREG1 = IF
+      N SCRATCHREG2 N->IR64,
+      SCRATCHREG2 srcIRa destIR OPID IR64IR64->IR64IDPF,
+    ELSE 
+      N SCRATCHREG1 N->IR64,
+      SCRATCHREG1 srcIRa destIR OPID IR64IR64->IR64IDPF,   
+    THEN     
+;
+
+// if source a is not reversible, this trashes scratchreg1 or scratchreg2
+// compile one register one n preserve flags instruction using instruction id
+: NIR64->IR64IDCF, { | N srcIRa destIR OPID -- } // tested
+    OPID ID>TYPE IDTABLE.ORDERIMPORTANT AND 0= IF
+      // op is reversible
+      srcIRa N destIR OPID IR64N->IR64IDCF,
+      EXIT
+    THEN
+
+    srcIRa SCRATCHREG1 = IF
+      N SCRATCHREG2 N->IR64,
+      SCRATCHREG2 srcIRa destIR OPID IR64IR64->IR64IDCF,
+    ELSE
+      N SCRATCHREG1 N->IR64,
+      SCRATCHREG1 srcIRa destIR OPID IR64IR64->IR64IDCF,
+    THEN
+;
+
+// [N]->IR?
+// IR->[PC+N] // no single instruction for this because OS usually does not allow writes to code mem... but since standard FORTH needs this...
+
+VARIABLE POPID
+
+VARIABLE PTARGETSIZE
+VARIABLE PTARGETR
+VARIABLE PTARGETN
+VARIABLE PTARGETMODE
+
+VARIABLE PSOURCEASIZE
+VARIABLE PSOURCEAR
+VARIABLE PSOURCEAN
+VARIABLE PSOURCEAMODE
+
+VARIABLE PSOURCEBSIZE
+VARIABLE PSOURCEBR
+VARIABLE PSOURCEBN
+VARIABLE PSOURCEBMODE
+
+VARIABLE PDESTSIZE
+VARIABLE PDESTR
+VARIABLE PDESTN
+VARIABLE PDESTMODE
+
+VARIABLE PPRESERVEFLAGSFLAG
+VARIABLE PDEFAULTPRESERVEFLAGSFLAG
+TRUE PDEFAULTPRESERVEFLAGSFLAG !
+
+VARIABLE PSOURCEARTEMP
+VARIABLE PSOURCEBRTEMP
+VARIABLE PDESTRTEMP
+
+: IR64IR64->IR64ID, ( -- ) // tested
+    PSOURCEARTEMP @ PSOURCEBRTEMP @ PDESTRTEMP @ POPID @
+
+    PPRESERVEFLAGSFLAG @ 0= IF 
+      IR64IR64->IR64IDCF,
+    ELSE
+      IR64IR64->IR64IDPF,
+    THEN
+;
+
+: IR64N->IR64ID, ( -- ) // tested
+    PSOURCEARTEMP @ PSOURCEBN @ PDESTRTEMP @ POPID @
+
+    PPRESERVEFLAGSFLAG @ 0= IF 
+      IR64N->IR64IDCF,
+    ELSE
+      IR64N->IR64IDPF,
+    THEN
+;
+
+: NIR64->IR64ID, ( -- ) // tested
+    PSOURCEAN @ PSOURCEBRTEMP @ PDESTRTEMP @ POPID @
+
+    PPRESERVEFLAGSFLAG @ 0= IF 
+      NIR64->IR64IDCF,
+    ELSE
+      NIR64->IR64IDPF,
+    THEN
+;
+
+-1 CONSTANT DEFAULTR
+-2 CONSTANT R
+-3 CONSTANT N
+-4 CONSTANT [R]
+-5 CONSTANT [R+N]
+-6 CONSTANT O
+-7 CONSTANT [O]
+-8 CONSTANT [PC+N]
+-9 CONSTANT [RSP+N]
+-0A CONSTANT PF
+-0A CONSTANT PRESERVEFLAGS
+-0B CONSTANT UF
+-0B CONSTANT UPDATEFLAGS
+-0C CONSTANT [R++N]
+-0D CONSTANT [R]++N
+
+// need preserveflags and updateflags
+
+: PULLTARGET { PULLONCE MODE | -- } ( R|N| MODE|R -- ) // tested
+    NOREG PTARGETR !
+    0 PTARGETN !
+    64BIT PTARGETSIZE !
+
+    BEGIN
+      ?ERRORIF NAME>E EXIT THEN
+  
+      TRUE TO PULLONCE
+
+      [ EMES, ]
+
+          ( 0 8BIT ) 
+          8BIT PTARGETSIZE !
+          FALSE TO PULLONCE
+
+        [ EME, ]
+
+          ( 1 16BIT )
+          16BIT PTARGETSIZE !
+          FALSE TO PULLONCE
+
+        [ EME, ]
+
+          ( 2 32BIT )
+          32BIT PTARGETSIZE !
+          FALSE TO PULLONCE
+
+        [ EME, ]
+
+          ( 3 64BIT )
+          64BIT PTARGETSIZE !
+          FALSE TO PULLONCE
+
+        [ EME, ]
+
+          ( 4 R )
+          PTARGETR !
+          R PTARGETMODE !
+
+        [ EME, ]
+
+          ( 5 N )
+          PTARGETN !
+          N PTARGETMODE !
+
+        [ EME, ]
+
+          ( 6 [R] )
+          PTARGETR !
+          [R] PTARGETMODE !
+
+        [ EME, ]
+
+          ( 7 [R+N] )
+          PTARGETN !
+          PTARGETR !
+          [R+N] PTARGETMODE !
+
+        [ EME, ]
+
+          ( 8 [PC+N] )
+          PTARGETN !
+          PC PTARGETR !  // this may not be needed...
+          [PC+N] PTARGETMODE !
+
+        [ EME, ]
+
+          ( 9 [RSP+N] )
+          PTARGETN !
+          RSP PTARGETR !
+          [RSP+N] PTARGETMODE ! // use [R+N] instead?
+
+        [ EME, ]
+
+          ( 0A O )
+          PTARGETN !
+          PC PTARGETR !
+          O PTARGETMODE !  // use N instead?
+
+        [ EME, ]
+
+          ( 0B [O] )
+          PTARGETN !
+          PC PTARGETR !
+          [O] PTARGETMODE !
+
+        [ EME, ]
+
+          ( 0C PF )
+          TRUE PPRESERVEFLAGSFLAG !
+          FALSE TO PULLONCE
+
+        [ EME, ]
+
+          ( 0D UF )
+          FALSE PPRESERVEFLAGSFLAG !
+          FALSE TO PULLONCE
+
+        [ EME, ]
+
+          ( 0E [R++N] )
+          PTARGETN !
+          PTARGETR !
+          [R++N] PTARGETMODE !
+
+        [ EME, ]
+
+          ( 0F [R]++N )
+          PTARGETN !
+          PTARGETR !
+          [R]++N PTARGETMODE !
+
+        [ EME, ]
+
+          ( 10 N8BIT ) 
+          N8BIT PTARGETSIZE !
+          FALSE TO PULLONCE
+
+        [ EME, ]
+
+          ( 11 N16BIT ) 
+          N16BIT PTARGETSIZE !
+          FALSE TO PULLONCE
+
+        [ EME, ]
+
+          ( 12 N32BIT ) 
+          N32BIT PTARGETSIZE !
+          FALSE TO PULLONCE
+
+      [ ENDEMES, ]
+
+      [ 8BIT 16BIT 32BIT 64BIT R N [R] [R+N] [PC+N] [RSP+N] O [O] PF UF [R++N] [R]++N N8BIT N16BIT N32BIT 13 CASES, ]
+
+        // default case: if not a reg, push an error, otherwise set up a reg
+        // ?ISNOTREG IF ERROR" PULLTARGET - target type or default reg not found" EXIT THEN
+        ( don't need to do drop, unknown mode is target reg ) PTARGETR !
+        DEFAULTR PTARGETMODE !
+
+      [ ENDCASES, ]
+
+      PULLONCE
+
+    UNTIL
+;
+
+: ?RR->R ( -- flag )
+    PSOURCEAMODE @ R =
+    PSOURCEBMODE @ R = AND
+    PDESTMODE @ R = AND
+;
+
+: ?RN->R ( -- flag )
+    PSOURCEAMODE @ R =
+    PSOURCEBMODE @ N = AND
+    PDESTMODE @ R = AND
+;
+
+: ?NR->R ( -- flag )
+    PSOURCEAMODE @ N =
+    PSOURCEBMODE @ R = AND
+    PDESTMODE @ R = AND
+;
+
+: ?[R]R->R ( -- flag )
+    PSOURCEAMODE @ [R] =
+    PSOURCEBMODE @ R = AND
+    PDESTMODE @ R = AND
+;
+
+: ?R[R]->R ( -- flag )
+    PSOURCEAMODE @ R =
+    PSOURCEBMODE @ [R] = AND
+    PDESTMODE @ R = AND
+;
+
+: ?RR->[R] ( -- flag )
+    PSOURCEAMODE @ R =
+    PSOURCEBMODE @ [R] = AND
+    PDESTMODE @ R = AND
+;
+
+: PULL3TARGETS ( -- ) // tested
+
+    PULLTARGET ?ERRORIF NAME>E EXIT THEN
+    PTARGETR @ PDESTR !
+    PTARGETN @ PDESTN !
+    PTARGETMODE @ PDESTMODE !
+    PTARGETSIZE @ PDESTSIZE !
+
+    PULLTARGET ?ERRORIF NAME>E EXIT THEN
+    PTARGETR @ PSOURCEBR !
+    PTARGETN @ PSOURCEBN !
+    PTARGETMODE @ PSOURCEBMODE !
+    PTARGETSIZE @ PSOURCEBSIZE !
+
+    PULLTARGET ?ERRORIF NAME>E EXIT THEN
+    PTARGETR @ PSOURCEAR !
+    PTARGETN @ PSOURCEAN !
+    PTARGETMODE @ PSOURCEAMODE !
+    PTARGETSIZE @ PSOURCEASIZE !    
+;
+
+: ?MA ( -- flag ) // tested
+    PSOURCEAMODE @
+
+    [ EMES, ]
+
+        ( 0 [R] ) 
+        TRUE
+
+      [ EME, ]
+
+        ( 1 [R+N] )
+        TRUE
+
+      [ EME, ]
+
+        ( 2 [O] )
+        TRUE
+
+      [ EME, ]
+
+        ( 3 [PC+N] )
+        TRUE
+
+      [ EME, ]
+
+        ( 4 [RSP+N] )
+        TRUE 
+
+      [ EME, ]
+
+        ( 5 [R++N] )
+        TRUE 
+
+      [ EME, ]
+
+        ( 6 [R]++N )
+        TRUE
+
+      [ ENDEMES, ]
+
+      [ [R] [R+N] [O] [PC+N] [RSP+N] [R++N] [R]++N 7 CASES, ]
+
+        DROP FALSE
+
+      [ ENDCASES, ] 
+;
+
+: MA->SCRATCHREG2, ( -- ) // tested
+    
+    PSOURCEAMODE @
+
+    [ EMES, ]
+
+        ( 0 [R] ) 
+        PSOURCEAR @ SCRATCHREG2 [IR64]->IR64,
+
+      [ EME, ]
+
+        ( 1 [R+N] )
+        PSOURCEAR @ PSOURCEAN @ SCRATCHREG2 [IR64+N]->IR64,
+
+      [ EME, ]
+
+        ( 2 [O] )
+        PSOURCEAN @ SCRATCHREG2 [O]->IR64,
+
+      [ EME, ]
+
+        ( 3 [PC+N] )
+        PSOURCEAN @ SCRATCHREG2 [PC+N]->IR64, // not sure how someone will use this mode easily when it compiles multiple instructions...
+
+      [ EME, ]
+
+        ( 4 [RSP+N] )
+        PSOURCEAN @ SCRATCHREG2 [RSP+N]->IR64, 
+
+      [ EME, ]
+
+        ( 5 [R++N] )
+        PSOURCEAR @ PSOURCEAN @ SCRATCHREG2 [IR64++N]->IR64,
+
+      [ EME, ]
+
+        ( 6 [R]++N )
+        PSOURCEAR @ PSOURCEAN @ SCRATCHREG2 [IR64]++N->IR64,
+
+      [ ENDEMES, ]
+
+      [ [R] [R+N] [O] [PC+N] [RSP+N] [R++N] [R]++N 7 CASES, ]
+
+        DROP // do nothing if source not mem
+
+      [ ENDCASES, ]
+;
+
+: MA->SCRATCHREG2SZ, ( -- ) // tested
+    
+    PSOURCEAMODE @
+
+    [ EMES, ]
+
+        ( 0 [R] ) 
+        PSOURCEAR @ SCRATCHREG2 PSOURCEASIZE @ [IR64]->IRSZ,
+
+      [ EME, ]
+
+        ( 1 [R+N] )
+        PSOURCEAR @ PSOURCEAN @ SCRATCHREG2 PSOURCEASIZE @ [IR64+N]->IRSZ,
+
+      [ EME, ]
+
+        ( 2 [O] )
+        PSOURCEAN @ SCRATCHREG2 PSOURCEASIZE @ [O]->IRSZ,
+
+      [ EME, ]
+
+        ( 3 [PC+N] )
+        PSOURCEAN @ SCRATCHREG2 PSOURCEASIZE @ [PC+N]->IRSZ, // not sure how someone will use this mode easily when it compiles multiple instructions...
+
+      [ EME, ]
+
+        ( 4 [RSP+N] )
+        PSOURCEAN @ SCRATCHREG2 PSOURCEASIZE @ [RSP+N]->IRSZ, 
+
+      [ EME, ]
+
+        ( 5 [R++N] )
+        PSOURCEAR @ PSOURCEAN @ SCRATCHREG2 PSOURCEASIZE @ [IR64++N]->IRSZ,
+
+      [ EME, ]
+
+        ( 6 [R]++N )
+        PSOURCEAR @ PSOURCEAN @ SCRATCHREG2 PSOURCEASIZE @ [IR64]++N->IRSZ,
+
+      [ ENDEMES, ]
+
+      [ [R] [R+N] [O] [PC+N] [RSP+N] [R++N] [R]++N 7 CASES, ]
+
+        DROP // do nothing if source not mem
+
+      [ ENDCASES, ]
+;
+
+: ?MB ( -- flag ) // tested
+    PSOURCEBMODE @
+
+    [ EMES, ]
+
+        ( 0 [R] ) 
+        TRUE
+
+      [ EME, ]
+
+        ( 1 [R+N] )
+        TRUE
+
+      [ EME, ]
+
+        ( 2 [O] )
+        TRUE
+
+      [ EME, ]
+
+        ( 3 [PC+N] )
+        TRUE
+
+      [ EME, ]
+
+        ( 4 [RSP+N] )
+        TRUE 
+
+      [ EME, ]
+
+        ( 5 [R++N] )
+        TRUE
+
+      [ EME, ]
+
+        ( 6 [R]++N )
+        TRUE
+
+      [ ENDEMES, ]
+
+      [ [R] [R+N] [O] [PC+N] [RSP+N] [R++N] [R]++N 7 CASES, ]
+
+        DROP FALSE
+
+      [ ENDCASES, ] 
+;
+
+: MB->SCRATCHREG1, ( -- ) // tested
+    
+    PSOURCEBMODE @
+
+    [ EMES, ]
+
+        ( 0 [R] ) 
+        PSOURCEBR @ SCRATCHREG1 [IR64]->IR64,
+
+      [ EME, ]
+
+        ( 1 [R+N] )
+        PSOURCEBR @ PSOURCEBN @ SCRATCHREG1 [IR64+N]->IR64,
+
+      [ EME, ]
+
+        ( 2 [O] )
+        PSOURCEBN @ SCRATCHREG1 [O]->IR64,
+
+      [ EME, ]
+
+        ( 3 [PC+N] )
+        PSOURCEBN @ SCRATCHREG1 [PC+N]->IR64, // not sure how someone will use this mode easily when it compiles multiple instructions...
+
+      [ EME, ]
+
+        ( 4 [RSP+N] )
+        PSOURCEBN @ SCRATCHREG1 [RSP+N]->IR64, 
+
+      [ EME, ]
+
+        ( 5 [R++N] )
+        PSOURCEBR @ PSOURCEBN @ SCRATCHREG1 [IR64++N]->IR64,
+
+      [ EME, ]
+
+        ( 6 [R]++N )
+        PSOURCEBR @ PSOURCEBN @ SCRATCHREG1 [IR64]++N->IR64,
+
+      [ ENDEMES, ]
+
+      [ [R] [R+N] [O] [PC+N] [RSP+N] [R++N] [R]++N 7 CASES, ]
+
+        DROP // do nothing if source not mem
+
+      [ ENDCASES, ]
+;
+
+: MB->IRSZ, { | destir -- }  // sz here means the fetch uses the source's size
+    
+    PSOURCEBMODE @
+
+    [ EMES, ]
+
+        ( 0 [R] ) 
+        PSOURCEBR @ destir PSOURCEBSIZE @ [IR64]->IRSZ,
+
+      [ EME, ]
+
+        ( 1 [R+N] )
+        PSOURCEBR @ PSOURCEBN @ destir PSOURCEBSIZE @ [IR64+N]->IRSZ,
+
+      [ EME, ]
+
+        ( 2 [O] )
+        PSOURCEBN @ destir PSOURCEBSIZE @ [O]->IRSZ,
+
+      [ EME, ]
+
+        ( 3 [PC+N] )
+        PSOURCEBN @ destir PSOURCEBSIZE @ [PC+N]->IRSZ, // not sure how someone will use this mode easily when it compiles multiple instructions...
+
+      [ EME, ]
+
+        ( 4 [RSP+N] )
+        PSOURCEBN @ destir PSOURCEBSIZE @ [RSP+N]->IRSZ, 
+
+      [ EME, ]
+
+        ( 5 [R++N] )
+        PSOURCEBR @ PSOURCEBN @ destir PSOURCEBSIZE @ [IR64++N]->IRSZ,
+
+      [ EME, ]
+
+        ( 6 [R]++N )
+        PSOURCEBR @ PSOURCEBN @ destir PSOURCEBSIZE @ [IR64]++N->IRSZ,
+
+      [ ENDEMES, ]
+
+      [ [R] [R+N] [O] [PC+N] [RSP+N] [R++N] [R]++N 7 CASES, ]
+
+        DROP // do nothing if source not mem
+
+      [ ENDCASES, ]
+;
+
+: MB->SCRATCHREG1SZ, ( -- ) // tested // SZ means the fetch uses the source's size
+
+    SCRATCHREG1 MB->IRSZ,
+
+;
+    
+// : MB->SCRATCHREG1SZ, ( -- ) // tested fetches size from MB
+
+//     PSOURCEBMODE @
+
+//     [ EMES, ]
+
+//         ( 0 [R] ) 
+//         PSOURCEBR @ SCRATCHREG1 PSOURCEBSIZE @ [IR64]->IRSZ,
+
+//       [ EME, ]
+
+//         ( 1 [R+N] )
+//         PSOURCEBR @ PSOURCEBN @ SCRATCHREG1 PSOURCEBSIZE @ [IR64+N]->IRSZ,
+
+//       [ EME, ]
+
+//         ( 2 [O] )
+//         PSOURCEBN @ SCRATCHREG1 PSOURCEBSIZE @ [O]->IRSZ,
+
+//       [ EME, ]
+
+//         ( 3 [PC+N] )
+//         PSOURCEBN @ SCRATCHREG1 PSOURCEBSIZE @ [PC+N]->IRSZ, // not sure how someone will use this mode easily when it compiles multiple instructions...
+
+//       [ EME, ]
+
+//         ( 4 [RSP+N] )
+//         PSOURCEBN @ SCRATCHREG1 PSOURCEBSIZE @ [RSP+N]->IRSZ, 
+
+//       [ EME, ]
+
+//         ( 5 [R++N] )
+//         PSOURCEBR @ PSOURCEBN @ SCRATCHREG1 PSOURCEBSIZE @ [IR64++N]->IRSZ,
+
+//       [ EME, ]
+
+//         ( 6 [R]++N )
+//         PSOURCEBR @ PSOURCEBN @ SCRATCHREG1 PSOURCEBSIZE @ [IR64]++N->IRSZ,
+
+//       [ ENDEMES, ]
+
+//       [ [R] [R+N] [O] [PC+N] [RSP+N] [R++N] [R]++N 7 CASES, ]
+
+//         DROP // do nothing if source not mem
+
+//       [ ENDCASES, ]
+// ;
+
+: ?MDEST ( -- flag ) // tested
+
+    PDESTMODE @
+
+    [ EMES, ]
+
+        ( 0 [R] ) 
+        TRUE
+
+      [ EME, ]
+
+        ( 1 [R+N] )
+        TRUE
+
+      [ EME, ]
+
+        ( 2 [O] )
+        TRUE
+
+      [ EME, ]
+
+        ( 3 [PC+N] )
+        TRUE
+
+      [ EME, ]
+
+        ( 4 [RSP+N] )
+        TRUE 
+
+      [ EME, ]
+
+        ( 5 [R++N] )
+        TRUE
+
+      [ EME, ]
+
+        ( 6 [R]++N )
+        TRUE
+
+      [ ENDEMES, ]
+
+      [ [R] [R+N] [O] [PC+N] [RSP+N] [R++N] [R]++N 7 CASES, ]
+
+        DROP FALSE
+
+      [ ENDCASES, ] 
+;
+
+: SCRATCHREG2->MDEST, ( -- ) // tested
+
+    PDESTMODE @
+
+    [ EMES, ]
+
+        ( 0 [R] ) 
+        SCRATCHREG2 PDESTR @ IR64->[IR64],
+
+      [ EME, ]
+
+        ( 1 [R+N] )
+        SCRATCHREG2 PDESTR @ PDESTN @  IR64->[IR64+N],
+
+      [ EME, ]
+
+        ( 2 [O] )
+        ERROR" writing to a .o code buffer is an os security violation... use [R] if you are going disable write protection on code buffers"
+
+      [ EME, ]
+
+        ( 3 [PC+N] )
+        ERROR" writing to a .o code buffer is an os security violation... use [R] if you are going disable write protection on code buffers"
+
+      [ EME, ]
+
+        ( 4 [RSP+N] )
+        SCRATCHREG2 PDESTN @ IR64->[RSP+N], 
+
+      [ EME, ]
+
+        ( 5 [R++N] )
+        SCRATCHREG2 PDESTR @ PDESTN @  IR64->[IR64++N],
+
+      [ EME, ]
+
+        ( 6 [R]++N )
+        SCRATCHREG2 PDESTR @ PDESTN @  IR64->[IR64]++N,
+
+      [ ENDEMES, ]
+
+      [ [R] [R+N] [O] [PC+N] [RSP+N] [R++N] [R]++N 7 CASES, ]
+
+        DROP // do nothing if dest not mem
+
+      [ ENDCASES, ]
+;
+
+: IR->MDESTSZ, { | srcir -- } // stores dest size to MDEST
+
+    PDESTMODE @
+
+    [ EMES, ]
+
+        ( 0 [R] ) 
+        srcir PDESTSIZE @ PDESTR @ IRSZ->[IR64],
+
+      [ EME, ]
+
+        ( 1 [R+N] )
+        srcir PDESTSIZE @ PDESTR @ PDESTN @  IRSZ->[IR64+N],
+
+      [ EME, ]
+
+        ( 2 [O] )
+        ERROR" writing to a .o code buffer is an os security violation... use [R] if you are going disable write protection on code buffers"
+
+      [ EME, ]
+
+        ( 3 [PC+N] )
+        ERROR" writing to a .o code buffer is an os security violation... use [R] if you are going disable write protection on code buffers"
+
+      [ EME, ]
+
+        ( 4 [RSP+N] )
+        srcir PDESTSIZE @ PDESTN @ IRSZ->[RSP+N], 
+
+      [ EME, ]
+
+        ( 5 [R++N] )
+        srcir PDESTSIZE @ PDESTR @ PDESTN @  IRSZ->[IR64++N],
+
+      [ EME, ]
+
+        ( 6 [R]++N )
+        srcir PDESTSIZE @ PDESTR @ PDESTN @  IRSZ->[IR64]++N,
+
+    [ ENDEMES, ]
+
+    [ [R] [R+N] [O] [PC+N] [RSP+N] [R++N] [R]++N 7 CASES, ]
+
+      DROP // do nothing if dest not mem
+
+    [ ENDCASES, ]
+;
+
+: SCRATCHREG2->MDESTSZ, ( -- ) // stores dest size to MDEST
+    SCRATCHREG2 IR->MDESTSZ,
+;
+
+// : SCRATCHREG2->MDESTSZ, ( -- ) // tested
+
+//    PDESTMODE @
+
+//    [ EMES, ]
+
+//        ( 0 [R] ) 
+//        SCRATCHREG2 PDESTSIZE @ PDESTR @ IRSZ->[IR64],
+
+//      [ EME, ]
+
+//        ( 1 [R+N] )
+//        SCRATCHREG2 PDESTSIZE @ PDESTR @ PDESTN @  IRSZ->[IR64+N],
+
+//      [ EME, ]
+
+//        ( 2 [O] )
+//        ERROR" writing to a .o code buffer is an os security violation... use [R] if you are going disable write protection on code buffers"
+
+//      [ EME, ]
+
+//        ( 3 [PC+N] )
+//        ERROR" writing to a .o code buffer is an os security violation... use [R] if you are going disable write protection on code buffers"
+
+//      [ EME, ]
+
+//        ( 4 [RSP+N] )
+//        SCRATCHREG2 PDESTSIZE @ PDESTN @ IRSZ->[RSP+N], 
+
+//      [ EME, ]
+//
+//        ( 5 [R++N] )
+//        SCRATCHREG2 PDESTSIZE @ PDESTR @ PDESTN @  IRSZ->[IR64++N],
+
+//      [ EME, ]
+
+//        ( 6 [R]++N )
+//        SCRATCHREG2 PDESTSIZE @ PDESTR @ PDESTN @  IRSZ->[IR64]++N,
+
+//    [ ENDEMES, ]
+
+//    [ [R] [R+N] [O] [PC+N] [RSP+N] [R++N] [R]++N 7 CASES, ]
+
+//      DROP // do nothing if dest not mem
+
+//    [ ENDCASES, ]
+// ;
+
+: ?SRCAR ( -- flag ) // tested
+    PSOURCEAMODE @ DUP R = 
+    SWAP DEFAULTR = OR
+;
+
+: ?SRCBR ( -- flag ) // tested
+    PSOURCEBMODE @ DUP R = 
+    SWAP DEFAULTR = OR
+;
+
+: ?DESTR ( -- flag ) // tested
+    PDESTMODE @ DUP R = 
+    SWAP DEFAULTR = OR
+;
+
+: IRSZ->IR64, { | rsource size rdest -- } // assumes reg is not rsp ... tested
+    size 80 AND 0= IF
+      // unsigned
+      size 3 AND
+      [ EMES, ]  
+          ( 0 8BIT ) rsource rdest ARMUXTB,
+        [ EME, ] 
+          ( 1 16BIT ) rsource rdest ARMUXTH,
+        [ EME, ]
+          ( 2 32BIT ) rsource rdest 32BIT ARMMOVREG, // can you use ARMSXTW with bit 31 = 0 instead?
+      [ ENDEMES, ]
+
+      [ UJUMP, 
+         DEFAULTDROPJUMP, ]
+         // is 64bits, and same reg do nothing otherwise do a move
+         rsource rdest <> IF
+           rsource rdest IR64->IR64,
+         THEN
+      [ ENDUJUMP, ]
+    ELSE
+      // signed
+      size 3 AND
+      [ EMES, ]  
+          ( 0 8BIT ) rsource rdest 64BIT ARMSXTB,
+        [ EME, ] 
+          ( 1 16BIT ) rsource rdest 64BIT ARMSXTH,
+        [ EME, ]
+          ( 2 32BIT ) rsource rdest ARMSXTW, 
+      [ ENDEMES, ]
+
+      [ UJUMP, 
+         DEFAULTDROPJUMP, ]
+         // is 64bits, and same reg do nothing otherwise do a move
+         rsource rdest <> IF
+           rsource rdest IR64->IR64,
+         THEN
+      [ ENDUJUMP, ]
+    THEN
+;
+
+// cases will be R N or M
+//   M can be [N] [R] [R+N] for now and will be handled as a sub
+//     N as dest is an error
+//     two N sources is an error
+//     that leaves:
+//       N R -> R  // use N R -> R op
+//       N R -> M  // use N R -> R op  then R -> M
+//       N M -> R  // use M -> SCRATCHREG1 then N R -> R op then R->M
+//       N M -> M  // do above then R -> M
+//       R N -> R  // use R N -> R op
+//       R N -> M  // do above then R->M
+//       R R -> R // normal case
+//       R R -> M // do above to a SCRATCHREG1 then R->M
+//       R M -> R // to M -> a SCRATCHREG1 then to above
+//       R M -> M // do above then to R->M
+//       M N -> R 
+//       M N -> M
+//       M R -> R
+//       M R -> M
+//       M M -> R
+//       M M -> M
+       
+: 2SOURCE1DESTOPID, ( opid -- ) // mostly tested I think...
+    POPID !
+    PULL3TARGETS
+
+    // if dest is N then that is an error
+    PDESTMODE @ N = IF ERROR" N can't be a destination" NAME>E EXIT THEN
+
+    // if dest is O then that is an error
+    PDESTMODE @ O = IF ERROR" O can't be a destination" NAME>E EXIT THEN
+
+    // both sources can't be N or O
+    PSOURCEAMODE @ DUP N = SWAP O = OR
+    PSOURCEBMODE @ DUP N = SWAP O = OR AND IF ERROR" both sources can't be N or O, please do the math and use a move" NAME>E EXIT THEN
+   
+    // if source a is R then compile code to sign extend R if needed using IRSZ->IR64, ( sourcer size destr -- )
+    ?SRCAR IF
+      PSOURCEAR @ PSOURCEASIZE @ OVER IRSZ->IR64,
+    THEN
+
+    // if source b is R then compile code to sign extend R if needed
+    ?SRCBR IF
+      PSOURCEBR @ PSOURCEBSIZE @ OVER IRSZ->IR64,
+    THEN
+    
+    // if sourcea M->R then do MA->SCRATCHREG2,
+    ?MA IF
+      // MA->SCRATCHREG2,
+      MA->SCRATCHREG2SZ,
+      SCRATCHREG2 PSOURCEARTEMP !
+    ELSE
+      // if source a is O then compile code to move o to scratchreg2
+      PSOURCEAMODE @ O = IF
+        PSOURCEAN @ SCRATCHREG2 O->IR64,  // size not supported for O... I could put it in .... but who'd ever need it?
+        SCRATCHREG2 PSOURCEARTEMP !
+      ELSE
+        PSOURCEAR @ PSOURCEARTEMP !
+        // probably should check for scratchreg and give error...
+      THEN
+    THEN
+
+    // if sourceb M->R then do MB->SCRATCHREG1,
+    ?MB IF
+      MB->SCRATCHREG1SZ, // fetches size from MB
+      SCRATCHREG1 PSOURCEBRTEMP !
+    ELSE
+      // if source b is O then compile code to move o to scratchreg1
+      PSOURCEBMODE @ O = IF
+        PSOURCEBN @ SCRATCHREG1 O->IR64, // size not supported for O... I could put it in .... but who'd ever need it?
+        SCRATCHREG1 PSOURCEBRTEMP !
+      ELSE
+        PSOURCEBR @ PSOURCEBRTEMP !
+      THEN
+    THEN 
+
+    // if dest is M then set destr to SCRATCHREG2 otherwise use PDESTR
+    ?MDEST IF
+      SCRATCHREG2 PDESTRTEMP !
+    ELSE
+      PDESTR @ PDESTRTEMP ! // is it ok for destreg to be a scratchreg? probably...
+    THEN
+ 
+    // at this point there are 3 cases, source a = n, source b = n, or everything else
+    
+    PSOURCEBMODE @ N = IF
+      IR64N->IR64ID, // case rn->r
+    ELSE
+      PSOURCEAMODE @ N = IF
+        NIR64->IR64ID, // case nr->r
+      ELSE
+        IR64IR64->IR64ID, // case rr->r
+      THEN
+    THEN
+
+    ?MDEST IF
+      SCRATCHREG2->MDESTSZ, // stores size to mdest
+    THEN
+
+    // if dest is R then compile code to sign extend R if needed
+    ?DESTR IF
+      PDESTR @ PDESTSIZE @ OVER IRSZ->IR64,
+    THEN
+;
+
+: 2SOURCE1DESTOPIDDEFAULTF, ( opid -- ) // mostly tested I think...
+    PDEFAULTPRESERVEFLAGSFLAG @ PPRESERVEFLAGSFLAG !
+    2SOURCE1DESTOPID,
+;
+
+
+: ADC,   IDADC   2SOURCE1DESTOPIDDEFAULTF, ;
+: SBC,   IDSBC   2SOURCE1DESTOPIDDEFAULTF, ;
+: SDIV,  IDSDIV  2SOURCE1DESTOPIDDEFAULTF, ;
+: ASR,   IDASR   2SOURCE1DESTOPIDDEFAULTF, ;
+: LSR,   IDLSR   2SOURCE1DESTOPIDDEFAULTF, ;
+: SMULH, IDSMULH 2SOURCE1DESTOPIDDEFAULTF, ;
+: MUL,   IDMUL   2SOURCE1DESTOPIDDEFAULTF, ; // lower 64 bits are same for both signed and unsigned multiply
+: UDIV,  IDUDIV  2SOURCE1DESTOPIDDEFAULTF, ;
+: LSL,   IDLSL   2SOURCE1DESTOPIDDEFAULTF, ;
+: ROR,   IDROR   2SOURCE1DESTOPIDDEFAULTF, ;
+: UMULH, IDUMULH 2SOURCE1DESTOPIDDEFAULTF, ;
+: ADD,   IDADD   2SOURCE1DESTOPIDDEFAULTF, ;
+: AND,   IDAND   2SOURCE1DESTOPIDDEFAULTF, ;
+: BIC,   IDBIC   2SOURCE1DESTOPIDDEFAULTF, ;
+: EON,   IDEON   2SOURCE1DESTOPIDDEFAULTF, ;
+: XNOR,  IDXNOR  2SOURCE1DESTOPIDDEFAULTF, ;
+: EOR,   IDEOR   2SOURCE1DESTOPIDDEFAULTF, ;
+: XOR,   IDXOR   2SOURCE1DESTOPIDDEFAULTF, ;
+: ORN,   IDORN   2SOURCE1DESTOPIDDEFAULTF, ;
+: ORR,   IDORR   2SOURCE1DESTOPIDDEFAULTF, ;
+: OR,    IDOR    2SOURCE1DESTOPIDDEFAULTF, ;
+: SUB,   IDSUB   2SOURCE1DESTOPIDDEFAULTF, ;
+: NAND,  IDNAND  2SOURCE1DESTOPIDDEFAULTF, ;
+: NOR,   IDNOR   2SOURCE1DESTOPIDDEFAULTF, ;
+
+
+: NSOURCEDESTOPID, ( nx opid -- ) // mostly tested I think...
+    POPID !
+
+    NOREG PSOURCEAR !
+    ( nx ) PSOURCEAN !
+    N PSOURCEAMODE !
+    64BIT PSOURCEASIZE !   
+    
+    PULLTARGET ?ERRORIF NAME>E EXIT THEN
+    PTARGETR @ PDESTR !
+    PTARGETN @ PDESTN !
+    PTARGETMODE @ PDESTMODE !
+    PTARGETSIZE @ PDESTSIZE !
+
+    PULLTARGET ?ERRORIF NAME>E EXIT THEN
+    PTARGETR @ PSOURCEBR !
+    PTARGETN @ PSOURCEBN !
+    PTARGETMODE @ PSOURCEBMODE !
+    PTARGETSIZE @ PSOURCEBSIZE !
+
+    // if dest is N then that is an error
+    PDESTMODE @ N = IF ERROR" N can't be a destination" NAME>E EXIT THEN
+
+    // if dest is O then that is an error
+    PDESTMODE @ O = IF ERROR" O can't be a destination" NAME>E EXIT THEN
+
+    // both sources can't be N
+    PSOURCEBMODE @ N = IF ERROR" source can't be N, please do the math and use a move" NAME>E EXIT THEN
+
+    // both sources can't be O
+    PSOURCEBMODE @ O = IF ERROR" source can't be O, please do the math and use a move" NAME>E EXIT THEN
+
+    // if source b is R then compile code to sign extend R if needed
+    ?SRCBR IF
+      PSOURCEBR @ PSOURCEBSIZE @ OVER IRSZ->IR64,
+    THEN
+
+    // if sourceb M->R then do MB->SCRATCHREG1,
+    ?MB IF
+      MB->SCRATCHREG1SZ, // fetches size from MB
+      SCRATCHREG1 PSOURCEBRTEMP !
+    ELSE
+      PSOURCEBR @ PSOURCEBRTEMP !
+    THEN 
+
+    // if dest is M then set destr to SCRATCHREG2 otherwise use PDESTR
+    ?MDEST IF
+      SCRATCHREG2 PDESTRTEMP !
+    ELSE
+      PDESTR @ PDESTRTEMP ! // is it ok for destreg to be a scratchreg? probably...
+    THEN
+ 
+    NIR64->IR64ID, // case nr->r
+      
+    ?MDEST IF
+      SCRATCHREG2->MDESTSZ, // stores size to mdest
+    THEN
+
+     // if dest is R then compile code to sign extend R if needed
+    ?DESTR IF
+      PDESTR @ PDESTSIZE @ OVER IRSZ->IR64,
+    THEN
+;
+
+: NSOURCEDESTOPIDDEFAULTF, ( opid -- ) 
+    PDEFAULTPRESERVEFLAGSFLAG @ PPRESERVEFLAGSFLAG !
+    NSOURCEDESTOPID,
+;
+
+: NEG, 0 IDSUB NSOURCEDESTOPIDDEFAULTF, ; // tested
+: NOT, -1 IDXOR NSOURCEDESTOPIDDEFAULTF, ; // tested
+: INC, 1 IDADD NSOURCEDESTOPIDDEFAULTF, ; // tested ... not sure if this is most effecient for uf case
+: DEC, -1 IDADD NSOURCEDESTOPIDDEFAULTF, ; // tested ... would sub be better?  ... not sure if best for uf case
+
+
+: MOV,
+
+    // for r->r case
+    IDOR POPID !
+    
+    NOREG PSOURCEAR !
+    0 PSOURCEAN !
+    N PSOURCEAMODE !
+    64BIT PSOURCEASIZE !  
+    
+    PULLTARGET ?ERRORIF NAME>E EXIT THEN
+    PTARGETR @ PDESTR !
+    PTARGETN @ PDESTN !
+    PTARGETMODE @ PDESTMODE !
+    PTARGETSIZE @ PDESTSIZE !
+
+    PULLTARGET ?ERRORIF NAME>E EXIT THEN
+    PTARGETR @ PSOURCEBR !
+    PTARGETN @ PSOURCEBN !
+    PTARGETMODE @ PSOURCEBMODE !
+    PTARGETSIZE @ PSOURCEBSIZE !
+
+    // if dest is N then that is an error
+    PDESTMODE @ N = IF ERROR" N can't be a destination" NAME>E EXIT THEN
+
+    // if dest is O then that is an error
+    PDESTMODE @ O = IF ERROR" O can't be a destination" NAME>E EXIT THEN
+
+    // cases: N->R N->M R->R R->M M->R M->M
+    // more cases: O->R O->M
+
+    // source is O
+    PSOURCEBMODE @ O = IF
+
+      ?MDEST IF
+        PSOURCEBN @ SCRATCHREG2 O->IR64, // case o->m
+        SCRATCHREG2->MDESTSZ, // stores size to mdest
+      ELSE 
+        PSOURCEBN @ PDESTR @ O->IR64, // case o->r
+        PDESTR @ PDESTSIZE @ OVER IRSZ->IR64, // not sure why anyone would ever do this... but just in case.... (didn't test this yet..)
+      THEN
+
+      EXIT
+    THEN
+
+    // source is N
+    PSOURCEBMODE @ N = IF
+
+      ?MDEST IF
+        PSOURCEBN @ SCRATCHREG2 N->IR64, // case n->m
+        SCRATCHREG2->MDESTSZ, // stores size to mdest
+      ELSE 
+        PSOURCEBN @ PDESTR @ N->IR64, // case n->r
+        PDESTR @ PDESTSIZE @ OVER IRSZ->IR64,
+      THEN
+
+      EXIT
+    THEN
+
+    // source is R
+    ?SRCBR IF
+
+      ?MDEST IF
+        PSOURCEBR @ PSOURCEBSIZE @ OVER IRSZ->IR64, // extend if necessary 
+        PSOURCEBR @ IR->MDESTSZ, // case r->m  stores destsize to mdest
+      ELSE
+        // could give error if both sizes are different and not 64BIT...
+        PDESTSIZE @ 64BIT = IF
+          PSOURCEBR @ PSOURCEBSIZE @ PDESTR @ IRSZ->IR64,
+        ELSE
+          PSOURCEBR @ PDESTSIZE @ PDESTR @ IRSZ->IR64,
+        THEN
+        
+      THEN
+
+      EXIT
+    THEN
+
+    // source is M
+    ?MDEST IF
+      MB->SCRATCHREG1SZ, // fetches size from MB
+      SCRATCHREG1 IR->MDESTSZ, // case m->m  stores dest size to mdest
+    ELSE
+      PDESTR @ MB->IRSZ, // case m->r fetches size from MB
+    THEN
+; 
+
+: 2SOURCEOPID, ( opid -- ) // assumes this will only be used with opids that have dedicated update flags instructions so that esp does not get trashed...
+    POPID !  
+
+    R31 ( probably should use NOREG ) PDESTR ! // for no destination
+    0 PDESTN !
+    R PDESTMODE !
+    64BIT PDESTSIZE !
+
+    PULLTARGET ?ERRORIF NAME>E EXIT THEN
+    PTARGETR @ PSOURCEBR !
+    PTARGETN @ PSOURCEBN !
+    PTARGETMODE @ PSOURCEBMODE !
+    PTARGETSIZE @ PSOURCEBSIZE !
+
+    PULLTARGET ?ERRORIF NAME>E EXIT THEN
+    PTARGETR @ PSOURCEAR !
+    PTARGETN @ PSOURCEAN !
+    PTARGETMODE @ PSOURCEAMODE !
+    PTARGETSIZE @ PSOURCEASIZE !
+
+    // going to ignore if someone tries to preserve flags
+    FALSE PPRESERVEFLAGSFLAG !
+
+    // if dest is N then that is an error
+    PDESTMODE @ N = IF ERROR" N can't be a destination" NAME>E EXIT THEN
+
+    // if dest is O then that is an error
+    PDESTMODE @ O = IF ERROR" O can't be a destination" NAME>E EXIT THEN
+
+    // both sources can't be N or O
+    PSOURCEAMODE @ DUP N = SWAP O = OR
+    PSOURCEBMODE @ DUP N = SWAP O = OR AND IF ERROR" both sources can't be N or O, please do the math and use a move" NAME>E EXIT THEN
+
+    // if source a is O then compile code to move o to scratchreg2
+    PSOURCEAMODE @ O = IF
+      PSOURCEAN @ SCRATCHREG2 O->IR64,
+      SCRATCHREG2 PSOURCEARTEMP !
+    THEN 
+
+    // if source b is R then compile code to sign extend R if needed
+    ?SRCAR IF
+      PSOURCEAR @ PSOURCEASIZE @ OVER IRSZ->IR64,
+    THEN
+
+    // if source b is R then compile code to sign extend R if needed
+    ?SRCBR IF
+      PSOURCEBR @ PSOURCEBSIZE @ OVER IRSZ->IR64,
+    THEN
+
+    // if sourcea M->R then do MA->SCRATCHREG2,
+    ?MA IF
+      // MA->SCRATCHREG2,
+      MA->SCRATCHREG2SZ,
+      SCRATCHREG2 PSOURCEARTEMP !
+    ELSE
+      // if source a is O then compile code to move o to scratchreg2
+      PSOURCEAMODE @ O = IF
+        PSOURCEAN @ SCRATCHREG2 O->IR64,  // size not supported for O... I could put it in .... but who'd ever need it?
+        SCRATCHREG2 PSOURCEARTEMP !
+      ELSE
+        PSOURCEAR @ PSOURCEARTEMP !
+        // probably should check for scratchreg and give error...
+      THEN
+    THEN
+
+    // if sourceb M->R then do MB->SCRATCHREG1,
+    ?MB IF
+      MB->SCRATCHREG1SZ, // fetches size from MB
+      SCRATCHREG1 PSOURCEBRTEMP !
+    ELSE
+      // if source b is O then compile code to move o to scratchreg1
+      PSOURCEBMODE @ O = IF
+        PSOURCEBN @ SCRATCHREG1 O->IR64,
+        SCRATCHREG1 PSOURCEBRTEMP !
+      ELSE
+        PSOURCEBR @ PSOURCEBRTEMP !
+      THEN
+    THEN 
+
+    // dest is always r31
+    PDESTR @ PDESTRTEMP ! // is it ok for destreg to be a scratchreg? probably...
+    
+ 
+    // at this point there are 3 cases, source a = n, source b = n, or everything else
+    
+    PSOURCEBMODE @ N = IF
+      IR64N->IR64ID, // case rn->r
+    ELSE
+      PSOURCEAMODE @ N = IF
+        NIR64->IR64ID, // case nr->r
+      ELSE
+        IR64IR64->IR64ID, // case rr->r
+      THEN
+    THEN
+;
+
+: TST, ( -- ) IDAND 2SOURCEOPID, ; // tested
+: CMP, ( -- ) IDSUB 2SOURCEOPID, ; // tested
+// could have a compare that can be chained using sbc,
+
+: ENTER-FRAME, ( -- )
+    RSP 10 N RSP SUB,
+    X29 X30 RSP 0 64BIT ARMSTP,
+;
+
+: EXIT-FRAME, ( -- )
+    RSP 0 X29 X30 64BIT ARMLDP,
+    RSP 10 N RSP ADD,
+;
+
+: CLRC, ( -- ) R31 0 2 ARMRMIF, ; // clear carry flag
+: CLRV, ( -- ) R31 0 1 ARMRMIF, ; // clear overflow flag
+: CLRZ, ( -- ) R31 0 4 ARMRMIF, ; // clear zero flag  
+: CLRN, ( -- ) R31 0 8 ARMRMIF, ; // clear minus flag
+
+SYNONYM OSYMBOL EXPORT // adds an element to EH[TOP] with value = ohere and name = next word in cib  
+
+// adds an element to EH[1] with value = ohere and name = next word in cib
+: IMPORT OHERE >NEW$ PARSE-NAME S>NEW$ 1 EH[ND] NEW-ELEMENT DROP ;
+
+// adds an element to EH[1] with value = ohere and name = next word in cib and compiles code for an uninitialized call
+: CALLIMPORT, IMPORT 0 ARMBL, ;
+
+HEX
+: CHECKSTACK 55 <> IF 
+    ERROR" stack check failed after compiling arm64 cross assembler"
+    TRUE ?END-EVALUATE // I think the error does this, so TRUE ?END-EVALUATE is not needed
+  THEN
+;
+
+CHECKSTACK
+
+
+TRUE ?END-EVALUATE
+
+// still to do
+
+// be nice to have EQIF, NEIF, and others (eqif, and neif, are single instruction on arm)
+// maybe add POPCOUNT LEADING0s LEADING1s EXTRACTBITS OVERWRITEBITS INSERTBITS DELETEBITS...
+// sources [R+opsize*R] none
+// destinations [R+opsize*R] none  
+// one target op CLR 
+
+// TLBIP make sure all table entries are all defined (seems same as TLBI table... but there may be additions...)
+
+
+// Need error if someone tries to use RSP with use flags... or compile multiple instructions....
+
+
+

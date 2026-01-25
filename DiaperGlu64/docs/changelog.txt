@@ -1,4 +1,38 @@
 Changelog for Diaperglu
+   24 January 2026
+     released v5.16 
+     (also added an ARM64 cross assembler v0.8 to the project)
+
+   21 October 2025
+     updated docs for lshift and rshift to 64 bits
+
+   04 June 2025
+     changed compile type of all words with compile type safe to compile type subroutine
+
+   25 May 2025
+     added OU32@
+     added OU32!
+
+   24 May 2025
+     added COPYL$[UD]>BUF
+     added COPYL$[U]>BUF
+
+   23 May 2025
+     added COPYBUF>NEWL$
+
+   18 May 2025
+     added GETSL$[UD]
+     fixed documentation for GETSL$[N]
+     added COPYL$>BUF
+     added L$>BUF
+
+   17 May 2025
+     added dg_getslstringatdepth
+
+   12 May 2025
+     added dg_depthtoindex
+     added dg_stackdepthtoindex
+
    04 May 2025
      Released v5.15
 

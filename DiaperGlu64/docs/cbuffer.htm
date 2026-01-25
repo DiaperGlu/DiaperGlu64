@@ -3,20 +3,20 @@
 //
 //    Copyright 2025 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.15.
+//    This file is part of DiaperGlu v5.16.
 //
-//    DiaperGlu v5.15 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.16 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.15 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.16 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.15; if not, write to the Free Software
+//    along with DiaperGlu v5.16; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// May 4, 2025                //
-// version 5.15               //
+// January 24, 2026           //
+// version 5.16               //
 // /////////////////////////////
 -->
 
@@ -123,6 +123,8 @@
       <a href=cbuffer.htm#dg_currentfrom                 >dg_currentfrom</a>
       <a href=cbuffer.htm#dg_getline                     >dg_getline</a>
       <a href=cbuffer.htm#dg_ubufferalign                >dg_ubufferalign</a>
+      <a href=cbuffer.htm#dg_depthtoindex                >dg_depthtoindex</a>
+      <a href=cbuffer.htm#dg_stackdepthtoindex           >dg_stackdepthtoindex</a>
 
       <a                                                 >&nbsp;</a>
       <a                                                 >C Structures</a>
@@ -2788,6 +2790,66 @@
 //  finaladdress = baseaddress + bufferlength
 //   if baseaddress = k*u and bufferlength = j*u and j and k are integers then
 //   finaladdress = u*(k+j) which is a multiple of u (distributive property)
+//   
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_depthtoindex>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_depthtoindex
+//
+// C prototype:
+//  void dg_depthtoindex(
+//   Bufferhandle* pBHarrayhead, 
+//   UINT64 desireddepth, 
+//   UINT64 maxdepth)
+// 
+// Inputs:
+//  Bufferhandle*   pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array where
+//                                   the other bufferhandles are stored.
+//  UINT64          desireddepth    depth on stack where 0 = top of stack
+//  UINT64          maxdepth        total number of elements on stack
+//  
+// Outputs:
+//  UINT64          index           index of array element
+//
+// Action:
+//  Converts a stack depth to an array index.
+//   
+// //////////////////////////////////////////////////////////////////////////////////////
+</pre>
+      </div>
+
+
+      <div class=word id=dg_stackdepthtoindex>
+<pre>
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// dg_stackdepthtoindex
+//
+// C prototype:
+//  void dg_stackdepthtoindex(
+//   Bufferhandle* pBHarrayhead, 
+//   UINT64 desireddepth, 
+//   UINT64 bufferid)
+// 
+// Inputs:
+//  Bufferhandle*   pBHarrayhead    pointer to a Bufferhandle structure which is 
+//                                   used as the bufferhandle for the array where
+//                                   the other bufferhandles are stored.
+//  UINT64          desireddepth    depth on stack where 0 = top of stack
+//  UINT64          bufferid        id of buffer containing stack of uint64s
+//  
+// Outputs:
+//  UINT64          index           index of array element
+//
+// Action:
+//  Converts a stack depth in an array of uint64s to an array index 
 //   
 // //////////////////////////////////////////////////////////////////////////////////////
 </pre>

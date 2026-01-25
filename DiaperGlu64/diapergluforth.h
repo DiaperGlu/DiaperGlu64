@@ -2,20 +2,20 @@
 //
 //    Copyright 2025 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.15.
+//    This file is part of DiaperGlu v5.16.
 //
-//    DiaperGlu v5.15 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.16 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.15 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.16 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.15; if not, write to the Free Software
+//    along with DiaperGlu v5.16; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// May 4, 2025                //
-// version 5.15               //
+// January 24, 2026           //
+// version 5.16               //
 // /////////////////////////////
 
 #if !defined(_INC_diapergluforth)
@@ -673,7 +673,7 @@ enum dg_cpux86regs {
 #define dg_presortedenvwordlistsize (21)
 // #define dg_presortedstringwordlistsize (0)
 // #define dg_presortederrorwordlistsize (0)
-#define dg_prestoredbufferwordlistsize (765)
+#define dg_prestoredbufferwordlistsize (773)
 // #define dg_presortedoswordlistsize (0)
 #define dg_presortedx86wordlistsize (1310)
 
@@ -758,7 +758,8 @@ enum dg_cpux86regs {
         DG_COLORSTATE_EXECUTE,
         DG_COLORSTATE_COMPILE,
         DG_COLORSTATE_POSTPONE,
-        DG_COLORSTATE_COMMENT
+        DG_COLORSTATE_COMMENT,
+        DG_COLORSTATE_SAFE
     };
 
 #define DG_MAX_WORDLISTID    (0xFFFFFFFFFFFFFFF4)
@@ -1800,6 +1801,7 @@ enum dg_cpux86regs {
     DGLU_API extern const char dg_forthcrightbracketname[];
     DGLU_API extern const char dg_forthcpname[];
     DGLU_API extern const char dg_forthcleftparenname[];
+    DGLU_API extern const char dg_forthcsafename[];
     DGLU_API extern const char dg_forthcodemescommaname[];
     DGLU_API extern const char dg_forthcodemecommaname[];
     DGLU_API extern const char dg_forthendcodemescommaname[];
@@ -1922,11 +1924,13 @@ enum dg_cpux86regs {
     DGLU_API extern const char dg_forthocfetchname[];
     DGLU_API extern const char dg_forthgetbufferbytename[];
     DGLU_API extern const char dg_forthofetchname[];
+    DGLU_API extern const char dg_forthou32fetchname[];
     DGLU_API extern const char dg_forthgetbufferuint64name[];
     DGLU_API extern const char dg_forthostonewstringname[];
     DGLU_API extern const char dg_forthocstorename[];
     DGLU_API extern const char dg_forthputbufferbytename[];
     DGLU_API extern const char dg_forthostorename[];
+    DGLU_API extern const char dg_forthou32storename[];
     DGLU_API extern const char dg_forthotwostorename[];
     DGLU_API extern const char dg_forthputbufferuint64name[];
     DGLU_API extern const char dg_forthctobufname[];
@@ -2086,6 +2090,13 @@ enum dg_cpux86regs {
     DGLU_API extern const char dg_forthu64starlstringnplustolstringnname[];
     DGLU_API extern const char dg_forthtoslashulelstringnname[];
     DGLU_API extern const char dg_forthtofactorialulestringname[];
+    DGLU_API extern const char dg_forthgetslstringbracketudname[];
+    DGLU_API extern const char dg_forthcopylstringtobufname[];
+    DGLU_API extern const char dg_forthlstringtobufname[];
+    DGLU_API extern const char dg_forthcopybuftonewlstringname[];
+    DGLU_API extern const char dg_forthcopylstringbracketudtobufname[];
+    DGLU_API extern const char dg_forthcopylstringbracketutobufname[];
+
     
     
     // forth string 
@@ -4681,7 +4692,34 @@ enum dg_cpux86regs {
     
     DGLU_API extern const char* dg_argstoargsbuffername;
     DGLU_API void dg_argstoargsbuffer (Bufferhandle* pBHarrayhead, int argc, char* argv[]);
+
     
+    DGLU_API extern const char dg_depthtoindexname[];
+
+    DGLU_API UINT64 dg_depthtoindex(
+        Bufferhandle* pBHarrayhead,
+        UINT64 desireddepth,
+        UINT64 maxdepth);
+
+
+    DGLU_API extern const char dg_stackdepthtoindexname[];
+
+    DGLU_API UINT64 dg_stackdepthtoindex(
+        Bufferhandle* pBHarrayhead,
+        UINT64 desireddepth,
+        UINT64 bufferid);
+
+
+    DGLU_API extern const char dg_getslstringatdepthname[];
+
+    DGLU_API unsigned char* dg_getslstringatdepth(
+        Bufferhandle* pBHarrayhead,
+        UINT64  offsetbufferid,
+        UINT64  stringbufferid,
+        UINT64  depthid, // 0 = top
+        UINT64* pstringlength);
+
+
     //////////////////////////////
     // End of C Buffer Routines //
     //////////////////////////////
@@ -7613,14 +7651,18 @@ enum dg_cpux86regs {
     
     
     DGLU_API void dg_forthocfetch (Bufferhandle* pBHarrayhead);
-   
+
     DGLU_API void dg_forthofetch (Bufferhandle* pBHarrayhead);
+   
+    DGLU_API void dg_forthou32fetch (Bufferhandle* pBHarrayhead);
   
     DGLU_API void dg_forthostonewstring (Bufferhandle* pBHarrayhead);
   
     DGLU_API void dg_forthocstore (Bufferhandle* pBHarrayhead);
     
     DGLU_API void dg_forthostore (Bufferhandle* pBHarrayhead);
+
+    DGLU_API void dg_forthou32store (Bufferhandle* pBHarrayhead);
 
     DGLU_API void dg_forthotwostore (Bufferhandle* pBHarrayhead);
     
@@ -7904,7 +7946,12 @@ enum dg_cpux86regs {
     DGLU_API void dg_forthlershiftclstringn (Bufferhandle* pBHarrayhead);
     DGLU_API void dg_forthu64starlstringnplustolstringn (Bufferhandle* pBHarrayhead);
     DGLU_API void dg_forthtoslashulelstringn (Bufferhandle* pBHarrayhead);
-    
+    DGLU_API void dg_forthgetslstringbracketud (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthcopylstringtobuf (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthlstringtobuf (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthcopybuftonewlstring (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthcopylstringbracketudtobuf (Bufferhandle* pBHarrayhead);
+    DGLU_API void dg_forthcopylstringbracketutobuf (Bufferhandle* pBHarrayhead);
 
     DGLU_API void dg_forthgetargsfromnstrings(Bufferhandle* pBHarrayhead);
     

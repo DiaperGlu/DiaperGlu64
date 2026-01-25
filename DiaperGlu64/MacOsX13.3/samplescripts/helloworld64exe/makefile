@@ -1,3 +1,5 @@
+# 24 Jan 2026 Jim Norris removed -no_uuid and -no_eh_labels from ld commands as uuid and eh_labels are now required
+# 24 Jan 2026 Jim Norris changed -mmacosx-version-min=11.0 to -target x86_64-apple-macos11.0 in as command
 
 .PHONY: all
 all : helloworld64 helloworld64gas clean
@@ -6,13 +8,13 @@ helloworld64.o : makehelloworld64doto.dglu FORCE
 	../../diaperglu makehelloworld64doto.dglu
 
 helloworld64gas.o : helloworld64gas.s
-	as -mmacosx-version-min=11.0 ./helloworld64gas.s -o helloworld64gas.o
+	as -target x86_64-apple-macos11.0 ./helloworld64gas.s -o helloworld64gas.o
 
 helloworld64 : helloworld64.o FORCE 
-	ld -e _myhelloworldstart -no_uuid -no_eh_labels -demangle -dynamic -arch x86_64 -platform_version macos 11.0.0 11.1 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -o helloworld64 -L/usr/local/lib helloworld64.o -lSystem
+	ld -e _myhelloworldstart -demangle -dynamic -arch x86_64 -platform_version macos 11.0.0 11.1 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -o helloworld64 -L/usr/local/lib helloworld64.o -lSystem
 
 helloworld64gas : helloworld64gas.o FORCE 
-	ld -e _myhelloworldstart -no_uuid -no_eh_labels -demangle -dynamic -arch x86_64 -platform_version macos 11.0.0 11.1 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -o helloworld64gas -L/usr/local/lib helloworld64gas.o -lSystem
+	ld -e _myhelloworldstart -demangle -dynamic -arch x86_64 -platform_version macos 11.0.0 11.1 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -o helloworld64gas -L/usr/local/lib helloworld64gas.o -lSystem
 
 .PHONY: clean 
 clean :

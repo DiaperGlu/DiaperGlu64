@@ -2,20 +2,20 @@
 //
 //    Copyright 2025 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.15.
+//    This file is part of DiaperGlu v5.16.
 //
-//    DiaperGlu v5.15 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.16 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.15 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.16 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.15; if not, write to the Free Software
+//    along with DiaperGlu v5.16; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// May 4, 2025                //
-// version 5.15               //
+// January 24, 2026           //
+// version 5.16               //
 // /////////////////////////////
 
 #include "diapergluforth.h"
@@ -15020,3 +15020,185 @@ void testdg_fescencodelstring()
     dg_free(BHarrayhead.pbuf, BHarrayhead.size, dg_success);
     BHarrayhead.pbuf = badbufferhandle;
 }
+
+
+void testdg_getslstringatdepth()
+{
+    const char* pError = NULL;
+    
+    unsigned char* plstring;
+    UINT64 lstringlength;
+
+    Bufferhandle BHarrayhead;
+
+    dg_initpbharrayhead(&BHarrayhead);
+
+    dg_printzerostring(&BHarrayhead, (unsigned char*)"testing dg_getslstringatdepth\n");
+
+    dg_initbuffers(&BHarrayhead); // gonna use the string stack for testing
+
+
+    // success case
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"cat",
+        3);
+
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_getslstringatdepth success case - got error pushing encoded string to string stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"bear",
+        4);
+
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_getslstringatdepth success case - got error pushing encoded string to string stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+    dg_stonewstring (
+        &BHarrayhead,
+        (unsigned char*)"lemur",
+        5);
+
+    pError = dg_poperror(&BHarrayhead);
+        
+    if (pError != dg_noerrors)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_getslstringatdepth success case - got error pushing encoded string to string stack, got ");
+        dg_printzerostring(&BHarrayhead, (unsigned char*)pError);
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"\n");
+        dg_forthdoterrors(&BHarrayhead);
+        return;
+    }
+
+
+    plstring = dg_getslstringatdepth(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        0, // 0 = top
+        &lstringlength);
+
+    if (lstringlength != 5)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_getslstringatdepth success case - 1st string length wrong\n");
+    }
+
+    
+    if (plstring[0] != 'l')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_getslstringatdepth success case - 1st character of 1st string wrong\n");
+    }
+
+    if (plstring[1] != 'e')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_getslstringatdepth success case - 2nd character of 1st string wrong\n");
+    }
+
+    if (plstring[2] != 'm')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_getslstringatdepth success case - 3rd character of 1st string wrong\n");
+    }
+
+    if (plstring[3] != 'u')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_getslstringatdepth success case - 4th character of 1st string wrong\n");
+    }
+
+    if (plstring[4] != 'r')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_getslstringatdepth success case - 5th character of 1st string wrong\n");
+    }
+
+    
+    plstring = dg_getslstringatdepth(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        1, // 0 = top
+        &lstringlength);
+   
+    if (plstring[0] != 'b')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_getslstringatdepth success case - 1st character of 2nd string wrong\n");
+    }
+
+    if (plstring[1] != 'e')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_getslstringatdepth success case - 2nd character of 2nd string wrong\n");
+    }
+
+    if (plstring[2] != 'a')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_getslstringatdepth success case - 3rd character of 2nd string wrong\n");
+    }
+
+    if (plstring[3] != 'r')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_getslstringatdepth success case - 4th character of 2nd string wrong\n");
+    }
+
+
+    plstring = dg_getslstringatdepth(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        2, // 0 = top
+        &lstringlength);
+   
+    if (plstring[0] != 'c')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_getslstringatdepth success case - 1st character of 3rd string wrong\n");
+    }
+
+    if (plstring[1] != 'a')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_getslstringatdepth success case - 2nd character of 3rd string wrong\n");
+    }
+
+    if (plstring[2] != 't')
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_getslstringatdepth success case - 3rd character of 3rd string wrong\n");
+    }
+
+    if (dg_geterrorcount(&BHarrayhead) != 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_getslstringatdepth success case - got errors doing dg_getslstringatdepth\n");
+    }
+
+
+    plstring = dg_getslstringatdepth(
+        &BHarrayhead,
+        DG_STRINGOFFSETSTACK_BUFFERID,
+        DG_STRINGSTRINGSTACK_BUFFERID,
+        3, // 0 = top
+        &lstringlength);
+    
+    if (dg_geterrorcount(&BHarrayhead) == 0)
+    {
+        dg_printzerostring(&BHarrayhead, (unsigned char*)"FAIL dg_getslstringatdepth success case - didn't get error for off end case\n");
+    }
+
+    dg_clearerrors(&BHarrayhead);
+        
+    // cleanup
+    dg_freeallbuffers(&BHarrayhead);
+}
+
+

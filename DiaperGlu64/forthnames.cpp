@@ -2,20 +2,20 @@
 //
 //    Copyright 2025 James Patrick Norris
 //
-//    This file is part of DiaperGlu v5.15.
+//    This file is part of DiaperGlu v5.16.
 //
-//    DiaperGlu v5.15 is free software; you can redistribute it and/or modify
+//    DiaperGlu v5.16 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DiaperGlu v5.15 is distributed in the hope that it will be useful,
+//    DiaperGlu v5.16 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DiaperGlu v5.15; if not, write to the Free Software
+//    along with DiaperGlu v5.16; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// May 4, 2025                //
-// version 5.15               //
+// January 24, 2026           //
+// version 5.16               //
 // /////////////////////////////
 
 
@@ -581,6 +581,7 @@ const char dg_forthcleftbracketname[]          = "C[";
 const char dg_forthcrightbracketname[]         = "C]";
 const char dg_forthcpname[]                    = "CP";
 const char dg_forthcleftparenname[]            = "C(";
+const char dg_forthcsafename[]                 = "CSAFE";
 
 const char dg_forthcodemescommaname[]            = "CODEMES,";
 const char dg_forthcodemecommaname[]             = "CODEME,";
@@ -905,17 +906,25 @@ const char dg_forthlelshiftclstringnname[]             = "LELSHIFTCL$[N]";
 const char dg_forthlershiftclstringnname[]             = "LERSHIFTCL$[N]";
 const char dg_forthu64starlstringnplustolstringnname[] = "U64*L$[N]+>L$[N]";
 const char dg_forthtoslashulelstringnname[]            = ">/ULEL$[N]";
+const char dg_forthgetslstringbracketudname[]          = "GETSL$[UD]";
+const char dg_forthcopylstringtobufname[]              = "COPYL$>BUF";
+const char dg_forthlstringtobufname[]                  = "L$>BUF";
+const char dg_forthcopybuftonewlstringname[]           = "COPYBUF>NEWL$";
+const char dg_forthcopylstringbracketudtobufname[]     = "COPYL$[UD]>BUF";
+const char dg_forthcopylstringbracketutobufname[]      = "COPYL$[U]>BUF";
 
 
 // forth buffer word names
 const char dg_forthocfetchname[]             = "OC@";
 const char dg_forthgetbufferbytename[]       = "GETBUFFERBYTE";
 const char dg_forthofetchname[]              = "O@";
+const char dg_forthou32fetchname[]           = "OU32@";
 const char dg_forthgetbufferuint64name[]     = "GETBUFFERUINT64";
 const char dg_forthostonewstringname[]       = "OS>NEW$";
 const char dg_forthocstorename[]             = "OC!";
 const char dg_forthputbufferbytename[]       = "PUTBUFFERBYTE";
 const char dg_forthostorename[]              = "O!";
+const char dg_forthou32storename[]           = "OU32!";
 const char dg_forthotwostorename[]           = "O2!";
 const char dg_forthputbufferuint64name[]     = "PUTBUFFERUINT64";
 const char dg_forthctobufname[]              = "C>BUF";
@@ -6111,7 +6120,7 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     presortedbufferwords[i].pname                 = dg_forthcompilebranchname;
     presortedbufferwords[i].namelength            = sizeof(dg_forthcompilebranchname);
     presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
-    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesafesubroutine; // is this correct?
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine; // is this correct?
     presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
     presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthcompilebranch;
 
@@ -6120,7 +6129,7 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     presortedbufferwords[i].pname                 = dg_forthcompilecallbuffername;
     presortedbufferwords[i].namelength            = sizeof(dg_forthcompilecallbuffername);
     presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
-    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesafesubroutine;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
     presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
     presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthcompilecallbuffer;
 
@@ -6129,7 +6138,7 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     presortedbufferwords[i].pname                 = dg_forthcompilecallcorename;
     presortedbufferwords[i].namelength            = sizeof(dg_forthcompilecallcorename);
     presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
-    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesafesubroutine;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
     presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
     presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthcompilecallcore;
 
@@ -6138,7 +6147,7 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     presortedbufferwords[i].pname                 = dg_forthcompilecallsamebuffername;
     presortedbufferwords[i].namelength            = sizeof(dg_forthcompilecallsamebuffername);
     presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
-    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesafesubroutine;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
     presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
     presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthcompilecallsamebuffer;
 
@@ -6147,7 +6156,7 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     presortedbufferwords[i].pname                 = dg_forthcompileentercolonname;
     presortedbufferwords[i].namelength            = sizeof(dg_forthcompileentercolonname);
     presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
-    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesafesubroutine;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
     presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
     presortedbufferwords[i].dataoffset            = (UINT64)&dg_compileinitlocals;
 
@@ -6156,7 +6165,7 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     presortedbufferwords[i].pname                 = dg_forthcompileentername;
     presortedbufferwords[i].namelength            = sizeof(dg_forthcompileentername);
     presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
-    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesafesubroutine;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
     presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
     presortedbufferwords[i].dataoffset            = (UINT64)&dg_compileinitlocals;
 
@@ -6165,7 +6174,7 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     presortedbufferwords[i].pname                 = dg_forthcompileentersubname;
     presortedbufferwords[i].namelength            = sizeof(dg_forthcompileentersubname);
     presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
-    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesafesubroutine;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
     presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
     presortedbufferwords[i].dataoffset            = (UINT64)&dg_compileentersubroutineframe;
 
@@ -6174,7 +6183,7 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     presortedbufferwords[i].pname                 = dg_forthcompileexitname;
     presortedbufferwords[i].namelength            = sizeof(dg_forthcompileexitname);
     presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
-    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesafesubroutine;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
     presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
     presortedbufferwords[i].dataoffset            = (UINT64)&dg_compileexitlocals;
 
@@ -6183,7 +6192,7 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     presortedbufferwords[i].pname                 = dg_forthcompilesname;
     presortedbufferwords[i].namelength            = sizeof(dg_forthcompilesname);
     presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
-    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesafesubroutine;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
     presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
     presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthcompiles;
 
@@ -6192,7 +6201,7 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     presortedbufferwords[i].pname                 = dg_forthcompilesafecallbuffername;
     presortedbufferwords[i].namelength            = sizeof(dg_forthcompilesafecallbuffername);
     presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
-    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesafesubroutine;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
     presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
     presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthcompilesafecallbuffer;
 
@@ -6201,7 +6210,7 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     presortedbufferwords[i].pname                 = dg_forthcompileu8sname;
     presortedbufferwords[i].namelength            = sizeof(dg_forthcompileu8sname);
     presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
-    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesafesubroutine;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
     presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
     presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthcompileu8s;
 
@@ -6210,9 +6219,27 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     presortedbufferwords[i].pname                 = dg_forthcompileu8scurlyname;
     presortedbufferwords[i].namelength            = sizeof(dg_forthcompileu8scurlyname);
     presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
-    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesafesubroutine;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
     presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
     presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthcompileu8scurly;
+
+    i++;
+
+    presortedbufferwords[i].pname                 = dg_forthcopybuftonewlstringname;
+    presortedbufferwords[i].namelength            = sizeof(dg_forthcopybuftonewlstringname);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
+    presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthcopybuftonewlstring;
+
+    i++;
+
+    presortedbufferwords[i].pname                 = dg_forthcopylstringtobufname;
+    presortedbufferwords[i].namelength            = sizeof(dg_forthcopylstringtobufname);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
+    presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthcopylstringtobuf;
 
     i++;
 
@@ -6231,6 +6258,24 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
     presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
     presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthgetlstring;
+
+    i++;
+
+    presortedbufferwords[i].pname                 = dg_forthcopylstringbracketudtobufname;
+    presortedbufferwords[i].namelength            = sizeof(dg_forthcopylstringbracketudtobufname);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
+    presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthcopylstringbracketudtobuf;
+
+    i++;
+
+    presortedbufferwords[i].pname                 = dg_forthcopylstringbracketutobufname;
+    presortedbufferwords[i].namelength            = sizeof(dg_forthcopylstringbracketutobufname);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
+    presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthcopylstringbracketutobuf;
 
     i++;
 
@@ -7900,6 +7945,15 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
 
     i++;
 
+    presortedbufferwords[i].pname                 = dg_forthgetslstringbracketudname;
+    presortedbufferwords[i].namelength            = sizeof(dg_forthgetslstringbracketudname);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
+    presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthgetslstringbracketud;
+
+    i++;
+
     presortedbufferwords[i].pname                 = dg_forthgetstartoffsetlstringnname;
     presortedbufferwords[i].namelength            = sizeof(dg_forthgetstartoffsetlstringnname);
     presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
@@ -8248,6 +8302,15 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
     presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
     presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthjumptableujumpcomma;
+
+    i++;
+
+    presortedbufferwords[i].pname                 = dg_forthlstringtobufname;
+    presortedbufferwords[i].namelength            = sizeof(dg_forthlstringtobufname);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
+    presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthlstringtobuf;
 
     i++;
     
@@ -9604,7 +9667,7 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     presortedbufferwords[i].pname                 = dg_forthosymbolcodeimportscommacurlyname; 
     presortedbufferwords[i].namelength            = sizeof(dg_forthosymbolcodeimportscommacurlyname);
     presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
-    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesafesubroutine;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
     presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
     presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthosymbolcodeimportscommacurly;
 
@@ -9625,6 +9688,24 @@ Premadeword* dg_getppresortedbufferwords (Bufferhandle* pBHarrayhead)
     presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
     presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
     presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthosymbolimport;
+
+    i++;
+
+    presortedbufferwords[i].pname                 = dg_forthou32storename;
+    presortedbufferwords[i].namelength            = sizeof(dg_forthou32storename);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
+    presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthou32store;
+
+    i++;
+
+    presortedbufferwords[i].pname                 = dg_forthou32fetchname;
+    presortedbufferwords[i].namelength            = sizeof(dg_forthou32fetchname);
+    presortedbufferwords[i].compileroutinebuf     = DG_CORE_BUFFERID;
+    presortedbufferwords[i].compileroutineoffset  = (UINT64)&dg_forthdocompiletypesubroutine;
+    presortedbufferwords[i].databuf               = DG_CORE_BUFFERID;
+    presortedbufferwords[i].dataoffset            = (UINT64)&dg_forthou32fetch;
 
     i++;
     

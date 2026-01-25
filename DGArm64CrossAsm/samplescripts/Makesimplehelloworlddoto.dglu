@@ -1,0 +1,64 @@
+
+//                                            ***********************
+//                                            * Simpler Hello World *
+//                                            ***********************
+
+
+$" ../DGMachoDotoMaker.dglu" INCLUDEFILE$
+$" ../DGArm64CrossAsm.dglu" INCLUDEFILE$
+
+
+
+HEX 5555              // This is a stack marker. It is used to detect if something messed up the stack.
+
+ 
+0 PBASEADDRESS !      // The base address is 0 when making a .o file. (Also base address <> 0 is not tested...)
+
+
+
+NEW-FLAT-OSYMBOL-BUF  // This makes a new compile buffer, an export hlist, and an import hlist
+                      // It's better to cross compile to a separate buffer to avoid the case where
+                      //   the buffer containing the assembler moves when you are using one of the
+                      //   assembler compiling words.   
+
+
+OHERE CONSTANT omessage            // Remembering the offset of the message.
+  $" Hello World" 
+  0A C>$ 0A C>$                    // Adding two line feeds to the string.
+  PCURRENTCOMPILEBUFFER @ $>BUF    // Pushing the string onto the end of the code buffer.
+
+OHERE omessage - CONSTANT omessage.length 
+
+
+BARALIGN32            // Need to align to 32 bits here. All opcodes are 32 bits and must be aligned to 32 bits.
+
+
+EXPORT main           // Add a symbol to the export symbol list with name = main and value = OHERE. 
+
+  ENTER-FRAME,        // Needed if you are calling a subroutine so you don't trash the link register.
+                      // This pushes the link and frame pointers to the return stack and sets the frame
+                      //   pointer to the new frame. The frame register must always point to a valid frame.
+
+  // write(hstdin, pmessage, messagelength)
+  1 N                X0  MOV,
+  omessage O         X1  MOV,
+  omessage.length N  X2  MOV, 
+  CALLIMPORT, write            // Add a symbol to the import symbol list with value = OHERE and name = write, 
+                               //   and compiles an uninitialzed call.
+  
+  EXIT-FRAME,                  // Needed if you did ENTER-FRAME,
+
+  // return(0)
+  0 N                X0  MOV,                  
+  RET, 
+
+
+5555 ?MARKER          // Checking to see if something messed up the stack. 
+
+
+// Making the .o file and cleaning up.
+$" simplehelloworld.o" IMPEXPBUF>.OFILE$
+
+
+
+
