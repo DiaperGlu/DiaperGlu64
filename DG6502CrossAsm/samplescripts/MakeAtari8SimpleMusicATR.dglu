@@ -1,0 +1,628 @@
+
+// This script cross compiles an Atari 8 bit computer .atr disk image hello world program.
+//   The hello world program loads at 600 and never exits the initialization routine
+//   This program uses the CIO to write a title using IOCB 0 then initializes a vertical blank song player.
+
+// /////////////////////////////////////////////////
+// Boiler plate to initialize the cross assembler //
+// /////////////////////////////////////////////////
+
+
+// compile the 6502 cross assembler
+$" ../DG6502CrossAsm.dglu" INCLUDEFILE$
+
+// compile the .atr disk file maker
+$" BufToATR.dglu" INCLUDEFILE$
+
+
+HEX 
+
+// Make the Atari OS labels needed for this program
+//   You could also do:
+//     $" AtariLabels.dglu" INCLUDEFILE$ 
+//   but this loads all labels which is slower
+
+2C8 CONSTANT COLOR4 
+2F2 CONSTANT CH1
+
+// CIO labels from https://www.atarimax.com/freenet/freenet_material/12.AtariLibrary/2.MiscellaneousTextFiles/showarticle.php?30
+
+0342 CONSTANT ICCOM // command ( writeappendeol=09 )
+0344 CONSTANT ICBAL // buffer address low   
+0345 CONSTANT ICBAH // buffer address hi
+
+0348 CONSTANT ICBLL // buffer length low
+0349 CONSTANT ICBLH // buffer length hi
+
+D200 CONSTANT AUDF1
+D208 CONSTANT AUDCTL
+D20F CONSTANT SKCTL
+E456 CONSTANT CIOV
+E45C CONSTANT SETVBV
+E462 CONSTANT XITVBV
+
+09 CONSTANT ICCOMwriteline
+0B CONSTANT ICCOMwrite
+
+// User page 0 variables start at 80H
+80 CONSTANT pChordLo
+81 CONSTANT pChordHi
+82 CONSTANT ChordFrameCounter  // how many frames left to play for this chord
+83 CONSTANT ChordCounter       // how many chords left to play in this song
+84 CONSTANT CurrentSong
+85 CONSTANT ChordRestCounter   // how many frames of silence left to play for this chord (after playing chord)
+
+
+// Initialize the cross assembler. This makes the disk image buffer.
+//   600 NEWCROSSBUFFER means make a new current compile buffer using relative base address 600
+HEX 
+600 NEWCROSSBUFFER  
+
+
+
+// /////////////////////////////////////////////////////
+// This is where your assembly language program goes. //
+// /////////////////////////////////////////////////////
+
+
+// Cross compile the Atari810 Disk Header 
+
+( 0x600 ) 0 CC,           // probably has to be 0 ( disassemble OS to find out for sure )
+OHERE CONSTANT oNumberOfBootSectors  // this makes a label so the script can automatically set the correct number of sectors
+( 0x601 ) 1 CC,           // number of boot sectors
+( 0x602 ) 600 CODE-U16,   // boot load address
+( 0x604 ) 606 CODE-U16,   // boot init routine address
+
+( 0x606 )
+
+// Cross compile the Simple Music program
+
+//   Branching over data
+//   Using IF, assumes data length is <= 7F because it uses a short branch
+//     For data larger than 7F use LONGIF, LONGTHEN,
+//   Using Forth style branch instructions eliminates the need for branch labels
+
+CLC, CS LONGIF,
+
+  BARHERE CONSTANT pTitle
+  $" Press Any Key to Play Song" LENGTH$ CONSTANT TitleSize
+  0 GETS$[ND] CODE-S, DROP$
+
+  // Simple Music Song Format (Wastes memory but is simple. 64 chords use up 1K) 
+  //   Each song is an array of chords:
+  //   AudF1  Frequency = 15KHz / AudF1
+  //   AudC1  Volume AudC1 AND 0F ( lower 4 bits sets volume, hi 3 bits set distortion, E = no distortion, left over bit is 0 unless you want to hear a pop )
+  //   AudF2
+  //   AudC2
+  //   AudF3
+  //   AudC3
+  //   AudF4
+  //   AudC4
+  //   ChordDuration (in frames)
+  //   ChordRestDuration (in frames)
+  //   reserved
+  //   reserved
+  //   reserved
+  //   reserved
+  //   reserved
+  //   reserved
+
+  //   This is NOT the even tempered scale. Notes were chosen to have consonance with the base note.
+  B4 CONSTANT FQ0 // very close to E2
+  A8 CONSTANT FQ1 // (~15/16) slightly off minor second
+  A0 CONSTANT FQ2 // (8/9) perfect major second
+  96 CONSTANT FQ3 // (5/6) perfect minor third
+  90 CONSTANT FQ4 // (4/5) perfect major third
+  87 CONSTANT FQ5 // (3/4) perfect 4th
+  80 CONSTANT FQ6 // (32/45) perfect diatonic augmented fourth
+  78 CONSTANT FQ7 // (2/3) perfect 5th
+  73 CONSTANT FQ8 // (~5/8) slightly off augmented fifth
+  6C CONSTANT FQ9 // (3/5) perfect major 6th
+  64 CONSTANT FQ10 // (5/9) perfect augmented 6th
+  60 CONSTANT FQ11 // (8/15) perfect seventh
+  5A CONSTANT FQ12 // (1/2) perfect octave
+  // FQ13
+  50 CONSTANT FQ14
+  // FQ15
+  48 CONSTANT FQ16
+  43 CONSTANT FQ17
+  // FQ18
+  3C CONSTANT FQ19
+  // FQ20
+  36 CONSTANT FQ21
+  // FQ22
+  30 CONSTANT FQ23
+  2D CONSTANT FQ24
+
+  // a scale is FQ0 FQ2 FQ4 FQ5 FQ7 FQ9 FQ11 FQ12
+  
+
+  10 CONSTANT ChordSize
+
+  // Song 0 uses perfect chord ratios as much as possible for 2 octave scale. This is not the even tempered scale.   
+  0D CONSTANT Song0Length
+  BARHERE CONSTANT Song0 
+    // chord 0
+    FQ0 CC, E4 CC, 
+    FQ4 CC, E2 CC,
+    FQ7 CC, E1 CC,
+    FQ12 CC, E1 CC,
+    30 CC, 10 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+
+    // chord 1
+    FQ1 CC, E4 CC,
+    FQ0 CC, E2 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    3C CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+
+    // chord 2
+    FQ2 CC, E4 CC,
+    FQ0 CC, E2 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    38 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+
+    // chord 3
+    FQ3 CC, E4 CC,
+    FQ0 CC, E2 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    30 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+
+    // chord 4
+    FQ4 CC, E4 CC,
+    FQ0 CC, E2 CC,
+    00 CC, E0 CC,
+    00 CC, 00 CC,
+    28 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+
+    // chord 5
+    FQ5 CC, E4 CC,
+    FQ0 CC, E2 CC,
+    00 CC, E0 CC,
+    00 CC, E1 CC,
+    10 CC, 10 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+
+    // chord 6
+    FQ6 CC, E4 CC,
+    FQ0 CC, E2 CC,
+    78 CC, E0 CC,
+    50 CC, E0 CC,
+    0C CC, 0C CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+
+    // chord 7
+    FQ7 CC, E4 CC,
+    FQ0 CC, E2 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    08 CC, 08 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+
+    // chord 8
+    FQ8 CC, E4 CC,
+    FQ0 CC, E2 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    0F CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+
+    // chord 9
+    FQ9 CC, E4 CC,
+    FQ0 CC, E2 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    10 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+
+    // chord 10
+    FQ10 CC, E4 CC,
+    FQ0 CC, E2 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    0E CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+
+    // chord 11
+    FQ11 CC, E4 CC,
+    FQ0 CC, E2 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    0D CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+
+    // chord 12
+    FQ12 CC, E6 CC,
+    FQ0 CC, E3 CC,
+    FQ4 CC, E2 CC,
+    FQ7 CC, E2 CC,
+    40 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+
+  3 CONSTANT Song1Length
+  BARHERE CONSTANT Song1
+    // chord 0
+    B4 CC, E4 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    40 CC, 08 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+
+    // chord 1
+    B4 CC, E6 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    40 CC, 08 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+
+    // chord 2
+    B4 CC, E4 CC,
+    90 CC, E2 CC,
+    78 CC, E1 CC,
+    5A CC, E1 CC,
+    80 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+
+// a scale is FQ0 FQ2 FQ4 FQ5 FQ7 FQ9 FQ11 FQ12
+  0B CONSTANT Song2Length
+  BARHERE CONSTANT Song2
+    // chord 0
+    FQ4 CC, E4 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    0C CC, 03 CC,  // 1/4 second
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+
+    // chord 1
+    FQ4 CC, E4 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    0C CC, 03 CC,  // 1/4 second
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+
+    // chord 2
+    FQ4 CC, E4 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    1B CC, 03 CC, // 1/2 second
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+
+
+    // chord 3
+    FQ4 CC, E4 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    0C CC, 03 CC,  // 1/4 second
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+
+    // chord 4
+    FQ4 CC, E4 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    0C CC, 03 CC,  // 1/4 second
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+
+    // chord 5
+    FQ4 CC, E4 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    1B CC, 03 CC, // 1/2 second
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+
+
+    // chord 6
+    FQ4 CC, E4 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    0C CC, 03 CC,  // 1/4 second
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+
+    // chord 7
+    FQ7 CC, E4 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    0C CC, 03 CC,  // 1/4 second
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+
+    // chord 8
+    FQ0 CC, E4 CC,
+    FQ12 CC, E1 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    13 CC, 03 CC,  // 1/4 second
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+
+    // chord 9
+    FQ2 CC, E4 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    00 CC, E0 CC,
+    05 CC, 03 CC,  // 1/4 second
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+
+    // chord 10
+    FQ4 CC, E5 CC,
+    FQ7 CC, E1 CC,
+    FQ12 CC, E1 CC,
+    FQ16 CC, E1 CC,
+    1B CC, 03 CC,  // 1/2 second
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+    00 CC, 00 CC,
+
+
+  // Simple Music Song Table Format
+  //   Each Song Table entry is:
+  //     pSongLo
+  //     pSongHi
+  //     NumberofChords
+  //     reserved
+
+  3 CONSTANT NumberOfSongs
+
+  BARHERE CONSTANT pSongTable
+    Song0 FF AND CC,
+    Song0 8 RSHIFT CC,
+    Song0Length CC,
+    0 CC,
+
+    Song1 FF AND CC,
+    Song1 8 RSHIFT CC,
+    Song1Length CC,
+    0 CC,
+
+    Song2 FF AND CC,
+    Song2 8 RSHIFT CC,
+    Song2Length CC,
+    0 CC,
+
+
+
+  BARHERE CONSTANT NextSong
+    CurrentSong [U] LDX,
+    INX,
+    NumberOfSongs U8 CPX,
+    EQ IF,
+      0 U8 LDX,
+    THEN,
+    CurrentSong [U] STX,
+    RTS,
+
+  BARHERE CONSTANT SoundOff
+    00 U8 LDA,
+    AUDF1 [U] STA,
+    E3 U8 LDA,
+    AUDF1 1+ [U] STA,
+    00 U8 LDA,
+    AUDF1 2 + [U] STA,
+    E0 U8 LDA,
+    AUDF1 3 + [U] STA,
+    00 U8 LDA,
+    AUDF1 4 + [U] STA,
+    E0 U8 LDA,
+    AUDF1 5 + [U] STA,
+    00 U8 LDA,
+    AUDF1 6 + [U] STA,
+    E0 U8 LDA,
+    AUDF1 7 + [U] STA,
+    RTS,
+
+  BARHERE CONSTANT ClearChord
+    SoundOff U16 JSR,
+    FF U8 LDA,
+    pChordHi [U] STA, // mark chord as done
+    0 U8 LDA,
+    ChordFrameCounter [U] STA,
+    ChordCounter [U] STA,
+    RTS,
+
+  BARHERE CONSTANT DoChordForFrame
+    ChordCounter [U] LDA, // if no chords are left in song then exit
+    EQ IF,
+      RTS,
+    THEN,
+    ChordFrameCounter [U] LDX, // count down frames left to play chord
+    NE IF,
+      DEX,
+      ChordFrameCounter [U] STX,
+      RTS,
+    THEN,
+     
+    ChordRestCounter [U] LDX,  // count down frames left to play rest... if there is a rest
+    NE IF,
+      SoundOff U16 JSR, // really only want to do this once... but this is a simple example...
+      DEX,
+      ChordRestCounter [U] STX,
+      RTS,
+    THEN,
+
+  BARHERE CONSTANT NextChord
+    ChordCounter [U] DEC,
+    EQ IF,
+      ClearChord U16 JSR,
+      NextSong U16 JMP,
+    THEN,
+    ChordSize U8 LDA, CLC,
+    pChordLo [U] ADC,
+    pChordLo [U] STA,
+    0 U8 LDA,
+    pChordHi [U] ADC,
+    pChordHi [U] STA,
+  
+  BARHERE CONSTANT LoadChord
+    0 U8 LDY,
+    BEGIN,
+      pChordLo [[U8]+Y] LDA,
+      AUDF1 [U+Y] STA,
+      INY,
+      8 U8 CPY,
+    EQ UNTIL,
+    pChordLo [[U8]+Y] LDA,
+    ChordFrameCounter [U] STA,
+    INY,
+    pChordLo [[U8]+Y] LDA,
+    ChordRestCounter [U] STA,
+    RTS,
+  
+  BARHERE CONSTANT LoadSong ( RA = song to play )
+    RA ASL, RA ASL, TAX,
+    pSongTable [U+X] LDA,
+    pChordLo [U] STA,
+    INX,
+    pSongTable [U+X] LDA,
+    pChordHi [U] STA,
+    INX,
+    pSongTable [U+X] LDA,
+    ChordCounter [U] STA,
+    LoadChord U16 JMP,
+
+  BARHERE CONSTANT deferredvblank
+    CH1 [U] LDX,
+    FF U8 CPX, 
+    NE IF, // key was pressed
+      // COLOR4 [U] STX,
+      FF U8 LDA,
+      CH1 [U] STA,
+      CurrentSong [U] LDA, // play current song
+      LoadSong U16 JSR,
+      0 U8 LDY,
+      pChordLo [[U8]+Y] LDA,
+      COLOR4 [U] STA,
+    THEN,
+    DoChordForFrame U16 JSR,
+    XITVBV U16 JMP,
+
+LONGTHEN,
+
+// setting register X to IOCB 0 which is the screen or editor and is already open after boot
+00 U8 LDX, 
+
+// setting IOCB 0 command to writeappendeol
+ICCOMwriteline U8 LDA,
+ICCOM [U] STA,  
+
+// setting IOCB i/o buffer pointer to point to Title message
+pTitle FF AND U8 LDA,    ICBAL [U] STA,
+pTitle 8 RSHIFT U8 LDA,  ICBAH [U] STA,
+
+// setting IOCB i/o buffer length to length of Title message
+TitleSize FF AND U8 LDA,     ICBLL [U] STA,
+TitleSize 8 RSHIFT U8 LDA,   ICBLH [U] STA, // not assuming sizehi is 0 so same code will work for future things 
+
+// Call the Atari OS CIO
+CIOV U16 JSR,
+
+// Init Sound
+0 U8 LDA,
+AUDCTL [U] STA,
+3 U8 LDA,
+SKCTL [U] STA,
+ClearChord U16 JSR,
+
+// Init keypress
+FF U8 LDA,
+CH1 [U] STA,
+
+// Init Current Song
+0 U8 LDA,
+CurrentSong [U] STA,
+
+// init deferred vbi
+deferredvblank FF AND U8 LDY,
+deferredvblank 100 / FF AND U8 LDX,
+7 U8 LDA,
+SETVBV U16 JSR,
+
+// Busy Wait Forever
+BEGIN,
+CLC, CS UNTIL,
+
+
+// //////////////////////////////////
+// End of where your program goes. //
+// //////////////////////////////////
+
+
+// This calculates and sets the number of boot sectors automatically
+//   I didn't fully test this calculation...
+OHERE SectorSize ROUNDUP SectorSize /   // calculate number of sectors needed
+oNumberOfBootSectors PCURRENTCOMPILEBUFFER @ O>P C!
+
+
+// This converts the program into a .ATR disk image and saves it to a file
+$" SimpleMusic.atr" PCURRENTCOMPILEBUFFER @ Buf>ATRFile
+
+
+
+
+
+

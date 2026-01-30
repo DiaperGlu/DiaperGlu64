@@ -1,4 +1,7 @@
 Changelog for Diaperglu
+   30 Jan 2026
+     released v5.16a which adds MakeAtari8SimpleMusicATR.dglu to the DG6502CrossAsm sample scripts
+
    24 January 2026
      released v5.16 
      (also added an ARM64 cross assembler v0.8 to the project)
