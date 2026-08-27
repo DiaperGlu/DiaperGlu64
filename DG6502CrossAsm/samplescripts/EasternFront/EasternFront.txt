@@ -1,0 +1,487 @@
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// EasternFront.txt
+//
+// Copyright 2026 James Patrick Norris
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of 
+// this software and associated documentation files (the “Software”), to deal in the 
+// Software without restriction, including without limitation the rights to use, copy,
+// modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, 
+// and to permit persons to whom the Software is furnished to do so, subject to the 
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// Aug 22, 2026               //
+// version 1.0                //
+// /////////////////////////////
+
+Building the game and test programs:
+
+  The default code in the source files expects a copy of Diaperglu in /DG6502CrossAsm/
+  cd into /DG6502CrossAsm/samplescripts/EasternFront/
+  to build the test program enter ../../diaperglu MakeAtari8TestEasternFrontsSubsATR.dglu
+  to build the game enter ../../diaperglu MakeAtari8EasternFrontATR.dglu
+  to run the test program boot the TestEasternFrontSubs.atr Atari 8 bit disk image
+  to run the game boot the TestEasternFront.atr Atari 8 bit disk image
+
+
+About how these files were made:
+
+  The code is a port of the Eastern Front game files that Chris Crawford released
+    on his website into the public domain. The orginal game files were written for a
+    an old commercial assembler for the Atari 8 bit and have to be assembled by hand.
+  This port is for the 6502 Assembler I've written to run under DiaperGlu.
+  The original files from Chris' website are missing the font data file and may not
+    be a 'final' version that compiles into a released version of the game.
+  I've tried to stick close to the the code from the original files, but I did fix a couple
+    obvious bugs and modified others to use lookup tables and alternate math routines
+    that trade memory for speed. While Chris's orginal game fits into an 8k cartridge
+    that runs on older computers, the newer models and the emulator have a lot more ram
+    so I used more memory to speed things up.
+  I'm hoping I didn't add any bugs doing the port.
+ 
+About how the game works:
+
+  The main program does the russian ai and turn processing.
+  The vertical blank interrupt routine handles user input.
+  The display list interrupt routine changes the screen colors and 
+    map font while the hardware draws the screen.
+
+Game Entry
+
+  // Game Initialization
+  // Game Turn
+
+
+Game Initialization
+
+  // Initialize map units
+  // Initialize variables and tables
+  // Initialize the display list pointer (tells hardware how to display screen lines)
+  // Initialize fine scroll
+  // Initialize units hit points (max), orders (none), when they will move (never)
+  // Initialize pmbase for cursor and arrow player missiles
+  // Initialize playfield display hardware
+  // Initialize player 0 hardware for cursor
+  // Enable vertical blank interrupt
+  // Enable display list interrupt
+
+
+Game Turn
+
+  // Begin game turn loop (while(true))
+  //   Increment week - Source EFT18M.ASM line 2120
+  //   Draw date - Source EFT18M.ASM line 2370
+  //   Calculate the season - Source EFT18M.ASM line 2690
+  //     Set the colors based on the month
+  //     If March or November, do the freeze/unfreeze map stuff
+  //   Do end of season calculations - Source EFT18M.ASM line 3720
+  //     Do unit arrivals
+  //     Check to see if units have supply and if not divide their combat strength (hp) by 2
+  //     Calculate points for German position
+  //     Calculate points for Russian position
+  //     Get the score
+  //     Draw the score
+  //     If the game is over, display game over message and hang up
+  //     Enable pressing fire button
+  //     Draw "Please enter your orders" message
+  //     Do Russian AI until start button is pressed
+  //     Disable pressing fire button
+  //     Draw figuring move, no orders allowed message
+  //     Determine when units will move during the turn (there are 32 ticks per turn)
+  //     For each of 32 ticks in a turn 
+  //       For each army
+  //         If the unit has more than 1 hp
+  //           Heal the army 1 or 2 hit points (the more hurt, the more likely to get 2)
+  //             (This heals the unit 32 to 64 hp per turn.)
+  //             (A left alone unit without supply seems to hover around 50hp.)
+  //         Endif
+  //         If the unit is set to move and it is time for the unit to move
+  //           Get the next order for the unit which is move one square N S E or W
+  //           If there is an enemy unit on the destination square
+  //             have the units fight (call OCOMBAT)
+  //             if the attacker won
+  //               check the zone of control
+  //               if the zone of control check failed
+  //                 set the next tick to try to move to +2 ticks
+  //               else
+  //                 move the unit
+  //                 if there are any orders to move (I moved this to fix arrows to top bug)
+  //                 drop the order
+  //                 calculate when unit will move next 
+  //                   (call DINGO - DINGO handles 0 orders case)
+  //                 see if unit captured a city
+  //                 delay
+  //               endif
+  //           Else
+  //             move the unit
+  //             if there are any orders to move (I moved this to fix arrows to top bug)
+  //               drop the order
+  //               calculate when unit will move next 
+  //                 (call DINGO - DINGO handles 0 orders case)
+  //               see if unit captured a city
+  //               delay
+  //           Endif
+  //         Endif
+  //       End for each army
+  //     End for each of 32 ticks in a turn
+  // Again game turn loop (endwhile)
+
+
+Check to see if units have supply
+
+  // German units do not have supply in spring or fall due to 'mud' and lose half their strength
+  //   but... during the 32 tick movement phase armies are given back 1 or 2 points each tick
+  // German units also do not have supply in winter if 
+  //   4 * distance from E edge + 0x4A is < [RANDOM]
+  //   Russian units all year and German units in summer do not have supply if the supply 
+  //     path is blocked.
+  //     The calculation for checking the supply path is a bit complicated but it
+  //       boils down to this I think:
+  //       The supply path is a straight line from the unit. W for Germans, E for Russians.
+  //       If there is an enemy unit on the supply path, it is blocked.
+  //       If a square on the path has a pair of enemy units directly to the N and S,
+  //         it is blocked.
+  //       If there is an unpaired enemy unit directly N or S of the square, the path
+  //         tries to pass. 
+  //         There are a limited number of tries to pass for the entire path.
+  //         There is a 50% chance to pass. 
+  //         If the pass fails, it tries again for the same square until it succeeds. 
+  //         If the path runs out of tries, the path is blocked. If the path reaches 
+  //           the edge of the map, it succeeds.
+  //         If there is a lake it's a bit tricker... but I think it works like this:
+  //         If there is a lake directly on the path with no enemy units near it,
+  //           the path is not blocked.
+  //         If there is a lake directly on the path with enemy units around it,
+  //           the path will try to pass. The math is a bit compilicated and there are
+  //           many cases, so I'll just say what it does. The math uses a point system.
+  //           A lake on the square is 1 point. Units to the N S E W are 2 points.
+  //           Units to the NE NW SE SW are 1 point. If there are 2 or more points for
+  //           the square, the same point system is applied randomly to either the square
+  //           to the N or S. If the square N or S is blocked too, a 'try' is used and
+  //           N or S of the original square is randomly chosen again. This means units
+  //           up to 2 squares N or S of the lake can affect whether or not the square
+  //           uses a try (if there are units and lakes only on one side)
+  //           or is blocked (units and lakes on both sides).
+
+
+ 
+OCOMBAT routine
+
+  // I changed a few things that seemed like bugs so the ported code does not
+  //   behave the same way as the original. I tried to make the code match Chris' comments.
+  // If the army is a Finn then exit
+  // Flash the unit's graphics. (This uses a busy wait.)
+  // I added storing the terrain code from the unit flash to [TRNCOD] so that 
+  //   the defender's terrain code would be used.
+  // Apply the defense bonus/penalty to the defender's attack 
+  //   Get the terrain type from the terrain code. (Call TERRTY)
+  //   Set the defender's attack strength to the defender's combat strength (hp)
+  //   Get the defender's defense bonus factor
+  //     terrain type           defense bonus factor
+  //      0 plain                 2
+  //      1 mountain              3
+  //      2 city                  3
+  //      3 frozen swamp          2
+  //      4 frozen river          2
+  //      5 swamp                 2
+  //      6 river                 1
+  //      7 coastline             1
+  //      8 unit                  2 (shouldn't happen)
+  //      9 border                0 (shouldn't happen)
+  // 
+  //   Scale the defender's attack
+  //     defense bonus factor   scaling
+  //      1                       /2
+  //      2                       (none)
+  //      3                       *2 saturated at 0xFF
+  // 
+  // Evaluate the defender's strike
+  //   I changed this so it would get the number of orders the defender unit has
+  //     instead of using the unit with the same number as the terrain type index..
+  //   If the defending unit has any orders, divide its attack by 2.
+  //   If the defender's attack is >= [RANDOM] then
+  //     decrement the attacker's muster strength (max hp)
+  //     subtract 5 from the attacker's combat strength (hp)
+  //     If the attacker's combat strength drops to 0 or less, 
+  //       the attacker dies.
+  //     else
+  //       see if the attacker breaks 
+  //       if the attacker breaks its number of orders is set to 0
+  //     endif
+  //   
+  // Evaluate the attacker's strike
+  //   Get the attacker's attack strength (attack strength = combat strength or hp)
+  //   If the attacker is on a river, coastline, or terrain and 0x3f = 0x3f
+  //     divide the attack strength by 2
+  //     I changed this section to get the terrain from the SWAPIT array instead
+  //       of calling TERR
+  //   If the attack strength is >= [RANDOM] then
+  //     decrement the defender's muster strength (max hp)
+  //     subtract 5 from the defender's combat strength (hp)
+  //     If the defender's combat strength is <= 0 then
+  //       the defender dies
+  //     else
+  //       see if the defender breaks
+  //       if the defender breaks its number of orders is set to 0
+  //       try to move the defender away from the attacker using this priority
+  //         1) directly away from the defender
+  //         2) N
+  //         3) S
+  //         4) W for Russian defender, and E for German defender
+  //         for each direction tried, if retreat is not possible
+  //           subtract 5 from the defender's combat strength (hp)
+  //           If the defender's combat strength is <= 0 then
+  //             the defender dies
+  //     endif
+  //   set the attacker's next tick to move to the next tick
+  //     (looks like this is changed after this returns)
+  //   return  
+
+
+Eastern Front Russian AI routine - Source EFT18T.ASM line 1620
+
+  // Get sum of combat strengths for each team - Source EFT18T.ASM line 1660
+  //
+  //   [TOTRS] = high byte of 0x101 + sum of Russian combat strengths
+  //   [TOTGS] = high byte of 0x100 + left over low byte of Russian combat strengths +
+  //     sum of German combat strengths 
+ 
+  // Scale German and Russian combat strength totals - Source EFT18T.ASM line 1910
+  // 
+  //  shift copy of German sum to the left up to 4 times until highest 
+  //    set bit is in highest position
+  //  using highest bit of German sum from before shift, scale Russian sum
+  //  if bit 7 was highest, divide russian sum by 16 
+  //  if bit 6 was highest, divide russian sum by 8 
+  //  if bit 5 was highest, divide russian sum by 4
+  //  if bit 4 was highest, divide russian sum by 2
+  //  [TOTGS]=germansum [TOTRS]=russiansum -mem- [TOTRS]=scaledrussiansum
+
+  // [OFR] = 0xFF/[TOTRS] - Source EFT18T.ASM line 2180
+
+  // Main loop MLOOP
+
+  // For each Russian unit:
+  // 
+  //   If Russian unit has arrived, but not this turn:
+  //     
+  //     If Russian unit is not Italian:
+  //   
+  //       If individual force ratio of Russian unit = [OFR] / 2
+  //    
+  //         (I'm guessing taking this path is very unlikely)
+  //         [OFR]/2 -> [BVAL]
+  //         (note: BONE not initialized and will likely be FF, 0, 1, 2, or 3)
+  //         
+  //         Go through all Russian units and find the unit with |deltax| + |deltay|
+  //           with values in ranges 4-7, C-F, 14-17, 1C-1F, etc.. that has the
+  //           greatest IFR - (|deltax| + |deltay| / 8) - Source EFT18T.ASM line 2510
+  //         X=srcunit -reg-
+  //         -mem- [OBJX+srcunit]=beleaguredunitx [OBJY+srcunit]=beleaguredunity
+  //
+  //       Else
+  //
+  //         "ad hoc logic for surrounded people"
+  //         Initialize [BONE] and [DIR] to FF which means go nowhere
+  //         Initialze [BVAL] to 0
+  //
+  //         If the individual force ratio of this unit to the East < 0x10 
+  //           or If initial combat strength(muster strength)/2 >= current combat strength  
+  //       
+  //           "Supply lines are in danger"
+  //            Set target square x coord 5 squares to the E or 0 if near E edge
+  //
+  //         Endif
+  //
+  //         Begin DRLOOP
+  //
+  /            - Source EFT18T.ASM line 3130
+  //           Use direction in [DIR] to get square adjacent to unit's current objective square
+  //             [OBJX+unit] [OBJY+unit] [DIR] -mem- [TARGX] [TARGY]
+  //             Initialze target square's value to 0
+  //               0 -> [SQVAL]
+  //
+  //             If direction is not FF (FF = no direction)
+  //  
+  //               Set all orders for Russian unit to the direction, this
+  //                 gives the unit only one order to go one square in the direction indicated
+  //     
+  //               Call Y00 to determine which tick the Russian unit will move on
+  //                 and get [TRNTYP] (terrain type) for unit
+  //                
+  //               If the Russian unit has plans to move 
+  // 
+  //                 - Source EFT18T.ASM line 3380
+  //                 Fill LINARR with the combat strengths of the Russian units in the 5x5
+  //                   square around the objective square. Set the central square
+  //                   with the muster strength of the unit being moved.
+  //                 Initialize [ACCLO] [ACCHI] to 0
+  //                 Initialize [SECDIR] to 0 which sets the current direction to check to N
+  //
+  //                 For each of the 4 directions: - Source EFT18T.ASM line 3920
+  //
+  //                   Build LV Array which holds the most northern russian unit for each column
+  //                     in the LINARR
+  //                   Go through LV array and if a Russian unit is found for a column add 40 
+  //                     decimal points
+  //                   Add 48 decimal bonus points if central column in LV array is empty
+  //                   Subtract 20 points for each column in LV array that has a Russian unit
+  //                     in rows 0-3
+  //                   Compare each combination of pairs of columns that are not the same
+  //                     and if most northern unit in each column of the pair is not the same, 
+  //                     subtract 2 ^ difference in northness from point total
+  //                    ( I may have N and S swapped here... lower number = more N )
+  //                   "now get overall line value weighted by danger vector"
+  //                     looks like a case statement that gets IFR for current direction into RA
+  //                   Multiply IFR for current direction in [SECDIR] by point total 
+  //                     and save in ACCHI:ACCLO 
+  //                   [SECDIR]++
+  //                   If not done doing all 4 directions
+  //                     Rotate LINARR 90 degrees for next direction
+  //                 
+  //                 Loop unit all 4 directions are done
+  //
+  //                 ([TARGX] [TARGY] = potential destination of Russian unit)
+  //                 Save hi byte of total in [SQVAL]
+  //                 Go through German units and find minimum |deltax| + |deltay| into [NBVAL]
+  //
+  //                 "now determine whether to use offensive or defensive strategy"
+  //                 get 0x0F - unit's IFR
+  //                 If 0x0F was greater than or equal to unit's IFR
+  //                   [TEMPR] = 2*(0x0F - IFR)
+  //                   [NBVAL] = 0x09 -[NBVAL]
+  //                 Endif
+  //
+  //                 "now add nbval * ifr to sqval with defensive bonus"
+  //                 If [NBVAL] != 0 
+  //
+  //                   then [SQVAL] <= [NBVAL]
+  //
+  //                 Else
+  //
+  //                   Add terrain's defense bonus to [NBVAL]
+  //                     (see TERRTY... this table may not match what's going on in every case)
+  //                    code name         bonus
+  //                     (0) plain        = 2 
+  //                     (1) mountain     = 3
+  //                     (2) city         = 3
+  //                     (3) frozen swamp = 2
+  //                     (4) frozen river = 2
+  //                     (5) swamp        = 2
+  //                     (6) river        = 1  
+  //                     (7) coastline    = 1  
+  //                     (8) unit?        = 2
+  //                     (9) border?      = 0
+  // 
+  //                   Multiply [NBVAL] with [TEMPR] and saturate at 0xFF
+  //                   Add result to [SQVAL] and saturate at 0xFF
+  // 
+  //                   "extract penalty if somebody else has dibs on this square"
+  //                   subtract 0x20 from [SQVAL] if another Russian unit has 
+  //                     same objective square
+  //
+  //                   "now extract distance penalty "
+  //                     modified distance (RA) = |deltax| + |deltay| + modified IFR
+  //
+  //                   If modified distance >= 7 
+  //                     then 0 => [SQVAL]
+  //                   Else
+  //                     [TEMPR] <= 2^(modified distance)
+  //                     [SQVAL] <= [SQVAL] - [TEMPR]
+  //                   Endif
+  //
+  //                 Endif
+  //               Endif
+  //             Endif
+  //
+  //             "now evaluate this square - EVALSQ" - Source EFT18T.ASM line 6910
+  //             If this square has a better [SQVAL] then remember it
+  //               [SQVAL] -> [BVAL]
+  //               [DIR] -> [BONE]
+  //             Endif
+  //
+  //             Increment direction to try next direction
+  //             [DIR]++
+  //
+  //           Loop to DRLOOP until [DIR] >= 4
+  //
+  //         Move Russian unit's objective square
+  //           unless this unit was directed to move up to 5 squares E,
+  //           this will be one square N E S W of current objective square
+  //  
+  //       Endif for unit was told to move due E       
+  //     Endif for individual force ratio of Russian unit = [OFR] / 2
+  //   Endif for Russian unit has not arrived or arrived this turn or is Italian
+  //
+  //   Check to see if start was pressed
+  //
+  // Until start is pressed, loop to MLOOP
+  //
+  // For each Russian unit, build order list for up to 8 orders to move unit from 
+  //   current location to objective location.
+  //
+  // Return
+
+
+Vertical Blank Interrupt Routine - Source EFT18I.ASM line 1650
+
+  // This routine handles player input
+
+  // If handicap is not already active
+  //   If <option> is pressed
+  //     Enable handicap
+  //     Change screen saver color cycling to Chris Crawford's 'signature' cycling
+  //     Scale all Russian units muster strength (max hp) by 3/4
+  //   Endif for <option> pressed
+  // Endif for handicap is not active
+
+  // If fire button 0 is not pressed and not 'masked'
+  //   (fire button is masked except during Russian AI calculations)
+  //   If the button was not just released (is [BUTFLG] = 0?)
+  //     do 'NOBUT' which polls the joystick and moves the cursor
+  //     Exit VBI routine
+  //   Else button was just released
+  //     change the cursor's color (player 0 color)
+  //     set button flag to released ([BUTFLG] = 0)
+  //     clear the text message window
+  //     initialize cursor just started moving acceleration
+  //     swap the unit back on the square under the cursor
+  //     clear the cursor and the arrow (players 0 and 1)
+  //     Exit the VBI routine
+  //   Endif button was not just release
+  // Else button is pressed
+  //   Clear text message window and sound
+  //   If there is no unit under the cursor
+  //     Exit VBI routine
+  //   Then
+  //   If the spacebar is pressed
+  //     If the unit is German
+  //       Clear the unit's list of orders
+  //       clear the cursor and arrow (players 0 and 1)
+  //     Endif
+  //   Endif
+  //   If it is time to move the arrow
+  //     If there are any orders to show
+  //       move the arrow
+  //     Endif
+  //   Endif
+  // Endif
+  // Exit VBI routine
+
+

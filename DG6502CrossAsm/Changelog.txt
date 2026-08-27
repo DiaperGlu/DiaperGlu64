@@ -1,4 +1,7 @@
 Changelog for DG6502CrossAsm
+  27 Aug 2026
+    Added Eastern Front port v1.0
+
   25 Sep 2023
     Released v1.4
 

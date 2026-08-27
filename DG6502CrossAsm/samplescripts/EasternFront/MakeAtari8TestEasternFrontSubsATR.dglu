@@ -1,0 +1,2996 @@
+// //////////////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2026 James Patrick Norris
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of 
+// this software and associated documentation files (the “Software”), to deal in the 
+// Software without restriction, including without limitation the rights to use, copy,
+// modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, 
+// and to permit persons to whom the Software is furnished to do so, subject to the 
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+// //////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////
+// James Patrick Norris       //
+// www.rainbarrel.com         //
+// Aug 22, 2026               //
+// version 1.0                //
+// /////////////////////////////
+
+// This script cross compiles an Atari 8 bit computer .atr disk image program.
+//   The program loads at 600 and never exits the initialization routine
+
+// This script runs under the DiaperGlu script engine.
+// The DiaperGlu script engine is compatible with the 1994 ANSI Forth draft standard.
+
+// /////////////////////////////////////////////////
+// Boiler plate to initialize the cross assembler //
+// /////////////////////////////////////////////////
+
+
+// compile the 6502 cross assembler
+$" ../../DG6502CrossAsm.dglu" INCLUDEFILE$
+
+// compile the .atr disk file maker
+$" ../BufToATR.dglu" INCLUDEFILE$
+
+
+HEX 
+
+// Make the Atari OS labels needed for this program
+//   You could also do:
+//     $" AtariLabels.dglu" INCLUDEFILE$ 
+//   but this loads all labels which is slower
+
+// CIO labels from https://www.atarimax.com/freenet/freenet_material/12.AtariLibrary/2.MiscellaneousTextFiles/showarticle.php?30
+0342 CONSTANT ICCOM // command ( writeappendeol=09 )
+0344 CONSTANT ICBAL // buffer address low   
+0345 CONSTANT ICBAH // buffer address hi
+
+0348 CONSTANT ICBLL // buffer length low
+0349 CONSTANT ICBLH // buffer length hi
+
+E456 CONSTANT CIOV
+
+09 CONSTANT ICCOMwriteline
+0B CONSTANT ICCOMwrite
+
+
+: BUILDROWOFFSETTABLE { | columns rows baseaddr -- }
+    rows 0 DO
+      I columns * baseaddr + CODE-U16,
+    LOOP
+;
+
+
+// Initialize the cross assembler. This makes the disk image buffer.
+//   600 NEWCROSSBUFFER means make a new current compile buffer using relative base address 600
+HEX 
+600 NEWCROSSBUFFER  
+
+
+
+// /////////////////////////////////////////////////////
+// This is where your assembly language program goes. //
+// /////////////////////////////////////////////////////
+
+
+// Cross compile the Atari810 Disk Header 
+
+( 0x600 ) 0 CC,           // probably has to be 0 ( disassemble OS to find out for sure )
+OHERE CONSTANT oNumberOfBootSectors  // this makes a label so the script can automatically set the correct number of sectors
+( 0x601 ) 1 CC,           // number of boot sectors
+( 0x602 ) 600 CODE-U16,   // boot load address
+( 0x604 ) 606 CODE-U16,   // boot init routine address
+
+( 0x606 )
+
+
+//   Jumping over data
+
+0 U16 JMP,  BARHERE CONSTANT toCode
+
+
+// Game constants
+HEX
+30 CONSTANT MAPWIDTH
+28 CONSTANT MAPHEIGHT
+MAPWIDTH MAPHEIGHT * CONSTANT MAPSIZE
+9E CONSTANT NUMBEROFUNITS
+37 CONSTANT FIRSTRUSSIANUNIT
+
+// Page zero user variables
+
+HEX 1 80
+ENUM<
+  PDESTLO
+  PDESTHI
+  MAPPTR
+  MAPPTRHI
+> DROP
+
+// Program data
+
+HEX
+BARHERE CONSTANT MsgSpace 20 CC, 1 CONSTANT MsgSpaceLength
+BARHERE CONSTANT MsgCRLF 0D CC, 0A CC, 2 CONSTANT MsgCRLFLength 
+BARHERE CONSTANT MsgPASS 
+  $" PASS" 0 GETS$[ND] CODE-S, DROP$
+  4 CONSTANT MsgPASSLength
+BARHERE CONSTANT MsgFAIL 
+  $" FAIL" 0 GETS$[ND] CODE-S, DROP$
+  4 CONSTANT MsgFAILLength
+BARHERE CONSTANT MsgTESTDONE
+  $" TEST DONE" 0 GETS$[ND] CODE-S, DROP$
+  9 CONSTANT MsgTESTDONELength
+
+BARHERE CONSTANT INITIALMAPTERRAIN      MAPSIZE CODE-ALLOT 
+
+BARHERE CONSTANT INITIALUNITARRIVETURN  NUMBEROFUNITS 1+ CODE-ALLOT
+BARHERE CONSTANT INITIALUNITX           NUMBEROFUNITS 1+ CODE-ALLOT
+BARHERE CONSTANT INITIALUNITY           NUMBEROFUNITS 1+ CODE-ALLOT
+BARHERE CONSTANT INITIALUNITCHAR        NUMBEROFUNITS 1+ CODE-ALLOT
+BARHERE CONSTANT INITIALUNITMAXHP       NUMBEROFUNITS 1+ CODE-ALLOT
+
+
+HEX
+BARHERE CONSTANT pMessageTbl // assumes all messages in this table are 16 characters long
+  ( 00 ) $" ABSA            " 0 GETS$[ND] CODE-S, DROP$ 
+  ( 01 ) $" NEXTWEEK        " 0 GETS$[ND] CODE-S, DROP$ 
+  ( 02 ) $" FILLMEM         " 0 GETS$[ND] CODE-S, DROP$ 
+  ( 03 ) $" ERASEMEM        " 0 GETS$[ND] CODE-S, DROP$ 
+  ( 04 ) $" UMUL+           " 0 GETS$[ND] CODE-S, DROP$
+  ( 05 ) $" U8DIV8          " 0 GETS$[ND] CODE-S, DROP$
+  ( 06 ) $" U16DIV8         " 0 GETS$[ND] CODE-S, DROP$ 
+  ( 07 ) $" BUILDROWOFFSETT " 0 GETS$[ND] CODE-S, DROP$
+  ( 08 ) $" CALCPOINTSFORGP " 0 GETS$[ND] CODE-S, DROP$
+  ( 09 ) $" CALCPOINTSFORRP " 0 GETS$[ND] CODE-S, DROP$
+  ( 0A ) $" TERRTY          " 0 GETS$[ND] CODE-S, DROP$
+  ( 0B ) $" TERRB           " 0 GETS$[ND] CODE-S, DROP$
+  ( 0C ) $" LOCTOUNIT       " 0 GETS$[ND] CODE-S, DROP$
+  ( 0D ) $" SQXYTOUNIT      " 0 GETS$[ND] CODE-S, DROP$
+  ( 0E ) $" CHECKFORNOTSAME " 0 GETS$[ND] CODE-S, DROP$
+
+
+
+// Program variables - can be moved to outside file to make file smaller
+
+HEX
+BARHERE CONSTANT MsgChar 1 CODE-ALLOT
+BARHERE CONSTANT FILLTEMP 1 CODE-ALLOT
+BARHERE CONSTANT TESTBUF 200 CODE-ALLOT
+
+BARHERE CONSTANT M1 1 CODE-ALLOT
+BARHERE CONSTANT M2LO 1 CODE-ALLOT
+BARHERE CONSTANT M2HI 1 CODE-ALLOT
+BARHERE CONSTANT MPRODLO 1 CODE-ALLOT
+BARHERE CONSTANT MPRODHI 1 CODE-ALLOT
+
+BARHERE CONSTANT NUMERLO 1 CODE-ALLOT
+BARHERE CONSTANT NUMERHI 1 CODE-ALLOT
+BARHERE CONSTANT DENOMLO 1 CODE-ALLOT
+BARHERE CONSTANT DENOMHI 1 CODE-ALLOT
+BARHERE CONSTANT QUOTLO 1 CODE-ALLOT
+BARHERE CONSTANT QUOTHI 1 CODE-ALLOT
+
+BARHERE CONSTANT MAPSTART   MAPSIZE CODE-ALLOT // what player sees on each square
+BARHERE CONSTANT MAPTERRAIN MAPSIZE CODE-ALLOT // terrain on each square
+BARHERE CONSTANT MAPUNITS   MAPSIZE CODE-ALLOT // what unit is on each square
+
+BARHERE CONSTANT MAPROWOFFSETTBL
+MAPWIDTH MAPHEIGHT MAPSTART BUILDROWOFFSETTABLE
+
+BARHERE CONSTANT MAPTERRAINROWOFFSETTBL
+MAPWIDTH MAPHEIGHT MAPUNITS BUILDROWOFFSETTABLE
+
+BARHERE CONSTANT MAPUNITSROWOFFSETTBL
+MAPWIDTH MAPHEIGHT MAPUNITS BUILDROWOFFSETTABLE
+
+
+BARHERE CONSTANT UNITX           BARHERE CONSTANT CORPSX        NUMBEROFUNITS CODE-ALLOT
+BARHERE CONSTANT UNITY           BARHERE CONSTANT CORPSY        NUMBEROFUNITS CODE-ALLOT
+BARHERE CONSTANT UNITHP          BARHERE CONSTANT CSTRNG        NUMBEROFUNITS CODE-ALLOT
+BARHERE CONSTANT UNITMAXHP       BARHERE CONSTANT MSTRNG        NUMBEROFUNITS CODE-ALLOT
+BARHERE CONSTANT UNITARRIVETURN  NUMBEROFUNITS CODE-ALLOT
+// BARHERE CONSTANT UNITTERRAINSWAP NUMBEROFUNITS CODE-ALLOT
+
+BARHERE CONSTANT ACCLO 1 CODE-ALLOT
+BARHERE CONSTANT ACCHI 1 CODE-ALLOT
+
+BARHERE CONSTANT TRNCOD 1 CODE-ALLOT
+BARHERE CONSTANT TRNTYP 1 CODE-ALLOT
+
+BARHERE CONSTANT LAT 1 CODE-ALLOT
+BARHERE CONSTANT LONG 1 CODE-ALLOT
+
+BARHERE CONSTANT SQX 1 CODE-ALLOT
+BARHERE CONSTANT SQY 1 CODE-ALLOT
+
+BARHERE CONSTANT UNITNO 1 CODE-ALLOT
+BARHERE CONSTANT ARMY 1 CODE-ALLOT
+
+
+// Test harness subroutines
+
+BARHERE CONSTANT TypeMessage ( x=pmessagehi y=pmessagelo ra=messagelength -reg- )
+
+  ICBAL [U] STY,
+  ICBAH [U] STX,
+
+  ICBLL [U] STA,
+  0 U8 LDA,
+  ICBLH [U] STA,
+
+  0 U8 LDX,
+
+  // setting IOCB 0 command to write
+  ICCOMwrite U8 LDA,
+  ICCOM [U] STA,  
+
+  CIOV U16 JMP,
+
+
+BARHERE CONSTANT TypeMessageEOL
+
+  ICBAL [U] STY,
+  ICBAH [U] STX,
+
+  ICBLL [U] STA,
+  0 U8 LDA,
+  ICBLH [U] STA,
+
+  0 U8 LDX,
+
+  // setting IOCB 0 command to write
+  ICCOMwriteline U8 LDA,
+  ICCOM [U] STA,  
+
+  CIOV U16 JMP,
+
+
+BARHERE CONSTANT TypeSpace
+
+  MsgSpace U8 LDY,
+  MsgSpace 8 RSHIFT U8 LDX,
+  MsgSpaceLength U8 LDA,
+  TypeMessage U16 JMP,
+
+
+BARHERE CONSTANT TypePass
+
+  MsgPASS U8 LDY,
+  MsgPASS 8 RSHIFT U8 LDX,
+  MsgPASSLength U8 LDA,
+  TypeMessageEOL U16 JMP,
+
+
+BARHERE CONSTANT TypeFail
+
+  MsgFAIL U8 LDY,
+  MsgFAIL 8 RSHIFT U8 LDX,
+  MsgFAILLength U8 LDA,
+  TypeMessageEOL U16 JMP,
+
+BARHERE CONSTANT TypeTestDone
+
+  MsgTESTDONE U8 LDY,
+  MsgTESTDONE 8 RSHIFT U8 LDX,
+  MsgTESTDONELength U8 LDA,
+  TypeMessageEOL U16 JMP,
+
+
+BARHERE CONSTANT TypeChar ( ra=char -reg- )
+
+  MsgChar [U] STA,
+  MsgChar U8 LDY,
+  MsgChar 8 RSHIFT U8 LDX,
+  1 U8 LDA,
+  TypeMessage U16 JMP,
+
+
+BARHERE CONSTANT TypePassFailMessage ( ra=passfail -reg- ) // 0=fail
+
+  0 U8 CMP,
+  EQ IF,
+    TypeFail U16 JSR,
+    BEGIN, CLC, CS UNTIL, // lock up on fail
+  THEN,
+  TypePass U16 JMP,
+ 
+ 
+BARHERE CONSTANT Type16CharMessage ( ra=messagenumber -- )
+
+  0 U8 LDX,
+  ICBAH [U] STX,
+
+  RA ASL,
+  ICBAH [U] ROL,
+  RA ASL,
+  ICBAH [U] ROL,
+  RA ASL,
+  ICBAH [U] ROL,
+  RA ASL,
+  ICBAH [U] ROL,
+
+  // carry will be clear
+  pMessageTbl ( FF AND ) U8 ADC,
+  ICBAL [U] STA,
+
+  // carry will be clear
+  pMessageTbl 8 RSHIFT U8 LDA,
+  ICBAH [U] ADC,
+  ICBAH [U] STA,
+
+  10 U8 LDA,
+  ICBLL [U] STA,
+  0 U8 LDA,
+  ICBLH [U] STA,
+
+  // setting IOCB 0 command to writeappendeol
+  ICCOMwrite U8 LDA,
+  ICCOM [U] STA,  
+
+  CIOV U16 JMP,
+
+
+HEX
+BARHERE CONSTANT DigitToChar ( RA=u -reg- RA=c )
+
+  0F U8 AND,
+  0A U8 CMP,
+  CS IF, 
+    40 0A - U8 ADC,
+    RTS,
+  THEN,
+  // carry is not set
+  30 U8 ADC,
+  RTS,
+
+
+BARHERE CONSTANT TypeHexByte ( RA=byte -- )
+
+    PHA,
+    RA LSR, RA LSR, RA LSR, RA LSR,
+    DigitToChar U16 JSR,
+    TypeChar U16 JSR,
+    
+    PLA, 
+    DigitToChar U16 JSR,
+    TypeChar U16 JMP,
+
+
+BARHERE CONSTANT TypeTestResult 
+
+  ( x=functionnameindex 
+    y=testnumber 
+    a=testresultflag -reg- )
+
+  PHA,
+  TYA,
+  PHA,
+  TXA,
+  Type16CharMessage U16 JSR,
+  TypeSpace U16 JSR,
+  PLA,
+  TypeHexByte U16 JSR,
+  TypeSpace U16 JSR,
+  PLA, 
+  TypePassFailMessage U16 JMP,  
+
+
+// Eastern Front data
+HEX
+BARHERE CONSTANT TRTAB 
+ 0 CC, 12 CC, 12 CC, 12 CC, D2 CC, D8 CC,
+D6 CC, C4 CC, D4 CC, C2 CC, 12 CC, 12 CC, 12 CC,
+
+DECIMAL
+BARHERE CONSTANT MONLEN
+ 0 CC, 31 CC, 28 CC, 31 CC, 30 CC, 31 CC,
+30 CC, 31 CC, 31 CC, 30 CC, 31 CC, 30 CC, 31 CC,
+
+
+// Eastern Front variables 
+BARHERE CONSTANT MONTH 0 CC,
+BARHERE CONSTANT DAY 0 CC,
+BARHERE CONSTANT YEAR 0 CC,
+BARHERE CONSTANT TRCOLR 0 CC,
+
+
+// Eastern Front subroutines
+HEX
+BARHERE CONSTANT ABSA // ( ra -reg- |ra| ) // assumes flag is set correctly on ra i.e. it was just loaded
+
+  MI IF,
+ 
+
+BARHERE CONSTANT NEGA // ( ra -reg- -ra )
+
+    FF U8 EOR,
+    CLC,
+    1 U8 ADC,
+  THEN,
+  RTS,
+
+
+BARHERE CONSTANT ERASEMEM // name changed to avoid conflict with forth standard word
+  ( [PDESTHI:PDEST]=pdest -mem- ) 
+  ( X:Y=length -reg- )
+
+  0 U8 LDA,
+BARHERE CONSTANT FILLMEM // name changed to avoid conflict with forth standard word
+  // length of 0 is treated as 0
+  ( [PDESTHI:PDEST]=pdest -mem- ) 
+  ( X:Y=length a=fillchar -reg- )
+  ( -local- [FILLTEMP]=temp )
+  0 U8 CPX,
+  NE IF,
+    FILLTEMP [U] STY,
+    0 U8 LDY,
+    BEGIN,
+      BEGIN,
+        PDESTLO [[U8]+Y] STA,
+        INY,
+      EQ UNTIL,
+      PDESTHI [U] INC,
+      DEX,
+    EQ UNTIL,
+    FILLTEMP [U] LDY,
+  THEN,
+  0 U8 CPY,
+  NE IF,
+    BEGIN,
+      DEY,
+      PDESTLO [[U8]+Y] STA,
+      0 U8 CPY,
+    EQ UNTIL,
+  THEN,
+  RTS,
+
+
+// hmm not sure this is faster than repetitive addition...
+BARHERE CONSTANT UMUL+ // mprod = (x * ra) + mprod
+  // ( RA X -reg- ) 
+  // ( [MPRODHI:LO] -mem- [MPRODHI:LO] ) 
+
+  M2LO [U] STX, // could leave if it's 0
+  M1 [U] STA, // could leave if it's 0
+
+BARHERE CONSTANT U8MUL8PLUSSAT 
+  // mprod = ([m1] * [m2lo]) + mprod
+  //   trashes RA; does not trash X or Y
+  TXA,
+  PHA,
+  0 U8 LDA, 
+  M2HI [U] STA,
+  8 U8 LDX,
+  BEGIN,
+    M1 [U] ROR,
+    CS IF,
+      M2LO [U] LDA,
+      CLC,
+      MPRODLO [U] ADC,
+      MPRODLO [U] STA,
+      M2HI [U] LDA,
+      MPRODHI [U] ADC,
+      MPRODHI [U] STA,
+      CS IF,
+        FF U8 LDA,
+        MPRODLO [U] STA,
+        MPRODHI [U] STA,
+        PLA,
+        TAX,
+        RTS,
+      THEN,
+    THEN,
+    M2LO [U] ASL,
+    M2HI [U] ROL,
+    DEX,
+  EQ UNTIL,
+  PLA,
+  TAX,
+  CLC, // probably not necessary... M2HI [U] ROL, should leave carry clear...
+  RTS,
+
+BARHERE CONSTANT U8MUL8
+  0 U8 LDA,
+  MPRODLO [U] STA,
+  MPRODHI [U] STA,
+  U8MUL8PLUSSAT U16 JMP,
+
+HEX
+BARHERE CONSTANT U8DIV8 // QUOTLO = INT(Y / RA); NUMERLO = REMAINDER(Y / RA)
+  ( Y=numerator RA=denominator -reg- ) 
+  ( -mem- [QUOTLO] [DENOMLO] ) 
+  NUMERLO [U] STY,
+
+  0 U8 LDY,
+  QUOTLO [U] STY,
+  DENOMLO [U] STY,
+
+  0 U8 CMP,
+  EQ IF,
+    // divide by 0 case
+    FF U8 LDA,
+    QUOTLO [U] STA, // result
+    NUMERLO [U] STA, // remainder
+    RTS,
+  THEN,
+
+  8 U8 LDX,
+  // shift until x=0 or denom=0
+  BEGIN,
+    DEX,
+    RA LSR,
+    DENOMLO [U] ROR,
+    0 U8 CMP,
+  EQ UNTIL,
+
+  // denominator is now aligned
+  NUMERLO [U] LDA, 
+  BEGIN,
+    DENOMLO [U] CMP,
+    // if numerator >= demoninator then sub denominator and shift 1 into result
+    // otherwise shift 0 into result
+    CS IF, 
+      DENOMLO [U] SBC, 
+      SEC,
+    THEN,
+    QUOTLO [U] ROL,
+    DENOMLO [U] LSR,
+    DEX,
+  MI UNTIL,
+
+  NUMERLO [U] STA,
+     
+  // at this point:
+  //   [QUOTLO] should be integer result
+  //   [NUMERLO] should be remainder
+  //   and [DENOMLO] should be original denominator
+  RTS,
+
+HEX
+BARHERE CONSTANT U16DIV8 // QUOTLO = INT(X:Y / RA); NUMERLO = REMAINDER(X:Y / RA)
+  ( X:Y=numerator RA=denominator -reg- ) 
+  ( -mem- [QUOTHI:QUOTLO] [DENOMHI:DENOMLO] )
+  NUMERLO [U] STY,
+  NUMERHI [U] STX,
+
+  0 U8 LDY,
+  QUOTLO [U] STY,
+  QUOTHI [U] STY,
+  DENOMLO [U] STY,
+  DENOMHI [U] STY,
+
+  0 U8 CMP,
+  EQ IF,
+    // divide by 0 case
+    FF U8 LDA,
+    QUOTLO [U] STA, // result
+    QUOTHI [U] STA,
+    NUMERLO [U] STA, // remainder
+    NUMERHI [U] STA, 
+    RTS,
+  THEN,
+
+  10 U8 LDX,
+  // shift until x=0 or denom=0
+  BEGIN,
+    DEX,
+    RA LSR,
+    DENOMHI [U] ROR, // don't need to do DENOMLO
+    0 U8 CMP,
+  EQ UNTIL,
+
+  // denominator is now aligned and shifts left to do is in x
+  BEGIN,
+    SEC,
+    NUMERLO [U] LDA,
+    DENOMLO [U] SBC,
+    NUMERHI [U] LDA,
+    DENOMHI [U] SBC,
+    // if numerator >= demoninator then sub denominator and shift 1 into result
+    // otherwise shift 0 into result
+    CS IF, 
+      NUMERLO [U] LDA,
+      DENOMLO [U] SBC,
+      NUMERLO [U] STA,
+      NUMERHI [U] LDA,
+      DENOMHI [U] SBC,
+      NUMERHI [U] STA, 
+      SEC,
+    THEN,
+    QUOTLO [U] ROL,
+    QUOTHI [U] ROL,
+    DENOMHI [U] LSR,
+    DENOMLO [U] ROR,
+    DEX,
+  MI UNTIL,
+     
+  // at this point:
+  //   [QUOTHI:QUOTLO] should be integer result
+  //   [NUMERHI:NUMERLO] should be remainder and NUMERHI should be 0
+  //   [DENOMLO] should be original denominator
+  //   [DENOMHI] should be 0
+  RTS,
+
+
+DECIMAL
+BARHERE CONSTANT NEXTWEEK
+
+  DAY [U] LDA,
+  CLC,
+  7 U8 ADC,
+  MONTH [U] LDX,  // if month is 0, monlen is 0
+  MONLEN [U+X] CMP,
+  NE IF, // is day <> monlen?
+    CS IF, 
+      // day is > monlen
+      2 U8 CPX, // is month february?
+      EQ IF,
+        // month is february
+        YEAR [U] LDY, // is year 1944? (leapyear?)
+        44 U8 CPY,
+        EQ IF,
+          // it's leapyear, fake day 29 by subtracting 1 from day- this will work as long as you don't end up on day 29 on a leap year
+          SEC,
+          1 U8 SBC,
+        THEN,
+      THEN,
+
+      SEC,
+      MONLEN [U+X] SBC, // subtracts month length of month from day
+
+      INX, // next month
+      13 U8 CPX,
+      EQ IF, // was month December?
+        YEAR [U] INC,  // year = next year
+        01 U8 LDX,     // month = January
+      THEN,
+      MONTH [U] STX,   // save month
+      TRTAB [U+X] LDY,
+      TRCOLR [U] STY,  // set TRCOLR to the current month's color
+    THEN,
+  THEN,
+  DAY [U] STA, // save day
+  RTS,
+
+
+BARHERE CONSTANT PMAPROWTODEST 
+  // ( -mem- [DESTHI:DESTLO] ) 
+  // ( ra=row -reg- x=row*2 )
+  
+  RA ASL,
+  CLC,
+  TAX,
+  MAPROWOFFSETTBL [U+X] LDA,
+  PDESTLO [U] STA,
+  MAPROWOFFSETTBL 1+ [U+X] LDA,
+  PDESTLO 1+ [U] STA,
+  RTS,
+
+BARHERE CONSTANT PMAPUNITSROWTODEST 
+  // ( -mem- [DESTHI:DESTLO] ) 
+  // ( ra=row -reg- x=row*2 )
+  
+  RA ASL,
+  CLC,
+  TAX,
+  MAPUNITSROWOFFSETTBL [U+X] LDA,
+  PDESTLO [U] STA,
+  MAPUNITSROWOFFSETTBL 1+ [U+X] LDA,
+  PDESTLO 1+ [U] STA,
+  RTS,
+
+BARHERE CONSTANT PMAPTERRAINROWTODEST 
+  // ( -mem- [DESTHI:DESTLO] ) 
+  // ( ra=row -reg- x=row*2 )
+  
+  RA ASL,
+  CLC,
+  TAX,
+  MAPTERRAINROWOFFSETTBL [U+X] LDA,
+  PDESTLO [U] STA,
+  MAPTERRAINROWOFFSETTBL 1+ [U+X] LDA,
+  PDESTLO 1+ [U] STA,
+  RTS,
+
+BARHERE CONSTANT MAP@
+  // ( -mem- [DESTHI:DESTLO] ) 
+  // ( ra=row y=column -reg- ra=mapchar )
+  PMAPROWTODEST U16 JSR,
+  PDESTLO [[U8]+Y] LDA,
+  RTS,
+
+BARHERE CONSTANT MAP!
+  // ( -mem- [DESTHI:DESTLO] ) 
+  // ( ra=mapchar x=row y=column -reg- )
+  PHA, TXA,
+  PMAPROWTODEST U16 JSR,
+  PLA,
+  PDESTLO [[U8]+Y] STA,
+  RTS,
+
+BARHERE CONSTANT MAPUNITS@
+  // ( -mem- [DESTHI:DESTLO] ) 
+  // ( ra=row y=column -reg- ra=mapunit )
+  PMAPUNITSROWTODEST U16 JSR,
+  PDESTLO [[U8]+Y] LDA,
+  RTS,
+
+BARHERE CONSTANT MAPUNITS!
+  // ( -mem- [DESTHI:DESTLO] ) 
+  // ( ra=mapunit x=row y=column -reg- )
+  PHA, TXA,
+  PMAPUNITSROWTODEST U16 JSR,
+  PLA,
+  PDESTLO [[U8]+Y] STA,
+  RTS,
+
+BARHERE CONSTANT MAPTERRAIN@
+  // ( -mem- [DESTHI:DESTLO] ) 
+  // ( ra=row y=column -reg- ra=mapunit )
+  PMAPTERRAINROWTODEST U16 JSR,
+  PDESTLO [[U8]+Y] LDA,
+  RTS,
+
+BARHERE CONSTANT MAPTERRAIN!
+  // ( -mem- [DESTHI:DESTLO] ) 
+  // ( ra=mapunit x=row y=column -reg- )
+  PHA, TXA,
+  PMAPTERRAINROWTODEST U16 JSR,
+  PLA,
+  PDESTLO [[U8]+Y] STA,
+  RTS,
+
+HEX
+// this calculates the strength of the German presence in Russian territory
+//   basically the sum of (distance into Russian territory * muster strength/2 aka maxhp/2)
+
+BARHERE CONSTANT CALCPOINTSFORGERMANPOSITION
+
+  0 U8 LDA,
+  ACCHI [U] STA, // will hold German points for position
+
+  MPRODLO [U] STA,
+  MPRODHI [U] STA,
+
+  1 U8 LDX, // for each German unit do
+  BEGIN,
+    // get distance into Russian territory
+    MAPWIDTH U8 LDA,
+    SEC,
+    CORPSX [U+X] SBC,
+    M1 [U] STA, // [M1] = distance into Russian territory
+
+    // ACCHI += distanceintorussianterritory * musterstrength/2
+    MSTRNG [U+X] LDA, // muster strength can be lowered during combat... 
+    RA LSR, // but it would take a lot of losses to get this low 
+    M2LO [U] STA, // [M2LO] = unit's hp / 2
+
+    // [M2LO]=unit's muster strength / 2
+    // [M1]=unit's distance into Russian territory
+    U8MUL8PLUSSAT U16 JSR, 
+      // mprodhi:lo += ((muster strength / 2) * unit's distance in Russian territory)
+    CS IF,
+      // calculation overflowed, mprodhi:lo = 0xffff
+      MPRODHI [U] LDA,
+      ACCHI [U] STA,
+      RTS,
+    THEN, 
+
+    INX,
+    FIRSTRUSSIANUNIT U8 CPX,
+  EQ UNTIL,
+  MPRODHI [U] LDA,
+  ACCHI [U] STA,
+  RTS,
+
+// this seems to add the high byte of the sum of each 
+//   russian unit's x location * (combat strength/8) to ACCLO and saturate at FF
+//   ACCHI:LO = the sum of (distance into German territory * muster strength) on entry
+
+BARHERE CONSTANT CALCPOINTSFORRUSSIANPOSITION // X=first Russian unit on entry
+  0 U8 LDA,
+  ACCLO [U] STA, // will hold Russian points for position
+
+  MPRODLO [U] STA,
+  MPRODHI [U] STA,
+
+  FIRSTRUSSIANUNIT U8 LDX, // J.N. added this just in case... also to make testing easier
+ 
+  BEGIN,
+    CORPSX [U+X] LDA, // unit's x location
+    M1 [U] STA,
+
+    CSTRNG [U+X] LDA, // unit's combat strength aka hp
+    RA LSR, RA LSR, RA LSR, // unit's combat strength aka hp / 8
+    M2LO [U] STA,
+
+    // [M2LO]=unit's combat strength / 8
+    // [M1]=unit's x location
+    U8MUL8PLUSSAT U16 JSR, // mprodhi:lo += (combat strength / 8 * unit's x location)
+    CS IF,
+      // calculation overflowed, mprodhi:lo = 0xffff
+      MPRODHI [U] LDA,
+      ACCLO [U] STA,
+      RTS,
+    THEN,      
+
+    INX,
+
+  NUMBEROFUNITS U8 CPX, 
+  EQ UNTIL, // to loopc
+  MPRODHI [U] LDA,
+  ACCLO [U] STA,
+  RTS,
+
+
+// TERRTY determines the type of terrain in a square
+//    type     name        code
+//      0      plain         0
+//     7F (3F) border        9
+//    <07      mountain      1
+//    <4B (0B) city          2
+//    <4F (0F) frozen swamp  3
+//    <69 (29) frozen river  4
+//    <8F (0F) swamp         5
+//    <A4 (24) river         6   if [LAT] < 0E  and <A9 is also 6
+//    <BA (3A) coastline     7   if [LAT] < 0E  and <BB is also 7
+//    <BD (3D) unit          8
+//   >=BD      ?             9   
+BARHERE CONSTANT TERRTY ( was 7369 ) ( [TRNCOD] [LAT] -mem- [TRNTYP]=terraintype ) 
+                                     ( -reg- y=terraintype )
+  0 U8 LDY,
+  TRNCOD [U] LDA, // terrain code
+  NE IF, // to done
+    7F U8 CMP, // border?
+    EQ IF, // to Y04
+      09 U8 LDY,
+      EQ IF, // to done
+    ( Y04 ) 
+    SWAP THEN,
+    INY,
+    7 U8 CMP, // mountain?
+    CS IF, // to done
+      INY,
+      4B U8 CMP, // city?
+      CS IF, // to done
+        INY,
+        4F U8 CMP, // frozen swamp?
+          CS IF, // to done
+            INY,
+            69 U8 CMP, // frozen river?
+            CS IF, // to done
+              INY,
+              8F U8 CMP, // swamp?
+              CS IF, // to done
+                INY,
+                A4 U8 CMP, // river?
+                CS IF, // to done
+                  LAT [U] LDX,
+                  0E U8 CPX,
+                  CS IF, // to next
+                    A9 U8 CMP,
+                    CS IF, // to done
+                  ( next )
+                  SWAP THEN,
+                  INY,
+                  BA U8 CMP, // coastline?
+                  CS IF, // to done
+                    0E U8 CPX,
+                    CS IF, // to next2
+                      BB U8 CMP, 
+                      CS IF, // to done
+                    ( next2 )
+                    SWAP THEN,
+                    INY,
+                    BD U8 CMP,
+                    CS IF, // to done
+                      INY,
+                    ( done )
+                    THEN,
+                      THEN,
+                  THEN,
+                    THEN,
+                THEN,
+              THEN,
+            THEN,
+          THEN,
+        THEN,
+      THEN,
+    THEN,
+  THEN,
+  TRNTYP [U] STY, // terrain type
+  RTS,
+
+
+BARHERE CONSTANT LOCTOMAPPTR ( [LAT] [LONG] -mem- [MAPPTRHI:MAPPTRLO] ) ( -reg- Y )
+  MAPHEIGHT 1- U8 LDA,  // 39 - [lat] // mapheight - 1
+  SEC,
+  LAT [U] SBC,
+  RA ASL,
+  CLC,
+  TAY,
+  MAPROWOFFSETTBL [U+Y] LDA,
+  MAPPTR [U] STA,
+  MAPROWOFFSETTBL 1+ [U+Y] LDA,
+  MAPPTR 1+ [U] STA,
+
+  MAPWIDTH 2 - U8 LDA, // 46 - [LONG] // mapwidth - 2
+  SEC,
+  LONG [U] SBC,
+  TAY,
+  RTS,
+
+BARHERE CONSTANT LOCTOMAPUNITSPTR ( [LAT] [LONG] -mem- [MAPPTRHI:MAPPTRLO] ) ( -reg- Y )
+  LAT [U] LDA,
+  RA ASL,
+  TAY,
+  MAPUNITSROWOFFSETTBL [U+Y] LDA,
+  MAPPTR [U] STA,
+  MAPUNITSROWOFFSETTBL 1+ [U+Y] LDA,
+  MAPPTR 1+ [U] STA,
+  LONG [U] LDY,
+  RTS,
+
+BARHERE CONSTANT LOCTOUNIT
+  // [LAT] [LONG] -mem-
+  // -reg- x=unit
+  LOCTOMAPUNITSPTR U16 JSR,
+  MAPPTR [[U8]+Y] LDA,
+  TAX,
+  RTS,
+
+BARHERE CONSTANT SQXYTOMAPUNITSPTR ( [SQX] [SQY] -mem- [MAPPTRHI:MAPPTRLO] ) ( -reg- Y )
+  SQY [U] LDA,
+  RA ASL,
+  TAY,
+  MAPUNITSROWOFFSETTBL [U+Y] LDA,
+  MAPPTR [U] STA,
+  MAPUNITSROWOFFSETTBL 1+ [U+Y] LDA,
+  MAPPTR 1+ [U] STA,
+  SQX [U] LDY,
+  RTS,
+
+BARHERE CONSTANT SQXYTOUNIT
+  // [SQX] [SQY] -mem-
+  // -reg- ra=unit or 0 for none
+  SQXYTOMAPUNITSPTR U16 JSR,
+  MAPPTR [[U8]+Y] LDA,
+  RTS,
+
+BARHERE CONSTANT CHECKFORRUSSIANNOTSAMEUNIT
+  // ra=found unit or 0 for none -reg- ra=Russian non [ARMY] unit or 0 for none 
+  // make sure unit is not same unit
+  ARMY [U] CMP,
+  EQ IF,
+    // is same unit
+    0 U8 LDA,
+    RTS,
+  THEN,
+
+  // make sure unit is Russian
+  FIRSTRUSSIANUNIT U8 CMP,
+  NC IF,
+    // unit is German or was 0 for no unit found
+    0 U8 LDA,
+    SEC,
+  THEN,
+  RTS,
+
+HEX
+BARHERE CONSTANT TERRB 
+  //  [LAT] [LONG] -mem- [TRNCOD]
+  //    [LAT] = map ypos
+  //    [LONG] = map xpos
+  //    [TRNCOD] = character at displayed map[x,y], which includes the unit characters 
+  //  -reg- zfcf 
+  //    zflag is set if it's a military unit, 
+  //    carry is set if it's a military unit or impassible
+
+  0 U8 LDA, 
+  UNITNO [U] STA, // some parent routines also calculate the unit on this square
+
+  LOCTOMAPPTR U16 JSR,
+
+  MAPPTR [[U8]+Y] LDA,
+  TRNCOD [U] STA,
+  3F U8 AND,
+  3D U8 CMP,
+  NE IF,
+    3E U8 CMP,
+  THEN,
+  RTS, 
+
+// Test subroutines
+HEX
+BARHERE CONSTANT TESTABSA
+
+0 U8 LDA,
+ABSA U16 JSR,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+0 U8 LDX, 
+0 U8 LDY,
+TypeTestResult U16 JSR,
+
+1 U8 LDA,
+ABSA U16 JSR,
+01 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+0 U8 LDX, 
+1 U8 LDY,
+TypeTestResult U16 JSR,
+
+2 U8 LDA,
+ABSA U16 JSR,
+02 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+0 U8 LDX, 
+2 U8 LDY,
+TypeTestResult U16 JSR,
+
+FF U8 LDA,
+ABSA U16 JSR,
+1 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+0 U8 LDX, 
+3 U8 LDY,
+TypeTestResult U16 JSR,
+
+FE U8 LDA,
+ABSA U16 JSR,
+2 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+0 U8 LDX, 
+4 U8 LDY,
+TypeTestResult U16 JSR,
+
+RTS,
+
+
+HEX
+BARHERE CONSTANT TESTNEXTWEEK
+  
+  1 U8 LDA,  
+  DAY [U] STA,
+  MONTH [U] STA,
+  YEAR [U] STA,
+
+  NEXTWEEK U16 JSR,
+
+  DAY [U] LDA,
+  8 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  1 U8 LDX, 
+  0 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  MONTH [U] LDA,
+  1 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  1 U8 LDX, 
+  1 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  YEAR [U] LDA,
+  1 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  1 U8 LDX, 
+  2 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  19 U8 LDA,
+  DAY [U] STA,
+
+  NEXTWEEK U16 JSR,
+
+  DAY [U] LDA,
+  1 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  1 U8 LDX, 
+  3 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  MONTH [U] LDA,
+  2 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  1 U8 LDX, 
+  4 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  YEAR [U] LDA,
+  1 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  1 U8 LDX, 
+  5 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  16 U8 LDA,
+  DAY [U] STA,
+
+  NEXTWEEK U16 JSR,
+
+  DAY [U] LDA,
+  1 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  1 U8 LDX, 
+  6 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  MONTH [U] LDA,
+  3 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  1 U8 LDX, 
+  7 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  YEAR [U] LDA,
+  1 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  1 U8 LDX, 
+  8 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  // test ending on day 29 of leap year
+  16 U8 LDA,
+  DAY [U] STA,
+  2 U8 LDA,
+  MONTH [U] STA,
+  2C U8 LDA,
+  YEAR [U] STA,
+
+  NEXTWEEK U16 JSR,
+
+  DAY [U] LDA,
+  0 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  1 U8 LDX, 
+  9 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  MONTH [U] LDA,
+  3 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  1 U8 LDX, 
+  0A U8 LDY,
+  TypeTestResult U16 JSR,
+
+  YEAR [U] LDA,
+  2C U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  1 U8 LDX, 
+  0B U8 LDY,
+  TypeTestResult U16 JSR,
+
+  19 U8 LDA,
+  DAY [U] STA,
+  0C U8 LDA,
+  MONTH [U] STA,
+
+  NEXTWEEK U16 JSR,
+
+  DAY [U] LDA,
+  1 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  1 U8 LDX, 
+  0C U8 LDY,
+  TypeTestResult U16 JSR,
+
+  MONTH [U] LDA,
+  1 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  1 U8 LDX, 
+  0D U8 LDY,
+  TypeTestResult U16 JSR,
+
+  YEAR [U] LDA,
+  2D U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  1 U8 LDX, 
+  0E U8 LDY,
+  TypeTestResult U16 JSR,
+
+  RTS,
+
+
+HEX
+BARHERE CONSTANT TESTFILLMEM
+  
+  FF U8 LDA,
+  TESTBUF [U] STA,
+  TESTBUF 1+ [U] STA,
+  TESTBUF 180 + [U] STA,
+  TESTBUF 181 + [U] STA,
+
+  TESTBUF 1+ U8 LDA,
+  PDESTLO [U] STA,
+  TESTBUF 1+ 8 RSHIFT U8 LDA,
+  PDESTHI [U] STA,
+  
+  80 U8 LDY,
+  01 U8 LDX,
+  36 U8 LDA,  
+
+  FILLMEM U16 JSR,
+
+  TESTBUF [U] LDA,  
+  FF U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  2 U8 LDX, 
+  0 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  TESTBUF 1+ [U] LDA,  
+  36 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  2 U8 LDX, 
+  1 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  TESTBUF 180 + [U] LDA,  
+  36 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  2 U8 LDX, 
+  2 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  TESTBUF 181 + [U] LDA,  
+  FF U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  2 U8 LDX, 
+  3 U8 LDY,
+  TypeTestResult U16 JSR,
+  
+  RTS,
+
+
+HEX
+BARHERE CONSTANT TESTERASEMEM
+  
+  FF U8 LDA,
+  TESTBUF [U] STA,
+  TESTBUF 1+ [U] STA,
+  TESTBUF 180 + [U] STA,
+  TESTBUF 181 + [U] STA,
+
+  TESTBUF 1+ U8 LDA,
+  PDESTLO [U] STA,
+  TESTBUF 1+ 8 RSHIFT U8 LDA,
+  PDESTHI [U] STA,
+  
+  80 U8 LDY,
+  01 U8 LDX,
+  36 U8 LDA,  
+
+  ERASEMEM U16 JSR,
+
+  TESTBUF [U] LDA,  
+  FF U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  3 U8 LDX, 
+  0 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  TESTBUF 1+ [U] LDA,  
+  00 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  3 U8 LDX, 
+  1 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  TESTBUF 180 + [U] LDA,  
+  00 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  3 U8 LDX, 
+  2 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  TESTBUF 181 + [U] LDA,  
+  FF U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  3 U8 LDX, 
+  3 U8 LDY,
+  TypeTestResult U16 JSR,
+  
+  RTS,
+
+
+HEX
+BARHERE CONSTANT TESTUMUL+
+  
+  // 0+0x0
+  0 U8 LDA,
+  MPRODLO [U] STA,
+  MPRODHI [U] STA,
+
+  0 U8 LDA,
+  0 U8 LDX,
+
+  UMUL+ U16 JSR,
+
+  MPRODLO [U] LDA,
+  0 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  4 U8 LDX, 
+  0 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  MPRODHI [U] LDA,
+  0 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  4 U8 LDX, 
+  1 U8 LDY,
+  TypeTestResult U16 JSR,
+
+
+  // 0+3*5
+  0 U8 LDA,
+  MPRODLO [U] STA,
+  MPRODHI [U] STA,
+
+  3 U8 LDA,
+  5 U8 LDX,
+
+  UMUL+ U16 JSR,
+
+  MPRODLO [U] LDA,
+  0F U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  4 U8 LDX, 
+  2 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  MPRODHI [U] LDA,
+  0 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  4 U8 LDX, 
+  3 U8 LDY,
+  TypeTestResult U16 JSR,
+
+
+  // 1FF + 3*5
+  FF U8 LDA,
+  MPRODLO [U] STA,
+  01 U8 LDA,
+  MPRODHI [U] STA,
+
+  3 U8 LDA,
+  5 U8 LDX,
+
+  UMUL+ U16 JSR,
+
+  MPRODLO [U] LDA,
+  0E U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  4 U8 LDX, 
+  4 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  MPRODHI [U] LDA,
+  02 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  4 U8 LDX, 
+  5 U8 LDY,
+  TypeTestResult U16 JSR,
+
+
+  // 102+FF*FE
+  02 U8 LDA,
+  MPRODLO [U] STA,
+  01 U8 LDA,
+  MPRODHI [U] STA,
+
+  FF U8 LDA,
+  FE U8 LDX,
+
+  UMUL+ U16 JSR,
+
+  MPRODLO [U] LDA,
+  04 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  4 U8 LDX, 
+  6 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  MPRODHI [U] LDA,
+  FE U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  4 U8 LDX, 
+  7 U8 LDY,
+  TypeTestResult U16 JSR,
+
+
+  // FFFE+1*1
+  FE U8 LDX,
+  MPRODLO [U] STX,
+  INX,
+  MPRODHI [U] STX,
+  1 U8 LDA,
+  TAX,
+  UMUL+ U16 JSR,
+  CS IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  4 U8 LDX, 
+  8 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  MPRODLO [U] LDA,
+  FF U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  4 U8 LDX, 
+  9 U8 LDY,
+  TypeTestResult U16 JSR, 
+
+  MPRODHI [U] LDA,
+  FF U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  4 U8 LDX, 
+  0A U8 LDY, 
+  TypeTestResult U16 JSR, 
+
+  // FFFF+1*1 - assumes FFFF is in MPROD
+  1 U8 LDA,
+  TAX, 
+  UMUL+ U16 JSR,
+  NC IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  4 U8 LDX, 
+  0B U8 LDY,
+  TypeTestResult U16 JSR, 
+
+  MPRODLO [U] LDA,
+  FF U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  4 U8 LDX, 
+  0C U8 LDY,
+  TypeTestResult U16 JSR,
+
+  MPRODHI [U] LDA,
+  FF U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  4 U8 LDX, 
+  0D U8 LDY,
+  TypeTestResult U16 JSR,
+  
+  RTS,
+
+
+HEX
+BARHERE CONSTANT TESTU8DIV8
+
+  0 U8 LDY,
+  0 U8 LDA,
+
+  U8DIV8 U16 JSR,
+
+  QUOTLO [U] LDA,
+  FF U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  5 U8 LDX, 
+  0 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  NUMERLO [U] LDA,
+  FF U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  5 U8 LDX, 
+  1 U8 LDY,
+  TypeTestResult U16 JSR,
+
+
+  1 U8 LDY,
+  0 U8 LDA,
+
+  U8DIV8 U16 JSR,
+
+  QUOTLO [U] LDA,
+  FF U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  5 U8 LDX, 
+  2 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  NUMERLO [U] LDA,
+  FF U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  5 U8 LDX, 
+  3 U8 LDY,
+  TypeTestResult U16 JSR,
+
+
+  1 U8 LDY,
+  1 U8 LDA,
+
+  U8DIV8 U16 JSR,
+
+  QUOTLO [U] LDA,
+  1 U8 CMP,
+  NE IF,
+    TypeHexByte U16 JSR,
+    TypeSpace U16 JSR,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  5 U8 LDX, 
+  4 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  NUMERLO [U] LDA,
+  0 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  5 U8 LDX, 
+  5 U8 LDY,
+  TypeTestResult U16 JSR,
+
+
+  57 U8 LDY,
+  1 U8 LDA,
+
+  U8DIV8 U16 JSR,
+
+  QUOTLO [U] LDA,
+  57 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  5 U8 LDX, 
+  6 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  NUMERLO [U] LDA,
+  0 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  5 U8 LDX, 
+  7 U8 LDY,
+  TypeTestResult U16 JSR,
+
+
+  0F U8 LDY,
+  5 U8 LDA,
+
+  U8DIV8 U16 JSR,
+
+  QUOTLO [U] LDA,
+  3 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  5 U8 LDX, 
+  8 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  NUMERLO [U] LDA,
+  0 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  5 U8 LDX, 
+  9 U8 LDY,
+  TypeTestResult U16 JSR,
+
+
+  10 U8 LDY,
+  5 U8 LDA,
+
+  U8DIV8 U16 JSR,
+
+  QUOTLO [U] LDA,
+  3 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  5 U8 LDX, 
+  0A U8 LDY,
+  TypeTestResult U16 JSR,
+
+  NUMERLO [U] LDA,
+  1 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  5 U8 LDX, 
+  0B U8 LDY,
+  TypeTestResult U16 JSR,
+
+  RTS,
+
+
+HEX
+BARHERE CONSTANT TESTU16DIV8
+
+  0 U8 LDY,
+  0 U8 LDX,
+  0 U8 LDA,
+
+  U16DIV8 U16 JSR,
+
+  QUOTLO [U] LDA,
+  FF U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  6 U8 LDX, 
+  0 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  QUOTHI [U] LDA,
+  FF U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  6 U8 LDX, 
+  1 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  NUMERLO [U] LDA,
+  FF U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  6 U8 LDX, 
+  2 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  NUMERHI [U] LDA,
+  FF U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  6 U8 LDX, 
+  3 U8 LDY,
+  TypeTestResult U16 JSR,
+
+
+  1 U8 LDY,
+  0 U8 LDX,
+  0 U8 LDA,
+
+  U16DIV8 U16 JSR,
+
+  QUOTLO [U] LDA,
+  FF U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  6 U8 LDX, 
+  4 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  QUOTHI [U] LDA,
+  FF U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  6 U8 LDX, 
+  5 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  NUMERLO [U] LDA,
+  FF U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  6 U8 LDX, 
+  6 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  NUMERHI [U] LDA,
+  FF U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  6 U8 LDX, 
+  7 U8 LDY,
+  TypeTestResult U16 JSR,
+
+
+  1 U8 LDY,
+  0 U8 LDX,
+  1 U8 LDA,
+
+  U16DIV8 U16 JSR,
+  
+  QUOTLO [U] LDA,
+  01 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  6 U8 LDX, 
+  8 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  QUOTHI [U] LDA,
+  00 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  6 U8 LDX, 
+  9 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  NUMERLO [U] LDA,
+  0 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  6 U8 LDX, 
+  0A U8 LDY,
+  TypeTestResult U16 JSR,
+
+  NUMERHI [U] LDA,
+  0 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  6 U8 LDX, 
+  0B U8 LDY,
+  TypeTestResult U16 JSR,
+
+
+  FE U8 LDY,
+  FF U8 LDX,
+  5 U8 LDA,
+
+  U16DIV8 U16 JSR,
+  
+  QUOTLO [U] LDA,
+  32 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  6 U8 LDX, 
+  0C U8 LDY,
+  TypeTestResult U16 JSR,
+
+  QUOTHI [U] LDA,
+  33 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  6 U8 LDX, 
+  0D U8 LDY,
+  TypeTestResult U16 JSR,
+
+  NUMERLO [U] LDA,
+  04 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  6 U8 LDX, 
+  0E U8 LDY,
+  TypeTestResult U16 JSR,
+
+  NUMERHI [U] LDA,
+  0 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  6 U8 LDX, 
+  0F U8 LDY,
+  TypeTestResult U16 JSR,
+
+
+  RTS,
+
+HEX
+BARHERE CONSTANT mytesttable
+6 3 A0FE BUILDROWOFFSETTABLE // 3 rows of 6 bytes starting at 0x1000
+
+BARHERE CONSTANT TESTBUILDROWOFFSETTABLE
+
+  mytesttable [U] LDA,
+  A0FE U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  7 U8 LDX, 
+  0 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  mytesttable 1+ [U] LDA,
+  A0FE 8 RSHIFT U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  7 U8 LDX, 
+  1 U8 LDY,
+  TypeTestResult U16 JSR,
+
+
+  mytesttable 2 + [U] LDA,
+  A0FE 6 + U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  7 U8 LDX, 
+  2 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  mytesttable 3 + [U] LDA,
+  A0FE 6 +  8 RSHIFT U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  7 U8 LDX, 
+  3 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  mytesttable 4 + [U] LDA,
+  A0FE 0C + U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  7 U8 LDX, 
+  4 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  mytesttable 5 + [U] LDA,
+  A0FE 0C +  8 RSHIFT U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  7 U8 LDX, 
+  5 U8 LDY,
+  TypeTestResult U16 JSR,
+
+
+BARHERE CONSTANT TESTCALCPOINTSFORGERMANPOSITION
+
+
+  // clear unitx and unitmaxhp
+  UNITX 8 RSHIFT U8 LDA,
+  PDESTHI [U] STA,
+  UNITX U8 LDA,
+  PDESTLO [U] STA,
+  NUMBEROFUNITS U8 LDY,
+  0 U8 LDX,
+  MAPWIDTH U8 LDA,
+  FILLMEM U16 JSR,
+
+  UNITMAXHP 8 RSHIFT U8 LDA,
+  PDESTHI [U] STA,
+  UNITMAXHP U8 LDA,
+  PDESTLO [U] STA,
+  NUMBEROFUNITS U8 LDY,
+  0 U8 LDX,
+  ERASEMEM U16 JSR,
+
+  // test 0 case
+  CALCPOINTSFORGERMANPOSITION U16 JSR,
+  
+  ACCHI [U] LDA,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  8 U8 LDX, 
+  0 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  MPRODHI [U] LDA,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  8 U8 LDX, 
+  1 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  MPRODLO [U] LDA,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  8 U8 LDX, 
+  2 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  // put stuff at 0, 1, FIRSTRUSSIAN-1, and FIRSTRUSSIAN
+  MAPWIDTH 02 - U8 LDA,  UNITX [U] STA,
+  03 2* U8 LDA,          UNITMAXHP [U] STA,
+  MAPWIDTH 05 - U8 LDA,  UNITX 1+ [U] STA,
+  07 2* U8 LDA,          UNITMAXHP 1+ [U] STA,
+  MAPWIDTH 0B - U8 LDA,  UNITX FIRSTRUSSIANUNIT 1- + [U] STA,
+  0D 2* U8 LDA,          UNITMAXHP FIRSTRUSSIANUNIT 1- + [U] STA,
+  MAPWIDTH 11 - U8 LDA,  UNITX FIRSTRUSSIANUNIT + [U] STA,
+  13 2* U8 LDA,          UNITMAXHP FIRSTRUSSIANUNIT + [U] STA,
+
+  CALCPOINTSFORGERMANPOSITION U16 JSR, 
+
+  // should be [05*07] + [0B*0D] = decimal 35 + 143 = 178 = hex B2
+
+  MPRODHI [U] LDA,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  8 U8 LDX, 
+  3 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  MPRODLO [U] LDA,
+  B2 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  8 U8 LDX, 
+  4 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  ACCHI [U] LDA,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  8 U8 LDX, 
+  5 U8 LDY,
+  TypeTestResult U16 JSR,  
+
+  RTS,
+
+
+BARHERE CONSTANT TESTCALCPOINTSFORRUSSIANPOSITION
+
+
+  // clear unitx and unitmaxhp
+  UNITX 8 RSHIFT U8 LDA,
+  PDESTHI [U] STA,
+  UNITX U8 LDA,
+  PDESTLO [U] STA,
+  NUMBEROFUNITS U8 LDY,
+  0 U8 LDX,
+  ERASEMEM U16 JSR,
+
+  UNITHP 8 RSHIFT U8 LDA,
+  PDESTHI [U] STA,
+  UNITHP U8 LDA,
+  PDESTLO [U] STA,
+  NUMBEROFUNITS U8 LDY,
+  0 U8 LDX,
+  ERASEMEM U16 JSR,
+
+  // test 0 case
+  CALCPOINTSFORRUSSIANPOSITION U16 JSR,
+  
+  ACCHI [U] LDA,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  9 U8 LDX, 
+  0 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  MPRODHI [U] LDA,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  9 U8 LDX, 
+  1 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  MPRODLO [U] LDA,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  9 U8 LDX, 
+  2 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  // put stuff at FIRSTRUSSIAN-1, FIRSTRUSSIAN, NUMBEFOFUNITS-1, NUMBEROFUNITS
+  02 U8 LDA,             UNITX FIRSTRUSSIANUNIT 1- + [U] STA,
+  03 2* 2* 2* U8 LDA,    UNITHP FIRSTRUSSIANUNIT 1- + [U] STA,
+  05 U8 LDA,             UNITX FIRSTRUSSIANUNIT + [U] STA,
+  07 2* 2* 2* U8 LDA,    UNITHP FIRSTRUSSIANUNIT + [U] STA,
+  0B U8 LDA,             UNITX  NUMBEROFUNITS 1- + [U] STA,
+  0D 2* 2* 2* U8 LDA,    UNITHP NUMBEROFUNITS 1- + [U] STA,
+  11 U8 LDA,             UNITX NUMBEROFUNITS + [U] STA,
+  13 2* 2* 2* U8 LDA,    UNITHP NUMBEROFUNITS + [U] STA,
+
+  CALCPOINTSFORRUSSIANPOSITION U16 JSR,
+
+  MPRODHI [U] LDA,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  9 U8 LDX, 
+  3 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  MPRODLO [U] LDA,
+  B2 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  9 U8 LDX, 
+  4 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  ACCHI [U] LDA,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  9 U8 LDX, 
+  5 U8 LDY,
+  TypeTestResult U16 JSR, 
+
+  RTS, 
+
+
+// TERRTY determines the type of terrain in a square
+//    type     name        code
+//      0      ?             unchanged
+//     7F (3F) border        9
+//    <07      mountain      1
+//    <4B (0B) city          2
+//    <4F (0F) frozen swamp  3
+//    <69 (29) frozen river  4
+//    <8F (0F) swamp         5
+//    <A4 (24) river         6   if [LAT] >= 0E  and <A9 is also 6
+//    <BA (3A) coastline     7   if [LAT] >= 0E  and <BB is also 7
+//    <BD (3D) ?             8   
+//   >=BD unit, border, and other  9
+
+HEX
+BARHERE CONSTANT TESTTERRTY ( [TNRCOD] -mem- [TRNTYP] ) 
+
+  0 U8 LDA,  TRNCOD [U] STA,  
+  83 U8 LDA, TRNTYP [U] STA,
+  TERRTY U16 JSR,
+
+  TRNTYP [U] LDA,
+  0 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0A U8 LDX, 
+  00 U8 LDY,
+  TypeTestResult U16 JSR, 
+
+
+  6 U8 LDA,  TRNCOD [U] STA,  
+  0 U8 LDA,  TRNTYP [U] STA,
+  TERRTY U16 JSR,
+
+  TRNTYP [U] LDA,
+  1 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0A U8 LDX, 
+  01 U8 LDY,
+  TypeTestResult U16 JSR, 
+
+
+  7 U8 LDA,  TRNCOD [U] STA,  
+  0 U8 LDA,  TRNTYP [U] STA,
+  TERRTY U16 JSR,
+
+  TRNTYP [U] LDA,
+  2 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0A U8 LDX, 
+  02 U8 LDY,
+  TypeTestResult U16 JSR, 
+
+
+  4A U8 LDA,  TRNCOD [U] STA,  
+  0 U8 LDA,  TRNTYP [U] STA,
+  TERRTY U16 JSR,
+
+  TRNTYP [U] LDA,
+  2 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0A U8 LDX, 
+  03 U8 LDY,
+  TypeTestResult U16 JSR, 
+
+
+  4B U8 LDA,  TRNCOD [U] STA,  
+  0 U8 LDA,  TRNTYP [U] STA,
+  TERRTY U16 JSR,
+
+  TRNTYP [U] LDA,
+  3 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0A U8 LDX, 
+  04 U8 LDY,
+  TypeTestResult U16 JSR, 
+
+
+  4E U8 LDA,  TRNCOD [U] STA,  
+  0 U8 LDA,  TRNTYP [U] STA,
+  TERRTY U16 JSR,
+
+  TRNTYP [U] LDA,
+  3 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0A U8 LDX, 
+  05 U8 LDY,
+  TypeTestResult U16 JSR, 
+
+
+  4F U8 LDA,  TRNCOD [U] STA,  
+  0 U8 LDA,  TRNTYP [U] STA,
+  TERRTY U16 JSR,
+
+  TRNTYP [U] LDA,
+  4 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0A U8 LDX, 
+  06 U8 LDY,
+  TypeTestResult U16 JSR, 
+
+
+  68 U8 LDA,  TRNCOD [U] STA,  
+  0 U8 LDA,  TRNTYP [U] STA,
+  TERRTY U16 JSR,
+
+  TRNTYP [U] LDA,
+  4 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0A U8 LDX, 
+  07 U8 LDY,
+  TypeTestResult U16 JSR, 
+
+
+  69 U8 LDA,  TRNCOD [U] STA,  
+  0 U8 LDA,  TRNTYP [U] STA,
+  TERRTY U16 JSR,
+
+  TRNTYP [U] LDA,
+  5 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0A U8 LDX, 
+  08 U8 LDY,
+  TypeTestResult U16 JSR, 
+
+
+  8E U8 LDA,  TRNCOD [U] STA,  
+  0 U8 LDA,  TRNTYP [U] STA,
+  TERRTY U16 JSR,
+
+  TRNTYP [U] LDA,
+  5 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0A U8 LDX, 
+  09 U8 LDY,
+  TypeTestResult U16 JSR, 
+
+
+  8F U8 LDA,  TRNCOD [U] STA,  
+  0 U8 LDA,   TRNTYP [U] STA,
+  // 0E U8 LDA,  LAT [U] STA,
+  TERRTY U16 JSR,
+
+  TRNTYP [U] LDA,
+  6 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0A U8 LDX, 
+  0A U8 LDY,
+  TypeTestResult U16 JSR, 
+
+
+  A3 U8 LDA,  TRNCOD [U] STA,  
+  0 U8 LDA,   TRNTYP [U] STA,
+  // 0E U8 LDA,  LAT [U] STA,
+  TERRTY U16 JSR,
+
+  TRNTYP [U] LDA,
+  6 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0A U8 LDX, 
+  0B U8 LDY,
+  TypeTestResult U16 JSR, 
+
+
+  A4 U8 LDA,  TRNCOD [U] STA,  
+  0 U8 LDA,   TRNTYP [U] STA,
+  0D U8 LDA,  LAT [U] STA,
+  TERRTY U16 JSR,
+
+  TRNTYP [U] LDA,
+  7 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0A U8 LDX, 
+  0C U8 LDY,
+  TypeTestResult U16 JSR, 
+
+
+  A8 U8 LDA,  TRNCOD [U] STA,  
+  0 U8 LDA,   TRNTYP [U] STA,
+  0E U8 LDA,  LAT [U] STA,
+  TERRTY U16 JSR,
+
+  TRNTYP [U] LDA,
+  6 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0A U8 LDX, 
+  0D U8 LDY,
+  TypeTestResult U16 JSR, 
+
+
+  A9 U8 LDA,  TRNCOD [U] STA,  
+  0 U8 LDA,   TRNTYP [U] STA,
+  0E U8 LDA,  LAT [U] STA,
+  TERRTY U16 JSR,
+
+  TRNTYP [U] LDA,
+  7 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0A U8 LDX, 
+  0E U8 LDY,
+  TypeTestResult U16 JSR, 
+
+
+  B9 U8 LDA,  TRNCOD [U] STA,  
+  0 U8 LDA,   TRNTYP [U] STA,
+  0D U8 LDA,  LAT [U] STA,
+  TERRTY U16 JSR,
+
+  TRNTYP [U] LDA,
+  7 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0A U8 LDX, 
+  0F U8 LDY,
+  TypeTestResult U16 JSR, 
+
+
+  BA U8 LDA,  TRNCOD [U] STA,  
+  0 U8 LDA,   TRNTYP [U] STA,
+  0D U8 LDA,  LAT [U] STA,
+  TERRTY U16 JSR,
+
+  TRNTYP [U] LDA,
+  8 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0A U8 LDX, 
+  10 U8 LDY,
+  TypeTestResult U16 JSR, 
+
+
+  BA U8 LDA,  TRNCOD [U] STA,  
+  0 U8 LDA,   TRNTYP [U] STA,
+  0E U8 LDA,  LAT [U] STA,
+  TERRTY U16 JSR,
+
+  TRNTYP [U] LDA,
+  7 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0A U8 LDX, 
+  11 U8 LDY,
+  TypeTestResult U16 JSR, 
+
+
+  BC U8 LDA,  TRNCOD [U] STA,  
+  0 U8 LDA,   TRNTYP [U] STA,
+  0E U8 LDA,  LAT [U] STA,
+  TERRTY U16 JSR,
+
+  TRNTYP [U] LDA,
+  8 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0A U8 LDX, 
+  12 U8 LDY,
+  TypeTestResult U16 JSR, 
+
+
+  BD U8 LDA,  TRNCOD [U] STA,  
+  0 U8 LDA,   TRNTYP [U] STA,
+  // 0E U8 LDA,  LAT [U] STA,
+  TERRTY U16 JSR,
+
+  TRNTYP [U] LDA,
+  9 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0A U8 LDX, 
+  13 U8 LDY,
+  TypeTestResult U16 JSR, 
+
+
+  7F U8 LDA,  TRNCOD [U] STA,  
+  0 U8 LDA,   TRNTYP [U] STA,
+  // 0E U8 LDA,  LAT [U] STA,
+  TERRTY U16 JSR,
+
+  TRNTYP [U] LDA,
+  9 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0A U8 LDX, 
+  14 U8 LDY,
+  TypeTestResult U16 JSR, 
+
+  RTS,
+
+
+HEX
+BARHERE CONSTANT TESTTERRB
+  4 U8 LDA,
+  MAPSTART MAPWIDTH MAPHEIGHT 1- * + // this is start of the last row
+    MAPWIDTH 2 - 2 - + [U] STA,
+  
+  // lower right corner
+  0 U8 LDA,
+  LAT [U] STA,
+  2 U8 LDA,
+  LONG [U] STA,
+  TERRB U16 JSR,
+  EQ IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0B U8 LDX, 
+  00 U8 LDY,
+  TypeTestResult U16 JSR, 
+
+
+  TRNCOD [U] LDA,
+  4 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0B U8 LDX, 
+  01 U8 LDY,
+  TypeTestResult U16 JSR, 
+
+
+  5 U8 LDA,
+  MAPSTART MAPWIDTH MAPHEIGHT 2 - * + // this is start of the 2nd to last row
+    MAPWIDTH 2 - 8 - + [U] STA,
+
+  // lower right corner
+  1 U8 LDA,
+  LAT [U] STA,
+  8 U8 LDA,
+  LONG [U] STA,
+  TERRB U16 JSR,
+  EQ IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0B U8 LDX, 
+  02 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  TRNCOD [U] LDA,
+  5 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0B U8 LDX, 
+  03 U8 LDY,
+  TypeTestResult U16 JSR,
+
+
+  3D U8 LDA,
+  MAPSTART [U] STA,
+
+  // upper left?
+  MAPHEIGHT 1- U8 LDA,
+  LAT [U] STA,
+  MAPWIDTH 2 - U8 LDA,
+  LONG [U] STA,
+  TERRB U16 JSR,
+  
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0B U8 LDX, 
+  04 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  TRNCOD [U] LDA,
+  3D U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0B U8 LDX, 
+  04 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  RTS,
+
+HEX
+BARHERE CONSTANT TESTLOCTOUNIT
+  4 U8 LDA,
+  MAPUNITS MAPWIDTH MAPHEIGHT 1- * + // this is start of the last row
+    MAPWIDTH 2 - 2 - + [U] STA,
+  
+  // lower right corner
+  0 U8 LDA,
+  LAT [U] STA,
+  2 U8 LDA,
+  LONG [U] STA,
+  LOCTOUNIT U16 JSR,
+  4 U8 CPX,
+  EQ IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0C U8 LDX, 
+  00 U8 LDY,
+  TypeTestResult U16 JSR, 
+
+  5 U8 LDA,
+  MAPUNITS MAPWIDTH MAPHEIGHT 2 - * + // this is start of the 2nd to last row
+    MAPWIDTH 2 - 8 - + [U] STA,
+
+  // lower right corner
+  1 U8 LDA,
+  LAT [U] STA,
+  8 U8 LDA,
+  LONG [U] STA,
+  LOCTOUNIT U16 JSR,
+  5 U8 CPX,
+  EQ IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0C U8 LDX, 
+  01 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  RTS,
+
+HEX
+BARHERE CONSTANT TESTSQXYTOUNIT
+  4 U8 LDA,
+  MAPUNITS MAPWIDTH MAPHEIGHT 1- * + // this is start of the last row
+    MAPWIDTH 2 - 2 - + [U] STA,
+  
+  // lower right corner
+  0 U8 LDA,
+  SQY [U] STA,
+  2 U8 LDA,
+  SQX [U] STA,
+  SQXYTOUNIT U16 JSR,
+  4 U8 CMP,
+  EQ IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0D U8 LDX, 
+  00 U8 LDY,
+  TypeTestResult U16 JSR, 
+
+  5 U8 LDA,
+  MAPUNITS MAPWIDTH MAPHEIGHT 2 - * + // this is start of the 2nd to last row
+    MAPWIDTH 2 - 8 - + [U] STA,
+
+  // lower right corner
+  1 U8 LDA,
+  SQY [U] STA,
+  8 U8 LDA,
+  SQX [U] STA,
+  SQXYTOUNIT U16 JSR,
+  5 U8 CMP,
+  EQ IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0D U8 LDX, 
+  01 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  RTS,
+
+HEX
+BARHERE CONSTANT TESTCHECKFORRUSSIANNOTSAMEUNIT
+  
+  FIRSTRUSSIANUNIT U8 LDX,
+  ARMY [U] STX,
+  CHECKFORRUSSIANNOTSAMEUNIT U16 JSR,
+  0 U8 CMP,
+  EQ IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0E U8 LDX, 
+  00 U8 LDY,
+  TypeTestResult U16 JSR, 
+
+  FIRSTRUSSIANUNIT U8 LDX,
+  ARMY [U] STX,
+  INX,
+  CHECKFORRUSSIANNOTSAMEUNIT U16 JSR,
+  FIRSTRUSSIANUNIT U8 CMP,
+  EQ IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0E U8 LDX, 
+  01 U8 LDY,
+  TypeTestResult U16 JSR, 
+
+  FIRSTRUSSIANUNIT 1- U8 LDX,
+  ARMY [U] STX,
+  CHECKFORRUSSIANNOTSAMEUNIT U16 JSR,
+  0 U8 CMP,
+  EQ IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  0E U8 LDX, 
+  02 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  RTS,
+  
+
+
+toCode LONGTHEN,
+
+
+// ///////////////////////////
+// This is the main program //
+// ///////////////////////////
+
+TESTABSA U16 JSR, 
+TESTNEXTWEEK U16 JSR,
+TESTFILLMEM U16 JSR,
+TESTERASEMEM U16 JSR,
+TESTUMUL+ U16 JSR, 
+TESTU8DIV8 U16 JSR,
+TESTU16DIV8 U16 JSR,
+TESTCALCPOINTSFORGERMANPOSITION U16 JSR,
+TESTCALCPOINTSFORRUSSIANPOSITION U16 JSR,
+TESTTERRTY U16 JSR,
+TESTTERRB U16 JSR,
+TESTLOCTOUNIT U16 JSR,
+TESTSQXYTOUNIT U16 JSR,
+TESTCHECKFORRUSSIANNOTSAMEUNIT U16 JSR,
+
+TypeTestDone U16 JSR,
+
+
+// Busy Wait Forever
+BEGIN,
+CLC, CS UNTIL,
+
+
+CRLF ." Program goes to: " BARHERE HEX U.
+CRLF ." Stack should be empty, it has: " .S
+
+
+// //////////////////////////////////
+// End of where your program goes. //
+// //////////////////////////////////
+
+
+// This calculates and sets the number of boot sectors automatically
+//   I didn't fully test this calculation...
+OHERE SectorSize ROUNDUP SectorSize /   // calculate number of sectors needed
+oNumberOfBootSectors PCURRENTCOMPILEBUFFER @ O>P C!
+
+
+// This converts the program into a .ATR disk image and saves it to a file
+$" TestEasternFrontSubs.atr" PCURRENTCOMPILEBUFFER @ Buf>ATRFile
+
+
+// Explanation of some of the other functions used in this script:
+//   INCLUDEFILE$   means load and compile a file using the filename$ on top of the string stack
+//   OHERE          means get the current offset in the current compile buffer which is also it's length
+//   ROUNDUP        means round the first value up to the nearest multiple of the second value
+//   @              means get a 64 bit value from memory
+//   C!             means store a byte to memory
+//   O>P            means convert an offset bufferid to an address
+//   /              means divide the first value by the second value
+
+// could have terrain map, unit map, and displayed map
+// PMAPROW>SRC ( ra=row -reg- x=2*row ra=pmaprowhi)
+// MAP@ ( xy -reg- ra )
+// MAP! ( xyra -reg- ) 
+
+// TERRAIN@
+// TERRAIN!
+
+// UNITENTER
+//   put unit char on map at unit x y ( if no unit already there )
+
+
+// UNITLEAVE
+//   put terrain char on map at unit x y
+
+// UNITMOVE
+//   unit leave old x y
+//   unit enter new x y
+
+// UNITARRIVE
+// UNITSARRIVE
+
+// UNITDIE
+
+// TERRAINFREEZE
+//   change color of terrain to freeze color
+// TERRAINTHAW
+//   change color of terrain to thaw color
+
+// UNITHEAL
+//   gain 1 or 2 hp based on difference between maxhp and hp
+
+// UNITLOSEHALFHP
+//   hp/2
+
+// UNITRETREAT
+
+
+
+// Need better stack check 
+// test GETSCORE
+// test DIDUNITCAPTURECITY
+// test GETFREEZELAT
+// test RUSSIANAI routines
+// test FINDBELEAGUREDARMY
+// test DRLOOP... document what it does
