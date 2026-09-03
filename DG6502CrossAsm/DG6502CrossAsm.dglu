@@ -2,20 +2,20 @@
 //
 //    Copyright 2023 James Patrick Norris
 //
-//    This file is part of DG6502CrossAsm v1.4
+//    This file is part of DG6502CrossAsm v1.5
 //
-//    DG6502CrossAsm v1.4 is free software; you can redistribute it and/or modify
+//    DG6502CrossAsm v1.5 is free software; you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation; either version 2 of the License, or
 //    (at your option) any later version.
 //
-//    DG6502CrossAsm v1.4 is distributed in the hope that it will be useful,
+//    DG6502CrossAsm v1.5 is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with DG6502CrossAsm v1.4; if not, write to the Free Software
+//    along with DG6502CrossAsm v1.5; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // //////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// Sep 25, 2023               //
-// version 1.4                //
+// Sep 3, 2026                //
+// version 1.5                //
 // /////////////////////////////
 
 
@@ -432,12 +432,14 @@ HEX
 ;
 
 : REPEAT, ( whileaddr beginaddr -- )
-    CLC,  NC UNTIL,
+    // CLC,  NC UNTIL, 
+    U16 JMP,
     THEN,
 ;
 
 : LONGREPEAT, ( whileaddr beginaddr -- )
-    CLC, NC UNTIL,
+    CLC, NC UNTIL, // 
+    U16 JMP,
     LONGTHEN,
 ;
 
@@ -514,4 +516,31 @@ HEX
 : BEQ, ( branchtarget addrmode -- ) EQ BranchAddrMode, ;
 : BNEVER, ( branchtarget addrmode -- ) 2DROP ;
 
+HEX
+: ASCII>ICODE { x | asciichar -- icodechar }
+    asciichar 7F AND TO x
+    x 20 U< IF
+      x 40 +
+    ELSE
+      x 60 U< IF
+        x 20 -
+      ELSE
+        x 
+      THEN
+    THEN
+    asciichar 80 AND OR
+;
 
+: ASCII$>ICODE$ ( ascii$ -$- icode$ ) { strlength pstr | -- }
+    0 GETS$[ND] TO strlength TO pstr
+    strlength 0= IF EXIT THEN
+    strlength 0 DO
+      pstr I + C@
+      ASCII>ICODE
+      pstr I + C!
+    LOOP ;
+
+: CODE-$, 0 GETS$[ND] CODE-S, DROP$ ; // this should be part of DiaperGlu
+
+: CODE-ICODE$, ( ascii$ -$- ) ASCII$>ICODE$ CODE-$, ;
+    

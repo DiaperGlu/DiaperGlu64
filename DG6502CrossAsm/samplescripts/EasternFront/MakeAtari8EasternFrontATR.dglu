@@ -39,10 +39,6 @@ $" ../BufToATR.dglu" INCLUDEFILE$
 // Load the Atari 8 bit labels.
 $" ../AtariLabels.dglu" INCLUDEFILE$
 
-: CODE-ICODE$, ( a$ -$- ) ( -ccbuf- a$ )
-    0 GETS$[ND] PCURRENTCOMPILEBUFFER @ S>BUF DROP$
-;
-
 
 // User labels
 HEX
