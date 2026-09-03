@@ -26,8 +26,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// Aug 27, 2026               //
-// version 1.0                //
+// Sep 2, 2026                //
+// version 1.1                //
 // /////////////////////////////
 
 // Compile the 6502 cross assembler
@@ -38,6 +38,10 @@ $" ../BufToATR.dglu" INCLUDEFILE$
 
 // Load the Atari 8 bit labels.
 $" ../AtariLabels.dglu" INCLUDEFILE$
+
+: CODE-ICODE$, ( a$ -$- ) ( -ccbuf- a$ )
+    0 GETS$[ND] PCURRENTCOMPILEBUFFER @ S>BUF DROP$
+;
 
 
 // User labels
@@ -2531,31 +2535,6 @@ BARHERE CONSTANT GETCOORDS
   CHUNKY [U] STA, // changes CHUNKY
   RTS,
 
-// Source JN
-BARHERE CONSTANT ISUNITATCHUNK
-  // [CORPSX+unit] [CORPSY+unit] [ARRIVE+unit] [CHUNKX]  [CHUNKY] [TURN] -mem-
-  // X=unit -reg- 
-  // -flag- CS=unitatchunk
-  CHUNKY [U] LDA,
-  CORPSY [U+X] CMP,
-  NE IF,
-    CLC,
-    RTS,
-  THEN,
-  CHUNKX [U] LDA,
-  CORPSX [U+X] CMP,
-  NE IF,
-    CLC,
-    RTS,
-  THEN,
-  ARRIVE [U+X] LDA,
-  MI IF,
-    CLC,
-    RTS,
-  THEN,
-  TURN [U] CMP,
-  // carry is set if unit has arrived
-  RTS,
 
 // Source EFT18I.ASM line 4330
 BARHERE CONSTANT DOUNITMATCHES
@@ -8482,6 +8461,32 @@ BARHERE CONSTANT OLDMULTIPLYNBVAL
     SWAP EQ UNTIL, // to loop60
         // Y71
         THEN,
+
+// Source JN
+BARHERE CONSTANT ISUNITATCHUNK
+  // [CORPSX+unit] [CORPSY+unit] [ARRIVE+unit] [CHUNKX]  [CHUNKY] [TURN] -mem-
+  // X=unit -reg- 
+  // -flag- CS=unitatchunk
+  CHUNKY [U] LDA,
+  CORPSY [U+X] CMP,
+  NE IF,
+    CLC,
+    RTS,
+  THEN,
+  CHUNKX [U] LDA,
+  CORPSX [U+X] CMP,
+  NE IF,
+    CLC,
+    RTS,
+  THEN,
+  ARRIVE [U+X] LDA,
+  MI IF,
+    CLC,
+    RTS,
+  THEN,
+  TURN [U] CMP,
+  // carry is set if unit has arrived
+  RTS,
 
 BARHERE CONSTANT OLDQUERYUNITUNDERCURSOR
   // -flag- cs=unitmatched
