@@ -66,6 +66,9 @@ E456 CONSTANT CIOV
 09 CONSTANT ICCOMwriteline
 0B CONSTANT ICCOMwrite
 
+7280 CONSTANT PLYR1
+7300 CONSTANT PLYR2
+
 
 : BUILDROWOFFSETTABLE { | columns rows baseaddr -- }
     rows 0 DO
@@ -118,6 +121,12 @@ ENUM<
   PDESTHI
   MAPPTR
   MAPPTRHI
+  MAPLO
+  MAPHI
+  CURSXL
+  CURSXH
+  CURSYL
+  CURSYH
 > DROP
 
 // Program data
@@ -135,14 +144,8 @@ BARHERE CONSTANT MsgTESTDONE
   $" TEST DONE" 0 GETS$[ND] CODE-S, DROP$
   9 CONSTANT MsgTESTDONELength
 
-BARHERE CONSTANT INITIALMAPTERRAIN      MAPSIZE CODE-ALLOT 
 
-BARHERE CONSTANT INITIALUNITARRIVETURN  NUMBEROFUNITS 1+ CODE-ALLOT
-BARHERE CONSTANT INITIALUNITX           NUMBEROFUNITS 1+ CODE-ALLOT
-BARHERE CONSTANT INITIALUNITY           NUMBEROFUNITS 1+ CODE-ALLOT
-BARHERE CONSTANT INITIALUNITCHAR        NUMBEROFUNITS 1+ CODE-ALLOT
-BARHERE CONSTANT INITIALUNITMAXHP       NUMBEROFUNITS 1+ CODE-ALLOT
-
+BARHERE CONSTANT TXTWDW 90 CODE-ALLOT
 
 HEX
 BARHERE CONSTANT pMessageTbl // assumes all messages in this table are 16 characters long
@@ -161,8 +164,30 @@ BARHERE CONSTANT pMessageTbl // assumes all messages in this table are 16 charac
   ( 0C ) $" LOCTOUNIT       " 0 GETS$[ND] CODE-S, DROP$
   ( 0D ) $" SQXYTOUNIT      " 0 GETS$[ND] CODE-S, DROP$
   ( 0E ) $" CHECKFORNOTSAME " 0 GETS$[ND] CODE-S, DROP$
-
-
+  ( 0F ) $" DNUMBR          " 0 GETS$[ND] CODE-S, DROP$
+  ( 10 ) $" CLRP1           " 0 GETS$[ND] CODE-S, DROP$
+  ( 11 ) $" CLRP2           " 0 GETS$[ND] CODE-S, DROP$
+  ( 12 ) $" ERRCLR          " 0 GETS$[ND] CODE-S, DROP$
+  ( 13 ) $" ROTATELINARR    " 0 GETS$[ND] CODE-S, DROP$
+  ( 14 ) $" GETNEXTTARGETSQ " 0 GETS$[ND] CODE-S, DROP$
+  ( 15 ) $" CHUNKTOMAPUNITS " 0 GETS$[ND] CODE-S, DROP$
+  ( 16 ) $" CHUNKTOUNIT     " 0 GETS$[ND] CODE-S, DROP$
+  ( 17 ) $" LOCTOMAPUNITSPT " 0 GETS$[ND] CODE-S, DROP$
+  ( 18 ) $" SQXYTOMAPUNITSP " 0 GETS$[ND] CODE-S, DROP$  
+  ( 19 ) $" CHUNKTOMAPHILO  " 0 GETS$[ND] CODE-S, DROP$
+  ( 1A ) $" CHUNKMAP@       " 0 GETS$[ND] CODE-S, DROP$
+  ( 1B ) $" CHUNKMAP!       " 0 GETS$[ND] CODE-S, DROP$
+  ( 1C ) $" SWITCH          " 0 GETS$[ND] CODE-S, DROP$
+  ( 1D ) $" UNITARRIVE      " 0 GETS$[ND] CODE-S, DROP$
+  ( 1E ) $" UNITMOVE        " 0 GETS$[ND] CODE-S, DROP$
+  ( 1F ) $" UNITLEAVE       " 0 GETS$[ND] CODE-S, DROP$
+  ( 20 ) $" DEADSUB         " 0 GETS$[ND] CODE-S, DROP$
+  ( 21 ) $" GETCOORDS       " 0 GETS$[ND] CODE-S, DROP$
+  ( 22 ) $" TERRAIN@        " 0 GETS$[ND] CODE-S, DROP$
+  ( 23 ) $" TERRAIN!        " 0 GETS$[ND] CODE-S, DROP$
+  ( 24 ) $" DROPORDER       " 0 GETS$[ND] CODE-S, DROP$
+  ( 25 ) $" CLEARORDERS     " 0 GETS$[ND] CODE-S, DROP$
+  ( 26 ) $" QUEUEORDER      " 0 GETS$[ND] CODE-S, DROP$
 
 // Program variables - can be moved to outside file to make file smaller
 
@@ -185,14 +210,14 @@ BARHERE CONSTANT QUOTLO 1 CODE-ALLOT
 BARHERE CONSTANT QUOTHI 1 CODE-ALLOT
 
 BARHERE CONSTANT MAPSTART   MAPSIZE CODE-ALLOT // what player sees on each square
-BARHERE CONSTANT MAPTERRAIN MAPSIZE CODE-ALLOT // terrain on each square
+// BARHERE CONSTANT MAPTERRAIN MAPSIZE CODE-ALLOT // terrain on each square
 BARHERE CONSTANT MAPUNITS   MAPSIZE CODE-ALLOT // what unit is on each square
 
 BARHERE CONSTANT MAPROWOFFSETTBL
 MAPWIDTH MAPHEIGHT MAPSTART BUILDROWOFFSETTABLE
 
-BARHERE CONSTANT MAPTERRAINROWOFFSETTBL
-MAPWIDTH MAPHEIGHT MAPUNITS BUILDROWOFFSETTABLE
+// BARHERE CONSTANT MAPTERRAINROWOFFSETTBL
+// MAPWIDTH MAPHEIGHT MAPTERRAIN BUILDROWOFFSETTABLE
 
 BARHERE CONSTANT MAPUNITSROWOFFSETTBL
 MAPWIDTH MAPHEIGHT MAPUNITS BUILDROWOFFSETTABLE
@@ -203,6 +228,13 @@ BARHERE CONSTANT UNITY           BARHERE CONSTANT CORPSY        NUMBEROFUNITS CO
 BARHERE CONSTANT UNITHP          BARHERE CONSTANT CSTRNG        NUMBEROFUNITS CODE-ALLOT
 BARHERE CONSTANT UNITMAXHP       BARHERE CONSTANT MSTRNG        NUMBEROFUNITS CODE-ALLOT
 BARHERE CONSTANT UNITARRIVETURN  NUMBEROFUNITS CODE-ALLOT
+BARHERE CONSTANT SWAPIT          NUMBEROFUNITS CODE-ALLOT
+BARHERE CONSTANT EXEC            NUMBEROFUNITS CODE-ALLOT
+BARHERE CONSTANT HMORDS          NUMBEROFUNITS CODE-ALLOT
+BARHERE CONSTANT WHORDS          NUMBEROFUNITS CODE-ALLOT
+BARHERE CONSTANT WHORDH          NUMBEROFUNITS CODE-ALLOT
+BARHERE CONSTANT ARRIVE          NUMBEROFUNITS CODE-ALLOT
+
 // BARHERE CONSTANT UNITTERRAINSWAP NUMBEROFUNITS CODE-ALLOT
 
 BARHERE CONSTANT ACCLO 1 CODE-ALLOT
@@ -219,6 +251,138 @@ BARHERE CONSTANT SQY 1 CODE-ALLOT
 
 BARHERE CONSTANT UNITNO 1 CODE-ALLOT
 BARHERE CONSTANT ARMY 1 CODE-ALLOT
+
+BARHERE CONSTANT STEPY 1 CODE-ALLOT
+BARHERE CONSTANT KRZY   1 CODE-ALLOT
+
+BARHERE CONSTANT ERRFLG 1 CODE-ALLOT
+
+BARHERE CONSTANT CHUNKX 1 CODE-ALLOT
+BARHERE CONSTANT CHUNKY 1 CODE-ALLOT
+
+BARHERE CONSTANT CORPS 1 CODE-ALLOT
+
+BARHERE CONSTANT TYH 1 CODE-ALLOT
+BARHERE CONSTANT TYL 1 CODE-ALLOT
+BARHERE CONSTANT TXH 1 CODE-ALLOT
+BARHERE CONSTANT TXL 1 CODE-ALLOT
+
+DECIMAL
+0 CC, // for testing out of array bound error
+BARHERE CONSTANT BAKARR 25 CODE-ALLOT
+0 CC, // for testing out of array bound error
+BARHERE CONSTANT LINARR 25 CODE-ALLOT
+0 CC, // for testing out of array bound error
+
+HEX
+BARHERE CONSTANT YINC 1 CC, // must go just before XINC
+BARHERE CONSTANT XINC 0 CC, FF CC, 0 CC, 1 CC,
+
+HEX
+BARHERE CONSTANT LINARRINIT
+01 CC, 02 CC, 03 CC, 04 CC, 05 CC,
+06 CC, 07 CC, 08 CC, 09 CC, 0A CC,
+0B CC, 0C CC, 0D CC, 0E CC, 0F CC,
+10 CC, 11 CC, 12 CC, 13 CC, 14 CC,
+15 CC, 16 CC, 17 CC, 18 CC, 19 CC,
+
+DECIMAL
+BARHERE CONSTANT ROTARR 
+  4 CC, 9 CC, 14 CC, 19 CC, 24 CC,
+  3 CC, 8 CC, 13 CC, 18 CC, 23 CC,
+  2 CC, 7 CC, 12 CC, 17 CC, 22 CC,
+  1 CC, 6 CC, 11 CC, 16 CC, 21 CC,
+  0 CC, 5 CC, 10 CC, 15 CC, 20 CC,
+
+BARHERE CONSTANT HDIGIT
+0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 
+0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 
+0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 
+0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 
+0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 
+0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 
+0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 
+0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 
+0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 
+0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 
+0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 
+0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 
+0 CC, 0 CC, 0 CC, 0 CC, 1 CC, 1 CC, 1 CC, 1 CC, 
+1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 
+1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 
+1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 
+1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 
+1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 
+1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 
+1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 
+1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 
+1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 
+1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 
+1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 
+1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 
+2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 
+2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 
+2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 
+2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 
+2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 
+2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 
+2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 
+
+BARHERE CONSTANT TDIGIT
+0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 
+1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 
+2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 
+3 CC, 3 CC, 3 CC, 3 CC, 3 CC, 3 CC, 3 CC, 3 CC, 3 CC, 3 CC, 
+4 CC, 4 CC, 4 CC, 4 CC, 4 CC, 4 CC, 4 CC, 4 CC, 4 CC, 4 CC, 
+5 CC, 5 CC, 5 CC, 5 CC, 5 CC, 5 CC, 5 CC, 5 CC, 5 CC, 5 CC, 
+6 CC, 6 CC, 6 CC, 6 CC, 6 CC, 6 CC, 6 CC, 6 CC, 6 CC, 6 CC, 
+7 CC, 7 CC, 7 CC, 7 CC, 7 CC, 7 CC, 7 CC, 7 CC, 7 CC, 7 CC, 
+8 CC, 8 CC, 8 CC, 8 CC, 8 CC, 8 CC, 8 CC, 8 CC, 8 CC, 8 CC, 
+9 CC, 9 CC, 9 CC, 9 CC, 9 CC, 9 CC, 9 CC, 9 CC, 9 CC, 9 CC, 
+0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 
+1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 
+2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 
+3 CC, 3 CC, 3 CC, 3 CC, 3 CC, 3 CC, 3 CC, 3 CC, 3 CC, 3 CC, 
+4 CC, 4 CC, 4 CC, 4 CC, 4 CC, 4 CC, 4 CC, 4 CC, 4 CC, 4 CC, 
+5 CC, 5 CC, 5 CC, 5 CC, 5 CC, 5 CC, 5 CC, 5 CC, 5 CC, 5 CC, 
+6 CC, 6 CC, 6 CC, 6 CC, 6 CC, 6 CC, 6 CC, 6 CC, 6 CC, 6 CC, 
+7 CC, 7 CC, 7 CC, 7 CC, 7 CC, 7 CC, 7 CC, 7 CC, 7 CC, 7 CC, 
+8 CC, 8 CC, 8 CC, 8 CC, 8 CC, 8 CC, 8 CC, 8 CC, 8 CC, 8 CC, 
+9 CC, 9 CC, 9 CC, 9 CC, 9 CC, 9 CC, 9 CC, 9 CC, 9 CC, 9 CC, 
+0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 0 CC, 
+1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 
+2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 2 CC, 
+3 CC, 3 CC, 3 CC, 3 CC, 3 CC, 3 CC, 3 CC, 3 CC, 3 CC, 3 CC, 
+4 CC, 4 CC, 4 CC, 4 CC, 4 CC, 4 CC, 4 CC, 4 CC, 4 CC, 4 CC, 
+5 CC, 5 CC, 5 CC, 5 CC, 5 CC, 5 CC, 
+
+BARHERE CONSTANT ODIGIT
+0 CC, 1 CC, 2 CC, 3 CC, 4 CC, 5 CC, 6 CC, 7 CC, 8 CC, 9 CC, 
+0 CC, 1 CC, 2 CC, 3 CC, 4 CC, 5 CC, 6 CC, 7 CC, 8 CC, 9 CC, 
+0 CC, 1 CC, 2 CC, 3 CC, 4 CC, 5 CC, 6 CC, 7 CC, 8 CC, 9 CC, 
+0 CC, 1 CC, 2 CC, 3 CC, 4 CC, 5 CC, 6 CC, 7 CC, 8 CC, 9 CC, 
+0 CC, 1 CC, 2 CC, 3 CC, 4 CC, 5 CC, 6 CC, 7 CC, 8 CC, 9 CC, 
+0 CC, 1 CC, 2 CC, 3 CC, 4 CC, 5 CC, 6 CC, 7 CC, 8 CC, 9 CC, 
+0 CC, 1 CC, 2 CC, 3 CC, 4 CC, 5 CC, 6 CC, 7 CC, 8 CC, 9 CC, 
+0 CC, 1 CC, 2 CC, 3 CC, 4 CC, 5 CC, 6 CC, 7 CC, 8 CC, 9 CC, 
+0 CC, 1 CC, 2 CC, 3 CC, 4 CC, 5 CC, 6 CC, 7 CC, 8 CC, 9 CC, 
+0 CC, 1 CC, 2 CC, 3 CC, 4 CC, 5 CC, 6 CC, 7 CC, 8 CC, 9 CC, 
+0 CC, 1 CC, 2 CC, 3 CC, 4 CC, 5 CC, 6 CC, 7 CC, 8 CC, 9 CC, 
+0 CC, 1 CC, 2 CC, 3 CC, 4 CC, 5 CC, 6 CC, 7 CC, 8 CC, 9 CC, 
+0 CC, 1 CC, 2 CC, 3 CC, 4 CC, 5 CC, 6 CC, 7 CC, 8 CC, 9 CC, 
+0 CC, 1 CC, 2 CC, 3 CC, 4 CC, 5 CC, 6 CC, 7 CC, 8 CC, 9 CC, 
+0 CC, 1 CC, 2 CC, 3 CC, 4 CC, 5 CC, 6 CC, 7 CC, 8 CC, 9 CC, 
+0 CC, 1 CC, 2 CC, 3 CC, 4 CC, 5 CC, 6 CC, 7 CC, 8 CC, 9 CC, 
+0 CC, 1 CC, 2 CC, 3 CC, 4 CC, 5 CC, 6 CC, 7 CC, 8 CC, 9 CC, 
+0 CC, 1 CC, 2 CC, 3 CC, 4 CC, 5 CC, 6 CC, 7 CC, 8 CC, 9 CC, 
+0 CC, 1 CC, 2 CC, 3 CC, 4 CC, 5 CC, 6 CC, 7 CC, 8 CC, 9 CC, 
+0 CC, 1 CC, 2 CC, 3 CC, 4 CC, 5 CC, 6 CC, 7 CC, 8 CC, 9 CC, 
+0 CC, 1 CC, 2 CC, 3 CC, 4 CC, 5 CC, 6 CC, 7 CC, 8 CC, 9 CC, 
+0 CC, 1 CC, 2 CC, 3 CC, 4 CC, 5 CC, 6 CC, 7 CC, 8 CC, 9 CC, 
+0 CC, 1 CC, 2 CC, 3 CC, 4 CC, 5 CC, 6 CC, 7 CC, 8 CC, 9 CC, 
+0 CC, 1 CC, 2 CC, 3 CC, 4 CC, 5 CC, 6 CC, 7 CC, 8 CC, 9 CC, 
+0 CC, 1 CC, 2 CC, 3 CC, 4 CC, 5 CC, 6 CC, 7 CC, 8 CC, 9 CC, 
+0 CC, 1 CC, 2 CC, 3 CC, 4 CC, 5 CC, 
 
 
 // Test harness subroutines
@@ -308,7 +472,7 @@ BARHERE CONSTANT TypePassFailMessage ( ra=passfail -reg- ) // 0=fail
   THEN,
   TypePass U16 JMP,
  
- 
+HEX 
 BARHERE CONSTANT Type16CharMessage ( ra=messagenumber -- )
 
   0 U8 LDX,
@@ -693,18 +857,18 @@ BARHERE CONSTANT PMAPUNITSROWTODEST
   PDESTLO 1+ [U] STA,
   RTS,
 
-BARHERE CONSTANT PMAPTERRAINROWTODEST 
+// BARHERE CONSTANT PMAPTERRAINROWTODEST 
   // ( -mem- [DESTHI:DESTLO] ) 
   // ( ra=row -reg- x=row*2 )
   
-  RA ASL,
-  CLC,
-  TAX,
-  MAPTERRAINROWOFFSETTBL [U+X] LDA,
-  PDESTLO [U] STA,
-  MAPTERRAINROWOFFSETTBL 1+ [U+X] LDA,
-  PDESTLO 1+ [U] STA,
-  RTS,
+//  RA ASL,
+//  CLC,
+//  TAX,
+//  MAPTERRAINROWOFFSETTBL [U+X] LDA,
+//  PDESTLO [U] STA,
+//  MAPTERRAINROWOFFSETTBL 1+ [U+X] LDA,
+//  PDESTLO 1+ [U] STA,
+//  RTS,
 
 BARHERE CONSTANT MAP@
   // ( -mem- [DESTHI:DESTLO] ) 
@@ -738,21 +902,21 @@ BARHERE CONSTANT MAPUNITS!
   PDESTLO [[U8]+Y] STA,
   RTS,
 
-BARHERE CONSTANT MAPTERRAIN@
+// BARHERE CONSTANT MAPTERRAIN@
   // ( -mem- [DESTHI:DESTLO] ) 
   // ( ra=row y=column -reg- ra=mapunit )
-  PMAPTERRAINROWTODEST U16 JSR,
-  PDESTLO [[U8]+Y] LDA,
-  RTS,
+//  PMAPTERRAINROWTODEST U16 JSR,
+//  PDESTLO [[U8]+Y] LDA,
+//  RTS,
 
-BARHERE CONSTANT MAPTERRAIN!
+// BARHERE CONSTANT MAPTERRAIN!
   // ( -mem- [DESTHI:DESTLO] ) 
   // ( ra=mapunit x=row y=column -reg- )
-  PHA, TXA,
-  PMAPTERRAINROWTODEST U16 JSR,
-  PLA,
-  PDESTLO [[U8]+Y] STA,
-  RTS,
+//  PHA, TXA,
+//  PMAPTERRAINROWTODEST U16 JSR,
+//  PLA,
+//  PDESTLO [[U8]+Y] STA,
+//  RTS,
 
 HEX
 // this calculates the strength of the German presence in Russian territory
@@ -1014,7 +1178,480 @@ BARHERE CONSTANT TERRB
   THEN,
   RTS, 
 
-// Test subroutines
+HEX // yes the 10s are really hex 10
+BARHERE CONSTANT DNUMBR
+  TAX,
+  CLC,
+  HDIGIT [U16+X] LDA,
+  NE IF,
+    10 U8 ADC,
+    TXTWDW [U16+Y] STA,
+    INY,
+    SEC,
+  THEN,
+  TDIGIT [U16+X] LDA,
+  NC IF,
+    NE IF,
+  SWAP THEN,
+      CLC,
+      10 U8 ADC,
+      TXTWDW [U16+Y] STA,
+      INY,
+  THEN,
+  ODIGIT [U16+X] LDA,
+  CLC,
+  10 U8 ADC,
+  TXTWDW [U16+Y] STA,
+  INY,
+  RTS,
+
+BARHERE CONSTANT CLRP1 // clears 10 starting at [STEPY] -1
+  0 U8 LDA,
+  STEPY [U] LDY,
+  DEY, TAX,
+  BEGIN,
+    80 U8 CPY,
+    NC IF,
+      PLYR1 [U+Y] STA,
+    THEN,
+    INY, INX,
+    0B U8 CPX,
+  EQ UNTIL,
+  RTS,
+
+BARHERE CONSTANT CLRP2
+  0 U8 LDA,
+  KRZY [U] LDY,
+  TAX,
+  BEGIN,
+    80 U8 CPY,
+    NC IF,
+      PLYR2 [U+Y] STA,
+    THEN,
+    INY, INX,
+    0A U8 CPX,
+  EQ UNTIL,
+  RTS,
+
+BARHERE CONSTANT ERRCLR // if ERRFLG is negative, clears TXTWDW +67 through +86
+  ERRFLG [U] LDA,
+  MI IF,
+    0 U8 LDA,
+    ERRFLG [U] STA,
+    86 U8 LDY,
+    1F U8 LDX,
+    BEGIN,
+      TXTWDW [U+Y] STA,
+      DEY,
+      DEX,
+    MI UNTIL,
+  THEN,
+  RTS,
+
+BARHERE CONSTANT ROTATELINARR
+      // rotate array
+      // copy LINARR to BAKARR
+      18 U8 LDX,
+      BEGIN, // LOOP70
+        LINARR [U+X] LDA,
+        BAKARR [U+X] STA,
+        DEX,
+      MI UNTIL, // to LOOP70
+
+      // COPY BAKARR to LINARR using rotated indexes for LINARR
+      18 U8 LDX,
+      BEGIN, // LOOP71
+        ROTARR [U+X] LDY, // ROTARR is a table of indexes used to rotate array
+        BAKARR [U+X] LDA,
+        LINARR [U+Y] STA,
+        DEX,
+      MI UNTIL, // loop LOOP71
+      RTS,
+
+BARHERE CONSTANT GETNEXTTARGETSQUARE // - Source EFT18T.ASM line 1620 
+  SQX [U] LDA,
+  CLC,
+  XINC [U+Y] ADC,
+  SQX [U] STA,
+  SQY [U] LDA,
+  CLC,
+  YINC [U+Y] ADC,
+  SQY [U] STA,
+  RTS,
+
+BARHERE CONSTANT CHUNKTOMAPUNITSPTR ( [CHUNKX] [CHUNKY] -mem- [MAPPTRHI:MAPPTRLO] ) ( -reg- Y )
+  CHUNKY [U] LDA,
+  RA ASL,
+  TAY,
+  MAPUNITSROWOFFSETTBL [U+Y] LDA,
+  MAPPTR [U] STA,
+  MAPUNITSROWOFFSETTBL 1+ [U+Y] LDA,
+  MAPPTR 1+ [U] STA,
+  CHUNKX [U] LDY,
+  RTS,
+
+BARHERE CONSTANT CHUNKTOUNIT
+  // [CHUNKX] [CHUNKY] -mem-
+  // -reg- x=unit
+  CHUNKTOMAPUNITSPTR U16 JSR,
+  MAPPTR [[U8]+Y] LDA,
+  TAX,
+  RTS,
+
+BARHERE CONSTANT LOCTOMAPUNITSPTR ( [LAT] [LONG] -mem- [MAPPTRHI:MAPPTRLO] ) ( -reg- Y )
+  LAT [U] LDA,
+  RA ASL,
+  TAY,
+  MAPUNITSROWOFFSETTBL [U+Y] LDA,
+  MAPPTR [U] STA,
+  MAPUNITSROWOFFSETTBL 1+ [U+Y] LDA,
+  MAPPTR 1+ [U] STA,
+  LONG [U] LDY,
+  RTS,
+
+BARHERE CONSTANT LOCTOUNIT
+  // [LAT] [LONG] -mem-
+  // -reg- x=unit
+  LOCTOMAPUNITSPTR U16 JSR,
+  MAPPTR [[U8]+Y] LDA,
+  TAX,
+  RTS,
+
+BARHERE CONSTANT SQXYTOMAPUNITSPTR ( [SQX] [SQY] -mem- [MAPPTRHI:MAPPTRLO] ) ( -reg- Y )
+  SQY [U] LDA,
+  RA ASL,
+  TAY,
+  MAPUNITSROWOFFSETTBL [U+Y] LDA,
+  MAPPTR [U] STA,
+  MAPUNITSROWOFFSETTBL 1+ [U+Y] LDA,
+  MAPPTR 1+ [U] STA,
+  SQX [U] LDY,
+  RTS,
+
+BARHERE CONSTANT SQXYTOUNIT
+  // [SQX] [SQY] -mem-
+  // -reg- ra=unit or 0 for none
+  SQXYTOMAPUNITSPTR U16 JSR,
+  MAPPTR [[U8]+Y] LDA,
+  RTS,
+
+BARHERE CONSTANT CHUNKTOMAPHILO ( [CHUNKY] [CHUNKX] -mem- [MAPHI:MAPLO] ) ( -reg- Y )
+  MAPHEIGHT 1- U8 LDA,  // 39 - [lat] // mapheight - 1
+  SEC,
+  CHUNKY [U] SBC,
+  RA ASL,
+  CLC,
+  TAY,
+  MAPROWOFFSETTBL [U+Y] LDA,
+  MAPLO [U] STA,
+  MAPROWOFFSETTBL 1+ [U+Y] LDA,
+  MAPLO 1+ [U] STA,
+
+  MAPWIDTH 2 - U8 LDA, // 46 - [LONG] // mapwidth - 2
+  SEC,
+  CHUNKX [U] SBC,
+  TAY,
+  RTS,
+
+BARHERE CONSTANT CHUNKMAP@ ( [CHUNKY] [CHUNKX] -mem- [MAPHI:MAPLO] ) ( -reg- Y RA )
+  CHUNKTOMAPHILO U16 JSR,
+  MAPLO [[U8]+Y] LDA,
+  RTS,
+
+BARHERE CONSTANT CHUNKMAP! ( [CHUNKY] [CHUNKX] -mem- [MAPHI:MAPLO] ) ( RA -reg- Y )
+  PHA,
+  CHUNKTOMAPHILO U16 JSR,
+  PLA,
+  MAPLO [[U8]+Y] STA,
+  RTS,
+
+
+BARHERE CONSTANT SWITCH ( was 0x79EF ) ( [CHUNKX] [CHUNKY] [CORPS] -- )
+  CORPS [U] LDX,
+  EQ IF,
+    RTS,
+  THEN,
+ 
+  CHUNKTOMAPHILO U16 JSR, // does not use reg X
+
+                      // if [corps] is not 0 then
+  MAPLO [[U8]+Y] LDA, //   exchange [[maplo]+y] with [swapit+[corps]]
+  
+  PHA,
+  SWAPIT [U+X] LDA,
+  MAPLO [[U8]+Y] STA,
+  PLA,
+  SWAPIT [U+X] STA,
+ 
+  RTS,
+
+BARHERE CONSTANT UNITARRIVE ( X=unit -reg- X=unit ) ( -flag- CS=it worked )
+
+  CORPSX [U+X] LDA,
+  CHUNKX [U] STA,
+  LONG [U] STA,
+
+  CORPSY [U+X] LDA,
+  CHUNKY [U] STA,
+  LAT [U] STA,
+
+  CORPS [U] STX,
+
+  CHUNKTOMAPUNITSPTR U16 JSR,
+  MAPPTR [[U8]+Y] LDA,
+  EQ IF,
+
+    // there is no unit on the square already
+    TXA,
+    MAPPTR [[U8]+Y] STA,
+
+    FIRSTRUSSIANUNIT U8 CPX, // russian unit check
+    NC IF, // to a51
+      // is a German unit... show asterix in text window - means a german unit arrived
+      0A U8 LDA,
+      TXTWDW 24 + [U] STA,
+    THEN,
+
+    // swap units
+    SWITCH U16 JSR, // trashes X but restores it using [CORPS]
+    
+    SEC, // unit arrived
+    RTS,
+
+  THEN,
+  CLC,
+  RTS,
+
+
+BARHERE CONSTANT UNITMOVE ( X=unit -reg- ) ( [LAT]=newy [LONG]=newx -mem- ) 
+  CORPS [U] STX,
+
+  LOCTOMAPUNITSPTR U16 JSR, // does not trash x
+  MAPPTR [[U8]+Y] LDA,
+  NE IF,
+    // DrawUNITMOVEEr U16 JSR,
+    CLC, BEGIN, CS UNTIL,    // lock up
+  THEN,
+
+  CORPSX [U+X] LDA,
+  CHUNKX [U] STA,
+  CORPSY [U+X] LDA,
+  CHUNKY [U] STA,
+
+  CHUNKTOMAPUNITSPTR U16 JSR, // does not trash x
+  0 U8 LDA,
+  MAPPTR [[U8]+Y] STA, 
+
+  SWITCH U16 JSR,
+
+  CORPS [U] LDX,
+  LAT [U] LDA,
+  CHUNKY [U] STA,
+  CORPSY [U+X] STA,
+  LONG [U] LDA,
+  CHUNKX [U] STA,
+  CORPSX [U+X] STA,
+
+  CHUNKTOMAPUNITSPTR U16 JSR,
+  TXA,
+  MAPPTR [[U8]+Y] STA, 
+
+  SWITCH U16 JSR,
+  RTS,
+
+
+BARHERE CONSTANT UNITLEAVE // could restore terrain from copy of original map
+                           //  and not use SWAPIT[UNIT]
+  // X=unit
+  CORPS [U] STX, // unit to swap with terrain
+  CORPSX [U+X] LDA, // unit x location
+  CHUNKX [U] STA, // x location of terrain to swap
+  CORPSY [U+X] LDA, // unit y location
+  CHUNKY [U] STA, // y location of terrain to swap
+
+  SWITCH U16 JSR, // restore terrain from unit // assumes unit is on map
+
+  CHUNKTOMAPUNITSPTR U16 JSR,
+  0 U8 LDA,
+  MAPPTR [[U8]+Y] STA, 
+  RTS,
+
+
+BARHERE CONSTANT DEADSUB // changed name due to conflict with hex number
+  0 U8 LDA,
+  MSTRNG [U+X] STA, // initial combat strength - muster strength
+  CSTRNG [U+X] STA, // combat strength
+  HMORDS [U+X] STA, // how many orders
+  FF U8 LDA,       // tick 'never'
+  EXEC [U+X] STA, // which tick to do next order
+  ARRIVE [U+X] STA, // what turn unit arrives
+  UNITLEAVE U16 JSR,
+  RTS,
+
+
+BARHERE CONSTANT GETCOORDS
+
+  // [TXH:L] <- [CURSXH:L] + 6
+  CURSXL [U] LDA, // 0 - 0x164
+  CLC,
+  06 U8 ADC,
+  TXL [U] STA,
+  CURSXH [U] LDA,
+  0 U8 ADC,
+  TXH [U] STA,
+
+  // [TYH:L] <- [CURSYH:L] + 9
+  CURSYL [U] LDA, // 2 - 0x25E
+  CLC,
+  9 U8 ADC,
+  TYL [U] STA,
+  CURSYH [U] LDA,
+  0 U8 ADC,
+  TYH [U] STA,
+
+  // [CHUNKX] <- [TXH:L] / 16 using bits 4-8
+  TXH [U] LDA,
+  RA LSR,
+  TXL [U] LDA,
+  RA ROR,
+  RA LSR,
+  RA LSR,
+
+  // coords of cursor (pixel frame)
+  CHUNKX [U] STA, // changes CHUNKX - 0 - 0x2F
+
+  // [CHUNKY] <- [TYH:L] / 16 using bits 4-9
+  TYH [U] LDA,
+  RA LSR,       // bit 8 is now in carry bit
+  TAX,          // X now has bits 8-15 shifted right once
+  TYL [U] LDA,
+  RA ROR,
+  TAY,          // Y now has bits 1-8 shifted right once
+  TXA,
+  RA LSR,       // bit 9 is now in carry bit 
+  TYA,          // RA now has bits 1-8 shifted once
+  RA ROR,       // RA now has bits 2-9 shifted twice
+  RA LSR,       // RA now has bits 3-9 shifted 3 times
+  RA LSR,       // RA now has bits 4-9 shifted 4 times
+  CHUNKY [U] STA, // changes CHUNKY - 0 - 0x27
+  RTS,
+
+
+BARHERE CONSTANT TERRAIN@ ( [CHUNKY] [CHUNKX] -mem- ) ( -reg- RA=terrain )
+
+  // check to see if there is a unit on the square
+  CHUNKTOMAPUNITSPTR U16 JSR, 
+  MAPPTR [[U8]+Y] LDA, // ra=0 or unit
+  NE IF,
+    // there is a unit, the terrain code is held in the swapit array
+    TAX, // x=unit
+    SWAPIT [U+X] LDA,
+    RTS,
+  THEN,
+
+  // there is no unit, the terrain code is in the map
+  CHUNKTOMAPHILO U16 JSR,
+  MAPLO [[U8]+Y] LDA,
+  RTS,
+
+
+BARHERE CONSTANT TERRAIN! ( [CHUNKY] [CHUNKX] -mem- [MAPPTRHI:MAPPTRLO] ) ( RA=terrain -reg- )
+  PHA,
+  // check to see if there is a unit on the square
+  CHUNKTOMAPUNITSPTR U16 JSR, 
+  MAPPTR [[U8]+Y] LDA, // ra=0 or unit
+  NE IF,
+    // there is a unit, the terrain code is held in the swapit array
+    TAX, // x=unit
+    PLA,
+    SWAPIT [U+X] STA,
+    RTS,
+  THEN,
+
+  // there is no unit, the terrain code is in the map
+  CHUNKTOMAPHILO U16 JSR,
+  PLA,
+  MAPLO [[U8]+Y] STA,
+  RTS,
+
+BARHERE CONSTANT DROPORDER ( X=unit -reg- )
+  // could make sure HMORDS doesn't go below 0 here...
+  HMORDS [U+X] DEC,
+  WHORDH [U+X] LSR,
+  WHORDS [U+X] ROR,
+  WHORDH [U+X] LSR,
+  WHORDS [U+X] ROR,
+  RTS,
+
+BARHERE CONSTANT CLEARORDERS ( X=unit -reg- )
+  0 U8 LDA,
+  HMORDS [U+X] STA,
+  WHORDH [U+X] STA,
+  WHORDS [U+X] STA,
+  RTS,
+
+BARHERE CONSTANT ORDERTABLE
+  00 CODE-U8,
+  55 CODE-U8,
+  AA CODE-U8,
+  FF CODE-U8,
+
+BARHERE CONSTANT U2BITTABLE
+  03 CODE-U8,
+  0C CODE-U8,
+  30 CODE-U8,
+  C0 CODE-U8,
+  03 CODE-U8,
+  0C CODE-U8,
+  30 CODE-U8,
+  C0 CODE-U8,
+
+BARHERE CONSTANT QUEUEORDER ( X=unit RA=order -reg- X=unit )
+
+  3 U8 AND, // could assume this...
+  TAY,
+  ORDERTABLE [U+Y] LDA, // copy order to all bit positions
+  HMORDS [U+X] LDY, // get current order
+  // could make sure number of orders is limited to 8
+  // 8 U8 CPY,
+  // CS IF,
+  //  RTS,
+  // THEN,
+  U2BITTABLE [U+Y] AND, // get the order shifted to the correct position
+  4 U8 CPY,
+  NC IF,
+    // Chris Crawford's method for replacing in bits - very nice
+    // basically replaced bit = 
+    //   ((replacement bit) xor (bit to replace)) xor (bit to replace)
+    //    0 xor 0 -> 0 xor 0 -> 0
+    //    1 xor 0 -> 1 xor 0 -> 1
+    //    0 xor 1 -> 1 xor 1 -> 0
+    //    1 xor 1 -> 0 xor 1 -> 1  
+    WHORDS [U+X] EOR,
+    U2BITTABLE [U+Y] AND,
+    WHORDS [U+X] EOR,
+    WHORDS [U+X] STA,
+    HMORDS [U+X] INC,
+    RTS,
+  THEN,
+  WHORDH [U+X] EOR,
+  U2BITTABLE [U+Y] AND,
+  WHORDH [U+X] EOR,
+  WHORDH [U+X] STA,
+  HMORDS [U+X] INC,
+  RTS,
+
+BARHERE CONSTANT DEQUEUEORDER ( X=unit -reg- X=unit RA=order )
+  WHORDS [U+X] LDA,
+  3 U8 AND,
+  DROPORDER U16 JSR,
+  RTS,
+
+
+// ///////////////////
+// Test subroutines //
+// ///////////////////
+
 HEX
 BARHERE CONSTANT TESTABSA
 
@@ -2887,7 +3524,2113 @@ BARHERE CONSTANT TESTCHECKFORRUSSIANNOTSAMEUNIT
   TypeTestResult U16 JSR,
 
   RTS,
+
+BARHERE CONSTANT TESTDNUMBR
+
+0 U8 LDA,
+TXTWDW 4 + [U] STA,
+TXTWDW 5 + [U] STA,
+TXTWDW 6 + [U] STA,
+
+// testing 0
+HEX
+0 U8 LDA,
+4 U8 LDY,
+DNUMBR U16 JSR,
+TXTWDW 4 + [U] LDA,
+10 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+0F U8 LDX, 
+00 U8 LDY,
+TypeTestResult U16 JSR, 
+TXTWDW 5 + [U] LDA,
+0 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+0F U8 LDX, 
+01 U8 LDY,
+TypeTestResult U16 JSR,
+
+// testing 10
+0A U8 LDA,
+4 U8 LDY,
+DNUMBR U16 JSR,
+TXTWDW 4 + [U] LDA,
+11 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+0F U8 LDX, 
+02 U8 LDY,
+TypeTestResult U16 JSR,
+TXTWDW 5 + [U] LDA,
+10 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+0F U8 LDX, 
+03 U8 LDY,
+TypeTestResult U16 JSR,
+TXTWDW 5 + [U] LDA,
+10 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+0F U8 LDX, 
+04 U8 LDY,
+TypeTestResult U16 JSR,
+TXTWDW 6 + [U] LDA,
+0 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+0F U8 LDX, 
+05 U8 LDY,
+TypeTestResult U16 JSR,
+
+// testing 99
+63 U8 LDA,
+4 U8 LDY,
+DNUMBR U16 JSR,
+TXTWDW 4 + [U] LDA,
+19 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+0F U8 LDX, 
+06 U8 LDY,
+TypeTestResult U16 JSR,
+TXTWDW 5 + [U] LDA,
+19 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+0F U8 LDX, 
+07 U8 LDY,
+TypeTestResult U16 JSR,
+TXTWDW 6 + [U] LDA,
+00 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+0F U8 LDX, 
+08 U8 LDY,
+TypeTestResult U16 JSR,
+
+// testing 100
+64 U8 LDA,
+4 U8 LDY,
+DNUMBR U16 JSR,
+TXTWDW 4 + [U] LDA,
+11 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+0F U8 LDX, 
+09 U8 LDY,
+TypeTestResult U16 JSR,
+TXTWDW 5 + [U] LDA,
+10 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+0F U8 LDX, 
+0A U8 LDY,
+TypeTestResult U16 JSR,
+TXTWDW 6 + [U] LDA,
+10 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+0F U8 LDX, 
+0B U8 LDY,
+TypeTestResult U16 JSR,
+
+RTS,
+
+BARHERE CONSTANT TESTCLRP1
+HEX
+
+30 U8 LDA,
+STEPY [U] STA,
+PLYR1 2E + [U] STA,
+PLYR1 2F + [U] STA,
+PLYR1 39 + [U] STA,
+PLYR1 3A + [U] STA,
+
+CLRP1 U16 JSR,
+
+PLYR1 2E + [U] LDA,
+EQ IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+10 U8 LDX, 
+00 U8 LDY,
+TypeTestResult U16 JSR,
+
+PLYR1 2F + [U] LDA,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+10 U8 LDX, 
+01 U8 LDY,
+TypeTestResult U16 JSR,
+
+PLYR1 39 + [U] LDA,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+10 U8 LDX, 
+02 U8 LDY,
+TypeTestResult U16 JSR,
+
+PLYR1 3A + [U] LDA,
+EQ IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+10 U8 LDX, 
+03 U8 LDY,
+TypeTestResult U16 JSR,
+
+RTS,
+
+
+BARHERE CONSTANT TESTCLRP2
+HEX
+
+40 U8 LDA,
+KRZY [U] STA,
+PLYR2 3F + [U] STA,
+PLYR2 40 + [U] STA,
+PLYR2 49 + [U] STA,
+PLYR2 4A + [U] STA,
+
+CLRP2 U16 JSR,
+
+PLYR2 3F + [U] LDA,
+EQ IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+11 U8 LDX, 
+00 U8 LDY,
+TypeTestResult U16 JSR,
+
+PLYR2 40 + [U] LDA,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+11 U8 LDX, 
+01 U8 LDY,
+TypeTestResult U16 JSR,
+
+PLYR2 49 + [U] LDA,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+11 U8 LDX, 
+02 U8 LDY,
+TypeTestResult U16 JSR,
+
+PLYR2 4A + [U] LDA,
+EQ IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+11 U8 LDX, 
+03 U8 LDY,
+TypeTestResult U16 JSR,
+
+RTS,
   
+
+BARHERE CONSTANT TESTERRCLR
+HEX
+
+FF U8 LDA,
+TXTWDW 66 + [U] STA,
+TXTWDW 67 + [U] STA,
+TXTWDW 86 + [U] STA,
+TXTWDW 87 + [U] STA,
+
+0 U8 LDA,
+ERRFLG [U] STA,
+
+ERRCLR U16 JSR, // should do nothing
+
+TXTWDW 67 + [U] LDA,
+EQ IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+12 U8 LDX, 
+00 U8 LDY,
+TypeTestResult U16 JSR,
+
+ERRFLG [U] DEC,
+
+ERRCLR U16 JSR, // should clear TXTWDW +86 - +A5
+
+TXTWDW 66 + [U] LDA,
+EQ IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+12 U8 LDX, 
+01 U8 LDY,
+TypeTestResult U16 JSR,
+
+TXTWDW 67 + [U] LDA,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+12 U8 LDX, 
+02 U8 LDY,
+TypeTestResult U16 JSR,
+
+TXTWDW 86 + [U] LDA,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+12 U8 LDX, 
+03 U8 LDY,
+TypeTestResult U16 JSR,
+
+TXTWDW 87 + [U] LDA,
+EQ IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+12 U8 LDX, 
+04 U8 LDY,
+TypeTestResult U16 JSR,
+
+RTS,
+
+// 00 01 02 03 04
+// 05 06 07 08 09
+// 0A 0B 0C 0D 0E
+// 0F 10 11 12 13
+// 14 15 16 17 18
+
+BARHERE CONSTANT TESTROTATELINARR
+HEX
+
+0 U8 LDX,
+BEGIN,
+  LINARRINIT [U+X] LDA,
+  LINARR [U+X] STA,
+  INX,
+  19 U8 CPX,
+EQ UNTIL,
+
+ROTATELINARR U16 JSR,
+
+LINARR 1- [U] LDA,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+13 U8 LDX, 
+00 U8 LDY,
+TypeTestResult U16 JSR,
+
+LINARR [U] LDA,
+15 U8 CMP, 
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+13 U8 LDX, 
+01 U8 LDY,
+TypeTestResult U16 JSR,
+
+LINARR 1+ [U] LDA,
+10 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+13 U8 LDX, 
+02 U8 LDY,
+TypeTestResult U16 JSR,
+
+LINARR 2 + [U] LDA,
+0B U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+13 U8 LDX, 
+03 U8 LDY,
+TypeTestResult U16 JSR,
+
+LINARR 3 + [U] LDA,
+06 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+13 U8 LDX, 
+04 U8 LDY,
+TypeTestResult U16 JSR,
+
+LINARR 4 + [U] LDA, 
+01 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+13 U8 LDX, 
+05 U8 LDY,
+TypeTestResult U16 JSR,
+
+LINARR 5 + [U] LDA, // TypeHexByte U16 JSR,
+16 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+13 U8 LDX, 
+06 U8 LDY,
+TypeTestResult U16 JSR,
+
+LINARR 6 + [U] LDA,
+11 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+13 U8 LDX, 
+07 U8 LDY,
+TypeTestResult U16 JSR,
+
+LINARR 7 + [U] LDA,
+0C U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+13 U8 LDX, 
+08 U8 LDY,
+TypeTestResult U16 JSR,
+
+LINARR 8 + [U] LDA,
+07 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+13 U8 LDX, 
+09 U8 LDY,
+TypeTestResult U16 JSR,
+
+LINARR 9 + [U] LDA,
+02 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+13 U8 LDX, 
+0A U8 LDY,
+TypeTestResult U16 JSR,
+
+LINARR 0A + [U] LDA,
+17 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+13 U8 LDX, 
+0B U8 LDY,
+TypeTestResult U16 JSR,
+
+LINARR 0B + [U] LDA,
+12 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+13 U8 LDX, 
+0C U8 LDY,
+TypeTestResult U16 JSR,
+
+LINARR 0C + [U] LDA,
+0D U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+13 U8 LDX, 
+0D U8 LDY,
+TypeTestResult U16 JSR,
+
+LINARR 0D + [U] LDA,
+08 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+13 U8 LDX, 
+0E U8 LDY,
+TypeTestResult U16 JSR,
+
+LINARR 0E + [U] LDA,
+03 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+13 U8 LDX, 
+0F U8 LDY,
+TypeTestResult U16 JSR,
+
+LINARR 0F + [U] LDA,
+18 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+13 U8 LDX, 
+10 U8 LDY,
+TypeTestResult U16 JSR,
+
+LINARR 10 + [U] LDA,
+13 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+13 U8 LDX, 
+11 U8 LDY,
+TypeTestResult U16 JSR,
+
+LINARR 11 + [U] LDA,
+0E U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+13 U8 LDX, 
+12 U8 LDY,
+TypeTestResult U16 JSR,
+
+LINARR 12 + [U] LDA,
+09 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+13 U8 LDX, 
+13 U8 LDY,
+TypeTestResult U16 JSR,
+
+LINARR 13 + [U] LDA,
+04 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+13 U8 LDX, 
+14 U8 LDY,
+TypeTestResult U16 JSR,
+
+LINARR 14 + [U] LDA,
+19 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+13 U8 LDX, 
+15 U8 LDY,
+TypeTestResult U16 JSR,
+
+LINARR 15 + [U] LDA,
+14 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+13 U8 LDX, 
+16 U8 LDY,
+TypeTestResult U16 JSR,
+
+LINARR 16 + [U] LDA,
+0F U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+13 U8 LDX, 
+17 U8 LDY,
+TypeTestResult U16 JSR,
+
+LINARR 17 + [U] LDA,
+0A U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+13 U8 LDX, 
+18 U8 LDY,
+TypeTestResult U16 JSR,
+
+LINARR 18 + [U] LDA,
+05 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+13 U8 LDX, 
+19 U8 LDY,
+TypeTestResult U16 JSR,
+
+LINARR 19 + [U] LDA,
+00 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+13 U8 LDX, 
+1A U8 LDY,
+TypeTestResult U16 JSR,
+
+RTS,
+
+
+BARHERE CONSTANT TESTGETNEXTTARGETSQUARE
+HEX
+
+5 U8 LDA, SQX [U] STA,
+9 U8 LDA, SQY [U] STA,
+
+0 U8 LDY, // +1 SQY
+GETNEXTTARGETSQUARE U16 JSR,
+
+SQX [U] LDA,
+5 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+14 U8 LDX, 
+00 U8 LDY,
+TypeTestResult U16 JSR,
+
+SQY [U] LDA,
+0A U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+14 U8 LDX, 
+01 U8 LDY,
+TypeTestResult U16 JSR,
+
+1 U8 LDY, // -1 SQX
+GETNEXTTARGETSQUARE U16 JSR,
+
+SQX [U] LDA,
+4 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+14 U8 LDX, 
+02 U8 LDY,
+TypeTestResult U16 JSR,
+
+SQY [U] LDA,
+0A U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+14 U8 LDX, 
+03 U8 LDY,
+TypeTestResult U16 JSR,
+
+2 U8 LDY, // -1 SQY
+GETNEXTTARGETSQUARE U16 JSR,
+
+SQX [U] LDA,
+4 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+14 U8 LDX, 
+04 U8 LDY,
+TypeTestResult U16 JSR,
+
+SQY [U] LDA,
+09 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+14 U8 LDX, 
+05 U8 LDY,
+TypeTestResult U16 JSR,
+
+3 U8 LDY, // +1 SQX
+GETNEXTTARGETSQUARE U16 JSR,
+
+SQX [U] LDA,
+5 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+14 U8 LDX, 
+06 U8 LDY,
+TypeTestResult U16 JSR,
+
+SQY [U] LDA,
+09 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+14 U8 LDX, 
+07 U8 LDY,
+TypeTestResult U16 JSR,
+
+RTS,
+
+
+BARHERE CONSTANT TESTCHUNKTOMAPUNITSPTR
+HEX
+
+2 U8 LDA, CHUNKY [U] STA,
+9 U8 LDA, CHUNKX [U] STA,
+
+CHUNKTOMAPUNITSPTR U16 JSR,
+
+CHUNKX [U] CPY,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+15 U8 LDX, 
+00 U8 LDY,
+TypeTestResult U16 JSR,
+
+MAPPTR 1+ [U] LDA,
+MAPUNITSROWOFFSETTBL 5 + [U] CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+15 U8 LDX, 
+01 U8 LDY,
+TypeTestResult U16 JSR,
+
+MAPPTR [U] LDA,
+MAPUNITSROWOFFSETTBL 4 + [U] CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+15 U8 LDX, 
+02 U8 LDY,
+TypeTestResult U16 JSR,
+
+RTS,
+
+
+BARHERE CONSTANT TESTCHUNKTOUNIT
+HEX
+
+21 U8 LDA, MAPUNITS 2 + [U] STA,
+98 U8 LDA, MAPUNITS MAPWIDTH 3 * + 5 + [U] STA,
+
+0 U8 LDA, CHUNKY [U] STA,
+2 U8 LDA, CHUNKX [U] STA,
+
+CHUNKTOUNIT U16 JSR,
+21 U8 CPX,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+16 U8 LDX, 
+00 U8 LDY,
+TypeTestResult U16 JSR,
+
+3 U8 LDA, CHUNKY [U] STA,
+5 U8 LDA, CHUNKX [U] STA,
+
+CHUNKTOUNIT U16 JSR,
+98 U8 CPX,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+16 U8 LDX, 
+01 U8 LDY,
+TypeTestResult U16 JSR,
+
+RTS,
+
+
+BARHERE CONSTANT TESTLOCTOMAPUNITSPTR
+HEX
+
+2 U8 LDA, LAT [U] STA,
+9 U8 LDA, LONG [U] STA,
+
+LOCTOMAPUNITSPTR U16 JSR,
+
+LONG [U] CPY,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+17 U8 LDX, 
+00 U8 LDY,
+TypeTestResult U16 JSR,
+
+MAPPTR 1+ [U] LDA,
+MAPUNITSROWOFFSETTBL 5 + [U] CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+17 U8 LDX, 
+01 U8 LDY,
+TypeTestResult U16 JSR,
+
+MAPPTR [U] LDA,
+MAPUNITSROWOFFSETTBL 4 + [U] CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+17 U8 LDX, 
+02 U8 LDY,
+TypeTestResult U16 JSR,
+
+RTS,
+
+
+BARHERE CONSTANT TESTSQXYTOMAPUNITSPTR
+HEX
+
+2 U8 LDA, SQY [U] STA,
+9 U8 LDA, SQX [U] STA,
+
+SQXYTOMAPUNITSPTR U16 JSR,
+
+SQX [U] CPY,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+18 U8 LDX, 
+00 U8 LDY,
+TypeTestResult U16 JSR,
+
+MAPPTR 1+ [U] LDA,
+MAPUNITSROWOFFSETTBL 5 + [U] CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+18 U8 LDX, 
+01 U8 LDY,
+TypeTestResult U16 JSR,
+
+MAPPTR [U] LDA,
+MAPUNITSROWOFFSETTBL 4 + [U] CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+18 U8 LDX, 
+02 U8 LDY,
+TypeTestResult U16 JSR,
+
+RTS,
+
+
+BARHERE CONSTANT TESTCHUNKTOMAPHILO
+HEX
+
+MAPHEIGHT 1- 2 - U8 LDA, CHUNKY [U] STA,
+MAPWIDTH 2 - 9 - U8 LDA, CHUNKX [U] STA,
+
+CHUNKTOMAPHILO U16 JSR,
+
+9 U8 CPY,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+19 U8 LDX, 
+00 U8 LDY,
+TypeTestResult U16 JSR,
+
+MAPLO 1+ [U] LDA,
+MAPROWOFFSETTBL 5 + [U] CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+19 U8 LDX, 
+01 U8 LDY,
+TypeTestResult U16 JSR,
+
+MAPLO [U] LDA,
+MAPROWOFFSETTBL 4 + [U] CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+19 U8 LDX, 
+02 U8 LDY,
+TypeTestResult U16 JSR,
+
+RTS,
+
+BARHERE CONSTANT TESTCHUNKMAP@
+HEX
+
+MAPHEIGHT 1- 2 - U8 LDA, CHUNKY [U] STA,
+MAPWIDTH 2 - 9 - U8 LDA, CHUNKX [U] STA,
+
+38 U8 LDA,
+MAPWIDTH 2* 9 + MAPSTART + [U] STA,
+
+0 U8 LDA,
+CHUNKMAP@ U16 JSR,
+
+38 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1A U8 LDX, 
+00 U8 LDY,
+TypeTestResult U16 JSR,
+
+49 U8 LDA,
+MAPWIDTH 2* 9 + MAPSTART + [U] STA,
+
+CHUNKMAP@ U16 JSR,
+
+49 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1A U8 LDX, 
+01 U8 LDY,
+TypeTestResult U16 JSR,
+
+RTS,
+
+BARHERE CONSTANT TESTCHUNKMAP!
+HEX
+
+MAPHEIGHT 1- 2 - U8 LDA, CHUNKY [U] STA,
+MAPWIDTH 2 - 9 - U8 LDA, CHUNKX [U] STA,
+
+0 U8 LDA,
+MAPWIDTH 2* 9 + MAPSTART + [U] STA,
+
+38 U8 LDA,
+CHUNKMAP! U16 JSR,
+
+0 U8 LDA,
+CHUNKMAP@ U16 JSR,
+
+38 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1B U8 LDX, 
+00 U8 LDY,
+TypeTestResult U16 JSR,
+
+RTS,
+
+
+BARHERE CONSTANT TESTSWITCH
+HEX
+
+MAPHEIGHT 1- 2 - U8 LDA, CHUNKY [U] STA,
+MAPWIDTH 2 - 5 - U8 LDA, CHUNKX [U] STA,
+
+97 U8 LDA,
+MAPWIDTH 2* 5 + MAPSTART + [U] STA,
+
+38 U8 LDA,
+SWAPIT 3 + [U] STA,
+
+3 U8 LDA,
+CORPS [U] STA,
+
+SWITCH U16 JSR,
+
+SWAPIT 3 + [U] LDA,
+97 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1C U8 LDX, 
+00 U8 LDY,
+TypeTestResult U16 JSR,
+
+MAPWIDTH 2* 5 + MAPSTART + [U] LDA,
+38 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1C U8 LDX, 
+01 U8 LDY,
+TypeTestResult U16 JSR,
+
+RTS,
+
+BARHERE CONSTANT TESTUNITARRIVE
+HEX
+
+// no unit already there case
+MAPHEIGHT 1- 5 - U8 LDA,  CORPSY 4 + [U] STA,  CHUNKY [U] STA,
+MAPWIDTH 2 - 7 - U8 LDA,  CORPSX 4 + [U] STA,  CHUNKX [U] STA,
+
+CHUNKTOMAPUNITSPTR U16 JSR,
+0 U8 LDA,  MAPPTR [[U8]+Y] STA,
+
+39 U8 LDA, 
+CHUNKMAP! U16 JSR,
+
+0 U8 LDA,  CHUNKX [U] STA,  CHUNKY [U] STA, 
+
+27 U8 LDA,
+SWAPIT 4 + [U] STA,
+
+4 U8 LDX,
+
+UNITARRIVE U16 JSR,
+
+NC IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1D U8 LDX, 
+00 U8 LDY,
+TypeTestResult U16 JSR,
+
+MAPHEIGHT 1- 5 - U8 LDA,
+CHUNKY [U] CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1D U8 LDX, 
+01 U8 LDY,
+TypeTestResult U16 JSR,
+
+MAPWIDTH 2 - 7 - U8 LDA,
+CHUNKX [U] CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1D U8 LDX, 
+02 U8 LDY,
+TypeTestResult U16 JSR,
+
+SWAPIT 4 + [U] LDA,
+39 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1D U8 LDX, 
+03 U8 LDY,
+TypeTestResult U16 JSR,
+
+CHUNKMAP@ U16 JSR,
+
+27 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1D U8 LDX, 
+04 U8 LDY,
+TypeTestResult U16 JSR,
+
+4 U8 LDA,
+CORPS [U] CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1D U8 LDX, 
+05 U8 LDY,
+TypeTestResult U16 JSR,
+
+MAPHEIGHT 1- 5 - U8 LDA,
+LAT [U] CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1D U8 LDX, 
+06 U8 LDY,
+TypeTestResult U16 JSR,
+
+MAPWIDTH 2 - 7 - U8 LDA,
+LONG [U] CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1D U8 LDX, 
+07 U8 LDY,
+TypeTestResult U16 JSR,
+
+// probably not necessary
+CHUNKTOMAPUNITSPTR U16 JSR,
+
+MAPPTR [[U8]+Y] LDA,
+4 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1D U8 LDX, 
+08 U8 LDY,
+TypeTestResult U16 JSR,
+
+// unit already there case
+MAPHEIGHT 1- 5 - U8 LDA,  CORPSY 5 + [U] STA,  CHUNKY [U] STA,
+MAPWIDTH 2 - 7 - U8 LDA,  CORPSX 5 + [U] STA,  CHUNKX [U] STA,
+
+2E U8 LDA,
+SWAPIT 5 + [U] STA,
+
+5 U8 LDX,
+
+UNITARRIVE U16 JSR,
+
+CS IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1D U8 LDX, 
+09 U8 LDY,
+TypeTestResult U16 JSR,
+
+MAPHEIGHT 1- 5 - U8 LDA,
+CHUNKY [U] CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1D U8 LDX, 
+0A U8 LDY,
+TypeTestResult U16 JSR,
+
+MAPWIDTH 2 - 7 - U8 LDA,
+CHUNKX [U] CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1D U8 LDX, 
+0B U8 LDY,
+TypeTestResult U16 JSR,
+
+// swapit[5] should not have changed
+SWAPIT 5 + [U] LDA,
+2E U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1D U8 LDX, 
+0C U8 LDY,
+TypeTestResult U16 JSR,
+
+CHUNKMAP@ U16 JSR,
+
+// oldicon should still be on map
+27 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1D U8 LDX, 
+0D U8 LDY,
+TypeTestResult U16 JSR,
+
+5 U8 LDA,
+CORPS [U] CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1D U8 LDX, 
+0E U8 LDY,
+TypeTestResult U16 JSR,
+
+MAPHEIGHT 1- 5 - U8 LDA,
+LAT [U] CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1D U8 LDX, 
+0F U8 LDY,
+TypeTestResult U16 JSR,
+
+MAPWIDTH 2 - 7 - U8 LDA,
+LONG [U] CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1D U8 LDX, 
+10 U8 LDY,
+TypeTestResult U16 JSR,
+
+// probably not necessary
+CHUNKTOMAPUNITSPTR U16 JSR,
+
+// old unit should still be on mapunits
+MAPPTR [[U8]+Y] LDA,
+4 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1D U8 LDX, 
+11 U8 LDY,
+TypeTestResult U16 JSR,
+
+RTS,
+
+
+BARHERE CONSTANT TESTUNITMOVE
+HEX
+
+// clear mapunits destination
+MAPHEIGHT 1- 3 - U8 LDA,  CHUNKY [U] STA,
+MAPWIDTH 2 - 7 - U8 LDA,  CHUNKX [U] STA,
+
+// set terrain for destination
+4C U8 LDA, // map[x,y] = terrain = 39
+CHUNKMAP! U16 JSR,
+
+// clear mapunits[x,y] for destination
+CHUNKTOMAPUNITSPTR U16 JSR,
+0 U8 LDA,  MAPPTR [[U8]+Y] STA,
+
+MAPHEIGHT 1- 2 - U8 LDA,  CORPSY 3 + [U] STA,  CHUNKY [U] STA,
+MAPWIDTH 2 - 5 - U8 LDA,  CORPSX 3 + [U] STA,  CHUNKX [U] STA,
+
+// clear mapunits[x,y] for start
+CHUNKTOMAPUNITSPTR U16 JSR,
+0 U8 LDA,  MAPPTR [[U8]+Y] STA,
+
+// set terrain for start
+39 U8 LDA, // map[x,y] = terrain = 39
+CHUNKMAP! U16 JSR,
+
+27 U8 LDA, // set icon for unit to 27
+SWAPIT 3 + [U] STA,
+
+// add unit to map
+3 U8 LDX,
+UNITARRIVE U16 JSR,
+
+// move unit
+MAPHEIGHT 1- 3 - U8 LDA,  LAT [U] STA,
+MAPWIDTH 2 - 7 - U8 LDA,  LONG [U] STA,
+3 U8 LDX,
+
+UNITMOVE U16 JSR,
+
+MAPHEIGHT 1- 3 - U8 LDA,
+CORPSY 3 + [U] CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1E U8 LDX, 
+00 U8 LDY,
+TypeTestResult U16 JSR,
+
+MAPWIDTH 2 - 7 - U8 LDA,
+CORPSX 3 + [U] CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1E U8 LDX, 
+01 U8 LDY,
+TypeTestResult U16 JSR,
+
+// check mapunits for source - should be back to 0
+MAPHEIGHT 1- 2 - U8 LDA,  CHUNKY [U] STA,
+MAPWIDTH 2 - 5 - U8 LDA,  CHUNKX [U] STA,
+
+CHUNKTOMAPUNITSPTR U16 JSR,
+MAPPTR [[U8]+Y] LDA,
+
+0 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1E U8 LDX, 
+02 U8 LDY,
+TypeTestResult U16 JSR,
+
+// check mapunits for dest - should be unit
+MAPHEIGHT 1- 3 - U8 LDA,  CHUNKY [U] STA,
+MAPWIDTH 2 - 7 - U8 LDA,  CHUNKX [U] STA,
+
+CHUNKTOMAPUNITSPTR U16 JSR,
+MAPPTR [[U8]+Y] LDA,
+
+3 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1E U8 LDX, 
+03 U8 LDY,
+TypeTestResult U16 JSR,
+
+// check old map terrain
+MAPHEIGHT 1- 2 - U8 LDA,  CHUNKY [U] STA,
+MAPWIDTH 2 - 5 - U8 LDA,  CHUNKX [U] STA,
+
+CHUNKMAP@ U16 JSR,
+
+39 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1E U8 LDX, 
+04 U8 LDY,
+TypeTestResult U16 JSR,
+
+// check new map icon
+MAPHEIGHT 1- 3 - U8 LDA,  CHUNKY [U] STA,
+MAPWIDTH 2 - 7 - U8 LDA,  CHUNKX [U] STA,
+
+CHUNKMAP@ U16 JSR,
+
+27 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1E U8 LDX, 
+05 U8 LDY,
+TypeTestResult U16 JSR,
+
+// check swapit for destination terrain
+SWAPIT 3 + [U] LDA,
+4C U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1E U8 LDX, 
+06 U8 LDY,
+TypeTestResult U16 JSR,
+
+RTS,
+
+
+BARHERE CONSTANT TESTUNITLEAVE
+HEX
+
+MAPHEIGHT 1- 5 - U8 LDA,  CORPSY 4 + [U] STA,  CHUNKY [U] STA,
+MAPWIDTH 2 - 7 - U8 LDA,  CORPSX 4 + [U] STA,  CHUNKX [U] STA,
+
+CHUNKTOMAPUNITSPTR U16 JSR,
+0 U8 LDA,  MAPPTR [[U8]+Y] STA,
+
+39 U8 LDA, 
+CHUNKMAP! U16 JSR,
+
+27 U8 LDA,
+SWAPIT 4 + [U] STA,
+
+4 U8 LDX,
+
+UNITARRIVE U16 JSR,
+
+4 U8 LDX,
+
+UNITLEAVE U16 JSR,
+
+MAPHEIGHT 1- 5 - U8 LDA,  CHUNKY [U] STA,
+MAPWIDTH 2 - 7 - U8 LDA,  CHUNKX [U] STA,
+
+CHUNKTOMAPUNITSPTR U16 JSR,
+MAPPTR [[U8]+Y] LDA,
+0 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1F U8 LDX, 
+00 U8 LDY,
+TypeTestResult U16 JSR,
+
+MAPHEIGHT 1- 5 - U8 LDA,  CHUNKY [U] STA,
+MAPWIDTH 2 - 7 - U8 LDA,  CHUNKX [U] STA,
+
+CHUNKMAP@ U16 JSR,
+39 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1F U8 LDX, 
+01 U8 LDY,
+TypeTestResult U16 JSR,
+
+SWAPIT 4 + [U] LDA,
+27 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+1F U8 LDX, 
+02 U8 LDY,
+TypeTestResult U16 JSR,
+
+RTS,
+
+
+BARHERE CONSTANT TESTDEADSUB
+HEX
+
+MAPHEIGHT 1- 5 - U8 LDA,  CORPSY 4 + [U] STA,  
+MAPWIDTH 2 - 7 - U8 LDA,  CORPSX 4 + [U] STA,  
+
+8 U8 LDA,
+MSTRNG 4 + [U] STA,
+CSTRNG 4 + [U] STA,
+HMORDS 4 + [U] STA,
+EXEC 4 + [U] STA,
+ARRIVE 4 + [U] STA,
+
+CHUNKTOMAPUNITSPTR U16 JSR,
+0 U8 LDA,  MAPPTR [[U8]+Y] STA,
+
+39 U8 LDA, 
+CHUNKMAP! U16 JSR,
+
+27 U8 LDA,
+SWAPIT 4 + [U] STA,
+
+4 U8 LDX,
+
+UNITARRIVE U16 JSR,
+
+4 U8 LDX,
+
+DEADSUB U16 JSR,
+
+MAPHEIGHT 1- 5 - U8 LDA,  CHUNKY [U] STA,
+MAPWIDTH 2 - 7 - U8 LDA,  CHUNKX [U] STA,
+
+CHUNKTOMAPUNITSPTR U16 JSR,
+MAPPTR [[U8]+Y] LDA,
+0 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+20 U8 LDX, 
+00 U8 LDY,
+TypeTestResult U16 JSR,
+
+CHUNKMAP@ U16 JSR,
+39 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+20 U8 LDX, 
+01 U8 LDY,
+TypeTestResult U16 JSR,
+
+SWAPIT 4 + [U] LDA,
+27 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+20 U8 LDX, 
+02 U8 LDY,
+TypeTestResult U16 JSR,
+
+MSTRNG 4 + [U] LDA,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+20 U8 LDX, 
+03 U8 LDY,
+TypeTestResult U16 JSR,
+
+CSTRNG 4 + [U] LDA,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+20 U8 LDX, 
+04 U8 LDY,
+TypeTestResult U16 JSR,
+
+HMORDS 4 + [U] LDA,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+20 U8 LDX, 
+05 U8 LDY,
+TypeTestResult U16 JSR,
+
+EXEC 4 + [U] LDA,
+FF U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+20 U8 LDX, 
+06 U8 LDY,
+TypeTestResult U16 JSR,
+
+ARRIVE 4 + [U] LDA,
+FF U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+20 U8 LDX, 
+07 U8 LDY,
+TypeTestResult U16 JSR,
+
+RTS,
+
+
+BARHERE CONSTANT TESTGETCOORDS
+HEX
+
+0 U8 LDA,
+CURSXL [U] STA,
+CURSXH [U] STA,
+CURSYL [U] STA,
+CURSYH [U] STA,
+
+FF U8 LDA,
+CHUNKX [U] STA,
+CHUNKY [U] STA,
+
+GETCOORDS U16 JSR,
+
+CHUNKX [U] LDA,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+21 U8 LDX, 
+00 U8 LDY,
+TypeTestResult U16 JSR,
+
+CHUNKY [U] LDA,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+21 U8 LDX, 
+01 U8 LDY,
+TypeTestResult U16 JSR,
+
+
+01 U8 LDA,
+CURSXL [U] STA,
+0 U8 LDA,
+CURSXH [U] STA,
+06 U8 LDA,
+CURSYL [U] STA,
+0 U8 LDA,
+CURSYH [U] STA,
+
+FF U8 LDA,
+CHUNKX [U] STA,
+CHUNKY [U] STA,
+
+GETCOORDS U16 JSR,
+
+CHUNKX [U] LDA,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+21 U8 LDX, 
+02 U8 LDY,
+TypeTestResult U16 JSR,
+
+CHUNKY [U] LDA,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+21 U8 LDX, 
+03 U8 LDY,
+TypeTestResult U16 JSR,
+
+
+02 U8 LDA,
+CURSXL [U] STA,
+0 U8 LDA,
+CURSXH [U] STA,
+06 U8 LDA,
+CURSYL [U] STA,
+0 U8 LDA,
+CURSYH [U] STA,
+
+FF U8 LDA,
+CHUNKX [U] STA,
+CHUNKY [U] STA,
+
+GETCOORDS U16 JSR,
+
+CHUNKX [U] LDA,
+1 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+21 U8 LDX, 
+04 U8 LDY,
+TypeTestResult U16 JSR,
+
+CHUNKY [U] LDA,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+21 U8 LDX, 
+05 U8 LDY,
+TypeTestResult U16 JSR,
+
+
+01 U8 LDA,
+CURSXL [U] STA,
+0 U8 LDA,
+CURSXH [U] STA,
+07 U8 LDA,
+CURSYL [U] STA,
+0 U8 LDA,
+CURSYH [U] STA,
+
+FF U8 LDA,
+CHUNKX [U] STA,
+CHUNKY [U] STA,
+
+GETCOORDS U16 JSR,
+
+CHUNKX [U] LDA,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+21 U8 LDX, 
+06 U8 LDY,
+TypeTestResult U16 JSR,
+
+CHUNKY [U] LDA,
+1 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+21 U8 LDX, 
+06 U8 LDY,
+TypeTestResult U16 JSR,
+
+12 U8 LDA,
+CURSXL [U] STA,
+0 U8 LDA,
+CURSXH [U] STA,
+47 U8 LDA,
+CURSYL [U] STA,
+0 U8 LDA,
+CURSYH [U] STA,
+
+FF U8 LDA,
+CHUNKX [U] STA,
+CHUNKY [U] STA,
+
+GETCOORDS U16 JSR,
+
+CHUNKX [U] LDA,
+3 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+21 U8 LDX, 
+07 U8 LDY,
+TypeTestResult U16 JSR,
+
+CHUNKY [U] LDA,
+5 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+21 U8 LDX, 
+08 U8 LDY,
+TypeTestResult U16 JSR,
+
+
+RTS,
+
+
+BARHERE CONSTANT TESTTERRAIN@
+HEX
+
+// no unit on map case
+5 U8 LDA,   CHUNKX [U] STA,
+7 U8 LDA,   CHUNKY [U] STA,
+33 U8 LDA,
+CHUNKMAP! U16 JSR,
+
+99 U8 LDA,
+SWAPIT 9 + [U] STA,
+
+5 U8 LDA,   CHUNKX [U] STA,
+7 U8 LDA,   CHUNKY [U] STA,
+CHUNKTOMAPUNITSPTR U16 JSR,
+
+0 U8 LDA, MAPPTR [[U8]+Y] STA,
+
+TERRAIN@ U16 JSR,
+
+33 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+22 U8 LDX, 
+00 U8 LDY,
+TypeTestResult U16 JSR,
+
+// unit on map case
+5 U8 LDA,
+CHUNKX [U] STA,
+7 U8 LDA,
+CHUNKY [U] STA,
+33 U8 LDA,
+CHUNKMAP! U16 JSR,
+
+99 U8 LDA,
+SWAPIT 9 + [U] STA,
+
+5 U8 LDA,   CHUNKX [U] STA,
+7 U8 LDA,   CHUNKY [U] STA,
+CHUNKTOMAPUNITSPTR U16 JSR,
+
+9 U8 LDA, MAPPTR [[U8]+Y] STA,
+
+TERRAIN@ U16 JSR, 
+99 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+22 U8 LDX, 
+01 U8 LDY,
+TypeTestResult U16 JSR,
+
+RTS,
+
+
+BARHERE CONSTANT TESTTERRAIN!
+HEX
+
+// no unit on map case
+5 U8 LDA,   CHUNKX [U] STA,
+7 U8 LDA,   CHUNKY [U] STA,
+CHUNKTOMAPUNITSPTR U16 JSR,
+
+0 U8 LDA, MAPPTR [[U8]+Y] STA,
+
+5 U8 LDA,   CHUNKX [U] STA,
+7 U8 LDA,   CHUNKY [U] STA,
+
+55 U8 LDA,
+
+TERRAIN! U16 JSR,
+
+5 U8 LDA,   CHUNKX [U] STA,
+7 U8 LDA,   CHUNKY [U] STA,
+CHUNKMAP@ U16 JSR,
+55 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+23 U8 LDX, 
+00 U8 LDY,
+TypeTestResult U16 JSR,
+
+// unit on map case
+5 U8 LDA,   CHUNKX [U] STA,
+7 U8 LDA,   CHUNKY [U] STA,
+CHUNKTOMAPUNITSPTR U16 JSR,
+4 U8 LDA,   MAPPTR [[U8]+Y] STA,
+
+0 U8 LDA,   SWAPIT 4 + [U] STA,
+
+5 U8 LDA,   CHUNKX [U] STA,
+7 U8 LDA,   CHUNKY [U] STA,
+1E U8 LDA,
+CHUNKMAP! U16 JSR,
+
+5 U8 LDA,   CHUNKX [U] STA,
+7 U8 LDA,   CHUNKY [U] STA,
+66 U8 LDA,
+TERRAIN! U16 JSR,
+
+5 U8 LDA,   CHUNKX [U] STA,
+7 U8 LDA,   CHUNKY [U] STA,
+CHUNKMAP@ U16 JSR,
+1E U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+23 U8 LDX, 
+01 U8 LDY,
+TypeTestResult U16 JSR,
+
+SWAPIT 4 + [U] LDA,
+66 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+23 U8 LDX, 
+02 U8 LDY,
+TypeTestResult U16 JSR,
+
+RTS,
+
+
+BARHERE CONSTANT TESTDROPORDER
+HEX
+
+3 U8 LDA,   HMORDS 5 + [U] STA,
+ED U8 LDA,  WHORDH 5 + [U] STA, // 11101101 -> 00111011
+CB U8 LDA,  WHORDS 5 + [U] STA, // 11001011 -> 01110010
+
+5 U8 LDX,
+DROPORDER U16 JSR,
+
+HMORDS 5 + [U] LDA,
+2 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+24 U8 LDX, 
+00 U8 LDY,
+TypeTestResult U16 JSR,
+
+WHORDH 5 + [U] LDA,
+3B U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+24 U8 LDX, 
+01 U8 LDY,
+TypeTestResult U16 JSR,
+
+WHORDS 5 + [U] LDA,
+72 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+24 U8 LDX, 
+02 U8 LDY,
+TypeTestResult U16 JSR,
+
+RTS,
+
+BARHERE CONSTANT TESTCLEARORDERS
+HEX
+
+3 U8 LDA,   HMORDS 5 + [U] STA,
+ED U8 LDA,  WHORDH 5 + [U] STA, 
+CB U8 LDA,  WHORDS 5 + [U] STA, 
+
+5 U8 LDX,
+CLEARORDERS U16 JSR,
+
+HMORDS 5 + [U] LDA,
+0 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+25 U8 LDX, 
+00 U8 LDY,
+TypeTestResult U16 JSR,
+
+WHORDH 5 + [U] LDA,
+0 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+25 U8 LDX, 
+01 U8 LDY,
+TypeTestResult U16 JSR,
+
+WHORDS 5 + [U] LDA,
+0 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+25 U8 LDX, 
+02 U8 LDY,
+TypeTestResult U16 JSR,
+
+RTS,
+
+BARHERE CONSTANT TESTQUEUEORDER
+HEX
+
+5 U8 LDX,
+CLEARORDERS U16 JSR,
+
+3 U8 LDA,  5 U8 LDX,  QUEUEORDER U16 JSR,
+2 U8 LDA,  5 U8 LDX,  QUEUEORDER U16 JSR,
+1 U8 LDA,  5 U8 LDX,  QUEUEORDER U16 JSR,
+0 U8 LDA,  5 U8 LDX,  QUEUEORDER U16 JSR,
+2 U8 LDA,  5 U8 LDX,  QUEUEORDER U16 JSR,
+3 U8 LDA,  5 U8 LDX,  QUEUEORDER U16 JSR,
+0 U8 LDA,  5 U8 LDX,  QUEUEORDER U16 JSR,
+1 U8 LDA,  5 U8 LDX,  QUEUEORDER U16 JSR,
+
+HMORDS 5 + [U] LDA,
+8 U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+26 U8 LDX, 
+00 U8 LDY,
+TypeTestResult U16 JSR,
+
+WHORDH 5 + [U] LDA, 
+4E U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+26 U8 LDX, 
+01 U8 LDY,
+TypeTestResult U16 JSR,
+
+WHORDS 5 + [U] LDA, 
+1B U8 CMP,
+NE IF,
+  0 U8 LDA,
+ELSE,
+  1 U8 LDA,
+THEN,
+26 U8 LDX, 
+02 U8 LDY,
+TypeTestResult U16 JSR,
+
+RTS,
 
 
 toCode LONGTHEN,
@@ -2911,6 +5654,43 @@ TESTTERRB U16 JSR,
 TESTLOCTOUNIT U16 JSR,
 TESTSQXYTOUNIT U16 JSR,
 TESTCHECKFORRUSSIANNOTSAMEUNIT U16 JSR,
+TESTDNUMBR U16 JSR,
+TESTCLRP1 U16 JSR,
+TESTCLRP2 U16 JSR,
+TESTERRCLR U16 JSR,
+TESTROTATELINARR U16 JSR,
+TESTGETNEXTTARGETSQUARE U16 JSR,
+TESTCHUNKTOMAPUNITSPTR U16 JSR,
+TESTCHUNKTOUNIT U16 JSR,
+TESTLOCTOMAPUNITSPTR U16 JSR,
+TESTSQXYTOMAPUNITSPTR U16 JSR,
+TESTCHUNKTOMAPHILO U16 JSR,
+TESTCHUNKMAP@ U16 JSR,
+TESTCHUNKMAP! U16 JSR,
+TESTSWITCH U16 JSR,
+TESTUNITARRIVE U16 JSR,
+TESTUNITMOVE U16 JSR,
+TESTUNITLEAVE U16 JSR,
+TESTDEADSUB U16 JSR,
+TESTGETCOORDS U16 JSR,
+TESTTERRAIN@ U16 JSR,
+TESTTERRAIN! U16 JSR,
+TESTDROPORDER U16 JSR,
+TESTCLEARORDERS U16 JSR,
+TESTQUEUEORDER U16 JSR,
+
+// PMAPUNITSROWTODEST
+// MAPUNITS@
+// MAPUNITS!
+// could check CHGDLSUB
+// DRAWUNITSPECS
+// DRAWDATE
+// TXTMSG
+// DWORDS
+// NOSUPPLIES
+
+
+
 
 TypeTestDone U16 JSR,
 

@@ -62,6 +62,20 @@ BA CONSTANT PM0MAXXPOS
 30 CONSTANT MAPWIDTH
 28 CONSTANT MAPHEIGHT
 
+6 CONSTANT CURSXOFF // out of 8, offset to center of cursor
+9 CONSTANT CURSYOFF // out of 16 or 0x10, offset to center of cursor
+
+HEX
+7000 CONSTANT VARENDSTART
+VARIABLE PVAREND
+VARENDSTART PVAREND !
+
+: VAR-HERE PVAREND @ ;
+: VAR-ALLOT { | length -- }
+    PVAREND @ length - PVAREND ! ;
+: SVAR ( length -- ) ( 'wordname morestuff' -cib- 'morestuff' ) 
+    VAR-ALLOT VAR-HERE CONSTANT ;
+
 : BUILDROWOFFSETTABLE { | columns rows baseaddr -- }
     rows 0 DO
       I columns * baseaddr + CODE-U16,
@@ -139,12 +153,193 @@ ENUM<
   SQVAL
 > DROP
 
-( 0x609 )
-HEX
-BARHERE CONSTANT TXTWDW (  was $6450 ) 90 CODE-ALLOT
-BARHERE CONSTANT TXTWDWTOP ( was $64E0 ) 20 CODE-ALLOT // adding 1 to original code
+//  DLSTPT - (vbi) pointer for subroutine that changes the display list map row starts
+//  DLSTPTHI
+//  MAPLO  - map pointer for SWITCH TERRAIN@ and TERRAIN!
+//  MAPHI
+//  CORPS  - (vbi) holds id of unit under cursor during order entry
+//  CURSXL - (vbi) cursor x position on map in pixels 0 - 0x164 where 0 = right edge
+//  CURSXH
+//  CURSYL - (vbi) cursor y position on map in pixels 2 - 0x25E where 0 = bottom edge
+//  CURSYH
+//  OFFLO  - (vbi) offset to add to display list row starts to scroll map one character
+//  OFFHI
+//  TEMPI - (vbi) holds temporary values in several subroutines
+//  CNT1  - (vbi and dli) dli counter
+//  CNT2  - (vbi and dli) dli counter
+//  CHUNKX - x input variable for map subroutines like SWITCH TERRAIN@ and TERRAIN!
+//  CHUNKY - y input variable for map subroutines like SWITCH TERRAIN@ and TERRAIN!
+//  MAPPTR - map pointer for map subroutines
+//  MAPPTRHI
+//  ARMY   - for passing unit id to subroutines and holding unit id in loops
+//  UNITNO - TERR returns unit found on a square in this variable (0 = none found)
+//  DEFNDR - holds id of defending unit in combat calculations
+//  TEMPR
+//  TEMPZ
+//  ACCLO  - 16 bit accumulator for various subroutines
+//  ACCHI
+//  TURN  - holds game turn (0 - 39)
+//  LAT   - for passing map ypos to TERRB and TERR
+//  LONG  - for passing map xpos to TERRB and TERR
+//  RFR   - Russian force ratio in all directions
+//  TRNTYP - terrain type 0 - 9 see TERRTY
+//  SQVAL - holds best destination square value for a Russian unit during Russian AI
 
-( 0x6B9 )
+
+// Game variables - moved to R.A.M.
+MAPWIDTH MAPHEIGHT * SVAR MAPUNITS // for faster lookup of which units are on a map square
+
+NUMBEROFUNITS 1+ SVAR CSTRNG // a unit's combat strength aka hp
+NUMBEROFUNITS 1+ SVAR MSTRNG // a unit's muster strength aka maxhp
+                             //   changed this to get copied so warm reset will restore this
+NUMBEROFUNITS 1+ SVAR EXEC   // which tick the unit will move on, FF = never
+NUMBEROFUNITS 1+ SVAR HMORDS // how many orders a unit has queued 0-8
+NUMBEROFUNITS 1+ SVAR WHORDS // a unit's orders list low byte - 2 bits per order  1-4
+NUMBEROFUNITS 1+ SVAR WHORDH // a unit's orders list high byte - 2 bits per order  5-8
+
+NUMBEROFRUSSIANUNITS 1+ SVAR IFRN // Russian unit individual force ratio N
+NUMBEROFRUSSIANUNITS 1+ SVAR IFRE // Russian unit individual force ratio E
+NUMBEROFRUSSIANUNITS 1+ SVAR IFRS // Russian unit individual force ratio S
+NUMBEROFRUSSIANUNITS 1+ SVAR IFRW // Russian unit individual force ratio W
+NUMBEROFRUSSIANUNITS 1+ SVAR IFR  // Russian unit sum of individual force ratios
+NUMBEROFRUSSIANUNITS 1+ SVAR OBJX // Russian unit objective square X
+NUMBEROFRUSSIANUNITS 1+ SVAR OBJY // Russian unit objective square Y
+
+HEX
+// these 16 are initialized by PSXVAL and must be in this order
+      10   SVAR     XPOSL   // was 0x600 - map window x position 0 = right edge
+                            //   only lower 7 bits are used as shadow for HSCROL
+XPOSL 1+   CONSTANT YPOSL   // map window y position 0 = top edge
+                            //   lower 16 bits are used as shadow for VSCROL
+XPOSL 02 + CONSTANT YPOSH
+XPOSL 03 + CONSTANT SCY     // shadow of vertical position of player 0 (cursor)
+XPOSL 04 + CONSTANT SHPOS0  // shadow of horizontal position of player 0 (cursor)
+XPOSL 05 + CONSTANT TRCOLR  // tree color (used to set COLPF0 in section 1)
+XPOSL 06 + CONSTANT EARTH   // earth color (used to set COLBK in section 3)
+XPOSL 07 + CONSTANT ICELAT  // frozen section is above this latitude
+XPOSL 08 + CONSTANT SEASN1  // [SEASN1] is 0x80 in february and 0x40 in april
+                            //   used to OR in terrain color during freeze
+XPOSL 09 + CONSTANT SEASN2  // [SEASN2] = FF in feb and 0 in apr
+                            //   used to add sign to random 0-7 freeze lat offset
+XPOSL 0A + CONSTANT SEASN3  // [SEASN3] = FF in feb and 1 in apr
+                            //   used in freeze area loop to update row counter
+XPOSL 0B + CONSTANT DAY     // 1 - 31
+XPOSL 0C + CONSTANT MONTH   // 1 - 12
+XPOSL 0D + CONSTANT YEAR    // 41 - 42  the 19 for 1941 is drawn on the screen 
+XPOSL 0E + CONSTANT BUTFLG  // FF means button is pressed
+XPOSL 0F + CONSTANT BUTMSK  // semaphore for variables shared between vbi and main
+                            //   0 = button press allowed, 1 = not allowed
+
+DECIMAL
+1 SVAR TYL     // used to calculate y of map square under cursor
+1 SVAR TYH
+1 SVAR DELAY   // acceleration delay on scrolling
+1 SVAR TIMSCL  // frame to scroll in
+// 1 SVAR TEMPLO  // was used in old SWITCH
+// 1 SVAR TEMPHI  // was used in old SWITCH
+1 SVAR BASEX   // start position for arrow (player frame)
+1 SVAR BASEY
+1 SVAR STEPX
+1 SVAR STEPY   // intermediate position of arrow
+1 SVAR STPCNT  // which intermediate step arrow is on
+1 SVAR ORDCNT  // which order arrow is showing
+1 SVAR ORD1    // holds order list for German unit during order entry
+1 SVAR ORD2
+1 SVAR ARRNDX  // arrow index
+1 SVAR HOWMNY  // how many orders for unit under arrow
+1 SVAR KRZX    // maltakreuze coords (player frame)
+1 SVAR KRZY
+1 SVAR DBTIMR // joystick debounce timer
+1 SVAR STICKI // coded value of stick direction (0-3)
+1 SVAR ERRFLG // if negative the error text message area is cleared
+1 SVAR KRZFLG // if 0 the player must wait for the maltakreuze
+1 SVAR STKFLG // 0 means the joystick is not active
+              //   used to prevent active joystick during button press
+1 SVAR HITFLG // 0 means there is a German unit under the cursor
+1 SVAR TXL    // used to calculate x of map square under cursor
+1 SVAR TXH
+1 SVAR HANDCP // 1 = handicap not activated, 0 = handicap activated
+1 SVAR OLDLAT // old freeze latitude from previous week
+1 SVAR TRNCOD // character on map square, depending on subr can include
+              //   unit characters or be character under units
+// 1 SVAR TLO    // old TERRB variable
+// 1 SVAR THI    // old TERRB variable
+1 SVAR TICK // there are 0x20 ticks per turn... 
+            //   this is used for unit movement speed and initiative
+1 SVAR UNTCOD // character for unit on map square, either 3D or 3E
+1 SVAR UNTCD1 // character for unit on map square, either 3D or 3E
+1 SVAR BVAL   // best value for ai unit's next objective square
+1 SVAR BONE   // best direction for ai unit's next objective square
+1 SVAR DIR
+1 SVAR TARGX  // Russian unit's next objective square x
+1 SVAR TARGY  // Russian unit's next objective square y
+1 SVAR SQX    // Russian unit's next target square x
+1 SVAR SQY    // Russian unit's next target square y
+1 SVAR JCNT   // movement table index for FILLLINARR
+// 1 SVAR LINCOD  // looks like this variable is set to 0 and not used
+1 SVAR NBVAL  // minimum and modified |deltax| + |deltay| to nearest 
+              //   German unit in Russian ai
+1 SVAR RORD1  // Russian unit's order's lo byte during wrapup
+1 SVAR RORD2  // Russian unit's order's hi byte during wrapup
+1 SVAR HDIR   // Russian unit's horizontal direction during wrapup
+1 SVAR VDIR   // Russian unit's vertical direction during wrapup
+1 SVAR LDIR   // Russian unit's longer direction during wrapup
+1 SVAR SDIR   // Russian unit's shorter direction during wrapup
+1 SVAR HRNGE  // horizontal distance to target during wrapup
+1 SVAR VRNGE  // vertical distance to target during wrapup
+1 SVAR LRNGE  // longer distance to target during wrapup
+1 SVAR SRNGE  // shorter distance to target during wrapup
+1 SVAR CHRIS  // accumulator during range calculations during wrapup
+1 SVAR RANGE  // total distance to target during wrapup
+1 SVAR RCNT   // Russian unit order index 0-7 during wrapup
+1 SVAR SECDIR // Russian unit ai direction to check
+1 SVAR POTATO // index of column being checked during BUILDLV
+25 SVAR BAKARR 25 CODE-ALLOT // 25 decimal - used to rotate LINARR
+25 SVAR LINARR 25 CODE-ALLOT // 25 decimal - Russian ai - holds muster strengths
+                             //   of Russian units in 5x5 area around proposed next
+                             //   square
+1 SVAR IFR0   // Russian unit individual force ratio to the N
+1 SVAR IFR1   // Russian unit individual force ratio to the E 
+                                         //   (I think)
+1 SVAR IFR2   // Russian unit individual force ratio to the S
+1 SVAR IFR3   // Russian unit individual force ratio to the W 
+                                         //   (I think)
+1 SVAR XLOC   // Russian unit x location during force ratio calcs
+1 SVAR YLOC   // Russian unit y location during force ratio calcs
+1 SVAR TEMPX  // used to hold delta x during force ratio calcs 
+1 SVAR TEMPY  // used to hold delta y during force ratio calcs
+5 SVAR LV     // most northern Russian unit in each column of LINARR
+1 SVAR LPTS   // point total for arrangement of Russian units in LINARR
+1 SVAR COLUM  // LINARR column index in penetration penalty calculation
+1 SVAR OCOLUM // LINARR column index in penetration penalty calculation
+1 SVAR IFRHI  // holds scaled sum of all force ratios
+// 1 SVAR PASSCT  // unused
+2 SVAR TOTGS  // total German combat strength
+TOTGS 1+ CONSTANT TOTRS // total Russian combat strength
+                        //   must be immediately after TOTGS
+1 SVAR OFR    // overall force ratio
+1 SVAR HOMEDR // supply direction (German is W, Russian is E)
+1 SVAR ZOC    // zone of control points for enemy units around a square
+// 1 SVAR TEMPQ  // unused
+// 1 SVAR LLIM   // unused
+1 SVAR VICTRY // combat victory flag 0 = false FF = true
+1 SVAR FILTMP // temporary variable for FILL (JN added)
+
+
+HEX
+90 SVAR TXTWDW (  was $6450 )
+20 SVAR TXTWDWTOP ( was $64E0 ) // adding 1 to original code
+
+
+// U8MUL8PLUSSAT variables
+1 SVAR M1
+1 SVAR M2LO
+1 SVAR M2HI
+1 SVAR MPRODLO
+1 SVAR MPRODHI
+
+
+( 0x699 )
 HEX
 2 CODE-ALLOT // to cover the corner case where BARHERE is at xxFE or xxFF 
              // this will allow for putting 2 bytes before aligned MAPDATA no matter what
@@ -518,7 +713,7 @@ BARHERE CONSTANT PSXVAL // EFT18M.ASM line 8600
    1 CC, // butmsk
 
 DECIMAL
-BARHERE CONSTANT MSTRNG // unit's muster strength a.k.a unit max hp, also initial hp
+BARHERE CONSTANT INITMSTRNG // unit's muster strength a.k.a unit max hp, also initial hp
 0 CC, 203 CC, 205 CC, 192 CC, 199 CC, 184 CC, 136 CC, 127 CC, 150 CC, 
 129 CC, 136 CC, 109 CC, 72 CC, 70 CC, 81 CC, 131 CC, 102 CC, 53 CC, 
 198 CC, 194 CC, 129 CC, 123 CC, 101 CC, 104 CC, 112 CC, 120 CC, 
@@ -731,139 +926,12 @@ HEX
 // BARHERE CONSTANT PWRTBL
 // 01 CC, 02 CC, 04 CC, 08 CC, 10 CC, 20 CC, 40 CC, 80 CC,
 
-DECIMAL
-BARHERE CONSTANT CSTRNG
-NUMBEROFUNITS 1+ CODE-ALLOT
-
-
-DECIMAL
-BARHERE CONSTANT HMORDS
-NUMBEROFUNITS 1+ CODE-ALLOT
-
-DECIMAL
-BARHERE CONSTANT EXEC // which tick the unit will move on, FF = never
-NUMBEROFUNITS 1+ CODE-ALLOT
-
-DECIMAL
-BARHERE CONSTANT XPOSL  1 CODE-ALLOT ( was 0x600 )
-BARHERE CONSTANT YPOSL  1 CODE-ALLOT
-BARHERE CONSTANT YPOSH  1 CODE-ALLOT
-BARHERE CONSTANT SCY    1 CODE-ALLOT
-BARHERE CONSTANT SHPOS0 1 CODE-ALLOT
-BARHERE CONSTANT TRCOLR 1 CODE-ALLOT
-BARHERE CONSTANT EARTH  1 CODE-ALLOT
-BARHERE CONSTANT ICELAT 1 CODE-ALLOT
-BARHERE CONSTANT SEASN1 1 CODE-ALLOT
-BARHERE CONSTANT SEASN2 1 CODE-ALLOT
-BARHERE CONSTANT SEASN3 1 CODE-ALLOT
-BARHERE CONSTANT DAY    1 CODE-ALLOT
-BARHERE CONSTANT MONTH  1 CODE-ALLOT
-BARHERE CONSTANT YEAR   1 CODE-ALLOT
-BARHERE CONSTANT BUTFLG 1 CODE-ALLOT
-BARHERE CONSTANT BUTMSK 1 CODE-ALLOT
-BARHERE CONSTANT TYL    1 CODE-ALLOT
-BARHERE CONSTANT TYH    1 CODE-ALLOT
-BARHERE CONSTANT DELAY  1 CODE-ALLOT // acceleration delay on scrolling
-BARHERE CONSTANT TIMSCL 1 CODE-ALLOT // frame to scroll in
-BARHERE CONSTANT TEMPLO 1 CODE-ALLOT
-BARHERE CONSTANT TEMPHI 1 CODE-ALLOT
-BARHERE CONSTANT BASEX  1 CODE-ALLOT // start position for arrow (player frame)
-BARHERE CONSTANT BASEY  1 CODE-ALLOT
-BARHERE CONSTANT STEPX  1 CODE-ALLOT
-BARHERE CONSTANT STEPY  1 CODE-ALLOT // intermediate position of arrow
-BARHERE CONSTANT STPCNT 1 CODE-ALLOT // which intermediate step arrow is on
-BARHERE CONSTANT ORDCNT 1 CODE-ALLOT // which order arrow is showing
-BARHERE CONSTANT ORD1   1 CODE-ALLOT
-BARHERE CONSTANT ORD2   1 CODE-ALLOT
-BARHERE CONSTANT ARRNDX 1 CODE-ALLOT // arrow index
-BARHERE CONSTANT HOWMNY 1 CODE-ALLOT // how many orders for unit under arrow
-BARHERE CONSTANT KRZX   1 CODE-ALLOT // maltakreuze coords (player frame)
-BARHERE CONSTANT KRZY   1 CODE-ALLOT
-BARHERE CONSTANT DBTIMR 1 CODE-ALLOT // joystick debounce timer
-BARHERE CONSTANT STICKI 1 CODE-ALLOT // coded value of stick direction (0-3)
-BARHERE CONSTANT ERRFLG 1 CODE-ALLOT
-BARHERE CONSTANT KRZFLG 1 CODE-ALLOT
-BARHERE CONSTANT STKFLG 1 CODE-ALLOT
-BARHERE CONSTANT HITFLG 1 CODE-ALLOT
-BARHERE CONSTANT TXL    1 CODE-ALLOT // temporary values-- slightly shifted
-BARHERE CONSTANT TXH    1 CODE-ALLOT
-BARHERE CONSTANT HANDCP 1 CODE-ALLOT ( was set to 0x68F )
-
-BARHERE CONSTANT OLDLAT 1 CODE-ALLOT
-BARHERE CONSTANT TRNCOD 1 CODE-ALLOT
-BARHERE CONSTANT TLO    1 CODE-ALLOT
-BARHERE CONSTANT THI    1 CODE-ALLOT
-BARHERE CONSTANT TICK   1 CODE-ALLOT // there are 0x20 ticks per turn... this is used for unit movement speed and initiative
-BARHERE CONSTANT UNTCOD 1 CODE-ALLOT
-BARHERE CONSTANT UNTCD1 1 CODE-ALLOT
-BARHERE CONSTANT BVAL   1 CODE-ALLOT
-BARHERE CONSTANT BONE   1 CODE-ALLOT
-BARHERE CONSTANT DIR    1 CODE-ALLOT
-BARHERE CONSTANT TARGX  1 CODE-ALLOT
-BARHERE CONSTANT TARGY  1 CODE-ALLOT
-BARHERE CONSTANT SQX    1 CODE-ALLOT
-BARHERE CONSTANT SQY    1 CODE-ALLOT
-BARHERE CONSTANT JCNT   1 CODE-ALLOT
-BARHERE CONSTANT LINCOD 1 CODE-ALLOT
-BARHERE CONSTANT NBVAL  1 CODE-ALLOT
-BARHERE CONSTANT RORD1  1 CODE-ALLOT
-BARHERE CONSTANT RORD2  1 CODE-ALLOT
-BARHERE CONSTANT HDIR   1 CODE-ALLOT
-BARHERE CONSTANT VDIR   1 CODE-ALLOT
-BARHERE CONSTANT LDIR   1 CODE-ALLOT
-BARHERE CONSTANT SDIR   1 CODE-ALLOT
-BARHERE CONSTANT HRNGE  1 CODE-ALLOT
-BARHERE CONSTANT VRNGE  1 CODE-ALLOT
-BARHERE CONSTANT LRNGE  1 CODE-ALLOT
-BARHERE CONSTANT SRNGE  1 CODE-ALLOT
-BARHERE CONSTANT CHRIS  1 CODE-ALLOT
-BARHERE CONSTANT RANGE  1 CODE-ALLOT
-BARHERE CONSTANT RCNT   1 CODE-ALLOT
-BARHERE CONSTANT SECDIR 1 CODE-ALLOT
-BARHERE CONSTANT POTATO 1 CODE-ALLOT
-BARHERE CONSTANT BAKARR 25 CODE-ALLOT // 25 decimal
-BARHERE CONSTANT LINARR 25 CODE-ALLOT // 25 decimal
-BARHERE CONSTANT IFR0   1 CODE-ALLOT
-BARHERE CONSTANT IFR1   1 CODE-ALLOT
-BARHERE CONSTANT IFR2   1 CODE-ALLOT
-BARHERE CONSTANT IFR3   1 CODE-ALLOT
-BARHERE CONSTANT XLOC   1 CODE-ALLOT
-BARHERE CONSTANT YLOC   1 CODE-ALLOT
-BARHERE CONSTANT TEMPX  1 CODE-ALLOT
-BARHERE CONSTANT TEMPY  1 CODE-ALLOT
-BARHERE CONSTANT LV     5 CODE-ALLOT
-BARHERE CONSTANT LPTS   1 CODE-ALLOT
-BARHERE CONSTANT COLUM  1 CODE-ALLOT
-BARHERE CONSTANT OCOLUM 1 CODE-ALLOT
-BARHERE CONSTANT IFRHI  1 CODE-ALLOT
-BARHERE CONSTANT PASSCT 1 CODE-ALLOT
-BARHERE CONSTANT DELAY  1 CODE-ALLOT
-BARHERE CONSTANT HANDCP 1 CODE-ALLOT
-BARHERE CONSTANT TOTGS  1 CODE-ALLOT
-BARHERE CONSTANT TOTRS  1 CODE-ALLOT // must be immediately after TOTGS
-BARHERE CONSTANT OFR    1 CODE-ALLOT
-BARHERE CONSTANT HOMEDR 1 CODE-ALLOT
-BARHERE CONSTANT ZOC    1 CODE-ALLOT
-BARHERE CONSTANT TEMPQ  1 CODE-ALLOT
-BARHERE CONSTANT LLIM   1 CODE-ALLOT
-BARHERE CONSTANT VICTRY 1 CODE-ALLOT
-BARHERE CONSTANT FILTMP 1 CODE-ALLOT
 
 HEX
 BARHERE CONSTANT YINC 1 CC, // must go just before XINC
 BARHERE CONSTANT XINC 0 CC, FF CC, 0 CC, 1 CC,
 
 BARHERE CONSTANT OFFNC 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 1 CC, 2 CC, 2 CC, 1 CC, 0 CC, 
-
-HEX
-BARHERE CONSTANT IFRN NUMBEROFRUSSIANUNITS 1+ CODE-ALLOT
-BARHERE CONSTANT IFRE NUMBEROFRUSSIANUNITS 1+ CODE-ALLOT
-BARHERE CONSTANT IFRS NUMBEROFRUSSIANUNITS 1+ CODE-ALLOT
-BARHERE CONSTANT IFRW NUMBEROFRUSSIANUNITS 1+ CODE-ALLOT
-BARHERE CONSTANT IFR  NUMBEROFRUSSIANUNITS 1+ CODE-ALLOT 
-
-BARHERE CONSTANT OBJX NUMBEROFRUSSIANUNITS 1+ CODE-ALLOT
-BARHERE CONSTANT OBJY NUMBEROFRUSSIANUNITS 1+ CODE-ALLOT 
 
 // lookup tables for decimal byte number conversion
 // HERE COME NUMBER CODES
@@ -1209,29 +1277,12 @@ BARHERE CONSTANT MOSCOW
 BARHERE CONSTANT MPTS HEX
   14 CC, 0A CC, 0A CC, 0A CC,
 
-DECIMAL
-BARHERE CONSTANT WHORDS
-NUMBEROFUNITS 1+ CODE-ALLOT
-
-DECIMAL
-BARHERE CONSTANT WHORDH
-NUMBEROFUNITS 1+ CODE-ALLOT 
-
 BARHERE CONSTANT MAPROWOFFSETTBL
 MAPWIDTH MAPHEIGHT MAPSTART BUILDROWOFFSETTABLE
-
-BARHERE CONSTANT MAPUNITS // for faster lookup of which units are on a map square
-MAPWIDTH MAPHEIGHT * CODE-ALLOT
 
 BARHERE CONSTANT MAPUNITSROWOFFSETTBL
 MAPWIDTH MAPHEIGHT MAPUNITS BUILDROWOFFSETTABLE
 
-// U8MUL8PLUSSAT variables
-BARHERE CONSTANT M1 0 CC,
-BARHERE CONSTANT M2LO 0 CC,
-BARHERE CONSTANT M2HI 0 CC,
-BARHERE CONSTANT MPRODLO 0 CC,
-BARHERE CONSTANT MPRODHI 0 CC,
 
 // //////////////////
 // Test Code Stuff //
@@ -1288,18 +1339,6 @@ HEX
 
   BARHERE CONSTANT pPASS
   $" PASS" LENGTH$ CONSTANT PASSSize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pTestDNUMBR
-  $" Tst DNUMBR" LENGTH$ CONSTANT TestDNUMBRSize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pTestCLRP1
-  $" Tst CLRP1 " LENGTH$ CONSTANT TestCLRP1Size
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pTestCLRP2
-  $" Tst CLRP2 " LENGTH$ CONSTANT TestCLRP2Size
   CODE-ICODE$,
 
   BARHERE CONSTANT pTestERRCLR
@@ -1670,36 +1709,6 @@ HEX
       TXTWDWTOP [U+Y] STA,
       INY, INX,
       PASSSize U8 CPX,
-    EQ UNTIL,
-    RTS,
-
-  BARHERE CONSTANT DrawTestDNUMBR ( Y = screenoffset -- ) // screen offset limited to 100 - size of title
-    0 U8 LDX,
-    BEGIN,
-      pTestDNUMBR [U+X] LDA,
-      TXTWDWTOP [U+Y] STA,
-      INY, INX,
-      TestDNUMBRSize U8 CPX,
-    EQ UNTIL,
-    RTS,
-
-  BARHERE CONSTANT DrawTestCLRP1 ( Y = screenoffset -- ) // screen offset limited to 100 - size of title
-    0 U8 LDX,
-    BEGIN,
-      pTestCLRP1 [U+X] LDA,
-      TXTWDWTOP [U+Y] STA,
-      INY, INX,
-      TestCLRP1Size U8 CPX,
-    EQ UNTIL,
-    RTS,
-
-  BARHERE CONSTANT DrawTestCLRP2 ( Y = screenoffset -- ) // screen offset limited to 100 - size of title
-    0 U8 LDX,
-    BEGIN,
-      pTestCLRP2 [U+X] LDA,
-      TXTWDWTOP [U+Y] STA,
-      INY, INX,
-      TestCLRP2Size U8 CPX,
     EQ UNTIL,
     RTS,
 
@@ -3391,7 +3400,9 @@ BARHERE CONSTANT OINIT // init game
 
   0 U8 LDX,
   BEGIN,
-    MSTRNG [U+X] LDA, // initial combat strength - muster strength
+    INITMSTRNG [U+X] LDA, // J.N. added this so MSTRNG will get restored on warm reset
+                          //   and to make it rommable
+    MSTRNG [U+X] STA, // initial combat strength - muster strength
     CSTRNG [U+X] STA, // combat strength
     0 U8 LDA,
     HMORDS [U+X] STA, // how many orders
@@ -4725,8 +4736,8 @@ BARHERE CONSTANT MLOOP // Source EFT18T.ASM line 2320
     // yes square is accessible - now fill in the direct line array
     // Source EFT18T.ASM line 3380
     ( Y57 )
-    0 U8 LDA,
-    LINCOD [U] STA,
+    // 0 U8 LDA,
+    // LINCOD [U] STA,
 
     // copy next objective square to SQX SQY
     TARGX [U] LDA,
@@ -6748,324 +6759,6 @@ BARHERE CONSTANT STOP
 
 
 
-BARHERE CONSTANT TESTDNUMBR
-// //////////////
-// Testing DNUMBR
-2 U8 LDY, 
-DrawTestDNUMBR U16 JSR,
-
-0 U8 LDA,
-TXTWDW 4 + [U] STA,
-TXTWDW 5 + [U] STA,
-TXTWDW 6 + [U] STA,
-
-// testing 0
-00 U8 LDA,
-0C U8 LDY,
-DrawHexByte U16 JSR,
-
-HEX
-0 U8 LDA,
-4 U8 LDY,
-DNUMBR U16 JSR,
-TXTWDW 4 + [U] LDA,
-10 U8 CMP,
-NE IF,
-  0F U8 LDY,
-  DrawFAIL U16 JSR,
-  STOP U16 JMP,
-THEN,
-TXTWDW 5 + [U] LDA,
-0 U8 CMP,
-NE IF,
-  0F U8 LDY,
-  DrawFAIL U16 JSR,
-  STOP U16 JMP,
-THEN,
-
-// testing 10
-0A U8 LDA,
-0C U8 LDY,
-DrawHexByte U16 JSR,
-
-0A U8 LDA,
-4 U8 LDY,
-DNUMBR U16 JSR,
-TXTWDW 4 + [U] LDA,
-11 U8 CMP,
-NE IF,
-  0F U8 LDY,
-  DrawFAIL U16 JSR,
-  STOP U16 JMP,
-THEN,
-TXTWDW 5 + [U] LDA,
-10 U8 CMP,
-NE IF,
-  0F U8 LDY,
-  DrawFAIL U16 JSR,
-  STOP U16 JMP,
-THEN,
-TXTWDW 5 + [U] LDA,
-10 U8 CMP,
-NE IF,
-  0F U8 LDY,
-  DrawFAIL U16 JSR,
-  STOP U16 JMP,
-THEN,
-TXTWDW 6 + [U] LDA,
-0 U8 CMP,
-NE IF,
-  0F U8 LDY,
-  DrawFAIL U16 JSR,
-  STOP U16 JMP,
-THEN,
-
-// testing 99
-63 U8 LDA,
-0C U8 LDY,
-DrawHexByte U16 JSR,
-
-63 U8 LDA,
-4 U8 LDY,
-DNUMBR U16 JSR,
-TXTWDW 4 + [U] LDA,
-19 U8 CMP,
-NE IF,
-  0F U8 LDY,
-  DrawFAIL U16 JSR,
-  STOP U16 JMP,
-THEN,
-TXTWDW 5 + [U] LDA,
-19 U8 CMP,
-NE IF,
-  0F U8 LDY,
-  DrawFAIL U16 JSR,
-  STOP U16 JMP,
-THEN,
-TXTWDW 6 + [U] LDA,
-00 U8 CMP,
-NE IF,
-  0F U8 LDY,
-  DrawFAIL U16 JSR,
-  STOP U16 JMP,
-THEN,
-
-// testing 100
-64 U8 LDA,
-0C U8 LDY,
-DrawHexByte U16 JSR,
-
-64 U8 LDA,
-4 U8 LDY,
-DNUMBR U16 JSR,
-TXTWDW 4 + [U] LDA,
-11 U8 CMP,
-NE IF,
-  0F U8 LDY,
-  DrawFAIL U16 JSR,
-  STOP U16 JMP,
-THEN,
-TXTWDW 5 + [U] LDA,
-10 U8 CMP,
-NE IF,
-  0F U8 LDY,
-  DrawFAIL U16 JSR,
-  STOP U16 JMP,
-THEN,
-TXTWDW 6 + [U] LDA,
-10 U8 CMP,
-NE IF,
-  0F U8 LDY,
-  DrawFAIL U16 JSR,
-  STOP U16 JMP,
-THEN,
-
-( 0 U8 LDA,
-TXTWDW 4 + [U] STA,
-TXTWDW 5 + [U] STA,
-TXTWDW 6 + [U] STA,
-
-0 U8 LDA,
-TestNum [U] STA,
-BEGIN,
-  TestNum [U] LDA,
-  4 U8 LDY,
-  DNUMBR U16 JSR,
-  FF U8 LDX,
-  BEGIN,
-    STALL U16 JSR,
-    DEX,
-  EQ UNTIL,
-  TestNum [U] INC,
-EQ UNTIL, )
-
-( 0 U8 LDA,
-TestNum [U] STA,
-BEGIN,
-  0 U8 LDA,
-  4 U8 LDY,
-  BEGIN,
-    TXTWDW [U+Y] STA,
-    INY,
-    0C U8 CPY,
-  EQ UNTIL,
-  TestNum [U] LDA,
-  4 U8 LDY,
-  DWORDS U16 JSR,
-  FF U8 LDX,
-  BEGIN,
-    STALL U16 JSR,
-    DEX,
-  EQ UNTIL,
-  TestNum [U] INC,
-  TestNum [U] LDA,
-  22 U8 CMP,
-CS UNTIL, )
-
-( 0 U8 LDA,
-TestNum [U] STA,
-BEGIN,
-  0 U8 LDA,
-  TestNum [U] LDA,
-  TXTMSG U16 JSR,
-  FF U8 LDX,
-  BEGIN,
-    STALL U16 JSR,
-    DEX,
-  EQ UNTIL,
-  TestNum [U] INC,
-  TestNum [U] LDA,
-  3 U8 CMP,
-CS UNTIL, )
-
-RTS,
-  
-
-BARHERE CONSTANT TESTCLRP1
-HEX
-// //////////////
-// Testing CLRP1
-2 U8 LDY, 
-DrawTestCLRP1 U16 JSR,
-
-30 U8 LDA,
-STEPY [U] STA,
-PLYR1 2E + [U] STA,
-PLYR1 2F + [U] STA,
-PLYR1 39 + [U] STA,
-PLYR1 3A + [U] STA,
-
-0 U8 LDA,
-0C U8 LDY,
-DrawHexByte U16 JSR,
-
-CLRP1 U16 JSR,
-
-PLYR1 2E + [U] LDA,
-EQ IF,
-  0F U8 LDY,
-  DrawFAIL U16 JSR,
-  STOP U16 JMP,
-THEN,
-
-1 U8 LDA,
-0C U8 LDY,
-DrawHexByte U16 JSR,
-
-PLYR1 2F + [U] LDA,
-NE IF,
-  0F U8 LDY,
-  DrawFAIL U16 JSR,
-  STOP U16 JMP,
-THEN,
-
-2 U8 LDA,
-0C U8 LDY,
-DrawHexByte U16 JSR,
-
-PLYR1 39 + [U] LDA,
-NE IF,
-  0F U8 LDY,
-  DrawFAIL U16 JSR,
-  STOP U16 JMP,
-THEN,
-
-3 U8 LDA,
-0C U8 LDY,
-DrawHexByte U16 JSR,
-
-PLYR1 3A + [U] LDA,
-EQ IF,
-  0F U8 LDY,
-  DrawFAIL U16 JSR,
-  STOP U16 JMP,
-THEN,
-
-RTS,
-
-BARHERE CONSTANT TESTCLRP2
-HEX
-// //////////////
-// Testing CLRP2
-2 U8 LDY, 
-DrawTestCLRP2 U16 JSR,
-
-40 U8 LDA,
-KRZY [U] STA,
-PLYR2 3F + [U] STA,
-PLYR2 40 + [U] STA,
-PLYR2 49 + [U] STA,
-PLYR2 4A + [U] STA,
-
-0 U8 LDA,
-0C U8 LDY,
-DrawHexByte U16 JSR,
-
-CLRP2 U16 JSR,
-
-PLYR2 3F + [U] LDA,
-EQ IF,
-  0F U8 LDY,
-  DrawFAIL U16 JSR,
-  STOP U16 JMP,
-THEN,
-
-1 U8 LDA,
-0C U8 LDY,
-DrawHexByte U16 JSR,
-
-PLYR2 40 + [U] LDA,
-NE IF,
-  0F U8 LDY,
-  DrawFAIL U16 JSR,
-  STOP U16 JMP,
-THEN,
-
-2 U8 LDA,
-0C U8 LDY,
-DrawHexByte U16 JSR,
-
-PLYR2 49 + [U] LDA,
-NE IF,
-  0F U8 LDY,
-  DrawFAIL U16 JSR,
-  STOP U16 JMP,
-THEN,
-
-3 U8 LDA,
-0C U8 LDY,
-DrawHexByte U16 JSR,
-
-PLYR2 4A + [U] LDA,
-EQ IF,
-  0F U8 LDY,
-  DrawFAIL U16 JSR,
-  STOP U16 JMP,
-THEN,
-
-RTS,
-
-
 BARHERE CONSTANT TESTERRCLR
 HEX
 // //////////////
@@ -7523,11 +7216,8 @@ toCode LONGTHEN,
 
 OINIT U16 JSR,
 
-// TESTDNUMBR U16 JSR,
 // STALL U16 JSR, // testing STALL (basically a crash test)
-// TESTCLRP1 U16 JSR,
-// TESTCLRP2 U16 JSR,
-// TESTERRCLR U16 JSR,
+
 // TESTSQUAWK U16 JSR,
 // TESTDRAWDATE U16 JSR,
 
@@ -7545,9 +7235,10 @@ NEWTRN U16 JMP,
 // Busy Wait Forever
 STOP U16 JMP,
 
-HEX 60 CODE-ALLOT
-
-CRLF ." Program goes to: " BARHERE HEX U.
+CRLF
+CRLF ." Program goes to: "               BARHERE HEX U.
+CRLF ." Variables start at: "            VAR-HERE HEX U.
+CRLF ." Player window starts at: "       HEX PLAYERWINDOWHI 100 * U. 
 CRLF ." Stack should be empty, it has: " .S
 
 

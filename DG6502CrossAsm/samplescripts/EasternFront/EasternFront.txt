@@ -26,8 +26,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// Aug 22, 2026               //
-// version 1.0                //
+// Sept 5, 2026               //
+// version 1.2                //
 // /////////////////////////////
 
 Building the game and test programs:
@@ -328,7 +328,7 @@ Eastern Front Russian AI routine - Source EFT18T.ASM line 1620
   //               If the Russian unit has plans to move 
   // 
   //                 - Source EFT18T.ASM line 3380
-  //                 Fill LINARR with the combat strengths of the Russian units in the 5x5
+  //                 Fill LINARR with the muster strengths of the Russian units in the 5x5
   //                   square around the objective square. Set the central square
   //                   with the muster strength of the unit being moved.
   //                 Initialize [ACCLO] [ACCHI] to 0
