@@ -53,14 +53,30 @@ HEX
 7380 CONSTANT PLYR3
 
 HEX
+
+30 CONSTANT MAPWIDTH  // in characters
+28 CONSTANT MAPHEIGHT // in characters
 9E CONSTANT NUMBEROFUNITS
 37 CONSTANT FIRSTRUSSIANUNIT 
 67 CONSTANT NUMBEROFRUSSIANUNITS
-78 CONSTANT PM0INITIALXPOS ( for cursor )
-36 CONSTANT PM0MINXPOS
-BA CONSTANT PM0MAXXPOS
-30 CONSTANT MAPWIDTH
-28 CONSTANT MAPHEIGHT
+78 CONSTANT PM0INITIALXPOS // for cursor - no longer has to align with other variables 
+33 CONSTANT PM0INITIALYPOS // for cursor - no longer has to align with other variables
+A0 CONSTANT SCREENWIDTH    // width of functional map window on screen in pixels
+                           //   does not include the extra 12 pixels on each side
+                           //   for the wide screen
+MAPWIDTH 8 * SCREENWIDTH - ( E0 ) CONSTANT XPOSLMAX
+
+A0 CONSTANT SCREENHEIGHT   // in pixels
+                           
+MAPHEIGHT 10 * SCREENHEIGHT 20 - - 1- CONSTANT YPOSMAX // - 2 rows for border
+                                                    
+36 CONSTANT SHPOS0MIN
+BA CONSTANT SHPOS0MAX
+164 CONSTANT CURSXMAX
+
+1C CONSTANT SCYMIN
+PM0INITIALYPOS CONSTANT SCYINIT
+49 CONSTANT SCYMAX
 
 6 CONSTANT CURSXOFF // out of 8, offset to center of cursor
 9 CONSTANT CURSYOFF // out of 16 or 0x10, offset to center of cursor
@@ -187,6 +203,8 @@ ENUM<
 
 
 // Game variables - moved to R.A.M.
+//   SVAR currently allocates memory from top down, take care if any variables need to be next to
+//     eachother in memory.
 MAPWIDTH MAPHEIGHT * SVAR MAPUNITS // for faster lookup of which units are on a map square
 
 NUMBEROFUNITS 1+ SVAR CSTRNG // a unit's combat strength aka hp
@@ -212,7 +230,12 @@ HEX
 XPOSL 1+   CONSTANT YPOSL   // map window y position 0 = top edge
                             //   lower 16 bits are used as shadow for VSCROL
 XPOSL 02 + CONSTANT YPOSH
+   
 XPOSL 03 + CONSTANT SCY     // shadow of vertical position of player 0 (cursor)
+                            //   in this game, each row of the player is 2 pixels high
+                            //   scy row 4 corresponds to the start of the 24 blank lines
+                            //   scy row 16 corresponds to the start of the playfield aka date text 
+                            //   scy row 22 corresponds to the start of the map 
 XPOSL 04 + CONSTANT SHPOS0  // shadow of horizontal position of player 0 (cursor)
 XPOSL 05 + CONSTANT TRCOLR  // tree color (used to set COLPF0 in section 1)
 XPOSL 06 + CONSTANT EARTH   // earth color (used to set COLBK in section 3)
@@ -323,13 +346,16 @@ TOTGS 1+ CONSTANT TOTRS // total Russian combat strength
 // 1 SVAR TEMPQ  // unused
 // 1 SVAR LLIM   // unused
 1 SVAR VICTRY // combat victory flag 0 = false FF = true
-1 SVAR FILTMP // temporary variable for FILL (JN added)
 
 
 HEX
-90 SVAR TXTWDW (  was $6450 )
-20 SVAR TXTWDWTOP ( was $64E0 ) // adding 1 to original code
+90 CONSTANT TXTWDWSIZE
+20 CONSTANT TXTWDWTOPSIZE 
+TXTWDWSIZE TXTWDWTOPSIZE + SVAR TXTWDW     ( was $6450 )
+TXTWDW TXTWDWSIZE + CONSTANT TXTWDWTOP  ( was $64E0 )  // adding 1 to original code
 
+
+1 SVAR FILTMP      // temporary variable for FILL (JN added)
 
 // U8MUL8PLUSSAT variables
 1 SVAR M1
@@ -659,58 +685,93 @@ CRLF ." Before display list alignment" BARHERE U.
 BARHERE 100 ROUNDUP BARHERE - CODE-ALLOT 
 
 // Display list has to go in ram and lms is needed in order to do the scrolling of the oversize map
+// Display list can not cross a 1k boundary. If you need to do that, use the jump instruction.
 // Also, game uses wide playfield, so left and right most pixels are not shown... 
 //   wide playfield is 384 pixels. So 64 extra pixels or 4 extra characters in antic mode 7, but you lose 1 1/2 character on each side)
 //   emulator default mode only shows 336 characters. 
+//   The limit including the 24 blank lines at the start is 240... without the 24 blank lines, it is 218.
+
+// For modes 0x02 - 0x0F:
+//   Instruction bit 7 = dli, bit 6 = lms, bit 5 = vscroll, bit 4 = hscroll, bits 3-0 = mode
+//   mode 6 is 8x8 5 color text mode   (narrow=16/normal=20/wide=24 bytes per row)
+//   mode 7 is 8x16 5 color text mode  (narrow=16/normal=20/wide=24 bytes per row)
+
+// For mode 0:
+//   Instruction bit 7 = dli, bits 6-4 = number of blank scan lines - 1, bits 3-0 = 0 for the mode
+
+// For mode 1:
+//   0x01 = load display list pointer (jump)
+//   0x41 = load display list pointer and wait (jump) for vbi
+
+// Source EFT18D.ASM line 2780
 HEX
 BARHERE CONSTANT DISPLAYLIST CRLF ." display list starts at " DISPLAYLIST U.
-( +00 ) 70 CC, 70 CC, 70 CC,                                // 24 blank lines
-( +03 ) C6 CC, TXTWDWTOP DUP CC, 8 RSHIFT CC,               // dli, lms 64E0, 40x24 5 color text mode
-( +06 ) 90 CC, 90 CC,                                       // 2 blank lines with dli 
-( +08 ) F7 CC, MAPDATA                DUP CC, 8 RSHIFT CC,  // vscroll, hscroll, dli, lms 64FE 40x12 5 color text mode - upper 2 bits select foreground color
-( +0B ) F7 CC, MAPDATA 1 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  // vscroll, hscroll, dli, lms 652E 40x12 5 color text mode - upper 2 bits select foreground color
-( +0E ) F7 CC, MAPDATA 2 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  // vscroll, hscroll, dli, lms 655E 40x12 5 color text mode - upper 2 bits select foreground color
-( +11 ) F7 CC, MAPDATA 3 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  // vscroll, hscroll, dli, lms 658E 40x12 5 color text mode - upper 2 bits select foreground color
-( +14 ) F7 CC, MAPDATA 4 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  // vscroll, hscroll, dli, lms 65BE 40x12 5 color text mode - upper 2 bits select foreground color
-( +17 ) F7 CC, MAPDATA 5 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  // vscroll, hscroll, dli, lms 64EE 40x12 5 color text mode - upper 2 bits select foreground color
-( +1A ) F7 CC, MAPDATA 6 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  // vscroll, hscroll, dli, lms 661E 40x12 5 color text mode - upper 2 bits select foreground color
-( +1D ) F7 CC, MAPDATA 7 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  // vscroll, hscroll, dli, lms 664E 40x12 5 color text mode - upper 2 bits select foreground color
-( +20 ) F7 CC, MAPDATA 8 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  // vscroll, hscroll, dli, lms 667E 40x12 5 color text mode - upper 2 bits select foreground color
-( +23 ) 57 CC, MAPDATA 9 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  // hscroll, lms 66AE 40 x 12 5 color text mode
-( +26 ) 90 CC,                                              // blank line with dli 
-( +27 ) C2 CC, TXTWDW DUP CC, 8 RSHIFT CC,                  // dli, lms 6450, 40x24 8x8 1 1/2 color text mode  
-02 CC,                                              // 40x24 8x8 character 1 1/2 color text mode
-90 CC,                                              // blank line with dli 
-02 CC,                                              // 40x24 8x8 character 1 1/2 color text mode
-90 CC,                                              // blank line with dli 
-41 CC, DISPLAYLIST DUP CC, 8 RSHIFT CC,             // load dli pointer with (6400) and wait for vbi
+                                                            // scanline plyry dli lms scrolls graphics mode
+( +00 ) 70 CC, 70 CC, 70 CC,                                //  0         4                    24 blank lines
+                                                            //  24       16                    extra line... probably from dli
+( +03 ) C6 CC, TXTWDWTOP DUP CC, 8 RSHIFT CC,               //  25            dli lms          24 8x8 5 color text - upper 2 bits select foreground color
+( +06 ) 90 CC,                                              //  33            dli               1 blank line
+( +07 ) 90 CC,                                              //  34            dli               1 blank line
+                                                            //  35                             extra line... probably from dli
+( +08 ) F7 CC, MAPDATA                DUP CC, 8 RSHIFT CC,  //  36       22   dli lms  vh 
+( +0B ) F7 CC, MAPDATA 1 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  37-52         dli lms  vh 
+( +0E ) F7 CC, MAPDATA 2 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  53-68         dli lms  vh      
+( +11 ) F7 CC, MAPDATA 3 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  69-84         dli lms  vh       
+( +14 ) F7 CC, MAPDATA 4 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  85-100        dli lms  vh      
+( +17 ) F7 CC, MAPDATA 5 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  101-116       dli lms  vh      
+( +1A ) F7 CC, MAPDATA 6 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  117-132       dli lms  vh       
+( +1D ) F7 CC, MAPDATA 7 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  133-148       dli lms  vh      
+( +20 ) F7 CC, MAPDATA 8 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  148-164       dli lms  vh      
+( +23 ) 57 CC, MAPDATA 9 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  165-180           lms   h 
+// first non vertical scrolled line finishes previous and adds one additional line 
+( +26 ) 90 CC,                                              //  181           dli               
+( +27 ) C2 CC, TXTWDW DUP CC, 8 RSHIFT CC,                  //  182           dli lms          
+        02 CC,                                              //  190                            
+        90 CC,                                              //  198           dli               
+        02 CC,                                              //  199                            
+        90 CC,                                              //  207           dli               
+        41 CC, DISPLAYLIST DUP CC, 8 RSHIFT CC,             //  208  load dlp and wait for vbi
+
+DISPLAYLIST 09 + CONSTANT PDLPMAPROW0 // pointer to display list pointer to map row 0 
+DISPLAYLIST 0C + CONSTANT PDLPMAPROW1
+DISPLAYLIST 0F + CONSTANT PDLPMAPROW2
+DISPLAYLIST 12 + CONSTANT PDLPMAPROW3
+DISPLAYLIST 15 + CONSTANT PDLPMAPROW4
+DISPLAYLIST 18 + CONSTANT PDLPMAPROW5
+DISPLAYLIST 1B + CONSTANT PDLPMAPROW6
+DISPLAYLIST 1E + CONSTANT PDLPMAPROW7
+DISPLAYLIST 21 + CONSTANT PDLPMAPROW8
+DISPLAYLIST 24 + CONSTANT PDLPMAPROW9
 
 HEX
 BARHERE CONSTANT ZPVAL
   DISPLAYLIST CC, DISPLAYLIST 8 RSHIFT CC,  // zero page pointer to display list
   0 CC, 0 CC,                               // maplo maphi
   0 CC,                                     // number of unit under window
-  22 CC, 1 CC,                              // cursor x - distance from right edge of map in pixels
-  30 CC, 2 CC,                              // cursor y - distance from bottom edge of map in pixels
+  // these below aren't used anymore... they are calculated now J.N.
+  0 CC, 0 CC,                               // cursor x - distance from right edge of map in pixels
+  0 CC, // cursor y lo - distance from bottom edge of map in pixels
+  0 CC, // cursor y hi
+                
 
 HEX
 BARHERE CONSTANT PSXVAL // EFT18M.ASM line 8600
-  E0 CC, // xposl  - horizontal position of upper left corner of map window
-   0 CC, // yposl  - vertical ""
-   0 CC, // yposh  - vertical ""
-  33 CC, // scy    - vertical position of player 0 ( cursor )
-  PM0INITIALXPOS CC, // shpos0 - shadow player 0 horizontal position ( cursor )
-  D6 CC, // trcolr
-  10 CC, // earth
-  27 CC, // icelat
-  40 CC, // seasn1
-   0 CC, // seasn2
-   1 CC, // seasn3
-  0F CC, // day
-   6 CC, // month
-  29 CC, // year
-   0 CC, // butflg
-   1 CC, // butmsk
+  XPOSLMAX CC,          // xposl  - map window x position 0 = right edge
+   0 CC,                // yposl  - map window y position 0 = top edge
+   0 CC,                // yposh  -
+  SCYINIT CC,           // scy    - vertical position of player 0 ( cursor ) 18 from both
+  PM0INITIALXPOS CC,    // shpos0 - shadow player 0 horizontal position ( cursor )
+  D6 CC,                // trcolr
+  10 CC,                // earth
+  27 CC,                // icelat
+  40 CC,                // seasn1
+   0 CC,                // seasn2
+   1 CC,                // seasn3
+  0F CC,                // day
+   6 CC,                // month
+  29 CC,                // year
+   0 CC,                // butflg
+   1 CC,                // butmsk
 
 DECIMAL
 BARHERE CONSTANT INITMSTRNG // unit's muster strength a.k.a unit max hp, also initial hp
@@ -2194,7 +2255,7 @@ HEX
 BARHERE CONSTANT ENDISR ( also x75 )
   YPOSH [U] LDA,
   RA LSR,
-  YPOSL [U] LDA,
+  YPOSL [U] LDA, // map window y position 0 = top edge
   RA ROR,
   RA LSR, RA LSR, RA LSR,
   11 U8 CMP,
@@ -2412,22 +2473,6 @@ BARHERE CONSTANT SWITCH ( was 0x79EF ) ( [CHUNKX] [CHUNKY] [CORPS] -- )
  
   RTS,
 
-// Source EFT18I.ASM line 8650
-BARHERE CONSTANT CHGDLSUB ( [OFFHI:OFFLO] -mem- ) // adds [offhi:offlo] to map row starts
-  09 U8 LDY,
-  BEGIN,
-    DLSTPT [[U8]+Y] LDA,
-    CLC,
-    OFFLO [U] ADC,
-    DLSTPT [[U8]+Y] STA,
-    INY,
-    DLSTPT [[U8]+Y] LDA,
-    OFFHI [U] ADC,
-    DLSTPT [[U8]+Y] STA,
-    INY, INY,
-    27 U8 CPY,
-  EQ UNTIL,
-  RTS,
 
 // Source EFT18I.ASM line 4410
 BARHERE CONSTANT DRAWUNITSPECS ( x=unitnumber -- )
@@ -2492,23 +2537,63 @@ BARHERE CONSTANT DRAWUNITSPECS ( x=unitnumber -- )
 
   RTS,
 
+HEX
+BARHERE CONSTANT CALCCURSORONMAP
+
+  0 U8 LDA,
+  CURSXH [U] STA,
+
+  SHPOS0MAX U8 LDA,
+  SEC,
+  SHPOS0 [U] SBC, // SHPOS0MAX should be > SHPOS0
+  CLC,
+  XPOSL [U] ADC,
+  CURSXL [U] STA,
+  CS IF,
+    CURSXH [U] INC,
+  THEN,
+
+
+  YPOSMAX FF AND U8 LDA,
+  SEC,
+  YPOSL [U] SBC,
+  CURSYL [U] STA,
+  YPOSMAX 8 RSHIFT U8 LDA,
+  YPOSH [U] SBC,
+  CURSYH [U] STA,
+
+  SCYMAX U8 LDA,
+  SEC,
+  SCY [U] SBC,
+  RA ASL,
+  CLC,
+  CURSYL [U] ADC,
+  CURSYL [U] STA,
+  CS IF,
+    CURSYH [U] INC,
+  THEN,
+  
+  RTS,
+
 // Source EFT18I.ASM line 3720
 BARHERE CONSTANT GETCOORDS
 
+  CALCCURSORONMAP U16 JSR,
+
   // [TXH:L] <- [CURSXH:L] + 6
-  CURSXL [U] LDA,
+  CURSXL [U] LDA, // cursor x position on map in pixels 0 - 0x164 where 0 = right edge
   CLC,
-  06 U8 ADC,
-  TXL [U] STA,
+  CURSXOFF U8 ADC, // 6
+  TXL [U] STA,    // used to calculate x of map square under cursor
   CURSXH [U] LDA,
   0 U8 ADC,
   TXH [U] STA,
 
   // [TYH:L] <- [CURSYH:L] + 9
-  CURSYL [U] LDA,
+  CURSYL [U] LDA, // cursor y position on map in pixels 2 - 0x25E where 0 = bottom edge
   CLC,
-  9 U8 ADC,
-  TYL [U] STA,
+  CURSYOFF U8 ADC, // 9
+  TYL [U] STA,    // used to calculate y of map square under cursor
   CURSYH [U] LDA,
   0 U8 ADC,
   TYH [U] STA,
@@ -2565,13 +2650,14 @@ BARHERE CONSTANT DOUNITMATCHES
   SWAP THEN,
   // German unit, set up orders display
   //   first calculate starting coords (BASEX, BASEY)
+ 
   1 U8 LDA,
   ORDCNT [U] STA,
   0 U8 LDA,
   STPCNT [U] STA,
 
   TXL [U] LDA,
-  7 U8 LDA,
+  7 U8 AND,
   CLC,
   1 U8 ADC,
   CLC,
@@ -2582,10 +2668,10 @@ BARHERE CONSTANT DOUNITMATCHES
   TYL [U] LDA,
   0F U8 AND,
   RA LSR,
-  SEC,
-  1 U8 SBC,
+  // SEC,
+  // 1 U8 SBC,
   CLC,
-  SCY [U] ADC,
+  SCY [U] ADC, // player 0 vertical position
   BASEY [U] STA,
   STEPY [U] STA,
 
@@ -2778,32 +2864,283 @@ BARHERE CONSTANT FBUTPS
   DEX,
   HITFLG [U] STX, // hitflg = -1
   ENDISR U16 JMP,
-  
 
-// this routine assumes CURSXH:CURSXL/8 XPOSL are in alignment and OFFLO is 0
-//   probably be better to calculate one from the other... but not faster...
+// 0x30 * 8 = 0x180  
+// |XPOSL| + |SHPOS0 - SHPOS0MIN| = 0x164 - 0
+// SHPOS0       cursor position on screen 0x36 - 0xBA, shadow for hardware HPOS0 (0x84 wide)
+// SCY          player 0 vertical position
+
+// XPOSL        map screen window x position 0 = right edge (0xE0 - 0)
+//                lower 3 bits are shadow for HSCROL
+// YPOSL        map screen window y position low 0 = top edge
+// YPOSH        map screen window y position high
+//                lower 4 bits are shadow for VSCROL
+  
+// CURSXL       cursor x position on map in pixels low
+// CURSXH       cursor x position on map in pixels high
+//                0 - 0x164 where 0 = right edge
+// CURSYL       cursor y position on map in pixels low
+// CURSYH       cursor y position on map in pixels high
+//                2 - 0x25E where 0 = bottom edge
+
+// OFFHI:OFFLO  offset to add to display list row starts 
+// PDLPMAPROW0  to 9, pointers to display list row starts
+
+// cursor moves to edge of screen, then map offset on screen is scrolled
+// Chris' method assumes all of them are in sync and must be changed together
+
+// I want to change this:
+//   given cursor position on screen, and map offset on screen, calculate the others
+//   cursorxpos = SHPOS0 - SHPOS0MIN
+//   cursorxposonmap = cursorxpos + XPOSLFROMLEFT
+//   CURSXL = maxcurorxposonmap - cursorxposonmap
+//   HSCROL = lower 3 bits of CURSXL
+//   cursorypos = SCY - SCYMIN 
+//   cursoryposonmap = cursorypos + YPOSL
+//   VSCROL = lower 4 bits of CURSYL
+//   PDLPMAPROW0 = MAPROWSTART[CURSYL/16] + xoffset...
+//     where Chris divides by 8 using CURSXL to get xoffset;
+//     not sure if you can use unreversed x...
+
+
+BARHERE CONSTANT ERASECURSOR ( X = ypos ) // J.N. added so cursor can jump around
+  00 U8 LDA,
+  PLYR0      [U+X] STA,
+  PLYR0 1+   [U+X] STA,
+  PLYR0 02 + [U+X] STA,
+  PLYR0 03 + [U+X] STA,
+  PLYR0 04 + [U+X] STA,
+  PLYR0 05 + [U+X] STA,
+  PLYR0 06 + [U+X] STA,
+  PLYR0 07 + [U+X] STA,
+  PLYR0 08 + [U+X] STA,
+  PLYR0 09 + [U+X] STA,
+  PLYR0 0A + [U+X] STA,
+  PLYR0 0B + [U+X] STA,
+  PLYR0 0C + [U+X] STA,
+  PLYR0 0D + [U+X] STA,
+  PLYR0 0E + [U+X] STA,
+  RTS,
+
+BARHERE CONSTANT INITCURSOR // assumes player mem was erased
+  PM0INITIALYPOS U8 LDX,
+
+// hard coding cursor image
+HEX
+BARHERE CONSTANT DRAWCURSOR ( X = ypos )  // J.N. added so cursor can jump around
+  ( 80 U8 LDA,  PLYR0 4 + [U] STA,
+  81 U8 LDA,  PLYR0 8 + [U] STA,
+  82 U8 LDA,  PLYR0 0C + [U] STA,
+  83 U8 LDA,  PLYR0 10 + [U] STA,
+  84 U8 LDA,  PLYR0 14 + [U] STA,
+  85 U8 LDA,  PLYR0 15 + [U] STA,
+  86 U8 LDA,  PLYR0 16 + [U] STA,
+  87 U8 LDA,  PLYR0 1E + [U] STA,
+  88 U8 LDA,  PLYR0 26 + [U] STA,
+  89 U8 LDA,  PLYR0 2E + [U] STA,
+  8A U8 LDA,  PLYR0 36 + [U] STA,
+  8B U8 LDA,  PLYR0 3E + [U] STA,
+  8C U8 LDA,  PLYR0 46 + [U] STA,
+  8D U8 LDA,  PLYR0 4E + [U] STA,
+  8E U8 LDA,  PLYR0 56 + [U] STA,
+  8F U8 LDA,  PLYR0 5E + [U] STA, )
+  FF U8 LDA,
+  PLYR0             [U+X] STA,
+  PLYR0          1+ [U+X] STA,
+  81 U8 LDA,
+  PLYR0        02 + [U+X] STA,
+  PLYR0        03 + [U+X] STA,
+  PLYR0        04 + [U+X] STA,
+  PLYR0        05 + [U+X] STA,
+  PLYR0        06 + [U+X] STA,
+  PLYR0        07 + [U+X] STA,
+  PLYR0        08 + [U+X] STA,
+  PLYR0        09 + [U+X] STA,
+  PLYR0        0A + [U+X] STA,
+  PLYR0        0B + [U+X] STA,
+  PLYR0        0C + [U+X] STA,
+  FF U8 LDA,
+  PLYR0        0D + [U+X] STA,
+  PLYR0        0E + [U+X] STA,
+  RTS,
+
+HEX
+BARHERE CONSTANT ERASEPLAYERMEM
+  PLYR0 8 RSHIFT U8 LDA,
+  MAPPTRHI [U] STA,
+  PLYR0 FF AND U8 LDA,
+  MAPPTR [U] STA,
+  2 U8 LDX,
+  0 U8 LDY,
+  ERASE U16 JMP,
+
+// calculate pdlrow0 from XPOSL YPOSL YPOSH
+//   pdlrow0 = MAPROWSTART[(2*YPOS)/16] + ((E0/8) - (XPOSL/8))
+
+// ypos/8 only goes from 0-80... so you only need one byte...
+//   only need 2 bits from YPOSH... but might as well do all 3
+
+// not as fast or simple as Chris' method... 
+//   but it makes some variables dependent on the others
+//   and does all directions at once
+HEX
+BARHERE CONSTANT CALCPDLROW0
+  
+  YPOSH [U] LDA,
+  TEMPI [U] STA,
+
+  YPOSL [U] LDA,
+
+  TEMPI [U] LSR,  RA ROR,
+  TEMPI [U] LSR,  RA ROR,
+  TEMPI [U] LSR,  RA ROR,
+  FE U8 AND, // really /16 then *2... so need to clear lowest bit
+  TAY,
+
+  // using start of map row - 2, the wide screen shows 1 1/2 extra characters on each side
+  //   might be able to start the row 2 characters earlier... have the extra border characters
+  //   be part of the start of the current row and change the math...
+  SEC,
+  MAPROWOFFSETTBL [U+Y] LDA,
+  2 U8 SBC,
+  PDLPMAPROW0 [U] STA,
+  MAPROWOFFSETTBL 1+ [U+Y] LDA,
+  0 U8 SBC,
+  PDLPMAPROW0 1+ [U] STA,
+
+  // XPOSL is reversed to simplify HSCROL calculation
+  XPOSL [U] LDA, 
+  RA LSR,        
+  RA LSR,        
+  RA LSR,
+  TEMPI [U] STA,
+  SEC,
+  XPOSLMAX 3 RSHIFT U8 LDA,
+  TEMPI [U] SBC,        
+
+  CLC, // CLC, probably needed
+  PDLPMAPROW0 [U] ADC,
+  PDLPMAPROW0 [U] STA,
+
+  0 U8 LDA,
+  PDLPMAPROW0 1+ [U] ADC,
+  PDLPMAPROW0 1+ [U] STA,
+
+  RTS,
+
+
+// calculate hardware scroll from XPOSL and YPOSL
+//   HSCROL = XPOSL & 7
+//   VSCROL = YPOSL & 0F
+HEX
+BARHERE CONSTANT CALCSCROLS
+  XPOSL [U] LDA,
+  7 U8 AND,
+  HSCROL [U] STA,
+
+  YPOSL [U] LDA,
+  0F U8 AND,
+  VSCROL [U] STA,
+  RTS,
+
+
+// JN replacement for EFT18I.ASM line 8650
+// this way takes more memory, but is about 100 cycles faster and calculates all rows from the base each frame
+BARHERE CONSTANT CHGDLSUB ( [OFFHI:OFFLO] -mem- ) 
+
+  // adds [offhi:offlo] to display list map row 0 start
+  // PDLPMAPROW0 [U] LDA,    // 4
+  // CLC,                    // 2
+  // OFFLO [U] ADC,          // 3
+  // PDLPMAPROW0 [U] STA,    // 4
+  // PDLPMAPROW0 1+ [U] LDA, // 4
+  // OFFHI [U] ADC,          // 3
+  // PDLPMAPROW0 1+ [U] STA, // 4 = 24
+
+  CALCPDLROW0 U16 JSR,
+
+  // adds map width to display list map row 0 start to get display list map row 1 start
+  PDLPMAPROW0 [U] LDA,    // 4
+  CLC,                    // 2
+  MAPWIDTH U8 ADC,        // 2
+  PDLPMAPROW1 [U] STA,    // 5
+  PDLPMAPROW0 1+ [U] LDA, // 4
+  0 U8 ADC,               // 2
+  PDLPMAPROW1 1+ [U] STA, // 4  = 23
+
+  PDLPMAPROW1 [U] LDA,
+  CLC,
+  MAPWIDTH U8 ADC,
+  PDLPMAPROW2 [U] STA,
+  PDLPMAPROW1 1+ [U] LDA,
+  0 U8 ADC,
+  PDLPMAPROW2 1+ [U] STA,
+
+  PDLPMAPROW2 [U] LDA,
+  CLC,
+  MAPWIDTH U8 ADC,
+  PDLPMAPROW3 [U] STA,
+  PDLPMAPROW2 1+ [U] LDA,
+  0 U8 ADC,
+  PDLPMAPROW3 1+ [U] STA,
+
+  PDLPMAPROW3 [U] LDA,
+  CLC,
+  MAPWIDTH U8 ADC,
+  PDLPMAPROW4 [U] STA,
+  PDLPMAPROW3 1+ [U] LDA,
+  0 U8 ADC,
+  PDLPMAPROW4 1+ [U] STA,
+
+  PDLPMAPROW4 [U] LDA,
+  CLC,
+  MAPWIDTH U8 ADC,
+  PDLPMAPROW5 [U] STA,
+  PDLPMAPROW4 1+ [U] LDA,
+  0 U8 ADC,
+  PDLPMAPROW5 1+ [U] STA,
+
+  PDLPMAPROW5 [U] LDA,
+  CLC,
+  MAPWIDTH U8 ADC,
+  PDLPMAPROW6 [U] STA,
+  PDLPMAPROW5 1+ [U] LDA,
+  0 U8 ADC,
+  PDLPMAPROW6 1+ [U] STA,
+
+  PDLPMAPROW6 [U] LDA,
+  CLC,
+  MAPWIDTH U8 ADC,
+  PDLPMAPROW7 [U] STA,
+  PDLPMAPROW6 1+ [U] LDA,
+  0 U8 ADC,
+  PDLPMAPROW7 1+ [U] STA,
+
+  PDLPMAPROW7 [U] LDA,
+  CLC,
+  MAPWIDTH U8 ADC,
+  PDLPMAPROW8 [U] STA,
+  PDLPMAPROW7 1+ [U] LDA,
+  0 U8 ADC,
+  PDLPMAPROW8 1+ [U] STA,
+
+  PDLPMAPROW8 [U] LDA,
+  CLC,
+  MAPWIDTH U8 ADC,
+  PDLPMAPROW9 [U] STA,
+  PDLPMAPROW8 1+ [U] LDA,
+  0 U8 ADC,
+  PDLPMAPROW9 1+ [U] STA,
+
+  RTS,
+
+
 HEX
 BARHERE CONSTANT CURSR // move cursor right
-  // if cursor is 0 then do nothing
-  CURSXL [U] LDA,
-  64 U8 CMP,
-  EQ IF,
-    CURSXH [U] LDX,
-    NE IF,
-      RTS,
-    THEN,
-  THEN,
-
-  CLC,
-  1 U8 ADC,
-  CURSXL [U] STA,
+  
+  SHPOS0 [U] LDA, // x position of cursor on screen
+  SHPOS0MIN 1+ U8 CMP,
   CS IF,
-    CURSXH [U] INC,
-  THEN,
-
-  SHPOS0 [U] LDA,
-  36 U8 CMP,
-  NE IF,
     SEC,
     1 U8 SBC,
     SHPOS0 [U] STA,
@@ -2811,46 +3148,22 @@ BARHERE CONSTANT CURSR // move cursor right
     RTS,
   THEN,
 
-  XPOSL [U] LDA,
-  CLC, // no, increment x-coordinate
-  1 U8 ADC,
-  XPOSL [U] STA,
-  7 U8 AND,
-  HSCROL [U] STA, // fine scroll
-  NE IF, RTS, THEN,
+  XPOSL [U] LDA, // map window x position 0 = right edge
+  XPOSLMAX U8 CMP,
+  NE IF,
+    CLC, // no, increment x-coordinate
+    1 U8 ADC,
+    XPOSL [U] STA,
+  THEN,
 
-  OFFLO [U] LDA, // yes, set up offset for character scroll
-  SEC,
-  1 U8 SBC,
-  OFFLO [U] STA,
-  OFFHI [U] LDA,
-  0 U8 SBC,
-  OFFHI [U] STA,
   RTS,
 
 HEX
 BARHERE CONSTANT CURSL // move cursor left
-  // XPOSL starts at E0; SHPOS0 HPOS0 start at 78; CURSXL should start at 164 - 78
-
-  // if cursorxpos > 0 then move cursor left 1
-  CURSXL [U] LDA,
-  EQ IF,
-    CURSXH [U] LDX,
-    EQ IF,
-      RTS,
-    THEN,
-  THEN,
-
-  SEC,
-  1 U8 SBC,
-  CURSXL [U] STA,
-  NC IF,
-    CURSXH [U] DEC,
-  THEN,
-
+  
   SHPOS0 [U] LDA,
-  BA U8 CMP,
-  NE IF,
+  SHPOS0MAX U8 CMP,
+  NC IF,
     CLC,
     1 U8 ADC,
     SHPOS0 [U] STA,
@@ -2858,68 +3171,36 @@ BARHERE CONSTANT CURSL // move cursor left
     RTS,
   THEN,
 
-  XPOSL [U] LDA,
-  SEC, // decrement x-coordinate
-  1 U8 SBC,
-  XPOSL [U] STA,
-  7 U8 AND,
-  HSCROL [U] STA, // fine scroll
-  7 U8 CMP, // scroll overflow?
-  NE IF, RTS, THEN,
-  // yes, mark it for offset
-  OFFLO [U] INC,
-  EQ IF,
-    OFFHI [U] INC, // probably not possible
+  XPOSL [U] LDA, // map window x position 0 = right edge
+  NE IF,
+    SEC, // decrement x-coordinate
+    1 U8 SBC,
+    XPOSL [U] STA,
   THEN,
+
   RTS,
     
 
 HEX
 BARHERE CONSTANT CURSU // move cursor up
 
-  // if CURSY is max 2FE then exit
-  CURSYL [U] LDA,
-  5E U8 CMP,
-  EQ IF,
-    CURSYH [U] LDX,
-    2 U8 CPX,
-    EQ IF,
-      RTS,
-    THEN,
-  THEN,
-
-  // inc CURSY
-  CURSYL [U] INC,
-  EQ IF,
-    CURSYH [U] INC,
-  THEN,
-
-  // looks like cursor moves up and down 2 pixels
+  // if SCY > SCYMIN then dec SCY
   SCY [U] LDX, // player0 vertical position
-  1B U8 CPX,
-  NE IF,
-    CURSYL [U] INC,
-    EQ IF,
-      CURSYH [U] INC,
-    THEN,
+  SCYMIN 1+ U8 CPX,
+  CS IF,
+    
+    ERASECURSOR U16 JSR,
 
     DEX,
     SCY [U] STX,
 
-    TXA, CLC,
-    12 U8 ADC,
-    TEMPI [U] STA,
+    DRAWCURSOR U16 JSR,
 
-    BEGIN,
-      PLYR0 [U+X] LDA,
-      PLYR0 1- [U+X] STA,
-      INX,
-      TEMPI [U] CPX,
-    EQ UNTIL,
     RTS,
   THEN,
 
-  YPOSL [U] LDA,
+  // if YPOS > 0 then dec YPOS
+  YPOSL [U] LDA, // map window y position 0 = top edge
   YPOSH [U] ORA,
   EQ IF,
     RTS,
@@ -2933,67 +3214,38 @@ BARHERE CONSTANT CURSU // move cursor up
   THEN,
   YPOSL [U] STA,
 
-  0F U8 AND,
-  VSCROL [U] STA, // fine scroll
-  0F U8 CMP,
-  NE IF, 
-    RTS,
-  THEN,
-
-  OFFLO [U] LDA, // yes, set up offset for character scroll
-  SEC,
-  30 U8 SBC,
-  OFFLO [U] STA,
-  OFFHI [U] LDA,
-  0 U8 SBC,
-  OFFHI [U] STA,
   RTS,
 
 HEX
 BARHERE CONSTANT CURSD // move cursor down
 
-  CURSYL [U] LDA,
-  2 U8 CMP,
-  EQ IF,
-    CURSYH [U] LDX,
-    EQ IF, RTS, THEN,
-  THEN,
-  SEC,
-  1 U8 SBC,
-  CURSYL [U] STA,
-  NC IF,
-    CURSYH [U] DEC,
-  THEN,
+  // if SCY is < SCYMAX then inc SCY
+  SCY [U] LDX, // cursor y position on screen... first 2 SCY rows is border
+  SCYMAX U8 CPX,
+  NC IF, // to x8
 
-  SCY [U] LDX,
-  4E U8 CPX,
-  NE IF, // to x8
+    ERASECURSOR U16 JSR,
 
-    SEC,
-    1 U8 SBC,
-    CURSYL [U] STA,
-    NC IF,
-      CURSYH [U] DEC,
-    THEN,
-
-    INX,
+    INX, // each SCY row is 2 pixels high
     SCY [U] STX,
 
-    TXA, 
-    CLC,
-    12 U8 ADC,
-    DEX, DEX,
-    TEMPI [U] STX,
-    TAX,
-    BEGIN,
-      PLYR0 1- [U+X] LDA,
-      PLYR0 [U+X] STA,
-      DEX,
-      TEMPI [U] CPX,
-    EQ UNTIL,
+    DRAWCURSOR U16 JSR,
+
     RTS,
   THEN,
 
+  // if YPOS < max then inc YPOS
+  YPOSL [U] LDA, // screen map window start offset
+  YPOSMAX FF AND U8 CMP, 
+  CS IF,
+    YPOSH [U] LDA,
+    YPOSMAX 8 RSHIFT U8 CMP,
+    CS IF,
+      RTS,
+    THEN,
+  THEN,
+
+  // increment screen map window y position
   YPOSL [U] LDA,
   CLC, // no, decrement y-coordinate
   1 U8 ADC,
@@ -3002,25 +3254,12 @@ BARHERE CONSTANT CURSD // move cursor down
     YPOSH [U] INC,
   THEN,
 
-  0F U8 AND,
-  VSCROL [U] STA, // fine scroll
-  NE IF, RTS, THEN,
-
-  OFFLO [U] LDA, // yes, mark offset
-  CLC,
-  30 U8 ADC,
-  OFFLO [U] STA,
-  OFFHI [U] LDA,
-  0 U8 ADC,
-  OFFHI [U] STA,
+  // vertical fine scroll is lower 4 bits of screen map window y position
   RTS,
 
 // Source JN replacement for code at EFT18I.ASM line 6930
 BARHERE CONSTANT MOVECURS // move cursor according to joystick position
-  0 U8 LDA,
-  OFFLO [U] STA,
-  OFFHI [U] STA,
-
+  
   STICK0 [U] LDA,
 
   RA ROR, // get up bit
@@ -3047,6 +3286,8 @@ BARHERE CONSTANT MOVECURS // move cursor according to joystick position
   THEN,  
 
   CHGDLSUB U16 JSR,
+  CALCSCROLS U16 JSR,
+  // CALCCURSORONMAP U16 JSR, // result only used in one subroutine so no need to do it here
   RTS,
 
 
@@ -3339,7 +3580,7 @@ BARHERE CONSTANT OVBI // vbi routine, handles player input
     THEN,
   THEN,
   ENDISR U16 JMP,
-
+ 
 HEX
 BARHERE CONSTANT OINIT // init game
 
@@ -3349,7 +3590,7 @@ BARHERE CONSTANT OINIT // init game
 //  MAPHI
 //  CORPS   number of unit under window
 //  CURSXL
-//  CURSXH  cursor coordinates on screen (map frame)
+//  CURSXH  cursor coordinates on map 
 //  CURSYL
 //  CURSYH
 
@@ -3394,9 +3635,11 @@ BARHERE CONSTANT OINIT // init game
   DLSTPTHI [U] LDA,
   DLSTHI [U] STA,
 
-  0 U8 LDA,  // really should be [XPOSL] AND 7
-  HSCROL [U] STA,
-  VSCROL [U] STA,
+  // 0 U8 LDA,  // really should be [XPOSL] AND 7
+  // HSCROL [U] STA,
+  // VSCROL [U] STA,
+  CALCSCROLS U16 JSR,
+  // CALCCURSORONMAP U16 JSR,
 
   0 U8 LDX,
   BEGIN,
@@ -3411,6 +3654,8 @@ BARHERE CONSTANT OINIT // init game
     INX,
     NUMBEROFUNITS 1+ U8 CPX,
   EQ UNTIL,
+
+  ERASEPLAYERMEM U16 JSR,
 
   // Source EFT18M.ASM line 1600
   // Set up player window
@@ -3431,25 +3676,11 @@ BARHERE CONSTANT OINIT // init game
   HANDCP [U] STA,
   GPRIOR [U] STA,
   SIZEP0 [U] STA,
-  
-  // init player 0 graphics
-  33 U8 LDX,
-  FF U8 LDA,
-  PLYR0 [U+X] STA,
-  INX,
-  PLYR0 [U+X] STA,
-  INX,
-  81 U8 LDA,
-  BEGIN,
-    PLYR0 [U+X] STA,
-    INX,
-    3F U8 CPX,
-  EQ UNTIL,
-  FF U8 LDA,
-  PLYR0 [U+X] STA,
-  TURN [U] STA,
-  INX,
-  PLYR0 [U+X] STA,
+
+  FF U8 LDA,   
+  TURN [U] STA,  // moved from OLDINITCURSOR
+
+  INITCURSOR U16 JSR, 
 
   // Source EFT18M.ASM line 1950
   // Enable deferred vertical blank interrupt
@@ -3623,11 +3854,13 @@ BARHERE CONSTANT TERR // was 7240 - determines what terrain and unit is in a squ
 
 // DINGO determines on which tick the unit will move
 //   there are 32 ticks per turn
-//   the order in which units move is determined by
+//   the order in which units first move is determined by
 //    their type (infantry vs armor), the season, 
 //    and what terrain they are on
 //    [TICK] is the current tick
 //    [EXEC+armyid] is the tick the unit will move on
+//    after the first move, some actions like a successful attack
+//    make it so the unit gets to repeat the action on the next tick
 // Source EFT18M.ASM line 7440
 BARHERE CONSTANT DINGO // CRLF ." DINGO = " DINGO HEX U.
   // DrawDINGO U16 JSR,
@@ -4596,6 +4829,66 @@ BARHERE CONSTANT DETERMINESTRATEGY
     RTS,
 
 
+BARHERE CONSTANT GETRANGESANDDIRS
+    // unit has arrived but not this turn
+    //   get horizontal direction and range
+    OBJX FIRSTRUSSIANUNIT - [U+X] LDA, // Russian unit's target x
+    3 U8 LDY, // set direction to W
+    SEC,
+    CORPSX [U+X] SBC, // subtract Russian unit's x location
+    MI IF,
+      // if unit's target X is less that unit's current x 
+      1 U8 LDY, // set direction to E
+      NEGA U16 JSR, // invert delta x
+    THEN,
+    HDIR [U] STY, // save horizontal direction of Russian unit
+    HRNGE [U] STA, // save Russian unit's delta X to target
+
+    //  get vertical direction and vrange
+    0 U8 LDY, // set direction to N
+    OBJY FIRSTRUSSIANUNIT - [U+X] LDA, // Russian unit's target y
+    SEC,
+    CORPSY [U+X] SBC, // subtract Russian unit's y location
+    SEC,
+    MI IF,
+      // if unit's target Y is less than unit's current y
+      2 U8 LDY, // set direction to N
+      NEGA U16 JSR, // invert delta y
+    THEN,
+    VDIR [U] STY, // save vertical direction of Russian unit
+    VRNGE [U] STA, // save Russian unit's delta y to target
+
+    // get shorter/longer distance and range
+    HRNGE [U] CMP, // see if vertical distance to target is greater or equal to horizontal
+    CS IF, // to Y81
+      // vertical distance to target is greater or equal to horizontal
+      LRNGE [U] STA, // save vertical distance to target in LRNGE
+      HRNGE [U] LDA, // get horizontal distance to target
+      SRNGE [U] STA, // save horizontal distance to target HRNGE -> SRNGE
+      HDIR [U] LDA, // get horizontal direction
+      SDIR [U] STA, // save horizontal direction in SDIR
+      LDIR [U] STY, // save vertical direction in LDIR
+    ELSE, // to Y82 
+      // Y81
+      SRNGE [U] STA, // save vertical distance to target in SRNGE
+      SDIR [U] STY, // save vertical direction in SDIR
+      HRNGE [U] LDA, // get horizontal distance to target
+      LRNGE [U] STA, // save horizontal distance to target in LRNGE
+      HDIR [U] LDY, // get horizontal direction 
+      LDIR [U] STY, // save horizontal direction in LDIR
+    THEN,
+
+    RTS,
+
+BARHERE CONSTANT GETTOTALRANGE
+    // [LRNGE] + [SRNGE] -> [RANGE]
+    //   get total range
+    LRNGE [U] LDA,
+    CLC,
+    SRNGE [U] ADC,
+    RANGE [U] STA, 
+    RTS,
+
 // Source EFT18T.ASM line 1620  
 BARHERE CONSTANT RUSSIANAI // was 4700 
 
@@ -5024,59 +5317,18 @@ BARHERE CONSTANT WRAPUP // start was pressed, end turn
       0 U16 JMP, BARHERE CONSTANT TOY77
     THEN,
 
-    // unit has arrived but not this turn
-    OBJX FIRSTRUSSIANUNIT - [U+X] LDA, // Russian unit's target x
-    3 U8 LDY, // set direction to W
-    SEC,
-    CORPSX [U+X] SBC, // subtract Russian unit's x location
-    MI IF,
-      // if unit's target X is less that unit's current x 
-      1 U8 LDY, // set direction to E
-      NEGA U16 JSR, // invert delta x
-    THEN,
-    HDIR [U] STY, // save horizontal direction of Russian unit
-    HRNGE [U] STA, // save Russian unit's delta X to target
-    0 U8 LDY, // set direction to N
-    OBJY FIRSTRUSSIANUNIT - [U+X] LDA, // Russian unit's target y
-    SEC,
-    CORPSY [U+X] SBC, // subtract Russian unit's y location
-    SEC,
-    MI IF,
-      // if unit's target Y is less than unit's current y
-      2 U8 LDY, // set direction to N
-      NEGA U16 JSR, // invert delta y
-    THEN,
-    VDIR [U] STY, // save vertical direction of Russian unit
-    VRNGE [U] STA, // save Russian unit's delta y to target
-    HRNGE [U] CMP, // see if vertical distance to target is greater or equal to horizontal
-    CS IF, // to Y81
-      // vertical distance to target is greater or equal to horizontal
-      LRNGE [U] STA, // save vertical distance to target in LRNGE
-      HRNGE [U] LDA, // get horizontal distance to target
-      SRNGE [U] STA, // save horizontal distance to target HRNGE -> SRNGE
-      HDIR [U] LDA, // get horizontal direction
-      SDIR [U] STA, // save horizontal direction in SDIR
-      LDIR [U] STY, // save vertical direction in LDIR
-    ELSE, // to Y82 
-      // Y81
-      SRNGE [U] STA, // save vertical distance to target in SRNGE
-      SDIR [U] STY, // save vertical direction in SDIR
-      HRNGE [U] LDA, // get horizontal distance to target
-      LRNGE [U] STA, // save horizontal distance to target in LRNGE
-      HDIR [U] LDY, // get horizontal direction 
-      LDIR [U] STY, // save horizontal direction in LDIR
-    THEN,
+    GETRANGESANDDIRS U16 JSR,
+
     // Y82
+    // clear orders
     0 U8 LDA,
-    RCNT [U] STA, // I think this holds which order for the russian unit
+    RCNT [U] STA, // current order index
     RORD1 [U] STA,
     RORD2 [U] STA,
 
-    // [LRNGE] + [SRNGE] -> [RANGE]
-    LRNGE [U] LDA,
-    CLC,
-    SRNGE [U] ADC,
-    RANGE [U] STA, 
+    GETTOTALRANGE U16 JSR,
+
+    // see if range is 0 i.e. target location is same as current location
     NE IF, // to Y86
       // unit's target location is not equal to current location
         // [LRNGE]/2 -> [CHRIS]
@@ -7404,7 +7656,7 @@ BARHERE CONSTANT CHKRT
     NE IF, CONSTANT tochkdn3
   // X6 
   THEN,
-  YPOSL [U] LDA,
+  YPOSL [U] LDA, // map window y position 0 = top edge
   SEC,
   1 U8 SBC,
   NC IF,
@@ -8212,4 +8464,80 @@ BARHERE CONSTANT OLDFBUTPS
   HITFLG [U] STX, // change hitflg to -1
   ENDISR U16 JMP,
 
+// Source EFT18I.ASM line 8650
+BARHERE CONSTANT CHGDLSUBOLD ( [OFFHI:OFFLO] -mem- ) // adds [offhi:offlo] to map row starts
+  09 U8 LDY,
+  BEGIN,
+    DLSTPT [[U8]+Y] LDA,  // 5 or 6
+    CLC,                  // 2
+    OFFLO [U] ADC,        // 3
+    DLSTPT [[U8]+Y] STA,  // 5 or 6
+    INY,                  // 2
+    DLSTPT [[U8]+Y] LDA,  // 5 or 6
+    OFFHI [U] ADC,        // 3
+    DLSTPT [[U8]+Y] STA,  // 5 or 6
+    INY, INY,             // 4  = 29 - 33 cycles
+    27 U8 CPY,
+  EQ UNTIL,
+  RTS,
+
+BARHERE CONSTANT OLDINITCURSOR
+  // init player 0 graphics
+  PM0INITIALYPOS U8 LDX,
+  FF U8 LDA,
+  PLYR0 [U+X] STA,
+  INX,
+  PLYR0 [U+X] STA,
+  INX,
+  81 U8 LDA,
+  BEGIN,
+    PLYR0 [U+X] STA,
+    INX,
+    3F U8 CPX,
+  EQ UNTIL,
+  FF U8 LDA,
+  PLYR0 [U+X] STA,
+  TURN [U] STA,
+  INX,
+  PLYR0 [U+X] STA,
+  RTS,
+
+
+//  CURSXL - (vbi) cursor x position on map in pixels 0 - 0x164 where 0 = right edge
+//  CURSXH
+//  SHPOS0 - 0x36 - 0xBA
+//  XPOSL - HSCROL - 0-7
+//  OFFLO (adjusts display list row starts)
+
+// XPOSL starts at E0; SHPOS0 HPOS0 start at 78; CURSXL should start at 164 - 78
+
+78 CONSTANT PM0INITIALXPOS ( for cursor )
+36 CONSTANT PM0MINXPOS
+BA CONSTANT PM0MAXXPOS
+30 CONSTANT MAPWIDTH    
+28 CONSTANT MAPHEIGHT
+164 CONSTANT CURSXMAX // cursor position x on map max
+25E CONSTANT CURSYMAX // cursor position y on map max
+2 CONSTANT CURSYMIN
+
+000 <-------> 17F  (1B)
+ 00E <-----> 172
+ 164 <-----> 0
+  0x36 <-> 0xBA (0x85 positions) ( 0x78 is the middle )
+000 - 042 13D - 17F
+
+// if CURSXL <= 42 or >= 13D then move cursor instead of screen
+// if CURSXL is between including 42 - 13D move screen
+
+// soo SHPOS0 HPOS0 is CURSX and 7 I think
+// row start offset = mapstart + (1 or 2) + (MAPWIDTH - CURSX/8)
+// HPOS0 = 
+//   if CURSX <= 0x42 then HPOS0 = 0x78 + (0x42 - CURSX)
+//   if 0x42 <= CURSX <= 0x13D then HPOS0 = 0x78
+//   if CURSX >= 0x13D then HPOS0 = 0x78 + (CURSX - 0x13D)
+    
+    
+
+//  CURSYL - (vbi) cursor y position on map in pixels 2 - 0x25E where 0 = bottom edge
+//  CURSYH
 

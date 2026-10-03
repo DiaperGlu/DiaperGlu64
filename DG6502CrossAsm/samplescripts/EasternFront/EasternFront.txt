@@ -26,8 +26,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// Sept 5, 2026               //
-// version 1.2                //
+// Sept 18, 2026              //
+// version 1.3                //
 // /////////////////////////////
 
 Building the game and test programs:
@@ -50,7 +50,7 @@ About how these files were made:
     be a 'final' version that compiles into a released version of the game.
   I've tried to stick close to the the code from the original files, but I did fix a couple
     obvious bugs and modified others to use lookup tables and alternate math routines
-    that trade memory for speed. While Chris's orginal game fits into an 8k cartridge
+    that trade memory for speed. While Chris's orginal game fits into an 16k cartridge
     that runs on older computers, the newer models and the emulator have a lot more ram
     so I used more memory to speed things up.
   I'm hoping I didn't add any bugs doing the port.
@@ -227,7 +227,7 @@ OCOMBAT routine
   //   
   // Evaluate the attacker's strike
   //   Get the attacker's attack strength (attack strength = combat strength or hp)
-  //   If the attacker is on a river, coastline, or terrain and 0x3f = 0x3f
+  //   If the attacker is on a river, coastline, or (terrain & 0x3f) = 0x3f
   //     divide the attack strength by 2
   //     I changed this section to get the terrain from the SWAPIT array instead
   //       of calling TERR
@@ -250,7 +250,7 @@ OCOMBAT routine
   //             the defender dies
   //     endif
   //   set the attacker's next tick to move to the next tick
-  //     (looks like this is changed after this returns)
+  //     (not sure if attacker's next tick to move is changed after this returns)
   //   return  
 
 

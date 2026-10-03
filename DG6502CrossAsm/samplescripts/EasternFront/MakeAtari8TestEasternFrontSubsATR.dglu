@@ -1577,6 +1577,10 @@ BARHERE CONSTANT TERRAIN! ( [CHUNKY] [CHUNKX] -mem- [MAPPTRHI:MAPPTRLO] ) ( RA=t
 BARHERE CONSTANT DROPORDER ( X=unit -reg- )
   // could make sure HMORDS doesn't go below 0 here...
   HMORDS [U+X] DEC,
+  MI IF,
+    HMORDS [U+X] INC,
+    RTS,
+  THEN,
   WHORDH [U+X] LSR,
   WHORDS [U+X] ROR,
   WHORDH [U+X] LSR,
