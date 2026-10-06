@@ -53,30 +53,47 @@ HEX
 7380 CONSTANT PLYR3
 
 HEX
-
 30 CONSTANT MAPWIDTH  // in characters
 28 CONSTANT MAPHEIGHT // in characters
 9E CONSTANT NUMBEROFUNITS
 37 CONSTANT FIRSTRUSSIANUNIT 
-67 CONSTANT NUMBEROFRUSSIANUNITS
-78 CONSTANT PM0INITIALXPOS // for cursor - no longer has to align with other variables 
-33 CONSTANT PM0INITIALYPOS // for cursor - no longer has to align with other variables
-A0 CONSTANT SCREENWIDTH    // width of functional map window on screen in pixels
-                           //   does not include the extra 12 pixels on each side
-                           //   for the wide screen
+// 67 CONSTANT NUMBEROFRUSSIANUNITS
+NUMBEROFUNITS FIRSTRUSSIANUNIT - CONSTANT NUMBEROFRUSSIANUNITS
+
+C0 CONSTANT WIDESCREENWIDTH  // 384 pixels / 2... each hscroll increment is 2 pixels wide
+                             // each character is 8 hscroll increments wide
+
+
+// row characters shown when left aligned at position 0 (-2 -1 mostly off screen):
+//   -2 -1   0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F 10 11 12 13  14 15
+// row characters shown right aligned (30 31 mostly off screen):
+//   1A 1B  1C 1D 1E 1F 20 21 22 23 24 25 26 27 28 29 2A 2B 2C 2D 2E 2F  30 31
+
+// when all the way to the right, should be at character 1C which is
+//   probably hscroll position 1C * 8 = E0 
+
+HEX
+WIDESCREENWIDTH 20 - CONSTANT SCREENWIDTH // 20 represents the 4 not shown characters
+                       
+   
+                  
 MAPWIDTH 8 * SCREENWIDTH - ( E0 ) CONSTANT XPOSLMAX
 
-A0 CONSTANT SCREENHEIGHT   // in pixels
-                           
+A0 CONSTANT SCREENHEIGHT   // in pixels... not sure on math for this number                         
 MAPHEIGHT 10 * SCREENHEIGHT 20 - - 1- CONSTANT YPOSMAX // - 2 rows for border
                                                     
 36 CONSTANT SHPOS0MIN
 BA CONSTANT SHPOS0MAX
-164 CONSTANT CURSXMAX
+78 CONSTANT PM0INITIALXPOS // for cursor - no longer has to align with other variables 
 
-1C CONSTANT SCYMIN
-PM0INITIALYPOS CONSTANT SCYINIT
-49 CONSTANT SCYMAX
+// 164 CONSTANT CURSXMAX
+
+16 CONSTANT PMYMAPSTART  // player missile row of start of map
+5E CONSTANT PMYMAPEND    // player missile row of end of map
+PMYMAPSTART 8 + ( to show one border row ) 2 - ( for 4 pixel cursor border ) CONSTANT SCYMIN
+PMYMAPEND 18 - ( one border row + cursor is 2 rows high ) 2 + ( for pixel cursor border )
+  1 + ( for 1/2 extra pm row from the end of vertical scroll ) CONSTANT SCYMAX
+SCYMAX SCYMIN - 2/ SCYMIN + CONSTANT SCYINIT
 
 6 CONSTANT CURSXOFF // out of 8, offset to center of cursor
 9 CONSTANT CURSYOFF // out of 16 or 0x10, offset to center of cursor
@@ -266,8 +283,8 @@ DECIMAL
 1 SVAR STEPY   // intermediate position of arrow
 1 SVAR STPCNT  // which intermediate step arrow is on
 1 SVAR ORDCNT  // which order arrow is showing
-1 SVAR ORD1    // holds order list for German unit during order entry
-1 SVAR ORD2
+2 SVAR ORD1    // holds order list for German unit during order entry
+ORD1 1+ CONSTANT ORD2 // must go after ORD1 in memory
 1 SVAR ARRNDX  // arrow index
 1 SVAR HOWMNY  // how many orders for unit under arrow
 1 SVAR KRZX    // maltakreuze coords (player frame)
@@ -302,8 +319,8 @@ DECIMAL
 // 1 SVAR LINCOD  // looks like this variable is set to 0 and not used
 1 SVAR NBVAL  // minimum and modified |deltax| + |deltay| to nearest 
               //   German unit in Russian ai
-1 SVAR RORD1  // Russian unit's order's lo byte during wrapup
-1 SVAR RORD2  // Russian unit's order's hi byte during wrapup
+2 SVAR RORD1  // Russian unit's order's lo byte during wrapup
+RORD1 1+ CONSTANT RORD2  // Russian unit's order's hi byte during wrapup // must go after RORD1
 1 SVAR HDIR   // Russian unit's horizontal direction during wrapup
 1 SVAR VDIR   // Russian unit's vertical direction during wrapup
 1 SVAR LDIR   // Russian unit's longer direction during wrapup
@@ -321,11 +338,12 @@ DECIMAL
 25 SVAR LINARR 25 CODE-ALLOT // 25 decimal - Russian ai - holds muster strengths
                              //   of Russian units in 5x5 area around proposed next
                              //   square
-1 SVAR IFR0   // Russian unit individual force ratio to the N
-1 SVAR IFR1   // Russian unit individual force ratio to the E 
+// the IFRs must be in order in memory
+4 SVAR IFR0   // Russian unit individual force ratio to the N
+IFR0 1+ CONSTANT IFR1   // Russian unit individual force ratio to the E 
                                          //   (I think)
-1 SVAR IFR2   // Russian unit individual force ratio to the S
-1 SVAR IFR3   // Russian unit individual force ratio to the W 
+IFR1 1+ CONSTANT IFR2   // Russian unit individual force ratio to the S
+IFR2 1+ CONSTANT IFR3   // Russian unit individual force ratio to the W 
                                          //   (I think)
 1 SVAR XLOC   // Russian unit x location during force ratio calcs
 1 SVAR YLOC   // Russian unit y location during force ratio calcs
@@ -346,6 +364,7 @@ TOTGS 1+ CONSTANT TOTRS // total Russian combat strength
 // 1 SVAR TEMPQ  // unused
 // 1 SVAR LLIM   // unused
 1 SVAR VICTRY // combat victory flag 0 = false FF = true
+1 SVAR StickTemp
 
 
 HEX
@@ -687,9 +706,24 @@ BARHERE 100 ROUNDUP BARHERE - CODE-ALLOT
 // Display list has to go in ram and lms is needed in order to do the scrolling of the oversize map
 // Display list can not cross a 1k boundary. If you need to do that, use the jump instruction.
 // Also, game uses wide playfield, so left and right most pixels are not shown... 
-//   wide playfield is 384 pixels. So 64 extra pixels or 4 extra characters in antic mode 7, but you lose 1 1/2 character on each side)
-//   emulator default mode only shows 336 characters. 
-//   The limit including the 24 blank lines at the start is 240... without the 24 blank lines, it is 218.
+//   wide playfield is 384 pixels but only 352 are visible so you lose 32 pixels for 16 on each side
+//   (emulator default mode only shows 336 pixels I think...) 
+//   since each character of the map takes 16 pixels, you lose at least 1 character on each side
+//     and almost 2 if on the emulator
+//   the map row characters are double wide and group 2 pixels together to 
+//     represent one bit for 192 bits
+//   this is 20 - 22 usuable characters per row
+//   This game subtracts 2 characters from the start of each map row to deal with this...
+//   So the non displayed characters at the start of the row is the border character from the
+//     previous row, and the character before that
+//     and the non displayed character at the end of the row is the border
+//     character from the start of the next row, and the one after that...
+
+//   The vertical limit including the 24 blank lines at the start is 240... 
+//     without the 24 blank lines, it is 218.
+//   I think this game uses 187 playfield lines.
+//   pmrow = 4 + (scanline/2)
+//   scanline = 2 * (pmrow - 4) 
 
 // For modes 0x02 - 0x0F:
 //   Instruction bit 7 = dli, bit 6 = lms, bit 5 = vscroll, bit 4 = hscroll, bits 3-0 = mode
@@ -697,22 +731,22 @@ BARHERE 100 ROUNDUP BARHERE - CODE-ALLOT
 //   mode 7 is 8x16 5 color text mode  (narrow=16/normal=20/wide=24 bytes per row)
 
 // For mode 0:
-//   Instruction bit 7 = dli, bits 6-4 = number of blank scan lines - 1, bits 3-0 = 0 for the mode
+//   Instruction bit 7 = dli, bits 6-4 = number of blank scan lines - 1, 
+//     bits 3-0 = 0 for the mode
 
 // For mode 1:
 //   0x01 = load display list pointer (jump)
-//   0x41 = load display list pointer and wait (jump) for vbi
+//   0x41 = load display list pointer and wait (jump) for vbi  
 
 // Source EFT18D.ASM line 2780
 HEX
 BARHERE CONSTANT DISPLAYLIST CRLF ." display list starts at " DISPLAYLIST U.
-                                                            // scanline plyry dli lms scrolls graphics mode
-( +00 ) 70 CC, 70 CC, 70 CC,                                //  0         4                    24 blank lines
-                                                            //  24       16                    extra line... probably from dli
-( +03 ) C6 CC, TXTWDWTOP DUP CC, 8 RSHIFT CC,               //  25            dli lms          24 8x8 5 color text - upper 2 bits select foreground color
-( +06 ) 90 CC,                                              //  33            dli               1 blank line
-( +07 ) 90 CC,                                              //  34            dli               1 blank line
-                                                            //  35                             extra line... probably from dli
+                                                            // scanline pmrow dli lms scrolls
+( +00 ) 70 CC, 70 CC, 70 CC,   ( 3*8 )                      //  0         4                                       
+( +03 ) C6 CC, TXTWDWTOP DUP CC, 8 RSHIFT CC,               //  24            dli lms          
+( +06 ) 90 CC,                 ( 2 )                        //  32            dli   
+                                                            //    color change 2nd line            
+( +07 ) 90 CC,                 ( 2 )                        //  34            dli                                            
 ( +08 ) F7 CC, MAPDATA                DUP CC, 8 RSHIFT CC,  //  36       22   dli lms  vh 
 ( +0B ) F7 CC, MAPDATA 1 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  37-52         dli lms  vh 
 ( +0E ) F7 CC, MAPDATA 2 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  53-68         dli lms  vh      
@@ -724,13 +758,14 @@ BARHERE CONSTANT DISPLAYLIST CRLF ." display list starts at " DISPLAYLIST U.
 ( +20 ) F7 CC, MAPDATA 8 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  148-164       dli lms  vh      
 ( +23 ) 57 CC, MAPDATA 9 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  165-180           lms   h 
 // first non vertical scrolled line finishes previous and adds one additional line 
-( +26 ) 90 CC,                                              //  181           dli               
-( +27 ) C2 CC, TXTWDW DUP CC, 8 RSHIFT CC,                  //  182           dli lms          
-        02 CC,                                              //  190                            
-        90 CC,                                              //  198           dli               
-        02 CC,                                              //  199                            
-        90 CC,                                              //  207           dli               
-        41 CC, DISPLAYLIST DUP CC, 8 RSHIFT CC,             //  208  load dlp and wait for vbi
+( +26 ) 90 CC,                ( 2 )                         //  181           dli               
+( +27 ) C2 CC, TXTWDW DUP CC, 8 RSHIFT CC,                  //  183           dli lms          
+        02 CC,                                              //  191  99 1/2                           
+        90 CC,                ( 2 )                         //  199  103 1/2   dli               
+        02 CC,                                              //  201  104 1/2                          
+        90 CC,                ( 2 )                         //  209  108 1/2   dli               
+        41 CC, DISPLAYLIST DUP CC, 8 RSHIFT CC,             //  211  load dlp and wait for vbi
+
 
 DISPLAYLIST 09 + CONSTANT PDLPMAPROW0 // pointer to display list pointer to map row 0 
 DISPLAYLIST 0C + CONSTANT PDLPMAPROW1
@@ -749,9 +784,9 @@ BARHERE CONSTANT ZPVAL
   0 CC, 0 CC,                               // maplo maphi
   0 CC,                                     // number of unit under window
   // these below aren't used anymore... they are calculated now J.N.
-  0 CC, 0 CC,                               // cursor x - distance from right edge of map in pixels
-  0 CC, // cursor y lo - distance from bottom edge of map in pixels
-  0 CC, // cursor y hi
+  0 CC, 0 CC,  // cursor x - distance from right edge of map in pixels
+  0 CC,        // cursor y lo - distance from bottom edge of map in pixels
+  0 CC,        // cursor y hi
                 
 
 HEX
@@ -1345,523 +1380,6 @@ BARHERE CONSTANT MAPUNITSROWOFFSETTBL
 MAPWIDTH MAPHEIGHT MAPUNITS BUILDROWOFFSETTABLE
 
 
-// //////////////////
-// Test Code Stuff //
-// //////////////////
-
-BARHERE CONSTANT StickTemp 0 CC,
-BARHERE CONSTANT TestNum 0 CC,
-BARHERE CONSTANT TestX 0 CC,
-BARHERE CONSTANT TestY 0 CC,
-
-  HEX
-  BARHERE CONSTANT DigitToChar ( RA=u - RA=c )
-    0F U8 AND,
-    0A U8 CMP,
-    CS IF, 
-      20 0A - U8 ADC,
-      RTS,
-    THEN,
-    // carry is not set
-    10 U8 ADC,
-    RTS,
-
-  BARHERE CONSTANT DrawHexByte ( RA=byte Y=TXTWDWTOPoffset -- )
-    INY,
-    TAX,
-    DigitToChar U16 JSR,
-    TXTWDWTOP [U+Y] STA,
-    TXA, RA LSR, RA LSR, RA LSR, RA LSR,
-    DigitToChar U16 JSR,
-    DEY,
-    TXTWDWTOP [U+Y] STA, 
-    NOP,
-    // INY,
-    RTS,
-
-  BARHERE CONSTANT DrawHexByte2 ( RA=byte Y=TXTWDWoffset -- )
-    INY,
-    TAX,
-    DigitToChar U16 JSR,
-    TXTWDW [U+Y] STA,
-    TXA, RA LSR, RA LSR, RA LSR, RA LSR,
-    DigitToChar U16 JSR,
-    DEY,
-    TXTWDW [U+Y] STA,
-    NOP,
-    // INY,
-    RTS,
-
-HEX
-
-  BARHERE CONSTANT pFAIL
-  $" FAIL" LENGTH$ CONSTANT FAILSize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pPASS
-  $" PASS" LENGTH$ CONSTANT PASSSize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pTestERRCLR
-  $" Tst ERRCLR" LENGTH$ CONSTANT TestERRCLRSize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pTestCHGDL
-  $" Tst CHGDL " LENGTH$ CONSTANT TestCHGDLSize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pTestMOVEMK
-  $" Tst MOVEMK" LENGTH$ CONSTANT TestMOVEMKSize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pTestSWITCH
-  $" Tst SWITCH" LENGTH$ CONSTANT TestSWITCHSize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pTestSCRLSB
-  $" Tst SCRLSB" LENGTH$ CONSTANT TestSCRLSBSize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pGOTHERE
-  $" GOT HERE" LENGTH$ CONSTANT GOTHERESize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pTestARRIVS
-  $" Tst ARRIVS" LENGTH$ CONSTANT TestARRIVSSize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pTestCHKZOC
-  $" Tst CHKZOC" LENGTH$ CONSTANT TestCHKZOCSize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pAIFor
-  $" AI For: " LENGTH$ CONSTANT AIForSize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pWRAPUP
-  $" WRAPUP for: " LENGTH$ CONSTANT WRAPUPSize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pCOMBAT
-  $" COMBAT " LENGTH$ CONSTANT COMBATSize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pDINGO
-  $" DINGO for: " LENGTH$ CONSTANT DINGOSize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pMOVEMENT
-  $" MOVEMENT for: " LENGTH$ CONSTANT MOVEMENTSize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pTICK
-  $" TICK: " LENGTH$ CONSTANT TICKSize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pTURN
-  $" TURN: " LENGTH$ CONSTANT TURNSize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pCALIFRbadunit
-  $" CALIFR bad unit " LENGTH$ CONSTANT CALIFRbadunitSize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pSWITCHbadx
-  $" SWITCH bad x " LENGTH$ CONSTANT SWITCHbadxSize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pSWITCHbady
-  $" SWITCH bad y " LENGTH$ CONSTANT SWITCHbadySize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pLATy
-  $" LATy " LENGTH$ CONSTANT LATySize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pLONGx
-  $" LONGx " LENGTH$ CONSTANT LONGxSize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pCORPS
-  $" CORPS " LENGTH$ CONSTANT CORPSSize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pTstINITMU
-  $" Tst INITMU " LENGTH$ CONSTANT TstINITMUSize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pUNITMOVEEr
-  $" UNITMOVEEr " LENGTH$ CONSTANT UNITMOVEErSize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pHiddenUnit
-  $" HiddenUnit " LENGTH$ CONSTANT HiddenUnitSize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pMissngUnit
-  $" HiddenUnit " LENGTH$ CONSTANT MissngUnitSize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pBADX
-  $" HiddenUnit " LENGTH$ CONSTANT BADXSize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT pBADY
-  $" HiddenUnit " LENGTH$ CONSTANT BADYSize
-  CODE-ICODE$,
-
-  BARHERE CONSTANT DrawBADY
-    2 U8 LDY,
-    0 U8 LDX,
-    BEGIN,
-      pBADY [U+X] LDA,
-      TXTWDWTOP [U+Y] STA,
-      INY, INX,
-      BADXSize U8 CPX,
-    EQ UNTIL,
-    RTS,
-
-  BARHERE CONSTANT DrawBADX
-    2 U8 LDY,
-    0 U8 LDX,
-    BEGIN,
-      pBADX [U+X] LDA,
-      TXTWDWTOP [U+Y] STA,
-      INY, INX,
-      BADXSize U8 CPX,
-    EQ UNTIL,
-    RTS,
-
-  BARHERE CONSTANT DrawMissngUnit
-    2 U8 LDY,
-    0 U8 LDX,
-    BEGIN,
-      pMissngUnit [U+X] LDA,
-      TXTWDWTOP [U+Y] STA,
-      INY, INX,
-      MissngUnitSize U8 CPX,
-    EQ UNTIL,
-    RTS,
-
-  BARHERE CONSTANT DrawHiddenUnit
-    2 U8 LDY,
-    0 U8 LDX,
-    BEGIN,
-      pHiddenUnit [U+X] LDA,
-      TXTWDWTOP [U+Y] STA,
-      INY, INX,
-      HiddenUnitSize U8 CPX,
-    EQ UNTIL,
-    RTS,
-
-  BARHERE CONSTANT DrawUNITMOVEEr
-    2 U8 LDY,
-    0 U8 LDX,
-    BEGIN,
-      pUNITMOVEEr [U+X] LDA,
-      TXTWDWTOP [U+Y] STA,
-      INY, INX,
-      UNITMOVEErSize U8 CPX,
-    EQ UNTIL,
-    RTS,
-
-  BARHERE CONSTANT DrawTestINITMU
-    2 U8 LDY,
-    0 U8 LDX,
-    BEGIN,
-      pTstINITMU [U+X] LDA,
-      TXTWDWTOP [U+Y] STA,
-      INY, INX,
-      TstINITMUSize U8 CPX,
-    EQ UNTIL,
-    RTS,
-
-  BARHERE CONSTANT DrawLONGx ( Y = start offset in TXTTBL )
-    0 U8 LDX,
-    BEGIN,
-      pLONGx [U+X] LDA,
-      TXTWDW [U+Y] STA,
-      INY, INX,
-      LONGxSize U8 CPX,
-    EQ UNTIL,
-    LONG [U] LDA,
-    DrawHexByte2 U16 JSR,
-    RTS,
-
-  BARHERE CONSTANT DrawLATy ( Y = start offset in TXTTBL )
-    0 U8 LDX,
-    BEGIN,
-      pLATy [U+X] LDA,
-      TXTWDW [U+Y] STA,
-      INY, INX,
-      LATySize U8 CPX,
-    EQ UNTIL,
-    LAT [U] LDA,
-    DrawHexByte2 U16 JSR,
-    RTS,
-
-  BARHERE CONSTANT DrawCORPS ( Y = start offset in TXTTBL )
-    0 U8 LDX,
-    BEGIN,
-      pCORPS [U+X] LDA,
-      TXTWDW [U+Y] STA,
-      INY, INX,
-      CORPSSize U8 CPX,
-    EQ UNTIL,
-    CORPS [U] LDA,
-    DrawHexByte2 U16 JSR,
-    RTS,
-
-  BARHERE CONSTANT DrawSWITCHbadx
-    3 U8 LDY,
-    0 U8 LDX,
-    BEGIN,
-      pSWITCHbadx [U+X] LDA,
-      TXTWDWTOP [U+Y] STA,
-      INY, INX,
-      SWITCHbadxSize U8 CPX,
-    EQ UNTIL,
-    RTS,
-
-  BARHERE CONSTANT DrawSWITCHbady
-    3 U8 LDY,
-    0 U8 LDX,
-    BEGIN,
-      pSWITCHbady [U+X] LDA,
-      TXTWDWTOP [U+Y] STA,
-      INY, INX,
-      SWITCHbadySize U8 CPX,
-    EQ UNTIL,
-    RTS,
-
-  BARHERE CONSTANT DrawCALIFRbadunit
-    3 U8 LDY,
-    0 U8 LDX,
-    BEGIN,
-      pCALIFRbadunit [U+X] LDA,
-      TXTWDWTOP [U+Y] STA,
-      INY, INX,
-      CALIFRbadunitSize U8 CPX,
-    EQ UNTIL,
-    RTS,
-
-  HEX
-  BARHERE CONSTANT DrawCOMBAT ( -- ) 
-    38 U8 LDY,
-    0 U8 LDX,
-    BEGIN,
-      pCOMBAT [U+X] LDA,
-      TXTWDW [U+Y] STA,
-      INY, INX,
-      COMBATSize U8 CPX,
-    EQ UNTIL,
-    RTS,
-
-  HEX
-  BARHERE CONSTANT DrawTICK ( -- ) 
-    8 U8 LDY,
-    0 U8 LDX,
-    BEGIN,
-      pTICK [U+X] LDA,
-      TXTWDW [U+Y] STA,
-      INY, INX,
-      TICKSize U8 CPX,
-    EQ UNTIL,
-    TICK [U] LDA,
-    DrawHexByte2 U16 JSR,
-    RTS,
-
-  HEX
-  BARHERE CONSTANT DrawTURN ( -- ) 
-    8 U8 LDY,
-    0 U8 LDX,
-    BEGIN,
-      pTURN [U+X] LDA,
-      TXTWDW [U+Y] STA,
-      INY, INX,
-      TURNSize U8 CPX,
-    EQ UNTIL,
-    TURN [U] LDA,
-    DrawHexByte2 U16 JSR,
-    RTS,
-
-  HEX
-  BARHERE CONSTANT DrawMOVEMENT ( -- ) 
-    38 U8 LDY,
-    0 U8 LDX,
-    BEGIN,
-      pMOVEMENT [U+X] LDA,
-      TXTWDW [U+Y] STA,
-      INY, INX,
-      MOVEMENTSize U8 CPX,
-    EQ UNTIL,
-
-    ARMY [U] LDA,
-    DrawHexByte2 U16 JSR,
-    ARMY [U] LDX,
-    RTS,
-
-  HEX
-  BARHERE CONSTANT DrawDINGO ( -- ) 
-    38 U8 LDY,
-    0 U8 LDX,
-    BEGIN,
-      pDINGO [U+X] LDA,
-      TXTWDW [U+Y] STA,
-      INY, INX,
-      DINGOSize U8 CPX,
-    EQ UNTIL,
-
-    ARMY [U] LDA,
-    DrawHexByte2 U16 JSR,
-    RTS,
-
-  HEX
-  BARHERE CONSTANT DrawAIFor ( -- ) 
-    // if button is pressed need to exit
-    TRIG0 [U] LDA,
-    EQ IF,
-      RTS,
-    THEN, 
-    38 U8 LDY,
-    0 U8 LDX,
-    BEGIN,
-      pAIFor [U+X] LDA,
-      TXTWDW [U+Y] STA,
-      INY, INX,
-      AIForSize U8 CPX,
-    EQ UNTIL,
-    ARMY [U] LDA,
-    DrawHexByte2 U16 JSR,
-    RTS,
-
-  HEX
-  BARHERE CONSTANT DrawWRAPUP ( -- ) 
-    38 U8 LDY,
-    0 U8 LDX,
-    BEGIN,
-      pWRAPUP [U+X] LDA,
-      TXTWDW [U+Y] STA,
-      INY, INX,
-      WRAPUPSize U8 CPX,
-    EQ UNTIL,
-
-    ARMY [U] LDA,
-    DrawHexByte2 U16 JSR,
-    ARMY [U] LDX,
-    RTS,
-
-  BARHERE CONSTANT DrawFAIL ( Y = screenoffset -- ) 
-    0 U8 LDX,
-    BEGIN,
-      pFAIL [U+X] LDA,
-      // SAVMSC [[U8]+Y] STA,
-      TXTWDWTOP [U+Y] STA,
-      INY, INX,
-      FAILSize U8 CPX,
-    EQ UNTIL,
-    RTS,
-
-  BARHERE CONSTANT DrawPASS ( Y = screenoffset -- ) 
-    0 U8 LDX,
-    BEGIN,
-      pPASS [U+X] LDA,
-      // SAVMSC [[U8]+Y] STA,
-      TXTWDWTOP [U+Y] STA,
-      INY, INX,
-      PASSSize U8 CPX,
-    EQ UNTIL,
-    RTS,
-
-  BARHERE CONSTANT DrawTestERRCLR ( Y = screenoffset -- ) // screen offset limited to 100 - size of title
-    0 U8 LDX,
-    BEGIN,
-      pTestERRCLR [U+X] LDA,
-      TXTWDWTOP [U+Y] STA,
-      INY, INX,
-      TestERRCLRSize U8 CPX,
-    EQ UNTIL,
-    RTS,
-
-  BARHERE CONSTANT DrawTestCHGDL ( Y = screenoffset -- ) // screen offset limited to 100 - size of title
-    0 U8 LDX,
-    BEGIN,
-      pTestCHGDL [U+X] LDA,
-      TXTWDWTOP [U+Y] STA,
-      INY, INX,
-      TestCHGDLSize U8 CPX,
-    EQ UNTIL,
-    RTS,
-
-  BARHERE CONSTANT DrawTestMOVEMK ( Y = screenoffset -- ) // screen offset limited to 100 - size of title
-    0 U8 LDX,
-    BEGIN,
-      pTestMOVEMK [U+X] LDA,
-      TXTWDWTOP [U+Y] STA,
-      INY, INX,
-      TestMOVEMKSize U8 CPX,
-    EQ UNTIL,
-    RTS,
-
-  BARHERE CONSTANT DrawTestSWITCH ( Y = screenoffset -- ) // screen offset limited to 100 - size of title
-    0 U8 LDX,
-    BEGIN,
-      pTestSWITCH [U+X] LDA,
-      TXTWDWTOP [U+Y] STA,
-      INY, INX,
-      TestSWITCHSize U8 CPX,
-    EQ UNTIL,
-    RTS,
-
-  BARHERE CONSTANT DrawTestSCRLSB ( Y = screenoffset -- ) // screen offset limited to 100 - size of title
-    0 U8 LDX,
-    BEGIN,
-      pTestSCRLSB [U+X] LDA,
-      TXTWDWTOP [U+Y] STA,
-      INY, INX,
-      TestSCRLSBSize U8 CPX,
-    EQ UNTIL,
-    RTS,
-
-  BARHERE CONSTANT DrawGOTHERE ( Y = screenoffset -- ) 
-    0 U8 LDX,
-    BEGIN,
-      pGOTHERE [U+X] LDA,
-      TXTWDWTOP [U+Y] STA,
-      INY, INX,
-      GOTHERESize U8 CPX,
-    EQ UNTIL,
-    RTS,
-
-  BARHERE CONSTANT GOTHERESTOP
-    DrawGOTHERE U16 JSR,
-    CLC, BEGIN, CS UNTIL,
-
-  BARHERE CONSTANT DrawTestARRIVS ( Y = screenoffset -- ) // screen offset limited to 100 - size of title
-    0 U8 LDX,
-    BEGIN,
-      pTestARRIVS [U+X] LDA,
-      TXTWDWTOP [U+Y] STA,
-      INY, INX,
-      TestARRIVSSize U8 CPX,
-    EQ UNTIL,
-    RTS,
-
-  BARHERE CONSTANT DrawTestCHKZOC ( Y = screenoffset -- ) // screen offset limited to 100 - size of title
-    0 U8 LDX,
-    BEGIN,
-      pTestCHKZOC [U+X] LDA,
-      TXTWDWTOP [U+Y] STA,
-      INY, INX,
-      TestCHKZOCSize U8 CPX,
-    EQ UNTIL,
-    RTS,
-
-// //////////////////////
-// End Test Code Stuff //
-// //////////////////////
-
-
 // Source EFT18T.ASM line 9710
 HEX
 BARHERE CONSTANT ABSA
@@ -2448,7 +1966,7 @@ BARHERE CONSTANT SWITCH ( was 0x79EF ) ( [CHUNKX] [CHUNKY] [CORPS] -- )
   CHUNKX [U] LDA,
   MAPWIDTH 2 - U8 CMP,
   CS IF,
-    DrawSWITCHbadx U16 JSR,
+    // DrawSWITCHbadx U16 JSR,
     BEGIN, CLC, CS UNTIL,
   THEN,
 
@@ -2456,7 +1974,7 @@ BARHERE CONSTANT SWITCH ( was 0x79EF ) ( [CHUNKX] [CHUNKY] [CORPS] -- )
   CHUNKY [U] LDA,
   MAPHEIGHT 1- U8 CMP,
   CS IF,
-    DrawSWITCHbady U16 JSR,
+    // DrawSWITCHbady U16 JSR,
     BEGIN, CLC, CS UNTIL,
   THEN,
  
@@ -2780,28 +2298,6 @@ BARHERE CONSTANT LOCTOMAPPTR ( [LAT] [LONG] -mem- [MAPPTRHI:MAPPTRLO] ) ( -reg- 
   TAY,
   RTS,
 
-HEX
-BARHERE CONSTANT DrawLOC
-    3 U8 LDY,
-    DrawLONGx U16 JSR,
-    INY, 0 U8 LDA, TXTWDW [U+Y] STA,
-    INY,
-    DrawLATy U16 JSR,
-    INY, 0 U8 LDA, TXTWDW [U+Y] STA,
-    INY,
-    DrawCORPS U16 JSR,
-
-    LOCTOMAPPTR U16 JSR,
-    MAPPTR [[U8]+Y] LDA,
-    20 U8 LDY,
-    DrawHexByte2 U16 JSR,
-
-    LOCTOMAPUNITSPTR U16 JSR,
-    MAPPTR [[U8]+Y] LDA,
-    24 U8 LDY,
-    DrawHexByte2 U16 JSR,
-    RTS,
-
 BARHERE CONSTANT TERRAIN@ ( [CHUNKY] [CHUNKX] -mem- ) ( -reg- RA=terrain )
 
   // check to see if there is a unit on the square
@@ -2923,27 +2419,12 @@ BARHERE CONSTANT ERASECURSOR ( X = ypos ) // J.N. added so cursor can jump aroun
   RTS,
 
 BARHERE CONSTANT INITCURSOR // assumes player mem was erased
-  PM0INITIALYPOS U8 LDX,
+  SCYINIT U8 LDX,
 
 // hard coding cursor image
 HEX
 BARHERE CONSTANT DRAWCURSOR ( X = ypos )  // J.N. added so cursor can jump around
-  ( 80 U8 LDA,  PLYR0 4 + [U] STA,
-  81 U8 LDA,  PLYR0 8 + [U] STA,
-  82 U8 LDA,  PLYR0 0C + [U] STA,
-  83 U8 LDA,  PLYR0 10 + [U] STA,
-  84 U8 LDA,  PLYR0 14 + [U] STA,
-  85 U8 LDA,  PLYR0 15 + [U] STA,
-  86 U8 LDA,  PLYR0 16 + [U] STA,
-  87 U8 LDA,  PLYR0 1E + [U] STA,
-  88 U8 LDA,  PLYR0 26 + [U] STA,
-  89 U8 LDA,  PLYR0 2E + [U] STA,
-  8A U8 LDA,  PLYR0 36 + [U] STA,
-  8B U8 LDA,  PLYR0 3E + [U] STA,
-  8C U8 LDA,  PLYR0 46 + [U] STA,
-  8D U8 LDA,  PLYR0 4E + [U] STA,
-  8E U8 LDA,  PLYR0 56 + [U] STA,
-  8F U8 LDA,  PLYR0 5E + [U] STA, )
+
   FF U8 LDA,
   PLYR0             [U+X] STA,
   PLYR0          1+ [U+X] STA,
@@ -3664,7 +3145,7 @@ BARHERE CONSTANT OINIT // init game
 
   // here follow various initializations
   // wide playfield is 384 pixels but only 352 are visible... 
-  //  so two extra characters on each side, but you can only see part of one of them.
+
   2F U8 LDA,       // wide playfield, missile dma, player dma, 
                    //  two line player resolution, dma enabled
   SDMCTL [U] STA,
@@ -3841,7 +3322,7 @@ BARHERE CONSTANT TERR // was 7240 - determines what terrain and unit is in a squ
   EQ IF,
 
     // J.N. run time error check added. no unit found on square, display message and lock up
-    DrawLOC U16 JSR,
+    // DrawLOC U16 JSR,
     BEGIN, CLC, CS UNTIL, // lock up...
 
   THEN,
@@ -4193,12 +3674,12 @@ BARHERE CONSTANT CALIFR ( X=russianunitid [ARMY]=russianunitid -reg- )
 
   NUMBEROFUNITS 1+ U8 CPX,
   CS IF, // U>=
-    DrawCALIFRbadunit U16 JSR,
+    // DrawCALIFRbadunit U16 JSR,
     BEGIN, CLC, CS UNTIL,
   THEN,
   FIRSTRUSSIANUNIT U8 CPX, 
   NC IF, // U<
-    DrawCALIFRbadunit U16 JSR,
+    // DrawCALIFRbadunit U16 JSR,
     BEGIN, CLC, CS UNTIL,
   THEN,
 
@@ -4300,15 +3781,6 @@ BARHERE CONSTANT CALIFR ( X=russianunitid [ARMY]=russianunitid -reg- )
   IFRW FIRSTRUSSIANUNIT - [U+X] STA,
   RTS,
 
-// For testing
-BARHERE CONSTANT WAITFORSTART
-  BEGIN,
-    8 U8 LDA,
-    CONSOL [U] STA, // clear consol latches
-    CONSOL [U] LDA, // get start-1 select-2 option-4 status
-    1 U8 AND, // is start pressed?
-  EQ UNTIL, 
-  RTS,
 
 // get 2 + sum of combat strengths + left over low russian strength for german units 
 //   and 2 + sum of combat strengths for russian units
@@ -4517,7 +3989,7 @@ BARHERE CONSTANT GETNEXTTARGETSQUARE // - Source EFT18T.ASM line 1620
 
 
 BARHERE CONSTANT FILLLINARR
-  // get combat strengths of other units around a unit's proposed next square in 5x5 area
+  // get muster strengths of other units around a unit's proposed next square in 5x5 area
     //   results are stored in LINARR, with middle square holding the muster strength of
     //   the original unit
     17 U8 LDY, // index of last movement in movement table (24)
@@ -5909,7 +5381,7 @@ BARHERE CONSTANT UNITMOVE ( X=unit -reg- ) ( [LAT]=newy [LONG]=newx -mem- )
   LOCTOMAPUNITSPTR U16 JSR, // does not trash x
   MAPPTR [[U8]+Y] LDA,
   NE IF,
-    DrawUNITMOVEEr U16 JSR,
+    // DrawUNITMOVEEr U16 JSR,
     CLC, BEGIN, CS UNTIL,    // lock up
   THEN,
 
@@ -5938,55 +5410,7 @@ BARHERE CONSTANT UNITMOVE ( X=unit -reg- ) ( [LAT]=newy [LONG]=newx -mem- )
 
   SWITCH U16 JSR,
   RTS,
-
-// J.N. added for debugging - makes sure unit map matches main map
-BARHERE CONSTANT CHECKMAPSQUARE 
-  // [LONG]=x [LAT]=y -mem-
-  
-  LOCTOMAPPTR U16 JSR,
-  MAPPTR [[U8]+Y] LDA,
-  3F U8 AND,
-  3D U8 CMP,
-  NE IF,
-    3E U8 CMP,
-    NE IF,
-      // map says there is no unit on square
-      LOCTOMAPUNITSPTR U16 JSR,
-      MAPPTR [[U8]+Y] LDA,
-      NE IF,
-        // there is a unit... show error and lock up
-        DrawHiddenUnit U16 JSR,
-        DrawLOC U16 JSR,
-        CLC, BEGIN, CS UNTIL,
-      THEN,
-      RTS,
-    THEN,
-  THEN,
-
-  LOCTOMAPUNITSPTR U16 JSR,
-  MAPPTR [[U8]+Y] LDA,
-  EQ IF,
-    // there is a unit... show error and lock up
-    DrawMissngUnit U16 JSR,
-    DrawLOC U16 JSR,
-    CLC, BEGIN, CS UNTIL,
-  THEN,
-  RTS,
-
-// J.N. added for debugging - makes sure unit map matches main map
-BARHERE CONSTANT CHECKMAPSQUARES
-  MAPHEIGHT 1- U8 LDA,
-  LAT [U] STA,
-  BEGIN,
-    MAPWIDTH 2 - U8 LDA,
-    LONG [U] STA,
-    BEGIN,
-      CHECKMAPSQUARE U16 JSR,
-      LONG [U] DEC,
-    EQ UNTIL,
-    LAT [U] DEC,
-  EQ UNTIL,
-  RTS, 
+ 
 
 // EFT18C.ASM line 1250 tag A11
 BARHERE CONSTANT UNITFLASH // this does not use the vbi routine to do the flash
@@ -6228,13 +5652,13 @@ BARHERE CONSTANT CHECKCOORD // [LONG]=x [LAT]=y
   LONG [U] LDA,
   MAPWIDTH 2 - U8 CMP,
   CS IF,
-    DrawBADX U16 JSR,
+    // DrawBADX U16 JSR,
     CLC, BEGIN, CS UNTIL,
   THEN,
   LAT [U] LDA,
   MAPHEIGHT 1- U8 CMP,
   CS IF,
-    DrawBADY U16 JSR,
+    // DrawBADY U16 JSR,
     CLC, BEGIN, CS UNTIL,
   THEN,
   RTS,  
@@ -7009,6 +6433,647 @@ BARHERE CONSTANT NEWTRN
 BARHERE CONSTANT STOP
   STOP U16 JMP,
 
+  
+// ///////////////////
+// Start of Program //
+// ///////////////////
+
+toCode LONGTHEN,
+
+OINIT U16 JSR,
+
+NEWTRN U16 JMP, 
+
+// Busy Wait Forever
+STOP U16 JMP,
+
+CRLF
+CRLF ." Program goes to: "               BARHERE HEX U.
+CRLF ." Variables start at: "            VAR-HERE HEX U.
+CRLF ." Player window starts at: "       HEX PLAYERWINDOWHI 100 * U. 
+CRLF ." Stack should be empty, it has: " .S
+
+// //////////////////////////////////
+// End of where your program goes. //
+// //////////////////////////////////
+
+
+// This calculates and sets the number of boot sectors automatically
+//   I didn't fully test this calculation...
+OHERE SectorSize ROUNDUP SectorSize /   // calculate number of sectors needed
+oNumberOfBootSectors PCURRENTCOMPILEBUFFER @ O>P C!
+
+
+// This converts the program into a .ATR disk image and saves it to a file
+$" EasternFront.atr" PCURRENTCOMPILEBUFFER @ Buf>ATRFile
+
+
+TRUE ?END-EVALUATE
+
+
+// /////////////
+// Test Stuff //
+// /////////////
+
+// //////////////////
+// Test Code Stuff //
+// //////////////////
+
+BARHERE CONSTANT TestNum 0 CC,
+BARHERE CONSTANT TestX 0 CC,
+BARHERE CONSTANT TestY 0 CC,
+
+  HEX
+  BARHERE CONSTANT DigitToChar ( RA=u - RA=c )
+    0F U8 AND,
+    0A U8 CMP,
+    CS IF, 
+      20 0A - U8 ADC,
+      RTS,
+    THEN,
+    // carry is not set
+    10 U8 ADC,
+    RTS,
+
+  BARHERE CONSTANT DrawHexByte ( RA=byte Y=TXTWDWTOPoffset -- )
+    INY,
+    TAX,
+    DigitToChar U16 JSR,
+    TXTWDWTOP [U+Y] STA,
+    TXA, RA LSR, RA LSR, RA LSR, RA LSR,
+    DigitToChar U16 JSR,
+    DEY,
+    TXTWDWTOP [U+Y] STA, 
+    NOP,
+    // INY,
+    RTS,
+
+  BARHERE CONSTANT DrawHexByte2 ( RA=byte Y=TXTWDWoffset -- )
+    INY,
+    TAX,
+    DigitToChar U16 JSR,
+    TXTWDW [U+Y] STA,
+    TXA, RA LSR, RA LSR, RA LSR, RA LSR,
+    DigitToChar U16 JSR,
+    DEY,
+    TXTWDW [U+Y] STA,
+    NOP,
+    // INY,
+    RTS,
+
+HEX
+
+  BARHERE CONSTANT pFAIL
+  $" FAIL" LENGTH$ CONSTANT FAILSize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT pPASS
+  $" PASS" LENGTH$ CONSTANT PASSSize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT pTestERRCLR
+  $" Tst ERRCLR" LENGTH$ CONSTANT TestERRCLRSize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT pTestCHGDL
+  $" Tst CHGDL " LENGTH$ CONSTANT TestCHGDLSize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT pTestMOVEMK
+  $" Tst MOVEMK" LENGTH$ CONSTANT TestMOVEMKSize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT pTestSWITCH
+  $" Tst SWITCH" LENGTH$ CONSTANT TestSWITCHSize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT pTestSCRLSB
+  $" Tst SCRLSB" LENGTH$ CONSTANT TestSCRLSBSize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT pGOTHERE
+  $" GOT HERE" LENGTH$ CONSTANT GOTHERESize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT pTestARRIVS
+  $" Tst ARRIVS" LENGTH$ CONSTANT TestARRIVSSize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT pTestCHKZOC
+  $" Tst CHKZOC" LENGTH$ CONSTANT TestCHKZOCSize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT pAIFor
+  $" AI For: " LENGTH$ CONSTANT AIForSize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT pWRAPUP
+  $" WRAPUP for: " LENGTH$ CONSTANT WRAPUPSize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT pCOMBAT
+  $" COMBAT " LENGTH$ CONSTANT COMBATSize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT pDINGO
+  $" DINGO for: " LENGTH$ CONSTANT DINGOSize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT pMOVEMENT
+  $" MOVEMENT for: " LENGTH$ CONSTANT MOVEMENTSize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT pTICK
+  $" TICK: " LENGTH$ CONSTANT TICKSize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT pTURN
+  $" TURN: " LENGTH$ CONSTANT TURNSize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT pCALIFRbadunit
+  $" CALIFR bad unit " LENGTH$ CONSTANT CALIFRbadunitSize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT pSWITCHbadx
+  $" SWITCH bad x " LENGTH$ CONSTANT SWITCHbadxSize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT pSWITCHbady
+  $" SWITCH bad y " LENGTH$ CONSTANT SWITCHbadySize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT pLATy
+  $" LATy " LENGTH$ CONSTANT LATySize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT pLONGx
+  $" LONGx " LENGTH$ CONSTANT LONGxSize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT pCORPS
+  $" CORPS " LENGTH$ CONSTANT CORPSSize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT pTstINITMU
+  $" Tst INITMU " LENGTH$ CONSTANT TstINITMUSize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT pUNITMOVEEr
+  $" UNITMOVEEr " LENGTH$ CONSTANT UNITMOVEErSize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT pHiddenUnit
+  $" HiddenUnit " LENGTH$ CONSTANT HiddenUnitSize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT pMissngUnit
+  $" HiddenUnit " LENGTH$ CONSTANT MissngUnitSize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT pBADX
+  $" HiddenUnit " LENGTH$ CONSTANT BADXSize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT pBADY
+  $" HiddenUnit " LENGTH$ CONSTANT BADYSize
+  CODE-ICODE$,
+
+  BARHERE CONSTANT DrawBADY
+    2 U8 LDY,
+    0 U8 LDX,
+    BEGIN,
+      pBADY [U+X] LDA,
+      TXTWDWTOP [U+Y] STA,
+      INY, INX,
+      BADXSize U8 CPX,
+    EQ UNTIL,
+    RTS,
+
+  BARHERE CONSTANT DrawBADX
+    2 U8 LDY,
+    0 U8 LDX,
+    BEGIN,
+      pBADX [U+X] LDA,
+      TXTWDWTOP [U+Y] STA,
+      INY, INX,
+      BADXSize U8 CPX,
+    EQ UNTIL,
+    RTS,
+
+  BARHERE CONSTANT DrawMissngUnit
+    2 U8 LDY,
+    0 U8 LDX,
+    BEGIN,
+      pMissngUnit [U+X] LDA,
+      TXTWDWTOP [U+Y] STA,
+      INY, INX,
+      MissngUnitSize U8 CPX,
+    EQ UNTIL,
+    RTS,
+
+  BARHERE CONSTANT DrawHiddenUnit
+    2 U8 LDY,
+    0 U8 LDX,
+    BEGIN,
+      pHiddenUnit [U+X] LDA,
+      TXTWDWTOP [U+Y] STA,
+      INY, INX,
+      HiddenUnitSize U8 CPX,
+    EQ UNTIL,
+    RTS,
+
+  BARHERE CONSTANT DrawUNITMOVEEr
+    2 U8 LDY,
+    0 U8 LDX,
+    BEGIN,
+      pUNITMOVEEr [U+X] LDA,
+      TXTWDWTOP [U+Y] STA,
+      INY, INX,
+      UNITMOVEErSize U8 CPX,
+    EQ UNTIL,
+    RTS,
+
+  BARHERE CONSTANT DrawTestINITMU
+    2 U8 LDY,
+    0 U8 LDX,
+    BEGIN,
+      pTstINITMU [U+X] LDA,
+      TXTWDWTOP [U+Y] STA,
+      INY, INX,
+      TstINITMUSize U8 CPX,
+    EQ UNTIL,
+    RTS,
+
+  BARHERE CONSTANT DrawLONGx ( Y = start offset in TXTTBL )
+    0 U8 LDX,
+    BEGIN,
+      pLONGx [U+X] LDA,
+      TXTWDW [U+Y] STA,
+      INY, INX,
+      LONGxSize U8 CPX,
+    EQ UNTIL,
+    LONG [U] LDA,
+    DrawHexByte2 U16 JSR,
+    RTS,
+
+  BARHERE CONSTANT DrawLATy ( Y = start offset in TXTTBL )
+    0 U8 LDX,
+    BEGIN,
+      pLATy [U+X] LDA,
+      TXTWDW [U+Y] STA,
+      INY, INX,
+      LATySize U8 CPX,
+    EQ UNTIL,
+    LAT [U] LDA,
+    DrawHexByte2 U16 JSR,
+    RTS,
+
+  BARHERE CONSTANT DrawCORPS ( Y = start offset in TXTTBL )
+    0 U8 LDX,
+    BEGIN,
+      pCORPS [U+X] LDA,
+      TXTWDW [U+Y] STA,
+      INY, INX,
+      CORPSSize U8 CPX,
+    EQ UNTIL,
+    CORPS [U] LDA,
+    DrawHexByte2 U16 JSR,
+    RTS,
+
+  BARHERE CONSTANT DrawSWITCHbadx
+    3 U8 LDY,
+    0 U8 LDX,
+    BEGIN,
+      pSWITCHbadx [U+X] LDA,
+      TXTWDWTOP [U+Y] STA,
+      INY, INX,
+      SWITCHbadxSize U8 CPX,
+    EQ UNTIL,
+    RTS,
+
+  BARHERE CONSTANT DrawSWITCHbady
+    3 U8 LDY,
+    0 U8 LDX,
+    BEGIN,
+      pSWITCHbady [U+X] LDA,
+      TXTWDWTOP [U+Y] STA,
+      INY, INX,
+      SWITCHbadySize U8 CPX,
+    EQ UNTIL,
+    RTS,
+
+  BARHERE CONSTANT DrawCALIFRbadunit
+    3 U8 LDY,
+    0 U8 LDX,
+    BEGIN,
+      pCALIFRbadunit [U+X] LDA,
+      TXTWDWTOP [U+Y] STA,
+      INY, INX,
+      CALIFRbadunitSize U8 CPX,
+    EQ UNTIL,
+    RTS,
+
+  HEX
+  BARHERE CONSTANT DrawCOMBAT ( -- ) 
+    38 U8 LDY,
+    0 U8 LDX,
+    BEGIN,
+      pCOMBAT [U+X] LDA,
+      TXTWDW [U+Y] STA,
+      INY, INX,
+      COMBATSize U8 CPX,
+    EQ UNTIL,
+    RTS,
+
+  HEX
+  BARHERE CONSTANT DrawTICK ( -- ) 
+    8 U8 LDY,
+    0 U8 LDX,
+    BEGIN,
+      pTICK [U+X] LDA,
+      TXTWDW [U+Y] STA,
+      INY, INX,
+      TICKSize U8 CPX,
+    EQ UNTIL,
+    TICK [U] LDA,
+    DrawHexByte2 U16 JSR,
+    RTS,
+
+  HEX
+  BARHERE CONSTANT DrawTURN ( -- ) 
+    8 U8 LDY,
+    0 U8 LDX,
+    BEGIN,
+      pTURN [U+X] LDA,
+      TXTWDW [U+Y] STA,
+      INY, INX,
+      TURNSize U8 CPX,
+    EQ UNTIL,
+    TURN [U] LDA,
+    DrawHexByte2 U16 JSR,
+    RTS,
+
+  HEX
+  BARHERE CONSTANT DrawMOVEMENT ( -- ) 
+    38 U8 LDY,
+    0 U8 LDX,
+    BEGIN,
+      pMOVEMENT [U+X] LDA,
+      TXTWDW [U+Y] STA,
+      INY, INX,
+      MOVEMENTSize U8 CPX,
+    EQ UNTIL,
+
+    ARMY [U] LDA,
+    DrawHexByte2 U16 JSR,
+    ARMY [U] LDX,
+    RTS,
+
+  HEX
+  BARHERE CONSTANT DrawDINGO ( -- ) 
+    38 U8 LDY,
+    0 U8 LDX,
+    BEGIN,
+      pDINGO [U+X] LDA,
+      TXTWDW [U+Y] STA,
+      INY, INX,
+      DINGOSize U8 CPX,
+    EQ UNTIL,
+
+    ARMY [U] LDA,
+    DrawHexByte2 U16 JSR,
+    RTS,
+
+  HEX
+  BARHERE CONSTANT DrawAIFor ( -- ) 
+    // if button is pressed need to exit
+    TRIG0 [U] LDA,
+    EQ IF,
+      RTS,
+    THEN, 
+    38 U8 LDY,
+    0 U8 LDX,
+    BEGIN,
+      pAIFor [U+X] LDA,
+      TXTWDW [U+Y] STA,
+      INY, INX,
+      AIForSize U8 CPX,
+    EQ UNTIL,
+    ARMY [U] LDA,
+    DrawHexByte2 U16 JSR,
+    RTS,
+
+  HEX
+  BARHERE CONSTANT DrawWRAPUP ( -- ) 
+    38 U8 LDY,
+    0 U8 LDX,
+    BEGIN,
+      pWRAPUP [U+X] LDA,
+      TXTWDW [U+Y] STA,
+      INY, INX,
+      WRAPUPSize U8 CPX,
+    EQ UNTIL,
+
+    ARMY [U] LDA,
+    DrawHexByte2 U16 JSR,
+    ARMY [U] LDX,
+    RTS,
+
+  BARHERE CONSTANT DrawFAIL ( Y = screenoffset -- ) 
+    0 U8 LDX,
+    BEGIN,
+      pFAIL [U+X] LDA,
+      // SAVMSC [[U8]+Y] STA,
+      TXTWDWTOP [U+Y] STA,
+      INY, INX,
+      FAILSize U8 CPX,
+    EQ UNTIL,
+    RTS,
+
+  BARHERE CONSTANT DrawPASS ( Y = screenoffset -- ) 
+    0 U8 LDX,
+    BEGIN,
+      pPASS [U+X] LDA,
+      // SAVMSC [[U8]+Y] STA,
+      TXTWDWTOP [U+Y] STA,
+      INY, INX,
+      PASSSize U8 CPX,
+    EQ UNTIL,
+    RTS,
+
+  BARHERE CONSTANT DrawTestERRCLR ( Y = screenoffset -- ) // screen offset limited to 100 - size of title
+    0 U8 LDX,
+    BEGIN,
+      pTestERRCLR [U+X] LDA,
+      TXTWDWTOP [U+Y] STA,
+      INY, INX,
+      TestERRCLRSize U8 CPX,
+    EQ UNTIL,
+    RTS,
+
+  BARHERE CONSTANT DrawTestCHGDL ( Y = screenoffset -- ) // screen offset limited to 100 - size of title
+    0 U8 LDX,
+    BEGIN,
+      pTestCHGDL [U+X] LDA,
+      TXTWDWTOP [U+Y] STA,
+      INY, INX,
+      TestCHGDLSize U8 CPX,
+    EQ UNTIL,
+    RTS,
+
+  BARHERE CONSTANT DrawTestMOVEMK ( Y = screenoffset -- ) // screen offset limited to 100 - size of title
+    0 U8 LDX,
+    BEGIN,
+      pTestMOVEMK [U+X] LDA,
+      TXTWDWTOP [U+Y] STA,
+      INY, INX,
+      TestMOVEMKSize U8 CPX,
+    EQ UNTIL,
+    RTS,
+
+  BARHERE CONSTANT DrawTestSWITCH ( Y = screenoffset -- ) // screen offset limited to 100 - size of title
+    0 U8 LDX,
+    BEGIN,
+      pTestSWITCH [U+X] LDA,
+      TXTWDWTOP [U+Y] STA,
+      INY, INX,
+      TestSWITCHSize U8 CPX,
+    EQ UNTIL,
+    RTS,
+
+  BARHERE CONSTANT DrawTestSCRLSB ( Y = screenoffset -- ) // screen offset limited to 100 - size of title
+    0 U8 LDX,
+    BEGIN,
+      pTestSCRLSB [U+X] LDA,
+      TXTWDWTOP [U+Y] STA,
+      INY, INX,
+      TestSCRLSBSize U8 CPX,
+    EQ UNTIL,
+    RTS,
+
+  BARHERE CONSTANT DrawGOTHERE ( Y = screenoffset -- ) 
+    0 U8 LDX,
+    BEGIN,
+      pGOTHERE [U+X] LDA,
+      TXTWDWTOP [U+Y] STA,
+      INY, INX,
+      GOTHERESize U8 CPX,
+    EQ UNTIL,
+    RTS,
+
+  BARHERE CONSTANT GOTHERESTOP
+    DrawGOTHERE U16 JSR,
+    CLC, BEGIN, CS UNTIL,
+
+  BARHERE CONSTANT DrawTestARRIVS ( Y = screenoffset -- ) // screen offset limited to 100 - size of title
+    0 U8 LDX,
+    BEGIN,
+      pTestARRIVS [U+X] LDA,
+      TXTWDWTOP [U+Y] STA,
+      INY, INX,
+      TestARRIVSSize U8 CPX,
+    EQ UNTIL,
+    RTS,
+
+  BARHERE CONSTANT DrawTestCHKZOC ( Y = screenoffset -- ) // screen offset limited to 100 - size of title
+    0 U8 LDX,
+    BEGIN,
+      pTestCHKZOC [U+X] LDA,
+      TXTWDWTOP [U+Y] STA,
+      INY, INX,
+      TestCHKZOCSize U8 CPX,
+    EQ UNTIL,
+    RTS,
+
+// //////////////////////
+// End Test Code Stuff //
+// //////////////////////
+
+HEX
+BARHERE CONSTANT DrawLOC
+    3 U8 LDY,
+    DrawLONGx U16 JSR,
+    INY, 0 U8 LDA, TXTWDW [U+Y] STA,
+    INY,
+    DrawLATy U16 JSR,
+    INY, 0 U8 LDA, TXTWDW [U+Y] STA,
+    INY,
+    DrawCORPS U16 JSR,
+
+    LOCTOMAPPTR U16 JSR,
+    MAPPTR [[U8]+Y] LDA,
+    20 U8 LDY,
+    DrawHexByte2 U16 JSR,
+
+    LOCTOMAPUNITSPTR U16 JSR,
+    MAPPTR [[U8]+Y] LDA,
+    24 U8 LDY,
+    DrawHexByte2 U16 JSR,
+    RTS,
+
+
+// J.N. added for debugging - makes sure unit map matches main map
+BARHERE CONSTANT CHECKMAPSQUARE 
+  // [LONG]=x [LAT]=y -mem-
+  
+  LOCTOMAPPTR U16 JSR,
+  MAPPTR [[U8]+Y] LDA,
+  3F U8 AND,
+  3D U8 CMP,
+  NE IF,
+    3E U8 CMP,
+    NE IF,
+      // map says there is no unit on square
+      LOCTOMAPUNITSPTR U16 JSR,
+      MAPPTR [[U8]+Y] LDA,
+      NE IF,
+        // there is a unit... show error and lock up
+        DrawHiddenUnit U16 JSR,
+        DrawLOC U16 JSR,
+        CLC, BEGIN, CS UNTIL,
+      THEN,
+      RTS,
+    THEN,
+  THEN,
+
+  LOCTOMAPUNITSPTR U16 JSR,
+  MAPPTR [[U8]+Y] LDA,
+  EQ IF,
+    // there is a unit... show error and lock up
+    DrawMissngUnit U16 JSR,
+    DrawLOC U16 JSR,
+    CLC, BEGIN, CS UNTIL,
+  THEN,
+  RTS,
+
+// J.N. added for debugging - makes sure unit map matches main map
+BARHERE CONSTANT CHECKMAPSQUARES
+  MAPHEIGHT 1- U8 LDA,
+  LAT [U] STA,
+  BEGIN,
+    MAPWIDTH 2 - U8 LDA,
+    LONG [U] STA,
+    BEGIN,
+      CHECKMAPSQUARE U16 JSR,
+      LONG [U] DEC,
+    EQ UNTIL,
+    LAT [U] DEC,
+  EQ UNTIL,
+  RTS,
+
+// STALL U16 JSR, // testing STALL (basically a crash test)
+
+// TESTSQUAWK U16 JSR,
+// TESTDRAWDATE U16 JSR,
+
+// TESTCHGDL U16 JSR,
+// TESTDRAWUNITSPECS U16 JSR,
+// TESTMOVEMK U16 JSR,
+// TESTSWITCH U16 JSR,
+// TESTDOARRIVALS U16 JSR,
+// TESTCHKZOC U16 JSR,
+// TESTINITMAPUNITS U16 JSR, // this also tests fill and erase
 
 
 BARHERE CONSTANT TESTERRCLR
@@ -7459,61 +7524,6 @@ BARHERE CONSTANT TESTINITMAPUNITS
   THEN,
 
   RTS,
-  
-// ////////////////
-// Start of Program
-// ////////////////
-
-toCode LONGTHEN,
-
-OINIT U16 JSR,
-
-// STALL U16 JSR, // testing STALL (basically a crash test)
-
-// TESTSQUAWK U16 JSR,
-// TESTDRAWDATE U16 JSR,
-
-// TESTCHGDL U16 JSR,
-// TESTDRAWUNITSPECS U16 JSR,
-// TESTMOVEMK U16 JSR,
-// TESTSWITCH U16 JSR,
-// TESTDOARRIVALS U16 JSR,
-// TESTCHKZOC U16 JSR,
-// TESTINITMAPUNITS U16 JSR, // this also tests fill and erase
-
-
-NEWTRN U16 JMP, 
-
-// Busy Wait Forever
-STOP U16 JMP,
-
-CRLF
-CRLF ." Program goes to: "               BARHERE HEX U.
-CRLF ." Variables start at: "            VAR-HERE HEX U.
-CRLF ." Player window starts at: "       HEX PLAYERWINDOWHI 100 * U. 
-CRLF ." Stack should be empty, it has: " .S
-
-
-// //////////////////////////////////
-// End of where your program goes. //
-// //////////////////////////////////
-
-
-// This calculates and sets the number of boot sectors automatically
-//   I didn't fully test this calculation...
-OHERE SectorSize ROUNDUP SectorSize /   // calculate number of sectors needed
-oNumberOfBootSectors PCURRENTCOMPILEBUFFER @ O>P C!
-
-
-// This converts the program into a .ATR disk image and saves it to a file
-$" EasternFront.atr" PCURRENTCOMPILEBUFFER @ Buf>ATRFile
-
-
-TRUE ?END-EVALUATE
-
-
-
-
 
 
 // //////////////////////////////////
@@ -8500,6 +8510,17 @@ BARHERE CONSTANT OLDINITCURSOR
   TURN [U] STA,
   INX,
   PLYR0 [U+X] STA,
+  RTS,
+
+
+// For testing
+BARHERE CONSTANT WAITFORSTART
+  BEGIN,
+    8 U8 LDA,
+    CONSOL [U] STA, // clear consol latches
+    CONSOL [U] LDA, // get start-1 select-2 option-4 status
+    1 U8 AND, // is start pressed?
+  EQ UNTIL, 
   RTS,
 
 
