@@ -127,6 +127,8 @@ ENUM<
   CURSXH
   CURSYL
   CURSYH
+  PSRCLO
+  PSRCHI
 > DROP
 
 // Program data
@@ -188,6 +190,7 @@ BARHERE CONSTANT pMessageTbl // assumes all messages in this table are 16 charac
   ( 24 ) $" DROPORDER       " 0 GETS$[ND] CODE-S, DROP$
   ( 25 ) $" CLEARORDERS     " 0 GETS$[ND] CODE-S, DROP$
   ( 26 ) $" QUEUEORDER      " 0 GETS$[ND] CODE-S, DROP$
+  ( 27 ) $" MOVEMEM         " 0 GETS$[ND] CODE-S, DROP$
 
 // Program variables - can be moved to outside file to make file smaller
 
@@ -195,6 +198,7 @@ HEX
 BARHERE CONSTANT MsgChar 1 CODE-ALLOT
 BARHERE CONSTANT FILLTEMP 1 CODE-ALLOT
 BARHERE CONSTANT TESTBUF 200 CODE-ALLOT
+BARHERE CONSTANT TESTBUF2 200 CODE-ALLOT
 
 BARHERE CONSTANT M1 1 CODE-ALLOT
 BARHERE CONSTANT M2LO 1 CODE-ALLOT
@@ -595,7 +599,7 @@ BARHERE CONSTANT ERASEMEM // name changed to avoid conflict with forth standard 
   0 U8 LDA,
 BARHERE CONSTANT FILLMEM // name changed to avoid conflict with forth standard word
   // length of 0 is treated as 0
-  ( [PDESTHI:PDEST]=pdest -mem- ) 
+  ( [PDESTHI:PDESTLO]=pdest -mem- ) 
   ( X:Y=length a=fillchar -reg- )
   ( -local- [FILLTEMP]=temp )
   0 U8 CPX,
@@ -616,6 +620,39 @@ BARHERE CONSTANT FILLMEM // name changed to avoid conflict with forth standard w
   NE IF,
     BEGIN,
       DEY,
+      PDESTLO [[U8]+Y] STA,
+      0 U8 CPY,
+    EQ UNTIL,
+  THEN,
+  RTS,
+
+HEX
+BARHERE CONSTANT MOVEMEM // length of 0 is treated as 0
+  // [PSRCHI:PSRCLO] = psrc
+  // [PDESTHI:PDESTLO] = pdest
+  // X=lengthhi
+  // Y=lengthlo
+  0 U8 CPX,
+  NE IF,
+    FILLTEMP [U] STY,
+    0 U8 LDY,
+    BEGIN,
+      BEGIN,
+        PSRCLO [[U8]+Y] LDA, 
+        PDESTLO [[U8]+Y] STA,
+        INY,
+      EQ UNTIL,
+      PSRCHI [U] INC,
+      PDESTHI [U] INC,
+      DEX,
+    EQ UNTIL,
+    FILLTEMP [U] LDY,
+  THEN,
+  0 U8 CPY,
+  NE IF,
+    BEGIN,
+      DEY,
+      PSRCLO [[U8]+Y] LDA, 
       PDESTLO [[U8]+Y] STA,
       0 U8 CPY,
     EQ UNTIL,
@@ -5637,6 +5674,94 @@ TypeTestResult U16 JSR,
 RTS,
 
 
+HEX
+BARHERE CONSTANT TESTMOVEMEM
+  
+  // erase dest
+  TESTBUF U8 LDA,
+  PDESTLO [U] STA,
+  TESTBUF 8 RSHIFT U8 LDA,
+  PDESTHI [U] STA,
+
+  00 U8 LDY, // size lo
+  02 U8 LDX, // size hi
+
+  ERASEMEM U16 JSR,
+
+  // set up source buffer data
+  24 U8 LDA,
+  TESTBUF2 [U] STA,
+  26 U8 LDA,
+  TESTBUF2 1+ [U] STA,
+  38 U8 LDA,
+  TESTBUF2 180 + [U] STA,
+  4A U8 LDA,
+  TESTBUF2 181 + [U] STA,
+
+  // set up pdest
+  TESTBUF 1+ U8 LDA,
+  PDESTLO [U] STA,
+  TESTBUF 1+ 8 RSHIFT U8 LDA,
+  PDESTHI [U] STA,
+
+  // set up psr
+  TESTBUF2 1+ U8 LDA,
+  PSRCLO [U] STA,
+  TESTBUF2 1+ 8 RSHIFT U8 LDA,
+  PSRCHI [U] STA,
+  
+  80 U8 LDY, // size lo
+  01 U8 LDX, // size hi
+
+  MOVEMEM U16 JSR,
+
+  TESTBUF [U] LDA,  
+  00 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  27 U8 LDX, 
+  0 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  TESTBUF 1+ [U] LDA,  
+  26 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  27 U8 LDX, 
+  1 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  TESTBUF 180 + [U] LDA,  
+  38 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  27 U8 LDX, 
+  2 U8 LDY,
+  TypeTestResult U16 JSR,
+
+  TESTBUF 181 + [U] LDA,  
+  00 U8 CMP,
+  NE IF,
+    0 U8 LDA,
+  ELSE,
+    1 U8 LDA,
+  THEN,
+  27 U8 LDX, 
+  3 U8 LDY,
+  TypeTestResult U16 JSR,
+  
+  RTS,
+
+
 toCode LONGTHEN,
 
 
@@ -5682,6 +5807,7 @@ TESTTERRAIN! U16 JSR,
 TESTDROPORDER U16 JSR,
 TESTCLEARORDERS U16 JSR,
 TESTQUEUEORDER U16 JSR,
+TESTMOVEMEM U16 JSR,
 
 // PMAPUNITSROWTODEST
 // MAPUNITS@

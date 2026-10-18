@@ -53,13 +53,14 @@ HEX
 7380 CONSTANT PLYR3
 
 HEX
-30 CONSTANT MAPWIDTH  // in characters
-28 CONSTANT MAPHEIGHT // in characters
+30 CONSTANT MAPWIDTH      // in characters
+28 CONSTANT MAPHEIGHT     // in characters, this does not include the border row after the map
 9E CONSTANT NUMBEROFUNITS
 37 CONSTANT FIRSTRUSSIANUNIT 
-// 67 CONSTANT NUMBEROFRUSSIANUNITS
 NUMBEROFUNITS FIRSTRUSSIANUNIT - CONSTANT NUMBEROFRUSSIANUNITS
 
+
+HEX
 C0 CONSTANT WIDESCREENWIDTH  // 384 pixels / 2... each hscroll increment is 2 pixels wide
                              // each character is 8 hscroll increments wide
 
@@ -74,29 +75,61 @@ C0 CONSTANT WIDESCREENWIDTH  // 384 pixels / 2... each hscroll increment is 2 pi
 
 HEX
 WIDESCREENWIDTH 20 - CONSTANT SCREENWIDTH // 20 represents the 4 not shown characters
-                       
-   
-                  
+                                        
 MAPWIDTH 8 * SCREENWIDTH - ( E0 ) CONSTANT XPOSLMAX
 
-A0 CONSTANT SCREENHEIGHT   // in pixels... not sure on math for this number                         
-MAPHEIGHT 10 * SCREENHEIGHT 20 - - 1- CONSTANT YPOSMAX // - 2 rows for border
-                                                    
+// map starts on scan line 36, goes to and includes scan line 180 for 145 lines or 0x91
+HEX
+24 CONSTANT MAPSTARTSCANLINE
+B4 CONSTANT MAPENDSCANLINE
+
+MAPENDSCANLINE 1+ MAPSTARTSCANLINE - 
+  CONSTANT SCREENHEIGHT      // the map window on screen is (9 * 16) + 1 or 0x91 pixels                     
+
+MAPHEIGHT 1+ // the bottom border is after the map... need to add 1 to show it
+  10 * // map height + bottom border in pixels, map characters are 16 or 0x10 pixels high
+  SCREENHEIGHT -
+  CONSTANT YPOSMAX 
+
+
+// cursor no longer has to align with other variables
+HEX                                               
 36 CONSTANT SHPOS0MIN
 BA CONSTANT SHPOS0MAX
-78 CONSTANT PM0INITIALXPOS // for cursor - no longer has to align with other variables 
+SHPOS0MAX SHPOS0MIN - 2/ SHPOS0MIN +
+  CONSTANT PM0INITIALXPOS // halfway 
 
-// 164 CONSTANT CURSXMAX
+: SCANLINE>PMROW 2/ 4 + ; // for the settings for this game
 
-16 CONSTANT PMYMAPSTART  // player missile row of start of map
-5E CONSTANT PMYMAPEND    // player missile row of end of map
-PMYMAPSTART 8 + ( to show one border row ) 2 - ( for 4 pixel cursor border ) CONSTANT SCYMIN
-PMYMAPEND 18 - ( one border row + cursor is 2 rows high ) 2 + ( for pixel cursor border )
-  1 + ( for 1/2 extra pm row from the end of vertical scroll ) CONSTANT SCYMAX
-SCYMAX SCYMIN - 2/ SCYMIN + CONSTANT SCYINIT
+
+HEX
+MAPSTARTSCANLINE SCANLINE>PMROW CONSTANT PMYMAPSTART
+MAPENDSCANLINE SCANLINE>PMROW CONSTANT PMYMAPEND
+// 16 CONSTANT PMYMAPSTART  // player missile row of start of map
+// 5E CONSTANT PMYMAPEND    // player missile row of end of map
+
+
+// for these, each map character row is 16 pixels high, but
+//   each pm row is 2 pixels high
+//   so there are 8 pm rows per map character row
+PMYMAPSTART 
+  8 +   // one border row
+  2 -   // for 4 pixel cursor border
+  CONSTANT SCYMIN
+
+HEX
+PMYMAPEND 
+  18 - // one map row for the border + 2 map rows for the cursor
+  2 +  // for pixel cursor border
+  1 +  // for 1/2 extra pm row from the end of vertical scroll
+  CONSTANT SCYMAX
+
+SCYMAX SCYMIN - 2/ SCYMIN + CONSTANT SCYINIT // halfway
+
 
 6 CONSTANT CURSXOFF // out of 8, offset to center of cursor
 9 CONSTANT CURSYOFF // out of 16 or 0x10, offset to center of cursor
+
 
 HEX
 7000 CONSTANT VARENDSTART
@@ -108,6 +141,23 @@ VARENDSTART PVAREND !
     PVAREND @ length - PVAREND ! ;
 : SVAR ( length -- ) ( 'wordname morestuff' -cib- 'morestuff' ) 
     VAR-ALLOT VAR-HERE CONSTANT ;
+
+HEX
+// see if VAR-ALLOT would cross the boundary
+: ?VARCROSSBOUND { | length boundarymask -- flag }
+    PVAREND @ DUP boundarymask AND - length U<
+;
+
+// if VAR-ALLOT would cross the boundary, align to the boundary 
+: ?VARALIGNBOUND { | length boundarymask -- }
+    length boundarymask ?VARCROSSBOUND IF
+      PVAREND @ boundarymask AND PVAREND !
+    THEN
+;
+
+HEX
+FC00 CONSTANT 1KMASK
+F000 CONSTANT 4KMASK
 
 : BUILDROWOFFSETTABLE { | columns rows baseaddr -- }
     rows 0 DO
@@ -184,6 +234,10 @@ ENUM<
   RFR
   TRNTYP
   SQVAL
+  PSRCLO
+  PSRCHI
+  PDESTLO
+  PDESTHI
 > DROP
 
 //  DLSTPT - (vbi) pointer for subroutine that changes the display list map row starts
@@ -217,16 +271,23 @@ ENUM<
 //  RFR   - Russian force ratio in all directions
 //  TRNTYP - terrain type 0 - 9 see TERRTY
 //  SQVAL - holds best destination square value for a Russian unit during Russian AI
-
+//  PSRCLO - source pointer for MOVE
+//  PSRCHI
 
 // Game variables - moved to R.A.M.
 //   SVAR currently allocates memory from top down, take care if any variables need to be next to
 //     eachother in memory.
-MAPWIDTH MAPHEIGHT * SVAR MAPUNITS // for faster lookup of which units are on a map square
+MAPWIDTH MAPHEIGHT 1+ * SVAR MAPUNITS // for faster lookup of which units are on a map square
 
 NUMBEROFUNITS 1+ SVAR CSTRNG // a unit's combat strength aka hp
 NUMBEROFUNITS 1+ SVAR MSTRNG // a unit's muster strength aka maxhp
                              //   changed this to get copied so warm reset will restore this
+NUMBEROFUNITS 1+ SVAR SWAPIT // unit character code and terrain under unit
+NUMBEROFUNITS 1+ SVAR ARRIVE // which turn a unit will arrive on
+NUMBEROFUNITS 1+ SVAR CORPSX // unit x location
+NUMBEROFUNITS 1+ SVAR CORPSY // unit y location
+
+
 NUMBEROFUNITS 1+ SVAR EXEC   // which tick the unit will move on, FF = never
 NUMBEROFUNITS 1+ SVAR HMORDS // how many orders a unit has queued 0-8
 NUMBEROFUNITS 1+ SVAR WHORDS // a unit's orders list low byte - 2 bits per order  1-4
@@ -373,8 +434,7 @@ HEX
 TXTWDWSIZE TXTWDWTOPSIZE + SVAR TXTWDW     ( was $6450 )
 TXTWDW TXTWDWSIZE + CONSTANT TXTWDWTOP  ( was $64E0 )  // adding 1 to original code
 
-
-1 SVAR FILTMP      // temporary variable for FILL (JN added)
+1 SVAR FILLTEMP      // temporary variable for FILLMEM and MOVEMEM (JN added)
 
 // U8MUL8PLUSSAT variables
 1 SVAR M1
@@ -384,26 +444,13 @@ TXTWDW TXTWDWSIZE + CONSTANT TXTWDWTOP  ( was $64E0 )  // adding 1 to original c
 1 SVAR MPRODHI
 
 
-( 0x699 )
-HEX
-2 CODE-ALLOT // to cover the corner case where BARHERE is at xxFE or xxFF 
-             // this will allow for putting 2 bytes before aligned MAPDATA no matter what
-
-CRLF ." before align for MAPSTART " BARHERE U.
-BARHERE 100 ROUNDUP 2 - BARHERE - CODE-ALLOT // to align MAPSTART to 700
-CRLF ." after align for mapdata " BARHERE U.
-
+// no longer needs to be aligned
+//   and since it's being copied to ram, only the ram copy can't cross a 4k boundary
 DECIMAL
-BARHERE CONSTANT MAPDATA // only initial display list uses MAPDATA
-0 CC, // adding one since original display list starts 1 before map data which 
-// may have been part of the top text line's data
-( this was originally at $64FF )
-127 CC, 
-
-// 48x41 map  code routines hardcode mapwidth and height such as the *48 calculation
-
-( this was originally at $6500 ... if this location is page aligned it speeds up calculations )
-BARHERE CONSTANT MAPSTART // start address for functions using map
+BARHERE CONSTANT MAPDATA // J.N. changed map row starts to be 2 characters earlier
+                         //   to simplify and speed up calculations
+// 48x41 map
+0 CC, 127 CC, 
 127 CC, 127 CC, 127 CC, 127 CC, 127 CC, 127 CC, 127 CC, 127 CC, 
 127 CC, 127 CC, 127 CC, 127 CC, 127 CC, 127 CC, 127 CC, 127 CC, 
 127 CC, 127 CC, 127 CC, 127 CC, 127 CC, 127 CC, 127 CC, 127 CC, 
@@ -699,9 +746,16 @@ BARHERE CONSTANT MAPSTART // start address for functions using map
 127 CC, 
 0 CC,
 
+BARHERE MAPDATA - CONSTANT MAPDATASIZE
+
+MAPDATASIZE 4KMASK ?VARALIGNBOUND
+MAPDATASIZE SVAR PMAPDATA
+
+CRLF ." PMAPDATA starts at " BARHERE U.
+
 HEX
-CRLF ." Before display list alignment" BARHERE U.
-BARHERE 100 ROUNDUP BARHERE - CODE-ALLOT 
+// no longer needs to be aligned
+//   and since it's being copied to ram, only the ram copy can't cross a 1k boundary 
 
 // Display list has to go in ram and lms is needed in order to do the scrolling of the oversize map
 // Display list can not cross a 1k boundary. If you need to do that, use the jump instruction.
@@ -713,11 +767,9 @@ BARHERE 100 ROUNDUP BARHERE - CODE-ALLOT
 //   the map row characters are double wide and group 2 pixels together to 
 //     represent one bit for 192 bits
 //   this is 20 - 22 usuable characters per row
-//   This game subtracts 2 characters from the start of each map row to deal with this...
-//   So the non displayed characters at the start of the row is the border character from the
-//     previous row, and the character before that
-//     and the non displayed character at the end of the row is the border
-//     character from the start of the next row, and the one after that...
+//   I changed the map rows to start 2 characters earlier to simplify the math...
+//     This means the rows start with the end character from the previous row, then
+//     2 border characters.
 
 //   The vertical limit including the 24 blank lines at the start is 240... 
 //     without the 24 blank lines, it is 218.
@@ -740,23 +792,23 @@ BARHERE 100 ROUNDUP BARHERE - CODE-ALLOT
 
 // Source EFT18D.ASM line 2780
 HEX
-BARHERE CONSTANT DISPLAYLIST CRLF ." display list starts at " DISPLAYLIST U.
+BARHERE CONSTANT DISPLAYLIST 
                                                             // scanline pmrow dli lms scrolls
 ( +00 ) 70 CC, 70 CC, 70 CC,   ( 3*8 )                      //  0         4                                       
 ( +03 ) C6 CC, TXTWDWTOP DUP CC, 8 RSHIFT CC,               //  24            dli lms          
 ( +06 ) 90 CC,                 ( 2 )                        //  32            dli   
                                                             //    color change 2nd line            
 ( +07 ) 90 CC,                 ( 2 )                        //  34            dli                                            
-( +08 ) F7 CC, MAPDATA                DUP CC, 8 RSHIFT CC,  //  36       22   dli lms  vh 
-( +0B ) F7 CC, MAPDATA 1 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  37-52         dli lms  vh 
-( +0E ) F7 CC, MAPDATA 2 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  53-68         dli lms  vh      
-( +11 ) F7 CC, MAPDATA 3 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  69-84         dli lms  vh       
-( +14 ) F7 CC, MAPDATA 4 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  85-100        dli lms  vh      
-( +17 ) F7 CC, MAPDATA 5 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  101-116       dli lms  vh      
-( +1A ) F7 CC, MAPDATA 6 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  117-132       dli lms  vh       
-( +1D ) F7 CC, MAPDATA 7 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  133-148       dli lms  vh      
-( +20 ) F7 CC, MAPDATA 8 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  148-164       dli lms  vh      
-( +23 ) 57 CC, MAPDATA 9 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  165-180           lms   h 
+( +08 ) F7 CC, PMAPDATA                DUP CC, 8 RSHIFT CC,  //  36       22   dli lms  vh 
+( +0B ) F7 CC, PMAPDATA 1 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  37-52         dli lms  vh 
+( +0E ) F7 CC, PMAPDATA 2 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  53-68         dli lms  vh      
+( +11 ) F7 CC, PMAPDATA 3 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  69-84         dli lms  vh       
+( +14 ) F7 CC, PMAPDATA 4 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  85-100        dli lms  vh      
+( +17 ) F7 CC, PMAPDATA 5 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  101-116       dli lms  vh      
+( +1A ) F7 CC, PMAPDATA 6 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  117-132       dli lms  vh       
+( +1D ) F7 CC, PMAPDATA 7 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  133-148       dli lms  vh      
+( +20 ) F7 CC, PMAPDATA 8 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  148-164       dli lms  vh      
+( +23 ) 57 CC, PMAPDATA 9 MAPWIDTH * + DUP CC, 8 RSHIFT CC,  //  165-180           lms   h 
 // first non vertical scrolled line finishes previous and adds one additional line 
 ( +26 ) 90 CC,                ( 2 )                         //  181           dli               
 ( +27 ) C2 CC, TXTWDW DUP CC, 8 RSHIFT CC,                  //  183           dli lms          
@@ -766,21 +818,27 @@ BARHERE CONSTANT DISPLAYLIST CRLF ." display list starts at " DISPLAYLIST U.
         90 CC,                ( 2 )                         //  209  108 1/2   dli               
         41 CC, DISPLAYLIST DUP CC, 8 RSHIFT CC,             //  211  load dlp and wait for vbi
 
+BARHERE DISPLAYLIST - CONSTANT DISPLAYLISTSIZE
 
-DISPLAYLIST 09 + CONSTANT PDLPMAPROW0 // pointer to display list pointer to map row 0 
-DISPLAYLIST 0C + CONSTANT PDLPMAPROW1
-DISPLAYLIST 0F + CONSTANT PDLPMAPROW2
-DISPLAYLIST 12 + CONSTANT PDLPMAPROW3
-DISPLAYLIST 15 + CONSTANT PDLPMAPROW4
-DISPLAYLIST 18 + CONSTANT PDLPMAPROW5
-DISPLAYLIST 1B + CONSTANT PDLPMAPROW6
-DISPLAYLIST 1E + CONSTANT PDLPMAPROW7
-DISPLAYLIST 21 + CONSTANT PDLPMAPROW8
-DISPLAYLIST 24 + CONSTANT PDLPMAPROW9
+DISPLAYLISTSIZE 1KMASK ?VARALIGNBOUND
+DISPLAYLISTSIZE SVAR PDISPLAYLIST
+CRLF ." PDISPLAYLIST starts at " PDISPLAYLIST U.
+
+
+PDISPLAYLIST 09 + CONSTANT PDLPMAPROW0 // pointer to display list pointer to map row 0 
+PDISPLAYLIST 0C + CONSTANT PDLPMAPROW1
+PDISPLAYLIST 0F + CONSTANT PDLPMAPROW2
+PDISPLAYLIST 12 + CONSTANT PDLPMAPROW3
+PDISPLAYLIST 15 + CONSTANT PDLPMAPROW4
+PDISPLAYLIST 18 + CONSTANT PDLPMAPROW5
+PDISPLAYLIST 1B + CONSTANT PDLPMAPROW6
+PDISPLAYLIST 1E + CONSTANT PDLPMAPROW7
+PDISPLAYLIST 21 + CONSTANT PDLPMAPROW8
+PDISPLAYLIST 24 + CONSTANT PDLPMAPROW9
 
 HEX
 BARHERE CONSTANT ZPVAL
-  DISPLAYLIST CC, DISPLAYLIST 8 RSHIFT CC,  // zero page pointer to display list
+  PDISPLAYLIST CC, PDISPLAYLIST 8 RSHIFT CC,  // zero page pointer to display list
   0 CC, 0 CC,                               // maplo maphi
   0 CC,                                     // number of unit under window
   // these below aren't used anymore... they are calculated now J.N.
@@ -1122,7 +1180,7 @@ BARHERE CONSTANT ODIGIT
 0 CC, 1 CC, 2 CC, 3 CC, 4 CC, 5 CC, 
 
 DECIMAL
-BARHERE CONSTANT SWAPIT CRLF ." SWAPIT = " SWAPIT HEX U. DECIMAL 
+BARHERE CONSTANT INITSWAPIT CRLF ." SWAPIT = " SWAPIT HEX U. DECIMAL 
 // unit graphics and holds terrain under unit when unit is on map
   0  CC, 126  CC, 126  CC, 126  CC, 126  CC, 126  CC, 125  CC, 125  CC, 125  CC, 
 125  CC, 125  CC, 125  CC, 125  CC, 125  CC, 125  CC, 125  CC, 125  CC, 
@@ -1148,7 +1206,7 @@ BARHERE CONSTANT SWAPIT CRLF ." SWAPIT = " SWAPIT HEX U. DECIMAL
 253  CC, 253  CC, 253  CC, 253  CC, 253  CC, 253  CC, 253  CC, 253  CC, 
 
 DECIMAL
-BARHERE CONSTANT CORPSX CRLF ." CORPSX = " CORPSX HEX U. DECIMAL // unit x position
+BARHERE CONSTANT INITCORPSX CRLF ." CORPSX = " CORPSX HEX U. DECIMAL // unit x position
    0 CC, 40 CC, 40 CC, 40 CC, 40 CC, 40 CC, 41 CC, 40 CC, 41 CC, 41 CC, 41 CC, 42 CC, 42 CC, 42 CC, 42 CC, 43 CC, 
   43 CC, 43 CC, 41 CC, 40 CC, 40 CC, 41 CC, 41 CC, 42 CC, 42 CC, 42 CC, 40 CC, 41 CC, 42 CC, 41 CC, 42 CC, 42 CC, 
   43 CC, 41 CC, 42 CC, 43 CC, 30 CC, 30 CC, 31 CC, 33 CC, 35 CC, 37 CC, 35 CC, 36 CC, 36 CC, 45 CC, 45 CC, 38 CC, 
@@ -1163,7 +1221,7 @@ BARHERE CONSTANT CORPSX CRLF ." CORPSX = " CORPSX HEX U. DECIMAL // unit x posit
    0 CC,  0 CC,  0 CC,  0 CC,  0 CC, 38 CC, 21 CC, 12 CC, 20 CC, 21 CC, 20 CC, 15 CC, 21 CC, 20 CC, 19 CC,
 
 DECIMAL 
-BARHERE CONSTANT CORPSY CRLF ." CORPSY = " CORPSY HEX U. DECIMAL // unit y position
+BARHERE CONSTANT INITCORPSY CRLF ." CORPSY = " CORPSY HEX U. DECIMAL // unit y position
  0 CC, 20 CC, 19 CC, 18 CC, 17 CC, 16 CC, 20 CC, 19 CC, 18 CC, 17 CC, 16 CC,
 20 CC, 19 CC, 18 CC, 17 CC, 19 CC, 18 CC, 17 CC, 23 CC, 22 CC, 21 CC, 21 CC, 22 CC,
 22 CC, 23 CC, 24 CC, 15 CC, 14 CC, 13 CC, 15 CC, 14 CC, 12 CC, 13 CC, 15 CC, 16 CC,
@@ -1182,7 +1240,7 @@ BARHERE CONSTANT CORPSY CRLF ." CORPSY = " CORPSY HEX U. DECIMAL // unit y posit
  3 CC,  3 CC,  3 CC,  2 CC,
 
 DECIMAL
-BARHERE CONSTANT ARRIVE // unit arrival turn
+BARHERE CONSTANT INITARRIVE // unit arrival turn
 255  CC, 
 0  CC, 255  CC,   0  CC,   0  CC,   0  CC,   0  CC,   0  CC,   0  CC, 
 0  CC,   0  CC, 255  CC, 255  CC, 255  CC, 255  CC, 255  CC, 255  CC, 
@@ -1373,11 +1431,17 @@ BARHERE CONSTANT MOSCOW
 BARHERE CONSTANT MPTS HEX
   14 CC, 0A CC, 0A CC, 0A CC,
 
-BARHERE CONSTANT MAPROWOFFSETTBL
-MAPWIDTH MAPHEIGHT MAPSTART BUILDROWOFFSETTABLE
+BARHERE CONSTANT MAPDATAROWOFFSETTBL
+  MAPWIDTH 
+  MAPHEIGHT 1+ // 1+ not really needed but just in case
+  PMAPDATA 
+  BUILDROWOFFSETTABLE
 
 BARHERE CONSTANT MAPUNITSROWOFFSETTBL
-MAPWIDTH MAPHEIGHT MAPUNITS BUILDROWOFFSETTABLE
+  MAPWIDTH 
+  MAPHEIGHT 1+ // 1+ not really needed but just in case
+  MAPUNITS 
+  BUILDROWOFFSETTABLE
 
 
 // Source EFT18T.ASM line 9710
@@ -1439,16 +1503,16 @@ BARHERE CONSTANT INITMAPUNITS
   8 RSHIFT U8 LDX,
 
 // Source JN 
-BARHERE CONSTANT ERASE
+BARHERE CONSTANT ERASEMEM
   // [MAPPTR:MAPPTRLO] = pdest
   // X:Y = length
   0 U8 LDA,
-BARHERE CONSTANT FILL // length of 0 is treated as 0
+BARHERE CONSTANT FILLMEM // length of 0 is treated as 0
   // X=lengthhi
   // Y=lengthlo
   0 U8 CPX,
   NE IF,
-    FILTMP [U] STY,
+    FILLTEMP [U] STY,
     0 U8 LDY,
     BEGIN,
       BEGIN,
@@ -1458,7 +1522,7 @@ BARHERE CONSTANT FILL // length of 0 is treated as 0
       MAPPTRHI [U] INC,
       DEX,
     EQ UNTIL,
-    FILTMP [U] LDY,
+    FILLTEMP [U] LDY,
   THEN,
   0 U8 CPY,
   NE IF,
@@ -1470,14 +1534,64 @@ BARHERE CONSTANT FILL // length of 0 is treated as 0
   THEN,
   RTS,
 
-  // Source EFT18M.ASM line 6720
-  BARHERE CONSTANT STALL ( was 7200 )
-    0 U8 LDA,
-    BEGIN, 
-      PHA, PLA, PHA, PLA, PHA, PLA,
-      1 U8 ADC,
+// Source JN 
+HEX
+BARHERE CONSTANT MOVEMEM // length of 0 is treated as 0
+  // [PSRCHI:PSRCLO] = psrc
+  // [PDESTHI:PDESTLO] = pdest
+  // X=lengthhi
+  // Y=lengthlo
+  0 U8 CPX,
+  NE IF,
+    FILLTEMP [U] STY,
+    0 U8 LDY,
+    BEGIN,
+      BEGIN,
+        PSRCLO [[U8]+Y] LDA, 
+        PDESTLO [[U8]+Y] STA,
+        INY,
+      EQ UNTIL,
+      PSRCHI [U] INC,
+      PDESTHI [U] INC,
+      DEX,
     EQ UNTIL,
-    RTS,
+    FILLTEMP [U] LDY,
+  THEN,
+  0 U8 CPY,
+  NE IF,
+    BEGIN,
+      DEY,
+      PSRCLO [[U8]+Y] LDA, 
+      PDESTLO [[U8]+Y] STA,
+      0 U8 CPY,
+    EQ UNTIL,
+  THEN,
+  RTS,
+
+BARHERE CONSTANT COPYMAPDATATORAM
+  MAPDATA U8 LDA,
+  PSRCLO [U] STA,
+  MAPDATA 8 RSHIFT U8 LDA,
+  PSRCHI [U] STA,
+
+  PMAPDATA U8 LDA,
+  PDESTLO [U] STA,
+  PMAPDATA 8 RSHIFT U8 LDA,
+  PDESTHI [U] STA,
+
+  MAPDATASIZE U8 LDY,
+  MAPDATASIZE 8 RSHIFT U8 LDX,
+
+  MOVEMEM U16 JMP,
+
+// Source EFT18M.ASM line 6720
+BARHERE CONSTANT STALL ( was 7200 )
+  0 U8 LDA,
+  BEGIN, 
+    PHA, PLA, PHA, PLA, PHA, PLA,
+    1 U8 ADC,
+  EQ UNTIL,
+  RTS,
 
 // Source EFT18I.ASM line 11360
 // displays number with leading zeroes suppressed
@@ -1725,25 +1839,25 @@ HEX
 // I think this assumes the assembler is in memory and
 //   you are using a specific os version
 // Source EFT18M.ASM line 6430
-BARHERE CONSTANT BREAKROUTINE ( was 0x7210 )
-  0 U8 LDA,
-  D01D [U] STA,
-  D00D [U] STA,
-  D00F [U] STA,
-  22 U8 LDA,
-  22F [U] STA,
-  20 U8 LDA,
-  230 [U] STA,
-  BC U8 LDA,
-  231 [U] STA,
-  40 U8 LDA,
-  NMIEN [U] STA,
-  0A U8 LDA,
-  2C5 [U] STA,
-  00 U8 LDA,
-  5FFF [U] STA,
-  2C8 [U] STA,
-  BRK,
+//  CONSTANT BREAKROUTINE ( was 0x7210 )
+//  0 U8 LDA,
+//  D01D [U] STA,
+//  D00D [U] STA,
+//  D00F [U] STA,
+//  22 U8 LDA,
+//  22F [U] STA,
+//  20 U8 LDA,
+//  230 [U] STA,
+//  BC U8 LDA,
+//  231 [U] STA,
+//  40 U8 LDA,
+//  NMIEN [U] STA,
+//  0A U8 LDA,
+//  2C5 [U] STA,
+//  00 U8 LDA,
+//  5FFF [U] STA,
+//  2C8 [U] STA,
+//  BRK,
 
 // Source EFT18I.ASM line 6410
 BARHERE CONSTANT SQUAWKSUB ( x = error message 0 - 2 )
@@ -1941,12 +2055,13 @@ BARHERE CONSTANT CHUNKTOMAPHILO ( [CHUNKY] [CHUNKX] -mem- [MAPHI:MAPLO] ) ( -reg
   RA ASL,
   CLC,
   TAY,
-  MAPROWOFFSETTBL [U+Y] LDA,
+  MAPDATAROWOFFSETTBL [U+Y] LDA,
+  
   MAPLO [U] STA,
-  MAPROWOFFSETTBL 1+ [U+Y] LDA,
+  MAPDATAROWOFFSETTBL 1+ [U+Y] LDA,
   MAPLO 1+ [U] STA,
 
-  MAPWIDTH 2 - U8 LDA, // 46 - [LONG] // mapwidth - 2
+  MAPWIDTH ( 2 - ) U8 LDA, // 46 - [LONG] // mapwidth - 2
   SEC,
   CHUNKX [U] SBC,
   TAY,
@@ -1962,7 +2077,7 @@ BARHERE CONSTANT SWITCH ( was 0x79EF ) ( [CHUNKX] [CHUNKY] [CORPS] -- )
     RTS,
   THEN,
 
-  // J.N. added - run time error check for x, display message and hang on error 
+  // J.N. added - run time error check for x, hang on error 
   CHUNKX [U] LDA,
   MAPWIDTH 2 - U8 CMP,
   CS IF,
@@ -1970,7 +2085,7 @@ BARHERE CONSTANT SWITCH ( was 0x79EF ) ( [CHUNKX] [CHUNKY] [CORPS] -- )
     BEGIN, CLC, CS UNTIL,
   THEN,
 
-  // J.N. added - run time error check for y, display message and hang on error
+  // J.N. added - run time error check for y, hang on error
   CHUNKY [U] LDA,
   MAPHEIGHT 1- U8 CMP,
   CS IF,
@@ -2287,12 +2402,14 @@ BARHERE CONSTANT LOCTOMAPPTR ( [LAT] [LONG] -mem- [MAPPTRHI:MAPPTRLO] ) ( -reg- 
   RA ASL,
   CLC,
   TAY,
-  MAPROWOFFSETTBL [U+Y] LDA,
+  // MAPROWOFFSETTBL [U+Y] LDA,
+  MAPDATAROWOFFSETTBL [U+Y] LDA,
   MAPPTR [U] STA,
-  MAPROWOFFSETTBL 1+ [U+Y] LDA,
+  // MAPROWOFFSETTBL 1+ [U+Y] LDA,
+  MAPDATAROWOFFSETTBL 1+ [U+Y] LDA,
   MAPPTR 1+ [U] STA,
 
-  MAPWIDTH 2 - U8 LDA, // 46 - [LONG] // mapwidth - 2
+  MAPWIDTH ( 2 - ) U8 LDA, // 46 - [LONG] // mapwidth - 2
   SEC,
   LONG [U] SBC,
   TAY,
@@ -2453,7 +2570,7 @@ BARHERE CONSTANT ERASEPLAYERMEM
   MAPPTR [U] STA,
   2 U8 LDX,
   0 U8 LDY,
-  ERASE U16 JMP,
+  ERASEMEM U16 JMP,
 
 // calculate pdlrow0 from XPOSL YPOSL YPOSH
 //   pdlrow0 = MAPROWSTART[(2*YPOS)/16] + ((E0/8) - (XPOSL/8))
@@ -2481,12 +2598,14 @@ BARHERE CONSTANT CALCPDLROW0
   // using start of map row - 2, the wide screen shows 1 1/2 extra characters on each side
   //   might be able to start the row 2 characters earlier... have the extra border characters
   //   be part of the start of the current row and change the math...
-  SEC,
-  MAPROWOFFSETTBL [U+Y] LDA,
-  2 U8 SBC,
+  // SEC,
+  // MAPROWOFFSETTBL [U+Y] LDA,
+  MAPDATAROWOFFSETTBL [U+Y] LDA,
+  // 2 U8 SBC,
   PDLPMAPROW0 [U] STA,
-  MAPROWOFFSETTBL 1+ [U+Y] LDA,
-  0 U8 SBC,
+  // MAPROWOFFSETTBL 1+ [U+Y] LDA,
+  MAPDATAROWOFFSETTBL 1+ [U+Y] LDA,
+  // 0 U8 SBC,
   PDLPMAPROW0 1+ [U] STA,
 
   // XPOSL is reversed to simplify HSCROL calculation
@@ -2526,17 +2645,9 @@ BARHERE CONSTANT CALCSCROLS
 
 
 // JN replacement for EFT18I.ASM line 8650
-// this way takes more memory, but is about 100 cycles faster and calculates all rows from the base each frame
+// this way takes more memory, but is about 100 cycles faster and calculates all rows 
+//   from the base each frame
 BARHERE CONSTANT CHGDLSUB ( [OFFHI:OFFLO] -mem- ) 
-
-  // adds [offhi:offlo] to display list map row 0 start
-  // PDLPMAPROW0 [U] LDA,    // 4
-  // CLC,                    // 2
-  // OFFLO [U] ADC,          // 3
-  // PDLPMAPROW0 [U] STA,    // 4
-  // PDLPMAPROW0 1+ [U] LDA, // 4
-  // OFFHI [U] ADC,          // 3
-  // PDLPMAPROW0 1+ [U] STA, // 4 = 24
 
   CALCPDLROW0 U16 JSR,
 
@@ -3061,9 +3172,37 @@ BARHERE CONSTANT OVBI // vbi routine, handles player input
     THEN,
   THEN,
   ENDISR U16 JMP,
+
+BARHERE CONSTANT COPYDISPLAYLISTTORAM
+  DISPLAYLISTSIZE U8 LDX,
+  BEGIN,
+    DISPLAYLIST 1- [U+X] LDA,
+    PDISPLAYLIST 1- [U+X] STA,
+    DEX,
+  EQ UNTIL,
+  RTS,
+
+BARHERE CONSTANT COPYMAPDATATORAM
+  MAPDATA U8 LDA,
+  PSRCLO [U] STA,
+  MAPDATA 8 RSHIFT U8 LDA,
+  PSRCHI [U] STA,
+
+  PMAPDATA U8 LDA,
+  PDESTLO [U] STA,
+  PMAPDATA 8 RSHIFT U8 LDA,
+  PDESTHI [U] STA,
+
+  MAPDATASIZE U8 LDY,
+  MAPDATASIZE 8 RSHIFT U8 LDX,
+
+  MOVEMEM U16 JMP,
  
 HEX
 BARHERE CONSTANT OINIT // init game
+
+  COPYDISPLAYLISTTORAM U16 JSR,
+  COPYMAPDATATORAM U16 JSR,
 
 // DLSTPT   zero page pointer to display list
 // DLSTPTHI
@@ -3128,6 +3267,14 @@ BARHERE CONSTANT OINIT // init game
                           //   and to make it rommable
     MSTRNG [U+X] STA, // initial combat strength - muster strength
     CSTRNG [U+X] STA, // combat strength
+    INITARRIVE [U+X] LDA,
+    ARRIVE [U+X] STA,
+    INITSWAPIT [U+X] LDA,
+    SWAPIT [U+X] STA,
+    INITCORPSX [U+X] LDA,
+    CORPSX [U+X] STA,
+    INITCORPSY [U+X] LDA,
+    CORPSY [U+X] STA,
     0 U8 LDA,
     HMORDS [U+X] STA, // how many orders
     FF U8 LDA,      // FF = never
@@ -6928,7 +7075,7 @@ HEX
       pTestMOVEMK [U+X] LDA,
       TXTWDWTOP [U+Y] STA,
       INY, INX,
-      TestMOVEMKSize U8 CPX,
+      Test MKSize U8 CPX,
     EQ UNTIL,
     RTS,
 
@@ -7073,7 +7220,7 @@ BARHERE CONSTANT CHECKMAPSQUARES
 // TESTSWITCH U16 JSR,
 // TESTDOARRIVALS U16 JSR,
 // TESTCHKZOC U16 JSR,
-// TESTINITMAPUNITS U16 JSR, // this also tests fill and erase
+// TESTINITMAPUNITS U16 JSR, 
 
 
 BARHERE CONSTANT TESTERRCLR
@@ -8547,18 +8694,5 @@ BA CONSTANT PM0MAXXPOS
   0x36 <-> 0xBA (0x85 positions) ( 0x78 is the middle )
 000 - 042 13D - 17F
 
-// if CURSXL <= 42 or >= 13D then move cursor instead of screen
-// if CURSXL is between including 42 - 13D move screen
 
-// soo SHPOS0 HPOS0 is CURSX and 7 I think
-// row start offset = mapstart + (1 or 2) + (MAPWIDTH - CURSX/8)
-// HPOS0 = 
-//   if CURSX <= 0x42 then HPOS0 = 0x78 + (0x42 - CURSX)
-//   if 0x42 <= CURSX <= 0x13D then HPOS0 = 0x78
-//   if CURSX >= 0x13D then HPOS0 = 0x78 + (CURSX - 0x13D)
-    
-    
-
-//  CURSYL - (vbi) cursor y position on map in pixels 2 - 0x25E where 0 = bottom edge
-//  CURSYH
-
+// move CORPSX CORPSY SWAPIT to ram
