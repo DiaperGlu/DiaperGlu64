@@ -26,8 +26,8 @@
 // /////////////////////////////
 // James Patrick Norris       //
 // www.rainbarrel.com         //
-// Sep 2, 2026                //
-// version 1.1                //
+// Oct 21, 2026               //
+// version 1.2                //
 // /////////////////////////////
 
 // Compile the 6502 cross assembler
@@ -38,6 +38,10 @@ $" ../BufToATR.dglu" INCLUDEFILE$
 
 // Load the Atari 8 bit labels.
 $" ../AtariLabels.dglu" INCLUDEFILE$
+
+// Notes:
+// Oct 21, 2026 
+//   - J.N. added a line that was missed in UNITFLASH that sets the flash color
 
 
 // User labels
@@ -65,6 +69,7 @@ C0 CONSTANT WIDESCREENWIDTH  // 384 pixels / 2... each hscroll increment is 2 pi
                              // each character is 8 hscroll increments wide
 
 
+// In this map row numbering scheme, -1 0 2F and 30 are borders
 // row characters shown when left aligned at position 0 (-2 -1 mostly off screen):
 //   -2 -1   0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F 10 11 12 13  14 15
 // row characters shown right aligned (30 31 mostly off screen):
@@ -187,6 +192,7 @@ OHERE CONSTANT oNumberOfBootSectors  // this makes a label so the script can aut
 ( 0x602 ) 600 CODE-U16,   // boot load address
 ( 0x604 ) 606 CODE-U16,   // boot init routine address 
    // code at load address + 6 is executed, then RTS, takes you to init address
+   //   but RTS, to init address should not happen in this program
    //   I should probably make init take you to an error
 
 0 U16 JMP, BARHERE CONSTANT toCode 
@@ -1431,6 +1437,12 @@ BARHERE CONSTANT MOSCOW
 BARHERE CONSTANT MPTS HEX
   14 CC, 0A CC, 0A CC, 0A CC,
 
+// BARHERE CONSTANT TERRAINROWOFFSETTBL
+//  MAPWIDTH 
+//  MAPHEIGHT 1+ // 1+ not really needed but just in case
+//  MAPDATA 
+//  BUILDROWOFFSETTABLE
+
 BARHERE CONSTANT MAPDATAROWOFFSETTBL
   MAPWIDTH 
   MAPHEIGHT 1+ // 1+ not really needed but just in case
@@ -2067,6 +2079,64 @@ BARHERE CONSTANT CHUNKTOMAPHILO ( [CHUNKY] [CHUNKX] -mem- [MAPHI:MAPLO] ) ( -reg
   TAY,
   RTS,
 
+// JN added to get terrain character from initial map that was moved to ROM
+// BARHERE CONSTANT CHUNKTOTERRAINPSRC ( [CHUNKY] [CHUNKX] -mem- [PSRCHI:PSRCLO] ) ( -reg- Y )
+//  MAPHEIGHT 1- U8 LDA,  // 39 - [lat] // mapheight - 1
+//  SEC,
+//  CHUNKY [U] SBC,
+//  RA ASL,
+//  CLC,
+//  TAY,
+//  TERRAINROWOFFSETTBL [U+Y] LDA,
+  
+//  PSRCLO [U] STA,
+//  TERRAINROWOFFSETTBL 1+ [U+Y] LDA,
+//  PSRCLO 1+ [U] STA,
+
+//  MAPWIDTH ( 2 - ) U8 LDA, // 46 - [LONG] // mapwidth - 2
+//  SEC,
+//  CHUNKX [U] SBC,
+//  TAY,
+//  RTS,
+
+// JN added to show terrain using initial map that was moved to ROM
+//   This is to replace SWITCH
+// BARHERE CONSTANT SHOWTERRAIN
+//  ( [CHUNKY] [CHUNKX] -mem- [PSRCHI:PSRCLO] [MAPHI:MAPLO] ) ( -reg- Y )
+//  CHUNKTOMAPHILO U16 JSR,
+//  CHUNKTOTERRAINPSRC U16 JSR,
+//  PSRCLO [[U8]+Y] LDA,
+//  MAPLO [[U8]+Y] STA,
+//  RTS,
+
+// JN added to show unit using initial array of unit icons that was moved to ROM
+//   assumes CORPS has same X Y and CHUNKX CHUNKY
+// BARHERE CONSTANT SHOWCORPS
+//  ( [CHUNKY] [CHUNKX] [CORPS] -mem- [MAPHI:MAPLO] ) ( -reg- Y )
+//  CHUNKTOMAPHILO U16 JSR,
+//  CORPS [U] LDX,
+//  EQ IF,
+//    RTS,
+//  THEN,
+
+//  INITSWAPIT [U+X] LDA,
+//  MAPLO [[U8]+Y] STA,
+//  RTS,
+
+BARHERE CONSTANT SHOWFLASHCHAR
+  ( [CHUNKY] [CHUNKX] [DEFNDR] -mem- [MAPHI:MAPLO] ) ( -reg- Y )
+  CHUNKTOMAPHILO U16 JSR,
+  DEFNDR [U] LDX,
+  FIRSTRUSSIANUNIT U8 CPX,
+  NC IF,
+    7F U8 LDA,
+  ELSE,
+    FF U8 LDA,
+  THEN,
+
+  MAPLO [[U8]+Y] STA,
+  RTS,
+
 
 // Source EFT18I.ASM line 9480
 HEX
@@ -2274,6 +2344,7 @@ BARHERE CONSTANT DOUNITMATCHES
 
   // flip unit with terrain
   SWITCH U16 JSR, // !!! uses SWITCH
+  // SHOWTERRAIN U16 JSR,
   CORPS [U] LDA,
   FIRSTRUSSIANUNIT U8 CMP,
   CS IF, // Russian?
@@ -3008,6 +3079,7 @@ BARHERE CONSTANT OVBI // vbi routine, handles player input
     // button was released... put terrain back... assumes switch params are correct
     //  from when button was pressed
     SWITCH U16 JSR,
+    // SHOWCORPS U16 JSR,
 
     0 U8 LDA,
     CORPS [U] STA,
@@ -5098,6 +5170,7 @@ BARHERE CONSTANT UNITLEAVE // could restore terrain from copy of original map
   CHUNKY [U] STA, // y location of terrain to swap
 
   SWITCH U16 JSR, // restore terrain from unit // assumes unit is on map
+  // SHOWTERRAIN U16 JSR,
 
   CHUNKTOMAPUNITSPTR U16 JSR,
   0 U8 LDA,
@@ -5542,6 +5615,7 @@ BARHERE CONSTANT UNITMOVE ( X=unit -reg- ) ( [LAT]=newy [LONG]=newx -mem- )
   MAPPTR [[U8]+Y] STA, 
 
   SWITCH U16 JSR,
+  // SHOWTERRAIN U16 JSR,
 
   CORPS [U] LDX,
   LAT [U] LDA,
@@ -5556,6 +5630,7 @@ BARHERE CONSTANT UNITMOVE ( X=unit -reg- ) ( [LAT]=newy [LONG]=newx -mem- )
   MAPPTR [[U8]+Y] STA, 
 
   SWITCH U16 JSR,
+  // SHOWCORPS U16 JSR,
   RTS,
  
 
@@ -5571,12 +5646,15 @@ BARHERE CONSTANT UNITFLASH // this does not use the vbi routine to do the flash
   NC IF,
     7F U8 LDA, // make it white for Germans
   THEN,
+  SWAPIT [U+X] STA, // JN looks like missed this line... added Oct 21, 2026,... 
+                    //   but it's now obsolete
   CORPS [U] STX,
   CORPSX [U+X] LDA,
   CHUNKX [U] STA,
   CORPSY [U+X] LDA,
   CHUNKY [U] STA,
   SWITCH U16 JSR,
+  // SHOWFLASHCHAR U16 JSR,
   08 U8 LDY,
   8F U8 LDX,
   BEGIN,
@@ -5593,6 +5671,7 @@ BARHERE CONSTANT UNITFLASH // this does not use the vbi routine to do the flash
 
   // now replace original unit character
   SWITCH U16 JSR,
+  // SHOWCORPS U16 JSR,
   DEFNDR [U] LDX,
   PLA,
   SWAPIT [U+X] STA,
@@ -5843,6 +5922,7 @@ BARHERE CONSTANT UNITARRIVE ( X=unit -reg- X=unit ) ( -flag- CS=it worked )
 
     // swap units
     SWITCH U16 JSR, // trashes X but restores it using [CORPS]
+    // SHOWCORPS U16 JSR,
     // eliminated UNITARRIVE as culprit for corrupting map May 2, 2026
     // CHECKMAPSQUARES U16 JSR,
     
